@@ -118,6 +118,8 @@ class TagModificationReport:
             except Exception as e:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
+        # Build photo link
+        photo_link = f"{IMMICH_WEB_BASE_URL}/photos/{asset_id}"
         entry = {
             "datetime": datetime.datetime.now().isoformat(),
             "asset_id": asset_id,
@@ -125,6 +127,7 @@ class TagModificationReport:
             "action": action,  # 'add' or 'remove'
             "tag_name": tag_name,
             "user": user,
+            "photo_link": photo_link,
         }
         self.modifications.append(entry)
         self._since_last_flush += 1
@@ -138,7 +141,7 @@ class TagModificationReport:
         with open(self.report_path, "a", encoding="utf-8") as f:
             for entry in self.modifications[-self._since_last_flush :]:
                 f.write(
-                    f"{entry['datetime']} | asset_id={entry['asset_id']} | name={entry['asset_name']} | action={entry['action']} | tag={entry['tag_name']}"
+                    f"{entry['datetime']} | asset_id={entry['asset_id']} | name={entry['asset_name']} | action={entry['action']} | tag={entry['tag_name']} | link={entry['photo_link']}"
                 )
                 if entry["user"]:
                     f.write(f" | user={entry['user']}")
@@ -149,7 +152,7 @@ class TagModificationReport:
         print("\n[SUMMARY] Tag modifications:")
         for entry in self.modifications:
             print(
-                f"{entry['datetime']} | asset_id={entry['asset_id']} | name={entry['asset_name']} | action={entry['action']} | tag={entry['tag_name']}"
+                f"{entry['datetime']} | asset_id={entry['asset_id']} | name={entry['asset_name']} | action={entry['action']} | tag={entry['tag_name']} | link={entry['photo_link']}"
                 + (f" | user={entry['user']}" if entry["user"] else "")
             )
         print(f"Total modifications: {len(self.modifications)}")
