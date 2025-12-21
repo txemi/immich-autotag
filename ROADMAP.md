@@ -2,7 +2,10 @@
 
 This document lists upcoming rules, features, and improvements planned for the Immich AutoTag project. Please update this file as new ideas or requirements arise.
 
-## 1. Next Rules to Implement
+
+## 1. Next Integrity Rules to Implement
+
+The following are integrity rules, which ensure that the tagging and classification remain consistent and logical. Other types of rules (e.g., automation, enrichment, or workflow rules) may be added in future sections as the project evolves.
 
 - **Rule:** Photos with recognized faces should not be tagged as `meme` or `adult meme`.
 - **Rule:** Photos belonging to specific groups of albums (e.g., people groups, family trees) should not be tagged as `meme` or `adult meme`. These album groups should be definable by pattern.
