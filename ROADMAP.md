@@ -10,25 +10,17 @@ The following are integrity rules, which ensure that the tagging and classificat
 - **Rule:** Photos with recognized faces should not be tagged as `meme` or `adult meme`.
 - **Rule:** Photos belonging to specific groups of albums (e.g., people groups, family trees) should not be tagged as `meme` or `adult meme`. These album groups should be definable by pattern.
 
-## 2. Configuration Improvements
-
-- Allow defining album group patterns (by name, type, or regex) to control classification rules.
-
-## 3. Classification Logic Enhancements
-
-- Improve conflict detection logic for assets classified by multiple criteria.
-- Add more granular classification categories as needed.
 
 ## 4. Automation and Utilities
 
-- Tool to automatically create albums from folder structures.
-- Tool to detect and manage duplicate photos or albums.
-- Batch operations for advanced organization workflows using tags.
+- Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums).
+- Assist in the detection and management of duplicate folders or files within the photo library.
+
+
 
 ## 5. Integration Ideas
 
 - Integrate with external AI-based classification systems for enhanced tagging.
-- Provide a web interface for managing rules and reviewing classification results.
 
 ---
 
