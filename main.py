@@ -170,28 +170,6 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
 
-    @typechecked
-    def apply_tag_conversions(self, tag_conversions: list, tag_mod_report: 'TagModificationReport | None' = None):
-        """
-        For each tag conversion (origin -> destination), if the asset has the origin tag:
-        - If it does not have the destination tag, add it and remove the origin tag.
-        - If it has both, just remove the origin tag.
-        All actions are logged in tag_mod_report if provided.
-        """
-        for conv in tag_conversions:
-            origin = conv["origin"]
-            dest = conv["destination"]
-            has_origin = self.has_tag(origin)
-            has_dest = self.has_tag(dest)
-            if has_origin and not has_dest:
-                try:
-                    self.add_tag_by_name(dest, tag_mod_report=tag_mod_report)
-                except Exception as e:
-                    print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
-                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
-            elif has_origin and has_dest:
-                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
-
 
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
@@ -454,6 +432,28 @@ class AssetResponseWrapper:
                     f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it's no longer in conflict."
                 )
                 self.remove_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
+    @typechecked
+    def apply_tag_conversions(self, tag_conversions: list, tag_mod_report: 'TagModificationReport | None' = None):
+        """
+        For each tag conversion (origin -> destination), if the asset has the origin tag:
+        - If it does not have the destination tag, add it and remove the origin tag.
+        - If it has both, just remove the origin tag.
+        All actions are logged in tag_mod_report if provided.
+        """
+        for conv in tag_conversions:
+            origin = conv["origin"]
+            dest = conv["destination"]
+            has_origin = self.has_tag(origin)
+            has_dest = self.has_tag(dest)
+            if has_origin and not has_dest:
+                try:
+                    self.add_tag_by_name(dest, tag_mod_report=tag_mod_report)
+                except Exception as e:
+                    print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
+                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
+            elif has_origin and has_dest:
+                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
