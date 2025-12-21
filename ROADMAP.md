@@ -13,10 +13,12 @@ The following are integrity rules, which ensure that the tagging and classificat
 
 
 
+
 ## 1.2. Automation and Utilities
 
 1. Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums).
 2. Assist in the detection and management of duplicate folders or files within the photo library.
+3. Provide an official Docker image for easy deployment and usage (requested by users).
 
 
 
