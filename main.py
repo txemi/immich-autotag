@@ -101,7 +101,8 @@ class MatchClassificationResult:
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagModificationReport:
-    report_path: str = "tag_modification_report.txt"
+    import os, datetime as dt
+    report_path: str = f"tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt"
     batch_size: int = 1
     modifications: list = attrs.field(factory=list, init=False)
     _since_last_flush: int = attrs.field(default=0, init=False)
@@ -436,10 +437,11 @@ class AssetResponseWrapper:
     def apply_tag_conversions(self, tag_conversions: list, tag_mod_report: 'TagModificationReport | None' = None):
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
-        - If it does not have the destination tag, add it and remove the origin tag.
+        - If it does not have the destination tag, add it and reload the asset, then remove the origin tag.
         - If it has both, just remove the origin tag.
         All actions are logged in tag_mod_report if provided.
         """
+        from immich_client.api.assets import get_asset_info
         for conv in tag_conversions:
             origin = conv["origin"]
             dest = conv["destination"]
@@ -448,6 +450,9 @@ class AssetResponseWrapper:
             if has_origin and not has_dest:
                 try:
                     self.add_tag_by_name(dest, tag_mod_report=tag_mod_report)
+                    # Reload asset to ensure state is up-to-date before removing origin
+                    updated = get_asset_info.sync(id=self.id, client=self.context.client)
+                    object.__setattr__(self, 'asset', updated)
                 except Exception as e:
                     print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
