@@ -25,6 +25,13 @@ CLASSIFIED_TAGS = [
 ]
 ALBUM_PATTERN = r"^\d{4}-(\d{2}(-\d{2})?)?"  # Example: YYYY-, YYYY-MM or YYYY-MM-DD
 
+# Tag conversions: legacy tag to new tag (origin -> destination)
+# Each item is a dict with 'origin' and 'destination' keys
+TAG_CONVERSIONS = [
+    {"origin": "meme", "destination": "autotag_input_meme"},
+    {"origin": "adult_meme", "destination": "autotag_input_adult_meme"},
+]
+
 # Output tags: no real hierarchy, use underscores
 AUTOTAG_UNKNOWN_CATEGORY = "autotag_output_unknown"  # Output: unclassified asset
 AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"  # Output: asset with classification conflict
