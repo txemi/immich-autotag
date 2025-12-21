@@ -170,6 +170,28 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
 
+    @typechecked
+    def apply_tag_conversions(self, tag_conversions: list, tag_mod_report: 'TagModificationReport | None' = None):
+        """
+        For each tag conversion (origin -> destination), if the asset has the origin tag:
+        - If it does not have the destination tag, add it and remove the origin tag.
+        - If it has both, just remove the origin tag.
+        All actions are logged in tag_mod_report if provided.
+        """
+        for conv in tag_conversions:
+            origin = conv["origin"]
+            dest = conv["destination"]
+            has_origin = self.has_tag(origin)
+            has_dest = self.has_tag(dest)
+            if has_origin and not has_dest:
+                try:
+                    self.add_tag_by_name(dest, tag_mod_report=tag_mod_report)
+                except Exception as e:
+                    print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
+                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
+            elif has_origin and has_dest:
+                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
+
 
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
@@ -602,7 +624,12 @@ def list_tags(client: Client) -> TagCollectionWrapper:
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
     count = 0
     tag_mod_report = TagModificationReport()
+
     for i, asset_wrapper in enumerate(get_all_assets(context, max_assets=max_assets)):
+        # Tag conversion logic encapsulated in the asset
+        asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
+
+        # Existing classification logic
         validate_and_update_asset_classification(
             asset_wrapper,
             tag_mod_report=tag_mod_report,
