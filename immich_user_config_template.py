@@ -23,7 +23,19 @@ CLASSIFIED_TAGS = [
     "autotag_input_adult_meme",  # Adult meme: memes with sensitive/NSFW content
     "autotag_input_pending_review",  # Pending review: photos postponed to decide their destination
 ]
-ALBUM_PATTERN = r"^\d{4}-(\d{2}(-\d{2})?)?"  # Example: YYYY-, YYYY-MM or YYYY-MM-DD
+
+# ALBUM_PATTERN defines which albums are considered "event albums" for classification purposes.
+#
+# Only albums whose names start with a date (e.g., '2023-', '2023-06', '2023-06-30') are treated as event albums.
+# This means a photo should always belong to exactly one event album (matching this pattern) to be considered organized.
+#
+# Why use this pattern?
+# - You may have other albums that are not events (e.g., collections about a person, a group, or a theme).
+# - These non-event albums should NOT be considered for classification, so they are ignored by the script.
+# - This approach lets you keep thematic or personal albums without affecting the event-based organization logic.
+#
+# You can adjust the pattern if your event album naming convention is different.
+ALBUM_PATTERN = r"^\d{4}-(\d{2}(-\d{2})?)?"  # Matches: YYYY-, YYYY-MM or YYYY-MM-DD
 
 # Tag conversions: legacy tag to new tag (origin -> destination)
 # Each item is a dict with 'origin' and 'destination' keys
