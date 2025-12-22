@@ -195,51 +195,49 @@ class AssetResponseWrapper:
     @typechecked
     def remove_tag_by_name(self, tag_name: str, verbose: bool = True, tag_mod_report: 'TagModificationReport | None' = None, user: str | None = None) -> bool:
         """
-        Removes a tag from the asset by name using the Immich API if it has it.
-        Returns True if removed, False if it didn't have it.
-        After removal, reloads the asset and checks if the tag is still present. Logs a warning if removal failed.
+        Removes all tags from the asset with the given name (case-insensitive), even if they have different IDs (e.g., global and nested tags).
+        Returns True if at least one was removed, False if none were found.
+        After removal, reloads the asset and checks if the tag is still present. Raises if any remain.
         """
         from immich_client.api.assets import get_asset_info
-        if not self.has_tag(tag_name):
-            if verbose:
-                    print(f"[INFO] Asset id={self.id} does not have the tag '{tag_name}'")
-            return False
         from immich_client.api.tags import untag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-        tag = self.context.tag_collection.find_by_name(tag_name)
-        if tag is None:
+        # Find all tag objects on the asset with the given name (case-insensitive)
+        tags_to_remove = [tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()]
+        if not tags_to_remove:
             if verbose:
-                    print(f"[WARN] Tag '{tag_name}' not found in global collection.")
+                print(f"[INFO] Asset id={self.id} does not have the tag '{tag_name}'")
             return False
 
-        # Log tags and IDs before removal
-            print(f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_id={tag.id}")
-            print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
+        print(f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}")
+        print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
 
-        response = untag_assets.sync(
-            id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
-        )
-        print(f"[DEBUG] Full untag_assets response: {response}")
-
-        if verbose:
-                print(f"[INFO] Removed tag '{tag_name}' from asset.id={self.id}. Response: {response}")
+        removed_any = False
+        for tag in tags_to_remove:
+            response = untag_assets.sync(
+                id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
+            )
+            print(f"[DEBUG] Full untag_assets response for tag_id={tag.id}: {response}")
+            if verbose:
+                print(f"[INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}")
+            removed_any = True
+            if tag_mod_report:
+                tag_mod_report.add_modification(
+                    asset_id=self.id,
+                    asset_name=self.original_file_name,
+                    action="remove",
+                    tag_name=tag_name,
+                    user=user,
+                )
 
         # Reload asset and check if tag is still present
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
         object.__setattr__(self, 'asset', updated_asset)
         print(f"[DEBUG] Tags after removal: {self.get_tag_names()}")
         tag_still_present = self.has_tag(tag_name)
-
-        if tag_mod_report:
-            tag_mod_report.add_modification(
-                asset_id=self.id,
-                asset_name=self.original_file_name,
-                action="remove",
-                tag_name=tag_name,
-                user=user,
-            )
-            if tag_still_present:
+        if tag_still_present:
+            if tag_mod_report:
                 tag_mod_report.add_modification(
                     asset_id=self.id,
                     asset_name=self.original_file_name,
@@ -247,11 +245,10 @@ class AssetResponseWrapper:
                     tag_name=tag_name,
                     user=user,
                 )
-        if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             print(error_msg)
             raise RuntimeError(error_msg)
-        return True
+        return removed_any
 
     @typechecked
     def add_tag_by_name(
