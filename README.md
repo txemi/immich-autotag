@@ -4,7 +4,7 @@
 
 ### 1.1.1. Why Immich?
 
-In recent years, Immich has become one of the most popular solutions for private photo and video management, surpassing alternatives like Google Photos or NAS applications. External services such as Google Photos may lose features, delete data (e.g., face information), impose quotas, or reduce photo quality. NAS apps often have poor performance. Immich stands out for being open-source (free software), fast, private, and having an active community, making it the preferred choice for many users.
+In recent years, Immich has become one of the most popular solutions for private photo and video management, surpassing alternatives like Google Photos or NAS applications. External services such as Google Photos may lose features, delete data (e.g., face information), impose quotas, or reduce photo quality. NAS apps often perform poorly when run on typical home hardware, which is usually less powerful than professional setups. Immich stands out for being open-source (free software), fast, private, and having an active community, making it the preferred choice for many users.
 
 ### 1.1.2. Why this project?
 
