@@ -38,6 +38,9 @@ IMMICH_BASE_URL = f"{IMMICH_WEB_BASE_URL}/api"
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"
 # ==================== LOG CONFIGURATION ====================
 PRINT_ASSET_DETAILS = False  # Set to True to enable detailed per-asset logging
+# Sequential mode is faster for this workload because the Immich API/server cannot efficiently handle multiple simultaneous requests.
+# Parallelization with more workers actually increases average processing time per asset due to server/network bottlenecks.
+MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -682,7 +685,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     N_LOG = 100  # Frecuencia del log de media
     print("Processing assets in parallel (streaming)...")
     start_time = time.time()
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = []
         for asset_wrapper in get_all_assets(context, max_assets=max_assets):
             future = executor.submit(process_single_asset, asset_wrapper, tag_mod_report, lock)
