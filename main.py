@@ -37,7 +37,7 @@ IMMICH_WEB_BASE_URL = f"http://{IMMICH_HOST}:{IMMICH_PORT}"
 IMMICH_BASE_URL = f"{IMMICH_WEB_BASE_URL}/api"
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"
 # ==================== LOG CONFIGURATION ====================
-PRINT_ASSET_DETAILS = False  # Cambia a True para activar el log detallado por asset
+PRINT_ASSET_DETAILS = False  # Set to True to enable detailed per-asset logging
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -557,7 +557,7 @@ def get_all_assets(
                 yield AssetResponseWrapper(asset=asset_full, context=context)
                 count += 1
             else:
-                raise RuntimeError(f"[ERROR] No se pudo cargar el asset con id={asset.id}. get_asset_info devolvió None.")
+                raise RuntimeError(f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None.")
         print(f"Page {page}: {len(assets_page)} assets (full info)")
         if (
             max_assets is not None and count >= max_assets
@@ -680,7 +680,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     lock = Lock()
     count = 0
     N_LOG = 100  # Frecuencia del log de media
-    print("Procesando assets en paralelo (streaming)...")
+    print("Processing assets in parallel (streaming)...")
     start_time = time.time()
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
@@ -690,7 +690,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             count += 1
             if count % N_LOG == 0:
                 elapsed = time.time() - start_time
-                print(f"[PERF] Procesados {count} assets. Media por asset: {elapsed/count:.3f} s")
+                print(f"[PERF] Processed {count} assets. Average per asset: {elapsed/count:.3f} s")
         for future in concurrent.futures.as_completed(futures):
             try:
                 future.result()
