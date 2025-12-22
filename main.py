@@ -16,10 +16,13 @@ from immich_client.models.tag_response_dto import TagResponseDto
 from immich_client.models import MetadataSearchDto
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.album_response_dto import AlbumResponseDto
+
+from threading import Lock
+import concurrent.futures
 import attrs
 
 # --- Detailed classification result ---
-from typing import List
+from typing import List, Generator
 
 
 
@@ -547,8 +550,9 @@ def get_all_assets(
             if max_assets is not None and count >= max_assets:
                 return
             asset_full = get_asset_info.sync(id=asset.id, client=context.client)
-            yield AssetResponseWrapper(asset=asset_full, context=context)
-            count += 1
+            if asset_full is not None:
+                yield AssetResponseWrapper(asset=asset_full, context=context)
+                count += 1
         print(f"Page {page}: {len(assets_page)} assets (full info)")
         if (
             max_assets is not None and count >= max_assets
@@ -646,30 +650,45 @@ def list_tags(client: Client) -> TagCollectionWrapper:
     return tag_collection
 
 
+
+
+import concurrent.futures
+from threading import Lock
+@typechecked
+def process_single_asset(
+    asset_wrapper: 'AssetResponseWrapper',
+    tag_mod_report: 'TagModificationReport',
+    lock: Lock
+) -> None:
+    asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
+    validate_and_update_asset_classification(
+        asset_wrapper,
+        tag_mod_report=tag_mod_report,
+    )
+    with lock:
+        tag_mod_report.flush()
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
-    count = 0
     tag_mod_report = TagModificationReport()
-
-    for i, asset_wrapper in enumerate(get_all_assets(context, max_assets=max_assets)):
-        # Tag conversion logic encapsulated in the asset
-        asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
-
-        # Existing classification logic
-        validate_and_update_asset_classification(
-            asset_wrapper,
-            tag_mod_report=tag_mod_report,
-        )
-        count += 1
-        # For testing, you can limit the number of assets processed:
-        # if i > 20:
-        #     break
-
+    lock = Lock()
+    count = 0
+    print("Procesando assets en paralelo (streaming)...")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+        for asset_wrapper in get_all_assets(context, max_assets=max_assets):
+            future = executor.submit(process_single_asset, asset_wrapper, tag_mod_report, lock)
+            futures.append(future)
+            count += 1
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"[ERROR] Asset processing failed: {e}")
     print(f"Total assets: {count}")
     if len(tag_mod_report.modifications) > 0:
         tag_mod_report.print_summary()
         tag_mod_report.flush()
-    MIN_ASSETS = 0  # Change this value if you know the actual minimum of assets
+    MIN_ASSETS = 0  # Cambia este valor si conoces el mínimo real de assets
     if count < MIN_ASSETS:
         raise Exception(
             f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
