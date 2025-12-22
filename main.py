@@ -38,8 +38,10 @@ IMMICH_BASE_URL = f"{IMMICH_WEB_BASE_URL}/api"
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"
 # ==================== LOG CONFIGURATION ====================
 PRINT_ASSET_DETAILS = False  # Set to True to enable detailed per-asset logging
-# Sequential mode is faster for this workload because the Immich API/server cannot efficiently handle multiple simultaneous requests.
-# Parallelization with more workers actually increases average processing time per asset due to server/network bottlenecks.
+# Control whether to use ThreadPoolExecutor for asset processing, regardless of MAX_WORKERS value.
+# If False, always use direct loop (sequential). If True, use thread pool even for MAX_WORKERS=1.
+USE_THREADPOOL = False  # Set to True to force thread pool usage, False for direct loop
+# Sequential mode is usually faster for this workload, but you can experiment with USE_THREADPOOL for benchmarking.
 MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
 
@@ -683,22 +685,32 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     lock = Lock()
     count = 0
     N_LOG = 100  # Frecuencia del log de media
-    print("Processing assets in parallel (streaming)...")
+    print(f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
     start_time = time.time()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = []
+    if USE_THREADPOOL:
+        # Use thread pool regardless of MAX_WORKERS value
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = []
+            for asset_wrapper in get_all_assets(context, max_assets=max_assets):
+                future = executor.submit(process_single_asset, asset_wrapper, tag_mod_report, lock)
+                futures.append(future)
+                count += 1
+                if count % N_LOG == 0:
+                    elapsed = time.time() - start_time
+                    print(f"[PERF] Processed {count} assets. Average per asset: {elapsed/count:.3f} s")
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"[ERROR] Asset processing failed: {e}")
+    else:
+        # Direct loop (sequential), no thread pool
         for asset_wrapper in get_all_assets(context, max_assets=max_assets):
-            future = executor.submit(process_single_asset, asset_wrapper, tag_mod_report, lock)
-            futures.append(future)
+            process_single_asset(asset_wrapper, tag_mod_report, lock)
             count += 1
             if count % N_LOG == 0:
                 elapsed = time.time() - start_time
                 print(f"[PERF] Processed {count} assets. Average per asset: {elapsed/count:.3f} s")
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                future.result()
-            except Exception as e:
-                print(f"[ERROR] Asset processing failed: {e}")
     total_time = time.time() - start_time
     print(f"Total assets: {count}")
     print(f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s")
