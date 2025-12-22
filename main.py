@@ -553,6 +553,8 @@ def get_all_assets(
             if asset_full is not None:
                 yield AssetResponseWrapper(asset=asset_full, context=context)
                 count += 1
+            else:
+                raise RuntimeError(f"[ERROR] No se pudo cargar el asset con id={asset.id}. get_asset_info devolvió None.")
         print(f"Page {page}: {len(assets_page)} assets (full info)")
         if (
             max_assets is not None and count >= max_assets
