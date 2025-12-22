@@ -105,7 +105,8 @@ class MatchClassificationResult:
 @attrs.define(auto_attribs=True, slots=True)
 class TagModificationReport:
     import os, datetime as dt
-    report_path: str = f"tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt"
+    log_dir: str = "logs"
+    report_path: str = f"{log_dir}/tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt"
     batch_size: int = 1
     modifications: list = attrs.field(factory=list, init=False)
     _since_last_flush: int = attrs.field(default=0, init=False)
