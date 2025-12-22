@@ -36,6 +36,8 @@ from immich_user_config import *
 IMMICH_WEB_BASE_URL = f"http://{IMMICH_HOST}:{IMMICH_PORT}"
 IMMICH_BASE_URL = f"{IMMICH_WEB_BASE_URL}/api"
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"
+# ==================== LOG CONFIGURATION ====================
+PRINT_ASSET_DETAILS = False  # Cambia a True para activar el log detallado por asset
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -585,9 +587,10 @@ def validate_and_update_asset_classification(
     asset_wrapper.ensure_autotag_category_unknown(classified, tag_mod_report=tag_mod_report)
     asset_wrapper.ensure_autotag_conflict_category(conflict, tag_mod_report=tag_mod_report)
 
-    print(
-        f"ID: {asset_wrapper.id} | Name: {asset_wrapper.original_file_name} | Favorite: {asset_wrapper.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Classified: {classified} | Date: {asset_wrapper.created_at} | original_path: {asset_wrapper.original_path}"
-    )
+    if PRINT_ASSET_DETAILS:
+        print(
+            f"ID: {asset_wrapper.id} | Name: {asset_wrapper.original_file_name} | Favorite: {asset_wrapper.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Classified: {classified} | Date: {asset_wrapper.created_at} | original_path: {asset_wrapper.original_path}"
+        )
     return bool(tag_names), bool(album_names)
 
 
@@ -672,22 +675,30 @@ def process_single_asset(
         tag_mod_report.flush()
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
+    import time
     tag_mod_report = TagModificationReport()
     lock = Lock()
     count = 0
+    N_LOG = 100  # Frecuencia del log de media
     print("Procesando assets en paralelo (streaming)...")
+    start_time = time.time()
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
         for asset_wrapper in get_all_assets(context, max_assets=max_assets):
             future = executor.submit(process_single_asset, asset_wrapper, tag_mod_report, lock)
             futures.append(future)
             count += 1
+            if count % N_LOG == 0:
+                elapsed = time.time() - start_time
+                print(f"[PERF] Procesados {count} assets. Media por asset: {elapsed/count:.3f} s")
         for future in concurrent.futures.as_completed(futures):
             try:
                 future.result()
             except Exception as e:
                 print(f"[ERROR] Asset processing failed: {e}")
+    total_time = time.time() - start_time
     print(f"Total assets: {count}")
+    print(f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s")
     if len(tag_mod_report.modifications) > 0:
         tag_mod_report.print_summary()
         tag_mod_report.flush()
