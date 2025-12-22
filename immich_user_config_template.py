@@ -52,5 +52,13 @@ TAG_CONVERSIONS = [
 ]
 
 # Output tags: no real hierarchy, use underscores
-AUTOTAG_UNKNOWN_CATEGORY = "autotag_output_unknown"  # Output: unclassified asset
-AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"  # Output: asset with classification conflict
+#
+# AUTOTAG_UNKNOWN_CATEGORY: This tag is applied to assets (photos/videos) that could not be assigned to any event album (i.e., they do not match any group based on the event pattern).
+# These are typically photos that are not yet organized, and need to be reviewed. You can use the Immich interface to filter by this tag and quickly find all unclassified assets.
+# The goal is to ensure every photo belongs to exactly one event album or is intentionally excluded (e.g., meme, ignore, etc.).
+AUTOTAG_UNKNOWN_CATEGORY = "autotag_output_unknown"
+#
+# AUTOTAG_CONFLICT_CATEGORY: This tag is applied to assets that are assigned to more than one event album (i.e., they match multiple groups, which is considered a classification conflict).
+# The ideal is that each photo belongs to only one event album. If a photo is in several, it means the organization needs to be reviewed.
+# Filtering by this tag in the Immich interface allows you to quickly focus on and resolve these conflicts: either by moving the photo to the correct album, removing it from extra albums, or reclassifying it (e.g., as meme or ignore).
+AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"
