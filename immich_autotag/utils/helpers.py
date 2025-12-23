@@ -1,4 +1,7 @@
-def print_perf(count, elapsed, total_assets=None):
+from typeguard import typechecked
+
+@typechecked
+def print_perf(count: int, elapsed: float, total_assets: int | None = None):
     """
     Print performance statistics for asset processing.
     Args:
