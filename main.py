@@ -731,12 +731,31 @@ def process_single_asset(
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
     import time
+    from immich_client.api.server import get_server_statistics
     tag_mod_report = TagModificationReport()
     lock = Lock()
     count = 0
     N_LOG = 100  # Frecuencia del log de media
     print(f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
+    # Obtener el total de assets antes de procesar
+    try:
+        stats = get_server_statistics.sync(client=context.client)
+        total_assets = getattr(stats, "photos", 0) + getattr(stats, "videos", 0)
+        print(f"[INFO] Total assets (photos + videos) reportados por Immich: {total_assets}")
+    except Exception as e:
+        print(f"[WARN] No se pudo obtener el total de assets desde la API: {e}")
+        total_assets = None
     start_time = time.time()
+    def print_perf(count, elapsed):
+        avg = elapsed / count if count else 0
+        if total_assets and count > 0:
+            remaining = total_assets - count
+            est_total = avg * total_assets
+            est_remaining = est_total - elapsed
+            percent = (count / total_assets) * 100
+            print(f"[PERF] {count}/{total_assets} ({percent:.1f}%) assets procesados. Media: {avg:.3f} s. Est. restante: {est_remaining/60:.1f} min")
+        else:
+            print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s")
     if USE_THREADPOOL:
         # Use thread pool regardless of MAX_WORKERS value
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -747,7 +766,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                 count += 1
                 if count % N_LOG == 0:
                     elapsed = time.time() - start_time
-                    print(f"[PERF] Processed {count} assets. Average per asset: {elapsed/count:.3f} s")
+                    print_perf(count, elapsed)
             for future in concurrent.futures.as_completed(futures):
                 try:
                     future.result()
@@ -760,7 +779,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             count += 1
             if count % N_LOG == 0:
                 elapsed = time.time() - start_time
-                print(f"[PERF] Processed {count} assets. Average per asset: {elapsed/count:.3f} s")
+                print_perf(count, elapsed)
     total_time = time.time() - start_time
     print(f"Total assets: {count}")
     print(f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s")
