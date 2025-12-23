@@ -25,6 +25,7 @@ from pathlib import Path
 
 # --- Detailed classification result ---
 from typing import List, Generator
+from immich_autotag.core.match_classification_result import MatchClassificationResult
 
 
 # ==================== USER-EDITABLE CONFIGURATION ====================
@@ -100,15 +101,6 @@ class TagCollectionWrapper:
         return iter(self.tags)
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
-class MatchClassificationResult:
-    tags_matched: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
-    albums_matched: List[str] = attrs.field(
-        validator=attrs.validators.instance_of(list)
-    )
-
-    def any(self) -> bool:
-        return bool(self.tags_matched or self.albums_matched)
 
 
 # ==================== TAG MODIFICATION TRACE REPORT ====================
@@ -536,7 +528,6 @@ class AssetResponseWrapper:
         All actions are logged in tag_mod_report if provided.
         """
         from immich_client.api.assets import get_asset_info
-
         for conv in tag_conversions:
             origin = conv["origin"]
             dest = conv["destination"]
