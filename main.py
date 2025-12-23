@@ -497,6 +497,8 @@ class AssetResponseWrapper:
         Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
         Only runs if ENABLE_ALBUM_DETECTION_FROM_FOLDERS is True, the asset does not already belong to an album,
         and does not have a classified tag. Returns the detected album name or None. Raises NotImplementedError for ambiguous cases.
+        Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
+        If the date is already in the containing folder, keep as before.
         """
         import os
         import re
@@ -508,7 +510,19 @@ class AssetResponseWrapper:
         # If already in an album matching ALBUM_PATTERN, skip
         if any(re.match(ALBUM_PATTERN, name) for name in self.get_album_names()):
             return None
-        # Get all ancestor folders (and optionally the filename)
+        analyzer = AlbumFolderAnalyzer(self.original_path)
+        return analyzer.get_album_name()
+
+import attrs
+
+@attrs.define(auto_attribs=True, slots=True)
+class AlbumFolderAnalyzer:
+    original_path: str
+    folders: list = attrs.field(init=False)
+    date_pattern: str = attrs.field(init=False, default=r"^\d{4}-\d{2}-\d{2}$")
+
+    def __attrs_post_init__(self):
+        import os
         path = self.original_path
         folders = []
         while True:
@@ -519,24 +533,51 @@ class AssetResponseWrapper:
                 if path:
                     folders.insert(0, path)
                 break
-        # Find folders starting with a date in ISO format (YYYY-MM-DD)
-        date_pattern = r"^\d{4}-\d{2}-\d{2}"
-        matches = [f for f in folders if re.match(date_pattern, f)]
-        if len(matches) == 0:
-            return None
-        if len(matches) == 1:
-            candidate = matches[0]
-            # Ignore if the folder is exactly a date (e.g. '2023-12-19')
-            if re.fullmatch(date_pattern, candidate):
-                # This is a common auto-folder, ignore silently
-                return None
-            if len(candidate) < 20:  # Arbitrary: suspiciously short
-                raise NotImplementedError(f"Detected album name is suspiciously short: '{candidate}'")
-            return candidate
-        if len(matches) > 1:
-            raise NotImplementedError(f"Multiple candidate folders for album detection: {matches}")
-        return None
+        self.folders = [f for f in folders if f]
 
+    def date_folder_indices(self):
+        import re
+        return [i for i, f in enumerate(self.folders) if re.fullmatch(self.date_pattern, f)]
+
+    def num_date_folders(self):
+        return len(self.date_folder_indices())
+
+    def is_date_in_last_position(self):
+        idxs = self.date_folder_indices()
+        return len(idxs) == 1 and idxs[0] == len(self.folders) - 1
+
+    def is_date_in_penultimate_position(self):
+        idxs = self.date_folder_indices()
+        return len(idxs) == 1 and idxs[0] == len(self.folders) - 2
+
+    def get_album_name(self):
+        import re
+        # 0 date folders: look for folder starting with date (but not only date)
+        if self.num_date_folders() == 0:
+            date_prefix_pattern = r"^\d{4}-\d{2}-\d{2}"
+            for f in self.folders:
+                if re.match(date_prefix_pattern, f) and not re.fullmatch(self.date_pattern, f):
+                    if len(f) < 10:
+                        raise NotImplementedError(f"Detected album name is suspiciously short: '{f}'")
+                    return f
+            return None
+        # >1 date folders: ambiguous, not supported
+        if self.num_date_folders() > 1:
+            idxs = self.date_folder_indices()
+            raise NotImplementedError(f"Multiple candidate folders for album detection: {[self.folders[i] for i in idxs]}")
+        # 1 date folder
+        idx = self.date_folder_indices()[0]
+        if idx == len(self.folders) - 1:
+            # Date folder is the last (containing folder): ignore
+            return None
+        if idx == len(self.folders) - 2:
+            # Date folder is penultimate: concatenate with last
+            album_name = f"{self.folders[idx]} {self.folders[idx+1]}"
+            if len(album_name) < 10:
+                raise NotImplementedError(f"Detected album name is suspiciously short: '{album_name}'")
+            return album_name
+        # Date folder in other position: not supported for now
+        return None
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
 
