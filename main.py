@@ -20,6 +20,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from threading import Lock
 import concurrent.futures
 import attrs
+from pathlib import Path
 
 # --- Detailed classification result ---
 from typing import List, Generator
@@ -517,23 +518,20 @@ import attrs
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
-    original_path: str
+    original_path: Path
     folders: list = attrs.field(init=False)
     date_pattern: str = attrs.field(init=False, default=r"^\d{4}-\d{2}-\d{2}$")
 
     def __attrs_post_init__(self):
-        import os
-        path = self.original_path
-        folders = []
-        while True:
-            path, folder = os.path.split(path)
-            if folder:
-                folders.insert(0, folder)
-            else:
-                if path:
-                    folders.insert(0, path)
-                break
-        self.folders = [f for f in folders if f]
+        import re
+        # Convert to Path if not already
+        path = self.original_path if isinstance(self.original_path, Path) else Path(self.original_path)
+        # Get all parts except root
+        folders = [part for part in path.parts if part not in (path.root, path.anchor, ".", "..", "")]
+        # If the last component looks like a file (has an extension), remove it
+        if folders and re.search(r"\.[a-zA-Z0-9]{2,5}$", folders[-1]):
+            folders = folders[:-1]
+        self.folders = folders
 
     def date_folder_indices(self):
         import re
