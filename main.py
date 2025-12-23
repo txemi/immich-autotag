@@ -720,7 +720,27 @@ def process_single_asset(
     detected_album = asset_wrapper.try_detect_album_from_folders()
     if detected_album:
         print(f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)")
-        # Here you could add logic to create the album or assign the asset, if desired
+        # Buscar si el álbum ya existe
+        from immich_client.api.albums import get_all_albums, create_album, add_assets_to_album
+        from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
+        client = asset_wrapper.context.client
+        # Buscar álbum por nombre exacto (case-sensitive)
+        albums = get_all_albums.sync(client=client)
+        album = next((a for a in albums if a.album_name == detected_album), None)
+        if album is None:
+            # Crear álbum si no existe
+            print(f"[ALBUM DETECTION] Creando álbum '{detected_album}'...")
+            album = create_album.sync(client=client, album_name=detected_album)
+        # Comprobar si el asset ya está en el álbum
+        if asset_wrapper.id not in [a.id for a in getattr(album, 'assets', []) or []]:
+            print(f"[ALBUM DETECTION] Añadiendo asset '{asset_wrapper.original_file_name}' al álbum '{detected_album}'...")
+            add_assets_to_album.sync(
+                id=album.id,
+                client=client,
+                body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id])
+            )
+        else:
+            print(f"[ALBUM DETECTION] El asset ya pertenece al álbum '{detected_album}'")
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
