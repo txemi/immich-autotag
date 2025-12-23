@@ -3,6 +3,24 @@
 This document lists upcoming rules, features, and improvements planned for the Immich AutoTag project. Please update this file as new ideas or requirements arise.
 
 
+## Upcoming Features (to be prioritized)
+
+- **Album detection from folders:**
+	If an album does not exist, implement logic to infer or create it based on folder structure.
+
+- **Refactor and modularize codebase:**
+	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution).
+
+- **Similar photo detection:**
+	Implement logic to detect duplicate or near-duplicate photos (e.g., WhatsApp copies) using available metadata.
+
+- **Date correction for assets:**
+	Many photos have incorrect dates. Analyze strategies to recover the true date, e.g., from folder names or from similar/identical photos with correct dates.
+
+---
+
+*Note: These items will be organized and prioritized in a future update.*
+
 ## 1.1. Next Integrity Rules to Implement
 
 The following are integrity rules, which ensure that the tagging and classification remain consistent and logical. Other types of rules (e.g., automation, enrichment, or workflow rules) may be added in future sections as the project evolves.
