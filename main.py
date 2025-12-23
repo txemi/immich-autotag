@@ -492,7 +492,7 @@ class AssetResponseWrapper:
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
             elif has_origin and has_dest:
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
-
+    @typechecked
     def try_detect_album_from_folders(self):
         """
         Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
@@ -516,6 +516,7 @@ class AssetResponseWrapper:
 
 import attrs
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
     original_path: Path
@@ -536,18 +537,18 @@ class AlbumFolderAnalyzer:
     def date_folder_indices(self):
         import re
         return [i for i, f in enumerate(self.folders) if re.fullmatch(self.date_pattern, f)]
-
+    @typechecked
     def num_date_folders(self):
         return len(self.date_folder_indices())
-
+    @typechecked
     def is_date_in_last_position(self):
         idxs = self.date_folder_indices()
         return len(idxs) == 1 and idxs[0] == len(self.folders) - 1
-
+    @typechecked
     def is_date_in_penultimate_position(self):
         idxs = self.date_folder_indices()
         return len(idxs) == 1 and idxs[0] == len(self.folders) - 2
-
+    @typechecked
     def get_album_name(self):
         import re
         # 0 date folders: look for folder starting with date (but not only date)
