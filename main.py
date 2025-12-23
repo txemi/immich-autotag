@@ -530,7 +530,7 @@ class AssetResponseWrapper:
             if re.fullmatch(date_pattern, candidate):
                 # This is a common auto-folder, ignore silently
                 return None
-            if len(candidate) < 4:  # Arbitrary: suspiciously short
+            if len(candidate) < 20:  # Arbitrary: suspiciously short
                 raise NotImplementedError(f"Detected album name is suspiciously short: '{candidate}'")
             return candidate
         if len(matches) > 1:
