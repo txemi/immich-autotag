@@ -2,6 +2,7 @@
 
 This document lists upcoming rules, features, and improvements planned for the Immich AutoTag project. Please update this file as new ideas or requirements arise.
 
+Note: This roadmap lists upcoming features in order of priority, based on a subjective assessment of what delivers the most value and quick wins for the project.
 
 ## 1.1. Upcoming Features (to be prioritized)
 
@@ -19,9 +20,6 @@ This document lists upcoming rules, features, and improvements planned for the I
 
 - **Containerization:**
 	Some users have requested a containerized version of this application. This is under consideration. See: https://github.com/txemi/immich-autotag/issues/1
----
-
-*Note: These items will be organized and prioritized in a future update.*
 
 ## 1.2. Next Integrity Rules to Implement
 
