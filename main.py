@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import List, Generator
 
 
-
 # ==================== USER-EDITABLE CONFIGURATION ====================
 # All user configuration is now in a separate module for clarity and maintainability.
 from immich_user_config import *
@@ -46,10 +45,11 @@ USE_THREADPOOL = True  # Set to True to force thread pool usage, False for direc
 MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
 
-
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-    tags: list[TagResponseDto] = attrs.field(validator=attrs.validators.instance_of(list))
+    tags: list[TagResponseDto] = attrs.field(
+        validator=attrs.validators.instance_of(list)
+    )
 
     @typechecked
     def create_tag_if_not_exists(self, name: str, client) -> TagResponseDto:
@@ -99,11 +99,12 @@ class TagCollectionWrapper:
         return iter(self.tags)
 
 
-
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class MatchClassificationResult:
     tags_matched: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
-    albums_matched: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    albums_matched: List[str] = attrs.field(
+        validator=attrs.validators.instance_of(list)
+    )
 
     def any(self) -> bool:
         return bool(self.tags_matched or self.albums_matched)
@@ -115,14 +116,38 @@ class MatchClassificationResult:
 @attrs.define(auto_attribs=True, slots=True)
 class TagModificationReport:
     import os, datetime as dt
-    log_dir: str = attrs.field(default="logs", validator=attrs.validators.instance_of(str))
-    report_path: str = attrs.field(default=f"logs/tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt", validator=attrs.validators.instance_of(str))
-    batch_size: int = attrs.field(default=1, validator=attrs.validators.instance_of(int))
-    modifications: list = attrs.field(factory=list, init=False, validator=attrs.validators.instance_of(list))
-    _since_last_flush: int = attrs.field(default=0, init=False, validator=attrs.validators.instance_of(int))
-    _cleared_report: bool = attrs.field(default=False, init=False, repr=False, validator=attrs.validators.instance_of(bool))
 
-    def add_modification(self, asset_id: str, asset_name: str, action: str, tag_name: str, user: str = None) -> None:
+    log_dir: str = attrs.field(
+        default="logs", validator=attrs.validators.instance_of(str)
+    )
+    report_path: str = attrs.field(
+        default=f"logs/tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt",
+        validator=attrs.validators.instance_of(str),
+    )
+    batch_size: int = attrs.field(
+        default=1, validator=attrs.validators.instance_of(int)
+    )
+    modifications: list = attrs.field(
+        factory=list, init=False, validator=attrs.validators.instance_of(list)
+    )
+    _since_last_flush: int = attrs.field(
+        default=0, init=False, validator=attrs.validators.instance_of(int)
+    )
+    _cleared_report: bool = attrs.field(
+        default=False,
+        init=False,
+        repr=False,
+        validator=attrs.validators.instance_of(bool),
+    )
+
+    def add_modification(
+        self,
+        asset_id: str,
+        asset_name: str,
+        action: str,
+        tag_name: str,
+        user: str = None,
+    ) -> None:
         """
         Registers a tag modification (add/remove) for an asset.
         """
@@ -173,7 +198,6 @@ class TagModificationReport:
         print(f"Total modifications: {len(self.modifications)}")
 
 
-
 # NOTE: With 'from __future__ import annotations' you can use types defined later in annotations,
 # but for attrs validators the type must be defined before or validated in __attrs_post_init__.
 from typing import TYPE_CHECKING
@@ -182,11 +206,14 @@ if TYPE_CHECKING:
     from .ejemplo_immich_client import ImmichContext
 
 
-
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
-    asset: AssetResponseDto = attrs.field(validator=attrs.validators.instance_of(AssetResponseDto))
-    context: 'ImmichContext' = attrs.field(validator=attrs.validators.instance_of(object))
+    asset: AssetResponseDto = attrs.field(
+        validator=attrs.validators.instance_of(AssetResponseDto)
+    )
+    context: "ImmichContext" = attrs.field(
+        validator=attrs.validators.instance_of(object)
+    )
 
     def __attrs_post_init__(self):
         if not isinstance(self.context, ImmichContext):
@@ -204,7 +231,13 @@ class AssetResponseWrapper:
         )
 
     @typechecked
-    def remove_tag_by_name(self, tag_name: str, verbose: bool = True, tag_mod_report: 'TagModificationReport | None' = None, user: str | None = None) -> bool:
+    def remove_tag_by_name(
+        self,
+        tag_name: str,
+        verbose: bool = True,
+        tag_mod_report: "TagModificationReport | None" = None,
+        user: str | None = None,
+    ) -> bool:
         """
         Removes all tags from the asset with the given name (case-insensitive), even if they have different IDs (e.g., global and nested tags).
         Returns True if at least one was removed, False if none were found.
@@ -215,13 +248,17 @@ class AssetResponseWrapper:
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         # Find all tag objects on the asset with the given name (case-insensitive)
-        tags_to_remove = [tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()]
+        tags_to_remove = [
+            tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
+        ]
         if not tags_to_remove:
             if verbose:
                 print(f"[INFO] Asset id={self.id} does not have the tag '{tag_name}'")
             return False
 
-        print(f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}")
+        print(
+            f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
+        )
         print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
 
         removed_any = False
@@ -231,7 +268,9 @@ class AssetResponseWrapper:
             )
             print(f"[DEBUG] Full untag_assets response for tag_id={tag.id}: {response}")
             if verbose:
-                print(f"[INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}")
+                print(
+                    f"[INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}"
+                )
             removed_any = True
             if tag_mod_report:
                 tag_mod_report.add_modification(
@@ -244,7 +283,7 @@ class AssetResponseWrapper:
 
         # Reload asset and check if tag is still present
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
-        object.__setattr__(self, 'asset', updated_asset)
+        object.__setattr__(self, "asset", updated_asset)
         print(f"[DEBUG] Tags after removal: {self.get_tag_names()}")
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
@@ -263,7 +302,12 @@ class AssetResponseWrapper:
 
     @typechecked
     def add_tag_by_name(
-        self, tag_name: str, verbose: bool = False, info: bool = True, tag_mod_report: 'TagModificationReport | None' = None, user: str | None = None
+        self,
+        tag_name: str,
+        verbose: bool = False,
+        info: bool = True,
+        tag_mod_report: "TagModificationReport | None" = None,
+        user: str | None = None,
     ) -> bool:
         """
         Adds a tag to the asset by name using the Immich API if it doesn't have it already.
@@ -279,9 +323,7 @@ class AssetResponseWrapper:
             )
         # Check if the asset already has the tag
         if self.has_tag(tag_name):
-            raise ValueError(
-                f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
-            )
+            raise ValueError(f"[INFO] Asset.id={self.id} already has tag '{tag_name}'")
         # Call the correct endpoint to associate the tag with the asset
         if verbose:
             print(
@@ -426,7 +468,12 @@ class AssetResponseWrapper:
         return False
 
     @typechecked
-    def ensure_autotag_category_unknown(self, classified: bool, tag_mod_report: 'TagModificationReport | None' = None, user: str | None = None) -> None:
+    def ensure_autotag_category_unknown(
+        self,
+        classified: bool,
+        tag_mod_report: "TagModificationReport | None" = None,
+        user: str | None = None,
+    ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
@@ -444,10 +491,17 @@ class AssetResponseWrapper:
                 print(
                     f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it is now classified."
                 )
-                self.remove_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
+                self.remove_tag_by_name(
+                    tag_name, tag_mod_report=tag_mod_report, user=user
+                )
 
     @typechecked
-    def ensure_autotag_conflict_category(self, conflict: bool, tag_mod_report: 'TagModificationReport | None' = None, user: str | None = None) -> None:
+    def ensure_autotag_conflict_category(
+        self,
+        conflict: bool,
+        tag_mod_report: "TagModificationReport | None" = None,
+        user: str | None = None,
+    ) -> None:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
@@ -464,9 +518,16 @@ class AssetResponseWrapper:
                 print(
                     f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it's no longer in conflict."
                 )
-                self.remove_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
+                self.remove_tag_by_name(
+                    tag_name, tag_mod_report=tag_mod_report, user=user
+                )
+
     @typechecked
-    def apply_tag_conversions(self, tag_conversions: list, tag_mod_report: 'TagModificationReport | None' = None):
+    def apply_tag_conversions(
+        self,
+        tag_conversions: list,
+        tag_mod_report: "TagModificationReport | None" = None,
+    ):
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
         - If it does not have the destination tag, add it and reload the asset, then remove the origin tag.
@@ -474,6 +535,7 @@ class AssetResponseWrapper:
         All actions are logged in tag_mod_report if provided.
         """
         from immich_client.api.assets import get_asset_info
+
         for conv in tag_conversions:
             origin = conv["origin"]
             dest = conv["destination"]
@@ -483,13 +545,16 @@ class AssetResponseWrapper:
                 try:
                     self.add_tag_by_name(dest, tag_mod_report=tag_mod_report)
                     # Reload asset to ensure state is up-to-date before removing origin
-                    updated = get_asset_info.sync(id=self.id, client=self.context.client)
-                    object.__setattr__(self, 'asset', updated)
+                    updated = get_asset_info.sync(
+                        id=self.id, client=self.context.client
+                    )
+                    object.__setattr__(self, "asset", updated)
                 except Exception as e:
                     print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
             elif has_origin and has_dest:
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
+
     @typechecked
     def try_detect_album_from_folders(self):
         """
@@ -501,6 +566,7 @@ class AssetResponseWrapper:
         """
         import os
         import re
+
         if not ENABLE_ALBUM_DETECTION_FROM_FOLDERS:
             return None
         # If already classified by tag or album, skip
@@ -512,21 +578,37 @@ class AssetResponseWrapper:
         analyzer = AlbumFolderAnalyzer(self.original_path)
         return analyzer.get_album_name()
 
+
 import attrs
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
     original_path: Path = attrs.field(validator=attrs.validators.instance_of(Path))
-    folders: list = attrs.field(init=False, validator=attrs.validators.instance_of(list))
-    date_pattern: str = attrs.field(init=False, default=r"^\d{4}-\d{2}-\d{2}$", validator=attrs.validators.instance_of(str))
+    folders: list = attrs.field(
+        init=False, validator=attrs.validators.instance_of(list)
+    )
+    date_pattern: str = attrs.field(
+        init=False,
+        default=r"^\d{4}-\d{2}-\d{2}$",
+        validator=attrs.validators.instance_of(str),
+    )
 
     def __attrs_post_init__(self):
         import re
+
         # Convert to Path if not already
-        path = self.original_path if isinstance(self.original_path, Path) else Path(self.original_path)
+        path = (
+            self.original_path
+            if isinstance(self.original_path, Path)
+            else Path(self.original_path)
+        )
         # Get all parts except root
-        folders = [part for part in path.parts if part not in (path.root, path.anchor, ".", "..", "")]
+        folders = [
+            part
+            for part in path.parts
+            if part not in (path.root, path.anchor, ".", "..", "")
+        ]
         # If the last component looks like a file (has an extension), remove it
         if folders and re.search(r"\.[a-zA-Z0-9]{2,5}$", folders[-1]):
             folders = folders[:-1]
@@ -534,34 +616,48 @@ class AlbumFolderAnalyzer:
 
     def date_folder_indices(self):
         import re
-        return [i for i, f in enumerate(self.folders) if re.fullmatch(self.date_pattern, f)]
+
+        return [
+            i for i, f in enumerate(self.folders) if re.fullmatch(self.date_pattern, f)
+        ]
+
     @typechecked
     def num_date_folders(self):
         return len(self.date_folder_indices())
+
     @typechecked
     def is_date_in_last_position(self):
         idxs = self.date_folder_indices()
         return len(idxs) == 1 and idxs[0] == len(self.folders) - 1
+
     @typechecked
     def is_date_in_penultimate_position(self):
         idxs = self.date_folder_indices()
         return len(idxs) == 1 and idxs[0] == len(self.folders) - 2
+
     @typechecked
     def get_album_name(self):
         import re
+
         # 0 date folders: look for folder starting with date (but not only date)
         if self.num_date_folders() == 0:
             date_prefix_pattern = r"^\d{4}-\d{2}-\d{2}"
             for f in self.folders:
-                if re.match(date_prefix_pattern, f) and not re.fullmatch(self.date_pattern, f):
+                if re.match(date_prefix_pattern, f) and not re.fullmatch(
+                    self.date_pattern, f
+                ):
                     if len(f) < 10:
-                        raise NotImplementedError(f"Detected album name is suspiciously short: '{f}'")
+                        raise NotImplementedError(
+                            f"Detected album name is suspiciously short: '{f}'"
+                        )
                     return f
             return None
         # >1 date folders: ambiguous, not supported
         if self.num_date_folders() > 1:
             idxs = self.date_folder_indices()
-            raise NotImplementedError(f"Multiple candidate folders for album detection: {[self.folders[i] for i in idxs]}")
+            raise NotImplementedError(
+                f"Multiple candidate folders for album detection: {[self.folders[i] for i in idxs]}"
+            )
         # 1 date folder
         idx = self.date_folder_indices()[0]
         if idx == len(self.folders) - 1:
@@ -571,14 +667,19 @@ class AlbumFolderAnalyzer:
             # Date folder is penultimate: concatenate with last
             album_name = f"{self.folders[idx]} {self.folders[idx+1]}"
             if len(album_name) < 10:
-                raise NotImplementedError(f"Detected album name is suspiciously short: '{album_name}'")
+                raise NotImplementedError(
+                    f"Detected album name is suspiciously short: '{album_name}'"
+                )
             return album_name
         # Date folder in other position: not supported for now
         return None
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
-    album: AlbumResponseDto = attrs.field(validator=attrs.validators.instance_of(AlbumResponseDto))
+    album: AlbumResponseDto = attrs.field(
+        validator=attrs.validators.instance_of(AlbumResponseDto)
+    )
 
     @typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
@@ -599,10 +700,11 @@ class AlbumResponseWrapper:
         )
 
 
-
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
-    albums: list[AlbumResponseWrapper] = attrs.field(validator=attrs.validators.instance_of(list))
+    albums: list[AlbumResponseWrapper] = attrs.field(
+        validator=attrs.validators.instance_of(list)
+    )
 
     @typechecked
     def albums_for_asset(self, asset: AssetResponseDto) -> list[str]:
@@ -614,12 +716,15 @@ class AlbumCollectionWrapper:
         return album_names
 
 
-
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ImmichContext:
     client: Client = attrs.field(validator=attrs.validators.instance_of(Client))
-    albums_collection: 'AlbumCollectionWrapper' = attrs.field(validator=attrs.validators.instance_of(object))
-    tag_collection: 'TagCollectionWrapper' = attrs.field(validator=attrs.validators.instance_of(object))
+    albums_collection: "AlbumCollectionWrapper" = attrs.field(
+        validator=attrs.validators.instance_of(object)
+    )
+    tag_collection: "TagCollectionWrapper" = attrs.field(
+        validator=attrs.validators.instance_of(object)
+    )
 
 
 @typechecked
@@ -645,7 +750,9 @@ def get_all_assets(
                 yield AssetResponseWrapper(asset=asset_full, context=context)
                 count += 1
             else:
-                raise RuntimeError(f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None.")
+                raise RuntimeError(
+                    f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
+                )
         print(f"Page {page}: {len(assets_page)} assets (full info)")
         if (
             max_assets is not None and count >= max_assets
@@ -672,8 +779,12 @@ def validate_and_update_asset_classification(
     # Check delegated to the wrapper method
     conflict = asset_wrapper.check_unique_classification(fail_fast=False)
     # Autotag logic delegated to the wrapper methods, now passing tag_mod_report
-    asset_wrapper.ensure_autotag_category_unknown(classified, tag_mod_report=tag_mod_report)
-    asset_wrapper.ensure_autotag_conflict_category(conflict, tag_mod_report=tag_mod_report)
+    asset_wrapper.ensure_autotag_category_unknown(
+        classified, tag_mod_report=tag_mod_report
+    )
+    asset_wrapper.ensure_autotag_conflict_category(
+        conflict, tag_mod_report=tag_mod_report
+    )
 
     if PRINT_ASSET_DETAILS:
         print(
@@ -744,23 +855,30 @@ def list_tags(client: Client) -> TagCollectionWrapper:
     return tag_collection
 
 
-
-
 import concurrent.futures
 from threading import Lock
+
+
 @typechecked
 def process_single_asset(
-    asset_wrapper: 'AssetResponseWrapper',
-    tag_mod_report: 'TagModificationReport',
-    lock: Lock
+    asset_wrapper: "AssetResponseWrapper",
+    tag_mod_report: "TagModificationReport",
+    lock: Lock,
 ) -> None:
     # 1. Try album detection from folders (feature)
     detected_album = asset_wrapper.try_detect_album_from_folders()
     if detected_album:
-        print(f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)")
+        print(
+            f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)"
+        )
         # Check if the album already exists
-        from immich_client.api.albums import get_all_albums, create_album, add_assets_to_album
+        from immich_client.api.albums import (
+            get_all_albums,
+            create_album,
+            add_assets_to_album,
+        )
         from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
+
         client = asset_wrapper.context.client
         # Find album by exact name (case-sensitive)
         albums = get_all_albums.sync(client=client)
@@ -770,15 +888,19 @@ def process_single_asset(
             print(f"[ALBUM DETECTION] Creating album '{detected_album}'...")
             album = create_album.sync(client=client, album_name=detected_album)
         # Check if the asset is already in the album
-        if asset_wrapper.id not in [a.id for a in getattr(album, 'assets', []) or []]:
-            print(f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'...")
+        if asset_wrapper.id not in [a.id for a in getattr(album, "assets", []) or []]:
+            print(
+                f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'..."
+            )
             add_assets_to_album.sync(
                 id=album.id,
                 client=client,
-                body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id])
+                body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id]),
             )
         else:
-            print(f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'")
+            print(
+                f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'"
+            )
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
@@ -786,24 +908,32 @@ def process_single_asset(
     )
     with lock:
         tag_mod_report.flush()
+
+
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
     import time
     from immich_client.api.server import get_server_statistics
+
     tag_mod_report = TagModificationReport()
     lock = Lock()
     count = 0
     N_LOG = 100  # Log frequency
-    print(f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
+    print(
+        f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}..."
+    )
     # Get total assets before processing
     try:
         stats = get_server_statistics.sync(client=context.client)
         total_assets = getattr(stats, "photos", 0) + getattr(stats, "videos", 0)
-        print(f"[INFO] Total assets (photos + videos) reported by Immich: {total_assets}")
+        print(
+            f"[INFO] Total assets (photos + videos) reported by Immich: {total_assets}"
+        )
     except Exception as e:
         print(f"[WARN] Could not get total assets from API: {e}")
         total_assets = None
     start_time = time.time()
+
     def print_perf(count, elapsed):
         avg = elapsed / count if count else 0
         if total_assets and count > 0:
@@ -811,15 +941,20 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             est_total = avg * total_assets
             est_remaining = est_total - elapsed
             percent = (count / total_assets) * 100
-            print(f"[PERF] {count}/{total_assets} ({percent:.1f}%) assets processed. Avg: {avg:.3f} s. Est. remaining: {est_remaining/60:.1f}/{est_total/60:.1f} min")
+            print(
+                f"[PERF] {count}/{total_assets} ({percent:.1f}%) assets processed. Avg: {avg:.3f} s. Est. remaining: {est_remaining/60:.1f}/{est_total/60:.1f} min"
+            )
         else:
             print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s")
+
     if USE_THREADPOOL:
         # Use thread pool regardless of MAX_WORKERS value
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
             for asset_wrapper in get_all_assets(context, max_assets=max_assets):
-                future = executor.submit(process_single_asset, asset_wrapper, tag_mod_report, lock)
+                future = executor.submit(
+                    process_single_asset, asset_wrapper, tag_mod_report, lock
+                )
                 futures.append(future)
                 count += 1
                 if count % N_LOG == 0:
@@ -840,7 +975,9 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                 print_perf(count, elapsed)
     total_time = time.time() - start_time
     print(f"Total assets: {count}")
-    print(f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s")
+    print(
+        f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s"
+    )
     if len(tag_mod_report.modifications) > 0:
         tag_mod_report.print_summary()
         tag_mod_report.flush()
