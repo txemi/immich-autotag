@@ -3,7 +3,7 @@
 This document lists upcoming rules, features, and improvements planned for the Immich AutoTag project. Please update this file as new ideas or requirements arise.
 
 
-## Upcoming Features (to be prioritized)
+## 1.1. Upcoming Features (to be prioritized)
 
 - **Album detection from folders:**
 	If an album does not exist, implement logic to infer or create it based on folder structure.
@@ -21,7 +21,7 @@ This document lists upcoming rules, features, and improvements planned for the I
 
 *Note: These items will be organized and prioritized in a future update.*
 
-## 1.1. Next Integrity Rules to Implement
+## 1.2. Next Integrity Rules to Implement
 
 The following are integrity rules, which ensure that the tagging and classification remain consistent and logical. Other types of rules (e.g., automation, enrichment, or workflow rules) may be added in future sections as the project evolves.
 
@@ -32,7 +32,7 @@ The following are integrity rules, which ensure that the tagging and classificat
 
 
 
-## 1.2. Automation and Utilities
+## 1.3. Automation and Utilities
 
 1. Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums).
 2. Assist in the detection and management of duplicate folders or files within the photo library.
@@ -41,7 +41,7 @@ The following are integrity rules, which ensure that the tagging and classificat
 
 
 
-## 1.3. Integration Ideas
+## 1.4. Integration Ideas
 
 1. Integrate with external AI-based classification systems for enhanced tagging.
 
