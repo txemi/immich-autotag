@@ -5,7 +5,7 @@ This document lists upcoming rules, features, and improvements planned for the I
 
 ## 1.1. Upcoming Features (to be prioritized)
 
-- **Album detection from folders:**
+- **Album detection and creation from folders:**
 	If an album does not exist, implement logic to infer or create it based on folder structure.
 
 - **Refactor and modularize codebase:**
@@ -17,6 +17,8 @@ This document lists upcoming rules, features, and improvements planned for the I
 - **Date correction for assets:**
 	Many photos have incorrect dates. Analyze strategies to recover the true date, e.g., from folder names or from similar/identical photos with correct dates.
 
+- **Containerization:**
+	Some users have requested a containerized version of this application. This is under consideration. See: https://github.com/txemi/immich-autotag/issues/1
 ---
 
 *Note: These items will be organized and prioritized in a future update.*
