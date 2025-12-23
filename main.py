@@ -183,6 +183,7 @@ if TYPE_CHECKING:
 class AssetResponseWrapper:
 
 
+
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
@@ -491,6 +492,46 @@ class AssetResponseWrapper:
             elif has_origin and has_dest:
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
 
+    def try_detect_album_from_folders(self):
+        """
+        Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
+        Only runs if ENABLE_ALBUM_DETECTION_FROM_FOLDERS is True, the asset does not already belong to an album,
+        and does not have a classified tag. Returns the detected album name or None. Raises NotImplementedError for ambiguous cases.
+        """
+        import os
+        import re
+        if not ENABLE_ALBUM_DETECTION_FROM_FOLDERS:
+            return None
+        # If already classified by tag or album, skip
+        if self.is_asset_classified():
+            return None
+        # If already in an album matching ALBUM_PATTERN, skip
+        if any(re.match(ALBUM_PATTERN, name) for name in self.get_album_names()):
+            return None
+        # Get all ancestor folders (and optionally the filename)
+        path = self.original_path
+        folders = []
+        while True:
+            path, folder = os.path.split(path)
+            if folder:
+                folders.insert(0, folder)
+            else:
+                if path:
+                    folders.insert(0, path)
+                break
+        # Find folders starting with a date in ISO format (YYYY-MM-DD)
+        date_pattern = r"^\d{4}-\d{2}-\d{2}"
+        matches = [f for f in folders if re.match(date_pattern, f)]
+        if len(matches) == 0:
+            return None
+        if len(matches) == 1:
+            candidate = matches[0]
+            if len(candidate) < 4:  # Arbitrary: suspiciously short
+                raise NotImplementedError(f"Detected album name is suspiciously short: '{candidate}'")
+            return candidate
+        if len(matches) > 1:
+            raise NotImplementedError(f"Multiple candidate folders for album detection: {matches}")
+        return None
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
@@ -671,6 +712,11 @@ def process_single_asset(
     tag_mod_report: 'TagModificationReport',
     lock: Lock
 ) -> None:
+    # 1. Try album detection from folders (feature)
+    detected_album = asset_wrapper.try_detect_album_from_folders()
+    if detected_album:
+        print(f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)")
+        # Here you could add logic to create the album or assign the asset, if desired
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,

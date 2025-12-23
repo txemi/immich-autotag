@@ -62,3 +62,6 @@ AUTOTAG_UNKNOWN_CATEGORY = "autotag_output_unknown"
 # The ideal is that each photo belongs to only one event album. If a photo is in several, it means the organization needs to be reviewed.
 # Filtering by this tag in the Immich interface allows you to quickly focus on and resolve these conflicts: either by moving the photo to the correct album, removing it from extra albums, or reclassifying it (e.g., as meme or ignore).
 AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"
+
+# Feature flag: Enable album detection from folder names (default: False)
+ENABLE_ALBUM_DETECTION_FROM_FOLDERS = False
