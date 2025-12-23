@@ -46,10 +46,10 @@ USE_THREADPOOL = True  # Set to True to force thread pool usage, False for direc
 MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-
-    tags: list[TagResponseDto]
+    tags: list[TagResponseDto] = attrs.field(validator=attrs.validators.instance_of(list))
 
     @typechecked
     def create_tag_if_not_exists(self, name: str, client) -> TagResponseDto:
@@ -99,10 +99,11 @@ class TagCollectionWrapper:
         return iter(self.tags)
 
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class MatchClassificationResult:
-    tags_matched: List[str]
-    albums_matched: List[str]
+    tags_matched: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    albums_matched: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
 
     def any(self) -> bool:
         return bool(self.tags_matched or self.albums_matched)
@@ -110,15 +111,16 @@ class MatchClassificationResult:
 
 # ==================== TAG MODIFICATION TRACE REPORT ====================
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class TagModificationReport:
     import os, datetime as dt
-    log_dir: str = "logs"
-    report_path: str = f"{log_dir}/tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt"
-    batch_size: int = 1
-    modifications: list = attrs.field(factory=list, init=False)
-    _since_last_flush: int = attrs.field(default=0, init=False)
-    _cleared_report: bool = attrs.field(default=False, init=False, repr=False)
+    log_dir: str = attrs.field(default="logs", validator=attrs.validators.instance_of(str))
+    report_path: str = attrs.field(default=f"logs/tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt", validator=attrs.validators.instance_of(str))
+    batch_size: int = attrs.field(default=1, validator=attrs.validators.instance_of(int))
+    modifications: list = attrs.field(factory=list, init=False, validator=attrs.validators.instance_of(list))
+    _since_last_flush: int = attrs.field(default=0, init=False, validator=attrs.validators.instance_of(int))
+    _cleared_report: bool = attrs.field(default=False, init=False, repr=False, validator=attrs.validators.instance_of(bool))
 
     def add_modification(self, asset_id: str, asset_name: str, action: str, tag_name: str, user: str = None) -> None:
         """
@@ -180,15 +182,11 @@ if TYPE_CHECKING:
     from .ejemplo_immich_client import ImmichContext
 
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
-
-
-
-    asset: AssetResponseDto = attrs.field(
-        validator=attrs.validators.instance_of(AssetResponseDto)
-    )
-    context: ImmichContext = attrs.field()
+    asset: AssetResponseDto = attrs.field(validator=attrs.validators.instance_of(AssetResponseDto))
+    context: 'ImmichContext' = attrs.field(validator=attrs.validators.instance_of(object))
 
     def __attrs_post_init__(self):
         if not isinstance(self.context, ImmichContext):
@@ -577,12 +575,10 @@ class AlbumFolderAnalyzer:
             return album_name
         # Date folder in other position: not supported for now
         return None
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
-
-    album: AlbumResponseDto = attrs.field(
-        validator=attrs.validators.instance_of(AlbumResponseDto)
-    )
+    album: AlbumResponseDto = attrs.field(validator=attrs.validators.instance_of(AlbumResponseDto))
 
     @typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
@@ -603,9 +599,10 @@ class AlbumResponseWrapper:
         )
 
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
-    albums: list[AlbumResponseWrapper]
+    albums: list[AlbumResponseWrapper] = attrs.field(validator=attrs.validators.instance_of(list))
 
     @typechecked
     def albums_for_asset(self, asset: AssetResponseDto) -> list[str]:
@@ -617,11 +614,12 @@ class AlbumCollectionWrapper:
         return album_names
 
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ImmichContext:
-    client: Client
-    albums_collection: "AlbumCollectionWrapper"
-    tag_collection: "TagCollectionWrapper"
+    client: Client = attrs.field(validator=attrs.validators.instance_of(Client))
+    albums_collection: 'AlbumCollectionWrapper' = attrs.field(validator=attrs.validators.instance_of(object))
+    tag_collection: 'TagCollectionWrapper' = attrs.field(validator=attrs.validators.instance_of(object))
 
 
 @typechecked
