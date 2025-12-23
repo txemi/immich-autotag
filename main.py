@@ -519,9 +519,9 @@ import attrs
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
-    original_path: Path
-    folders: list = attrs.field(init=False)
-    date_pattern: str = attrs.field(init=False, default=r"^\d{4}-\d{2}-\d{2}$")
+    original_path: Path = attrs.field(validator=attrs.validators.instance_of(Path))
+    folders: list = attrs.field(init=False, validator=attrs.validators.instance_of(list))
+    date_pattern: str = attrs.field(init=False, default=r"^\d{4}-\d{2}-\d{2}$", validator=attrs.validators.instance_of(str))
 
     def __attrs_post_init__(self):
         import re
