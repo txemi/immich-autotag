@@ -9,6 +9,8 @@ Note: This roadmap lists upcoming features in order of priority, based on a subj
 
 1. **Album detection and creation from folders:**
 	If an album does not exist, implement logic to infer or create it based on folder structure.
+    
+	[See detailed design document →](docs/feature-album-detection-from-folders.md)
 2. **Refactor and modularize codebase:**
 	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution).
 3. **Similar photo detection:**
