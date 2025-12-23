@@ -1,11 +1,42 @@
+
 # Refactoring Plan: Immich Autotag
 
 This document details the proposed refactoring of the codebase, specifying where each function and class will be moved as the project is modularized.
 
+---
+
+## Sequential Refactoring Plan & Checklist
+
+We will refactor in small, safe steps, testing after each change. The goal is to minimize risk and keep the codebase working at all times.
+
+### Steps
+
+1. [x] **Create folder structure and empty modules**  
+    - Create `immich_autotag/` package and subfolders: `core/`, `albums/`, `tags/`, `api/`, `logging/`, `utils/`.
+2. [ ] **Move helpers and utilities**  
+    - Move all stateless helper functions to `utils/helpers.py`.
+3. [ ] **Move simple data wrappers**  
+    - Move `MatchClassificationResult`, `TagCollectionWrapper`, `AlbumResponseWrapper`, `AssetResponseWrapper` to `core/`.
+4. [ ] **Move folder analysis logic**  
+    - Move `AlbumFolderAnalyzer` to `albums/album_detection.py`.
+5. [ ] **Move logging logic**  
+    - Move `TagModificationReport` to `logging/modification_report.py`.
+6. [ ] **Move API integration logic**  
+    - Move Immich API access functions to `api/`.
+7. [ ] **Move tag and album business logic**  
+    - Move tag conversion, classification, and album logic to `tags/` and `albums/`.
+8. [ ] **Update imports and test after each step**
+9. [ ] **Refactor main.py to use new modules**
+
+> Mark each step as `[x]` when completed. Add notes or issues as needed.
+
+---
+
+
 ## Package Structure Proposal
 
 ```
-autotag/
+immich_autotag/
     __init__.py
     core/
         __init__.py
