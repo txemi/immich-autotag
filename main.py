@@ -773,7 +773,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             est_total = avg * total_assets
             est_remaining = est_total - elapsed
             percent = (count / total_assets) * 100
-            print(f"[PERF] {count}/{total_assets} ({percent:.1f}%) assets processed. Avg: {avg:.3f} s. Est. remaining: {est_remaining/60:.1f} min")
+            print(f"[PERF] {count}/{total_assets} ({percent:.1f}%) assets processed. Avg: {avg:.3f} s. Est. remaining: {est_remaining/60:.1f}/{est_total/60:.1f} min")
         else:
             print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s")
     if USE_THREADPOOL:
