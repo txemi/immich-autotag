@@ -633,7 +633,7 @@ def validate_and_update_asset_classification(
 
     # Check delegated to the wrapper method
     conflict = asset_wrapper.check_unique_classification(fail_fast=False)
-    # Autotag logic delegada a los métodos del wrapper, ahora pasando tag_mod_report
+    # Autotag logic delegated to the wrapper methods, now passing tag_mod_report
     asset_wrapper.ensure_autotag_category_unknown(classified, tag_mod_report=tag_mod_report)
     asset_wrapper.ensure_autotag_conflict_category(conflict, tag_mod_report=tag_mod_report)
 
@@ -720,27 +720,27 @@ def process_single_asset(
     detected_album = asset_wrapper.try_detect_album_from_folders()
     if detected_album:
         print(f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)")
-        # Buscar si el álbum ya existe
+        # Check if the album already exists
         from immich_client.api.albums import get_all_albums, create_album, add_assets_to_album
         from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
         client = asset_wrapper.context.client
-        # Buscar álbum por nombre exacto (case-sensitive)
+        # Find album by exact name (case-sensitive)
         albums = get_all_albums.sync(client=client)
         album = next((a for a in albums if a.album_name == detected_album), None)
         if album is None:
-            # Crear álbum si no existe
-            print(f"[ALBUM DETECTION] Creando álbum '{detected_album}'...")
+            # Create album if it does not exist
+            print(f"[ALBUM DETECTION] Creating album '{detected_album}'...")
             album = create_album.sync(client=client, album_name=detected_album)
-        # Comprobar si el asset ya está en el álbum
+        # Check if the asset is already in the album
         if asset_wrapper.id not in [a.id for a in getattr(album, 'assets', []) or []]:
-            print(f"[ALBUM DETECTION] Añadiendo asset '{asset_wrapper.original_file_name}' al álbum '{detected_album}'...")
+            print(f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'...")
             add_assets_to_album.sync(
                 id=album.id,
                 client=client,
                 body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id])
             )
         else:
-            print(f"[ALBUM DETECTION] El asset ya pertenece al álbum '{detected_album}'")
+            print(f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'")
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
@@ -755,15 +755,15 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     tag_mod_report = TagModificationReport()
     lock = Lock()
     count = 0
-    N_LOG = 100  # Frecuencia del log de media
+    N_LOG = 100  # Log frequency
     print(f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
-    # Obtener el total de assets antes de procesar
+    # Get total assets before processing
     try:
         stats = get_server_statistics.sync(client=context.client)
         total_assets = getattr(stats, "photos", 0) + getattr(stats, "videos", 0)
-        print(f"[INFO] Total assets (photos + videos) reportados por Immich: {total_assets}")
+        print(f"[INFO] Total assets (photos + videos) reported by Immich: {total_assets}")
     except Exception as e:
-        print(f"[WARN] No se pudo obtener el total de assets desde la API: {e}")
+        print(f"[WARN] Could not get total assets from API: {e}")
         total_assets = None
     start_time = time.time()
     def print_perf(count, elapsed):
@@ -773,7 +773,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             est_total = avg * total_assets
             est_remaining = est_total - elapsed
             percent = (count / total_assets) * 100
-            print(f"[PERF] {count}/{total_assets} ({percent:.1f}%) assets procesados. Media: {avg:.3f} s. Est. restante: {est_remaining/60:.1f} min")
+            print(f"[PERF] {count}/{total_assets} ({percent:.1f}%) assets processed. Avg: {avg:.3f} s. Est. remaining: {est_remaining/60:.1f} min")
         else:
             print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s")
     if USE_THREADPOOL:
@@ -806,7 +806,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     if len(tag_mod_report.modifications) > 0:
         tag_mod_report.print_summary()
         tag_mod_report.flush()
-    MIN_ASSETS = 0  # Cambia este valor si conoces el mínimo real de assets
+    MIN_ASSETS = 0  # Change this value if you know the real minimum number of assets
     if count < MIN_ASSETS:
         raise Exception(
             f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
