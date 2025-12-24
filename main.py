@@ -36,7 +36,7 @@ from immich_autotag.core.tag_modification_report import TagModificationReport
 from immich_autotag.utils.helpers import print_perf
 # ==================== USER-EDITABLE CONFIGURATION ====================
 # All user configuration is now in a separate module for clarity and maintainability.
-from immich_user_config import *
+from immich_autotag.immich_user_config import *
 
 # ==================== TAG MODIFICATION TRACE REPORT ====================
 
