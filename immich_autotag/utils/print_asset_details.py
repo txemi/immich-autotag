@@ -1,6 +1,13 @@
+from __future__ import annotations
+
 from immich_client import Client
 from immich_client.api.assets import get_asset_info
+from typeguard import typechecked
 
+
+
+
+@typechecked
 def print_asset_details_with_tags(asset_id: str, client: Client) -> None:
     """Obtains and displays complete details of an asset, including tags."""
     asset = get_asset_info.sync(id=asset_id, client=client)
