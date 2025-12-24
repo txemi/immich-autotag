@@ -16,6 +16,8 @@ from immich_client.models import MetadataSearchDto
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.album_response_dto import AlbumResponseDto
 
+from immich_autotag.core.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.core.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.utils.helpers import print_perf
 import concurrent.futures
@@ -239,47 +241,6 @@ class AlbumFolderAnalyzer:
             return album_name
         # Date folder in other position: not supported for now
         return None
-
-
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
-class AlbumResponseWrapper:
-    album: AlbumResponseDto = attrs.field(
-        validator=attrs.validators.instance_of(AlbumResponseDto)
-    )
-
-    @typechecked
-    def has_asset(self, asset: AssetResponseDto) -> bool:
-        """Returns True if the asset belongs to this album."""
-        if self.album.assets:
-            return any(a.id == asset.id for a in self.album.assets)
-        return False
-
-    @typechecked
-    def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
-        """
-        Returns the album's assets wrapped in AssetResponseWrapper.
-        """
-        return (
-            [AssetResponseWrapper(asset=a, context=context) for a in self.album.assets]
-            if self.album.assets
-            else []
-        )
-
-
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
-class AlbumCollectionWrapper:
-    albums: list[AlbumResponseWrapper] = attrs.field(
-        validator=attrs.validators.instance_of(list)
-    )
-
-    @typechecked
-    def albums_for_asset(self, asset: AssetResponseDto) -> list[str]:
-        """Returns the names of the albums the asset belongs to."""
-        album_names = []
-        for album_wrapper in self.albums:
-            if album_wrapper.has_asset(asset):
-                album_names.append(album_wrapper.album.album_name)
-        return album_names
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
