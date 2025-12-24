@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import concurrent.futures
 # --- Detailed classification result ---
 # NOTE: With 'from __future__ import annotations' you can use types defined later in annotations,
 # but for attrs validators the type must be defined before or validated in __attrs_post_init__.
@@ -22,22 +21,17 @@ from typeguard import typechecked
 # Ahora centralizadas en immich_autotag/config.py
 from immich_autotag.config import (
     IMMICH_BASE_URL,
-    USE_THREADPOOL,
-    MAX_WORKERS,
 )
 from immich_autotag.core.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.core.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.core.immich_context import ImmichContext
 from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
-from immich_autotag.core.tag_modification_report import TagModificationReport
-from immich_autotag.utils.get_all_assets import get_all_assets
-from immich_autotag.utils.helpers import print_perf
 # ==================== USER-EDITABLE CONFIGURATION ====================
 # All user configuration is now in a separate module for clarity and maintainability.
 from immich_autotag.immich_user_config import *
 
 from immich_autotag.utils.print_tags import print_tags
-from immich_autotag.utils.process_single_asset import process_single_asset
+from immich_autotag.utils.process_assets import process_assets
 
 # ==================== TAG MODIFICATION TRACE REPORT ====================
 
@@ -82,78 +76,6 @@ def list_tags(client: Client) -> TagCollectionWrapper:
     tag_collection = TagCollectionWrapper.from_api(client)
     print_tags(tag_collection.tags)
     return tag_collection
-
-
-import concurrent.futures
-from threading import Lock
-
-
-@typechecked
-def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
-    import time
-    from immich_client.api.server import get_server_statistics
-
-    tag_mod_report = TagModificationReport()
-    lock = Lock()
-    count = 0
-    N_LOG = 100  # Log frequency
-    print(
-        f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}..."
-    )
-    # Get total assets before processing
-    try:
-        stats = get_server_statistics.sync(client=context.client)
-        total_assets = getattr(stats, "photos", 0) + getattr(stats, "videos", 0)
-        print(
-            f"[INFO] Total assets (photos + videos) reported by Immich: {total_assets}"
-        )
-    except Exception as e:
-        print(f"[WARN] Could not get total assets from API: {e}")
-        total_assets = None
-    start_time = time.time()
-
-    # print_perf now imported from helpers
-    # Usage: print_perf(count, elapsed, total_assets)
-
-    if USE_THREADPOOL:
-        # Use thread pool regardless of MAX_WORKERS value
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = []
-            for asset_wrapper in get_all_assets(context, max_assets=max_assets):
-                future = executor.submit(
-                    process_single_asset, asset_wrapper, tag_mod_report, lock
-                )
-                futures.append(future)
-                count += 1
-                if count % N_LOG == 0:
-                    elapsed = time.time() - start_time
-                    print_perf(count, elapsed)
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    future.result()
-                except Exception as e:
-                    print(f"[ERROR] Asset processing failed: {e}")
-    else:
-        # Direct loop (sequential), no thread pool
-        for asset_wrapper in get_all_assets(context, max_assets=max_assets):
-            process_single_asset(asset_wrapper, tag_mod_report, lock)
-            count += 1
-            if count % N_LOG == 0:
-                elapsed = time.time() - start_time
-                print_perf(count, elapsed)
-    total_time = time.time() - start_time
-    print(f"Total assets: {count}")
-    print(
-        f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s"
-    )
-    if len(tag_mod_report.modifications) > 0:
-        tag_mod_report.print_summary()
-        tag_mod_report.flush()
-    MIN_ASSETS = 0  # Change this value if you know the real minimum number of assets
-    if count < MIN_ASSETS:
-        raise Exception(
-            f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
-        )
 
 
 def main():

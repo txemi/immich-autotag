@@ -1,12 +1,22 @@
+from __future__ import annotations
+
+import concurrent.futures
 import time
 from threading import Lock
+
+from typeguard import typechecked
+
+from immich_autotag.core.immich_context import ImmichContext
 from immich_autotag.core.tag_modification_report import TagModificationReport
 from immich_autotag.utils.process_single_asset import process_single_asset
 from immich_autotag.utils.get_all_assets import get_all_assets
 from immich_autotag.utils.helpers import print_perf
 from immich_autotag.config import MAX_WORKERS, USE_THREADPOOL
 
-def process_assets(context, max_assets: int | None = None) -> None:
+
+@typechecked
+def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
+    import time
     from immich_client.api.server import get_server_statistics
 
     tag_mod_report = TagModificationReport()
@@ -28,9 +38,11 @@ def process_assets(context, max_assets: int | None = None) -> None:
         total_assets = None
     start_time = time.time()
 
+    # print_perf now imported from helpers
+    # Usage: print_perf(count, elapsed, total_assets)
+
     if USE_THREADPOOL:
         # Use thread pool regardless of MAX_WORKERS value
-        import concurrent.futures
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
             for asset_wrapper in get_all_assets(context, max_assets=max_assets):
