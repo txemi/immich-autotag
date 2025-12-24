@@ -75,6 +75,9 @@ Run the main application:
 ```
 
 ## 1.6. Structure
+- `immich_api_examples/`: Example scripts showing how to use the Immich API and test integration:
+	- `immich_api_example_read_asset_tags_albums.py`: Example for reading asset tags and albums.
+	- `run_test_asset_albums_tags.sh`: Script to run the above example in the correct environment.
 - `main.py`: Main entry point for Immich AutoTag.
 - `run_app.sh`: Script to launch the application.
 - `setup_venv.sh`: Script to create the environment, install dependencies, and generate the client.
