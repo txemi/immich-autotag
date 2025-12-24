@@ -12,7 +12,11 @@ When starting to use Immich, it is common to import large volumes of photos from
 
 ### 1.1.3. What does this project solve?
 
-This project automatically applies new tags to assets (photos and videos) in Immich, based on existing albums and tags. It helps to:
+This project automatically applies new tags to assets (photos and videos) in Immich, based on existing albums and tags. 
+
+**In the context of this project, a photo is considered 'classified' if it either belongs to a set of albums (configurable) that are deemed to provide classification, or it has one or more tags (also configurable) that the user considers sufficient for classification.**
+
+It helps to:
 - Quickly detect which photos or videos are still unorganized.
 - Highlight possible errors, such as assets classified under multiple conflicting criteria.
 - Speed up the review and mass organization of your photo library.
