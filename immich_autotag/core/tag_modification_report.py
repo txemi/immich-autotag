@@ -1,9 +1,20 @@
+from __future__ import annotations
+
+import datetime
+
 import attrs
 import os
 import datetime as dt
 
+from main import IMMICH_WEB_BASE_URL
+
+
+
+
 @attrs.define(auto_attribs=True, slots=True)
 class TagModificationReport:
+    import os, datetime as dt
+
     log_dir: str = attrs.field(
         default="logs", validator=attrs.validators.instance_of(str)
     )
@@ -46,9 +57,9 @@ class TagModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
         # Build photo link
-        photo_link = f"http://localhost/photos/{asset_id}"
+        photo_link = f"{IMMICH_WEB_BASE_URL}/photos/{asset_id}"
         entry = {
-            "datetime": dt.datetime.now().isoformat(),
+            "datetime": datetime.datetime.now().isoformat(),
             "asset_id": asset_id,
             "asset_name": asset_name,
             "action": action,  # 'add' or 'remove'
