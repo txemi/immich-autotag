@@ -1,9 +1,16 @@
+from __future__ import annotations
+
 from threading import Lock
+
+from typeguard import typechecked
+
 from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.core.tag_modification_report import TagModificationReport
 from immich_autotag.utils.asset_validation import validate_and_update_asset_classification
 from immich_autotag.immich_user_config import TAG_CONVERSIONS
 
+
+@typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "TagModificationReport",
