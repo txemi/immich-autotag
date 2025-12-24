@@ -85,7 +85,7 @@ A continuación se detalla el orden sugerido para mover los símbolos (ficheros)
 - Marcar cada paso como hecho (`[x]`) para llevar el control.
 
 Puedes copiar esta tabla y marcar el progreso durante la migración.
-
+Empezamos
 ---
 
 **Este informe es una propuesta. Si quieres, puedo ayudarte a automatizar la migración o a generar los README para cada subcarpeta.**
