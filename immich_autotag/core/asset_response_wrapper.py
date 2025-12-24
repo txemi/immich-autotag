@@ -29,7 +29,8 @@ class AssetResponseWrapper:
     )
 
     def __attrs_post_init__(self):
-        if not isinstance(self.context, ImmichContext):
+        # Avoid direct reference to ImmichContext to prevent NameError/circular import
+        if self.context.__class__.__name__ != "ImmichContext":
             raise TypeError(f"context debe ser ImmichContext, no {type(self.context)}")
 
     @typechecked
