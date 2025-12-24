@@ -15,7 +15,6 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.tag_response_dto import TagResponseDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
-from typeguard import typechecked
 
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # Ahora centralizadas en immich_autotag/config.py
@@ -23,26 +22,18 @@ from immich_autotag.config import (
     IMMICH_BASE_URL,
 )
 from immich_autotag.core.immich_context import ImmichContext
-from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
 # ==================== USER-EDITABLE CONFIGURATION ====================
 # All user configuration is now in a separate module for clarity and maintainability.
 from immich_autotag.immich_user_config import *
 
 from immich_autotag.utils.list_albums import list_albums
-from immich_autotag.utils.print_tags import print_tags
+from immich_autotag.utils.list_tags import list_tags
 from immich_autotag.utils.process_assets import process_assets
 
 # ==================== TAG MODIFICATION TRACE REPORT ====================
 
 if TYPE_CHECKING:
     from .ejemplo_immich_client import ImmichContext
-
-
-@typechecked
-def list_tags(client: Client) -> TagCollectionWrapper:
-    tag_collection = TagCollectionWrapper.from_api(client)
-    print_tags(tag_collection.tags)
-    return tag_collection
 
 
 def main():
