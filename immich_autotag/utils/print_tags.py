@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from typing import List
 from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
-
-
 
 
 @typechecked
