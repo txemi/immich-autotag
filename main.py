@@ -23,7 +23,6 @@ from typeguard import typechecked
 # Ahora centralizadas en immich_autotag/config.py
 from immich_autotag.config import (
     IMMICH_BASE_URL,
-    PRINT_ASSET_DETAILS,
     USE_THREADPOOL,
     MAX_WORKERS,
 )
@@ -33,6 +32,7 @@ from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.core.immich_context import ImmichContext
 from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.core.tag_modification_report import TagModificationReport
+from immich_autotag.utils.asset_validation import validate_and_update_asset_classification
 from immich_autotag.utils.helpers import print_perf
 # ==================== USER-EDITABLE CONFIGURATION ====================
 # All user configuration is now in a separate module for clarity and maintainability.
@@ -78,38 +78,6 @@ def get_all_assets(
         ) or not response.parsed.assets.next_page:
             break
         page += 1
-
-
-@typechecked
-def validate_and_update_asset_classification(
-    asset_wrapper: AssetResponseWrapper,
-    tag_mod_report: "TagModificationReport" = None,
-) -> tuple[bool, bool]:
-    """
-    Prints asset information, including the names of the albums it belongs to,
-    using an album collection wrapper. Receives the global tag list to avoid double API call.
-    If conflict_list is passed, adds the asset to the list if there is a classification conflict.
-    """
-
-    tag_names = asset_wrapper.get_tag_names()
-    album_names = asset_wrapper.get_album_names()
-    classified = asset_wrapper.is_asset_classified()  # Now returns bool
-
-    # Check delegated to the wrapper method
-    conflict = asset_wrapper.check_unique_classification(fail_fast=False)
-    # Autotag logic delegated to the wrapper methods, now passing tag_mod_report
-    asset_wrapper.ensure_autotag_category_unknown(
-        classified, tag_mod_report=tag_mod_report
-    )
-    asset_wrapper.ensure_autotag_conflict_category(
-        conflict, tag_mod_report=tag_mod_report
-    )
-
-    if PRINT_ASSET_DETAILS:
-        print(
-            f"ID: {asset_wrapper.id} | Name: {asset_wrapper.original_file_name} | Favorite: {asset_wrapper.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Classified: {classified} | Date: {asset_wrapper.created_at} | original_path: {asset_wrapper.original_path}"
-        )
-    return bool(tag_names), bool(album_names)
 
 
 @typechecked
