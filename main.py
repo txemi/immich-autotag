@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import concurrent.futures
 # --- Detailed classification result ---
-from typing import Generator
 # NOTE: With 'from __future__ import annotations' you can use types defined later in annotations,
 # but for attrs validators the type must be defined before or validated in __attrs_post_init__.
 from typing import TYPE_CHECKING
@@ -33,6 +32,7 @@ from immich_autotag.core.immich_context import ImmichContext
 from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.core.tag_modification_report import TagModificationReport
 from immich_autotag.utils.asset_validation import validate_and_update_asset_classification
+from immich_autotag.utils.get_all_assets import get_all_assets
 from immich_autotag.utils.helpers import print_perf
 # ==================== USER-EDITABLE CONFIGURATION ====================
 # All user configuration is now in a separate module for clarity and maintainability.
@@ -44,40 +44,6 @@ from immich_autotag.utils.print_tags import print_tags
 
 if TYPE_CHECKING:
     from .ejemplo_immich_client import ImmichContext
-
-
-@typechecked
-def get_all_assets(
-    context: "ImmichContext", max_assets: int | None = None
-) -> "Generator[AssetResponseWrapper, None, None]":
-    """
-    Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
-    """
-    page = 1
-    count = 0
-    while True:
-        body = MetadataSearchDto(page=page)
-        response = search_assets.sync_detailed(client=context.client, body=body)
-        if response.status_code != 200:
-            raise RuntimeError(f"Error: {response.status_code} - {response.content}")
-        assets_page = response.parsed.assets.items
-        for asset in assets_page:
-            if max_assets is not None and count >= max_assets:
-                return
-            asset_full = get_asset_info.sync(id=asset.id, client=context.client)
-            if asset_full is not None:
-                yield AssetResponseWrapper(asset=asset_full, context=context)
-                count += 1
-            else:
-                raise RuntimeError(
-                    f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
-                )
-        print(f"Page {page}: {len(assets_page)} assets (full info)")
-        if (
-            max_assets is not None and count >= max_assets
-        ) or not response.parsed.assets.next_page:
-            break
-        page += 1
 
 
 @typechecked
