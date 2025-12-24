@@ -1,7 +1,14 @@
+from __future__ import annotations
+
 from typing import List
 from immich_client.models.tag_response_dto import TagResponseDto
+from typeguard import typechecked
 
-def print_tags(tags: List[TagResponseDto]) -> None:
+
+
+
+@typechecked
+def print_tags(tags: list[TagResponseDto]) -> None:
     print("Tags:")
     for tag in tags:
         print(f"- {tag.name}")

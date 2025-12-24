@@ -38,6 +38,8 @@ from immich_autotag.utils.helpers import print_perf
 # All user configuration is now in a separate module for clarity and maintainability.
 from immich_autotag.immich_user_config import *
 
+from immich_autotag.utils.print_tags import print_tags
+
 # ==================== TAG MODIFICATION TRACE REPORT ====================
 
 if TYPE_CHECKING:
@@ -150,19 +152,6 @@ def list_albums(client: Client) -> AlbumCollectionWrapper:
             f"ERROR: Unexpectedly low number of albums: {len(albums_full)} < {MIN_ALBUMS}"
         )
     return AlbumCollectionWrapper(albums=albums_full)
-
-
-@typechecked
-def print_tags(tags: list[TagResponseDto]) -> None:
-    print("Tags:")
-    for tag in tags:
-        print(f"- {tag.name}")
-    print(f"Total tags: {len(tags)}\n")
-    MIN_TAGS = 57
-    if len(tags) < MIN_TAGS:
-        raise Exception(
-            f"ERROR: Unexpectedly low number of tags: {len(tags)} < {MIN_TAGS}"
-        )
 
 
 @typechecked
