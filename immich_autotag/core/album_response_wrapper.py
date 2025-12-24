@@ -9,7 +9,7 @@ from typeguard import typechecked
 if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from .asset_response_wrapper import AssetResponseWrapper
-    from .main import ImmichContext
+from .immich_context import ImmichContext
 
 
 
