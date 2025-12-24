@@ -1,0 +1,39 @@
+from typing import Generator
+from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.core.immich_context import ImmichContext
+from immich_client.api.assets import get_asset_info
+from immich_client.api.search import search_assets
+from immich_client.models import MetadataSearchDto
+
+def get_all_assets(
+    context: "ImmichContext", max_assets: int | None = None
+) -> Generator[AssetResponseWrapper, None, None]:
+    """
+    Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
+    """
+    page = 1
+    count = 0
+    while True:
+        body = MetadataSearchDto(page=page)
+        response = search_assets.sync_detailed(client=context.client, body=body)
+        if response.status_code != 200:
+            raise RuntimeError(f"Error: {response.status_code} - {response.content}")
+        assets_page = response.parsed.assets.items
+        for asset in assets_page:
+            if max_assets is not None and count >= max_assets:
+                return
+            asset_full = get_asset_info.sync(id=asset.id, client=context.client)
+            if asset_full is not None:
+                yield AssetResponseWrapper(asset=asset_full, context=context)
+                count += 1
+            else:
+                raise RuntimeError(
+                    f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
+                )
+        print(f"Page {page}: {len(assets_page)} assets (full info)")
+        if (
+            max_assets is not None and count >= max_assets
+        ) or not response.parsed.assets.next_page:
+            break
+        page += 1
