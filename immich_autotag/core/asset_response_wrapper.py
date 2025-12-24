@@ -5,10 +5,12 @@ from typeguard import typechecked
 from typing import TYPE_CHECKING
 from immich_client.models.asset_response_dto import AssetResponseDto
 
+
 from immich_user_config import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY
-from main import ImmichContext, TagModificationReport, IMMICH_WEB_BASE_URL, IMMICH_PHOTO_PATH_TEMPLATE, \
-    AlbumFolderAnalyzer
 from .match_classification_result import MatchClassificationResult
+
+if TYPE_CHECKING:
+    from ..main import ImmichContext, TagModificationReport, IMMICH_WEB_BASE_URL, IMMICH_PHOTO_PATH_TEMPLATE, AlbumFolderAnalyzer
 
 if TYPE_CHECKING:
     from .ejemplo_immich_client import ImmichContext
