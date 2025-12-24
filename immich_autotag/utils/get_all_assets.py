@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from typing import Generator
+
+from immich_client.api.assets import get_asset_info
+from immich_client.api.search import search_assets
+from immich_client.models import MetadataSearchDto
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.core.immich_context import ImmichContext
-from immich_client.api.assets import get_asset_info
-from immich_client.api.search import search_assets
-from immich_client.models import MetadataSearchDto
+
 
 @typechecked
 def get_all_assets(

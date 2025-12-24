@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from immich_client import Client
 from typeguard import typechecked
+
 from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.utils.print_tags import print_tags
-
 
 
 @typechecked

@@ -5,8 +5,6 @@ from immich_client.api.assets import get_asset_info
 from typeguard import typechecked
 
 
-
-
 @typechecked
 def print_asset_details_with_tags(asset_id: str, client: Client) -> None:
     """Obtains and displays complete details of an asset, including tags."""

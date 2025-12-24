@@ -25,7 +25,6 @@ from immich_autotag.core.immich_context import ImmichContext
 # ==================== USER-EDITABLE CONFIGURATION ====================
 # All user configuration is now in a separate module for clarity and maintainability.
 from immich_autotag.immich_user_config import *
-
 from immich_autotag.utils.list_albums import list_albums
 from immich_autotag.utils.list_tags import list_tags
 from immich_autotag.utils.process_assets import process_assets

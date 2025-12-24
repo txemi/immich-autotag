@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import attrs
-from immich_client import Client
 from typing import TYPE_CHECKING
 
-
+import attrs
+from immich_client import Client
 
 if TYPE_CHECKING:
     from .album_collection_wrapper import AlbumCollectionWrapper

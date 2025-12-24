@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import attrs
 from pathlib import Path
+
+import attrs
 from typeguard import typechecked
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
