@@ -1,59 +1,44 @@
 from __future__ import annotations
 
-from immich_client.models.update_album_dto import UpdateAlbumDto
-from typeguard import typechecked
-from immich_client.api.assets import get_asset_info
-
-
-from immich_client import Client
-from immich_client.api.search import search_assets
-from immich_client.api.albums import get_all_albums, get_album_info, update_album_info
-from immich_client.api.tags import get_all_tags
-from immich_client.models.tag_response_dto import TagResponseDto
-from immich_client.models import MetadataSearchDto
-from immich_client.models.asset_response_dto import AssetResponseDto
-from immich_client.models.album_response_dto import AlbumResponseDto
-
-from immich_autotag.core.album_collection_wrapper import AlbumCollectionWrapper
-from immich_autotag.core.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.core.tag_modification_report import TagModificationReport
-from immich_autotag.utils.helpers import print_perf
 import concurrent.futures
 from pathlib import Path
-
 # --- Detailed classification result ---
 from typing import Generator
-from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
+# NOTE: With 'from __future__ import annotations' you can use types defined later in annotations,
+# but for attrs validators the type must be defined before or validated in __attrs_post_init__.
+from typing import TYPE_CHECKING
 
-
-# ==================== USER-EDITABLE CONFIGURATION ====================
-# All user configuration is now in a separate module for clarity and maintainability.
-from immich_user_config import *
-
+from immich_client import Client
+from immich_client.api.albums import get_all_albums, get_album_info, update_album_info
+from immich_client.api.assets import get_asset_info
+from immich_client.api.search import search_assets
+from immich_client.api.tags import get_all_tags
+from immich_client.models import MetadataSearchDto
+from immich_client.models.album_response_dto import AlbumResponseDto
+from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.tag_response_dto import TagResponseDto
+from immich_client.models.update_album_dto import UpdateAlbumDto
+from typeguard import typechecked
 
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # Ahora centralizadas en immich_autotag/config.py
 from immich_autotag.config import (
-    IMMICH_WEB_BASE_URL,
     IMMICH_BASE_URL,
-    IMMICH_PHOTO_PATH_TEMPLATE,
     PRINT_ASSET_DETAILS,
     USE_THREADPOOL,
     MAX_WORKERS,
 )
-
-
-
-
-
+from immich_autotag.core.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.core.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
+from immich_autotag.core.tag_modification_report import TagModificationReport
+from immich_autotag.utils.helpers import print_perf
+# ==================== USER-EDITABLE CONFIGURATION ====================
+# All user configuration is now in a separate module for clarity and maintainability.
+from immich_user_config import *
 
 # ==================== TAG MODIFICATION TRACE REPORT ====================
-
-
-# NOTE: With 'from __future__ import annotations' you can use types defined later in annotations,
-# but for attrs validators the type must be defined before or validated in __attrs_post_init__.
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .ejemplo_immich_client import ImmichContext

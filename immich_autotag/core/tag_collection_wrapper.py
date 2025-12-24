@@ -1,7 +1,8 @@
 import attrs
-from typeguard import typechecked
-from immich_client.models.tag_response_dto import TagResponseDto
 from immich_client import Client
+from immich_client.models.tag_response_dto import TagResponseDto
+from typeguard import typechecked
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:

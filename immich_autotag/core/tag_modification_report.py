@@ -3,12 +3,8 @@ from __future__ import annotations
 import datetime
 
 import attrs
-import os
-import datetime as dt
 
 from main import IMMICH_WEB_BASE_URL
-
-
 
 
 @attrs.define(auto_attribs=True, slots=True)

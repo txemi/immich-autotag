@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import attrs
-from typeguard import typechecked
-from immich_client.models.album_response_dto import AlbumResponseDto
 from typing import TYPE_CHECKING
+
+import attrs
+from immich_client.models.album_response_dto import AlbumResponseDto
+from typeguard import typechecked
 
 if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from .asset_response_wrapper import AssetResponseWrapper
-    from .tag_collection_wrapper import TagCollectionWrapper
     from .main import ImmichContext
 
 

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import attrs
-from typeguard import typechecked
 from typing import TYPE_CHECKING
-from immich_client.models.asset_response_dto import AssetResponseDto
 
+import attrs
+from immich_client.models.asset_response_dto import AssetResponseDto
+from typeguard import typechecked
 
 from immich_user_config import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY
 from .match_classification_result import MatchClassificationResult
@@ -377,7 +377,6 @@ class AssetResponseWrapper:
         Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
         If the date is already in the containing folder, keep as before.
         """
-        import os
         import re
 
         if not ENABLE_ALBUM_DETECTION_FROM_FOLDERS:

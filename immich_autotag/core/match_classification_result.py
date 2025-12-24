@@ -1,5 +1,7 @@
-import attrs
 from typing import List
+
+import attrs
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class MatchClassificationResult:

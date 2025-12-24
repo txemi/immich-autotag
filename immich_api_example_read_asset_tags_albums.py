@@ -1,9 +1,10 @@
 
-from immich_client import Client
-from immich_client.api.assets import get_asset_info
-from immich_client.api.albums import get_all_albums
-from immich_client.models import AlbumResponseDto
 from typing import List
+
+from immich_client import Client
+from immich_client.api.albums import get_all_albums
+from immich_client.api.assets import get_asset_info
+from immich_client.models import AlbumResponseDto
 from typeguard import typechecked
 
 # Import configuration from the centralized module
