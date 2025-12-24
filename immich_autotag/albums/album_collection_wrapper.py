@@ -3,7 +3,7 @@ from __future__ import annotations
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.core.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)

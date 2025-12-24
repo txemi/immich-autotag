@@ -8,8 +8,8 @@ from typeguard import typechecked
 
 if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
-    from .asset_response_wrapper import AssetResponseWrapper
-from .immich_context import ImmichContext
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.context.immich_context import ImmichContext
 
 
 

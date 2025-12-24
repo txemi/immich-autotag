@@ -6,11 +6,11 @@ from threading import Lock
 from typeguard import typechecked
 
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
-from immich_autotag.core.immich_context import ImmichContext
-from immich_autotag.core.tag_modification_report import TagModificationReport
-from immich_autotag.utils.get_all_assets import get_all_assets
+from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.tags.tag_modification_report import TagModificationReport
+from immich_autotag.assets.get_all_assets import get_all_assets
 from immich_autotag.utils.helpers import print_perf
-from immich_autotag.utils.process_single_asset import process_single_asset
+from immich_autotag.assets.process_single_asset import process_single_asset
 
 
 @typechecked

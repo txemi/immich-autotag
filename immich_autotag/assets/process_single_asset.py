@@ -4,10 +4,9 @@ from threading import Lock
 
 from typeguard import typechecked
 
-from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.core.tag_modification_report import TagModificationReport
-from immich_autotag.config.user import TAG_CONVERSIONS
-from immich_autotag.utils.asset_validation import validate_and_update_asset_classification
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.tags.tag_modification_report import TagModificationReport
+from immich_autotag.assets.asset_validation import validate_and_update_asset_classification
 from immich_autotag.config.user import TAG_CONVERSIONS
 
 

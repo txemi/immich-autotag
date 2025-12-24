@@ -6,8 +6,8 @@ import attrs
 from immich_client import Client
 
 if TYPE_CHECKING:
-    from .album_collection_wrapper import AlbumCollectionWrapper
-    from .tag_collection_wrapper import TagCollectionWrapper
+    from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
+    from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)

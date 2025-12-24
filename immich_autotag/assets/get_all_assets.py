@@ -8,8 +8,8 @@ from immich_client.models import MetadataSearchDto
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.core.immich_context import ImmichContext
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.context.immich_context import ImmichContext
 
 
 @typechecked

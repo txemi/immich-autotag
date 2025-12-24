@@ -5,8 +5,8 @@ from immich_client.api.albums import get_all_albums, get_album_info, update_albu
 from immich_client.models.update_album_dto import UpdateAlbumDto
 from typeguard import typechecked
 
-from immich_autotag.core.album_collection_wrapper import AlbumCollectionWrapper
-from immich_autotag.core.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
 
 @typechecked

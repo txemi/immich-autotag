@@ -7,10 +7,10 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY
-from .match_classification_result import MatchClassificationResult
+from immich_autotag.classification.match_classification_result import MatchClassificationResult
 
 if TYPE_CHECKING:
-    from .immich_context import ImmichContext
+    from immich_autotag.context.immich_context import ImmichContext
     from .main import TagModificationReport
 
 
