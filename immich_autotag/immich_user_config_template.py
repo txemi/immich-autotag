@@ -1,6 +1,16 @@
 # Immich user configuration template
 # Copy this file to 'immich_user_config.py' and edit the values for your instance.
 
+
+# DISCLAIMER: CONFIGURATION AS CODE (TEMPORARY)
+# =============================================
+# WARNING! This configuration is written as Python code and is located inside the main package for refactoring and development agility reasons.
+# We are aware that this is unorthodox and not the recommended practice for mature projects.
+# This decision is TEMPORARY and allows us to include small code fragments and logic in the configuration during this period of major changes.
+# There is an open issue to decide the future of the configuration system and migrate to a more standard format once refactoring is complete.
+# If you have questions or suggestions, please check the relevant issue and don't worry: this will be fixed!
+
+
 # Immich host or domain (can be IP or DNS name)
 # Example: "immich.example.com" or "192.168.1.100"
 IMMICH_HOST = "immich.example.com"

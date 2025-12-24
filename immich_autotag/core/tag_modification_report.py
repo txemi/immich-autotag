@@ -4,7 +4,7 @@ import datetime
 
 import attrs
 
-from main import IMMICH_WEB_BASE_URL
+from immich_autotag.config import IMMICH_WEB_BASE_URL
 
 
 @attrs.define(auto_attribs=True, slots=True)
