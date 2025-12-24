@@ -52,6 +52,40 @@ Este informe propone una estructura alternativa basada en dominios/funcionalidad
 3. Actualizar los imports y la documentación.
 4. Añadir un README en cada subcarpeta explicando su propósito.
 
+## Plan de migración: orden recomendado
+
+A continuación se detalla el orden sugerido para mover los símbolos (ficheros) y facilitar un proceso mecánico y controlado. Cada paso puede marcarse como hecho una vez completado.
+
+| Paso | Fichero actual                                         | Nueva ubicación sugerida                        |
+|------|--------------------------------------------------------|-------------------------------------------------|
+| 1    | immich_autotag/entrypoint.py                           | immich_autotag/app.py                           |
+| 2    | immich_autotag/core/immich_context.py                  | immich_autotag/context/immich_context.py         |
+| 3    | immich_autotag/core/album_collection_wrapper.py        | immich_autotag/albums/collection.py              |
+| 4    | immich_autotag/core/album_response_wrapper.py          | immich_autotag/albums/response_wrapper.py        |
+| 5    | immich_autotag/core/album_folder_analyzer.py           | immich_autotag/albums/folder_analyzer.py         |
+| 6    | immich_autotag/core/asset_response_wrapper.py          | immich_autotag/assets/response_wrapper.py        |
+| 7    | immich_autotag/core/tag_collection_wrapper.py          | immich_autotag/tags/collection.py                |
+| 8    | immich_autotag/core/tag_modification_report.py         | immich_autotag/tags/modification_report.py       |
+| 9    | immich_autotag/core/match_classification_result.py     | immich_autotag/classification/match_result.py    |
+| 10   | immich_autotag/utils/process_assets.py                 | immich_autotag/assets/process.py                 |
+| 11   | immich_autotag/utils/process_single_asset.py           | immich_autotag/assets/process_single.py          |
+| 12   | immich_autotag/utils/asset_validation.py               | immich_autotag/assets/validation.py              |
+| 13   | immich_autotag/utils/list_albums.py                    | immich_autotag/albums/list.py                   |
+| 14   | immich_autotag/utils/list_tags.py                      | immich_autotag/tags/list.py                     |
+| 15   | immich_autotag/utils/helpers.py                        | immich_autotag/common/helpers.py                |
+| 16   | immich_autotag/utils/get_all_assets.py                 | immich_autotag/assets/get_all.py                |
+| 17   | immich_autotag/utils/print_asset_details.py            | immich_autotag/assets/print_details.py          |
+| 18   | immich_autotag/utils/print_tags.py                     | immich_autotag/tags/print_tags.py               |
+| 19   | immich_api_examples/immich_api_example_read_asset_tags_albums.py | examples/immich_api_example_read_asset_tags_albums.py |
+| 20   | immich_api_examples/run_test_asset_albums_tags.sh      | examples/run_test_asset_albums_tags.sh           |
+
+**Recomendación:**
+- Realizar los pasos en orden, comprobando que los imports y tests siguen funcionando tras cada bloque de movimientos.
+- Tras cada movimiento, actualizar los imports en el resto del código.
+- Marcar cada paso como hecho (`[x]`) para llevar el control.
+
+Puedes copiar esta tabla y marcar el progreso durante la migración.
+
 ---
 
 **Este informe es una propuesta. Si quieres, puedo ayudarte a automatizar la migración o a generar los README para cada subcarpeta.**
