@@ -8,7 +8,7 @@ from immich_client.models import AlbumResponseDto
 from typeguard import typechecked
 
 # Import configuration from the centralized module
-from immich_autotag.immich_user_config import IMMICH_HOST, IMMICH_PORT, API_KEY
+from immich_autotag.config.user import IMMICH_HOST, IMMICH_PORT, API_KEY
 
 IMMICH_BASE_URL = f"http://{IMMICH_HOST}:{IMMICH_PORT}/api"
 PHOTO_ID = "abc02a80-ae50-4989-aebd-55263da48191"
