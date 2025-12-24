@@ -7,10 +7,17 @@ Note: This roadmap lists upcoming features in order of priority, based on a subj
 
 ## 1.1. Upcoming Features (to be prioritized)
 
-1. **Album detection and creation from folders:**
+1. **Album detection and creation from folders (IN PROGRESS):**
 	If an album does not exist, implement logic to infer or create it based on folder structure.
     
 	[See detailed design document →](docs/feature-album-detection-from-folders.md)
+    
+	**Current sub-tasks and context:**
+	- We have started a major refactor to split the monolithic script into smaller, maintainable modules. This is necessary due to the growing complexity and size of the codebase.
+	- Temporarily, configuration is being handled as Python code inside the package to allow for code fragments and easier refactor. There is an open issue to migrate to a more standard config system after refactoring.
+	- The logging/reporting system is being updated: the tag modification report will soon also track other types of modifications (not just tag changes), to support broader asset operations and debugging.
+	- The folder-based album detection logic is currently paused while we complete the refactor and logging improvements, to ensure maintainability and easier debugging.
+	- Once these foundational changes are complete, we will resume and finish the folder detection feature.
 2. **Refactor and modularize codebase:**
 	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution).
 3. **Similar photo detection:**
