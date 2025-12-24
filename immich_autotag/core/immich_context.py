@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 import attrs
 from immich_client import Client
 from typing import TYPE_CHECKING
 
+from .album_collection_wrapper import AlbumCollectionWrapper
+
 if TYPE_CHECKING:
     from .album_response_wrapper import AlbumCollectionWrapper
     from .tag_collection_wrapper import TagCollectionWrapper
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ImmichContext:

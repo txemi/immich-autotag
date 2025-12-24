@@ -30,6 +30,7 @@ from immich_autotag.config import (
 from immich_autotag.core.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.core.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.core.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.core.immich_context import ImmichContext
 from immich_autotag.core.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.core.tag_modification_report import TagModificationReport
 from immich_autotag.utils.helpers import print_perf
@@ -41,19 +42,6 @@ from immich_autotag.immich_user_config import *
 
 if TYPE_CHECKING:
     from .ejemplo_immich_client import ImmichContext
-
-import attrs
-
-
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
-class ImmichContext:
-    client: Client = attrs.field(validator=attrs.validators.instance_of(Client))
-    albums_collection: "AlbumCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of(object)
-    )
-    tag_collection: "TagCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of(object)
-    )
 
 
 @typechecked
