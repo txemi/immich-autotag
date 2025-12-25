@@ -386,6 +386,7 @@ class AssetResponseWrapper:
         # If already classified by tag or album, skip
         if self.is_asset_classified():
             return None
+        # TODO: REVISAR SI LA LOGICA DE ABAJO ESTA EN EL METODO ANTERIOR is_asset_classified
         # If already in an album matching ALBUM_PATTERN, skip
         if any(re.match(ALBUM_PATTERN, name) for name in self.get_album_names()):
             return None
