@@ -18,7 +18,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     import time
     from immich_client.api.server import get_server_statistics
 
-    tag_mod_report = TagModificationReport()
+    tag_mod_report = TagModificationReport.get_instance()
     lock = Lock()
     count = 0
     N_LOG = 100  # Log frequency

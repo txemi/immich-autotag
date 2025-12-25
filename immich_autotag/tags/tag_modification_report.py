@@ -26,7 +26,9 @@ class ModificationEntry:
 # TODO: la siguiente clase es mas generiga que tag, requiere refactorizar nombre y ubicacion
 
 @attrs.define(auto_attribs=True, slots=True)
+
 class TagModificationReport:
+    _instance = None  # Singleton instance
     _instance_created = False  # Class-level flag
 
 
@@ -55,11 +57,19 @@ class TagModificationReport:
         validator=attrs.validators.instance_of(bool),
     )
 
+
     def __attrs_post_init__(self):
         cls = self.__class__
         if getattr(cls, '_instance_created', False):
-            raise RuntimeError("TagModificationReport instance already exists. Use the existing instance instead of creating a new one.")
+            raise RuntimeError("TagModificationReport instance already exists. Use TagModificationReport.get_instance() instead of creating a new one.")
         cls._instance_created = True
+        cls._instance = self
+
+    @staticmethod
+    def get_instance(*args, **kwargs) -> "TagModificationReport":
+        if TagModificationReport._instance is None:
+            TagModificationReport(*args, **kwargs)
+        return TagModificationReport._instance
 
     from typeguard import typechecked
     @typechecked

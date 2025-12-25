@@ -18,7 +18,7 @@ def list_albums(client: Client) -> AlbumCollectionWrapper:
     albums_full: list[AlbumResponseWrapper] = []
     print("\nAlbums:")
     from immich_autotag.tags.tag_modification_report import TagModificationReport
-    tag_mod_report = TagModificationReport()
+    tag_mod_report = TagModificationReport.get_instance()
     for album in albums:
         album_full = get_album_info.sync(id=album.id, client=client)
         n_assets = len(album_full.assets) if album_full.assets else 0
