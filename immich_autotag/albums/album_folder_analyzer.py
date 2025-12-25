@@ -103,8 +103,18 @@ class AlbumFolderAnalyzer:
                 )
             return folder_name
         if idx == len(self.folders) - 2:
-            # Date folder is penultimate: concatenate with last
+            # Date folder is penultimate: concatena con la última
             album_name = f"{self.folders[idx]} {self.folders[idx+1]}"
+            if len(album_name) < 10:
+                raise NotImplementedError(
+                    f"Detected album name is suspiciously short: '{album_name}'"
+                )
+            return album_name
+        if idx == len(self.folders) - 3:
+            # --- Nuevo caso: carpeta con fecha en antepenúltima posición ---
+            # Si la carpeta con fecha está en la antepenúltima posición, concatenamos esa carpeta y las dos siguientes.
+            # Esto permite capturar rutas como .../fecha/fecha-descriptivo/picasa/Evento/...
+            album_name = f"{self.folders[idx]} {self.folders[idx+1]} {self.folders[idx+2]}"
             if len(album_name) < 10:
                 raise NotImplementedError(
                     f"Detected album name is suspiciously short: '{album_name}'"
