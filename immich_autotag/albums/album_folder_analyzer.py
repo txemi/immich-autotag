@@ -122,5 +122,8 @@ class AlbumFolderAnalyzer:
                     f"Detected album name is suspiciously short: '{album_name}'"
                 )
             return album_name
-        # Date folder in other position: not supported for now
-        return None
+        # Date folder en otra posición: caso no soportado ni previsto.
+        # Lanzamos excepción para poder analizar estos casos si aparecen en producción.
+        raise NotImplementedError(
+            f"No se pudo construir un nombre de álbum útil para la ruta: {self.original_path} (carpetas: {self.folders})"
+        )
