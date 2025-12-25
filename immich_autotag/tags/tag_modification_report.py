@@ -92,7 +92,9 @@ class TagModificationReport:
         Maintains compatibility with previous usage.
         """
         if not self._cleared_report:
+            import os
             try:
+                os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
                 with open(self.report_path, "w", encoding="utf-8") as f:
                     pass  # Truncate the file
             except Exception as e:
@@ -191,6 +193,8 @@ class TagModificationReport:
         """Flushes the report to file (append)."""
         if not self.modifications or self._since_last_flush == 0:
             return
+        import os
+        os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
         with open(self.report_path, "a", encoding="utf-8") as f:
             for entry in self.modifications[-self._since_last_flush :]:
                 # Flexible log line

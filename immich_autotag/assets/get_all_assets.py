@@ -29,7 +29,7 @@ def get_all_assets(
         assets_page = response.parsed.assets.items
         for asset in assets_page:
             if max_assets is not None and count >= max_assets:
-                return
+                break
             asset_full = get_asset_info.sync(id=asset.id, client=context.client)
             if asset_full is not None:
                 yield AssetResponseWrapper(asset=asset_full, context=context)
@@ -38,9 +38,9 @@ def get_all_assets(
                 raise RuntimeError(
                     f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
                 )
-        print(f"Page {page}: {len(assets_page)} assets (full info)")
-        if (
-            max_assets is not None and count >= max_assets
-        ) or not response.parsed.assets.next_page:
+        print(f"Page {page}: {len(assets_page)} assets (full info)")            
+        if max_assets is not None and count >= max_assets:
+            break
+        if not response.parsed.assets.next_page:
             break
         page += 1
