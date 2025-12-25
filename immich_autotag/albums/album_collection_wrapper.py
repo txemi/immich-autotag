@@ -5,6 +5,7 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_client.models.asset_response_dto import AssetResponseDto
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
