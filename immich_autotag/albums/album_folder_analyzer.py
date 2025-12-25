@@ -8,6 +8,7 @@ from typeguard import typechecked
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
+    MAX_ALBUM_DEPTH: int = 3  # Máximo de carpetas a concatenar tras la fecha
     original_path: Path = attrs.field(validator=attrs.validators.instance_of(Path))
     folders: list = attrs.field(
         init=False, validator=attrs.validators.instance_of(list)
@@ -87,44 +88,16 @@ class AlbumFolderAnalyzer:
             )
         # 1 date folder
         idx = self.date_folder_indices()[0]
-        if idx == len(self.folders) - 1:
-            # --- Lógica especial para carpeta con fecha en última posición ---
-            # Si la única carpeta con formato de fecha está al final del path:
-            #   - Si la carpeta es exactamente la fecha (sin más caracteres), lo ignoramos y devolvemos None.
-            #     Esto ocurre frecuentemente en carpetas generadas por apps como WhatsApp y no es útil para crear álbumes.
-            #   - Si la carpeta tiene la fecha y más caracteres, comprobamos que la longitud sea suficiente (fecha + 10).
-            #     Si cumple, devolvemos el nombre de la carpeta como nombre de álbum.
-            #     Si no, lanzamos una excepción para analizar el caso.
-            folder_name = self.folders[idx]
-            if len(folder_name) == len(DATE_FORMAT_STR):
-                # Solo la fecha, caso común de carpetas de WhatsApp, ignorar
-                return None
-            min_length = 10 + len(DATE_FORMAT_STR)  # fecha + 10
-            if len(folder_name) < min_length:
-                raise NotImplementedError(
-                    f"Detected album name is suspiciously short (date folder at end): '{folder_name}'"
-                )
-            return folder_name
-        if idx == len(self.folders) - 2:
-            # Date folder is penultimate: concatena con la última
-            album_name = SEPARATOR.join([self.folders[idx], self.folders[idx+1]])
-            if len(album_name) < 10:
-                raise NotImplementedError(
-                    f"Detected album name is suspiciously short: '{album_name}'"
-                )
-            return album_name
-        if idx == len(self.folders) - 3:
-            # --- Nuevo caso: carpeta con fecha en antepenúltima posición ---
-            # Si la carpeta con fecha está en la antepenúltima posición, concatenamos esa carpeta y las dos siguientes.
-            # Esto permite capturar rutas como .../fecha/fecha-descriptivo/picasa/Evento/...
-            album_name = SEPARATOR.join([self.folders[idx], self.folders[idx+1], self.folders[idx+2]])
-            if len(album_name) < 10:
-                raise NotImplementedError(
-                    f"Detected album name is suspiciously short: '{album_name}'"
-                )
-            return album_name
-        # Date folder en otra posición: caso no soportado ni previsto.
-        # Lanzamos excepción para poder analizar estos casos si aparecen en producción.
-        raise NotImplementedError(
-            f"No se pudo construir un nombre de álbum útil para la ruta: {self.original_path} (carpetas: {self.folders})"
-        )
+        # Si la carpeta de fecha está al final y es solo la fecha, ignorar
+        folder_name = self.folders[idx]
+        if idx == len(self.folders) - 1 and len(folder_name) == len(DATE_FORMAT_STR):
+            return None
+        # Concatenar desde la carpeta de fecha hasta un máximo de MAX_ALBUM_DEPTH carpetas siguientes
+        end_idx = min(idx + 1 + self.MAX_ALBUM_DEPTH, len(self.folders))
+        album_parts = self.folders[idx:end_idx]
+        album_name = SEPARATOR.join(album_parts)
+        if len(album_name) < 10:
+            raise NotImplementedError(
+                f"Detected album name is suspiciously short: '{album_name}'"
+            )
+        return album_name
