@@ -41,8 +41,13 @@ def _process_album_detection(
         get_all_albums,
         create_album,
         add_assets_to_album,
+        add_users_to_album,
     )
+    from immich_client.api.users import get_my_user
     from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
+    from immich_client.models.add_users_dto import AddUsersDto
+    from immich_client.models.album_user_add_dto import AlbumUserAddDto
+    from immich_client.models.album_user_role import AlbumUserRole
 
     client = asset_wrapper.context.client
     albums = get_all_albums.sync(client=client)
@@ -50,6 +55,14 @@ def _process_album_detection(
     if album is None:
         print(f"[ALBUM DETECTION] Creating album '{detected_album}'...")
         album = create_album.sync(client=client, album_name=detected_album)
+        # Assign current user as EDITOR to the album
+        user = get_my_user.sync(client=client)
+        user_id = user.id
+        add_users_to_album.sync(
+            id=album.id,
+            client=client,
+            body=AddUsersDto(album_users=[AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)])
+        )
         tag_mod_report.add_album_modification(
             action="create",
             album_id=album.id,
