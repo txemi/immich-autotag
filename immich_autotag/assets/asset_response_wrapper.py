@@ -231,8 +231,14 @@ class AssetResponseWrapper:
         return self.asset.id
 
     @property
-    def original_path(self) -> str:
-        return self.asset.original_path
+    def original_path(self) -> "Path":
+        from pathlib import Path
+        path = Path(self.asset.original_path)
+        if not path.exists():
+            raise FileNotFoundError(f"[ERROR] original_path does not exist: {path}")
+        if not path.is_file():
+            raise ValueError(f"[ERROR] original_path is not a file: {path}")
+        return path
 
     @typechecked
     def get_classification_match_detail(self) -> MatchClassificationResult:
