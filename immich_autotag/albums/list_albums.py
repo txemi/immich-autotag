@@ -17,6 +17,8 @@ def list_albums(client: Client) -> AlbumCollectionWrapper:
     albums = get_all_albums.sync(client=client)
     albums_full: list[AlbumResponseWrapper] = []
     print("\nAlbums:")
+    from immich_autotag.tags.tag_modification_report import TagModificationReport
+    tag_mod_report = TagModificationReport()
     for album in albums:
         album_full = get_album_info.sync(id=album.id, client=client)
         n_assets = len(album_full.assets) if album_full.assets else 0
@@ -30,8 +32,17 @@ def list_albums(client: Client) -> AlbumCollectionWrapper:
                 body=update_body,
             )
             print(f"Renamed album '{album_full.album_name}' to '{cleaned_name}'")
+            # Log renaming
+            tag_mod_report.add_album_modification(
+                action="rename",
+                album_id=album_full.id,
+                album_name=cleaned_name,
+                old_name=album_full.album_name,
+                new_name=cleaned_name,
+            )
             album_full.album_name = cleaned_name
         albums_full.append(AlbumResponseWrapper(album=album_full))
+    tag_mod_report.flush()
     print(f"Total albums: {len(albums_full)}\n")
     MIN_ALBUMS = 326
     if len(albums_full) < MIN_ALBUMS:

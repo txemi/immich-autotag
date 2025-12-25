@@ -23,8 +23,13 @@ class ModificationEntry:
     link: Optional[str] = None
     extra: Optional[dict] = None
 
+# TODO: la siguiente clase es mas generiga que tag, requiere refactorizar nombre y ubicacion
+
 @attrs.define(auto_attribs=True, slots=True)
 class TagModificationReport:
+    _instance_created = False  # Class-level flag
+
+
     import os, datetime as dt
 
     log_dir: str = attrs.field(
@@ -50,6 +55,11 @@ class TagModificationReport:
         validator=attrs.validators.instance_of(bool),
     )
 
+    def __attrs_post_init__(self):
+        cls = self.__class__
+        if getattr(cls, '_instance_created', False):
+            raise RuntimeError("TagModificationReport instance already exists. Use the existing instance instead of creating a new one.")
+        cls._instance_created = True
 
     @attrs.validators.typechecked
     def add_modification(

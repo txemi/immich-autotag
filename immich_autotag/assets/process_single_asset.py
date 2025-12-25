@@ -38,6 +38,12 @@ def process_single_asset(
             # Create album if it does not exist
             print(f"[ALBUM DETECTION] Creating album '{detected_album}'...")
             album = create_album.sync(client=client, album_name=detected_album)
+            # Log album creation
+            tag_mod_report.add_album_modification(
+                action="create",
+                album_id=album.id,
+                album_name=detected_album,
+            )
         # Check if the asset is already in the album
         if asset_wrapper.id not in [a.id for a in getattr(album, "assets", []) or []]:
             print(
@@ -47,6 +53,14 @@ def process_single_asset(
                 id=album.id,
                 client=client,
                 body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id]),
+            )
+            # Log assignment
+            tag_mod_report.add_assignment_modification(
+                action="assign",
+                asset_id=asset_wrapper.id,
+                asset_name=asset_wrapper.original_file_name,
+                album_id=album.id,
+                album_name=detected_album,
             )
         else:
             print(
