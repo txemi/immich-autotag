@@ -63,6 +63,8 @@ class AlbumFolderAnalyzer:
     def get_album_name(self):
         import re
 
+        SEPARATOR = "/"  # Cambia aquí para modificar el separador en todos los casos
+
         # 0 date folders: look for folder starting with date (but not only date)
         if self.num_date_folders() == 0:
             date_prefix_pattern = r"^\d{4}-\d{2}-\d{2}"
@@ -104,7 +106,7 @@ class AlbumFolderAnalyzer:
             return folder_name
         if idx == len(self.folders) - 2:
             # Date folder is penultimate: concatena con la última
-            album_name = f"{self.folders[idx]} {self.folders[idx+1]}"
+            album_name = SEPARATOR.join([self.folders[idx], self.folders[idx+1]])
             if len(album_name) < 10:
                 raise NotImplementedError(
                     f"Detected album name is suspiciously short: '{album_name}'"
@@ -114,7 +116,7 @@ class AlbumFolderAnalyzer:
             # --- Nuevo caso: carpeta con fecha en antepenúltima posición ---
             # Si la carpeta con fecha está en la antepenúltima posición, concatenamos esa carpeta y las dos siguientes.
             # Esto permite capturar rutas como .../fecha/fecha-descriptivo/picasa/Evento/...
-            album_name = f"{self.folders[idx]} {self.folders[idx+1]} {self.folders[idx+2]}"
+            album_name = SEPARATOR.join([self.folders[idx], self.folders[idx+1], self.folders[idx+2]])
             if len(album_name) < 10:
                 raise NotImplementedError(
                     f"Detected album name is suspiciously short: '{album_name}'"
