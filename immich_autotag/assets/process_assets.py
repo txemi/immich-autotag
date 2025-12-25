@@ -28,7 +28,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     # Get total assets before processing
     try:
         stats = get_server_statistics.sync(client=context.client)
-        total_assets = getattr(stats, "photos", 0) + getattr(stats, "videos", 0)
+        total_assets = stats.photos + stats.videos
         print(
             f"[INFO] Total assets (photos + videos) reported by Immich: {total_assets}"
         )
