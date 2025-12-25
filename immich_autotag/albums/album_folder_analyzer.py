@@ -85,10 +85,18 @@ class AlbumFolderAnalyzer:
         # 1 date folder
         idx = self.date_folder_indices()[0]
         if idx == len(self.folders) - 1:
-            # Date folder is the last (containing folder): ignore
-            # TODO: Aquí queremos cambiar la lógica si llegamos a este punto significa que solo hay una carpeta con con fecha y que la tenemos al final del todo es en una situación óptima para para crear el álbum entonces lo único que vamos a comprobar es que el nombre de la carpeta no sea sospechosamente bajo que aparte de la fecha al principio tengo unos cuantos caracteres más vamos a poner en la longitud de la fecha más no sé pongamos seis caracteres porque una palabra no sé si bueno ponle 10 por ejemplo si se cumple esto podemos crear el álbum o sea que retornamos la cadena entera si no se cumple y la longitud es más corta del número que hemos dicho por ejemplo es de dos lanzamos una excepción porque es una situación rara que no que antes de programarla queremos analizarla y vamos a lanzar por ejemplo una excepción de no implementado
-
-            return None
+            # --- Lógica especial para carpeta con fecha en última posición ---
+            # Si la única carpeta con formato de fecha está al final del path, es una situación óptima para crear el álbum.
+            # Sin embargo, para evitar errores o nombres poco descriptivos, comprobamos que la longitud del nombre de la carpeta
+            # sea suficientemente grande (fecha + al menos 10 caracteres extra). Si no, lanzamos una excepción para analizar el caso.
+            # Si cumple, devolvemos el nombre de la carpeta como nombre de álbum.
+            folder_name = self.folders[idx]
+            min_length = 10 + len("YYYY-MM-DD")  # fecha + 10
+            if len(folder_name) < min_length:
+                raise NotImplementedError(
+                    f"Detected album name is suspiciously short (date folder at end): '{folder_name}'"
+                )
+            return folder_name
         if idx == len(self.folders) - 2:
             # Date folder is penultimate: concatenate with last
             album_name = f"{self.folders[idx]} {self.folders[idx+1]}"
