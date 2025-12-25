@@ -73,5 +73,13 @@ AUTOTAG_UNKNOWN_CATEGORY = "autotag_output_unknown"
 # Filtering by this tag in the Immich interface allows you to quickly focus on and resolve these conflicts: either by moving the photo to the correct album, removing it from extra albums, or reclassifying it (e.g., as meme or ignore).
 AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"
 
+# Feature flag: Remove leading/trailing spaces from album names (default: True)
+#
+# When enabled, the autotag system will automatically clean up album names by removing any leading or trailing spaces
+# when creating or updating albums. This helps avoid accidental duplicates and keeps album names tidy.
+#
+# Recommended: Keep enabled unless you have a specific reason to preserve spaces in album names.
+ENABLE_ALBUM_NAME_STRIP = True
+
 # Feature flag: Enable album detection from folder names (default: False)
 ENABLE_ALBUM_DETECTION_FROM_FOLDERS = False
