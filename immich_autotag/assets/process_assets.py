@@ -52,7 +52,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                 count += 1
                 if count % N_LOG == 0:
                     elapsed = time.time() - start_time
-                    print_perf(count, elapsed)
+                    print_perf(count, elapsed, total_assets)
             for future in concurrent.futures.as_completed(futures):
                 try:
                     future.result()
@@ -65,7 +65,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             count += 1
             if count % N_LOG == 0:
                 elapsed = time.time() - start_time
-                print_perf(count, elapsed)
+                print_perf(count, elapsed, total_assets)
     total_time = time.time() - start_time
     print(f"Total assets: {count}")
     print(
