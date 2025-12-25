@@ -8,7 +8,6 @@ from typeguard import typechecked
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
-    MAX_ALBUM_DEPTH: int = 3  # Máximo de carpetas a concatenar tras la fecha
     original_path: Path = attrs.field(validator=attrs.validators.instance_of(Path))
     folders: list = attrs.field(
         init=False, validator=attrs.validators.instance_of(list)
@@ -66,6 +65,7 @@ class AlbumFolderAnalyzer:
 
         SEPARATOR = "/"  # Cambia aquí para modificar el separador en todos los casos
         DATE_FORMAT_STR = "YYYY-MM-DD"
+        MAX_ALBUM_DEPTH = 3  # Máximo de carpetas a concatenar tras la fecha
 
         # 0 date folders: look for folder starting with date (but not only date)
         if self.num_date_folders() == 0:
@@ -93,7 +93,7 @@ class AlbumFolderAnalyzer:
         if idx == len(self.folders) - 1 and len(folder_name) == len(DATE_FORMAT_STR):
             return None
         # Concatenar desde la carpeta de fecha hasta un máximo de MAX_ALBUM_DEPTH carpetas siguientes
-        end_idx = min(idx + 1 + self.MAX_ALBUM_DEPTH, len(self.folders))
+        end_idx = min(idx + 1 + MAX_ALBUM_DEPTH, len(self.folders))
         album_parts = self.folders[idx:end_idx]
         album_name = SEPARATOR.join(album_parts)
         if len(album_name) < 10:
