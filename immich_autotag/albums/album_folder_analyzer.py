@@ -64,6 +64,7 @@ class AlbumFolderAnalyzer:
         import re
 
         SEPARATOR = "/"  # Cambia aquí para modificar el separador en todos los casos
+        DATE_FORMAT_STR = "YYYY-MM-DD"
 
         # 0 date folders: look for folder starting with date (but not only date)
         if self.num_date_folders() == 0:
@@ -95,10 +96,10 @@ class AlbumFolderAnalyzer:
             #     Si cumple, devolvemos el nombre de la carpeta como nombre de álbum.
             #     Si no, lanzamos una excepción para analizar el caso.
             folder_name = self.folders[idx]
-            if len(folder_name) == len("YYYY-MM-DD"):
+            if len(folder_name) == len(DATE_FORMAT_STR):
                 # Solo la fecha, caso común de carpetas de WhatsApp, ignorar
                 return None
-            min_length = 10 + len("YYYY-MM-DD")  # fecha + 10
+            min_length = 10 + len(DATE_FORMAT_STR)  # fecha + 10
             if len(folder_name) < min_length:
                 raise NotImplementedError(
                     f"Detected album name is suspiciously short (date folder at end): '{folder_name}'"
