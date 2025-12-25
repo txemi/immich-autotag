@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import attrs
@@ -20,3 +21,41 @@ class AlbumCollectionWrapper:
             if album_wrapper.has_asset(asset):
                 album_names.append(album_wrapper.album.album_name)
         return album_names
+    @typechecked
+    def create_or_get_album_with_user(self, album_name: str, client, tag_mod_report=None) -> AlbumResponseWrapper:
+        """
+        Busca un álbum por nombre. Si no existe, lo crea y asigna el usuario actual como EDITOR.
+        Actualiza la colección interna si se crea.
+        """
+        # Buscar álbum existente
+        for album_wrapper in self.albums:
+            if album_wrapper.album.album_name == album_name:
+                return album_wrapper
+
+        # Si no existe, crearlo y asignar usuario
+        from immich_client.api.albums import create_album, add_users_to_album
+        from immich_client.api.users import get_my_user
+        from immich_client.models.add_users_dto import AddUsersDto
+        from immich_client.models.album_user_add_dto import AlbumUserAddDto
+        from immich_client.models.album_user_role import AlbumUserRole
+        from immich_client.models.album_response_dto import AlbumResponseDto
+        from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+
+        album = create_album.sync(client=client, album_name=album_name)
+        user = get_my_user.sync(client=client)
+        user_id = user.id
+        add_users_to_album.sync(
+            id=album.id,
+            client=client,
+            body=AddUsersDto(album_users=[AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)])
+        )
+        wrapper = AlbumResponseWrapper(album=album)
+        # Actualizar colección interna (como es frozen, hay que reconstruir)
+        self.albums.append(wrapper)
+        if tag_mod_report:
+            tag_mod_report.add_album_modification(
+                action="create",
+                album_id=album.id,
+                album_name=album_name,
+            )
+        return wrapper

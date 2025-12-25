@@ -37,37 +37,15 @@ def _process_album_detection(
     print(
         f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)"
     )
-    from immich_client.api.albums import (
-        get_all_albums,
-        create_album,
-        add_assets_to_album,
-        add_users_to_album,
-    )
-    from immich_client.api.users import get_my_user
+    from immich_client.api.albums import add_assets_to_album
     from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
-    from immich_client.models.add_users_dto import AddUsersDto
-    from immich_client.models.album_user_add_dto import AlbumUserAddDto
-    from immich_client.models.album_user_role import AlbumUserRole
 
     client = asset_wrapper.context.client
-    albums = get_all_albums.sync(client=client)
-    album = next((a for a in albums if a.album_name == detected_album), None)
-    if album is None:
-        print(f"[ALBUM DETECTION] Creating album '{detected_album}'...")
-        album = create_album.sync(client=client, album_name=detected_album)
-        # Assign current user as EDITOR to the album
-        user = get_my_user.sync(client=client)
-        user_id = user.id
-        add_users_to_album.sync(
-            id=album.id,
-            client=client,
-            body=AddUsersDto(album_users=[AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)])
-        )
-        tag_mod_report.add_album_modification(
-            action="create",
-            album_id=album.id,
-            album_name=detected_album,
-        )
+    albums_collection = asset_wrapper.context.albums_collection
+    album_wrapper = albums_collection.create_or_get_album_with_user(
+        detected_album, client, tag_mod_report=tag_mod_report
+    )
+    album = album_wrapper.album
     if asset_wrapper.id not in [a.id for a in getattr(album, "assets", []) or []]:
         print(
             f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'..."
