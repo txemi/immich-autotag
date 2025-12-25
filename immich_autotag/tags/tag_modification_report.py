@@ -61,7 +61,8 @@ class TagModificationReport:
             raise RuntimeError("TagModificationReport instance already exists. Use the existing instance instead of creating a new one.")
         cls._instance_created = True
 
-    @attrs.validators.typechecked
+    from typeguard import typechecked
+    @typechecked
     def add_modification(
         self,
         action: str,
@@ -118,7 +119,7 @@ class TagModificationReport:
             self.flush()
 
     # Métodos específicos para cada tipo de acción
-    @attrs.validators.typechecked
+    @typechecked
     def add_tag_modification(
         self,
         asset_id: str,
@@ -136,7 +137,7 @@ class TagModificationReport:
             user=user,
         )
 
-    @attrs.validators.typechecked
+    @typechecked
     def add_album_modification(
         self,
         action: str,
@@ -156,7 +157,7 @@ class TagModificationReport:
             user=user,
         )
 
-    @attrs.validators.typechecked
+    @typechecked
     def add_assignment_modification(
         self,
         action: str,
