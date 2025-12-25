@@ -234,10 +234,7 @@ class AssetResponseWrapper:
     def original_path(self) -> "Path":
         from pathlib import Path
         path = Path(self.asset.original_path)
-        if not path.exists():
-            raise FileNotFoundError(f"[ERROR] original_path does not exist: {path}")
-        if not path.is_file():
-            raise ValueError(f"[ERROR] original_path is not a file: {path}")
+
         return path
 
     @typechecked
