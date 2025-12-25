@@ -11,61 +11,15 @@ from immich_autotag.config.user import TAG_CONVERSIONS
 
 
 @typechecked
+
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "TagModificationReport",
     lock: Lock,
 ) -> None:
-    # 1. Try album detection from folders (feature)
     detected_album = asset_wrapper.try_detect_album_from_folders()
     if detected_album:
-        print(
-            f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)"
-        )
-        # Check if the album already exists
-        from immich_client.api.albums import (
-            get_all_albums,
-            create_album,
-            add_assets_to_album,
-        )
-        from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
-
-        client = asset_wrapper.context.client
-        # Find album by exact name (case-sensitive)
-        albums = get_all_albums.sync(client=client)
-        album = next((a for a in albums if a.album_name == detected_album), None)
-        if album is None:
-            # Create album if it does not exist
-            print(f"[ALBUM DETECTION] Creating album '{detected_album}'...")
-            album = create_album.sync(client=client, album_name=detected_album)
-            # Log album creation
-            tag_mod_report.add_album_modification(
-                action="create",
-                album_id=album.id,
-                album_name=detected_album,
-            )
-        # Check if the asset is already in the album
-        if asset_wrapper.id not in [a.id for a in getattr(album, "assets", []) or []]:
-            print(
-                f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'..."
-            )
-            add_assets_to_album.sync(
-                id=album.id,
-                client=client,
-                body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id]),
-            )
-            # Log assignment
-            tag_mod_report.add_assignment_modification(
-                action="assign",
-                asset_id=asset_wrapper.id,
-                asset_name=asset_wrapper.original_file_name,
-                album_id=album.id,
-                album_name=detected_album,
-            )
-        else:
-            print(
-                f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'"
-            )
+        _process_album_detection(asset_wrapper, tag_mod_report, detected_album)
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
@@ -73,3 +27,51 @@ def process_single_asset(
     )
     with lock:
         tag_mod_report.flush()
+
+@typechecked
+def _process_album_detection(
+    asset_wrapper: "AssetResponseWrapper",
+    tag_mod_report: "TagModificationReport",
+    detected_album: str,
+) -> None:
+    print(
+        f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)"
+    )
+    from immich_client.api.albums import (
+        get_all_albums,
+        create_album,
+        add_assets_to_album,
+    )
+    from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
+
+    client = asset_wrapper.context.client
+    albums = get_all_albums.sync(client=client)
+    album = next((a for a in albums if a.album_name == detected_album), None)
+    if album is None:
+        print(f"[ALBUM DETECTION] Creating album '{detected_album}'...")
+        album = create_album.sync(client=client, album_name=detected_album)
+        tag_mod_report.add_album_modification(
+            action="create",
+            album_id=album.id,
+            album_name=detected_album,
+        )
+    if asset_wrapper.id not in [a.id for a in getattr(album, "assets", []) or []]:
+        print(
+            f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'..."
+        )
+        add_assets_to_album.sync(
+            id=album.id,
+            client=client,
+            body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id]),
+        )
+        tag_mod_report.add_assignment_modification(
+            action="assign",
+            asset_id=asset_wrapper.id,
+            asset_name=asset_wrapper.original_file_name,
+            album_id=album.id,
+            album_name=detected_album,
+        )
+    else:
+        print(
+            f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'"
+        )
