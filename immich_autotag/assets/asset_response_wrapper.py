@@ -6,7 +6,8 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY
+from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
+from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY, ENABLE_ALBUM_DETECTION_FROM_FOLDERS
 from immich_autotag.classification.match_classification_result import MatchClassificationResult
 
 if TYPE_CHECKING:
