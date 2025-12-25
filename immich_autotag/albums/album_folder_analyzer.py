@@ -86,11 +86,16 @@ class AlbumFolderAnalyzer:
         idx = self.date_folder_indices()[0]
         if idx == len(self.folders) - 1:
             # --- Lógica especial para carpeta con fecha en última posición ---
-            # Si la única carpeta con formato de fecha está al final del path, es una situación óptima para crear el álbum.
-            # Sin embargo, para evitar errores o nombres poco descriptivos, comprobamos que la longitud del nombre de la carpeta
-            # sea suficientemente grande (fecha + al menos 10 caracteres extra). Si no, lanzamos una excepción para analizar el caso.
-            # Si cumple, devolvemos el nombre de la carpeta como nombre de álbum.
+            # Si la única carpeta con formato de fecha está al final del path:
+            #   - Si la carpeta es exactamente la fecha (sin más caracteres), lo ignoramos y devolvemos None.
+            #     Esto ocurre frecuentemente en carpetas generadas por apps como WhatsApp y no es útil para crear álbumes.
+            #   - Si la carpeta tiene la fecha y más caracteres, comprobamos que la longitud sea suficiente (fecha + 10).
+            #     Si cumple, devolvemos el nombre de la carpeta como nombre de álbum.
+            #     Si no, lanzamos una excepción para analizar el caso.
             folder_name = self.folders[idx]
+            if len(folder_name) == len("YYYY-MM-DD"):
+                # Solo la fecha, caso común de carpetas de WhatsApp, ignorar
+                return None
             min_length = 10 + len("YYYY-MM-DD")  # fecha + 10
             if len(folder_name) < min_length:
                 raise NotImplementedError(
