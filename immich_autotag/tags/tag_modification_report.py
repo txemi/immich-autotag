@@ -5,7 +5,7 @@ import datetime
 import attrs
 
 from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL
-from typing import Optional
+from typing import Optional, Any
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ModificationEntry:
@@ -21,7 +21,7 @@ class ModificationEntry:
     new_name: Optional[str] = None
     user: Optional[str] = None
     link: Optional[str] = None
-    extra: Optional[dict] = None
+    extra: Optional[dict[str, Any]] = None
 
 # TODO: la siguiente clase es mas generiga que tag, requiere refactorizar nombre y ubicacion
 
@@ -75,7 +75,7 @@ class TagModificationReport:
         old_name: Optional[str] = None,
         new_name: Optional[str] = None,
         user: Optional[str] = None,
-        extra: Optional[dict] = None,
+        extra: Optional[dict[str, Any]] = None,
     ) -> None:
         """
         Registers a modification for any entity (tag, album, assignment, etc.).
