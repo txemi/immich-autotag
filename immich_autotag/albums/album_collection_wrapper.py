@@ -25,15 +25,15 @@ class AlbumCollectionWrapper:
     @typechecked
     def create_or_get_album_with_user(self, album_name: str, client, tag_mod_report=None) -> AlbumResponseWrapper:
         """
-        Busca un álbum por nombre. Si no existe, lo crea y asigna el usuario actual como EDITOR.
-        Actualiza la colección interna si se crea.
+        Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.
+        Updates the internal collection if created.
         """
-        # Buscar álbum existente
+        # Search for existing album
         for album_wrapper in self.albums:
             if album_wrapper.album.album_name == album_name:
                 return album_wrapper
 
-        # Si no existe, crearlo y asignar usuario
+        # If it does not exist, create and assign user
         from immich_client.api.albums import create_album, add_users_to_album
         from immich_client.api.users import get_my_user
         from immich_client.models.add_users_dto import AddUsersDto
@@ -51,7 +51,7 @@ class AlbumCollectionWrapper:
             body=AddUsersDto(album_users=[AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)])
         )
         wrapper = AlbumResponseWrapper(album=album)
-        # Actualizar colección interna (como es frozen, hay que reconstruir)
+        # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
         if tag_mod_report:
             tag_mod_report.add_album_modification(
