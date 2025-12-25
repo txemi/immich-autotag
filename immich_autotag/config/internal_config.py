@@ -1,5 +1,5 @@
 # internal_config.py
-# Centraliza las variables internas y de configuración global del proyecto.
+# Centralizes internal variables and global project configuration.
 
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
