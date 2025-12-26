@@ -1,3 +1,4 @@
+from immich_autotag.assets.get_all_assets import get_all_assets
 import attrs
 from typing import Dict, Iterator, Optional, TYPE_CHECKING
 from immich_client import Client

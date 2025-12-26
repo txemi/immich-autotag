@@ -1,40 +1,32 @@
 
 import attrs
 from typeguard import typechecked
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 from uuid import UUID
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
-class DuplicateAssetList:
-    uuids: List[UUID]
-
-    def __contains__(self, item: Union[str, UUID]) -> bool:
-        if isinstance(item, str):
-            try:
-                item = UUID(item)
-            except Exception:
-                return False
-        return item in self.uuids
-
-    def as_str_list(self) -> List[str]:
-        return [str(u) for u in self.uuids]
+class DuplicateAssetGroup:
+    assets: List[UUID]
 
     def __iter__(self):
-        return iter(self.uuids)
+        return iter(self.assets)
 
     def __len__(self):
-        return len(self.uuids)
+        return len(self.assets)
+
+    def as_str_list(self) -> List[str]:
+        return [str(u) for u in self.assets]
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class DuplicateCollectionWrapper:
     """
     Wrapper for the Immich duplicates database structure.
-    Holds a mapping from asset UUID to DuplicateAssetList.
+    Holds a mapping from duplicate_id (UUID) to DuplicateAssetGroup.
     """
-    duplicates_by_asset: Dict[UUID, DuplicateAssetList]
+    groups_by_duplicate_id: Dict[UUID, DuplicateAssetGroup]
 
     @classmethod
     @typechecked
@@ -42,24 +34,18 @@ class DuplicateCollectionWrapper:
         cls, data: List[DuplicateResponseDto]
     ) -> "DuplicateCollectionWrapper":
         """
-        Construye el mapping de duplicados a partir de la respuesta de la API, usando UUID y DuplicateAssetList.
+        Construye el mapping de duplicados a partir de la respuesta de la API, usando duplicate_id como clave y la lista de assets como DuplicateAssetGroup.
         """
-        mapping: Dict[UUID, DuplicateAssetList] = {}
+        mapping: Dict[UUID, DuplicateAssetGroup] = {}
         for group in data:
             if not isinstance(group, DuplicateResponseDto):
                 raise TypeError(f"Expected DuplicateResponseDto, got {type(group)}")
+            duplicate_id = UUID(group.duplicate_id)
             asset_ids = [UUID(asset.id) for asset in group.assets]
-            for asset_id in asset_ids:
-                others = [other_id for other_id in asset_ids if other_id != asset_id]
-                mapping[asset_id] = DuplicateAssetList(others)
-        return cls(duplicates_by_asset=mapping)
+            mapping[duplicate_id] = DuplicateAssetGroup(asset_ids)
+        return cls(groups_by_duplicate_id=mapping)
 
     @typechecked
-    def get_duplicates(self, asset_id: Union[str, UUID]) -> DuplicateAssetList:
-        """Return the DuplicateAssetList for a given asset_id (str or UUID). Empty if not found."""
-        if isinstance(asset_id, str):
-            try:
-                asset_id = UUID(asset_id)
-            except Exception:
-                return DuplicateAssetList([])
-        return self.duplicates_by_asset.get(asset_id, DuplicateAssetList([]))
+    def get_group(self, duplicate_id: UUID) -> DuplicateAssetGroup:
+        """Return the DuplicateAssetGroup for a given duplicate_id. Empty if not found."""
+        return self.groups_by_duplicate_id.get(duplicate_id, DuplicateAssetGroup([]))
