@@ -54,7 +54,7 @@ def _process_album_detection(
         add_assets_to_album.sync(
             id=album.id,
             client=client,
-            body=AlbumsAddAssetsDto(asset_ids=[asset_wrapper.id]),
+            body=AlbumsAddAssetsDto(album_ids=[album.id], asset_ids=[asset_wrapper.id]),
         )
         tag_mod_report.add_assignment_modification(
             action="assign",
