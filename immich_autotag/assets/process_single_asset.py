@@ -52,18 +52,41 @@ def _process_album_detection(
         print(
             f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'..."
         )
-        # todo: viendo la llamada de abajo el codigo parece que recibe un BulkIdsDto y no un AlbumsAddAssetsDto, puedes revisarlo?
-        add_assets_to_album.sync(
-            id=album.id,
-            client=client,
-            body=BulkIdsDto(ids=[asset_wrapper.id]),
-        )
-        if False:
-            add_assets_to_album.sync(
+        try:
+            result = add_assets_to_album.sync(
                 id=album.id,
                 client=client,
-                body=AlbumsAddAssetsDto(album_ids=[album.id], asset_ids=[asset_wrapper.id]),
+                body=BulkIdsDto(ids=[asset_wrapper.id]),
             )
+        except Exception as e:
+            print(f"[ERROR] Exception when adding asset to album: {e}")
+            raise
+        # Validación estricta del resultado
+        if not isinstance(result, list):
+            print(f"[ERROR] Unexpected return type from add_assets_to_album: {type(result)}")
+            raise RuntimeError("add_assets_to_album did not return a list")
+        found = False
+        for item in result:
+            # Comprobación estricta de atributos sin hasattr ni getattr
+            try:
+                _id = item.id
+                _success = item.success
+            except AttributeError:
+                raise RuntimeError(f"Item in add_assets_to_album response missing required attributes: {item}")
+            if _id == str(asset_wrapper.id):
+                found = True
+                if not _success:
+                    # El atributo error puede no estar siempre, pero si está lo mostramos
+                    error_msg = None
+                    try:
+                        error_msg = item.error
+                    except AttributeError:
+                        pass
+                    print(f"[ERROR] Asset {asset_wrapper.id} was not successfully added to album {album.id}: {error_msg}")
+                    raise RuntimeError(f"Asset {asset_wrapper.id} was not successfully added to album {album.id}")
+        if not found:
+            print(f"[ERROR] Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}")
+            raise RuntimeError(f"Asset {asset_wrapper.id} not found in add_assets_to_album response")
         tag_mod_report.add_assignment_modification(
             action="assign",
             asset_id=asset_wrapper.id,
