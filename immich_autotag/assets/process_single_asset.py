@@ -1,6 +1,6 @@
-from typing import Optional
 
 from __future__ import annotations
+from typing import Optional
 
 from threading import Lock
 
