@@ -40,9 +40,10 @@ class AlbumCollectionWrapper:
         from immich_client.models.album_user_add_dto import AlbumUserAddDto
         from immich_client.models.album_user_role import AlbumUserRole
         from immich_client.models.album_response_dto import AlbumResponseDto
+        from immich_client.models.album_create_dto import AlbumCreateDto
         from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
-        album = create_album.sync(client=client, title=album_name)
+        album = create_album.sync(client=client, body=AlbumCreateDto(album_name=album_name))
         user = get_my_user.sync(client=client)
         user_id = user.id
         add_users_to_album.sync(
