@@ -35,7 +35,7 @@ def get_tags_for_asset(asset_id: str, client: Client) -> List[str]:
 
 @typechecked
 def main() -> None:
-    client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY})
+    client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY}, raise_on_unexpected_status=True)
     print(f"Searching albums and tags for photo {PHOTO_ID}\n")
     albums = get_albums_for_asset(PHOTO_ID, client)
     tags = get_tags_for_asset(PHOTO_ID, client)

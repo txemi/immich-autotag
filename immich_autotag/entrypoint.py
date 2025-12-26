@@ -8,7 +8,7 @@ from immich_autotag.albums.list_albums import list_albums
 from immich_autotag.tags.list_tags import list_tags
 
 def run_main():
-    client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY})
+    client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY}, raise_on_unexpected_status=True)
     tag_collection = list_tags(client)
     albums_collection = list_albums(client)
     context = ImmichContext(
