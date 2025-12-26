@@ -31,7 +31,7 @@ class AlbumCollectionWrapper:
         album_name: str,
         client: Client,
         tag_mod_report: TagModificationReport | None = None
-    ) -> "AlbumResponseWrapper":
+    ) -> 'AlbumResponseWrapper':
         """
         Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.
         Updates the internal collection if created.
@@ -49,7 +49,7 @@ class AlbumCollectionWrapper:
         from immich_client.models.album_user_role import AlbumUserRole
         from immich_client.models.album_response_dto import AlbumResponseDto
         from immich_client.models.create_album_dto import CreateAlbumDto
-        from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+        # (import removed, already imported at module level)
 
         album = create_album.sync(client=client, body=CreateAlbumDto(album_name=album_name))
         user = get_my_user.sync(client=client)
