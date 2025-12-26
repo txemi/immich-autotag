@@ -6,15 +6,20 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.albums.list_albums import list_albums
 from immich_autotag.tags.list_tags import list_tags
+from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
 
 def run_main():
     client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY}, raise_on_unexpected_status=True)
     tag_collection = list_tags(client)
     albums_collection = list_albums(client)
+    # Cargar duplicados
+    duplicates_loader = DuplicatesLoader(client=client)
+    duplicates_collection = duplicates_loader.load()
     context = ImmichContext(
         client=client,
         albums_collection=albums_collection,
         tag_collection=tag_collection,
+        duplicates_collection=duplicates_collection,
     )
     # You can change the max_assets value here or pass it as an external argument
     max_assets = None

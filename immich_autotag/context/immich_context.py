@@ -8,6 +8,8 @@ from immich_client import Client
 if TYPE_CHECKING:
     from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+    from immich_autotag.duplicates.duplicate_collection_wrapper import DuplicateCollectionWrapper
+
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -17,5 +19,8 @@ class ImmichContext:
         validator=attrs.validators.instance_of(object)
     )
     tag_collection: "TagCollectionWrapper" = attrs.field(
+        validator=attrs.validators.instance_of(object)
+    )
+    duplicates_collection: "DuplicateCollectionWrapper" = attrs.field(
         validator=attrs.validators.instance_of(object)
     )
