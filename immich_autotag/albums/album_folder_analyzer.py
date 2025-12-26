@@ -14,26 +14,26 @@ class AlbumFolderAnalyzer:
     )
     date_pattern: str = attrs.field(
         init=False,
-        default=r"^\d{4}-\d{2}-\d{2}$",
+        default=r"^\d{4}-\d{2}-\d{2}",
         validator=attrs.validators.instance_of(str),
     )
 
     def __attrs_post_init__(self):
         import re
 
-        # Convert to Path if not already
+        # Convert to Path if not already and resolve to canonical path (removes '.', '..', etc)
         path = (
             self.original_path
             if isinstance(self.original_path, Path)
             else Path(self.original_path)
-        )
-        # Get all parts except root
+        ).resolve()
         folders = [
             part
             for part in path.parts
-            if part not in (path.root, path.anchor, ".", "..", "")
+            if part not in (path.root, path.anchor, "")
         ]
         # If the last component looks like a file (has an extension), remove it
+        # todo: no entiendo la logica de abajo, si la ruta asumimos que es un fichero no es mejor coger todo menos el ultimo?
         if folders and re.search(r"\.[a-zA-Z0-9]{2,5}$", folders[-1]):
             folders = folders[:-1]
         self.folders = folders
