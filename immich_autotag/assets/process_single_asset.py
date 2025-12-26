@@ -47,9 +47,15 @@ def _process_album_detection(
         detected_album, client, tag_mod_report=tag_mod_report
     )
     album = album_wrapper.album
-    if asset_wrapper.id not in [a.id for a in getattr(album, "assets", []) or []]:
+    if asset_wrapper.id not in [a.id for a in album.assets or []]:
         print(
             f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'..."
+        )
+        # todo: viendo la llamada de abajo el codigo parece que recibe un BulkIdsDto y no un AlbumsAddAssetsDto, puedes revisarlo?
+        add_assets_to_album.sync(
+            id=album.id,
+            client=client,
+            body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
         add_assets_to_album.sync(
             id=album.id,
