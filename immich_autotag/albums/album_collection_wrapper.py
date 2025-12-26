@@ -5,7 +5,10 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+
 from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.client import Client
+from immich_autotag.tags.tag_modification_report import TagModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -23,7 +26,12 @@ class AlbumCollectionWrapper:
                 album_names.append(album_wrapper.album.album_name)
         return album_names
     @typechecked
-    def create_or_get_album_with_user(self, album_name: str, client, tag_mod_report=None) -> "AlbumResponseWrapper":
+    def create_or_get_album_with_user(
+        self,
+        album_name: str,
+        client: Client,
+        tag_mod_report: TagModificationReport | None = None
+    ) -> "AlbumResponseWrapper":
         """
         Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.
         Updates the internal collection if created.
