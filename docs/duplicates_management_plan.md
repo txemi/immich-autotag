@@ -7,7 +7,6 @@ After investigating the Immich API and its capabilities, we discovered that Immi
 ## Key Findings
 
 - Immich exposes a dedicated endpoint for retrieving all duplicate assets:
-  - `http://immich.ad3.lab:2283/api/duplicates`
   - Official documentation: https://api.immich.app/endpoints/duplicates/getAssetDuplicates
 - The response from this endpoint is a large structure containing all known duplicates, and retrieving it may take some time.
 - Each asset's metadata also includes a field listing its duplicates, allowing direct access to related assets.
