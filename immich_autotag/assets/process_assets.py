@@ -15,6 +15,8 @@ from immich_autotag.assets.process_single_asset import process_single_asset
 
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
+    from immich_autotag.utils.helpers import AdaptiveTimeEstimator
+    estimator = AdaptiveTimeEstimator(alpha=0.2)
     import time
     from immich_client.api.server import get_server_statistics
 
@@ -45,14 +47,17 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
             for asset_wrapper in get_all_assets(context, max_assets=max_assets):
+                t0 = time.time()
                 future = executor.submit(
                     process_single_asset, asset_wrapper, tag_mod_report, lock
                 )
                 futures.append(future)
+                t1 = time.time()
+                estimator.update(t1 - t0)
                 count += 1
                 if count % N_LOG == 0:
                     elapsed = time.time() - start_time
-                    print_perf(count, elapsed, total_assets)
+                    print_perf(count, elapsed, total_assets, estimator)
             for future in concurrent.futures.as_completed(futures):
                 try:
                     future.result()
@@ -61,11 +66,14 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     else:
         # Direct loop (sequential), no thread pool
         for asset_wrapper in get_all_assets(context, max_assets=max_assets):
+            t0 = time.time()
             process_single_asset(asset_wrapper, tag_mod_report, lock)
+            t1 = time.time()
+            estimator.update(t1 - t0)
             count += 1
             if count % N_LOG == 0:
                 elapsed = time.time() - start_time
-                print_perf(count, elapsed, total_assets)
+                print_perf(count, elapsed, total_assets, estimator)
     total_time = time.time() - start_time
     print(f"Total assets: {count}")
     print(

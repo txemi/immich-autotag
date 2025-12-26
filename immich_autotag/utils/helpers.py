@@ -1,7 +1,30 @@
+
+
 from typeguard import typechecked
+import pandas as pd
+from typing import Optional
+import attrs
+
+@attrs.define(auto_attribs=True, slots=True)
+class AdaptiveTimeEstimator:
+    """
+    Estima el tiempo restante usando una media móvil exponencial (EWMA) sobre los tiempos por asset.
+    """
+    alpha: float = 0.2
+    times: list[float] = attrs.field(factory=list)
+    ewma: Optional[float] = None
+    @typechecked
+    def update(self, time_per_asset: float) -> float:
+        self.times.append(time_per_asset)
+        s = pd.Series(self.times)
+        self.ewma = s.ewm(alpha=self.alpha, adjust=False).mean().iloc[-1]
+        return self.ewma
+    @typechecked
+    def get_estimated_time_per_asset(self) -> float:
+        return self.ewma if self.ewma is not None else 0.0
 
 @typechecked
-def print_perf(count: int, elapsed: float, total_assets: int | None = None):
+def print_perf(count: int, elapsed: float, total_assets: int | None = None, estimator: 'AdaptiveTimeEstimator' = None):
     """
     Print performance statistics for asset processing.
     Args:
@@ -12,10 +35,14 @@ def print_perf(count: int, elapsed: float, total_assets: int | None = None):
     avg = elapsed / count if count else 0
     if total_assets and count > 0:
         remaining = total_assets - count
-        est_total = avg * total_assets
-        est_remaining = est_total - elapsed
+        if estimator is not None and estimator.get_estimated_time_per_asset() > 0:
+            ewma = estimator.get_estimated_time_per_asset()
+            est_total = ewma * total_assets
+            est_remaining = ewma * remaining
+        else:
+            est_total = avg * total_assets
+            est_remaining = est_total - elapsed
         percent = (count / total_assets) * 100
-        # Formato de tiempo: si es más de 60 minutos, mostrar en horas
         def fmt_time(minutes: float) -> str:
             if minutes >= 60:
                 return f"{minutes/60:.1f} h"
