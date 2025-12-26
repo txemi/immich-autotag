@@ -19,6 +19,7 @@ def process_single_asset(
 ) -> None:
     detected_album = asset_wrapper.try_detect_album_from_folders()
     if detected_album:
+        asset_wrapper.try_detect_album_from_folders()
         _process_album_detection(asset_wrapper, tag_mod_report, detected_album)
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(

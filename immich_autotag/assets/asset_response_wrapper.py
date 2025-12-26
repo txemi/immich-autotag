@@ -8,6 +8,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_client.api.assets import get_asset_info
+from immich_autotag.config.internal_config import IMMICH_PHOTO_PATH_TEMPLATE, IMMICH_WEB_BASE_URL
 from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY, ENABLE_ALBUM_DETECTION_FROM_FOLDERS
 from immich_autotag.classification.match_classification_result import MatchClassificationResult
 
