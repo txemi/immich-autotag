@@ -8,7 +8,7 @@ from typeguard import typechecked
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.tags.tag_modification_report import TagModificationReport
-from immich_autotag.assets.get_all_assets import get_all_assets
+
 from immich_autotag.utils.helpers import print_perf
 from immich_autotag.assets.process_single_asset import process_single_asset
 
@@ -46,7 +46,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         # Use thread pool regardless of MAX_WORKERS value
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
-            for asset_wrapper in get_all_assets(context, max_assets=max_assets):
+            for asset_wrapper in context.asset_manager.iter_assets(context, max_assets=max_assets):
                 t0 = time.time()
                 future = executor.submit(
                     process_single_asset, asset_wrapper, tag_mod_report, lock
@@ -65,7 +65,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                     print(f"[ERROR] Asset processing failed: {e}")
     else:
         # Direct loop (sequential), no thread pool
-        for asset_wrapper in get_all_assets(context, max_assets=max_assets):
+        for asset_wrapper in context.asset_manager.iter_assets(context, max_assets=max_assets):
             t0 = time.time()
             process_single_asset(asset_wrapper, tag_mod_report, lock)
             t1 = time.time()

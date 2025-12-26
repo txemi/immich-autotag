@@ -18,6 +18,10 @@ def process_single_asset(
     tag_mod_report: "TagModificationReport",
     lock: Lock,
 ) -> None:
+    aaa=asset_wrapper.asset.duplicate_id
+    if aaa is not None:
+        pass
+    # todo: comprobar antes de hacer aritmética de carpetas si hay un duplicado con album porque el album debería ser el mismo, si hay un album en un duplicado podemos sugerir el mismo. El sugerido por carpeta tambien lo podemos calculary si coincide o no podemos hacer lógica de errores u otra coa.
     detected_album = asset_wrapper.try_detect_album_from_folders()
     if detected_album:
         asset_wrapper.try_detect_album_from_folders()
