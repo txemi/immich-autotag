@@ -13,9 +13,20 @@ class DuplicateCollectionWrapper:
     duplicates_by_asset: Dict[str, List[str]]
 
     @classmethod
-    def from_api_response(cls, data: Any) -> "DuplicateCollectionWrapper":
-        # data is a list of DuplicateResponseDto
-        mapping = {entry.asset_id: entry.duplicates for entry in data}
+    @typechecked
+    def from_api_response(
+        cls, data: List[DuplicateResponseDto]
+    ) -> "DuplicateCollectionWrapper":
+        """
+        Construye el mapping de duplicados a partir de la respuesta de la API.
+        """
+        mapping: Dict[str, List[str]] = {}
+        for group in data:
+            if not isinstance(group, DuplicateResponseDto):
+                raise TypeError(f"Expected DuplicateResponseDto, got {type(group)}")
+            asset_ids = [asset.id for asset in group.assets]
+            for asset_id in asset_ids:
+                mapping[asset_id] = [other_id for other_id in asset_ids if other_id != asset_id]
         return cls(duplicates_by_asset=mapping)
 
     @typechecked
