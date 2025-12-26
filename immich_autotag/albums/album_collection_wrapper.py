@@ -23,7 +23,7 @@ class AlbumCollectionWrapper:
                 album_names.append(album_wrapper.album.album_name)
         return album_names
     @typechecked
-    def create_or_get_album_with_user(self, album_name: str, client, tag_mod_report=None) -> AlbumResponseWrapper:
+    def create_or_get_album_with_user(self, album_name: str, client, tag_mod_report=None) -> "AlbumResponseWrapper":
         """
         Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.
         Updates the internal collection if created.
