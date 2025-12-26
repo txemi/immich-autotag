@@ -78,7 +78,7 @@ class AlbumFolderAnalyzer:
                         raise NotImplementedError(
                             f"Detected album name is suspiciously short: '{f}'"
                         )
-                    return f
+                    raise NotImplementedError
             return None
         # >1 date folders: ambiguous, not supported
         if self.num_date_folders() > 1:
