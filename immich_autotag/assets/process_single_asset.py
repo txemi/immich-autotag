@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from threading import Lock
 
+from immich_client.models.bulk_ids_dto import BulkIdsDto
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -57,11 +58,12 @@ def _process_album_detection(
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
-        add_assets_to_album.sync(
-            id=album.id,
-            client=client,
-            body=AlbumsAddAssetsDto(album_ids=[album.id], asset_ids=[asset_wrapper.id]),
-        )
+        if False:
+            add_assets_to_album.sync(
+                id=album.id,
+                client=client,
+                body=AlbumsAddAssetsDto(album_ids=[album.id], asset_ids=[asset_wrapper.id]),
+            )
         tag_mod_report.add_assignment_modification(
             action="assign",
             asset_id=asset_wrapper.id,
