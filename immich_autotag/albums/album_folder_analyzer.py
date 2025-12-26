@@ -40,9 +40,9 @@ class AlbumFolderAnalyzer:
 
     def date_folder_indices(self):
         import re
-
+        date_prefix_pattern = r"^\d{4}-\d{2}-\d{2}"
         return [
-            i for i, f in enumerate(self.folders) if re.fullmatch(self.date_pattern, f)
+            i for i, f in enumerate(self.folders) if re.match(date_prefix_pattern, f)
         ]
 
     @typechecked
