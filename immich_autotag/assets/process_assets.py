@@ -16,7 +16,7 @@ from immich_autotag.assets.process_single_asset import process_single_asset
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
     from immich_autotag.utils.helpers import AdaptiveTimeEstimator
-    estimator = AdaptiveTimeEstimator(alpha=0.2)
+    estimator = AdaptiveTimeEstimator(alpha=0.05)
     import time
     from immich_client.api.server import get_server_statistics
 
