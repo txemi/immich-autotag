@@ -21,12 +21,7 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
-    @classmethod
-    def from_dto(cls: type["AssetResponseWrapper"], dto: AssetResponseDto, context: "ImmichContext") -> "AssetResponseWrapper":
-        """
-        Crea un AssetResponseWrapper a partir de un DTO y un contexto.
-        """
-        return cls(asset=dto, context=context)
+
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
@@ -415,3 +410,13 @@ class AssetResponseWrapper:
             return None
         analyzer = AlbumFolderAnalyzer(self.original_path)
         return analyzer.get_album_name()
+    @property
+    def id_as_uuid(self) -> "UUID":
+        from uuid import UUID
+        return UUID(self.asset.id)
+    @classmethod
+    def from_dto(cls: type["AssetResponseWrapper"], dto: AssetResponseDto, context: "ImmichContext") -> "AssetResponseWrapper":
+        """
+        Crea un AssetResponseWrapper a partir de un DTO y un contexto.
+        """
+        return cls(asset=dto, context=context)
