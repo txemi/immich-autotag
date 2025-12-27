@@ -28,6 +28,8 @@ class ModificationEntry:
 @attrs.define(auto_attribs=True, slots=True)
 
 class TagModificationReport:
+
+
     _instance = None  # Singleton instance
     _instance_created = False  # Class-level flag
 
@@ -105,12 +107,7 @@ class TagModificationReport:
             kind = ModificationKind[kind]
 
         # Build link (asset or album)
-        link = None
-        if kind in {ModificationKind.ASSIGN_TAG, ModificationKind.REMOVE_TAG, ModificationKind.CREATE_TAG, ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM} and asset_id:
-            from immich_autotag.utils.helpers import get_immich_photo_url
-            link = get_immich_photo_url(asset_id)
-        elif kind in {ModificationKind.ASSIGN_ALBUM, ModificationKind.REMOVE_ALBUM, ModificationKind.CREATE_ALBUM, ModificationKind.RENAME_ALBUM} and album_id:
-            link = f"/albums/{album_id}"
+        link = self._build_link(kind, asset_id, album_id)
 
         entry = ModificationEntry(
             datetime=datetime.datetime.now().isoformat(),
@@ -189,7 +186,7 @@ class TagModificationReport:
             album_name=album_name,
             user=user,
         )
-
+    @typechecked
     def flush(self) -> None:
         """Flushes the report to file (append)."""
         if not self.modifications or self._since_last_flush == 0:
@@ -224,7 +221,7 @@ class TagModificationReport:
                     parts.append(f"user={entry.user}")
                 f.write(" | ".join(parts) + "\n")
         self._since_last_flush = 0
-
+    @typechecked
     def print_summary(self) -> None:
         print("\n[SUMMARY] Modifications:")
         for entry in self.modifications:
@@ -253,3 +250,14 @@ class TagModificationReport:
                 parts.append(f"user={entry.user}")
             print(" | ".join(parts))
         print(f"Total modifications: {len(self.modifications)}")
+    @typechecked
+    def _build_link(self, kind: ModificationKind, asset_id: Optional[UUID], album_id: Optional[UUID]) -> Optional[str]:
+        """
+        Build a link for the modification entry based on kind and ids.
+        """
+        from immich_autotag.utils.helpers import get_immich_photo_url
+        if kind in {ModificationKind.ASSIGN_TAG, ModificationKind.REMOVE_TAG, ModificationKind.CREATE_TAG, ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM} and asset_id:
+            return get_immich_photo_url(asset_id)
+        elif kind in {ModificationKind.ASSIGN_ALBUM, ModificationKind.REMOVE_ALBUM, ModificationKind.CREATE_ALBUM, ModificationKind.RENAME_ALBUM} and album_id:
+            return f"/albums/{album_id}"
+        return None
