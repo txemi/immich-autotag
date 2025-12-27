@@ -136,25 +136,30 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
     If the asset has duplicates, checks the classification tags of each duplicate.
     If the classification tags (from config) do not match, raises an exception.
     """
-    from immich_autotag.config.user import TAG_CONVERSIONS
     context = asset_wrapper.context
     duplicate_id = asset_wrapper.asset.duplicate_id
     if not duplicate_id:
         return
-    from uuid import UUID
     group = context.duplicates_collection.get_group(asset_wrapper.duplicate_id_as_uuid)
-    # Get the set of classification tags for this asset
-    this_tags = set(asset_wrapper.get_classification_tags(TAG_CONVERSIONS))
     for dup_id in group:
         if str(dup_id) == asset_wrapper.asset.id:
             continue
-        dup_asset = context.asset_manager.get_asset(dup_id, context)
-        if dup_asset is not None:
-            dup_tags = set(dup_asset.get_classification_tags(TAG_CONVERSIONS))
-            if dup_tags != this_tags:
-                raise ValueError(
-                    f"Classification tags do not match for duplicate assets: {asset_wrapper.asset.id} ({this_tags}) vs {dup_id} ({dup_tags})"
-                )
+        dup_asset_wrapper = context.asset_manager.get_asset(dup_id, context)
+        if dup_asset_wrapper is None:
+            raise RuntimeError(f"Duplicate asset wrapper not found for asset {dup_id}. This should not happen.")
+        # Compare tags using a method on AssetResponseWrapper
+        if not asset_wrapper.has_same_classification_tags_as(dup_asset_wrapper):
+            raise NotImplementedError(
+                f"Classification tags differ for duplicates: {asset_wrapper.asset.id} vs {dup_id}"
+            )
+@typechecked
+def has_same_classification_tags_as(self: "AssetResponseWrapper", other: "AssetResponseWrapper") -> bool:
+    """
+    Compare classification tags between self and another AssetResponseWrapper.
+    Returns True if tags are equal, False otherwise.
+    """
+    from immich_autotag.config.user import TAG_CONVERSIONS
+    return set(self.get_classification_tags(TAG_CONVERSIONS)) == set(other.get_classification_tags(TAG_CONVERSIONS))
 
 @typechecked
 
