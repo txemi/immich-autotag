@@ -296,7 +296,8 @@ class AssetResponseWrapper:
         match_detail = self.get_classification_match_detail()
         n_matches = len(match_detail.tags_matched) + len(match_detail.albums_matched)
         if n_matches > 1:
-            photo_url = get_immich_photo_url(self.id)
+            import uuid
+            photo_url = get_immich_photo_url(uuid.UUID(self.id))
             msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by more than one criterion: tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
             if fail_fast:
                 raise Exception(msg)
