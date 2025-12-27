@@ -435,13 +435,12 @@ class AssetResponseWrapper:
         Returns the classification tags for this asset, applying tag conversions if needed.
         Only tags configured as relevant for classification in the user config are considered.
         """
-        # Collect all relevant tags from CLASSIFIED_TAGS and tag_conversions (origins and destinations)
+        # Collect all relevant tags from CLASSIFIED_TAGS and tag_conversions (only destinations)
         from immich_autotag.config.user import CLASSIFIED_TAGS
-        relevant_tags = set([t.lower() for t in CLASSIFIED_TAGS])
-        # Add all origins and destinations from tag_conversions
+        relevant_tags = set([tfor t in CLASSIFIED_TAGS])
+        # Only add destinations from tag_conversions
         if tag_conversions:
-            for origin, dest in tag_conversions.items():
-                relevant_tags.add(origin.lower())
-                relevant_tags.add(dest.lower())
+            for dest in tag_conversions.keys():
+                relevant_tags.remove(dest)
         # Filter asset tags to only those relevant for classification
         return [tag.name for tag in self.asset.tags if tag.name.lower() in relevant_tags] if self.asset.tags else []
