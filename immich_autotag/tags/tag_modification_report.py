@@ -195,60 +195,13 @@ class TagModificationReport:
         os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
         with open(self.report_path, "a", encoding="utf-8") as f:
             for entry in self.modifications[-self._since_last_flush :]:
-                # Flexible log line
-                parts = [f"{entry.datetime}"]
-                if entry.entity:
-                    parts.append(f"entity={entry.entity}")
-                if entry.action:
-                    parts.append(f"action={entry.action}")
-                if entry.asset_id:
-                    parts.append(f"asset_id={entry.asset_id}")
-                if entry.asset_name:
-                    parts.append(f"name={entry.asset_name}")
-                if entry.tag_name:
-                    parts.append(f"tag={entry.tag_name}")
-                if entry.album_id:
-                    parts.append(f"album_id={entry.album_id}")
-                if entry.album_name:
-                    parts.append(f"album_name={entry.album_name}")
-                if entry.old_name:
-                    parts.append(f"old_name={entry.old_name}")
-                if entry.new_name:
-                    parts.append(f"new_name={entry.new_name}")
-                if entry.link:
-                    parts.append(f"link={entry.link}")
-                if entry.user:
-                    parts.append(f"user={entry.user}")
-                f.write(" | ".join(parts) + "\n")
+                f.write(self._format_modification_entry(entry) + "\n")
         self._since_last_flush = 0
     @typechecked
     def print_summary(self) -> None:
         print("\n[SUMMARY] Modifications:")
         for entry in self.modifications:
-            parts = [f"{entry.datetime}"]
-            if entry.entity:
-                parts.append(f"entity={entry.entity}")
-            if entry.action:
-                parts.append(f"action={entry.action}")
-            if entry.asset_id:
-                parts.append(f"asset_id={entry.asset_id}")
-            if entry.asset_name:
-                parts.append(f"name={entry.asset_name}")
-            if entry.tag_name:
-                parts.append(f"tag={entry.tag_name}")
-            if entry.album_id:
-                parts.append(f"album_id={entry.album_id}")
-            if entry.album_name:
-                parts.append(f"album_name={entry.album_name}")
-            if entry.old_name:
-                parts.append(f"old_name={entry.old_name}")
-            if entry.new_name:
-                parts.append(f"new_name={entry.new_name}")
-            if entry.link:
-                parts.append(f"link={entry.link}")
-            if entry.user:
-                parts.append(f"user={entry.user}")
-            print(" | ".join(parts))
+            print(self._format_modification_entry(entry))
         print(f"Total modifications: {len(self.modifications)}")
     @typechecked
     def _build_link(self, kind: ModificationKind, asset_id: Optional[UUID], album_id: Optional[UUID]) -> Optional[str]:
@@ -261,3 +214,29 @@ class TagModificationReport:
         elif kind in {ModificationKind.ASSIGN_ALBUM, ModificationKind.REMOVE_ALBUM, ModificationKind.CREATE_ALBUM, ModificationKind.RENAME_ALBUM} and album_id:
             return f"/albums/{album_id}"
         return None
+    @typechecked
+    def _format_modification_entry(self, entry: ModificationEntry) -> str:
+        parts = [f"{entry.datetime}"]
+        if hasattr(entry, 'entity') and entry.entity:
+            parts.append(f"entity={entry.entity}")
+        if hasattr(entry, 'action') and entry.action:
+            parts.append(f"action={entry.action}")
+        if entry.asset_id:
+            parts.append(f"asset_id={entry.asset_id}")
+        if entry.asset_name:
+            parts.append(f"name={entry.asset_name}")
+        if entry.tag_name:
+            parts.append(f"tag={entry.tag_name}")
+        if entry.album_id:
+            parts.append(f"album_id={entry.album_id}")
+        if entry.album_name:
+            parts.append(f"album_name={entry.album_name}")
+        if entry.old_name:
+            parts.append(f"old_name={entry.old_name}")
+        if entry.new_name:
+            parts.append(f"new_name={entry.new_name}")
+        if entry.link:
+            parts.append(f"link={entry.link}")
+        if entry.user:
+            parts.append(f"user={entry.user}")
+        return " | ".join(parts)
