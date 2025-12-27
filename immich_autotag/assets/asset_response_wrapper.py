@@ -8,7 +8,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_client.api.assets import get_asset_info
-from immich_autotag.config.internal_config import IMMICH_PHOTO_PATH_TEMPLATE, IMMICH_WEB_BASE_URL
+from immich_autotag.utils.helpers import get_immich_photo_url
 from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY, ENABLE_ALBUM_DETECTION_FROM_FOLDERS
 from immich_autotag.classification.match_classification_result import MatchClassificationResult
 
@@ -279,9 +279,7 @@ class AssetResponseWrapper:
         match_detail = self.get_classification_match_detail()
         n_matches = len(match_detail.tags_matched) + len(match_detail.albums_matched)
         if n_matches > 1:
-            photo_url = (
-                f"{IMMICH_WEB_BASE_URL}{IMMICH_PHOTO_PATH_TEMPLATE.format(id=self.id)}"
-            )
+            photo_url = get_immich_photo_url(self.id)
             msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by more than one criterion: tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
             if fail_fast:
                 raise Exception(msg)
