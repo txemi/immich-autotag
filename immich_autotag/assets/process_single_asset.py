@@ -129,6 +129,32 @@ def analyze_and_assign_album(
         # No assignment performed due to ambiguity/conflict
         return
 
+
+@typechecked
+def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper") -> None:
+    """
+    If the asset has duplicates, checks the classification tags of each duplicate.
+    If the classification tags (from config) do not match, raises an exception.
+    """
+    from immich_autotag.config.user import TAG_CONVERSIONS
+    context = asset_wrapper.context
+    duplicate_id = asset_wrapper.asset.duplicate_id
+    if not duplicate_id:
+        return
+    group = context.duplicates_collection.get_group(duplicate_id)
+    # Get the set of classification tags for this asset
+    this_tags = set(asset_wrapper.get_classification_tags(TAG_CONVERSIONS))
+    for dup_id in group:
+        if str(dup_id) == asset_wrapper.asset.id:
+            continue
+        dup_asset = context.asset_manager.get_asset(dup_id, context)
+        if dup_asset is not None:
+            dup_tags = set(dup_asset.get_classification_tags(TAG_CONVERSIONS))
+            if dup_tags != this_tags:
+                raise ValueError(
+                    f"Classification tags do not match for duplicate assets: {asset_wrapper.asset.id} ({this_tags}) vs {dup_id} ({dup_tags})"
+                )
+
 @typechecked
 
 def process_single_asset(
@@ -137,9 +163,13 @@ def process_single_asset(
     lock: Lock,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
-    analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
-    # If there is no valid album, none is assigned
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
+    
+    analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
+    analyze_duplicate_classification_tags(asset_wrapper)
+
+    # If there is no valid album, none is assigned
+
     validate_and_update_asset_classification(
         asset_wrapper,
         tag_mod_report=tag_mod_report,
