@@ -91,14 +91,10 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
     filtered_duplicates = {a for a in albums_from_duplicates if re.match(ALBUM_PATTERN, a)}
     detected_album = asset_wrapper.try_detect_album_from_folders()
     return AlbumDecision(albums_from_duplicates=filtered_duplicates, album_from_folder=detected_album)
-@typechecked
 
-def process_single_asset(
-    asset_wrapper: "AssetResponseWrapper",
-    tag_mod_report: "TagModificationReport",
-    lock: Lock,
-    suppress_album_already_belongs_log: bool = True,
-) -> None:
+
+@typechecked
+def buscar_otro_nombre():
     album_decision = decide_album_for_asset(asset_wrapper)
     if album_decision.is_unique():
         detected_album = album_decision.get_unique()
@@ -127,6 +123,16 @@ def process_single_asset(
             )
         # No assignment performed due to ambiguity/conflict
         return
+
+@typechecked
+
+def process_single_asset(
+    asset_wrapper: "AssetResponseWrapper",
+    tag_mod_report: "TagModificationReport",
+    lock: Lock,
+    suppress_album_already_belongs_log: bool = True,
+) -> None:
+    buscar_otro_nombre(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
     # If there is no valid album, none is assigned
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
