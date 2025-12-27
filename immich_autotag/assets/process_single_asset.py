@@ -40,24 +40,18 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> Optional[st
     Devuelve None si no hay sugerencia.
     """
     albums_from_duplicates = get_album_from_duplicates(asset_wrapper)
-    assert isinstance(albums_from_duplicates, set)
     detected_album = asset_wrapper.try_detect_album_from_folders()
-    assert detected_album is None or isinstance(detected_album, str)
-    if albums_from_duplicates and detected_album:
-        if detected_album in albums_from_duplicates:
-            print(f"[DUPLICATE-ALBUM] Asset {asset_wrapper.asset.id} y duplicados coinciden en álbum '{detected_album}'.")
-            return detected_album
-        else:
-            print(f"[DUPLICATE-ALBUM-CONFLICT] Asset {asset_wrapper.asset.id}: álbumes por duplicado={albums_from_duplicates}, por carpeta='{detected_album}'.")
-            # Por ahora priorizamos el primero de los duplicados
-            return next(iter(albums_from_duplicates))
-    elif albums_from_duplicates:
-        for album in albums_from_duplicates:
-            print(f"[DUPLICATE-ALBUM] Asset {asset_wrapper.asset.id} sugiere álbum '{album}' por duplicado.")
-            return album
-    elif detected_album:
-        return detected_album
-    return None
+    # Unificar todas las opciones posibles
+    options = set(albums_from_duplicates)
+    if detected_album:
+        options.add(detected_album)
+    if len(options) == 1:
+        return next(iter(options))
+    elif len(options) == 0:
+        return None
+    else:
+        print(f"[ALBUM DECISION] Asset {asset_wrapper.asset.id} tiene múltiples opciones de álbum: {options}")
+        raise NotImplementedError(f"No se ha implementado la lógica para decidir entre múltiples álbumes: {options}")
 @typechecked
 
 def process_single_asset(
