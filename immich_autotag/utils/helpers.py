@@ -56,8 +56,13 @@ def print_perf(count: int, elapsed: float, total_assets: int | None = None, esti
         print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s")
 
 @typechecked
-def get_immich_photo_url(asset_id: str) -> str:
+def get_immich_photo_url(asset_id: Union[str, uuid.UUID]) -> str:
     """
-    Devuelve la URL web de Immich para un asset dado su id.
+    Devuelve la URL web de Immich para un asset dado su id (UUID o str convertible a UUID).
     """
-    return f"{IMMICH_WEB_BASE_URL}{IMMICH_PHOTO_PATH_TEMPLATE.format(id=asset_id)}"
+    if isinstance(asset_id, uuid.UUID):
+        asset_id_str = str(asset_id)
+    else:
+        # Validar que es un UUID válido
+        asset_id_str = str(uuid.UUID(str(asset_id)))
+    return f"{IMMICH_WEB_BASE_URL}{IMMICH_PHOTO_PATH_TEMPLATE.format(id=asset_id_str)}"
