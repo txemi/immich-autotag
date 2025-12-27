@@ -437,9 +437,11 @@ class AssetResponseWrapper:
         """
         from immich_autotag.config.user import CLASSIFIED_TAGS, TAG_CONVERSIONS
         relevant_tags = set(CLASSIFIED_TAGS)
-        # Remove origins (keys) from TAG_CONVERSIONS
+        # Remove origins from TAG_CONVERSIONS (list of dicts)
         if TAG_CONVERSIONS:
-            for origin in TAG_CONVERSIONS.keys():
-                relevant_tags.discard(origin)
+            for conv in TAG_CONVERSIONS:
+                origin = conv.get("origin")
+                if origin:
+                    relevant_tags.discard(origin)
         # Filter asset tags to only those relevant for classification (case-sensitive)
         return [tag.name for tag in self.asset.tags if tag.name in relevant_tags] if self.asset.tags else []
