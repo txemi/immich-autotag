@@ -152,14 +152,7 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
             raise NotImplementedError(
                 f"Classification tags differ for duplicates: {asset_wrapper.asset.id} vs {dup_id}"
             )
-@typechecked
-def has_same_classification_tags_as(self: "AssetResponseWrapper", other: "AssetResponseWrapper") -> bool:
-    """
-    Compare classification tags between self and another AssetResponseWrapper.
-    Returns True if tags are equal, False otherwise.
-    """
-    from immich_autotag.config.user import TAG_CONVERSIONS
-    return set(self.get_classification_tags(TAG_CONVERSIONS)) == set(other.get_classification_tags(TAG_CONVERSIONS))
+
 
 @typechecked
 

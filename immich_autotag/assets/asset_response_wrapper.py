@@ -420,3 +420,12 @@ class AssetResponseWrapper:
         Crea un AssetResponseWrapper a partir de un DTO y un contexto.
         """
         return cls(asset=dto, context=context)
+    @typechecked
+    def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
+        """
+        Compare classification tags between self and another AssetResponseWrapper.
+        Returns True if tags are equal, False otherwise.
+        """
+        from immich_autotag.config.user import TAG_CONVERSIONS
+        return set(self.get_classification_tags(TAG_CONVERSIONS)) == set(other.get_classification_tags(TAG_CONVERSIONS))
+    
