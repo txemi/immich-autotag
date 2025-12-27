@@ -437,7 +437,7 @@ class AssetResponseWrapper:
         """
         # Collect all relevant tags from CLASSIFIED_TAGS and tag_conversions (only destinations)
         from immich_autotag.config.user import CLASSIFIED_TAGS
-        relevant_tags = set([tfor t in CLASSIFIED_TAGS])
+        relevant_tags = set([t for t in CLASSIFIED_TAGS])
         # Only add destinations from tag_conversions
         if tag_conversions:
             for dest in tag_conversions.keys():
