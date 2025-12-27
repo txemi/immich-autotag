@@ -12,19 +12,19 @@ from immich_autotag.tags.tag_modification_report import TagModificationReport
 from immich_autotag.assets.asset_validation import validate_and_update_asset_classification
 from immich_autotag.config.user import TAG_CONVERSIONS
 
-
+@typechecked
 def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Optional[str]:
     """
-    Si el asset es un duplicado, busca si alguno de sus duplicados ya tiene álbum y devuelve el primero encontrado.
-    Si no hay duplicados con álbum, devuelve None.
+    Si el asset es un duplicado, busca si alguno de sus duplicados ya tiene álbum y devuelve el conjunto de todos los álbumes encontrados.
+    Si no hay duplicados con álbum, devuelve un set vacío.
     """
     from uuid import UUID
     context = asset_wrapper.context
     duplicate_id = asset_wrapper.asset.duplicate_id
+    albums_for_duplicates = set()
     if duplicate_id is not None:
         group = context.duplicates_collection.get_group(UUID(duplicate_id))
         albums_collection = context.albums_collection
-        albums_for_duplicates = set()
         for dup_id in group:
             # Saltar el propio asset
             if str(dup_id) == asset_wrapper.asset.id:
@@ -33,9 +33,7 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Optional
             if dup_asset is not None:
                 albums = albums_collection.albums_for_asset(dup_asset.asset)
                 albums_for_duplicates.update(albums)
-        if albums_for_duplicates:
-            return next(iter(albums_for_duplicates))
-    return None
+    return albums_for_duplicates
 
 @typechecked
 
