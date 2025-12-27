@@ -21,6 +21,12 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
+    @classmethod
+    def from_dto(cls, dto: AssetResponseDto, context: "ImmichContext") -> "AssetResponseWrapper":
+        """
+        Crea un AssetResponseWrapper a partir de un DTO y un contexto.
+        """
+        return cls(asset=dto, context=context)
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
