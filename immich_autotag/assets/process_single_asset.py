@@ -16,7 +16,7 @@ from immich_autotag.tags.modification_kind import ModificationKind
 @typechecked
 def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]:
     """
-    Si el asset es un duplicado, busca si alguno de sus duplicados ya tiene álbum y devuelve el conjunto de todos los álbumes encontrados.
+    If the asset is a duplicate, checks if any of its duplicates already has an album and returns the set of all found albums.
     If there are no duplicates with albums, returns an empty set.
     """
     from uuid import UUID
@@ -105,6 +105,8 @@ def process_single_asset(
         if detected_album:
             album_origin = album_decision.get_album_origin(detected_album)
             _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin, suppress_album_already_belongs_log=suppress_album_already_belongs_log)
+        else:
+            print(f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed.")
     elif album_decision.has_conflict():
         from immich_autotag.utils.helpers import get_immich_photo_url
         from urllib.parse import ParseResult
@@ -115,12 +117,11 @@ def process_single_asset(
         context = asset_wrapper.context
         duplicate_id = asset_wrapper.duplicate_id_as_uuid
         duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id)
-        print(f"[ALBUM DECISION] Asset {asset_id} has multiple valid album options: {album_decision.valid_albums()}\nSee asset: {immich_url}")
+        print(f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}")
         if duplicate_links:
-            print(f"[ALBUM DECISION] Duplicates of {asset_id}:\n" + "\n".join([l.geturl() for l in duplicate_links]))
-        raise NotImplementedError(
-            f"Logic for deciding between multiple valid albums is not implemented: {album_decision}\nSee asset: {immich_url}\nDuplicates: {', '.join([l.geturl() for l in duplicate_links]) if duplicate_links else '-'}"
-        )
+            print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join([l.geturl() for l in duplicate_links]))
+        # No assignment performed due to ambiguity/conflict
+        return
     # If there is no valid album, none is assigned
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
@@ -138,9 +139,11 @@ def _process_album_detection(
     album_origin: str,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
-    print(
-        f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' ({album_origin})"
-    )
+    # Only log candidate album if not suppressing already-belongs log (i.e., in dry-run/check mode)
+    if not suppress_album_already_belongs_log:
+        print(
+            f"[ALBUM CHECK] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (origin: {album_origin})"
+        )
     from immich_client.api.albums import add_assets_to_album
     from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
 
@@ -152,7 +155,7 @@ def _process_album_detection(
     album = album_wrapper.album
     if asset_wrapper.id not in [a.id for a in album.assets or []]:
         print(
-            f"[ALBUM DETECTION] Adding asset '{asset_wrapper.original_file_name}' to album '{detected_album}'..."
+            f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' assigned to album '{detected_album}' (origin: {album_origin})"
         )
         try:
             result = add_assets_to_album.sync(
@@ -199,5 +202,5 @@ def _process_album_detection(
     else:
         if not suppress_album_already_belongs_log:
             print(
-                f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'"
+                f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' already in album '{detected_album}' (origin: {album_origin}), no action taken."
             )
