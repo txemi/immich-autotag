@@ -34,26 +34,43 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]
                 albums_for_duplicates.update(albums)
     return albums_for_duplicates
 
+
+import attrs
+@attrs.define(auto_attribs=True, slots=True, frozen=True)
+class AlbumDecision:
+    albums_from_duplicates: set[str]
+    album_from_folder: str | None
+
+    def all_options(self) -> set[str]:
+        opts = set(self.albums_from_duplicates)
+        if self.album_from_folder:
+            opts.add(self.album_from_folder)
+        return opts
+
+    def is_unique(self) -> bool:
+        return len(self.all_options()) == 1
+
+    def has_conflict(self) -> bool:
+        return len(self.all_options()) > 1
+
+    def get_unique(self) -> str | None:
+        opts = self.all_options()
+        if len(opts) == 1:
+            return next(iter(opts))
+        return None
+
+    def __str__(self):
+        return f"AlbumDecision(duplicates={self.albums_from_duplicates}, folder={self.album_from_folder})"
+
+
 @typechecked
-def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> Optional[str]:
+def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecision:
     """
-    Decide el álbum a asignar al asset, considerando duplicados y carpeta.
-    Si hay conflicto, prioriza el primer álbum de duplicados; si no hay duplicados, usa el de carpeta.
-    Devuelve None si no hay sugerencia.
+    Devuelve un objeto AlbumDecision con toda la información relevante para decidir el álbum.
     """
     albums_from_duplicates = get_album_from_duplicates(asset_wrapper)
     detected_album = asset_wrapper.try_detect_album_from_folders()
-    # Unificar todas las opciones posibles
-    options = set(albums_from_duplicates)
-    if detected_album:
-        options.add(detected_album)
-    if len(options) == 1:
-        return next(iter(options))
-    elif len(options) == 0:
-        return None
-    else:
-        print(f"[ALBUM DECISION] Asset {asset_wrapper.asset.id} tiene múltiples opciones de álbum: {options}")
-        raise NotImplementedError(f"No se ha implementado la lógica para decidir entre múltiples álbumes: {options}")
+    return AlbumDecision(albums_from_duplicates=albums_from_duplicates, album_from_folder=detected_album)
 @typechecked
 
 def process_single_asset(
@@ -61,9 +78,12 @@ def process_single_asset(
     tag_mod_report: "TagModificationReport",
     lock: Lock,
 ) -> None:
-    album_to_assign = decide_album_for_asset(asset_wrapper)
-    if album_to_assign:
-        _process_album_detection(asset_wrapper, tag_mod_report, album_to_assign)
+    album_decision = decide_album_for_asset(asset_wrapper)
+    if album_decision.is_unique():
+        _process_album_detection(asset_wrapper, tag_mod_report, album_decision.get_unique())
+    elif album_decision.has_conflict():
+        print(f"[ALBUM DECISION] Asset {asset_wrapper.asset.id} tiene múltiples opciones de álbum: {album_decision.all_options()}")
+        raise NotImplementedError(f"No se ha implementado la lógica para decidir entre múltiples álbumes: {album_decision}")
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
