@@ -97,20 +97,27 @@ def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "TagModificationReport",
     lock: Lock,
+    suppress_album_already_belongs_log: bool = False,
 ) -> None:
     album_decision = decide_album_for_asset(asset_wrapper)
     if album_decision.is_unique():
         detected_album = album_decision.get_unique()
         if detected_album:
             album_origin = album_decision.get_album_origin(detected_album)
-            _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin)
+            _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin, suppress_album_already_belongs_log=suppress_album_already_belongs_log)
     elif album_decision.has_conflict():
         from immich_autotag.utils.helpers import get_immich_photo_url
         asset_id = asset_wrapper.asset.id
         immich_url = get_immich_photo_url(asset_id)
+        # Mostrar enlaces de todos los duplicados
+        context = asset_wrapper.context
+        duplicate_id = asset_wrapper.duplicate_id_as_uuid
+        duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id, get_immich_photo_url)
         print(f"[ALBUM DECISION] Asset {asset_id} tiene múltiples opciones de álbum válidos: {album_decision.valid_albums()}\nVer asset: {immich_url}")
+        if duplicate_links:
+            print(f"[ALBUM DECISION] Duplicados de {asset_id}:\n" + "\n".join(duplicate_links))
         raise NotImplementedError(
-            f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}\nVer asset: {immich_url}"
+            f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}\nVer asset: {immich_url}\nDuplicados: {', '.join(duplicate_links) if duplicate_links else '-'}"
         )
     # Si no hay álbum válido, no se asigna ninguno
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
@@ -127,6 +134,7 @@ def _process_album_detection(
     tag_mod_report: "TagModificationReport",
     detected_album: str,
     album_origin: str,
+    suppress_album_already_belongs_log: bool = False,
 ) -> None:
     print(
         f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' ({album_origin})"
@@ -187,6 +195,7 @@ def _process_album_detection(
             album_name=detected_album,
         )
     else:
-        print(
-            f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'"
-        )
+        if not suppress_album_already_belongs_log:
+            print(
+                f"[ALBUM DETECTION] Asset already belongs to album '{detected_album}'"
+            )
