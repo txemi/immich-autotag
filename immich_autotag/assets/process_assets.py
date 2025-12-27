@@ -23,7 +23,8 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     tag_mod_report = TagModificationReport.get_instance()
     lock = Lock()
     count = 0
-    N_LOG = 100  # Log frequency
+    LOG_INTERVAL = 5  # seconds
+    last_log_time = time.time()
     print(
         f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}..."
     )
@@ -55,9 +56,11 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                 t1 = time.time()
                 estimator.update(t1 - t0)
                 count += 1
-                if count % N_LOG == 0:
-                    elapsed = time.time() - start_time
+                now = time.time()
+                if now - last_log_time >= LOG_INTERVAL:
+                    elapsed = now - start_time
                     print_perf(count, elapsed, total_assets, estimator)
+                    last_log_time = now
             for future in concurrent.futures.as_completed(futures):
                 try:
                     future.result()
@@ -71,9 +74,11 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             t1 = time.time()
             estimator.update(t1 - t0)
             count += 1
-            if count % N_LOG == 0:
-                elapsed = time.time() - start_time
+            now = time.time()
+            if now - last_log_time >= LOG_INTERVAL:
+                elapsed = now - start_time
                 print_perf(count, elapsed, total_assets, estimator)
+                last_log_time = now
     total_time = time.time() - start_time
     print(f"Total assets: {count}")
     print(
