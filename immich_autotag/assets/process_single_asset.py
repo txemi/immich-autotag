@@ -66,6 +66,14 @@ class AlbumDecision:
             return next(iter(valid))
         return None
 
+    def get_album_origin(self, album: str) -> str:
+        if self.album_from_folder == album:
+            return "from folders"
+        elif album in self.albums_from_duplicates:
+            return "from duplicates"
+        else:
+            return "unknown"
+
     def __str__(self):
         return f"AlbumDecision(valid={self.valid_albums()}, folder={self.album_from_folder})"
 
@@ -92,7 +100,8 @@ def process_single_asset(
     if album_decision.is_unique():
         detected_album = album_decision.get_unique()
         if detected_album:
-            _process_album_detection(asset_wrapper, tag_mod_report, detected_album)
+            album_origin = album_decision.get_album_origin(detected_album)
+            _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin)
     elif album_decision.has_conflict():
         print(f"[ALBUM DECISION] Asset {asset_wrapper.asset.id} tiene múltiples opciones de álbum válidos: {album_decision.valid_albums()}")
         raise NotImplementedError(f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}")
@@ -110,9 +119,10 @@ def _process_album_detection(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "TagModificationReport",
     detected_album: str,
+    album_origin: str,
 ) -> None:
     print(
-        f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (from folders)"
+        f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' ({album_origin})"
     )
     from immich_client.api.albums import add_assets_to_album
     from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
