@@ -4,14 +4,13 @@ import datetime
 
 import attrs
 
-from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL
-from typing import Optional, Any
+from typing import Optional, Any, Union
+from immich_autotag.tags.modification_kind import ModificationKind
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ModificationEntry:
     datetime: str
-    entity: str
-    action: str
+    kind: ModificationKind
     asset_id: Optional[str] = None
     asset_name: Optional[str] = None
     tag_name: Optional[str] = None
@@ -75,8 +74,7 @@ class TagModificationReport:
     @typechecked
     def add_modification(
         self,
-        action: str,
-        entity: str = "tag",
+        kind: Union[ModificationKind, str],
         asset_id: Optional[str] = None,
         asset_name: Optional[str] = None,
         tag_name: Optional[str] = None,
@@ -101,19 +99,21 @@ class TagModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
+        # Permitir str para facilitar migración, pero convertir a Enum
+        if isinstance(kind, str):
+            kind = ModificationKind[kind]
+
         # Build link (asset or album)
         link = None
-        if entity == "tag" and asset_id:
-            link = f"{IMMICH_WEB_BASE_URL}/photos/{asset_id}"
-        elif entity == "album" and album_id:
-            link = f"{IMMICH_WEB_BASE_URL}/albums/{album_id}"
-        elif entity == "assignment" and asset_id:
-            link = f"{IMMICH_WEB_BASE_URL}/photos/{asset_id}"
+        if kind in {ModificationKind.ASSIGN_TAG, ModificationKind.REMOVE_TAG, ModificationKind.CREATE_TAG, ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM} and asset_id:
+            from immich_autotag.utils.helpers import get_immich_photo_url
+            link = get_immich_photo_url(asset_id)
+        elif kind in {ModificationKind.ASSIGN_ALBUM, ModificationKind.REMOVE_ALBUM, ModificationKind.CREATE_ALBUM, ModificationKind.RENAME_ALBUM} and album_id:
+            link = f"/albums/{album_id}"
 
         entry = ModificationEntry(
             datetime=datetime.datetime.now().isoformat(),
-            entity=entity,
-            action=action,
+            kind=kind,
             asset_id=asset_id,
             asset_name=asset_name,
             tag_name=tag_name,
@@ -134,15 +134,15 @@ class TagModificationReport:
     @typechecked
     def add_tag_modification(
         self,
+        kind: ModificationKind,
         asset_id: str,
         asset_name: str,
-        action: str,
         tag_name: str,
         user: Optional[str] = None,
     ) -> None:
+        assert kind in {ModificationKind.ASSIGN_TAG, ModificationKind.REMOVE_TAG, ModificationKind.CREATE_TAG}
         self.add_modification(
-            action=action,
-            entity="tag",
+            kind=kind,
             asset_id=asset_id,
             asset_name=asset_name,
             tag_name=tag_name,
@@ -152,16 +152,16 @@ class TagModificationReport:
     @typechecked
     def add_album_modification(
         self,
-        action: str,
+        kind: ModificationKind,
         album_id: str,
         album_name: Optional[str] = None,
         old_name: Optional[str] = None,
         new_name: Optional[str] = None,
         user: Optional[str] = None,
     ) -> None:
+        assert kind in {ModificationKind.ASSIGN_ALBUM, ModificationKind.REMOVE_ALBUM, ModificationKind.CREATE_ALBUM, ModificationKind.RENAME_ALBUM}
         self.add_modification(
-            action=action,
-            entity="album",
+            kind=kind,
             album_id=album_id,
             album_name=album_name,
             old_name=old_name,
@@ -172,16 +172,16 @@ class TagModificationReport:
     @typechecked
     def add_assignment_modification(
         self,
-        action: str,
+        kind: ModificationKind,
         asset_id: str,
         asset_name: str,
         album_id: str,
         album_name: Optional[str] = None,
         user: Optional[str] = None,
     ) -> None:
+        assert kind in {ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM}
         self.add_modification(
-            action=action,
-            entity="assignment",
+            kind=kind,
             asset_id=asset_id,
             asset_name=asset_name,
             album_id=album_id,
