@@ -33,8 +33,8 @@ class AssetManager:
         if asset_uuid in self._assets:
             return self._assets[asset_uuid]
         # Si no está, pedirlo a la API y envolverlo
-        from immich_client.api.assets.get_asset import sync as get_asset_sync
-        dto = get_asset_sync(client=self.client, id=str(asset_uuid))
+        from immich_client.api.assets import get_asset_info
+        dto = get_asset_info.sync(id=str(asset_uuid), client=self.client)
         if dto is None:
             return None
         asset = AssetResponseWrapper.from_dto(dto, context)
