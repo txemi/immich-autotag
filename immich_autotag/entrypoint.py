@@ -14,8 +14,13 @@ def run_main():
     tag_collection = list_tags(client)
     albums_collection = list_albums(client)
     # Cargar duplicados
+    import time
+    print("[INFO] Solicitando duplicados al servidor Immich... (puede tardar)")
+    t0 = time.perf_counter()
     duplicates_loader = DuplicatesLoader(client=client)
     duplicates_collection = duplicates_loader.load()
+    t1 = time.perf_counter()
+    print(f"[INFO] Duplicados cargados en {t1-t0:.2f} s. Total grupos: {len(duplicates_collection.groups_by_duplicate_id)}")
     asset_manager = AssetManager(client=client)
     context = ImmichContext(
         client=client,
