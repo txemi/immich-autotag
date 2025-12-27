@@ -9,7 +9,7 @@ from typeguard import typechecked
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.tags.tag_modification_report import TagModificationReport
 from immich_autotag.assets.asset_validation import validate_and_update_asset_classification
-from immich_autotag.config.user import TAG_CONVERSIONS
+from immich_autotag.config.user import TAG_CONVERSIONS, ALBUM_PATTERN
 
 @typechecked
 def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]:
@@ -37,6 +37,7 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]
 
 import attrs
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
+
 class AlbumDecision:
     albums_from_duplicates: set[str]
     album_from_folder: str | None
@@ -47,20 +48,26 @@ class AlbumDecision:
             opts.add(self.album_from_folder)
         return opts
 
+    def valid_albums(self) -> set[str]:
+        import re
+        return {a for a in self.all_options() if re.match(ALBUM_PATTERN, a)}
+
     def is_unique(self) -> bool:
-        return len(self.all_options()) == 1
+        valid = self.valid_albums()
+        return len(valid) == 1
 
     def has_conflict(self) -> bool:
-        return len(self.all_options()) > 1
+        valid = self.valid_albums()
+        return len(valid) > 1
 
     def get_unique(self) -> str | None:
-        opts = self.all_options()
-        if len(opts) == 1:
-            return next(iter(opts))
+        valid = self.valid_albums()
+        if len(valid) == 1:
+            return next(iter(valid))
         return None
 
     def __str__(self):
-        return f"AlbumDecision(duplicates={self.albums_from_duplicates}, folder={self.album_from_folder})"
+        return f"AlbumDecision(valid={self.valid_albums()}, folder={self.album_from_folder})"
 
 
 @typechecked
@@ -68,9 +75,12 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
     """
     Devuelve un objeto AlbumDecision con toda la información relevante para decidir el álbum.
     """
+    import re
     albums_from_duplicates = get_album_from_duplicates(asset_wrapper)
+    # Filtrar solo los que cumplen el patrón
+    filtered_duplicates = {a for a in albums_from_duplicates if re.match(ALBUM_PATTERN, a)}
     detected_album = asset_wrapper.try_detect_album_from_folders()
-    return AlbumDecision(albums_from_duplicates=albums_from_duplicates, album_from_folder=detected_album)
+    return AlbumDecision(albums_from_duplicates=filtered_duplicates, album_from_folder=detected_album)
 @typechecked
 
 def process_single_asset(
@@ -80,10 +90,13 @@ def process_single_asset(
 ) -> None:
     album_decision = decide_album_for_asset(asset_wrapper)
     if album_decision.is_unique():
-        _process_album_detection(asset_wrapper, tag_mod_report, album_decision.get_unique())
+        detected_album = album_decision.get_unique()
+        if detected_album:
+            _process_album_detection(asset_wrapper, tag_mod_report, detected_album)
     elif album_decision.has_conflict():
-        print(f"[ALBUM DECISION] Asset {asset_wrapper.asset.id} tiene múltiples opciones de álbum: {album_decision.all_options()}")
-        raise NotImplementedError(f"No se ha implementado la lógica para decidir entre múltiples álbumes: {album_decision}")
+        print(f"[ALBUM DECISION] Asset {asset_wrapper.asset.id} tiene múltiples opciones de álbum válidos: {album_decision.valid_albums()}")
+        raise NotImplementedError(f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}")
+    # Si no hay álbum válido, no se asigna ninguno
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
