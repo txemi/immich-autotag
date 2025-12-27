@@ -426,21 +426,20 @@ class AssetResponseWrapper:
         Compare classification tags between self and another AssetResponseWrapper.
         Returns True if tags are equal, False otherwise.
         """
-        from immich_autotag.config.user import TAG_CONVERSIONS
-        return set(self.get_classification_tags(TAG_CONVERSIONS)) == set(other.get_classification_tags(TAG_CONVERSIONS))
+        return set(self.get_classification_tags()) == set(other.get_classification_tags())
     
     @typechecked
-    def get_classification_tags(self, tag_conversions: dict) -> list[str]:
+    def get_classification_tags(self) -> list[str]:
         """
         Returns the classification tags for this asset, applying tag conversions if needed.
         Only tags configured as relevant for classification in the user config are considered.
+        This version does NOT lowercase tags and REMOVES the origins (keys) of TAG_CONVERSIONS from the relevant set.
         """
-        # Collect all relevant tags from CLASSIFIED_TAGS and tag_conversions (only destinations)
-        from immich_autotag.config.user import CLASSIFIED_TAGS
-        relevant_tags = set([t for t in CLASSIFIED_TAGS])
-        # Only add destinations from tag_conversions
-        if tag_conversions:
-            for dest in tag_conversions.keys():
-                relevant_tags.remove(dest)
-        # Filter asset tags to only those relevant for classification
-        return [tag.name for tag in self.asset.tags if tag.name.lower() in relevant_tags] if self.asset.tags else []
+        from immich_autotag.config.user import CLASSIFIED_TAGS, TAG_CONVERSIONS
+        relevant_tags = set(CLASSIFIED_TAGS)
+        # Remove origins (keys) from TAG_CONVERSIONS
+        if TAG_CONVERSIONS:
+            for origin in TAG_CONVERSIONS.keys():
+                relevant_tags.discard(origin)
+        # Filter asset tags to only those relevant for classification (case-sensitive)
+        return [tag.name for tag in self.asset.tags if tag.name in relevant_tags] if self.asset.tags else []
