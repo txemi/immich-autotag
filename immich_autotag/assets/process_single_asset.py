@@ -94,7 +94,15 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
 
 
 @typechecked
-def buscar_otro_nombre():
+@typechecked
+def analyze_and_assign_album(
+    asset_wrapper: "AssetResponseWrapper",
+    tag_mod_report: "TagModificationReport",
+    suppress_album_already_belongs_log: bool = True,
+) -> None:
+    """
+    Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
+    """
     album_decision = decide_album_for_asset(asset_wrapper)
     if album_decision.is_unique():
         detected_album = album_decision.get_unique()
@@ -105,11 +113,8 @@ def buscar_otro_nombre():
             print(f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed.")
     elif album_decision.has_conflict():
         from immich_autotag.utils.helpers import get_immich_photo_url
-        from urllib.parse import ParseResult
-        # Use asset_wrapper.id_as_uuid to robustly obtain the asset UUID
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
-        # Show links for all duplicates
         context = asset_wrapper.context
         duplicate_id = asset_wrapper.duplicate_id_as_uuid
         duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id)
@@ -132,7 +137,7 @@ def process_single_asset(
     lock: Lock,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
-    buscar_otro_nombre(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
+    analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
     # If there is no valid album, none is assigned
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
