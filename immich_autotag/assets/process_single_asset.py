@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 from typing import Set
 
@@ -34,7 +33,29 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]
                 albums = albums_collection.albums_for_asset(dup_asset.asset)
                 albums_for_duplicates.update(albums)
     return albums_for_duplicates
-
+def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> Optional[str]:
+    """
+    Decide el álbum a asignar al asset, considerando duplicados y carpeta.
+    Si hay conflicto, prioriza el primer álbum de duplicados; si no hay duplicados, usa el de carpeta.
+    Devuelve None si no hay sugerencia.
+    """
+    albums_from_duplicates = get_album_from_duplicates(asset_wrapper)
+    detected_album = asset_wrapper.try_detect_album_from_folders()
+    if albums_from_duplicates and detected_album:
+        if detected_album in albums_from_duplicates:
+            print(f"[DUPLICATE-ALBUM] Asset {asset_wrapper.asset.id} y duplicados coinciden en álbum '{detected_album}'.")
+            return detected_album
+        else:
+            print(f"[DUPLICATE-ALBUM-CONFLICT] Asset {asset_wrapper.asset.id}: álbumes por duplicado={albums_from_duplicates}, por carpeta='{detected_album}'.")
+            # Por ahora priorizamos el primero de los duplicados
+            return next(iter(albums_from_duplicates))
+    elif albums_from_duplicates:
+        for album in albums_from_duplicates:
+            print(f"[DUPLICATE-ALBUM] Asset {asset_wrapper.asset.id} sugiere álbum '{album}' por duplicado.")
+            return album
+    elif detected_album:
+        return detected_album
+    return None
 @typechecked
 
 def process_single_asset(
@@ -42,22 +63,9 @@ def process_single_asset(
     tag_mod_report: "TagModificationReport",
     lock: Lock,
 ) -> None:
-    albums_from_duplicates = get_album_from_duplicates(asset_wrapper)
-    detected_album = asset_wrapper.try_detect_album_from_folders()
-    if albums_from_duplicates and detected_album:
-        if detected_album in albums_from_duplicates:
-            print(f"[DUPLICATE-ALBUM] Asset {asset_wrapper.asset.id} y duplicados coinciden en álbum '{detected_album}'.")
-            _process_album_detection(asset_wrapper, tag_mod_report, detected_album)
-        else:
-            print(f"[DUPLICATE-ALBUM-CONFLICT] Asset {asset_wrapper.asset.id}: álbumes por duplicado={albums_from_duplicates}, por carpeta='{detected_album}'.")
-            # Por ahora priorizamos el primero de los duplicados
-            _process_album_detection(asset_wrapper, tag_mod_report, next(iter(albums_from_duplicates)))
-    elif albums_from_duplicates:
-        for album in albums_from_duplicates:
-            print(f"[DUPLICATE-ALBUM] Asset {asset_wrapper.asset.id} sugiere álbum '{album}' por duplicado.")
-            _process_album_detection(asset_wrapper, tag_mod_report, album)
-    elif detected_album:
-        _process_album_detection(asset_wrapper, tag_mod_report, detected_album)
+    album_to_assign = decide_album_for_asset(asset_wrapper)
+    if album_to_assign:
+        _process_album_detection(asset_wrapper, tag_mod_report, album_to_assign)
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
