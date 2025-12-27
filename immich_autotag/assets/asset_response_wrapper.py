@@ -248,6 +248,20 @@ class AssetResponseWrapper:
 
         return path
 
+    @property
+    def duplicate_id_as_uuid(self):
+        """
+        Devuelve el duplicate_id como UUID (o None si no está presente o es inválido).
+        """
+        from uuid import UUID
+        val = self.asset.duplicate_id
+        if val is None:
+            return None
+        try:
+            return UUID(val)
+        except Exception:
+            return None
+
     @typechecked
     def get_classification_match_detail(self) -> MatchClassificationResult:
         """
