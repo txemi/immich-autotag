@@ -3,7 +3,7 @@ from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL, IMMICH_PH
 
 from typeguard import typechecked
 import pandas as pd
-from typing import Optional
+from typing import Optional, Union
 import attrs
 
 @attrs.define(auto_attribs=True, slots=True)
