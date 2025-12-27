@@ -63,8 +63,9 @@ class AlbumCollectionWrapper:
         # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
         if tag_mod_report:
+            from immich_autotag.tags.modification_kind import ModificationKind
             tag_mod_report.add_album_modification(
-                action="create",
+                kind=ModificationKind.CREATE_ALBUM,
                 album_id=album.id,
                 album_name=album_name,
             )
