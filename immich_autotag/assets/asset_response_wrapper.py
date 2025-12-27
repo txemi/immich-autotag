@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
     @classmethod
-    def from_dto(cls, dto: AssetResponseDto, context: "ImmichContext") -> "AssetResponseWrapper":
+    def from_dto(cls: type["AssetResponseWrapper"], dto: AssetResponseDto, context: "ImmichContext") -> "AssetResponseWrapper":
         """
         Crea un AssetResponseWrapper a partir de un DTO y un contexto.
         """
@@ -34,7 +34,7 @@ class AssetResponseWrapper:
         validator=attrs.validators.instance_of(object)
     )
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         # Avoid direct reference to ImmichContext to prevent NameError/circular import
         if self.context.__class__.__name__ != "ImmichContext":
             raise TypeError(f"context debe ser ImmichContext, no {type(self.context)}")
@@ -249,7 +249,7 @@ class AssetResponseWrapper:
         return path
 
     @property
-    def duplicate_id_as_uuid(self):
+    def duplicate_id_as_uuid(self) -> "UUID | None":
         """
         Devuelve el duplicate_id como UUID (o None si no está presente o es inválido).
         """
@@ -365,7 +365,7 @@ class AssetResponseWrapper:
         self,
         tag_conversions: list,
         tag_mod_report: "TagModificationReport | None" = None,
-    ):
+    ) -> None:
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
         - If it does not have the destination tag, add it and reload the asset, then remove the origin tag.
@@ -393,7 +393,7 @@ class AssetResponseWrapper:
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
 
     @typechecked
-    def try_detect_album_from_folders(self):
+    def try_detect_album_from_folders(self) -> str | None:
         """
         Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
         Only runs if ENABLE_ALBUM_DETECTION_FROM_FOLDERS is True, the asset does not already belong to an album,
