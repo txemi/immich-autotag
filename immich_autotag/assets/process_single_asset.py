@@ -33,6 +33,8 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]
                 albums = albums_collection.albums_for_asset(dup_asset.asset)
                 albums_for_duplicates.update(albums)
     return albums_for_duplicates
+
+@typechecked
 def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> Optional[str]:
     """
     Decide el álbum a asignar al asset, considerando duplicados y carpeta.
