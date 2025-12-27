@@ -141,7 +141,8 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
     duplicate_id = asset_wrapper.asset.duplicate_id
     if not duplicate_id:
         return
-    group = context.duplicates_collection.get_group(duplicate_id)
+    from uuid import UUID
+    group = context.duplicates_collection.get_group(asset_wrapper.duplicate_id_as_uuid)
     # Get the set of classification tags for this asset
     this_tags = set(asset_wrapper.get_classification_tags(TAG_CONVERSIONS))
     for dup_id in group:
