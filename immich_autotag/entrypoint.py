@@ -8,23 +8,27 @@ from immich_autotag.albums.list_albums import list_albums
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
 from immich_autotag.assets.asset_manager import AssetManager
+from typeguard import typechecked
+from immich_autotag.duplicates.duplicate_collection_wrapper import DuplicateCollectionWrapper
+
 @typechecked
-def renombrar_este_metodo() -> DuplicateCollectionWrapper:
-        import time
+def renombrar_este_metodo(client) -> DuplicateCollectionWrapper:
+    import time
     print("[INFO] Requesting duplicates from Immich server... (this may take a while)")
     t0 = time.perf_counter()
     duplicates_loader = DuplicatesLoader(client=client)
     duplicates_collection = duplicates_loader.load()
     t1 = time.perf_counter()
     print(f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}")
+    return duplicates_collection
  
 def run_main():
     client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY}, raise_on_unexpected_status=True)
     tag_collection = list_tags(client)
     albums_collection = list_albums(client)
     # Load duplicates
-    renombrar_este_metodo()
-   asset_manager = AssetManager(client=client)
+    duplicates_collection = renombrar_este_metodo(client)
+    asset_manager = AssetManager(client=client)
     context = ImmichContext(
         client=client,
         albums_collection=albums_collection,
