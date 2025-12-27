@@ -136,7 +136,7 @@ def _process_album_detection(
     tag_mod_report: "TagModificationReport",
     detected_album: str,
     album_origin: str,
-    suppress_album_already_belongs_log: bool = False,
+    suppress_album_already_belongs_log: bool = True,
 ) -> None:
     print(
         f"[ALBUM DETECTION] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' ({album_origin})"
