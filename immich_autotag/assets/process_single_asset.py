@@ -17,7 +17,7 @@ from immich_autotag.tags.modification_kind import ModificationKind
 def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]:
     """
     Si el asset es un duplicado, busca si alguno de sus duplicados ya tiene álbum y devuelve el conjunto de todos los álbumes encontrados.
-    Si no hay duplicados con álbum, devuelve un set vacío.
+    If there are no duplicates with albums, returns an empty set.
     """
     from uuid import UUID
     context = asset_wrapper.context
@@ -27,7 +27,7 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]
         group = context.duplicates_collection.get_group(UUID(duplicate_id))
         albums_collection = context.albums_collection
         for dup_id in group:
-            # Saltar el propio asset
+            # Skip the asset itself
             if str(dup_id) == asset_wrapper.asset.id:
                 continue
             dup_asset = context.asset_manager.get_asset(dup_id, context)
@@ -83,7 +83,7 @@ class AlbumDecision:
 @typechecked
 def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecision:
     """
-    Devuelve un objeto AlbumDecision con toda la información relevante para decidir el álbum.
+    Returns an AlbumDecision object with all relevant information to decide the album.
     """
     import re
     albums_from_duplicates = get_album_from_duplicates(asset_wrapper)
@@ -108,20 +108,20 @@ def process_single_asset(
     elif album_decision.has_conflict():
         from immich_autotag.utils.helpers import get_immich_photo_url
         from urllib.parse import ParseResult
-        # Usar asset_wrapper.id_as_uuid para obtener el UUID del asset de forma robusta
+        # Use asset_wrapper.id_as_uuid to robustly obtain the asset UUID
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
-        # Mostrar enlaces de todos los duplicados
+        # Show links for all duplicates
         context = asset_wrapper.context
         duplicate_id = asset_wrapper.duplicate_id_as_uuid
         duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id)
-        print(f"[ALBUM DECISION] Asset {asset_id} tiene múltiples opciones de álbum válidos: {album_decision.valid_albums()}\nVer asset: {immich_url}")
+        print(f"[ALBUM DECISION] Asset {asset_id} has multiple valid album options: {album_decision.valid_albums()}\nSee asset: {immich_url}")
         if duplicate_links:
-            print(f"[ALBUM DECISION] Duplicados de {asset_id}:\n" + "\n".join([l.geturl() for l in duplicate_links]))
+            print(f"[ALBUM DECISION] Duplicates of {asset_id}:\n" + "\n".join([l.geturl() for l in duplicate_links]))
         raise NotImplementedError(
-            f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}\nVer asset: {immich_url}\nDuplicados: {', '.join([l.geturl() for l in duplicate_links]) if duplicate_links else '-'}"
+            f"Logic for deciding between multiple valid albums is not implemented: {album_decision}\nSee asset: {immich_url}\nDuplicates: {', '.join([l.geturl() for l in duplicate_links]) if duplicate_links else '-'}"
         )
-    # Si no hay álbum válido, no se asigna ninguno
+    # If there is no valid album, none is assigned
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
         asset_wrapper,
