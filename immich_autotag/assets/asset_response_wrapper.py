@@ -433,7 +433,15 @@ class AssetResponseWrapper:
     def get_classification_tags(self, tag_conversions: dict) -> list[str]:
         """
         Returns the classification tags for this asset, applying tag conversions if needed.
+        Only tags configured as relevant for classification in the user config are considered.
         """
-        # todo: hay que coger los tags configuradoes en la config de usuario, el resto de etiquetas no noes interean
-        # For now, just return tag names; adapt if tag_conversions logic is needed
-        return [tag.name for tag in self.asset.tags] if self.asset.tags else []
+        # Collect all relevant tags from CLASSIFIED_TAGS and tag_conversions (origins and destinations)
+        from immich_autotag.config.user import CLASSIFIED_TAGS
+        relevant_tags = set([t.lower() for t in CLASSIFIED_TAGS])
+        # Add all origins and destinations from tag_conversions
+        if tag_conversions:
+            for origin, dest in tag_conversions.items():
+                relevant_tags.add(origin.lower())
+                relevant_tags.add(dest.lower())
+        # Filter asset tags to only those relevant for classification
+        return [tag.name for tag in self.asset.tags if tag.name.lower() in relevant_tags] if self.asset.tags else []
