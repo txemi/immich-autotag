@@ -18,13 +18,17 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Optional
     Si el asset es un duplicado, busca si alguno de sus duplicados ya tiene álbum y devuelve el primero encontrado.
     Si no hay duplicados con álbum, devuelve None.
     """
+    from uuid import UUID
     context = asset_wrapper.context
     duplicate_id = asset_wrapper.asset.duplicate_id
     if duplicate_id is not None:
-        duplicates = context.duplicates_collection.get_duplicates(asset_wrapper.asset.id)
+        group = context.duplicates_collection.get_group(UUID(duplicate_id))
         albums_collection = context.albums_collection
         albums_for_duplicates = set()
-        for dup_id in duplicates:
+        for dup_id in group:
+            # Saltar el propio asset
+            if str(dup_id) == asset_wrapper.asset.id:
+                continue
             dup_asset = context.asset_manager.get_asset(dup_id, context)
             if dup_asset is not None:
                 albums = albums_collection.albums_for_asset(dup_asset.asset)
