@@ -40,7 +40,9 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> Optional[st
     Devuelve None si no hay sugerencia.
     """
     albums_from_duplicates = get_album_from_duplicates(asset_wrapper)
+    assert isinstance(albums_from_duplicates, set)
     detected_album = asset_wrapper.try_detect_album_from_folders()
+    assert detected_album is None or isinstance(detected_album, str)
     if albums_from_duplicates and detected_album:
         if detected_album in albums_from_duplicates:
             print(f"[DUPLICATE-ALBUM] Asset {asset_wrapper.asset.id} y duplicados coinciden en álbum '{detected_album}'.")
