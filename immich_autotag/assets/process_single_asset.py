@@ -120,6 +120,11 @@ def process_single_asset(
         print(f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}")
         if duplicate_links:
             print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join([l.geturl() for l in duplicate_links]))
+            # This situation requires user intervention: ambiguous album assignment due to duplicates.
+            # For now, raise an exception to force manual review. In the future, consider logging this in the report instead.
+            raise NotImplementedError(
+                f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join([l.geturl() for l in duplicate_links]) if duplicate_links else '-'}"
+            )
         # No assignment performed due to ambiguity/conflict
         return
     # If there is no valid album, none is assigned
