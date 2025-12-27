@@ -1,3 +1,4 @@
+import uuid
 from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL, IMMICH_PHOTO_PATH_TEMPLATE
 
 
