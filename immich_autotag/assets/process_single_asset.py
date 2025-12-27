@@ -8,8 +8,10 @@ from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.tags.tag_modification_report import TagModificationReport
+
 from immich_autotag.assets.asset_validation import validate_and_update_asset_classification
 from immich_autotag.config.user import TAG_CONVERSIONS, ALBUM_PATTERN
+from immich_autotag.tags.modification_kind import ModificationKind
 
 @typechecked
 def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Set[str]:
@@ -178,7 +180,7 @@ def _process_album_detection(
             print(f"[ERROR] Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}")
             raise RuntimeError(f"Asset {asset_wrapper.id} not found in add_assets_to_album response")
         tag_mod_report.add_assignment_modification(
-            action="assign",
+            kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
             asset_id=asset_wrapper.id,
             asset_name=asset_wrapper.original_file_name,
             album_id=album.id,

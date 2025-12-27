@@ -93,10 +93,11 @@ class AssetResponseWrapper:
                 )
             removed_any = True
             if tag_mod_report:
+                from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
                     asset_id=self.id,
                     asset_name=self.original_file_name,
-                    action="remove",
+                    action=ModificationKind.REMOVE,
                     tag_name=tag_name,
                     user=user,
                 )
@@ -108,10 +109,11 @@ class AssetResponseWrapper:
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
             if tag_mod_report:
+                from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
                     asset_id=self.id,
                     asset_name=self.original_file_name,
-                    action="warning_removal_failed",
+                    action=ModificationKind.WARNING_REMOVAL_FAILED,
                     tag_name=tag_name,
                     user=user,
                 )
@@ -170,10 +172,11 @@ class AssetResponseWrapper:
                 f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}"
             )
         if tag_mod_report:
+            from immich_autotag.tags.modification_kind import ModificationKind
             tag_mod_report.add_modification(
                 asset_id=self.id,
                 asset_name=self.original_file_name,
-                action="add",
+                action=ModificationKind.ADD,
                 tag_name=tag_name,
                 user=user,
             )
