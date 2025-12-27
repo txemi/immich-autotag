@@ -103,8 +103,13 @@ def process_single_asset(
             album_origin = album_decision.get_album_origin(detected_album)
             _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin)
     elif album_decision.has_conflict():
-        print(f"[ALBUM DECISION] Asset {asset_wrapper.asset.id} tiene múltiples opciones de álbum válidos: {album_decision.valid_albums()}")
-        raise NotImplementedError(f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}")
+        from immich_autotag.utils.helpers import get_immich_photo_url
+        asset_id = asset_wrapper.asset.id
+        immich_url = get_immich_photo_url(asset_id)
+        print(f"[ALBUM DECISION] Asset {asset_id} tiene múltiples opciones de álbum válidos: {album_decision.valid_albums()}\nVer asset: {immich_url}")
+        raise NotImplementedError(
+            f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}\nVer asset: {immich_url}"
+        )
     # Si no hay álbum válido, no se asigna ninguno
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     validate_and_update_asset_classification(
