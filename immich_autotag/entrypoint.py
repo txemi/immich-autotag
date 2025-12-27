@@ -12,7 +12,10 @@ from typeguard import typechecked
 from immich_autotag.duplicates.duplicate_collection_wrapper import DuplicateCollectionWrapper
 
 @typechecked
-def renombrar_este_metodo(client) -> DuplicateCollectionWrapper:
+def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
+    """
+    Loads the duplicate collection from the Immich server and prints timing information.
+    """
     import time
     print("[INFO] Requesting duplicates from Immich server... (this may take a while)")
     t0 = time.perf_counter()
@@ -21,13 +24,13 @@ def renombrar_este_metodo(client) -> DuplicateCollectionWrapper:
     t1 = time.perf_counter()
     print(f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}")
     return duplicates_collection
- 
+@typechecked
 def run_main():
     client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY}, raise_on_unexpected_status=True)
     tag_collection = list_tags(client)
     albums_collection = list_albums(client)
     # Load duplicates
-    duplicates_collection = renombrar_este_metodo(client)
+    duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)
     context = ImmichContext(
         client=client,
