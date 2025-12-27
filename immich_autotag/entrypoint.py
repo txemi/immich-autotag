@@ -13,14 +13,14 @@ def run_main():
     client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY}, raise_on_unexpected_status=True)
     tag_collection = list_tags(client)
     albums_collection = list_albums(client)
-    # Cargar duplicados
+    # Load duplicates
     import time
-    print("[INFO] Solicitando duplicados al servidor Immich... (puede tardar)")
+    print("[INFO] Requesting duplicates from Immich server... (this may take a while)")
     t0 = time.perf_counter()
     duplicates_loader = DuplicatesLoader(client=client)
     duplicates_collection = duplicates_loader.load()
     t1 = time.perf_counter()
-    print(f"[INFO] Duplicados cargados en {t1-t0:.2f} s. Total grupos: {len(duplicates_collection.groups_by_duplicate_id)}")
+    print(f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}")
     asset_manager = AssetManager(client=client)
     context = ImmichContext(
         client=client,
