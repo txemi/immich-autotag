@@ -429,3 +429,11 @@ class AssetResponseWrapper:
         from immich_autotag.config.user import TAG_CONVERSIONS
         return set(self.get_classification_tags(TAG_CONVERSIONS)) == set(other.get_classification_tags(TAG_CONVERSIONS))
     
+    @typechecked
+    def get_classification_tags(self, tag_conversions: dict) -> list[str]:
+        """
+        Returns the classification tags for this asset, applying tag conversions if needed.
+        """
+        # todo: hay que coger los tags configuradoes en la config de usuario, el resto de etiquetas no noes interean
+        # For now, just return tag names; adapt if tag_conversions logic is needed
+        return [tag.name for tag in self.asset.tags] if self.asset.tags else []
