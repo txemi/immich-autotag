@@ -53,14 +53,13 @@ class DuplicateCollectionWrapper:
         """Return the DuplicateAssetGroup for a given duplicate_id. Empty if not found."""
         return self.groups_by_duplicate_id.get(duplicate_id, DuplicateAssetGroup([]))
     @typechecked
-    def get_duplicate_asset_links(self, duplicate_id: UUID | str | None, get_url_func: callable[[str], str]) -> list[str]:
+    def get_duplicate_asset_links(self, duplicate_id: UUID) -> list[str]:
         """
         Returns a list of asset links for all assets in the duplicate group.
-        duplicate_id: UUID or str
-        get_url_func: function to generate the asset URL from asset id (str)
+        duplicate_id: UUID
         """
-        from uuid import UUID
+        from immich_autotag.utils.helpers import get_immich_photo_url
         if duplicate_id is None:
             return []
-        group = self.get_group(UUID(str(duplicate_id)))
-        return [get_url_func(str(dup_id)) for dup_id in group]
+        group = self.get_group(duplicate_id)
+        return [get_immich_photo_url(str(dup_id)) for dup_id in group]
