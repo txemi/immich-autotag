@@ -1,3 +1,4 @@
+from urllib.parse import urlparse, ParseResult
 
 import attrs
 from typeguard import typechecked
@@ -53,13 +54,13 @@ class DuplicateCollectionWrapper:
         """Return the DuplicateAssetGroup for a given duplicate_id. Empty if not found."""
         return self.groups_by_duplicate_id.get(duplicate_id, DuplicateAssetGroup([]))
     @typechecked
-    def get_duplicate_asset_links(self, duplicate_id: UUID) -> list[str]:
+    def get_duplicate_asset_links(self, duplicate_id: UUID) -> list[ParseResult]:
         """
-        Returns a list of asset links for all assets in the duplicate group.
+        Returns a list of ParseResult (standard URL objects) for all assets in the duplicate group.
         duplicate_id: UUID
         """
         from immich_autotag.utils.helpers import get_immich_photo_url
         if duplicate_id is None:
             return []
         group = self.get_group(duplicate_id)
-        return [get_immich_photo_url(str(dup_id)) for dup_id in group]
+        return [urlparse(get_immich_photo_url(dup_id)) for dup_id in group]

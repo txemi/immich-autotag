@@ -5,16 +5,17 @@ import datetime
 import attrs
 
 from typing import Optional, Any, Union
+from uuid import UUID
 from immich_autotag.tags.modification_kind import ModificationKind
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ModificationEntry:
     datetime: str
     kind: ModificationKind
-    asset_id: Optional[str] = None
+    asset_id: Optional[UUID] = None
     asset_name: Optional[str] = None
     tag_name: Optional[str] = None
-    album_id: Optional[str] = None
+    album_id: Optional[UUID] = None
     album_name: Optional[str] = None
     old_name: Optional[str] = None
     new_name: Optional[str] = None
@@ -75,10 +76,10 @@ class TagModificationReport:
     def add_modification(
         self,
         kind: Union[ModificationKind, str],
-        asset_id: Optional[str] = None,
+        asset_id: Optional[UUID] = None,
         asset_name: Optional[str] = None,
         tag_name: Optional[str] = None,
-        album_id: Optional[str] = None,
+        album_id: Optional[UUID] = None,
         album_name: Optional[str] = None,
         old_name: Optional[str] = None,
         new_name: Optional[str] = None,
@@ -135,7 +136,7 @@ class TagModificationReport:
     def add_tag_modification(
         self,
         kind: ModificationKind,
-        asset_id: str,
+        asset_id: UUID,
         asset_name: str,
         tag_name: str,
         user: Optional[str] = None,
@@ -153,7 +154,7 @@ class TagModificationReport:
     def add_album_modification(
         self,
         kind: ModificationKind,
-        album_id: str,
+        album_id: UUID,
         album_name: Optional[str] = None,
         old_name: Optional[str] = None,
         new_name: Optional[str] = None,
@@ -173,9 +174,9 @@ class TagModificationReport:
     def add_assignment_modification(
         self,
         kind: ModificationKind,
-        asset_id: str,
+        asset_id: UUID,
         asset_name: str,
-        album_id: str,
+        album_id: UUID,
         album_name: Optional[str] = None,
         user: Optional[str] = None,
     ) -> None:
