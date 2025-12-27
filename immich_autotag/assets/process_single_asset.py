@@ -97,7 +97,7 @@ def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "TagModificationReport",
     lock: Lock,
-    suppress_album_already_belongs_log: bool = False,
+    suppress_album_already_belongs_log: bool = True,
 ) -> None:
     album_decision = decide_album_for_asset(asset_wrapper)
     if album_decision.is_unique():
