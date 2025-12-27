@@ -107,17 +107,19 @@ def process_single_asset(
             _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin, suppress_album_already_belongs_log=suppress_album_already_belongs_log)
     elif album_decision.has_conflict():
         from immich_autotag.utils.helpers import get_immich_photo_url
-        asset_id = asset_wrapper.asset.id
+        from immich_autotag.duplicates.duplicate_collection_wrapper import Link
+        # Usar asset_wrapper.id_as_uuid para obtener el UUID del asset de forma robusta
+        asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
         # Mostrar enlaces de todos los duplicados
         context = asset_wrapper.context
         duplicate_id = asset_wrapper.duplicate_id_as_uuid
-        duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id, get_immich_photo_url)
+        duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id)
         print(f"[ALBUM DECISION] Asset {asset_id} tiene múltiples opciones de álbum válidos: {album_decision.valid_albums()}\nVer asset: {immich_url}")
         if duplicate_links:
-            print(f"[ALBUM DECISION] Duplicados de {asset_id}:\n" + "\n".join(duplicate_links))
+            print(f"[ALBUM DECISION] Duplicados de {asset_id}:\n" + "\n".join([l.url for l in duplicate_links]))
         raise NotImplementedError(
-            f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}\nVer asset: {immich_url}\nDuplicados: {', '.join(duplicate_links) if duplicate_links else '-'}"
+            f"No se ha implementado la lógica para decidir entre múltiples álbumes válidos: {album_decision}\nVer asset: {immich_url}\nDuplicados: {', '.join([l.url for l in duplicate_links]) if duplicate_links else '-'}"
         )
     # Si no hay álbum válido, no se asigna ninguno
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
