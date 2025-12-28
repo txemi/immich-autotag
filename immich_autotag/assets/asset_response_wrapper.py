@@ -96,7 +96,7 @@ class AssetResponseWrapper:
                 tag_mod_report.add_modification(
                     asset_id=self.id,
                     asset_name=self.original_file_name,
-                    action=ModificationKind.REMOVE,
+                    kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
                     tag_name=tag_name,
                     user=user,
                 )
@@ -112,7 +112,7 @@ class AssetResponseWrapper:
                 tag_mod_report.add_modification(
                     asset_id=self.id,
                     asset_name=self.original_file_name,
-                    action=ModificationKind.WARNING_REMOVAL_FAILED,
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     tag_name=tag_name,
                     user=user,
                 )
@@ -175,7 +175,7 @@ class AssetResponseWrapper:
             tag_mod_report.add_modification(
                 asset_id=self.id,
                 asset_name=self.original_file_name,
-                action=ModificationKind.ADD,
+                kind=ModificationKind.ADD_TAG_TO_ASSET,
                 tag_name=tag_name,
                 user=user,
             )

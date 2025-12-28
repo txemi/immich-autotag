@@ -138,7 +138,7 @@ class TagModificationReport:
         tag_name: str,
         user: Optional[str] = None,
     ) -> None:
-        assert kind in {ModificationKind.ASSIGN_TAG, ModificationKind.REMOVE_TAG, ModificationKind.CREATE_TAG}
+        assert kind in {ModificationKind.ADD_TAG_TO_ASSET, ModificationKind.REMOVE_TAG_FROM_ASSET, ModificationKind.REMOVE_TAG_GLOBALLY}
         self.add_modification(
             kind=kind,
             asset_id=asset_id,
@@ -157,7 +157,7 @@ class TagModificationReport:
         new_name: Optional[str] = None,
         user: Optional[str] = None,
     ) -> None:
-        assert kind in {ModificationKind.ASSIGN_ALBUM, ModificationKind.REMOVE_ALBUM, ModificationKind.CREATE_ALBUM, ModificationKind.RENAME_ALBUM}
+        assert kind in {ModificationKind.CREATE_ALBUM, ModificationKind.DELETE_ALBUM, ModificationKind.RENAME_ALBUM}
         self.add_modification(
             kind=kind,
             album_id=album_id,
@@ -209,9 +209,9 @@ class TagModificationReport:
         Build a link for the modification entry based on kind and ids.
         """
         from immich_autotag.utils.helpers import get_immich_photo_url
-        if kind in {ModificationKind.ASSIGN_TAG, ModificationKind.REMOVE_TAG, ModificationKind.CREATE_TAG, ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM} and asset_id:
+        if kind in {ModificationKind.ADD_TAG_TO_ASSET, ModificationKind.REMOVE_TAG_FROM_ASSET, ModificationKind.REMOVE_TAG_GLOBALLY, ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM} and asset_id:
             return get_immich_photo_url(asset_id)
-        elif kind in {ModificationKind.ASSIGN_ALBUM, ModificationKind.REMOVE_ALBUM, ModificationKind.CREATE_ALBUM, ModificationKind.RENAME_ALBUM} and album_id:
+        elif kind in {ModificationKind.CREATE_ALBUM, ModificationKind.DELETE_ALBUM, ModificationKind.RENAME_ALBUM} and album_id:
             return f"/albums/{album_id}"
         return None
     @typechecked
