@@ -94,7 +94,7 @@ class AssetResponseWrapper:
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
-                    asset_id=self.id,
+                    asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
                     kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
                     tag_name=tag_name,
@@ -110,7 +110,7 @@ class AssetResponseWrapper:
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
-                    asset_id=self.id,
+                    asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     tag_name=tag_name,
@@ -173,7 +173,7 @@ class AssetResponseWrapper:
         if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
             tag_mod_report.add_modification(
-                asset_id=self.id,
+                asset_id=self.id_as_uuid,
                 asset_name=self.original_file_name,
                 kind=ModificationKind.ADD_TAG_TO_ASSET,
                 tag_name=tag_name,
