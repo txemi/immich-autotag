@@ -14,17 +14,18 @@ from immich_autotag.config.user import TAG_CONVERSIONS, ALBUM_PATTERN
 from immich_autotag.tags.modification_kind import ModificationKind
 
 
-import attrs
+from uuid import UUID
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAlbumsInfo:
-    _mapping: Dict[AssetResponseWrapper, List[str]]
+    # Maps asset UUID to (AssetResponseWrapper, List[str])
+    _mapping: Dict[UUID, tuple[AssetResponseWrapper, List[str]]]
 
     def all_album_names(self) -> set[str]:
         """Return a set with all album names found among duplicates."""
-        return {album for albums in self._mapping.values() for album in albums}
+        return {album for (_, albums) in self._mapping.values() for album in albums}
 
-    def get_details(self) -> Dict[AssetResponseWrapper, List[str]]:
+    def get_details(self) -> Dict[UUID, tuple[AssetResponseWrapper, List[str]]]:
         """Return the full mapping (read-only)."""
         return dict(self._mapping)
 
@@ -35,11 +36,11 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Duplicat
     to the list of album names it belongs to. This allows for richer traceability and future extensibility.
     If there are no duplicates, returns an empty mapping.
     """
-    result: Dict[AssetResponseWrapper, List[str]] = {}
+    result: Dict[UUID, tuple[AssetResponseWrapper, List[str]]] = {}
     duplicate_wrappers = asset_wrapper.get_duplicate_wrappers()
     for dup_wrapper in duplicate_wrappers:
         albums = dup_wrapper.get_album_names()
-        result[dup_wrapper] = list(albums)
+        result[dup_wrapper.id_as_uuid] = (dup_wrapper, list(albums))
     return DuplicateAlbumsInfo(result)
 
 
@@ -129,7 +130,7 @@ def analyze_and_assign_album(
         albums_info = album_decision.duplicates_info
         print(f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}")
         details = []
-        for dup_wrapper, albums in albums_info.get_details().items():
+        for _, (dup_wrapper, albums) in albums_info.get_details().items():
             details.append(
                 f"{dup_wrapper.get_link().geturl()} | file: {dup_wrapper.asset.original_file_name} | date: {dup_wrapper.asset.created_at} | albums: {albums or '[unavailable]'}"
             )
