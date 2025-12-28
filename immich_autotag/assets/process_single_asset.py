@@ -153,6 +153,9 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
             raise RuntimeError(f"Duplicate asset wrapper not found for asset {dup_asset_wrapper.asset.id}. This should not happen.")
         # Compare tags using a method on AssetResponseWrapper
         if not asset_wrapper.has_same_classification_tags_as(dup_asset_wrapper):
+            # todo: Su acción es muy mala que menos que poner un enlace a los dos activos que difieren y las etiquetas de cada uno además aparte de imprimirla de lanzar la sección ese mismo mensaje antes lo podríamos sacar por pantalla
+
+
             raise NotImplementedError(
                 f"Classification tags differ for duplicates: {asset_wrapper.asset.id} vs {dup_asset_wrapper.asset.id}"
             )
