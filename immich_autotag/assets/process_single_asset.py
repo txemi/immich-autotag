@@ -169,8 +169,8 @@ def process_single_asset(
 ) -> None:
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
     
-    analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
     analyze_duplicate_classification_tags(asset_wrapper)
+    analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
 
     # If there is no valid album, none is assigned
 
