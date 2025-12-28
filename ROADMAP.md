@@ -9,6 +9,8 @@ Note: This roadmap lists upcoming features in order of priority, based on a subj
 
 1. **Album detection and creation from folders (IN PROGRESS):**
 	If an album does not exist, implement logic to infer or create it based on folder structure.
+
+	<!-- Planned for version 0.20 -->
     
 	[See detailed design document →](docs/feature-album-detection-from-folders.md)
     
