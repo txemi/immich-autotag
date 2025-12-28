@@ -44,10 +44,8 @@ class AlbumResponseWrapper:
     @typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         """
-        Returns the album's assets wrapped in AssetResponseWrapper.
+        Returns the album's assets wrapped in AssetResponseWrapper, usando el asset_manager del contexto.
         """
-        return (
-            [AssetResponseWrapper(asset=a, context=context) for a in self.album.assets]
-            if self.album.assets
-            else []
-        )
+        if not self.album.assets:
+            return []
+        return [context.asset_manager.get_wrapper_for_asset(a) for a in self.album.assets]
