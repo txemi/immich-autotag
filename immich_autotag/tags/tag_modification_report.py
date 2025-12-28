@@ -46,8 +46,8 @@ class TagModificationReport:
     batch_size: int = attrs.field(
         default=1, validator=attrs.validators.instance_of(int)
     )
-    modifications: list[ModificationEntry] = attrs.field(
-        factory=list, init=False, validator=attrs.validators.instance_of(list)
+    modifications: list[ModificationEntry] = attrs.field(  # type: ignore
+        factory=list, init=False
     )
     _since_last_flush: int = attrs.field(
         default=0, init=False, validator=attrs.validators.instance_of(int)
@@ -217,10 +217,9 @@ class TagModificationReport:
     @typechecked
     def _format_modification_entry(self, entry: ModificationEntry) -> str:
         parts = [f"{entry.datetime}"]
-        if hasattr(entry, 'entity') and entry.entity:
-            parts.append(f"entity={entry.entity}")
-        if hasattr(entry, 'action') and entry.action:
-            parts.append(f"action={entry.action}")
+        # Always include the operation/enum (kind)
+        parts.append(f"kind={entry.kind.name if hasattr(entry.kind, 'name') else entry.kind}")
+        # Removed 'entity' and 'action' as they are not attributes of ModificationEntry
         if entry.asset_id:
             parts.append(f"asset_id={entry.asset_id}")
         if entry.asset_name:
