@@ -1,0 +1,6 @@
+[project]
+name = "immich-autotag"
+version = "0.20.0.dev0"
+description = "Immich autotagging and album management system"
+authors = ["txemi"]
+license = "GPL-3.0-only"
