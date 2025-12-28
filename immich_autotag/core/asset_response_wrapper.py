@@ -6,7 +6,7 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY
+from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CATEGORY_CONFLICT
 from .match_classification_result import MatchClassificationResult
 
 if TYPE_CHECKING:
@@ -290,7 +290,7 @@ class AssetResponseWrapper:
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
         Idempotent: does nothing if already in correct state.
         """
-        tag_name = AUTOTAG_UNKNOWN_CATEGORY
+        tag_name = AUTOTAG_CATEGORY_UNKNOWN
         if not classified:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
@@ -317,7 +317,7 @@ class AssetResponseWrapper:
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         """
-        tag_name = AUTOTAG_CONFLICT_CATEGORY
+        tag_name = AUTOTAG_CATEGORY_CONFLICT
         if conflict:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
