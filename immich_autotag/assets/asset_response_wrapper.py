@@ -55,6 +55,7 @@ class AssetResponseWrapper:
         verbose: bool = True,
         tag_mod_report: "TagModificationReport | None" = None,
         user: str | None = None,
+        fail_on_error: bool = False,
     ) -> bool:
         """
         Removes all tags from the asset with the given name (case-insensitive), even if they have different IDs (e.g., global and nested tags).
@@ -107,6 +108,7 @@ class AssetResponseWrapper:
         print(f"[DEBUG] Tags after removal: {self.get_tag_names()}")
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
+            error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
@@ -115,10 +117,12 @@ class AssetResponseWrapper:
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     tag_name=tag_name,
                     user=user,
+                    extra={"error": error_msg},
                 )
-            error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             print(error_msg)
-            raise RuntimeError(error_msg)
+            if fail_on_error:
+                raise RuntimeError(error_msg)
+            # else: just log and continue
         return removed_any
 
     @typechecked
