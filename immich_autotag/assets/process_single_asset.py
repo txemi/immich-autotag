@@ -120,11 +120,23 @@ def analyze_and_assign_album(
         duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id)
         print(f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}")
         if duplicate_links:
-            print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join([l.geturl() for l in duplicate_links]))
+            # For each duplicate, show its link and the albums it belongs to
+            duplicate_id = asset_wrapper.duplicate_id_as_uuid
+            # todo aqui abajo no podemos usar get_duplicate_asset_wrappers ??
+            group = context.duplicates_collection.get_group(duplicate_id)
+            albums_collection = context.albums_collection
+            details = []
+            for dup_id, link in zip(group, duplicate_links):
+                dup_asset = context.asset_manager.get_asset(dup_id, context)
+                if dup_asset is not None:
+                    albums = albums_collection.albums_for_asset(dup_asset.asset)
+                    details.append(f"{link.geturl()} | albums: {albums}")
+                else:
+                    details.append(f"{link.geturl()} | albums: [unavailable]")
+            print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details))
             # This situation requires user intervention: ambiguous album assignment due to duplicates.
-            # For now, raise an exception to force manual review. In the future, consider logging this in the report instead.
             raise NotImplementedError(
-                f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join([l.geturl() for l in duplicate_links]) if duplicate_links else '-'}"
+                f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
             )
         # No assignment performed due to ambiguity/conflict
         return
