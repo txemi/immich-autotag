@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
 
     asset: AssetResponseDto = attrs.field(
@@ -66,6 +66,7 @@ class AssetResponseWrapper:
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         # Find all tag objects on the asset with the given name (case-insensitive)
+        # todo: revisar por que hacemos tolower, tiene sentido?
         tags_to_remove = [
             tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
         ]
@@ -102,7 +103,7 @@ class AssetResponseWrapper:
 
         # Reload asset and check if tag is still present
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
-        object.__setattr__(self, "asset", updated_asset)
+        self.asset = updated_asset
         print(f"[DEBUG] Tags after removal: {self.get_tag_names()}")
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
