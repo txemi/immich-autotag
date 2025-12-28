@@ -246,7 +246,6 @@ def _process_album_detection(
             raise RuntimeError("add_assets_to_album did not return a list")
         found = False
         for item in result:
-            # Comprobación estricta de atributos sin hasattr ni getattr
             try:
                 _id = item.id
                 _success = item.success
@@ -255,17 +254,24 @@ def _process_album_detection(
             if _id == str(asset_wrapper.id):
                 found = True
                 if not _success:
-                    # El atributo error puede no estar siempre, pero si está lo mostramos
                     error_msg = None
                     try:
                         error_msg = item.error
                     except AttributeError:
                         pass
                     print(f"[ERROR] Asset {asset_wrapper.id} was not successfully added to album {album.id}: {error_msg}")
-                    raise RuntimeError(f"Asset {asset_wrapper.id} was not successfully added to album {album.id}")
+                    print(f"[DEBUG] Full add_assets_to_album response: {result}")
+                    raise RuntimeError(
+                        f"Asset {asset_wrapper.id} was not successfully added to album {album.id}. "
+                        f"Error: {error_msg}. Full response: {result}"
+                    )
         if not found:
             print(f"[ERROR] Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}")
-            raise RuntimeError(f"Asset {asset_wrapper.id} not found in add_assets_to_album response")
+            print(f"[DEBUG] Full add_assets_to_album response: {result}")
+            raise RuntimeError(
+                f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}. "
+                f"Full response: {result}"
+            )
         tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
             asset_id=asset_wrapper.id_as_uuid,
