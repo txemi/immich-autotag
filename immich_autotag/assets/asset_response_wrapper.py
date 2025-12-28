@@ -478,10 +478,10 @@ class AssetResponseWrapper:
         """
         from uuid import UUID
         context = self.context
-        duplicate_id = self.asset.duplicate_id
+        duplicate_id = self.duplicate_id_as_uuid
         wrappers = []
         if duplicate_id is not None:
-            group = context.duplicates_collection.get_group(UUID(duplicate_id))
+            group = context.duplicates_collection.get_group(duplicate_id)
             for dup_id in group:
                 if str(dup_id) == self.asset.id:
                     continue
