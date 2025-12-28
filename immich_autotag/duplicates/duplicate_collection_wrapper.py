@@ -6,6 +6,11 @@ from typing import Any, Dict, List
 from uuid import UUID
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
 
+from typing import Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.assets.asset_manager import AssetManager
+    from immich_autotag.context.immich_context import ImmichContext
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAssetGroup:
@@ -22,6 +27,7 @@ class DuplicateAssetGroup:
 
 
 @attrs.define(auto_attribs=True, slots=True)
+
 
 class DuplicateCollectionWrapper:
 
@@ -55,7 +61,7 @@ class DuplicateCollectionWrapper:
         """Return the DuplicateAssetGroup for a given duplicate_id. Empty if not found."""
         return self.groups_by_duplicate_id.get(duplicate_id, DuplicateAssetGroup([]))
     @typechecked
-    def get_duplicate_asset_links(self, duplicate_id: UUID) -> list[ParseResult]:
+    def get_duplicate_asset_links(self, duplicate_id: Optional[UUID]) -> list[ParseResult]:
         """
         Returns a list of ParseResult (standard URL objects) for all assets in the duplicate group.
         duplicate_id: UUID
@@ -67,7 +73,12 @@ class DuplicateCollectionWrapper:
         return [urlparse(get_immich_photo_url(dup_id)) for dup_id in group]
     
     @typechecked
-    def get_duplicate_asset_wrappers(self, duplicate_id: UUID, asset_manager, context) -> list:
+    def get_duplicate_asset_wrappers(
+        self,
+        duplicate_id: UUID,
+        asset_manager: 'AssetManager',
+        context: 'ImmichContext',
+    ) -> list['AssetResponseWrapper']:
         """
         Returns a list of AssetResponseWrapper objects for all assets in the duplicate group.
         """
