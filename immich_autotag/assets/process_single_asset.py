@@ -14,6 +14,8 @@ from immich_autotag.config.user import TAG_CONVERSIONS, ALBUM_PATTERN
 from immich_autotag.tags.modification_kind import ModificationKind
 
 
+
+import attrs
 from uuid import UUID
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
