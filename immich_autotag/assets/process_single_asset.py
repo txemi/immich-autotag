@@ -43,7 +43,9 @@ import attrs
 class AlbumDecision:
     albums_from_duplicates: set[str]
     album_from_folder: str | None
-
+    # todo: quiero poder poner un breakpoint en construccion, crea funcion constructura de attrs para poder meter una breakpoint
+    def __attrs_post_init__(self):
+        pass
     def all_options(self) -> set[str]:
         opts = set(self.albums_from_duplicates)
         if self.album_from_folder:
