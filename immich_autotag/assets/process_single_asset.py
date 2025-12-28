@@ -112,6 +112,7 @@ def analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "TagModificationReport",
     suppress_album_already_belongs_log: bool = True,
+    fail_on_duplicate_album_conflict: bool = False,
 ) -> None:
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
@@ -126,6 +127,7 @@ def analyze_and_assign_album(
             print(f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed.")
     elif album_decision.has_conflict():
         from immich_autotag.utils.helpers import get_immich_photo_url
+        from immich_autotag.config.user import AUTOTAG_DUPLICATE_ALBUM_CONFLICT
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
         albums_info = album_decision.duplicates_info
@@ -138,9 +140,14 @@ def analyze_and_assign_album(
             )
         if details:
             print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details))
-            raise NotImplementedError(
-                f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
-            )
+            if fail_on_duplicate_album_conflict:
+                raise NotImplementedError(
+                    f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
+                )
+            else:
+                # Etiquetar el asset con la etiqueta de conflicto de álbumes entre duplicados
+                print(f"[ALBUM ASSIGNMENT] Tagging asset {asset_wrapper.asset.id} with '{AUTOTAG_DUPLICATE_ALBUM_CONFLICT}' for duplicate album conflict.")
+                asset_wrapper.add_tag_by_name(AUTOTAG_DUPLICATE_ALBUM_CONFLICT, verbose=True)
         # No assignment performed due to ambiguity/conflict
         return
 
