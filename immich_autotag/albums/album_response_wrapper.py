@@ -34,9 +34,13 @@ class AlbumResponseWrapper:
         """Returns True if the asset belongs to this album (optimizado con set)."""
         return asset.id in self.asset_ids
     @typechecked
-    def has_asset_wrapper(self, asset_wrapper: "AssetResponseWrapper") -> bool:
-        """Returns True if the wrapped asset belongs to this album (high-level API)."""
-        return self.has_asset(asset_wrapper.asset)
+    def has_asset_wrapper(self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True) -> bool:
+        """Returns True if the wrapped asset belongs to this album (high-level API).
+        Si use_cache=True, usa el set cacheado (rápido). Si False, usa búsqueda lineal (lento, solo para pruebas)."""
+        if use_cache:
+            return asset_wrapper.asset.id in self.asset_ids
+        else:
+            return self.has_asset(asset_wrapper.asset)
     @typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         """
