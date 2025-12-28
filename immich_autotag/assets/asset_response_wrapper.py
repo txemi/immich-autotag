@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
+from immich_autotag.tags.tag_modification_report import TagModificationReport
 from urllib.parse import ParseResult
 from uuid import UUID
 
