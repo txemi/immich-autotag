@@ -4,10 +4,7 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 ## [0.10] - YYYY-MM-DD
 ### Added
-- Clear definition of asset categories using configuration files.
-- Automatic tags to inform users about categorized and uncategorized assets.
-- Conflict tags when categorization issues are detected.
-
+# **Info:** The official release tag for version 0.10 is [`v0.10`](https://github.com/txemi/immich-autotag/releases/tag/v0.10) on the `main` branch.
 ## [0.20] - YYYY-MM-DD
 ### Added
 - Automatic album creation for uncategorized assets based on file path analysis.
