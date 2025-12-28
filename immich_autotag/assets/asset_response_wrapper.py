@@ -13,7 +13,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_client.api.assets import get_asset_info
 from immich_autotag.utils.helpers import get_immich_photo_url
-from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CONFLICT_CATEGORY, ENABLE_ALBUM_DETECTION_FROM_FOLDERS
+from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_CATEGORY_UNKNOWN, AUTOTAG_CATEGORY_CONFLICT, ENABLE_ALBUM_DETECTION_FROM_FOLDERS
 from immich_autotag.classification.match_classification_result import MatchClassificationResult
 
 if TYPE_CHECKING:
@@ -153,15 +153,56 @@ class AssetResponseWrapper:
                 else:
                     if verbose:
                         print(f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping.")
-                    return
-        # Call the correct endpoint to associate the tag with the asset
+                    return False
+        # Extra checks and logging before API call
+        if not tag or not getattr(tag, 'id', None):
+            error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
+            print(error_msg)
+            if tag_mod_report:
+                from immich_autotag.tags.modification_kind import ModificationKind
+                tag_mod_report.add_modification(
+                    asset_id=self.id_as_uuid,
+                    asset_name=self.original_file_name,
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    tag_name=tag_name,
+                    user=user,
+                    extra={"error": error_msg},
+                )
+            return False
+        if not self.id:
+            error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"
+            print(error_msg)
+            if tag_mod_report:
+                from immich_autotag.tags.modification_kind import ModificationKind
+                tag_mod_report.add_modification(
+                    asset_id=None,
+                    asset_name=self.original_file_name,
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    tag_name=tag_name,
+                    user=user,
+                    extra={"error": error_msg},
+                )
+            return False
         if verbose:
-            print(
-                f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}"
+            print(f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}")
+        try:
+            response = tag_assets.sync(
+                id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
             )
-        response = tag_assets.sync(
-            id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
-        )
+        except Exception as e:
+            error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
+            print(error_msg)
+            if tag_mod_report:
+                from immich_autotag.tags.modification_kind import ModificationKind
+                tag_mod_report.add_modification(
+                    asset_id=self.id_as_uuid,
+                    asset_name=self.original_file_name,
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    tag_name=tag_name,
+                    user=user,
+                    extra={"error": error_msg},
+                )
+            return False
         if verbose:
             print(f"[DEBUG] Response tag_assets: {response}")
         # Request the asset again and check if the tag is applied
@@ -172,13 +213,21 @@ class AssetResponseWrapper:
             [tag.name for tag in updated_asset.tags] if updated_asset.tags else []
         )
         if tag_name not in tag_names:
-            raise RuntimeError(
-                f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
-            )
+            error_msg = f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
+            print(error_msg)
+            if tag_mod_report:
+                from immich_autotag.tags.modification_kind import ModificationKind
+                tag_mod_report.add_modification(
+                    asset_id=self.id_as_uuid,
+                    asset_name=self.original_file_name,
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    tag_name=tag_name,
+                    user=user,
+                    extra={"error": error_msg},
+                )
+            return False
         if info:
-            print(
-                f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}"
-            )
+            print(f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}")
         if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
             tag_mod_report.add_modification(
@@ -326,7 +375,7 @@ class AssetResponseWrapper:
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
         Idempotent: does nothing if already in correct state.
         """
-        tag_name = AUTOTAG_UNKNOWN_CATEGORY
+        tag_name = AUTOTAG_CATEGORY_UNKNOWN
         if not classified:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
@@ -353,7 +402,7 @@ class AssetResponseWrapper:
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         """
-        tag_name = AUTOTAG_CONFLICT_CATEGORY
+        tag_name = AUTOTAG_CATEGORY_CONFLICT
         if conflict:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
@@ -514,8 +563,8 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-        from immich_autotag.config.user import AUTOTAG_DUPLICATE_ALBUM_CONFLICT
-        tag_name = AUTOTAG_DUPLICATE_ALBUM_CONFLICT
+        from immich_autotag.config.user import AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
+        tag_name = AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
         # Generic tag
         if conflict:
             if not self.has_tag(tag_name):
