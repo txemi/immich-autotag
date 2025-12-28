@@ -145,9 +145,19 @@ def analyze_and_assign_album(
                     f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
                 )
             else:
-                # Etiquetar el asset con la etiqueta de conflicto de álbumes entre duplicados
+                # Etiquetar todos los duplicados con una etiqueta única para este conjunto
+                # Etiquetar SIEMPRE con la etiqueta genérica
                 print(f"[ALBUM ASSIGNMENT] Tagging asset {asset_wrapper.asset.id} with '{AUTOTAG_DUPLICATE_ALBUM_CONFLICT}' for duplicate album conflict.")
                 asset_wrapper.add_tag_by_name(AUTOTAG_DUPLICATE_ALBUM_CONFLICT, verbose=True)
+
+                # Etiquetar también con la etiqueta específica por set si hay duplicate_id
+                duplicate_id = asset_wrapper.asset.duplicate_id
+                tag_for_set = f"{AUTOTAG_DUPLICATE_ALBUM_CONFLICT}_{duplicate_id}"
+                if duplicate_id:
+                    print(f"[ALBUM ASSIGNMENT] Tagging all assets in duplicate set {duplicate_id} with '{tag_for_set}' for duplicate album conflict.")
+                    all_wrappers = [asset_wrapper] + list(albums_info.get_details().values())
+                    for wrapper in all_wrappers:
+                        wrapper.add_tag_by_name(tag_for_set, verbose=True)
         # No assignment performed due to ambiguity/conflict
         return
 
