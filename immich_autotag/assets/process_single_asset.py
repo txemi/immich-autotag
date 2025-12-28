@@ -120,19 +120,12 @@ def analyze_and_assign_album(
         duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id)
         print(f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}")
         if duplicate_links:
-            # For each duplicate, show its link and the albums it belongs to
-            duplicate_id = asset_wrapper.duplicate_id_as_uuid
-            # todo aqui abajo no podemos usar get_duplicate_asset_wrappers ??
-            group = context.duplicates_collection.get_group(duplicate_id)
-            albums_collection = context.albums_collection
-            details = []
-            for dup_id, link in zip(group, duplicate_links):
-                dup_asset = context.asset_manager.get_asset(dup_id, context)
-                if dup_asset is not None:
-                    albums = albums_collection.albums_for_asset(dup_asset.asset)
-                    details.append(f"{link.geturl()} | albums: {albums}")
-                else:
-                    details.append(f"{link.geturl()} | albums: [unavailable]")
+            # Use the new API to get AssetResponseWrapper objects for all duplicates
+            wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(duplicate_id, context.asset_manager, context)
+            details = [
+                f"{w.get_link().geturl()} | albums: {w.get_album_names() or '[unavailable]'}"
+                for w in wrappers
+            ]
             print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details))
             # This situation requires user intervention: ambiguous album assignment due to duplicates.
             raise NotImplementedError(
