@@ -153,14 +153,31 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
             raise RuntimeError(f"Duplicate asset wrapper not found for asset {dup_asset_wrapper.asset.id}. This should not happen.")
         # Compare tags using a method on AssetResponseWrapper
         if not asset_wrapper.has_same_classification_tags_as(dup_asset_wrapper):
+            # Try to auto-fix: if one has a classification tag and the other does not, add it to the one missing it
+            tags1 = set(asset_wrapper.get_classification_tags())
+            tags2 = set(dup_asset_wrapper.get_classification_tags())
+            diff1 = tags1 - tags2
+            diff2 = tags2 - tags1
+            # Only one asset has classification tags, the other has none
+            if tags1 and not tags2 and len(tags1) == 1:
+                # Add the tag to dup_asset_wrapper
+                tag_to_add = next(iter(tags1))
+                print(f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {dup_asset_wrapper.asset.id}")
+                dup_asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
+                continue
+            elif tags2 and not tags1 and len(tags2) == 1:
+                # Add the tag to asset_wrapper
+                tag_to_add = next(iter(tags2))
+                print(f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}")
+                asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
+                continue
+            # Otherwise, print and raise as before
             link1 = asset_wrapper.get_link().geturl()
             link2 = dup_asset_wrapper.get_link().geturl()
-            tags1 = asset_wrapper.get_tag_names()
-            tags2 = dup_asset_wrapper.get_tag_names()
             msg = (
                 f"[ERROR] Classification tags differ for duplicates:\n"
-                f"Asset 1: {asset_wrapper.asset.id} | {link1}\nTags: {tags1}\n"
-                f"Asset 2: {dup_asset_wrapper.asset.id} | {link2}\nTags: {tags2}"
+                f"Asset 1: {asset_wrapper.asset.id} | {link1}\nTags: {list(tags1)}\n"
+                f"Asset 2: {dup_asset_wrapper.asset.id} | {link2}\nTags: {list(tags2)}"
             )
             print(msg)
             raise NotImplementedError(msg)
