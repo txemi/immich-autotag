@@ -123,7 +123,7 @@ def analyze_and_assign_album(
             # Use the new API to get AssetResponseWrapper objects for all duplicates
             wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(duplicate_id, context.asset_manager, context)
             details = [
-                f"{w.get_link().geturl()} | albums: {w.get_album_names() or '[unavailable]'}"
+                f"{w.get_link().geturl()} | file: {w.asset.original_file_name} | date: {w.asset.created_at} | albums: {w.get_album_names() or '[unavailable]'}"
                 for w in wrappers
             ]
             print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details))
