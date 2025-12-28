@@ -2,7 +2,7 @@
 
 All versions follow [Semantic Versioning](https://semver.org/).
 
-## [0.10] - YYYY-MM-DD
+## [0.10] - 2025-12-23
 ### Added
 # **Info:** The official release tag for version 0.10 is [`v0.10`](https://github.com/txemi/immich-autotag/releases/tag/v0.10) on the `main` branch.
 - Clear definition of asset categories using configuration files.
