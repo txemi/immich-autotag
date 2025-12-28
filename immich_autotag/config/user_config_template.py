@@ -67,16 +67,19 @@ TAG_CONVERSIONS = [
 # These are typically photos that are not yet organized, and need to be reviewed. You can use the Immich interface to filter by this tag and quickly find all unclassified assets.
 # The goal is to ensure every photo belongs to exactly one event album or is intentionally excluded (e.g., meme, ignore, etc.).
 AUTOTAG_UNKNOWN_CATEGORY = "autotag_output_unknown"
+# TODO: refactorizar a AUTOTAG_CATEGORY_UNKNOWN
 #
 # AUTOTAG_CONFLICT_CATEGORY: This tag is applied to assets that are assigned to more than one event album (i.e., they match multiple groups, which is considered a classification conflict).
 # The ideal is that each photo belongs to only one event album. If a photo is in several, it means the organization needs to be reviewed.
 # Filtering by this tag in the Immich interface allows you to quickly focus on and resolve these conflicts: either by moving the photo to the correct album, removing it from extra albums, or reclassifying it (e.g., as meme or ignore).
 AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"
+# todo: refactorizar a AUTOTAG_CATEGORY_CONFLICT
 
 #
 # AUTOTAG_DUPLICATE_ALBUM_CONFLICT: This tag is applied to assets that have a conflict of album assignment between duplicates (i.e., two or more duplicate assets are assigned to different event albums, which is an organizational inconsistency).
 # Filtering by this tag in the Immich interface allows you to quickly find and resolve these duplicate album conflicts, ensuring that all duplicates are consistently organized.
 AUTOTAG_DUPLICATE_ALBUM_CONFLICT = "autotag_output_duplicate_album_conflict"
+# todo: refactorizar a AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
 
 
 # Feature flag: Remove leading/trailing spaces from album names (default: True)
