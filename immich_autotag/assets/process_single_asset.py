@@ -118,6 +118,14 @@ def analyze_and_assign_album(
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
     """
     album_decision = decide_album_for_asset(asset_wrapper)
+    # Si hay conflicto de álbumes entre duplicados, añade la etiqueta; si no, la elimina si está presente
+    conflict = album_decision.has_conflict()
+    duplicate_id = asset_wrapper.asset.duplicate_id
+    # Aplica la lógica de la etiqueta de conflicto a todos los duplicados
+    all_wrappers = [asset_wrapper] + list(album_decision.duplicates_info.get_details().values())
+    for wrapper in all_wrappers:
+        wrapper.ensure_autotag_duplicate_album_conflict(conflict, tag_mod_report=tag_mod_report, duplicate_id=duplicate_id)
+
     if album_decision.is_unique():
         detected_album = album_decision.get_unique()
         if detected_album:
@@ -125,9 +133,8 @@ def analyze_and_assign_album(
             _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin, suppress_album_already_belongs_log=suppress_album_already_belongs_log)
         else:
             print(f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed.")
-    elif album_decision.has_conflict():
+    elif conflict:
         from immich_autotag.utils.helpers import get_immich_photo_url
-        from immich_autotag.config.user import AUTOTAG_DUPLICATE_ALBUM_CONFLICT
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
         albums_info = album_decision.duplicates_info
@@ -140,25 +147,11 @@ def analyze_and_assign_album(
             )
         if details:
             print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details))
-            if fail_on_duplicate_album_conflict:
-                raise NotImplementedError(
-                    f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
-                )
-            else:
-                # Etiquetar todos los duplicados con una etiqueta única para este conjunto
-                # Etiquetar SIEMPRE con la etiqueta genérica
-                print(f"[ALBUM ASSIGNMENT] Tagging asset {asset_wrapper.asset.id} with '{AUTOTAG_DUPLICATE_ALBUM_CONFLICT}' for duplicate album conflict.")
-                asset_wrapper.add_tag_by_name(AUTOTAG_DUPLICATE_ALBUM_CONFLICT, verbose=True)
-
-                # Etiquetar también con la etiqueta específica por set si hay duplicate_id
-                duplicate_id = asset_wrapper.asset.duplicate_id
-                tag_for_set = f"{AUTOTAG_DUPLICATE_ALBUM_CONFLICT}_{duplicate_id}"
-                if duplicate_id:
-                    print(f"[ALBUM ASSIGNMENT] Tagging all assets in duplicate set {duplicate_id} with '{tag_for_set}' for duplicate album conflict.")
-                    all_wrappers = [asset_wrapper] + list(albums_info.get_details().values())
-                    for wrapper in all_wrappers:
-                        wrapper.add_tag_by_name(tag_for_set, verbose=True)
-        # No assignment performed due to ambiguity/conflict
+        if fail_on_duplicate_album_conflict:
+            raise NotImplementedError(
+                f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
+            )
+        # No assignment performed debido a ambigüedad/conflicto
         return
 
 
