@@ -145,17 +145,16 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
     duplicate_id = asset_wrapper.asset.duplicate_id
     if not duplicate_id:
         return
-    group = context.duplicates_collection.get_group(asset_wrapper.duplicate_id_as_uuid)
-    for dup_id in group:
-        if str(dup_id) == asset_wrapper.asset.id:
+    wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context)
+    for dup_asset_wrapper in wrappers:
+        if dup_asset_wrapper.asset.id == asset_wrapper.asset.id:
             continue
-        dup_asset_wrapper = context.asset_manager.get_asset(dup_id, context)
         if dup_asset_wrapper is None:
-            raise RuntimeError(f"Duplicate asset wrapper not found for asset {dup_id}. This should not happen.")
+            raise RuntimeError(f"Duplicate asset wrapper not found for asset {dup_asset_wrapper.asset.id}. This should not happen.")
         # Compare tags using a method on AssetResponseWrapper
         if not asset_wrapper.has_same_classification_tags_as(dup_asset_wrapper):
             raise NotImplementedError(
-                f"Classification tags differ for duplicates: {asset_wrapper.asset.id} vs {dup_id}"
+                f"Classification tags differ for duplicates: {asset_wrapper.asset.id} vs {dup_asset_wrapper.asset.id}"
             )
 
 
