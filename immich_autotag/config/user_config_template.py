@@ -78,7 +78,13 @@ AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"
 #
 # AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT: This tag is applied to assets that have a conflict of album assignment between duplicates (i.e., two or more duplicate assets are assigned to different event albums, which is an organizational inconsistency).
 # Filtering by this tag in the Immich interface allows you to quickly find and resolve these duplicate album conflicts, ensuring that all duplicates are consistently organized.
-AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT = "autotag_output_duplicate_album_conflict"
+AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT = "autotag_output_duplicate_asset_album_conflict"
+
+# AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT: This tag is applied to assets that have a conflict of classification tags between duplicates (i.e., two or more duplicate assets have different classification tags, which is an organizational inconsistency).
+# Filtering by this tag in the Immich interface allows you to quickly find and resolve these duplicate classification conflicts, ensuring that all duplicates are consistently organized.
+AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = "autotag_output_duplicate_asset_classification_conflict"
+# Prefix for group-specific duplicate classification conflict tag
+AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = "autotag_output_duplicate_asset_classification_conflict_"
 # todo: refactorizar a AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
 
 

@@ -166,6 +166,7 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
     if not duplicate_id:
         return
     wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context)
+    from immich_autotag.config.user import AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX
     for dup_asset_wrapper in wrappers:
         if dup_asset_wrapper.asset.id == asset_wrapper.asset.id:
             continue
@@ -173,34 +174,41 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
             raise RuntimeError(f"Duplicate asset wrapper not found for asset {dup_asset_wrapper.asset.id}. This should not happen.")
         # Compare tags using a method on AssetResponseWrapper
         if not asset_wrapper.has_same_classification_tags_as(dup_asset_wrapper):
-            # Try to auto-fix: if one has a classification tag and the other does not, add it to the one missing it
             tags1 = set(asset_wrapper.get_classification_tags())
             tags2 = set(dup_asset_wrapper.get_classification_tags())
             diff1 = tags1 - tags2
             diff2 = tags2 - tags1
-            # Only one asset has classification tags, the other has none
             if tags1 and not tags2 and len(tags1) == 1:
-                # Add the tag to dup_asset_wrapper
                 tag_to_add = next(iter(tags1))
                 print(f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {dup_asset_wrapper.asset.id}")
                 dup_asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
                 continue
             elif tags2 and not tags1 and len(tags2) == 1:
-                # Add the tag to asset_wrapper
                 tag_to_add = next(iter(tags2))
                 print(f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}")
                 asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
                 continue
-            # Otherwise, print and raise as before
-            link1 = asset_wrapper.get_link().geturl()
-            link2 = dup_asset_wrapper.get_link().geturl()
+            # Otherwise, print and tag all duplicates with conflict tags
+            all_wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(
+                asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context
+            )
+            details = []
+            for w in all_wrappers:
+                link = w.get_link().geturl()
+                tags = w.get_classification_tags()
+                details.append(f"{w.asset.id} | {link} | Tags: {list(tags)}")
             msg = (
                 f"[ERROR] Classification tags differ for duplicates:\n"
-                f"Asset 1: {asset_wrapper.asset.id} | {link1}\nTags: {list(tags1)}\n"
-                f"Asset 2: {dup_asset_wrapper.asset.id} | {link2}\nTags: {list(tags2)}"
+                + "\n".join(details)
             )
             print(msg)
-            raise NotImplementedError(msg)
+            # Tag all duplicates with generic and group-specific conflict tags
+            group_tag = f"{AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX}{asset_wrapper.duplicate_id_as_uuid}"
+            for w in all_wrappers:
+                w.add_tag_by_name(AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, verbose=True)
+                w.add_tag_by_name(group_tag, verbose=True)
+            # No exception raised; process continues
+            return
 
 
 @typechecked
