@@ -470,3 +470,22 @@ class AssetResponseWrapper:
         Returns the names of the albums this asset belongs to.
         """
         return self.context.albums_collection.albums_for_asset(self.asset)
+
+    @typechecked
+    def get_duplicate_wrappers(self) -> list["AssetResponseWrapper"]:
+        """
+        Returns a list of AssetResponseWrapper objects for all duplicates of this asset (excluding itself).
+        """
+        from uuid import UUID
+        context = self.context
+        duplicate_id = self.asset.duplicate_id
+        wrappers = []
+        if duplicate_id is not None:
+            group = context.duplicates_collection.get_group(UUID(duplicate_id))
+            for dup_id in group:
+                if str(dup_id) == self.asset.id:
+                    continue
+                dup_asset = context.asset_manager.get_asset(dup_id, context)
+                if dup_asset is not None:
+                    wrappers.append(dup_asset)
+        return wrappers
