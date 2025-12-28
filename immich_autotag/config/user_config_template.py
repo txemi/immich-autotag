@@ -73,6 +73,12 @@ AUTOTAG_UNKNOWN_CATEGORY = "autotag_output_unknown"
 # Filtering by this tag in the Immich interface allows you to quickly focus on and resolve these conflicts: either by moving the photo to the correct album, removing it from extra albums, or reclassifying it (e.g., as meme or ignore).
 AUTOTAG_CONFLICT_CATEGORY = "autotag_output_conflict"
 
+#
+# AUTOTAG_DUPLICATE_ALBUM_CONFLICT: This tag is applied to assets that have a conflict of album assignment between duplicates (i.e., two or more duplicate assets are assigned to different event albums, which is an organizational inconsistency).
+# Filtering by this tag in the Immich interface allows you to quickly find and resolve these duplicate album conflicts, ensuring that all duplicates are consistently organized.
+AUTOTAG_DUPLICATE_ALBUM_CONFLICT = "autotag_output_duplicate_album_conflict"
+
+
 # Feature flag: Remove leading/trailing spaces from album names (default: True)
 #
 # When enabled, the autotag system will automatically clean up album names by removing any leading or trailing spaces
