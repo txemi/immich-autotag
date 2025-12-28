@@ -22,10 +22,11 @@ class AlbumResponseWrapper:
         validator=attrs.validators.instance_of(AlbumResponseDto)
     )
 
-    @property
+    from functools import cached_property
+
+    @cached_property
     def asset_ids(self) -> set[str]:
         """Set de IDs de assets del álbum, cacheado para acceso O(1) en has_asset."""
-        # Si los assets no cambian durante la vida del wrapper, esto es seguro y eficiente.
         return set(a.id for a in self.album.assets) if self.album.assets else set()
 
     @typechecked
