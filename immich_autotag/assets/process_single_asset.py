@@ -260,10 +260,9 @@ def _process_album_detection(
                     except AttributeError:
                         pass
                     from immich_autotag.utils.helpers import get_immich_photo_url
+                    from immich_autotag.utils.get_immich_album_url import get_immich_album_url
                     asset_url = get_immich_photo_url(asset_wrapper.id_as_uuid)
-                    # Album web link: assuming Immich album URL pattern
-                    # todo: si tenemos metodo para enlace a foto tambien deberíamos para enlace a album
-                    album_url = f"/albums/{album.id}"
+                    album_url = get_immich_album_url(album.id)
                     print(f"[ERROR] Asset {asset_wrapper.id} was not successfully added to album {album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}")
                     print(f"[DEBUG] Full add_assets_to_album response: {result}")
                     raise RuntimeError(
