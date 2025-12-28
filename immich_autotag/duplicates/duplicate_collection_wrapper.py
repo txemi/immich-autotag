@@ -26,6 +26,7 @@ class DuplicateAssetGroup:
 class DuplicateCollectionWrapper:
 
 
+
     """
     Wrapper for the Immich duplicates database structure.
     Holds a mapping from duplicate_id (UUID) to DuplicateAssetGroup.
@@ -64,3 +65,16 @@ class DuplicateCollectionWrapper:
             return []
         group = self.get_group(duplicate_id)
         return [urlparse(get_immich_photo_url(dup_id)) for dup_id in group]
+    
+    @typechecked
+    def get_duplicate_asset_wrappers(self, duplicate_id: UUID, asset_manager, context) -> list:
+        """
+        Returns a list of AssetResponseWrapper objects for all assets in the duplicate group.
+        """
+        group = self.get_group(duplicate_id)
+        wrappers = []
+        for dup_id in group:
+            wrapper = asset_manager.get_asset(dup_id, context)
+            if wrapper is not None:
+                wrappers.append(wrapper)
+        return wrappers

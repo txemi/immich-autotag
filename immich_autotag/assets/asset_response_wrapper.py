@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from urllib.parse import ParseResult
+from uuid import UUID
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
@@ -14,13 +16,13 @@ from immich_autotag.classification.match_classification_result import MatchClass
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
-    from .main import TagModificationReport
 
 
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AssetResponseWrapper:
+
 
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
@@ -445,3 +447,24 @@ class AssetResponseWrapper:
                     relevant_tags.discard(origin)
         # Filter asset tags to only those relevant for classification (case-sensitive)
         return [tag.name for tag in self.asset.tags if tag.name in relevant_tags] if self.asset.tags else []
+
+
+    @typechecked
+    def get_link(self) -> ParseResult:
+        """
+        Returns a ParseResult URL object for this asset.
+        """
+        from urllib.parse import urlparse, ParseResult
+        from immich_autotag.utils.helpers import get_immich_photo_url
+        url = get_immich_photo_url(self.uuid)
+        return urlparse(url)
+
+    @property
+    def uuid(self) -> UUID:
+        return UUID(self.asset.id)
+
+    def get_album_names(self) -> list[str]:
+        """
+        Returns the names of the albums this asset belongs to.
+        """
+        return self.context.albums_collection.albums_for_asset(self.asset)
