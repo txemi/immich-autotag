@@ -44,16 +44,22 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Duplicat
 
 
 import attrs
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
 
+@attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumDecision:
-    albums_from_duplicates: set[str]
+    """
+    Encapsulates the decision logic for album assignment, including all album info from duplicates (as DuplicateAlbumsInfo)
+    and the album detected from folder structure (if any).
+    """
+    duplicates_info: DuplicateAlbumsInfo
     album_from_folder: str | None
-    # todo: quiero poder poner un breakpoint en construccion, crea funcion constructura de attrs para poder meter una breakpoint
+
     def __attrs_post_init__(self):
+        # Place breakpoint here for debugging construction
         pass
+
     def all_options(self) -> set[str]:
-        opts = set(self.albums_from_duplicates)
+        opts = set(self.duplicates_info.all_album_names())
         if self.album_from_folder:
             opts.add(self.album_from_folder)
         return opts
@@ -79,7 +85,7 @@ class AlbumDecision:
     def get_album_origin(self, album: str) -> str:
         if self.album_from_folder == album:
             return "from folders"
-        elif album in self.albums_from_duplicates:
+        elif album in self.duplicates_info.all_album_names():
             return "from duplicates"
         else:
             return "unknown"
@@ -93,11 +99,9 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
     """
     Returns an AlbumDecision object with all relevant information to decide the album.
     """
-    import re
     albums_info = get_album_from_duplicates(asset_wrapper)
-    filtered_duplicates = {a for a in albums_info.all_album_names() if re.match(ALBUM_PATTERN, a)}
     detected_album = asset_wrapper.try_detect_album_from_folders()
-    return AlbumDecision(albums_from_duplicates=filtered_duplicates, album_from_folder=detected_album)
+    return AlbumDecision(duplicates_info=albums_info, album_from_folder=detected_album)
 
 
 @typechecked
@@ -122,19 +126,15 @@ def analyze_and_assign_album(
         from immich_autotag.utils.helpers import get_immich_photo_url
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
-        context = asset_wrapper.context
-        duplicate_id = asset_wrapper.duplicate_id_as_uuid
-        duplicate_links = context.duplicates_collection.get_duplicate_asset_links(duplicate_id)
+        albums_info = album_decision.duplicates_info
         print(f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}")
-        if duplicate_links:
-            # Use the new API to get AssetResponseWrapper objects for all duplicates
-            wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(duplicate_id, context.asset_manager, context)
-            details = [
-                f"{w.get_link().geturl()} | file: {w.asset.original_file_name} | date: {w.asset.created_at} | albums: {w.get_album_names() or '[unavailable]'}"
-                for w in wrappers
-            ]
+        details = []
+        for dup_wrapper, albums in albums_info.get_details().items():
+            details.append(
+                f"{dup_wrapper.get_link().geturl()} | file: {dup_wrapper.asset.original_file_name} | date: {dup_wrapper.asset.created_at} | albums: {albums or '[unavailable]'}"
+            )
+        if details:
             print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details))
-            # This situation requires user intervention: ambiguous album assignment due to duplicates.
             raise NotImplementedError(
                 f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
             )
