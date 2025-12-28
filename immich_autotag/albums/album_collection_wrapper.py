@@ -13,6 +13,7 @@ from immich_autotag.tags.tag_modification_report import TagModificationReport
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
+
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
@@ -25,6 +26,20 @@ class AlbumCollectionWrapper:
             if album_wrapper.has_asset(asset):
                 album_names.append(album_wrapper.album.album_name)
         return album_names
+    @typechecked
+    def albums_for_asset_wrapper(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
+        """Returns the names of the albums the asset (wrapped) belongs to."""
+        return self.albums_for_asset(asset_wrapper.asset)    
+    @typechecked
+    def albums_wrappers_for_asset_wrapper(self, asset_wrapper: "AssetResponseWrapper") -> list[AlbumResponseWrapper]:
+        """Returns the AlbumResponseWrapper objects for all albums the asset (wrapped) belongs to.
+        This is more robust than using album names, as names may not be unique."""
+        result = []
+        for album_wrapper in self.albums:
+            if album_wrapper.has_asset(asset_wrapper.asset):
+                result.append(album_wrapper)
+        return result
+    
     @typechecked
     def create_or_get_album_with_user(
         self,

@@ -17,6 +17,7 @@ from immich_autotag.context.immich_context import ImmichContext
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
+
     album: AlbumResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AlbumResponseDto)
     )
@@ -27,7 +28,10 @@ class AlbumResponseWrapper:
         if self.album.assets:
             return any(a.id == asset.id for a in self.album.assets)
         return False
-
+    @typechecked
+    def has_asset_wrapper(self, asset_wrapper: "AssetResponseWrapper") -> bool:
+        """Returns True if the wrapped asset belongs to this album (high-level API)."""
+        return self.has_asset(asset_wrapper.asset)
     @typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         """
