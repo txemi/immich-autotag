@@ -13,22 +13,34 @@ from immich_autotag.assets.asset_validation import validate_and_update_asset_cla
 from immich_autotag.config.user import TAG_CONVERSIONS, ALBUM_PATTERN
 from immich_autotag.tags.modification_kind import ModificationKind
 
+
+import attrs
+
+@attrs.define(auto_attribs=True, slots=True, frozen=True)
+class DuplicateAlbumsInfo:
+    _mapping: Dict[AssetResponseWrapper, List[str]]
+
+    def all_album_names(self) -> set[str]:
+        """Return a set with all album names found among duplicates."""
+        return {album for albums in self._mapping.values() for album in albums}
+
+    def get_details(self) -> Dict[AssetResponseWrapper, List[str]]:
+        """Return the full mapping (read-only)."""
+        return dict(self._mapping)
+
 @typechecked
-def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Dict["AssetResponseWrapper", List[str]]:
+def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> DuplicateAlbumsInfo:
     """
-    For a given asset, if it is a duplicate, returns a mapping from each duplicate AssetResponseWrapper (excluding itself)
+    For a given asset, if it is a duplicate, returns a DuplicateAlbumsInfo object encapsulating the mapping from each duplicate AssetResponseWrapper (excluding itself)
     to the list of album names it belongs to. This allows for richer traceability and future extensibility.
-    If there are no duplicates, returns an empty dict.
+    If there are no duplicates, returns an empty mapping.
     """
-    # todo: Apeteciendo encapsular el diccionario de retorno en una clase nueva que haríamos como siempre con attrs para que sea robusta de esta manera será muy fácil si alguien solo le interesan un set con los álbumes lo podríamos obtener con un método y si alguien le apetece todo el detalle pues podríamos tener métodos para que obtenga el detalle de esta forma no exponemos el diccionario interno y hacemos métodos para acceder con comodidad a lo que haga falta
-
-
     result: Dict[AssetResponseWrapper, List[str]] = {}
     duplicate_wrappers = asset_wrapper.get_duplicate_wrappers()
     for dup_wrapper in duplicate_wrappers:
         albums = dup_wrapper.get_album_names()
         result[dup_wrapper] = list(albums)
-    return result
+    return DuplicateAlbumsInfo(result)
 
 
 import attrs
@@ -82,11 +94,8 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
     Returns an AlbumDecision object with all relevant information to decide the album.
     """
     import re
-    albums_from_duplicates_map = get_album_from_duplicates(asset_wrapper)
-    all_duplicate_albums = set()
-    for album_list in albums_from_duplicates_map.values():
-        all_duplicate_albums.update(album_list)
-    filtered_duplicates = {a for a in all_duplicate_albums if re.match(ALBUM_PATTERN, a)}
+    albums_info = get_album_from_duplicates(asset_wrapper)
+    filtered_duplicates = {a for a in albums_info.all_album_names() if re.match(ALBUM_PATTERN, a)}
     detected_album = asset_wrapper.try_detect_album_from_folders()
     return AlbumDecision(albums_from_duplicates=filtered_duplicates, album_from_folder=detected_album)
 
