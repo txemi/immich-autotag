@@ -17,7 +17,10 @@ from immich_autotag.tags.modification_kind import ModificationKind
 
 import attrs
 from uuid import UUID
-
+# Date correction config flag
+from immich_autotag.config.user import ENABLE_DATE_CORRECTION
+# Date correction logic
+from immich_autotag.assets.date_correction import correct_asset_date
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAlbumsInfo:
     # Maps asset UUID to AssetResponseWrapper
@@ -324,11 +327,4 @@ def _process_album_detection(
             )
 
 
-from immich_autotag.config.user import ENABLE_DATE_CORRECTION
-# --- Date correction logic ---
-def correct_asset_date(asset_wrapper: "AssetResponseWrapper") -> None:
-    """
-    Placeholder for asset date correction logic. Will attempt to fix incorrect dates (e.g., scanned, WhatsApp, etc.).
-    For now, raises NotImplementedError.
-    """
-    raise NotImplementedError("Date correction for asset is not yet implemented.")
+
