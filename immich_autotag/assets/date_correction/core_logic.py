@@ -31,7 +31,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date = asset_wrapper.get_best_date()
     # If Immich date is the oldest or strictly earlier than all suggestions, do nothing
-    if all(immich_date <= d for _, d in date_candidates):
+    if all(immich_date <= d for d in date_candidates.all_dates()):
         print(f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a todas las sugeridas, no se hace nada.")
         return
     # If Immich date is the same day as the oldest, do nothing
