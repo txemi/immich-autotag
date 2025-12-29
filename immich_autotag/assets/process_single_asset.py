@@ -20,7 +20,6 @@ from uuid import UUID
 # Date correction config flag
 from immich_autotag.config.user import ENABLE_DATE_CORRECTION
 # Date correction logic
-from immich_autotag.assets.date_correction.core_logic import correct_asset_date
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAlbumsInfo:
     # Maps asset UUID to AssetResponseWrapper
@@ -226,6 +225,7 @@ def process_single_asset(
 
     # Date correction step (configurable)
     if ENABLE_DATE_CORRECTION:
+        from immich_autotag.assets.date_correction.core_logic import correct_asset_date
         correct_asset_date(asset_wrapper)
 
     analyze_duplicate_classification_tags(asset_wrapper)
