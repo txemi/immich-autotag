@@ -21,7 +21,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     date_sources_list = AssetDateSourcesList.from_wrappers(wrappers)
     date_candidates = date_sources_list.to_candidates()
     if date_candidates.is_empty():
-        print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
+        print(
+            f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}"
+        )
         return
     print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
     for label, d in date_candidates:
@@ -32,34 +34,54 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     immich_date = asset_wrapper.get_best_date()
     # Si la fecha de Immich es la más antigua o igual a todas las sugeridas, no se hace nada
     if date_candidates.immich_date_is_oldest_or_equal(immich_date):
-        print(f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a todas las sugeridas, no se hace nada.")
+        print(
+            f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a todas las sugeridas, no se hace nada."
+        )
         return
     # If Immich date is the same day as the oldest, do nothing
     if immich_date.date() == oldest.date():
-        print(f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada.")
+        print(
+            f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada."
+        )
         return
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
     from datetime import datetime
+
     @typechecked
     def is_precise_immich_and_rounded_oldest_close(
-        immich_date: datetime,
-        oldest: datetime,
-        threshold_seconds: int = 4*3600
+        immich_date: datetime, oldest: datetime, threshold_seconds: int = 4 * 3600
     ) -> bool:
-        diff = abs((oldest.astimezone(ZoneInfo("UTC")) - immich_date.astimezone(ZoneInfo("UTC"))).total_seconds())
+        diff = abs(
+            (
+                oldest.astimezone(ZoneInfo("UTC"))
+                - immich_date.astimezone(ZoneInfo("UTC"))
+            ).total_seconds()
+        )
         return (
             diff < threshold_seconds
-            and (immich_date.hour != 0 or immich_date.minute != 0 or immich_date.second != 0)
-            and oldest.hour == 0 and oldest.minute == 0 and oldest.second == 0
+            and (
+                immich_date.hour != 0
+                or immich_date.minute != 0
+                or immich_date.second != 0
+            )
+            and oldest.hour == 0
+            and oldest.minute == 0
+            and oldest.second == 0
         )
 
     if is_precise_immich_and_rounded_oldest_close(immich_date, oldest):
-        print(f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada.")
+        print(
+            f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
+        )
         return
     # Nueva lógica: si la fecha de Immich es posterior a la fecha obtenida del nombre del fichero en más de 24h, actualizar
     whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
-    if date_candidates.immich_date_is_more_than_days_after(immich_date, whatsapp_filename_date, days=1):
-        print(f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}")
+    if date_candidates.immich_date_is_more_than_days_after(
+        immich_date, whatsapp_filename_date, days=1
+    ):
+        print(
+            f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}"
+        )
         # Aquí iría la lógica para actualizar la fecha de Immich en el asset
         # asset_wrapper.update_date(whatsapp_filename_date)
         return
@@ -67,9 +89,11 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
     print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")
+
     # Print both dates in UTC for clarity
     def to_utc(dt):
         return dt.astimezone(ZoneInfo("UTC")) if dt.tzinfo else dt
+
     immich_utc = to_utc(immich_date)
     oldest_utc = to_utc(oldest)
     msg = (

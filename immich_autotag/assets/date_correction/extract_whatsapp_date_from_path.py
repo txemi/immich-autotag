@@ -26,22 +26,33 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
     """
     # Pattern 1: IMG-YYYYMMDD-WAxxxx or VID-YYYYMMDD-WAxxxx (más robusto)
     # Permite guiones, subrayados, espacios, y extensiones
-    m = re.search(r"(?:IMG|VID)[-_]?(\d{4})(\d{2})(\d{2})-WA\d+", str(path), re.IGNORECASE)
-    if m:
-        try:
-            tz = ZoneInfo(DATE_EXTRACTION_TIMEZONE)
-            return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz)
-        except Exception:
-            return None
-    # Pattern 2: WhatsApp Image YYYY-MM-DD at HH.MM.SS
-    m = re.search(r"WhatsApp (?:Image|Video) (\d{4})-(\d{2})-(\d{2}) at (\d{2})\.(\d{2})\.(\d{2})", str(path))
+    m = re.search(
+        r"(?:IMG|VID)[-_]?(\d{4})(\d{2})(\d{2})-WA\d+", str(path), re.IGNORECASE
+    )
     if m:
         try:
             tz = ZoneInfo(DATE_EXTRACTION_TIMEZONE)
             return datetime(
-                int(m.group(1)), int(m.group(2)), int(m.group(3)),
-                int(m.group(4)), int(m.group(5)), int(m.group(6)),
-                tzinfo=tz
+                int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
+            )
+        except Exception:
+            return None
+    # Pattern 2: WhatsApp Image YYYY-MM-DD at HH.MM.SS
+    m = re.search(
+        r"WhatsApp (?:Image|Video) (\d{4})-(\d{2})-(\d{2}) at (\d{2})\.(\d{2})\.(\d{2})",
+        str(path),
+    )
+    if m:
+        try:
+            tz = ZoneInfo(DATE_EXTRACTION_TIMEZONE)
+            return datetime(
+                int(m.group(1)),
+                int(m.group(2)),
+                int(m.group(3)),
+                int(m.group(4)),
+                int(m.group(5)),
+                int(m.group(6)),
+                tzinfo=tz,
             )
         except Exception:
             return None

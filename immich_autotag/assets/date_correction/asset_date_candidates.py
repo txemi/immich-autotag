@@ -4,18 +4,17 @@ from datetime import datetime
 from datetime import datetime
 from typing import Optional
 from typeguard import typechecked
+
+
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidates:
-
-
-
 
     candidates: List[Tuple[str, datetime]] = attrs.field(factory=list)
 
     def add(self, label: str, dt: datetime) -> None:
         self.candidates.append((label, dt))
 
-    def extend(self, other: 'AssetDateCandidates') -> None:
+    def extend(self, other: "AssetDateCandidates") -> None:
         self.candidates.extend(other.candidates)
 
     def is_empty(self) -> bool:
@@ -32,20 +31,19 @@ class AssetDateCandidates:
 
     def __iter__(self):
         return iter(self.candidates)
+
     def immich_date_is_oldest_or_equal(self, immich_date) -> bool:
         """
         Returns True if immich_date is less than or equal to all candidate dates.
         """
         return all(immich_date <= d for d in self.all_dates())
-    
-
 
     @typechecked
     def immich_date_is_more_than_days_after(
         self,
         immich_date: Optional[datetime],
         other_date: Optional[datetime],
-        days: int = 1
+        days: int = 1,
     ) -> bool:
         """
         Returns True if immich_date is more than `days` after other_date.
@@ -53,4 +51,4 @@ class AssetDateCandidates:
         if immich_date is None or other_date is None:
             return False
         delta = (immich_date - other_date).total_seconds()
-        return delta > days * 86400    
+        return delta > days * 86400
