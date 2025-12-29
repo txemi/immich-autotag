@@ -118,10 +118,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         if wa_date:
             date_candidates.append(wa_date)
         # 3. Optionally, try from full path if available
-        if hasattr(w.asset, 'original_path'):
-            wa_date2 = extract_whatsapp_date_from_path(getattr(w.asset, 'original_path', ''))
-            if wa_date2:
-                date_candidates.append(wa_date2)
+        wa_date2 = extract_whatsapp_date_from_path(w.asset.original_path)
+        if wa_date2:
+            date_candidates.append(wa_date2)
     if not date_candidates:
         return
     # Pick the oldest date
