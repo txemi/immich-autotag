@@ -4,6 +4,8 @@ from datetime import datetime
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidates:
+
+
     candidates: List[Tuple[str, datetime]] = attrs.field(factory=list)
 
     def add(self, label: str, dt: datetime) -> None:
@@ -26,3 +28,8 @@ class AssetDateCandidates:
 
     def __iter__(self):
         return iter(self.candidates)
+    def immich_date_is_oldest_or_equal(self, immich_date) -> bool:
+        """
+        Returns True if immich_date is less than or equal to all candidate dates.
+        """
+        return all(immich_date <= d for d in self.all_dates())
