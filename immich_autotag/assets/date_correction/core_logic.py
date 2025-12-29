@@ -39,7 +39,13 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         print(f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada.")
         return
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
-    def is_precise_immich_and_rounded_oldest_close(immich_date, oldest, threshold_seconds=4*3600):
+    from datetime import datetime
+    @typechecked
+    def is_precise_immich_and_rounded_oldest_close(
+        immich_date: datetime,
+        oldest: datetime,
+        threshold_seconds: int = 4*3600
+    ) -> bool:
         diff = abs((oldest.astimezone(ZoneInfo("UTC")) - immich_date.astimezone(ZoneInfo("UTC"))).total_seconds())
         return (
             diff < threshold_seconds
