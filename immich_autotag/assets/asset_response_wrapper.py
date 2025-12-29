@@ -1,3 +1,9 @@
+from datetime import datetime
+from typing import List
+
+# Excepción para integridad de fechas
+class DateIntegrityError(Exception):
+    pass
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -24,6 +30,31 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
+
+    @typechecked
+    def get_best_date(self) -> datetime:
+        """
+        Devuelve la mejor fecha posible para el asset, usando solo campos del DTO:
+        - created_at
+        - file_created_at
+        - exif_created_at
+        Elige la más antigua y lanza excepción si alguna es anterior a la elegida.
+        """
+        date_candidates: List[datetime] = []
+        # Solo fechas del DTO
+        for attr in ("created_at", "file_created_at", "exif_created_at"):
+            dt = getattr(self.asset, attr, None)
+            if dt is not None:
+                if not isinstance(dt, datetime):
+                    raise TypeError(f"{attr} no es datetime: {dt!r}")
+                date_candidates.append(dt)
+        if not date_candidates:
+            raise ValueError("No se pudo determinar ninguna fecha para el asset.")
+        best_date = min(date_candidates)
+        for d in date_candidates:
+            if d < best_date:
+                raise DateIntegrityError(f"Integridad rota: se encontró una fecha ({d}) anterior a la mejor fecha seleccionada ({best_date}) para el asset {self.asset.id}")
+        return best_date
 
     @typechecked
     def get_all_duplicate_wrappers(self, include_self: bool = True) -> list["AssetResponseWrapper"]:
