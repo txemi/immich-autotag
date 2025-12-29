@@ -137,15 +137,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     print(f"[DATE CORRECTION] Asset {asset_wrapper.asset.id}: candidate dates = {date_candidates}, oldest = {oldest}")
     # Si la fecha más antigua es distinta, actualiza en Immich
     current_date = asset_wrapper.asset.created_at
+    assert isinstance(current_date, ( datetime,)), f"Unexpected type for current_date: {type(current_date)}"
     # Acepta tanto datetime como string en current_date
-    if isinstance(current_date, str):
-        try:
-            from dateutil.parser import parse as parse_date
-            current_date_dt = parse_date(current_date)
-        except Exception:
-            current_date_dt = None
-    else:
-        current_date_dt = current_date
+    current_date_dt=    current_date
     if current_date_dt != oldest:
         print(f"[DATE CORRECTION] Updating asset {asset_wrapper.asset.id} date from {current_date_dt} to {oldest}")
         # Formato ISO 8601 para Immich
