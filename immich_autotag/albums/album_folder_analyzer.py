@@ -8,18 +8,7 @@ from typeguard import typechecked
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
-        def _is_excluded_by_pattern(self) -> bool:
-            """
-            Returns True if the folder path matches any exclusion pattern.
-            """
-            import re
-            from immich_autotag.config.user import ALBUM_DETECTION_EXCLUDED_PATHS
-            # Compose the full folder path as a string (joined by /)
-            folder_path_str = "/".join(self.folders).lower()
-            for pattern in ALBUM_DETECTION_EXCLUDED_PATHS:
-                if re.search(pattern, folder_path_str, re.IGNORECASE):
-                    return True
-            return False
+
     original_path: Path = attrs.field(validator=attrs.validators.instance_of(Path))
     folders: list = attrs.field(
         init=False, validator=attrs.validators.instance_of(list)
@@ -70,9 +59,22 @@ class AlbumFolderAnalyzer:
     def is_date_in_penultimate_position(self):
         idxs = self.date_folder_indices()
         return len(idxs) == 1 and idxs[0] == len(self.folders) - 2
-
+    def _is_excluded_by_pattern(self) -> bool:
+        """
+        Returns True if the folder path matches any exclusion pattern.
+        """
+        import re
+        from immich_autotag.config.user import ALBUM_DETECTION_EXCLUDED_PATHS
+        # Compose the full folder path as a string (joined by /)
+        folder_path_str = "/".join(self.folders).lower()
+        for pattern in ALBUM_DETECTION_EXCLUDED_PATHS:
+            if re.search(pattern, folder_path_str, re.IGNORECASE):
+                return True
+        return False
     @typechecked
     def get_album_name(self):
+        if self._is_excluded_by_pattern():
+            return None        
         import re
 
         SEPARATOR = "/"  # Cambia aquí para modificar el separador en todos los casos
@@ -113,6 +115,5 @@ class AlbumFolderAnalyzer:
                 f"Detected album name is suspiciously short: '{album_name}'"
             )
         # Excluir por patrón en la ruta de carpetas
-        if self._is_excluded_by_pattern():
-            return None
+
         return album_name
