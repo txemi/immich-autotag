@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from urllib.parse import ParseResult
 
 import attrs
 
@@ -204,7 +205,7 @@ class TagModificationReport:
             print(self._format_modification_entry(entry))
         print(f"Total modifications: {len(self.modifications)}")
     @typechecked
-    def _build_link(self, kind: ModificationKind, asset_id: Optional[UUID], album_id: Optional[UUID]) -> Optional[str]:
+    def _build_link(self, kind: ModificationKind, asset_id: Optional[UUID], album_id: Optional[UUID]) -> Optional[ParseResult]:
         """
         Build a link for the modification entry based on kind and ids.
         """

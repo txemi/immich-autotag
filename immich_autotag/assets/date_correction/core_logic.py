@@ -126,8 +126,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     """
     # Always consider all possible date sources, even if there are no duplicates
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
-    if not wrappers:
-        wrappers = [asset_wrapper]
+    wrappers.append(asset_wrapper)
 
     date_sources_list = [get_asset_date_sources(w) for w in wrappers]
     # Gather all dates with their source info for debugging
