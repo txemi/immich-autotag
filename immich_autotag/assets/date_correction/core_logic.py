@@ -1,3 +1,4 @@
+import datetime
 from .asset_date_sources_list import AssetDateSourcesList
 from .asset_date_candidates import AssetDateCandidates
 
@@ -8,7 +9,19 @@ from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
-
+@typechecked
+def _immich_date_is_more_than_days_after(
+    immich_date: Optional[datetime],
+    other_date: Optional[datetime],
+    days: int = 1,
+) -> bool:
+    """
+    Returns True if immich_date is more than `days` after other_date.
+    """
+    if immich_date is None or other_date is None:
+        return False
+    delta = (immich_date - other_date).total_seconds()
+    return delta > days * 86400
 @typechecked
 def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     """
@@ -76,14 +89,14 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         return
     # Nueva lógica: si la fecha de Immich es posterior a la fecha obtenida del nombre del fichero en más de 24h, actualizar
     whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
-    if date_candidates.immich_date_is_more_than_days_after(
+    if _immich_date_is_more_than_days_after(
         immich_date, whatsapp_filename_date, days=1
     ):
         print(
             f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}"
         )
-        # Aquí iría la lógica para actualizar la fecha de Immich en el asset
-        # asset_wrapper.update_date(whatsapp_filename_date)
+        asset_wrapper.update_date(whatsapp_filename_date)
+        print(f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {whatsapp_filename_date}")
         return
     # Si no se cumple la condición, lanzar excepción como antes
     photo_url_obj = asset_wrapper.get_immich_photo_url()
