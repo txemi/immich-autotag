@@ -53,12 +53,10 @@ class AssetDateSourcesList:
     @typechecked
     def get_whatsapp_filename_date(self) -> Optional[datetime]:
         """
-        Return the first non-None whatsapp_filename_date found in the sources, or None if not present.
+        Return the minimum (oldest) non-None whatsapp_filename_date among all sources, or None if none present.
         """
-        for src in self.sources:
-            if getattr(src, "whatsapp_filename_date", None) is not None:
-                return src.whatsapp_filename_date
-        return None
+        dates = [src.whatsapp_filename_date for src in self.sources if src.whatsapp_filename_date is not None]
+        return min(dates) if dates else None
 
     @typechecked
     def to_candidates(self) -> "AssetDateCandidates":
