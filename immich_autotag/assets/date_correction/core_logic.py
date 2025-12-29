@@ -160,4 +160,6 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
     print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")
-    raise NotImplementedError(f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})")
+    msg = f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})"
+    print(msg)
+    raise NotImplementedError(msg)
