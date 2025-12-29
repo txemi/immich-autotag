@@ -69,11 +69,14 @@ class AlbumCollectionWrapper:
         album = create_album.sync(client=client, body=CreateAlbumDto(album_name=album_name))
         user = get_my_user.sync(client=client)
         user_id = user.id
-        add_users_to_album.sync(
-            id=album.id,
-            client=client,
-            body=AddUsersDto(album_users=[AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)])
-        )
+        try:
+            add_users_to_album.sync(
+                id=album.id,
+                client=client,
+                body=AddUsersDto(album_users=[AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)])
+            )
+        except Exception as e:
+            raise RuntimeError(f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}") from e
         wrapper = AlbumResponseWrapper(album=album)
         # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
