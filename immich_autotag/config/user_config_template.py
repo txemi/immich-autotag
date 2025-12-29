@@ -25,6 +25,9 @@ API_KEY = "YOUR_IMMICH_API_KEY_HERE"
 # All tags use underscores '_' instead of slashes. The namespace is only virtual/documentary.
 # This avoids issues with Immich API and tag discovery, as hierarchical tags are not reliably supported.
 CLASSIFIED_TAGS = [
+    # TODO: Consider renaming CLASSIFIED_TAGS to something more semantically accurate (e.g., CLASSIFYING_TAGS),
+    # since these are the tags used by the application to classify, not tags that are already classified.
+    # This will help future maintainers understand the intent and avoid confusion.
     # Example tags (modify as needed for your use case)
     "meme",  # (LEGACY) Meme: humorous images, no prefix. Keep for compatibility.
     "adult_meme",  # (LEGACY) Adult meme: memes with sensitive/NSFW content, no prefix. Keep for compatibility.
@@ -63,13 +66,13 @@ TAG_CONVERSIONS = [
 
 # Output tags: no real hierarchy, use underscores
 #
-# AUTOTAG_UNKNOWN_CATEGORY: This tag is applied to assets (photos/videos) that could not be assigned to any event album (i.e., they do not match any group based on the event pattern).
+# AUTOTAG_CATEGORY_UNKNOWN: This tag is applied to assets (photos/videos) that could not be assigned to any event album (i.e., they do not match any group based on the event pattern).
 # These are typically photos that are not yet organized, and need to be reviewed. You can use the Immich interface to filter by this tag and quickly find all unclassified assets.
 # The goal is to ensure every photo belongs to exactly one event album or is intentionally excluded (e.g., meme, ignore, etc.).
 AUTOTAG_CATEGORY_UNKNOWN = "autotag_output_unknown"
 # TODO: refactorizar a AUTOTAG_CATEGORY_UNKNOWN
 #
-# AUTOTAG_CONFLICT_CATEGORY: This tag is applied to assets that are assigned to more than one event album (i.e., they match multiple groups, which is considered a classification conflict).
+# AUTOTAG_CATEGORY_CONFLICT: This tag is applied to assets that are assigned to more than one event album (i.e., they match multiple groups, which is considered a classification conflict).
 # The ideal is that each photo belongs to only one event album. If a photo is in several, it means the organization needs to be reviewed.
 # Filtering by this tag in the Immich interface allows you to quickly focus on and resolve these conflicts: either by moving the photo to the correct album, removing it from extra albums, or reclassifying it (e.g., as meme or ignore).
 AUTOTAG_CATEGORY_CONFLICT = "autotag_output_conflict"
@@ -85,8 +88,6 @@ AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT = "autotag_output_duplicate_asset_album_c
 AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = "autotag_output_duplicate_asset_classification_conflict"
 # Prefix for group-specific duplicate classification conflict tag
 AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = "autotag_output_duplicate_asset_classification_conflict_"
-# todo: refactorizar a AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
-
 
 
 # Feature flag: Remove leading/trailing spaces from album names (default: True)
@@ -102,6 +103,5 @@ ENABLE_ALBUM_DETECTION_FROM_FOLDERS = False
 
 # Feature flag: Enable date correction for assets (default: False)
 ENABLE_DATE_CORRECTION = False
-
 # Zona horaria para fechas extraídas de nombres de archivo/carpeta (por defecto UTC, cambiar si tus fotos son siempre de otra zona)
 DATE_EXTRACTION_TIMEZONE = "UTC"
