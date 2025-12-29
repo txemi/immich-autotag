@@ -154,6 +154,14 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
     print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")
-    msg = f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})"
+    # Print both dates in UTC for clarity
+    def to_utc(dt):
+        return dt.astimezone(ZoneInfo("UTC")) if dt.tzinfo else dt
+    immich_utc = to_utc(immich_date)
+    oldest_utc = to_utc(oldest)
+    msg = (
+        f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})\n"
+        f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
+    )
     print(msg)
     raise NotImplementedError(msg)
