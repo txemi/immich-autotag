@@ -1,3 +1,18 @@
+from .asset_date_sources import AssetDateSources
+def get_asset_date_sources(asset_wrapper: AssetResponseWrapper) -> AssetDateSources:
+    """
+    Extract all relevant date sources for a given asset.
+    Returns an AssetDateSources object with immich_date, WhatsApp filename date, and WhatsApp path date.
+    """
+    immich_date = asset_wrapper.get_best_date()
+    wa_filename_date = extract_whatsapp_date_from_path(getattr(asset_wrapper.asset, 'original_file_name', ''))
+    wa_path_date = extract_whatsapp_date_from_path(getattr(asset_wrapper.asset, 'original_path', ''))
+    return AssetDateSources(
+        asset_id=asset_wrapper.asset.id,
+        immich_date=immich_date,
+        whatsapp_filename_date=wa_filename_date,
+        whatsapp_path_date=wa_path_date,
+    )
 from zoneinfo import ZoneInfo
 from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
 
@@ -108,52 +123,40 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     Main entry point for asset date correction logic.
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
     """
-    # Get all duplicate wrappers (including self)
+    # Always consider all possible date sources, even if there are no duplicates
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
     if not wrappers:
-        return
-    # Collect all dates
-    date_candidates: List[tuple[str, datetime]] = []
-    for w in wrappers:
-        # 1. Date from Immich
-        immich_date = w.get_best_date()
-        date_candidates.append((f"immich_date {w.asset.id}", immich_date))
-        # 2. Date from WhatsApp filename
-        wa_date = extract_whatsapp_date_from_path(w.asset.original_file_name)
-        if wa_date:
-            date_candidates.append((f"wa_date {w.asset.id}", wa_date))
-        # 3. Optionally, try from full path if available
-        wa_date2 = extract_whatsapp_date_from_path(w.asset.original_path)
-        if wa_date2:
-            date_candidates.append((f"wa_date2 {w.asset.id}", wa_date2))
+        wrappers = [asset_wrapper]
+
+    date_sources_list = [get_asset_date_sources(w) for w in wrappers]
+    # Gather all dates with their source info for debugging
+    date_candidates = []
+    for ds in date_sources_list:
+        if ds.immich_date:
+            date_candidates.append((f"immich_date {ds.asset_id}", ds.immich_date))
+        if ds.whatsapp_filename_date:
+            date_candidates.append((f"wa_filename_date {ds.asset_id}", ds.whatsapp_filename_date))
+        if ds.whatsapp_path_date:
+            date_candidates.append((f"wa_path_date {ds.asset_id}", ds.whatsapp_path_date))
     if not date_candidates:
+        print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
     print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
     for label, d in date_candidates:
         print(f"  {label}: {d!r} (type={type(d)}, tzinfo={getattr(d, 'tzinfo', None)})")
-    # Esto va a fallar si hay naive y aware, pero así vemos el problema
+    # This will fail if there are naive and aware datetimes, but that's intentional for debugging
     oldest = min([d for _, d in date_candidates])
-    # Obtener la fecha de Immich (la que se ve y se puede modificar en la UI)
+    # Get the Immich date (the one visible and modifiable in the UI)
     immich_date = asset_wrapper.get_best_date()
-    # Si la fecha de Immich ya es la más antigua, no hacer nada
+    # If Immich date is already the oldest, do nothing
     if immich_date == oldest:
         print(f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua, no se hace nada.")
         return
-    # Si la fecha de Immich es del mismo día que la más antigua (ignorando hora), tampoco hacer nada
+    # If Immich date is the same day as the oldest, do nothing
     if immich_date.date() == oldest.date():
         print(f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada.")
         return
-    # En cualquier otro caso, imprimir enlace a la foto y lanzar excepción para revisión futura
     photo_url_obj = asset_wrapper.get_immich_photo_url()
-    if not photo_url_obj:
-        raise RuntimeError(f"No se pudo obtener la URL de Immich para el asset {asset_wrapper.asset.id}")
     photo_url = photo_url_obj.geturl()
     print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")
     raise NotImplementedError(f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})")
-    if current_date_dt != oldest:
-        print(f"[DATE CORRECTION] Updating asset {asset_wrapper.asset.id} date from {current_date_dt} to {oldest}")
-        # Formato ISO 8601 para Immich
-        iso_date = oldest.isoformat()
-        dto = UpdateAssetDto(date_time_original=iso_date)
-        updated = update_asset.sync(id=asset_wrapper.asset.id, client=asset_wrapper.context.client, body=dto)
-        print(f"[DATE CORRECTION] Update result: {updated}")        
