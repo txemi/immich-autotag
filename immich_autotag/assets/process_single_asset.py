@@ -220,7 +220,11 @@ def process_single_asset(
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
-    
+
+    # Date correction step (configurable)
+    if ENABLE_DATE_CORRECTION:
+        correct_asset_date(asset_wrapper)
+
     analyze_duplicate_classification_tags(asset_wrapper)
     analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
 
@@ -318,3 +322,13 @@ def _process_album_detection(
             print(
                 f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' already in album '{detected_album}' (origin: {album_origin}), no action taken."
             )
+
+
+from immich_autotag.config.user import ENABLE_DATE_CORRECTION
+# --- Date correction logic ---
+def correct_asset_date(asset_wrapper: "AssetResponseWrapper") -> None:
+    """
+    Placeholder for asset date correction logic. Will attempt to fix incorrect dates (e.g., scanned, WhatsApp, etc.).
+    For now, raises NotImplementedError.
+    """
+    raise NotImplementedError("Date correction for asset is not yet implemented.")

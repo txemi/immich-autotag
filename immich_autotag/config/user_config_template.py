@@ -88,6 +88,7 @@ AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = "autotag_output_duplica
 # todo: refactorizar a AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
 
 
+
 # Feature flag: Remove leading/trailing spaces from album names (default: True)
 #
 # When enabled, the autotag system will automatically clean up album names by removing any leading or trailing spaces
@@ -98,3 +99,6 @@ ENABLE_ALBUM_NAME_STRIP = True
 
 # Feature flag: Enable album detection from folder names (default: False)
 ENABLE_ALBUM_DETECTION_FROM_FOLDERS = False
+
+# Feature flag: Enable date correction for assets (default: False)
+ENABLE_DATE_CORRECTION = False
