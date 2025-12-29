@@ -17,7 +17,10 @@ from immich_autotag.tags.modification_kind import ModificationKind
 
 import attrs
 from uuid import UUID
-
+# Date correction config flag
+from immich_autotag.config.user import ENABLE_DATE_CORRECTION
+# Date correction logic
+from immich_autotag.assets.date_correction import correct_asset_date
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAlbumsInfo:
     # Maps asset UUID to AssetResponseWrapper
@@ -220,7 +223,11 @@ def process_single_asset(
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
-    
+
+    # Date correction step (configurable)
+    if ENABLE_DATE_CORRECTION:
+        correct_asset_date(asset_wrapper)
+
     analyze_duplicate_classification_tags(asset_wrapper)
     analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
 
@@ -318,3 +325,6 @@ def _process_album_detection(
             print(
                 f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' already in album '{detected_album}' (origin: {album_origin}), no action taken."
             )
+
+
+
