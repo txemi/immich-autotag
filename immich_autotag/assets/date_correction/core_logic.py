@@ -46,11 +46,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
     """
     # Get all duplicate wrappers (including self)
-    context = asset_wrapper.context
-    duplicate_id = asset_wrapper.asset.duplicate_id
-    if not duplicate_id:
+    wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
+    if not wrappers:
         return
-    wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context)
     # Collect all dates
     date_candidates: List[datetime] = []
     for w in wrappers:

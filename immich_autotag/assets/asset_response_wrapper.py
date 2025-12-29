@@ -25,6 +25,28 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
 
+    @typechecked
+    def get_all_duplicate_wrappers(self, include_self: bool = True) -> list["AssetResponseWrapper"]:
+        """
+        Returns a list of AssetResponseWrapper objects for all duplicates of this asset.
+        If include_self is True, includes this asset as well.
+        """
+        from uuid import UUID
+        context = self.context
+        duplicate_id = self.duplicate_id_as_uuid
+        wrappers = []
+        if duplicate_id is not None:
+            group = context.duplicates_collection.get_group(duplicate_id)
+            for dup_id in group:
+                if not include_self and str(dup_id) == self.asset.id:
+                    continue
+                dup_asset = context.asset_manager.get_asset(dup_id, context)
+                if dup_asset is not None:
+                    wrappers.append(dup_asset)
+        if include_self and (self not in wrappers):
+            wrappers.append(self)
+        return wrappers
+
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
