@@ -38,6 +38,6 @@ class AssetDateSourcesList:
         """
         Build an AssetDateSourcesList from a list of AssetResponseWrapper objects.
         """
-        from .core_logic import get_asset_date_sources
+        from .get_asset_date_sources import get_asset_date_sources
         sources = [get_asset_date_sources(w) for w in wrappers]
         return AssetDateSourcesList(sources)

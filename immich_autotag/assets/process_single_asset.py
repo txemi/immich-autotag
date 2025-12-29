@@ -229,7 +229,7 @@ def process_single_asset(
 
     # Date correction step (configurable)
     if ENABLE_DATE_CORRECTION:
-        from immich_autotag.assets.date_correction.core_logic import correct_asset_date
+        from immich_autotag.assets.date_correction.correct_asset_date import correct_asset_date
         correct_asset_date(asset_wrapper)
 
     analyze_duplicate_classification_tags(asset_wrapper)
