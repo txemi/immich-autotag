@@ -33,6 +33,31 @@ if TYPE_CHECKING:
 class AssetResponseWrapper:
 
     @typechecked
+    def update_date(self, new_date: datetime) -> None:
+        """
+        Actualiza la fecha principal (created_at) del asset usando la API de Immich.
+        """
+        from immich_client.api.assets import update_asset
+        from immich_client.models.asset_update_dto import AssetUpdateDto
+        import pytz
+        # Asegura que la fecha es timezone-aware en UTC
+        if new_date.tzinfo is None:
+            import zoneinfo
+            new_date = new_date.replace(tzinfo=zoneinfo.ZoneInfo("UTC"))
+        else:
+            new_date = new_date.astimezone(pytz.UTC)
+        dto = AssetUpdateDto(
+            id=self.id,
+            created_at=new_date.isoformat()
+        )
+        response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
+        # Recarga el asset para reflejar el cambio
+        from immich_client.api.assets import get_asset_info
+        updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
+        self.asset = updated_asset
+        return
+
+    @typechecked
     def get_immich_photo_url(self) -> 'ParseResult':
         """
         Devuelve la URL web de Immich para este asset como ParseResult.
