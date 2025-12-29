@@ -8,6 +8,14 @@ from .asset_date_sources import AssetDateSources
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
+    def to_candidates(self) -> "AssetDateCandidates":
+        """
+        Return an AssetDateCandidates object with all candidates from all sources.
+        """
+        from .asset_date_candidates import AssetDateCandidates
+        candidates = AssetDateCandidates()
+        self.add_all_candidates_to(candidates.candidates)
+        return candidates
 
 
     sources: List[AssetDateSources] = attrs.field(factory=list)

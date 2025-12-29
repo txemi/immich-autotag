@@ -19,8 +19,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
     wrappers.append(asset_wrapper)
     date_sources_list = AssetDateSourcesList.from_wrappers(wrappers)
-    date_candidates = AssetDateCandidates()
-    date_sources_list.add_all_candidates_to(date_candidates.candidates)
+    date_candidates = date_sources_list.to_candidates()
     if date_candidates.is_empty():
         print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
