@@ -5,7 +5,9 @@ from immich_client.models.update_asset_dto import UpdateAssetDto
 import re
 from datetime import datetime
 from typing import Optional, List
+from typeguard import typechecked
 
+@typechecked
 def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
     """
     Try to extract a date from WhatsApp-style filenames or paths.
@@ -35,7 +37,10 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
             return None
     return None
 
-def correct_asset_date(asset_wrapper) -> None:
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
+@typechecked
+def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     """
     Main entry point for asset date correction logic.
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
@@ -88,8 +93,8 @@ def correct_asset_date(asset_wrapper) -> None:
         print(f"[DATE CORRECTION] Update result: {updated}")
 
 
-
-def correct_asset_date(asset_wrapper) -> None:
+@typechecked
+def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     """
     Main entry point for asset date correction logic.
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
