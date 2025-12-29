@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from typeguard import typechecked
@@ -10,11 +11,10 @@ from .asset_date_sources import AssetDateSources
 from typing import Optional
 from datetime import datetime
 from typeguard import typechecked
+
+
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
-
-
-
 
     sources: List[AssetDateSources] = attrs.field(factory=list)
 
@@ -38,6 +38,7 @@ class AssetDateSourcesList:
     @typechecked
     def __iter__(self):
         return iter(self.sources)
+
     @staticmethod
     @typechecked
     def from_wrappers(wrappers: list["AssetResponseWrapper"]) -> "AssetDateSourcesList":
@@ -45,10 +46,9 @@ class AssetDateSourcesList:
         Build an AssetDateSourcesList from a list of AssetResponseWrapper objects.
         """
         from .get_asset_date_sources import get_asset_date_sources
+
         sources = [get_asset_date_sources(w) for w in wrappers]
         return AssetDateSourcesList(sources)
-    
-
 
     @typechecked
     def get_whatsapp_filename_date(self) -> Optional[datetime]:
@@ -56,17 +56,17 @@ class AssetDateSourcesList:
         Return the first non-None whatsapp_filename_date found in the sources, or None if not present.
         """
         for src in self.sources:
-            if getattr(src, 'whatsapp_filename_date', None) is not None:
+            if getattr(src, "whatsapp_filename_date", None) is not None:
                 return src.whatsapp_filename_date
         return None
 
-
-    @typechecked    
+    @typechecked
     def to_candidates(self) -> "AssetDateCandidates":
         """
         Return an AssetDateCandidates object with all candidates from all sources.
         """
         from .asset_date_candidates import AssetDateCandidates
+
         candidates = AssetDateCandidates()
         self.add_all_candidates_to(candidates.candidates)
-        return candidates    
+        return candidates
