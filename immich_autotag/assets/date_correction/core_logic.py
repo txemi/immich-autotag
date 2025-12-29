@@ -1,3 +1,5 @@
+from .asset_date_sources_list import AssetDateSourcesList
+from .asset_date_candidates import AssetDateCandidates
 
 from zoneinfo import ZoneInfo
 from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
@@ -127,20 +129,17 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     # Always consider all possible date sources, even if there are no duplicates
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
     wrappers.append(asset_wrapper)
-
-    date_sources_list = [get_asset_date_sources(w) for w in wrappers]
-    # Gather all dates with their source info for debugging
-    date_candidates = []
-    for ds in date_sources_list:
-        ds.add_candidates_to(date_candidates)
-    if not date_candidates:
+    date_sources_list = AssetDateSourcesList.from_wrappers(wrappers)
+    date_candidates = AssetDateCandidates()
+    date_sources_list.add_all_candidates_to(date_candidates.candidates)
+    if date_candidates.is_empty():
         print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
     print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
     for label, d in date_candidates:
         print(f"  {label}: {d!r} (type={type(d)}, tzinfo={getattr(d, 'tzinfo', None)})")
     # This will fail if there are naive and aware datetimes, but that's intentional for debugging
-    oldest = min([d for _, d in date_candidates])
+    oldest = date_candidates.oldest()
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date = asset_wrapper.get_best_date()
     # If Immich date is the oldest or strictly earlier than all suggestions, do nothing
@@ -150,6 +149,16 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     # If Immich date is the same day as the oldest, do nothing
     if immich_date.date() == oldest.date():
         print(f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada.")
+        return
+    # New: If the best candidate is less than 4h different and Immich has time info but candidate is exactly at 00:00:00, keep Immich's date
+    from datetime import timedelta
+    diff = abs((oldest.astimezone(ZoneInfo("UTC")) - immich_date.astimezone(ZoneInfo("UTC"))).total_seconds())
+    if (
+        diff < 4 * 3600
+        and (immich_date.hour != 0 or immich_date.minute != 0 or immich_date.second != 0)
+        and oldest.hour == 0 and oldest.minute == 0 and oldest.second == 0
+    ):
+        print(f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada.")
         return
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
