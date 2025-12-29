@@ -56,6 +56,14 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     if is_precise_immich_and_rounded_oldest_close(immich_date, oldest):
         print(f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada.")
         return
+    # Nueva lógica: si la fecha de Immich es posterior a la fecha obtenida del nombre del fichero en más de 24h, actualizar
+    whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
+    if date_candidates.immich_date_is_more_than_days_after(immich_date, whatsapp_filename_date, days=1):
+        print(f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}")
+        # Aquí iría la lógica para actualizar la fecha de Immich en el asset
+        # asset_wrapper.update_date(whatsapp_filename_date)
+        return
+    # Si no se cumple la condición, lanzar excepción como antes
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
     print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")

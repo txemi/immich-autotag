@@ -6,16 +6,14 @@ import attrs
 from typing import List
 from .asset_date_sources import AssetDateSources
 
+
+from typing import Optional
+from datetime import datetime
+from typeguard import typechecked
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
-    def to_candidates(self) -> "AssetDateCandidates":
-        """
-        Return an AssetDateCandidates object with all candidates from all sources.
-        """
-        from .asset_date_candidates import AssetDateCandidates
-        candidates = AssetDateCandidates()
-        self.add_all_candidates_to(candidates.candidates)
-        return candidates
+
+
 
 
     sources: List[AssetDateSources] = attrs.field(factory=list)
@@ -49,3 +47,26 @@ class AssetDateSourcesList:
         from .get_asset_date_sources import get_asset_date_sources
         sources = [get_asset_date_sources(w) for w in wrappers]
         return AssetDateSourcesList(sources)
+    
+
+
+    @typechecked
+    def get_whatsapp_filename_date(self) -> Optional[datetime]:
+        """
+        Return the first non-None whatsapp_filename_date found in the sources, or None if not present.
+        """
+        for src in self.sources:
+            if getattr(src, 'whatsapp_filename_date', None) is not None:
+                return src.whatsapp_filename_date
+        return None
+
+
+    @typechecked    
+    def to_candidates(self) -> "AssetDateCandidates":
+        """
+        Return an AssetDateCandidates object with all candidates from all sources.
+        """
+        from .asset_date_candidates import AssetDateCandidates
+        candidates = AssetDateCandidates()
+        self.add_all_candidates_to(candidates.candidates)
+        return candidates    
