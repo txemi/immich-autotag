@@ -132,12 +132,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     # Gather all dates with their source info for debugging
     date_candidates = []
     for ds in date_sources_list:
-        if ds.immich_date:
-            date_candidates.append((f"immich_date {ds.asset_id}", ds.immich_date))
-        if ds.whatsapp_filename_date:
-            date_candidates.append((f"wa_filename_date {ds.asset_id}", ds.whatsapp_filename_date))
-        if ds.whatsapp_path_date:
-            date_candidates.append((f"wa_path_date {ds.asset_id}", ds.whatsapp_path_date))
+        ds.add_candidates_to(date_candidates)
     if not date_candidates:
         print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
