@@ -1,10 +1,11 @@
+
+from __future__ import annotations
 from datetime import datetime
 from typing import List
 
 # Excepción para integridad de fechas
 class DateIntegrityError(Exception):
     pass
-from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
