@@ -38,13 +38,16 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     if immich_date.date() == oldest.date():
         print(f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada.")
         return
-    # New: If the best candidate is less than 4h different and Immich has time info but candidate is exactly at 00:00:00, keep Immich's date
-    diff = abs((oldest.astimezone(ZoneInfo("UTC")) - immich_date.astimezone(ZoneInfo("UTC"))).total_seconds())
-    if (
-        diff < 4 * 3600
-        and (immich_date.hour != 0 or immich_date.minute != 0 or immich_date.second != 0)
-        and oldest.hour == 0 and oldest.minute == 0 and oldest.second == 0
-    ):
+    # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
+    def is_precise_immich_and_rounded_oldest_close(immich_date, oldest, threshold_seconds=4*3600):
+        diff = abs((oldest.astimezone(ZoneInfo("UTC")) - immich_date.astimezone(ZoneInfo("UTC"))).total_seconds())
+        return (
+            diff < threshold_seconds
+            and (immich_date.hour != 0 or immich_date.minute != 0 or immich_date.second != 0)
+            and oldest.hour == 0 and oldest.minute == 0 and oldest.second == 0
+        )
+
+    if is_precise_immich_and_rounded_oldest_close(immich_date, oldest):
         print(f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada.")
         return
     photo_url_obj = asset_wrapper.get_immich_photo_url()
