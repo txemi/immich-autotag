@@ -9,17 +9,23 @@ from typeguard import typechecked
 
 @typechecked
 def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
-    """
-    Try to extract a date from WhatsApp-style filenames or paths.
-    Supports patterns like:
-      - IMG-YYYYMMDD-WAxxxx.jpg
-      - VID-YYYYMMDD-WAxxxx.mp4
-      - WhatsApp Image YYYY-MM-DD at HH.MM.SS.jpeg
-      - WhatsApp Video YYYY-MM-DD at HH.MM.SS.mp4
-    Returns a datetime if found, else None.
-    """
-    # Pattern 1: IMG-YYYYMMDD-WAxxxx or VID-YYYYMMDD-WAxxxx
-    m = re.search(r"[IV][MD][G]-?(\d{4})(\d{2})(\d{2})-WA\d+", path)
+        """
+        Try to extract a date from WhatsApp-style filenames or paths.
+        Supports patterns like:
+            - IMG-YYYYMMDD-WAxxxx.jpg
+            - VID-YYYYMMDD-WAxxxx.mp4
+            - WhatsApp Image YYYY-MM-DD at HH.MM.SS.jpeg
+            - WhatsApp Video YYYY-MM-DD at HH.MM.SS.mp4
+        Returns a datetime if found, else None.
+
+        ---
+        # Historial de casos reales que han motivado cambios en la función:
+        - 'VID-20251229-WA0004.mp4'  # Caso real: no detectado inicialmente, añadido soporte robusto para este patrón
+        ---
+        """
+    # Pattern 1: IMG-YYYYMMDD-WAxxxx or VID-YYYYMMDD-WAxxxx (más robusto)
+    # Permite guiones, subrayados, espacios, y extensiones
+    m = re.search(r"(?:IMG|VID)[-_]?(\d{4})(\d{2})(\d{2})-WA\d+", str(path), re.IGNORECASE)
     if m:
         try:
             return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
