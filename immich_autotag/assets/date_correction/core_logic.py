@@ -133,13 +133,23 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         print(f"  {label}: {d!r} (type={type(d)}, tzinfo={getattr(d, 'tzinfo', None)})")
     # Esto va a fallar si hay naive y aware, pero así vemos el problema
     oldest = min([d for _, d in date_candidates])
-    # Compare with asset_wrapper.asset.created_at and update if needed
-    print(f"[DATE CORRECTION] Asset {asset_wrapper.asset.id}: candidate dates = {date_candidates}, oldest = {oldest}")
-    # Si la fecha más antigua es distinta, actualiza en Immich
-    current_date = asset_wrapper.asset.created_at
-    assert isinstance(current_date, ( datetime,)), f"Unexpected type for current_date: {type(current_date)}"
-    # Acepta tanto datetime como string en current_date
-    current_date_dt=    current_date
+    # Obtener la fecha de Immich (la que se ve y se puede modificar en la UI)
+    immich_date = asset_wrapper.get_best_date()
+    # Si la fecha de Immich ya es la más antigua, no hacer nada
+    if immich_date == oldest:
+        print(f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua, no se hace nada.")
+        return
+    # Si la fecha de Immich es del mismo día que la más antigua (ignorando hora), tampoco hacer nada
+    if immich_date.date() == oldest.date():
+        print(f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada.")
+        return
+    # En cualquier otro caso, imprimir enlace a la foto y lanzar excepción para revisión futura
+    photo_url_obj = asset_wrapper.get_immich_photo_url()
+    if not photo_url_obj:
+        raise RuntimeError(f"No se pudo obtener la URL de Immich para el asset {asset_wrapper.asset.id}")
+    photo_url = photo_url_obj.geturl()
+    print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")
+    raise NotImplementedError(f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})")
     if current_date_dt != oldest:
         print(f"[DATE CORRECTION] Updating asset {asset_wrapper.asset.id} date from {current_date_dt} to {oldest}")
         # Formato ISO 8601 para Immich

@@ -2,10 +2,12 @@ import uuid
 from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL, IMMICH_PHOTO_PATH_TEMPLATE
 
 
+
 from typeguard import typechecked
 import pandas as pd
 from typing import Optional, Union
 import attrs
+from urllib.parse import urlparse, ParseResult
 
 @attrs.define(auto_attribs=True, slots=True)
 class AdaptiveTimeEstimator:
@@ -57,11 +59,12 @@ def print_perf(count: int, elapsed: float, total_assets: int | None = None, esti
         print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s")
 
 @typechecked
-def get_immich_photo_url(asset_id: uuid.UUID) -> str:
+def get_immich_photo_url(asset_id: uuid.UUID) -> ParseResult:
     """
-    Devuelve la URL web de Immich para un asset dado su id (UUID).
+    Devuelve la URL web de Immich para un asset dado su id (UUID) como ParseResult.
     """
     if not isinstance(asset_id, uuid.UUID):
         raise TypeError(f"asset_id debe ser uuid.UUID, no {type(asset_id)}")
     asset_id_str = str(asset_id)
-    return f"{IMMICH_WEB_BASE_URL}{IMMICH_PHOTO_PATH_TEMPLATE.format(id=asset_id_str)}"
+    url = f"{IMMICH_WEB_BASE_URL}{IMMICH_PHOTO_PATH_TEMPLATE.format(id=asset_id_str)}"
+    return urlparse(url)

@@ -33,6 +33,14 @@ if TYPE_CHECKING:
 class AssetResponseWrapper:
 
     @typechecked
+    def get_immich_photo_url(self) -> 'ParseResult':
+        """
+        Devuelve la URL web de Immich para este asset como ParseResult.
+        """
+        from immich_autotag.utils.helpers import get_immich_photo_url
+        return get_immich_photo_url(self.uuid)
+
+    @typechecked
     def get_best_date(self) -> datetime:
         """
         Devuelve la mejor fecha posible para el asset, usando solo campos del DTO:
