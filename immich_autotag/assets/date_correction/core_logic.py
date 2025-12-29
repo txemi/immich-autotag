@@ -105,9 +105,8 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     date_candidates: List[datetime] = []
     for w in wrappers:
         # 1. Date from Immich
-        immich_date = w.asset.created_at
-        if isinstance(immich_date, datetime):
-            date_candidates.append(immich_date)
+        immich_date = w.get_best_date()
+        date_candidates.append(immich_date)
         # 2. Date from WhatsApp filename
         wa_date = extract_whatsapp_date_from_path(w.asset.original_file_name)
         if wa_date:
