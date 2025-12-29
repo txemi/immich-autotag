@@ -63,9 +63,13 @@ class AlbumDecision:
         pass
 
     def all_options(self) -> set[str]:
+        import re
+        from immich_autotag.config.user import ALBUM_PATTERN
         opts = set(self.duplicates_info.all_album_names())
+        opts= {a for a in opts if re.match(ALBUM_PATTERN, a)}
         if self.album_from_folder:
             opts.add(self.album_from_folder)
+        # Solo devolver álbumes que cumplen el patrón de evento
         return opts
 
     def valid_albums(self) -> set[str]:
