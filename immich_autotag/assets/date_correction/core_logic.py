@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
 
 from immich_client.api.assets import update_asset
 from immich_client.models.update_asset_dto import UpdateAssetDto
@@ -28,16 +30,19 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
     m = re.search(r"(?:IMG|VID)[-_]?(\d{4})(\d{2})(\d{2})-WA\d+", str(path), re.IGNORECASE)
     if m:
         try:
-            return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+            tz = ZoneInfo(DATE_EXTRACTION_TIMEZONE)
+            return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz)
         except Exception:
             return None
     # Pattern 2: WhatsApp Image YYYY-MM-DD at HH.MM.SS
     m = re.search(r"WhatsApp (?:Image|Video) (\d{4})-(\d{2})-(\d{2}) at (\d{2})\.(\d{2})\.(\d{2})", str(path))
     if m:
         try:
+            tz = ZoneInfo(DATE_EXTRACTION_TIMEZONE)
             return datetime(
                 int(m.group(1)), int(m.group(2)), int(m.group(3)),
-                int(m.group(4)), int(m.group(5)), int(m.group(6))
+                int(m.group(4)), int(m.group(5)), int(m.group(6)),
+                tzinfo=tz
             )
         except Exception:
             return None
@@ -108,23 +113,26 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     if not wrappers:
         return
     # Collect all dates
-    date_candidates: List[datetime] = []
+    date_candidates: List[tuple[str, datetime]] = []
     for w in wrappers:
         # 1. Date from Immich
         immich_date = w.get_best_date()
-        date_candidates.append(immich_date)
+        date_candidates.append((f"immich_date {w.asset.id}", immich_date))
         # 2. Date from WhatsApp filename
         wa_date = extract_whatsapp_date_from_path(w.asset.original_file_name)
         if wa_date:
-            date_candidates.append(wa_date)
+            date_candidates.append((f"wa_date {w.asset.id}", wa_date))
         # 3. Optionally, try from full path if available
         wa_date2 = extract_whatsapp_date_from_path(w.asset.original_path)
         if wa_date2:
-            date_candidates.append(wa_date2)
+            date_candidates.append((f"wa_date2 {w.asset.id}", wa_date2))
     if not date_candidates:
         return
-    # Pick the oldest date
-    oldest = min(date_candidates)
+    print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
+    for label, d in date_candidates:
+        print(f"  {label}: {d!r} (type={type(d)}, tzinfo={getattr(d, 'tzinfo', None)})")
+    # Esto va a fallar si hay naive y aware, pero así vemos el problema
+    oldest = min([d for _, d in date_candidates])
     # Compare with asset_wrapper.asset.created_at and update if needed
     print(f"[DATE CORRECTION] Asset {asset_wrapper.asset.id}: candidate dates = {date_candidates}, oldest = {oldest}")
     # Si la fecha más antigua es distinta, actualiza en Immich

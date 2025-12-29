@@ -102,3 +102,6 @@ ENABLE_ALBUM_DETECTION_FROM_FOLDERS = False
 
 # Feature flag: Enable date correction for assets (default: False)
 ENABLE_DATE_CORRECTION = False
+
+# Zona horaria para fechas extraídas de nombres de archivo/carpeta (por defecto UTC, cambiar si tus fotos son siempre de otra zona)
+DATE_EXTRACTION_TIMEZONE = "UTC"
