@@ -1,18 +1,4 @@
-from .asset_date_sources import AssetDateSources
-def get_asset_date_sources(asset_wrapper: AssetResponseWrapper) -> AssetDateSources:
-    """
-    Extract all relevant date sources for a given asset.
-    Returns an AssetDateSources object with immich_date, WhatsApp filename date, and WhatsApp path date.
-    """
-    immich_date = asset_wrapper.get_best_date()
-    wa_filename_date = extract_whatsapp_date_from_path(getattr(asset_wrapper.asset, 'original_file_name', ''))
-    wa_path_date = extract_whatsapp_date_from_path(getattr(asset_wrapper.asset, 'original_path', ''))
-    return AssetDateSources(
-        asset_id=asset_wrapper.asset.id,
-        immich_date=immich_date,
-        whatsapp_filename_date=wa_filename_date,
-        whatsapp_path_date=wa_path_date,
-    )
+
 from zoneinfo import ZoneInfo
 from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
 
@@ -116,6 +102,21 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         updated = update_asset.sync(id=asset_wrapper.asset.id, client=asset_wrapper.context.client, body=dto)
         print(f"[DATE CORRECTION] Update result: {updated}")
 
+from .asset_date_sources import AssetDateSources
+def get_asset_date_sources(asset_wrapper: AssetResponseWrapper) -> AssetDateSources:
+    """
+    Extract all relevant date sources for a given asset.
+    Returns an AssetDateSources object with immich_date, WhatsApp filename date, and WhatsApp path date.
+    """
+    immich_date = asset_wrapper.get_best_date()
+    wa_filename_date = extract_whatsapp_date_from_path(getattr(asset_wrapper.asset, 'original_file_name', ''))
+    wa_path_date = extract_whatsapp_date_from_path(getattr(asset_wrapper.asset, 'original_path', ''))
+    return AssetDateSources(
+        asset_id=asset_wrapper.asset.id,
+        immich_date=immich_date,
+        whatsapp_filename_date=wa_filename_date,
+        whatsapp_path_date=wa_path_date,
+    )
 
 @typechecked
 def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
