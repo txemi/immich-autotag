@@ -7,7 +7,7 @@ from immich_autotag.assets.date_correction.asset_date_candidate import AssetDate
 
 
 @attrs.define(auto_attribs=True, slots=True)
-class AssetDateSources:
+class AssetDateSources_deprecated:
     asset_id: str
     immich_date: Optional[AssetDateCandidate]
     whatsapp_filename_date: Optional[AssetDateCandidate]
