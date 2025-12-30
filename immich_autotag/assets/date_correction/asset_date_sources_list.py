@@ -55,7 +55,11 @@ class AssetDateSourcesList:
         """
         Return the minimum (oldest) non-None whatsapp_filename_date among all sources, or None if none present.
         """
-        dates = [src.whatsapp_filename_date for src in self.sources if src.whatsapp_filename_date is not None]
+        dates = [
+            src.whatsapp_filename_date
+            for src in self.sources
+            if src.whatsapp_filename_date is not None
+        ]
         return min(dates) if dates else None
 
     @typechecked

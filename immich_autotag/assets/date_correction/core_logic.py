@@ -7,9 +7,10 @@ from zoneinfo import ZoneInfo
 from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
 
 from typeguard import typechecked
-
+from datetime import datetime
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
 
 @typechecked
 def _is_precise_immich_and_rounded_oldest_close(
@@ -17,16 +18,13 @@ def _is_precise_immich_and_rounded_oldest_close(
 ) -> bool:
     diff = abs(
         (
-            oldest.astimezone(ZoneInfo("UTC"))
-            - immich_date.astimezone(ZoneInfo("UTC"))
+            oldest.astimezone(ZoneInfo("UTC")) - immich_date.astimezone(ZoneInfo("UTC"))
         ).total_seconds()
     )
     return (
         diff < threshold_seconds
         and (
-            immich_date.hour != 0
-            or immich_date.minute != 0
-            or immich_date.second != 0
+            immich_date.hour != 0 or immich_date.minute != 0 or immich_date.second != 0
         )
         and oldest.hour == 0
         and oldest.minute == 0
@@ -70,9 +68,6 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         )
         return
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
-    from datetime import datetime
-
-
 
     if _is_precise_immich_and_rounded_oldest_close(immich_date, oldest):
         print(
@@ -88,7 +83,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
             f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}"
         )
         asset_wrapper.update_date(whatsapp_filename_date)
-        print(f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {whatsapp_filename_date}")
+        print(
+            f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {whatsapp_filename_date}"
+        )
         return
     # Si no se cumple la condición, lanzar excepción como antes
     photo_url_obj = asset_wrapper.get_immich_photo_url()

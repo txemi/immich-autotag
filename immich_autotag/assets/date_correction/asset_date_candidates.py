@@ -37,5 +37,3 @@ class AssetDateCandidates:
         Returns True if immich_date is less than or equal to all candidate dates.
         """
         return all(immich_date <= d for d in self.all_dates())
-
-
