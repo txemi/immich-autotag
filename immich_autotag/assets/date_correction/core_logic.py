@@ -11,6 +11,28 @@ from typeguard import typechecked
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
+@typechecked
+def _is_precise_immich_and_rounded_oldest_close(
+    immich_date: datetime, oldest: datetime, threshold_seconds: int = 4 * 3600
+) -> bool:
+    diff = abs(
+        (
+            oldest.astimezone(ZoneInfo("UTC"))
+            - immich_date.astimezone(ZoneInfo("UTC"))
+        ).total_seconds()
+    )
+    return (
+        diff < threshold_seconds
+        and (
+            immich_date.hour != 0
+            or immich_date.minute != 0
+            or immich_date.second != 0
+        )
+        and oldest.hour == 0
+        and oldest.minute == 0
+        and oldest.second == 0
+    )
+
 
 @typechecked
 def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
@@ -50,29 +72,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
     from datetime import datetime
 
-    @typechecked
-    def is_precise_immich_and_rounded_oldest_close(
-        immich_date: datetime, oldest: datetime, threshold_seconds: int = 4 * 3600
-    ) -> bool:
-        diff = abs(
-            (
-                oldest.astimezone(ZoneInfo("UTC"))
-                - immich_date.astimezone(ZoneInfo("UTC"))
-            ).total_seconds()
-        )
-        return (
-            diff < threshold_seconds
-            and (
-                immich_date.hour != 0
-                or immich_date.minute != 0
-                or immich_date.second != 0
-            )
-            and oldest.hour == 0
-            and oldest.minute == 0
-            and oldest.second == 0
-        )
 
-    if is_precise_immich_and_rounded_oldest_close(immich_date, oldest):
+
+    if _is_precise_immich_and_rounded_oldest_close(immich_date, oldest):
         print(
             f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
         )
