@@ -64,8 +64,7 @@ class AssetDateSourcesList:
         """
         Return an AssetDateCandidates object with all AssetDateCandidate objects from all sources.
         """
-        from .extract_candidates_from_sources import extract_candidates_from_sources
         candidates = AssetDateCandidates()
         for src in self.sources:
-            candidates.candidates.extend(extract_candidates_from_sources(src))
+            candidates.candidates.extend(src.all_candidates())
         return candidates

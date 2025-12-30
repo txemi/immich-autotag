@@ -83,12 +83,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         print(f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {whatsapp_filename_date}")
         return
 
-    # Nueva lógica: si hay una fecha en el nombre del fichero (no WhatsApp) que es válida y al menos 2 días anterior a la de Immich, actualizar
-    # Buscar la fecha más antigua de los candidatos que provenga del nombre del fichero y no sea WhatsApp
-    filename_candidates = [
-        c for c in date_candidates
-        if c.source_kind == DateSourceKind.FILENAME
-    ]
+    filename_candidates = date_candidates.filename_candidates()
     if filename_candidates:
         filename_candidate = min(filename_candidates, key=lambda c: c.date)
         if is_datetime_more_than_days_after(immich_date, filename_candidate.date, days=2):

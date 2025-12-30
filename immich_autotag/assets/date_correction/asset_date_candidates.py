@@ -35,3 +35,8 @@ class AssetDateCandidates:
         Returns True if immich_date is less than or equal to all candidate dates.
         """
         return all(immich_date <= c.date for c in self.candidates)
+
+    def filename_candidates(self):
+        """Return all candidates whose source_kind is FILENAME."""
+        from .date_source_kind import DateSourceKind
+        return [c for c in self.candidates if c.source_kind == DateSourceKind.FILENAME]
