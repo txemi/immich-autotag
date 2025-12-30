@@ -8,21 +8,10 @@ from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
 
 from typeguard import typechecked
 
+from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
-@typechecked
-def _immich_date_is_more_than_days_after(
-    immich_date: Optional[datetime],
-    other_date: Optional[datetime],
-    days: int = 1,
-) -> bool:
-    """
-    Returns True if immich_date is more than `days` after other_date.
-    """
-    if immich_date is None or other_date is None:
-        return False
-    delta = (immich_date - other_date).total_seconds()
-    return delta > days * 86400
+
 @typechecked
 def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     """
