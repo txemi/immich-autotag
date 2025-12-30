@@ -13,7 +13,7 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @typechecked
-def is_precise_and_rounded_midnight_close(
+def _is_precise_and_rounded_midnight_close(
     dt_precise: datetime, dt_midnight: datetime, threshold_seconds: int = 4 * 3600
 ) -> bool:
     """
@@ -72,14 +72,14 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         return
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
 
-    if is_precise_and_rounded_midnight_close(immich_date, oldest):
+    if _is_precise_and_rounded_midnight_close(immich_date, oldest):
         print(
             f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
         )
         return
     # Nueva lógica: si la fecha de Immich es posterior a la fecha obtenida del nombre del fichero en más de 24h, actualizar
     whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
-    if _immich_date_is_more_than_days_after(
+    if is_datetime_more_than_days_after(
         immich_date, whatsapp_filename_date, days=1
     ):
         print(
