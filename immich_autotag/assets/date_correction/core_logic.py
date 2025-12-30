@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 from .asset_date_sources_list import AssetDateSourcesList
 from .asset_date_candidates import AssetDateCandidates
 
