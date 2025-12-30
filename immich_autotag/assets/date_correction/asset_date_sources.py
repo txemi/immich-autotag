@@ -12,6 +12,7 @@ class AssetDateSources:
     immich_date: Optional[AssetDateCandidate]
     whatsapp_filename_date: Optional[AssetDateCandidate]
     whatsapp_path_date: Optional[AssetDateCandidate]
+    filename_date: Optional[AssetDateCandidate]
 
     def all_candidates(self) -> list[AssetDateCandidate]:
         """Return all non-None AssetDateCandidate objects as a list."""
@@ -20,6 +21,7 @@ class AssetDateSources:
                 self.immich_date,
                 self.whatsapp_filename_date,
                 self.whatsapp_path_date,
+                self.filename_date,
             ] if d is not None
         ]
 
