@@ -1,20 +1,15 @@
 
-import attrs
 from typing import List
 from datetime import datetime
 from typeguard import typechecked
-
-@attrs.define(auto_attribs=True, slots=True)
-class AssetDateCandidate:
-    label: str
-    date: datetime
+from .asset_date_candidate import AssetDateCandidate
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidates:
     candidates: List[AssetDateCandidate] = attrs.field(factory=list)
 
-    def add(self, label: str, dt: datetime) -> None:
-        self.candidates.append(AssetDateCandidate(label=label, date=dt))
+    def add(self, candidate: AssetDateCandidate) -> None:
+        self.candidates.append(candidate)
 
     def extend(self, other: "AssetDateCandidates") -> None:
         self.candidates.extend(other.candidates)
