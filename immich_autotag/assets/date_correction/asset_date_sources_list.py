@@ -6,6 +6,7 @@ from typeguard import typechecked
 import attrs
 from typing import List
 from .asset_date_sources import AssetDateSources
+from .asset_date_candidates import AssetDateCandidates
 
 
 from typing import Optional
@@ -26,10 +27,6 @@ class AssetDateSourcesList:
     def extend(self, sources: List[AssetDateSources]) -> None:
         self.sources.extend(sources)
 
-    @typechecked
-    def add_all_candidates_to(self, candidates: list) -> None:
-        for src in self.sources:
-            src.add_candidates_to(candidates)
 
     @typechecked
     def __len__(self) -> int:
@@ -63,12 +60,12 @@ class AssetDateSourcesList:
         return min(dates) if dates else None
 
     @typechecked
-    def to_candidates(self) -> "AssetDateCandidates":
+    def to_candidates(self) -> AssetDateCandidates:
         """
-        Return an AssetDateCandidates object with all candidates from all sources.
+        Return an AssetDateCandidates object with all AssetDateCandidate objects from all sources.
         """
-        from .asset_date_candidates import AssetDateCandidates
-
+        from .extract_candidates_from_sources import extract_candidates_from_sources
         candidates = AssetDateCandidates()
-        self.add_all_candidates_to(candidates.candidates)
+        for src in self.sources:
+            candidates.candidates.extend(extract_candidates_from_sources(src))
         return candidates
