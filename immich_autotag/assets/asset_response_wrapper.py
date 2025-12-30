@@ -33,13 +33,15 @@ if TYPE_CHECKING:
 class AssetResponseWrapper:
 
     @typechecked
-    def update_date(self, new_date: datetime) -> None:
+    def update_date(self, new_date: datetime, tag_mod_report: "TagModificationReport | None" = None, user: str = None) -> None:
         """
         Actualiza la fecha principal (created_at) del asset usando la API de Immich.
+        Si se proporciona tag_mod_report, registra la modificación.
         """
         from immich_client.api.assets import update_asset
         from immich_client.models.asset_update_dto import AssetUpdateDto
         import pytz
+        old_date = self.asset.created_at
         # Asegura que la fecha es timezone-aware en UTC
         if new_date.tzinfo is None:
             import zoneinfo
@@ -50,6 +52,22 @@ class AssetResponseWrapper:
             id=self.id,
             created_at=new_date.isoformat()
         )
+        # Log and print before updating the asset
+        log_msg = (
+            f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
+            f"old_date={old_date}, new_date={new_date}"
+        )
+        print(log_msg)
+        if tag_mod_report is not None:
+            tag_mod_report.add_modification(
+                kind="UPDATE_ASSET_DATE",
+                asset_id=self.id_as_uuid,
+                asset_name=self.original_file_name,
+                old_name=str(old_date) if old_date else None,
+                new_name=str(new_date) if new_date else None,
+                user=user,
+                extra={"pre_update": True}
+            )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
         # Recarga el asset para reflejar el cambio
         from immich_client.api.assets import get_asset_info

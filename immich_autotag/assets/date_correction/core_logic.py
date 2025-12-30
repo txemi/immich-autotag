@@ -36,7 +36,7 @@ def _is_precise_and_rounded_midnight_close(
 
 
 @typechecked
-def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
+def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -> None:
     """
     Main entry point for asset date correction logic.
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
@@ -47,48 +47,41 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
     date_sources_list = AssetDateSourcesList.from_wrappers(wrappers)
     date_candidates = date_sources_list.to_candidates()
     if date_candidates.is_empty():
-        print(
-            f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}"
-        )
+        if log:
+            print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
-    print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
-    for label, d in date_candidates:
-        print(f"  {label}: {d!r} (type={type(d)}, tzinfo={getattr(d, 'tzinfo', None)})")
+    if log:
+        print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
+        for label, d in date_candidates:
+            print(f"  {label}: {d!r} (type={type(d)}, tzinfo={getattr(d, 'tzinfo', None)})")
     # This will fail if there are naive and aware datetimes, but that's intentional for debugging
     oldest = date_candidates.oldest()
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date = asset_wrapper.get_best_date()
     # Si la fecha de Immich es la más antigua o igual a todas las sugeridas, no se hace nada
     if date_candidates.immich_date_is_oldest_or_equal(immich_date):
-        print(
-            f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a todas las sugeridas, no se hace nada."
-        )
+        if log:
+            print(f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a todas las sugeridas, no se hace nada.")
         return
     # If Immich date is the same day as the oldest, do nothing
     if immich_date.date() == oldest.date():
-        print(
-            f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada."
-        )
+        if log:
+            print(f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada.")
         return
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
 
     if _is_precise_and_rounded_midnight_close(immich_date, oldest):
-        print(
-            f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
-        )
+        if log:
+            print(f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada.")
         return
     # Nueva lógica: si la fecha de Immich es posterior a la fecha obtenida del nombre del fichero en más de 24h, actualizar
     whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
     if is_datetime_more_than_days_after(
         immich_date, whatsapp_filename_date, days=1
     ):
-        print(
-            f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}"
-        )
+        print(f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}")
         asset_wrapper.update_date(whatsapp_filename_date)
-        print(
-            f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {whatsapp_filename_date}"
-        )
+        print(f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {whatsapp_filename_date}")
         return
     # Si no se cumple la condición, lanzar excepción como antes
     photo_url_obj = asset_wrapper.get_immich_photo_url()

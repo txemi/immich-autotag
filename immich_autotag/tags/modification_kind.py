@@ -11,3 +11,4 @@ class ModificationKind(Enum):
     RENAME_ALBUM = auto()  # Album renamed
     ASSIGN_ASSET_TO_ALBUM = auto()  # Asset assigned to album
     REMOVE_ASSET_FROM_ALBUM = auto()  # Asset removed from album
+    UPDATE_ASSET_DATE = auto()  # Asset date updated
