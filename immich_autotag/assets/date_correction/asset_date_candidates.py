@@ -1,18 +1,20 @@
+
 import attrs
-from typing import List, Tuple
+from typing import List
 from datetime import datetime
-from datetime import datetime
-from typing import Optional
 from typeguard import typechecked
 
+@attrs.define(auto_attribs=True, slots=True)
+class AssetDateCandidate:
+    label: str
+    date: datetime
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidates:
-
-    candidates: List[Tuple[str, datetime]] = attrs.field(factory=list)
+    candidates: List[AssetDateCandidate] = attrs.field(factory=list)
 
     def add(self, label: str, dt: datetime) -> None:
-        self.candidates.append((label, dt))
+        self.candidates.append(AssetDateCandidate(label=label, date=dt))
 
     def extend(self, other: "AssetDateCandidates") -> None:
         self.candidates.extend(other.candidates)
@@ -21,10 +23,10 @@ class AssetDateCandidates:
         return not self.candidates
 
     def oldest(self) -> datetime:
-        return min((dt for _, dt in self.candidates), default=None)
+        return min((c.date for c in self.candidates), default=None)
 
     def all_dates(self) -> List[datetime]:
-        return [dt for _, dt in self.candidates]
+        return [c.date for c in self.candidates]
 
     def __len__(self):
         return len(self.candidates)
@@ -36,4 +38,4 @@ class AssetDateCandidates:
         """
         Returns True if immich_date is less than or equal to all candidate dates.
         """
-        return all(immich_date <= d for d in self.all_dates())
+        return all(immich_date <= c.date for c in self.candidates)
