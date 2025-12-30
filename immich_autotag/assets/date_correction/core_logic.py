@@ -13,22 +13,25 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @typechecked
-def _is_precise_immich_and_rounded_oldest_close(
-    immich_date: datetime, oldest: datetime, threshold_seconds: int = 4 * 3600
+def is_precise_and_rounded_midnight_close(
+    dt_precise: datetime, dt_midnight: datetime, threshold_seconds: int = 4 * 3600
 ) -> bool:
+    """
+    Devuelve True si dt_precise tiene hora distinta de 00:00:00, dt_midnight es exactamente a medianoche,
+    y la diferencia absoluta entre ambos es menor que threshold_seconds.
+    """
     diff = abs(
         (
-            oldest.astimezone(ZoneInfo("UTC")) - immich_date.astimezone(ZoneInfo("UTC"))
+            dt_midnight.astimezone(ZoneInfo("UTC"))
+            - dt_precise.astimezone(ZoneInfo("UTC"))
         ).total_seconds()
     )
     return (
         diff < threshold_seconds
-        and (
-            immich_date.hour != 0 or immich_date.minute != 0 or immich_date.second != 0
-        )
-        and oldest.hour == 0
-        and oldest.minute == 0
-        and oldest.second == 0
+        and (dt_precise.hour != 0 or dt_precise.minute != 0 or dt_precise.second != 0)
+        and dt_midnight.hour == 0
+        and dt_midnight.minute == 0
+        and dt_midnight.second == 0
     )
 
 
@@ -69,7 +72,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper) -> None:
         return
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
 
-    if _is_precise_immich_and_rounded_oldest_close(immich_date, oldest):
+    if is_precise_and_rounded_midnight_close(immich_date, oldest):
         print(
             f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
         )
