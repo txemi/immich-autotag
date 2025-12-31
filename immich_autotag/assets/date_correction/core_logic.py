@@ -90,9 +90,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
                 f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
             )
         return
-    # Si la diferencia entre la fecha de Immich y la más antigua es menor de 16 horas, no hacer nada (para evitar falsos positivos)
+    # Si la diferencia entre la fecha de Immich y la más antigua es menor de 20 horas, no hacer nada (para evitar falsos positivos)  Lo iremos reduciendo a medida que lo probemos y queden menos casos por arreglar
     diff_seconds_abs = abs((immich_date - oldest).total_seconds())
-    if diff_seconds_abs < 16 * 3600:
+    if diff_seconds_abs < 20 * 3600:
         if log:
             print(f"[DATE CORRECTION] Diferencia entre Immich date y oldest es menor de 16h: {diff_seconds_abs/3600:.2f} horas. No se hace nada.")
         return
