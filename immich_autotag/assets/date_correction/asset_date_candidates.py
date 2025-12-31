@@ -1,3 +1,4 @@
+
 from datetime import datetime
 from typing import Iterator, List, Optional
 
@@ -92,3 +93,11 @@ class AssetDateCandidates:
     def has_kind(self, kind: DateSourceKind) -> bool:
         """Return True if there is at least one candidate of the given kind."""
         return any(c.source_kind == kind for c in self.candidates)
+    @typechecked
+    def oldest_candidate(self) -> Optional["AssetDateCandidate"]:
+        """
+        Devuelve el AssetDateCandidate con la fecha más antigua para este asset.
+        """
+        if not self.candidates:
+            return None
+        return min(self.candidates)
