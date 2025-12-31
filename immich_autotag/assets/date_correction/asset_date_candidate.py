@@ -9,6 +9,7 @@ from .date_source_kind import DateSourceKind
 
 
 @attrs.define(auto_attribs=True, slots=True)
+
 class AssetDateCandidate:
     """
     Representa una fecha candidata ofrecida por un asset (puede ser el asset principal o un duplicado).
@@ -67,3 +68,8 @@ class AssetDateCandidate:
         if not isinstance(other, AssetDateCandidate):
             return NotImplemented
         return self.get_aware_date() == other.get_aware_date()
+    @typechecked
+    def format_info(self) -> str:
+        aw = self.asset_wrapper
+        link = aw.get_immich_photo_url().geturl() if hasattr(aw, 'get_immich_photo_url') else "(sin enlace)"
+        return f"[{self.source_kind.name}] fecha={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.id} | enlace={link}"

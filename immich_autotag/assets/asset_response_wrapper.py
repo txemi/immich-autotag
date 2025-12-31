@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
+
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
@@ -94,7 +95,8 @@ class AssetResponseWrapper:
             old_name=str(old_date) if old_date else None,
             new_name=str(new_date) if new_date else None,
             user=user_name,
-            extra={"pre_update": True, "asset_url": asset_url},
+            link=asset_url,
+            extra={"pre_update": True},
         )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
         # Fail-fast: check response type and status directly, no dynamic attribute access
@@ -795,3 +797,20 @@ class AssetResponseWrapper:
                     self.remove_tag_by_name(
                         tag_for_set, tag_mod_report=tag_mod_report, user=user
                     )
+
+    @typechecked
+    def format_info(self) -> str:
+        lines = [f"Asset {self.id} | {self.original_file_name}"]
+        try:
+            link = self.get_immich_photo_url().geturl()
+        except Exception:
+            link = "(sin enlace)"
+        lines.append(f"  Enlace: {link}")
+        lines.append(f"  created_at: {getattr(self.asset, 'created_at', None)}")
+        lines.append(f"  file_created_at: {getattr(self.asset, 'file_created_at', None)}")
+        lines.append(f"  exif_created_at: {getattr(self.asset, 'exif_created_at', None)}")
+        lines.append(f"  updated_at: {getattr(self.asset, 'updated_at', None)}")
+        lines.append(f"  Tags: {self.get_tag_names()}")
+        lines.append(f"  Albums: {self.get_album_names()}")
+        lines.append(f"  Path: {getattr(self.asset, 'original_path', None)}")
+        return '\n'.join(lines)

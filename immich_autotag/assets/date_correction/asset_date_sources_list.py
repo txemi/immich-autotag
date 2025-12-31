@@ -14,6 +14,7 @@ from .asset_date_candidates import AssetDateCandidate, AssetDateCandidates
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
+
     """
     Holds a list of AssetDateCandidates sets, one for each duplicate asset (AssetResponseWrapper).
     Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
@@ -113,3 +114,15 @@ class AssetDateSourcesList:
         if not all_candidates:
             return None
         return min(all_candidates)
+
+    @typechecked
+    def format_full_info(self) -> str:
+        lines = []
+        lines.append("==== [AssetDateSourcesList] Diagnóstico completo ====")
+        lines.append(f"Activo principal: {self.asset_wrapper.format_info()}")
+        lines.append("")
+        for i, candidate_set in enumerate(self.date_candidates_per_duplicate):
+            lines.append(f"--- Duplicado #{i+1} ---")
+            lines.append(candidate_set.format_info())
+            lines.append("")
+        return '\n'.join(lines)
