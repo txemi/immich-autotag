@@ -54,16 +54,15 @@ class AssetResponseWrapper:
         old_date = self.asset.created_at
         # Asegura que la fecha es timezone-aware en UTC
         if new_date.tzinfo is None:
-            import zoneinfo
-
-            new_date = new_date.replace(tzinfo=zoneinfo.ZoneInfo("UTC"))
+            raise ValueError("[ERROR] new_date debe ser timezone-aware. Recibido naive datetime. No se actualiza el asset.")
         else:
             new_date = new_date.astimezone(pytz.UTC)
         dto = AssetUpdateDto(id=self.id, created_at=new_date.isoformat())
-        # Log and print before updating the asset
+        # Log and print before updating the asset, incluyendo enlace a la foto en Immich
+        photo_url = self.get_immich_photo_url()
         log_msg = (
             f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
-            f"old_date={old_date}, new_date={new_date}"
+            f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
         )
         print(log_msg)
         if tag_mod_report is not None:
