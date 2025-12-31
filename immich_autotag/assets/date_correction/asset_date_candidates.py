@@ -12,6 +12,7 @@ from .date_source_kind import DateSourceKind
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidates:
+
     """
     Representa la colección de fechas candidatas proporcionadas por un único asset (activo).
     Cada instancia de esta clase agrupa todas las posibles fechas extraídas de distintas fuentes (Immich, filename, EXIF, etc.) para ese asset concreto.
@@ -112,3 +113,7 @@ class AssetDateCandidates:
         for c in self.candidates:
             lines.append("    " + c.format_info())
         return "\n".join(lines)
+    @typechecked
+    def candidates_by_kinds(self, kinds: list[DateSourceKind]) -> List[AssetDateCandidate]:
+        """Devuelve todos los candidatos cuyo source_kind está en la lista kinds."""
+        return [c for c in self.candidates if c.source_kind in kinds]

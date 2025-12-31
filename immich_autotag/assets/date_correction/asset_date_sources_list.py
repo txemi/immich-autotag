@@ -9,11 +9,14 @@ from typing import Optional
 import attrs
 from typeguard import typechecked
 
+
 from .asset_date_candidates import AssetDateCandidate, AssetDateCandidates
+from .date_source_kind import DateSourceKind
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
+
     """
     Holds a list of AssetDateCandidates sets, one for each duplicate asset (AssetResponseWrapper).
     Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
@@ -125,3 +128,11 @@ class AssetDateSourcesList:
             lines.append(candidate_set.format_info())
             lines.append("")
         return "\n".join(lines)
+
+    @typechecked
+    def candidates_by_kinds(self, kinds: list[DateSourceKind]) -> list[AssetDateCandidate]:
+        """Devuelve todos los candidatos de todos los duplicados cuyo source_kind está en la lista kinds."""
+        result = []
+        for candidate_set in self.date_candidates_per_duplicate:
+            result.extend(candidate_set.candidates_by_kinds(kinds))
+        return result
