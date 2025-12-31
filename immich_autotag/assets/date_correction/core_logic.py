@@ -82,6 +82,12 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
                 f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
             )
         return
+    # Si la diferencia entre la fecha de Immich y la más antigua es menor de 16 horas, no hacer nada (para evitar falsos positivos)
+    diff_seconds_abs = abs((immich_date - oldest).total_seconds())
+    if diff_seconds_abs < 16 * 3600:
+        if log:
+            print(f"[DATE CORRECTION] Diferencia entre Immich date y oldest es menor de 16h: {diff_seconds_abs/3600:.2f} horas. No se hace nada.")
+        return
     # Nueva lógica: si la fecha de Immich es posterior a la fecha obtenida del nombre del fichero en más de 24h, actualizar
     whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
     if whatsapp_filename_date is not None and is_datetime_more_than_days_after(
