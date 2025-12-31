@@ -1,5 +1,7 @@
 #!/bin/bash
 # Script para formatear y organizar imports en el proyecto, evitando .venv y librerías externas
+set -x
+set -e
 
 # Directorio a formatear (por defecto, el actual)
 TARGET_DIR="${1:-.}"
@@ -22,8 +24,8 @@ if [ ! -f "$VENV_PATH" ]; then
 fi
 source "$VENV_PATH"
 
-# Formatea el código con Black
-black $BLACK_EXCLUDES "$TARGET_DIR"
+# Formatea el código con Black usando el Python del entorno virtual
+"$PROJECT_ROOT/.venv/bin/python" -m black $BLACK_EXCLUDES "$TARGET_DIR"
 
-# Organiza los imports con isort
-isort $ISORT_SKIPS "$TARGET_DIR"
+# Organiza los imports con isort usando el Python del entorno virtual
+"$PROJECT_ROOT/.venv/bin/python" -m isort $ISORT_SKIPS "$TARGET_DIR"
