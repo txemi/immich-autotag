@@ -1,8 +1,10 @@
-import attrs
 from datetime import datetime
 from typing import Optional
-from .date_source_kind import DateSourceKind
+
+import attrs
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
+from .date_source_kind import DateSourceKind
 
 
 @attrs.define(auto_attribs=True, slots=True)

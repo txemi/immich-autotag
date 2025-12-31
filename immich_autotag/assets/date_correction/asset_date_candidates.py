@@ -1,10 +1,12 @@
-import attrs
-from typing import List, Iterator, Optional
 from datetime import datetime
+from typing import Iterator, List, Optional
+
+import attrs
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from typeguard import typechecked
+
 from .asset_date_candidate import AssetDateCandidate
 from .date_source_kind import DateSourceKind
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True)

@@ -2,14 +2,14 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from typeguard import typechecked
-import attrs
-from .asset_date_candidates import AssetDateCandidates, AssetDateCandidate
 
-
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+import attrs
 from typeguard import typechecked
+
+from .asset_date_candidates import AssetDateCandidate, AssetDateCandidates
 
 
 @attrs.define(auto_attribs=True, slots=True)
