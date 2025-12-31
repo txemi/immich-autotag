@@ -22,7 +22,18 @@ if [ ! -f "$VENV_PATH" ]; then
 	echo "Ejecuta primero el script de setup: bash setup_venv.sh"
 	exit 1
 fi
+
 source "$VENV_PATH"
+
+# Instala black e isort si no están disponibles
+if ! "$PROJECT_ROOT/.venv/bin/python" -c "import black" 2>/dev/null; then
+	echo "Instalando black en el entorno virtual..."
+	"$PROJECT_ROOT/.venv/bin/python" -m pip install black
+fi
+if ! "$PROJECT_ROOT/.venv/bin/python" -c "import isort" 2>/dev/null; then
+	echo "Instalando isort en el entorno virtual..."
+	"$PROJECT_ROOT/.venv/bin/python" -m pip install isort
+fi
 
 # Formatea el código con Black usando el Python del entorno virtual
 "$PROJECT_ROOT/.venv/bin/python" -m black $BLACK_EXCLUDES "$TARGET_DIR"
