@@ -54,7 +54,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
             print(f"  {candidate.source_kind}: {candidate.date!r} (type={type(candidate.date)}, tzinfo={getattr(candidate.date, 'tzinfo', None)})")
     # Usar el método de la lista para obtener el candidato más antiguo (normalizado)
     oldest_candidate = date_sources_list.oldest_candidate()
+    assert oldest_candidate is not None
     oldest: Optional[datetime] = oldest_candidate.date if oldest_candidate else None
+    assert oldest is not None
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
     # Si la fecha de Immich es la más antigua o igual a la más antigua sugerida, no se hace nada
