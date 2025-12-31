@@ -46,25 +46,22 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     flat_candidates = date_sources_list.to_flat_candidates()
     if not flat_candidates:
         if log:
-            print(
-                f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}"
-            )
+            print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
     if log:
         print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
         for candidate in flat_candidates:
-            print(
-                f"  {candidate.source_kind}: {candidate.date!r} (type={type(candidate.date)}, tzinfo={getattr(candidate.date, 'tzinfo', None)})"
-            )
-    # This will fail if there are naive and aware datetimes, but that's intentional for debugging
-    oldest: Optional[datetime] = min((c.date for c in flat_candidates), default=None)
+            print(f"  {candidate.source_kind}: {candidate.date!r} (type={type(candidate.date)}, tzinfo={getattr(candidate.date, 'tzinfo', None)})")
+    # Usar el método de la lista para obtener el candidato más antiguo (normalizado)
+    oldest_candidate = date_sources_list.oldest_candidate()
+    oldest: Optional[datetime] = oldest_candidate.date if oldest_candidate else None
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
-    # Si la fecha de Immich es la más antigua o igual a todas las sugeridas, no se hace nada
-    if all(immich_date <= c.date for c in flat_candidates):
+    # Si la fecha de Immich es la más antigua o igual a la más antigua sugerida, no se hace nada
+    if oldest is not None and immich_date <= oldest:
         if log:
             print(
-                f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a todas las sugeridas, no se hace nada."
+                f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a la más antigua sugerida ({oldest}), no se hace nada."
             )
         return
     # If Immich date is the same day as the oldest, do nothing
