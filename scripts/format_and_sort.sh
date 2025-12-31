@@ -7,8 +7,11 @@ TARGET_DIR="${1:-.}"
 # Excluye .venv y librerías externas
 EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts"
 
-# Activa el entorno virtual si es necesario
-# source /ruta/a/tu/entorno/.venv/bin/activate
+
+# Activa el entorno virtual del proyecto de forma robusta
+SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
+PROJECT_ROOT="$SCRIPT_DIR/.."
+source "$PROJECT_ROOT/.venv/bin/activate"
 
 # Formatea el código con Black
 black $EXCLUDES "$TARGET_DIR"
