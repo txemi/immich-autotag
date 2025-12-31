@@ -10,6 +10,9 @@ from .date_source_kind import DateSourceKind
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidate:
+
+
+
     """
     Representa una fecha candidata ofrecida por un asset (puede ser el asset principal o un duplicado).
     Cada instancia corresponde a una posible fuente de fecha para ese asset, como la fecha de Immich, la fecha extraída del nombre de archivo, del path, EXIF, etc.
@@ -36,3 +39,26 @@ class AssetDateCandidate:
 
     def __str__(self):
         return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.date}, file_path={self.file_path}, asset_id={getattr(self.asset_wrapper, 'id', None)})"
+
+    def get_aware_date(self, user_tz=None):
+        """
+        Devuelve la fecha garantizando que tiene zona horaria.
+        Si la fecha es naive, usa la zona horaria de usuario (user_tz) o la definida en la configuración (DATE_EXTRACTION_TIMEZONE).
+        """
+        dt = self.date
+        if dt.tzinfo is not None:
+            return dt
+        if user_tz is None:
+            from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
+            from zoneinfo import ZoneInfo
+            user_tz = ZoneInfo(DATE_EXTRACTION_TIMEZONE)
+        return dt.replace(tzinfo=user_tz)
+    def __lt__(self, other):
+        if not isinstance(other, AssetDateCandidate):
+            return NotImplemented
+        return self.get_aware_date() < other.get_aware_date()
+
+    def __eq__(self, other):
+        if not isinstance(other, AssetDateCandidate):
+            return NotImplemented
+        return self.get_aware_date() == other.get_aware_date()
