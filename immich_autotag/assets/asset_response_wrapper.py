@@ -94,6 +94,13 @@ class AssetResponseWrapper:
         from immich_client.api.assets import get_asset_info
 
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
+        # Fail-fast check: ensure the date has actually changed to what we expect
+        updated_created_at = updated_asset.created_at
+        # Compare as ISO strings for robustness (datetime with tzinfo)
+        if updated_created_at is None or updated_created_at.isoformat() != new_date.isoformat():
+            raise DateIntegrityError(
+                f"[ERROR] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
+            )
         self.asset = updated_asset
         return
 
