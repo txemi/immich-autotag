@@ -76,6 +76,7 @@ def _check_filename_candidate_and_fix(
         print(
             f"[DATE CORRECTION] Updating Immich date to the one from candidate: {best_candidate.get_aware_date()} (label: {best_candidate.source_kind})"
         )
+        # todo: utiliza date_sources_list.format_full_info() para el diagnóstico completo y tambien logea best_candidate con la funcion format_info()
         asset_wrapper.update_date(best_candidate.get_aware_date())
         print(
             f"[DATE CORRECTION] Immich date successfully updated to {best_candidate.get_aware_date()}"
