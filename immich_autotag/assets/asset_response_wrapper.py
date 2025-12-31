@@ -66,8 +66,6 @@ class AssetResponseWrapper:
         # Asegura que la fecha es timezone-aware en UTC
         if new_date.tzinfo is None:
             raise ValueError("[ERROR] new_date debe ser timezone-aware. Recibido naive datetime. No se actualiza el asset.")
-        else:
-            new_date = new_date.astimezone(pytz.UTC)
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, incluyendo enlace a la foto en Immich
         photo_url_obj = self.get_immich_photo_url()
@@ -100,7 +98,7 @@ class AssetResponseWrapper:
         return
 
     @typechecked
-    def get_immich_photo_url(self) -> str:
+    def get_immich_photo_url(self) -> ParseResult:
         """
         Devuelve la URL web de Immich para este asset como string.
         """
