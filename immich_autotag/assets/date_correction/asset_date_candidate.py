@@ -22,6 +22,9 @@ class AssetDateCandidate:
     Ejemplo: Un asset puede tener varias fechas candidatas (Immich, filename, EXIF, etc.), cada una representada por una instancia de esta clase.
     """
 
+    asset_wrapper: AssetResponseWrapper = attrs.field(
+        validator=attrs.validators.instance_of(AssetResponseWrapper)
+    )
     source_kind: DateSourceKind = attrs.field(
         validator=attrs.validators.instance_of(DateSourceKind)
     )
@@ -29,9 +32,6 @@ class AssetDateCandidate:
     file_path: Optional[str] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
-    )
-    asset_wrapper: AssetResponseWrapper = attrs.field(
-        validator=attrs.validators.instance_of(AssetResponseWrapper)
     )
 
     def __str__(self):
