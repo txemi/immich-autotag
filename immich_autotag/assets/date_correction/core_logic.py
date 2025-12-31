@@ -58,6 +58,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     oldest: datetime = oldest_candidate.get_aware_date()
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
+
     # Si la fecha de Immich es la más antigua o igual a la más antigua sugerida, no se hace nada
     if immich_date <= oldest:
         if log:
@@ -117,12 +118,16 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     # Print both dates in UTC for clarity
     def to_utc(dt: datetime) -> datetime:
         return dt.astimezone(ZoneInfo("UTC")) if dt.tzinfo else dt
+    # Print the difference between Immich date and the oldest candidate for debugging
+    diff_seconds = (immich_date - oldest).total_seconds()
+    diff_timedelta = immich_date - oldest
 
     immich_utc = to_utc(immich_date)
     oldest_utc = to_utc(oldest)
     msg = (
         f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})\n"
         f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
+        f"[DATE CORRECTION][DIFF] Immich date - oldest: {diff_timedelta} ({diff_seconds:.1f} seconds)"
     )
     print(msg)
     correct_asset_date(asset_wrapper, log=True)  # Evitar bucle infinito en logs
