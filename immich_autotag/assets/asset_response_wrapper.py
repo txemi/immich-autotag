@@ -35,6 +35,17 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
+    asset: AssetResponseDto = attrs.field(
+        validator=attrs.validators.instance_of(AssetResponseDto)
+    )
+    context: "ImmichContext" = attrs.field(
+        validator=attrs.validators.instance_of(object)
+    )
+
+    def __attrs_post_init__(self) -> None:
+        # Avoid direct reference to ImmichContext to prevent NameError/circular import
+        if self.context.__class__.__name__ != "ImmichContext":
+            raise TypeError(f"context debe ser ImmichContext, no {type(self.context)}")
 
     @typechecked
     def update_date(
@@ -144,17 +155,6 @@ class AssetResponseWrapper:
             wrappers.append(self)
         return wrappers
 
-    asset: AssetResponseDto = attrs.field(
-        validator=attrs.validators.instance_of(AssetResponseDto)
-    )
-    context: "ImmichContext" = attrs.field(
-        validator=attrs.validators.instance_of(object)
-    )
-
-    def __attrs_post_init__(self) -> None:
-        # Avoid direct reference to ImmichContext to prevent NameError/circular import
-        if self.context.__class__.__name__ != "ImmichContext":
-            raise TypeError(f"context debe ser ImmichContext, no {type(self.context)}")
 
     @typechecked
     def has_tag(self, tag_name: str) -> bool:
