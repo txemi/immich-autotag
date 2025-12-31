@@ -42,7 +42,6 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     """
     # Always consider all possible date sources, even if there are no duplicates
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
-    wrappers.append(asset_wrapper)
     date_sources_list = AssetDateSourcesList.from_wrappers(wrappers)
     date_candidates: AssetDateCandidates = date_sources_list.to_candidates()
     if date_candidates.is_empty():
