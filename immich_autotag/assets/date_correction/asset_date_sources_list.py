@@ -1,3 +1,4 @@
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -88,3 +89,12 @@ class AssetDateSourcesList:
             for candidate_set in self.candidates_list
             for c in candidate_set.candidates
         ]
+    @typechecked
+    def oldest_candidate(self) -> Optional["AssetDateCandidate"]:
+        """
+        Devuelve el AssetDateCandidate más antiguo entre todos los duplicados.
+        """
+        all_candidates = [cset.oldest_candidate() for cset in self.candidates_list if cset.oldest_candidate() is not None]
+        if not all_candidates:
+            return None
+        return min(all_candidates)
