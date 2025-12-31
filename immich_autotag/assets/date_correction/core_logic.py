@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from typing import Optional
 from zoneinfo import ZoneInfo
@@ -33,20 +32,30 @@ def _is_precise_and_rounded_midnight_close(
         and dt_midnight.minute == 0
         and dt_midnight.second == 0
     )
+
+
 from enum import Enum, auto
+
 
 # Enum for control flow in date correction steps
 class DateCorrectionStepResult(Enum):
 
     CONTINUE = auto()  # Continue processing
-    EXIT = auto()      # Stop processing, nothing to do
-    FIXED = auto()     # Date was fixed, stop processing
+    EXIT = auto()  # Stop processing, nothing to do
+    FIXED = auto()  # Date was fixed, stop processing
+
     @staticmethod
     def should_exit(result: "DateCorrectionStepResult") -> bool:
         """Return True if the result means processing should exit (FIXED or EXIT)."""
-        return result in (DateCorrectionStepResult.FIXED, DateCorrectionStepResult.EXIT)    
+        return result in (DateCorrectionStepResult.FIXED, DateCorrectionStepResult.EXIT)
+
+
 @typechecked
-def _check_filename_candidate_and_fix(asset_wrapper: AssetResponseWrapper, date_sources_list: AssetDateSourcesList, immich_date: datetime) -> "DateCorrectionStepResult":
+def _check_filename_candidate_and_fix(
+    asset_wrapper: AssetResponseWrapper,
+    date_sources_list: AssetDateSourcesList,
+    immich_date: datetime,
+) -> "DateCorrectionStepResult":
     """
     Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.
     If no correction is needed, returns CONTINUE. If a condition is met to exit early, returns EXIT.
@@ -67,6 +76,8 @@ def _check_filename_candidate_and_fix(asset_wrapper: AssetResponseWrapper, date_
         )
         return DateCorrectionStepResult.FIXED
     return DateCorrectionStepResult.CONTINUE
+
+
 @typechecked
 def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -> None:
     """
@@ -87,13 +98,17 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     flat_candidates = date_sources_list.to_flat_candidates()
     if not flat_candidates:
         if log:
-            print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
+            print(
+                f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}"
+            )
         return
     if log:
         print("[DEBUG] Candidate dates and their types/tzinfo:")
         for candidate in flat_candidates:
             aware_date = candidate.get_aware_date()
-            print(f"  {candidate.source_kind}: {aware_date!r} (type={type(aware_date)}, tzinfo={getattr(aware_date, 'tzinfo', None)})")
+            print(
+                f"  {candidate.source_kind}: {aware_date!r} (type={type(aware_date)}, tzinfo={getattr(aware_date, 'tzinfo', None)})"
+            )
     # Use the list method to get the oldest candidate (normalized)
     oldest_candidate = date_sources_list.oldest_candidate()
     oldest: datetime = oldest_candidate.get_aware_date()
@@ -115,9 +130,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
             )
         return
     # If the best candidate is rounded to midnight and is very close (<4h) to the Immich date, and the Immich date is precise, do nothing
-    if _is_precise_and_rounded_midnight_close(
-        immich_date, oldest
-    ):
+    if _is_precise_and_rounded_midnight_close(immich_date, oldest):
         if log:
             print(
                 f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do."
@@ -127,7 +140,9 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     diff_seconds_abs = abs((immich_date - oldest).total_seconds())
     if diff_seconds_abs < 20 * 3600:
         if log:
-            print(f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do.")
+            print(
+                f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do."
+            )
         return
     # New logic: if the Immich date is more than 24h after the date from the filename, update
     whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
@@ -144,11 +159,12 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         return
 
     # Check if filename-based correction should be applied
-    step_result = _check_filename_candidate_and_fix(asset_wrapper, date_sources_list, immich_date)
+    step_result = _check_filename_candidate_and_fix(
+        asset_wrapper, date_sources_list, immich_date
+    )
     if DateCorrectionStepResult.should_exit(step_result):
         return
     # else, continue processing
-
 
     # If none of the above conditions are met, raise an error as before
     photo_url_obj = asset_wrapper.get_immich_photo_url()
@@ -158,6 +174,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     # Print both dates in UTC for clarity
     def to_utc(dt: datetime) -> datetime:
         return dt.astimezone(ZoneInfo("UTC")) if dt.tzinfo else dt
+
     # Print the difference between Immich date and the oldest candidate for debugging
     diff_seconds = (immich_date - oldest).total_seconds()
     diff_timedelta = immich_date - oldest

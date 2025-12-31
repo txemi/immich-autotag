@@ -1,7 +1,7 @@
-from immich_client.api.users import get_my_user
-from typeguard import typechecked
 from typing import Any
 
+from immich_client.api.users import get_my_user
+from typeguard import typechecked
 
 
 @typechecked

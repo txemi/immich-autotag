@@ -1,4 +1,3 @@
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -15,7 +14,6 @@ from .asset_date_candidates import AssetDateCandidate, AssetDateCandidates
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
-
     """
     Holds a list of AssetDateCandidates sets, one for each duplicate asset (AssetResponseWrapper).
     Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
@@ -100,12 +98,17 @@ class AssetDateSourcesList:
         for candidate_set in self.candidates_list:
             result.extend(candidate_set.filename_candidates())
         return result
+
     @typechecked
     def oldest_candidate(self) -> Optional["AssetDateCandidate"]:
         """
         Devuelve el AssetDateCandidate más antiguo entre todos los duplicados.
         """
-        all_candidates = [cset.oldest_candidate() for cset in self.candidates_list if cset.oldest_candidate() is not None]
+        all_candidates = [
+            cset.oldest_candidate()
+            for cset in self.candidates_list
+            if cset.oldest_candidate() is not None
+        ]
         if not all_candidates:
             return None
         return min(all_candidates)

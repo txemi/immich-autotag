@@ -10,9 +10,6 @@ from .date_source_kind import DateSourceKind
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidate:
-
-
-
     """
     Representa una fecha candidata ofrecida por un asset (puede ser el asset principal o un duplicado).
     Cada instancia corresponde a una posible fuente de fecha para ese asset, como la fecha de Immich, la fecha extraída del nombre de archivo, del path, EXIF, etc.
@@ -30,7 +27,7 @@ class AssetDateCandidate:
     )
     source_kind: DateSourceKind = attrs.field(
         validator=attrs.validators.instance_of(DateSourceKind)
-    )    
+    )
     _date: datetime = attrs.field(validator=attrs.validators.instance_of(datetime))
     file_path: Optional[str] = attrs.field(
         default=None,
@@ -53,8 +50,10 @@ class AssetDateCandidate:
         if dt.tzinfo is not None:
             return dt
         from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
+
         tz = user_tz or DATE_EXTRACTION_TIMEZONE
         from zoneinfo import ZoneInfo
+
         return dt.replace(tzinfo=ZoneInfo(tz))
 
     @typechecked

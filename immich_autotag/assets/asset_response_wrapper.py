@@ -42,6 +42,7 @@ class AssetResponseWrapper:
     context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(object)
     )
+
     def __attrs_post_init__(self) -> None:
         # Avoid direct reference to ImmichContext to prevent NameError/circular import
 
@@ -65,7 +66,9 @@ class AssetResponseWrapper:
         old_date = self.asset.created_at
         # Asegura que la fecha es timezone-aware en UTC
         if new_date.tzinfo is None:
-            raise ValueError("[ERROR] new_date debe ser timezone-aware. Recibido naive datetime. No se actualiza el asset.")
+            raise ValueError(
+                "[ERROR] new_date debe ser timezone-aware. Recibido naive datetime. No se actualiza el asset."
+            )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, incluyendo enlace a la foto en Immich
         photo_url_obj = self.get_immich_photo_url()
@@ -75,8 +78,10 @@ class AssetResponseWrapper:
             f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
         )
         print(log_msg)
-        from immich_autotag.tags.tag_modification_report import TagModificationReport
+        from immich_autotag.tags.tag_modification_report import \
+            TagModificationReport
         from immich_autotag.utils.user_helpers import get_current_user
+
         tag_mod_report = TagModificationReport.get_instance()
         user_obj = get_current_user(self.context)
         user_id = getattr(user_obj, "id", None)
@@ -112,7 +117,10 @@ class AssetResponseWrapper:
         # Fail-fast check: ensure the date has actually changed to what we expect
         updated_created_at = updated_asset.created_at
         # Compare as ISO strings for robustness (datetime with tzinfo)
-        if updated_created_at is None or updated_created_at.isoformat() != new_date.isoformat():
+        if (
+            updated_created_at is None
+            or updated_created_at.isoformat() != new_date.isoformat()
+        ):
             raise DateIntegrityError(
                 f"[ERROR] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
             )
@@ -125,6 +133,7 @@ class AssetResponseWrapper:
         Devuelve la URL web de Immich para este asset como string.
         """
         from immich_autotag.utils.url_helpers import get_immich_photo_url
+
         return get_immich_photo_url(self.uuid)
 
     @typechecked
@@ -178,7 +187,6 @@ class AssetResponseWrapper:
         if include_self and (self not in wrappers):
             wrappers.append(self)
         return wrappers
-
 
     @typechecked
     def has_tag(self, tag_name: str) -> bool:
@@ -288,6 +296,7 @@ class AssetResponseWrapper:
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         from immich_autotag.utils.user_helpers import get_current_user
+
         user = get_current_user(self.context).id
 
         tag = self.context.tag_collection.find_by_name(tag_name)
@@ -554,9 +563,7 @@ class AssetResponseWrapper:
                 print(
                     f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it is now classified."
                 )
-                self.remove_tag_by_name(
-                    tag_name, tag_mod_report=tag_mod_report
-                )
+                self.remove_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
 
     @typechecked
     def ensure_autotag_conflict_category(

@@ -1,7 +1,8 @@
-from typeguard import typechecked
 from typing import Optional
-from .estimator import AdaptiveTimeEstimator
 
+from typeguard import typechecked
+
+from .estimator import AdaptiveTimeEstimator
 
 
 @typechecked

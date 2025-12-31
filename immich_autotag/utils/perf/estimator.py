@@ -1,8 +1,8 @@
-import attrs
-from typeguard import typechecked
 from typing import Optional
-import pandas as pd
 
+import attrs
+import pandas as pd
+from typeguard import typechecked
 
 
 @attrs.define(auto_attribs=True, slots=True)
