@@ -16,6 +16,7 @@ from uuid import UUID
 import attrs
 from immich_client.api.assets import get_asset_info
 from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.update_asset_dto import UpdateAssetDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
@@ -59,7 +60,7 @@ class AssetResponseWrapper:
         """
         import pytz
         from immich_client.api.assets import update_asset
-        from immich_client.models.asset_update_dto import AssetUpdateDto
+        from immich_client.models.update_asset_dto import UpdateAssetDto
 
         old_date = self.asset.created_at
         # Asegura que la fecha es timezone-aware en UTC
@@ -67,7 +68,7 @@ class AssetResponseWrapper:
             raise ValueError("[ERROR] new_date debe ser timezone-aware. Recibido naive datetime. No se actualiza el asset.")
         else:
             new_date = new_date.astimezone(pytz.UTC)
-        dto = AssetUpdateDto(id=self.id, created_at=new_date.isoformat())
+        dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, incluyendo enlace a la foto en Immich
         photo_url = self.get_immich_photo_url()
         log_msg = (
@@ -255,7 +256,6 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        user: str,
         tag_mod_report: "TagModificationReport",
         verbose: bool = False,
         info: bool = True,
@@ -266,6 +266,9 @@ class AssetResponseWrapper:
         """
         from immich_client.api.tags import tag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
+
+        from immich_autotag.utils.helpers import get_current_user
+        user = get_current_user(self.context).id
 
         tag = self.context.tag_collection.find_by_name(tag_name)
         if tag is None:
@@ -278,14 +281,13 @@ class AssetResponseWrapper:
                     raise ValueError(
                         f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
                     )
-                else:
-                    if verbose:
-                        print(
-                            f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping."
-                        )
-                    return False
+                if verbose:
+                    print(
+                        f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping."
+                    )
+                return False
         # Extra checks and logging before API call
-        if not tag or not getattr(tag, "id", None):
+        if not tag or tag.id is None:
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
             print(error_msg)
             if tag_mod_report:
@@ -384,8 +386,6 @@ class AssetResponseWrapper:
     @typechecked
     def _get_current_tag_ids(self) -> list[str]:
         """Returns the IDs of the asset's current tags."""
-        if not hasattr(self.asset, "tags"):
-            raise AttributeError("AssetResponseDto is missing 'tags' attribute.")
         if self.asset.tags is None:
             return []
         return [t.id for t in self.asset.tags]
@@ -516,7 +516,6 @@ class AssetResponseWrapper:
         self,
         classified: bool,
         tag_mod_report: "TagModificationReport | None" = None,
-        user: str | None = None,
     ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
@@ -526,7 +525,7 @@ class AssetResponseWrapper:
         tag_name = AUTOTAG_CATEGORY_UNKNOWN
         if not classified:
             if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
+                self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
                 print(
                     f"[WARN] asset.id={self.id} ({self.original_file_name}) is not classified. Tagged as '{tag_name}'."
                 )
@@ -536,7 +535,7 @@ class AssetResponseWrapper:
                     f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it is now classified."
                 )
                 self.remove_tag_by_name(
-                    tag_name, tag_mod_report=tag_mod_report, user=user
+                    tag_name, tag_mod_report=tag_mod_report
                 )
 
     @typechecked

@@ -1,6 +1,10 @@
 from immich_client.api.users import get_my_user
 
-def get_current_user(context):
+from typeguard import typechecked
+from typing import Any
+
+@typechecked
+def get_current_user(context: Any) -> Any:
     """
     Devuelve el usuario actual usando el cliente del contexto Immich.
     Retorna el objeto usuario completo (puedes acceder a .id, .email, .name, etc.).
@@ -46,7 +50,7 @@ def print_perf(
     elapsed: float,
     total_assets: int | None = None,
     estimator: "AdaptiveTimeEstimator" = None,
-):
+) -> None:
     """
     Print performance statistics for asset processing.
     Args:
