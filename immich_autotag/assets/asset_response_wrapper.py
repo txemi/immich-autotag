@@ -44,6 +44,7 @@ class AssetResponseWrapper:
 
     def __attrs_post_init__(self) -> None:
         # Avoid direct reference to ImmichContext to prevent NameError/circular import
+        # todo: esto refactoriza mal, hacer un import no mirar el nombre de la clase
         if self.context.__class__.__name__ != "ImmichContext":
             raise TypeError(f"context debe ser ImmichContext, no {type(self.context)}")
 
