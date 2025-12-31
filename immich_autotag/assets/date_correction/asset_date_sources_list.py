@@ -14,54 +14,68 @@ from typeguard import typechecked
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
-    candidates: AssetDateCandidates = attrs.field(factory=AssetDateCandidates)
+    """
+    Holds a list of AssetDateCandidates sets, one for each duplicate asset (AssetResponseWrapper).
+    Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
+    The asset_wrapper field indicates the asset that triggered this investigation.
+
+    Example usage:
+        sources_list = AssetDateSourcesList.from_wrappers(main_asset_wrapper, [wrapper1, wrapper2, ...])
+        print(sources_list.asset_wrapper)  # asset that triggered
+        for candidate_set in sources_list.candidates_list:
+            ...
+
+    TODO: Consider renaming to AssetDateCandidatesList for clarity.
+    """
+    asset_wrapper: "AssetResponseWrapper" = attrs.field()
+    candidates_list: list[AssetDateCandidates] = attrs.field(factory=list)
 
     @typechecked
-    def add(self, candidate: AssetDateCandidate) -> None:
-        self.candidates.add(candidate)
+    def add(self, candidate_set: AssetDateCandidates) -> None:
+        self.candidates_list.append(candidate_set)
 
     @typechecked
-    def extend(self, candidates: list[AssetDateCandidate]) -> None:
-        for candidate in candidates:
-            self.candidates.add(candidate)
+    def extend(self, candidate_sets: list[AssetDateCandidates]) -> None:
+        self.candidates_list.extend(candidate_sets)
 
     @typechecked
     def __len__(self) -> int:
-        return len(self.candidates)
+        return len(self.candidates_list)
 
     @typechecked
     def __iter__(self):
-        return iter(self.candidates)
+        return iter(self.candidates_list)
 
     @staticmethod
     @typechecked
-    def from_wrappers(wrappers: list["AssetResponseWrapper"]) -> "AssetDateSourcesList":
+    def from_wrappers(asset_wrapper: "AssetResponseWrapper", wrappers: list["AssetResponseWrapper"]) -> "AssetDateSourcesList":
         """
-        Build an AssetDateSourcesList from a list of AssetResponseWrapper objects.
+        Build an AssetDateSourcesList from a main AssetResponseWrapper and a list of AssetResponseWrapper objects (duplicates).
+        Each wrapper gets its own AssetDateCandidates set.
         """
         from .get_asset_date_sources import get_asset_date_candidates
-        all_candidates = AssetDateCandidates()
-        for w in wrappers:
-            candidates = get_asset_date_candidates(w)
-            all_candidates.extend(candidates)
-        return AssetDateSourcesList(all_candidates)
+        if not wrappers:
+            raise ValueError("wrappers list must not be empty")
+        candidate_sets = [get_asset_date_candidates(w) for w in wrappers]
+        return AssetDateSourcesList(asset_wrapper, candidate_sets)
 
     @typechecked
     def get_whatsapp_filename_date(self) -> Optional[datetime]:
         """
-        Return the minimum (oldest) non-None whatsapp_filename_date among all candidates, or None if none present.
+        Return the minimum (oldest) non-None whatsapp_filename_date among all candidates in all sets, or None if none present.
         """
         from .date_source_kind import DateSourceKind
         dates = [
             c.date
-            for c in self.candidates
+            for candidate_set in self.candidates_list
+            for c in candidate_set.candidates
             if c.source_kind == DateSourceKind.WHATSAPP_FILENAME
         ]
         return min(dates) if dates else None
 
     @typechecked
-    def to_candidates(self) -> AssetDateCandidates:
+    def to_flat_candidates(self) -> list[AssetDateCandidate]:
         """
-        Return the AssetDateCandidates object (all candidates).
+        Return a flat list of all AssetDateCandidate objects from all sets.
         """
-        return self.candidates
+        return [c for candidate_set in self.candidates_list for c in candidate_set.candidates]

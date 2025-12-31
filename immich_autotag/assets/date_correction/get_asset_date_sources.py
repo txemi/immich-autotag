@@ -14,7 +14,7 @@ def get_asset_date_candidates(asset_wrapper: AssetResponseWrapper) -> AssetDateC
     Extract all relevant date candidates for a given asset.
     Returns an AssetDateCandidates object with all found AssetDateCandidate objects.
     """
-    candidates = AssetDateCandidates()
+    candidates = AssetDateCandidates(asset_wrapper=asset_wrapper)
     # IMMICH date
     immich_dt = asset_wrapper.get_best_date()
     if immich_dt:
@@ -22,7 +22,7 @@ def get_asset_date_candidates(asset_wrapper: AssetResponseWrapper) -> AssetDateC
             source_kind=DateSourceKind.IMMICH,
             date=immich_dt,
             file_path=asset_wrapper.asset.original_path,
-            asset=asset_wrapper.asset,
+            asset_wrapper=asset_wrapper,
         ))
 
     # WhatsApp filename date
@@ -33,7 +33,7 @@ def get_asset_date_candidates(asset_wrapper: AssetResponseWrapper) -> AssetDateC
             source_kind=DateSourceKind.WHATSAPP_FILENAME,
             date=wa_filename_dt,
             file_path=filename,
-            asset=asset_wrapper.asset,
+            asset_wrapper=asset_wrapper,
         ))
 
     # WhatsApp path date
@@ -44,9 +44,18 @@ def get_asset_date_candidates(asset_wrapper: AssetResponseWrapper) -> AssetDateC
             source_kind=DateSourceKind.WHATSAPP_PATH,
             date=wa_path_dt,
             file_path=path,
-            asset=asset_wrapper.asset,
+            asset_wrapper=asset_wrapper,
         ))
 
-    # TODO: Add other filename/date extraction logic as needed
+    # Detectar fechas en nombres de fichero tipo cámara (FILENAME)
+    from immich_autotag.assets.date_correction.extract_date_from_filename import extract_date_from_filename
+    filename_date = extract_date_from_filename(filename)
+    if filename_date:
+        candidates.add(AssetDateCandidate(
+            source_kind=DateSourceKind.FILENAME,
+            date=filename_date,
+            file_path=filename,
+            asset_wrapper=asset_wrapper,
+        ))
 
     return candidates

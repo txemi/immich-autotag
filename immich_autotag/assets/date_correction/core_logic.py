@@ -42,22 +42,22 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     """
     # Always consider all possible date sources, even if there are no duplicates
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
-    date_sources_list = AssetDateSourcesList.from_wrappers(wrappers)
-    date_candidates: AssetDateCandidates = date_sources_list.to_candidates()
-    if date_candidates.is_empty():
+    date_sources_list = AssetDateSourcesList.from_wrappers(asset_wrapper, wrappers)
+    flat_candidates = date_sources_list.to_flat_candidates()
+    if not flat_candidates:
         if log:
             print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
     if log:
         print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
-        for candidate in date_candidates:
+        for candidate in flat_candidates:
             print(f"  {candidate.source_kind}: {candidate.date!r} (type={type(candidate.date)}, tzinfo={getattr(candidate.date, 'tzinfo', None)})")
     # This will fail if there are naive and aware datetimes, but that's intentional for debugging
-    oldest: Optional[datetime] = date_candidates.oldest()
+    oldest: Optional[datetime] = min((c.date for c in flat_candidates), default=None)
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
     # Si la fecha de Immich es la más antigua o igual a todas las sugeridas, no se hace nada
-    if date_candidates.immich_date_is_oldest_or_equal(immich_date):
+    if all(immich_date <= c.date for c in flat_candidates):
         if log:
             print(f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a todas las sugeridas, no se hace nada.")
         return
@@ -106,4 +106,5 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
     )
     print(msg)
+    correct_asset_date(asset_wrapper, log=True)  # Evitar bucle infinito en logs
     raise NotImplementedError(msg)
