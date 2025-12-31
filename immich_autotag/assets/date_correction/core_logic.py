@@ -64,8 +64,11 @@ def _check_filename_candidate_and_fix(
     if not filename_candidates:
         return DateCorrectionStepResult.CONTINUE
     filename_candidate = min(filename_candidates, key=lambda c: c.get_aware_date())
+    from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
+
+    # Usar 1.1 días como umbral
     if is_datetime_more_than_days_after(
-        immich_date, filename_candidate.get_aware_date(), days=2
+        immich_date, filename_candidate.get_aware_date(), days=1.1
     ):
         print(
             f"[DATE CORRECTION] Updating Immich date to the one from the filename (not WhatsApp): {filename_candidate.get_aware_date()} (label: {filename_candidate.source_kind})"
@@ -187,5 +190,4 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         f"[DATE CORRECTION][DIFF] Immich date - oldest: {diff_timedelta} ({diff_seconds:.1f} seconds)"
     )
     print(msg)
-    correct_asset_date(asset_wrapper, log=True)  # Avoid infinite log loop
     raise NotImplementedError(msg)

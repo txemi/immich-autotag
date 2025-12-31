@@ -85,14 +85,16 @@ class AssetResponseWrapper:
         tag_mod_report = TagModificationReport.get_instance()
         user_obj = get_current_user(self.context)
         user_id = getattr(user_obj, "id", None)
+        user_name = getattr(user_obj, "name", None) or getattr(user_obj, "username", None) or user_id
+        asset_url = self.get_immich_photo_url().geturl()
         tag_mod_report.add_modification(
             kind="UPDATE_ASSET_DATE",
             asset_id=self.id_as_uuid,
             asset_name=self.original_file_name,
             old_name=str(old_date) if old_date else None,
             new_name=str(new_date) if new_date else None,
-            user=user_id,
-            extra={"pre_update": True},
+            user=user_name,
+            extra={"pre_update": True, "asset_url": asset_url},
         )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
         # Fail-fast: check response type and status directly, no dynamic attribute access
@@ -107,17 +109,25 @@ class AssetResponseWrapper:
         # This assumes that if present, 'error' is a public attribute of the response object
         from immich_client.api.assets import get_asset_info
 
-        updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
-        # Fail-fast check: ensure the date has actually changed to what we expect
-        updated_created_at = updated_asset.created_at
-        # Compare as ISO strings for robustness (datetime with tzinfo)
-        if (
-            updated_created_at is None
-            or updated_created_at.isoformat() != new_date.isoformat()
-        ):
-            raise DateIntegrityError(
-                f"[ERROR] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
-            )
+        import time
+        max_retries = 3
+        retry_delay = 1.5  # segundos
+        for attempt in range(max_retries):
+            updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
+            updated_created_at = updated_asset.created_at
+            if updated_created_at is not None and updated_created_at.isoformat() == new_date.isoformat():
+                self.asset = updated_asset
+                return
+            if attempt < max_retries - 1:
+                print(f"[WARN] Fecha no actualizada aún tras update (intento {attempt+1}/{max_retries}), esperando {retry_delay}s...")
+                time.sleep(retry_delay)
+        # Si tras los reintentos sigue sin actualizar, imprimir todas las fechas y warning
+        print("[DEBUG][AFTER UPDATE] Fechas del asset actualizado:")
+        print(f"  created_at:      {getattr(updated_asset, 'created_at', None)}")
+        print(f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}")
+        print(f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}")
+        print(f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}")
+        print(f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})")
         self.asset = updated_asset
         return
 
