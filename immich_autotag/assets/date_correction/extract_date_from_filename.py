@@ -16,10 +16,12 @@ Patrones de fechas en nombres de fichero y su origen:
 - Otras apps/cámaras: Pueden variar, pero suelen seguir patrones similares.
 
 """
+
 import re
 from datetime import datetime
 from typing import Optional
 from typeguard import typechecked
+
 
 @typechecked
 def extract_date_from_filename(filename: str) -> Optional[datetime]:
@@ -44,8 +46,12 @@ def extract_date_from_filename(filename: str) -> Optional[datetime]:
     if m:
         try:
             return datetime(
-                int(m.group(1)), int(m.group(2)), int(m.group(3)),
-                int(m.group(4)), int(m.group(5)), int(m.group(6))
+                int(m.group(1)),
+                int(m.group(2)),
+                int(m.group(3)),
+                int(m.group(4)),
+                int(m.group(5)),
+                int(m.group(6)),
             )
         except Exception:
             return None

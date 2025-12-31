@@ -1,5 +1,6 @@
 from enum import Enum, auto
 
+
 class DateSourceKind(Enum):
     IMMICH = auto()
     WHATSAPP_FILENAME = auto()

@@ -27,6 +27,7 @@ class AssetDateSourcesList:
 
     TODO: Consider renaming to AssetDateCandidatesList for clarity.
     """
+
     asset_wrapper: "AssetResponseWrapper" = attrs.field()
     candidates_list: list[AssetDateCandidates] = attrs.field(factory=list)
 
@@ -48,12 +49,15 @@ class AssetDateSourcesList:
 
     @staticmethod
     @typechecked
-    def from_wrappers(asset_wrapper: "AssetResponseWrapper", wrappers: list["AssetResponseWrapper"]) -> "AssetDateSourcesList":
+    def from_wrappers(
+        asset_wrapper: "AssetResponseWrapper", wrappers: list["AssetResponseWrapper"]
+    ) -> "AssetDateSourcesList":
         """
         Build an AssetDateSourcesList from a main AssetResponseWrapper and a list of AssetResponseWrapper objects (duplicates).
         Each wrapper gets its own AssetDateCandidates set.
         """
         from .get_asset_date_sources import get_asset_date_candidates
+
         if not wrappers:
             raise ValueError("wrappers list must not be empty")
         candidate_sets = [get_asset_date_candidates(w) for w in wrappers]
@@ -65,6 +69,7 @@ class AssetDateSourcesList:
         Return the minimum (oldest) non-None whatsapp_filename_date among all candidates in all sets, or None if none present.
         """
         from .date_source_kind import DateSourceKind
+
         dates = [
             c.date
             for candidate_set in self.candidates_list
@@ -78,4 +83,8 @@ class AssetDateSourcesList:
         """
         Return a flat list of all AssetDateCandidate objects from all sets.
         """
-        return [c for candidate_set in self.candidates_list for c in candidate_set.candidates]
+        return [
+            c
+            for candidate_set in self.candidates_list
+            for c in candidate_set.candidates
+        ]
