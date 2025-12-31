@@ -16,8 +16,8 @@ def _is_precise_and_rounded_midnight_close(
     dt_precise: datetime, dt_midnight: datetime, threshold_seconds: int = 4 * 3600
 ) -> bool:
     """
-    Devuelve True si dt_precise tiene hora distinta de 00:00:00, dt_midnight es exactamente a medianoche,
-    y la diferencia absoluta entre ambos es menor que threshold_seconds.
+    Returns True if dt_precise has a time different from 00:00:00, dt_midnight is exactly at midnight,
+    and the absolute difference between them is less than threshold_seconds.
     """
     diff = abs(
         (
@@ -57,56 +57,56 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
             print(f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}")
         return
     if log:
-        print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
+        print("[DEBUG] Candidate dates and their types/tzinfo:")
         for candidate in flat_candidates:
             aware_date = candidate.get_aware_date()
             print(f"  {candidate.source_kind}: {aware_date!r} (type={type(aware_date)}, tzinfo={getattr(aware_date, 'tzinfo', None)})")
-    # Usar el método de la lista para obtener el candidato más antiguo (normalizado)
+    # Use the list method to get the oldest candidate (normalized)
     oldest_candidate = date_sources_list.oldest_candidate()
     oldest: datetime = oldest_candidate.get_aware_date()
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
 
-    # Si la fecha de Immich es la más antigua o igual a la más antigua sugerida, no se hace nada
+    # If the Immich date is the oldest or equal to the oldest suggested, do nothing
     if immich_date <= oldest:
         if log:
             print(
-                f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a la más antigua sugerida ({oldest}), no se hace nada."
+                f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do."
             )
         return
     # If Immich date is the same day as the oldest, do nothing
     if immich_date.date() == oldest.date():
         if log:
             print(
-                f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada."
+                f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do."
             )
         return
-    # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
+    # If the best candidate is rounded to midnight and is very close (<4h) to the Immich date, and the Immich date is precise, do nothing
     if _is_precise_and_rounded_midnight_close(
         immich_date, oldest
     ):
         if log:
             print(
-                f"[DATE CORRECTION] Immich date {immich_date} tiene hora precisa y la sugerida {oldest} es redondeada y muy cercana (<4h). No se hace nada."
+                f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do."
             )
         return
-    # Si la diferencia entre la fecha de Immich y la más antigua es menor de un umbral de horas, no hacer nada (para evitar falsos positivos)  Lo iremos reduciendo a medida que lo probemos y queden menos casos por arreglar
+    # If the difference between Immich date and the oldest is less than a threshold of hours, do nothing (to avoid false positives). This threshold will be reduced as we test and fix more cases.
     diff_seconds_abs = abs((immich_date - oldest).total_seconds())
     if diff_seconds_abs < 20 * 3600:
         if log:
-            print(f"[DATE CORRECTION] Diferencia entre Immich date y oldest es menor de 16h: {diff_seconds_abs/3600:.2f} horas. No se hace nada.")
+            print(f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do.")
         return
-    # Nueva lógica: si la fecha de Immich es posterior a la fecha obtenida del nombre del fichero en más de 24h, actualizar
+    # New logic: if the Immich date is more than 24h after the date from the filename, update
     whatsapp_filename_date = date_sources_list.get_whatsapp_filename_date()
     if whatsapp_filename_date is not None and is_datetime_more_than_days_after(
         immich_date, whatsapp_filename_date, days=1
     ):
         print(
-            f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero: {whatsapp_filename_date}"
+            f"[DATE CORRECTION] Updating Immich date to the one from the filename: {whatsapp_filename_date}"
         )
         asset_wrapper.update_date(whatsapp_filename_date)
         print(
-            f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {whatsapp_filename_date}"
+            f"[DATE CORRECTION] Immich date successfully updated to {whatsapp_filename_date}"
         )
         return
 
@@ -117,14 +117,14 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
             immich_date, filename_candidate.get_aware_date(), days=2
         ):
             print(
-                f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero (no WhatsApp): {filename_candidate.get_aware_date()} (label: {filename_candidate.source_kind})"
+                f"[DATE CORRECTION] Updating Immich date to the one from the filename (not WhatsApp): {filename_candidate.get_aware_date()} (label: {filename_candidate.source_kind})"
             )
             asset_wrapper.update_date(filename_candidate.get_aware_date())
             print(
-                f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {filename_candidate.get_aware_date()}"
+                f"[DATE CORRECTION] Immich date successfully updated to {filename_candidate.get_aware_date()}"
             )
             return
-    # Si no se cumple la condición, lanzar excepción como antes
+    # If none of the above conditions are met, raise an error as before
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
     print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")
@@ -139,10 +139,10 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     immich_utc = to_utc(immich_date)
     oldest_utc = to_utc(oldest)
     msg = (
-        f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})\n"
+        f"[DATE CORRECTION] Unhandled case: Immich date {immich_date} and oldest {oldest} (asset {asset_wrapper.asset.id})\n"
         f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
         f"[DATE CORRECTION][DIFF] Immich date - oldest: {diff_timedelta} ({diff_seconds:.1f} seconds)"
     )
     print(msg)
-    correct_asset_date(asset_wrapper, log=True)  # Evitar bucle infinito en logs
+    correct_asset_date(asset_wrapper, log=True)  # Avoid infinite log loop
     raise NotImplementedError(msg)
