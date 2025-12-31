@@ -1,11 +1,9 @@
-
 from datetime import datetime
 from typing import Optional
 
 from typeguard import typechecked
 
-from datetime import datetime
-from typeguard import typechecked
+
 @typechecked
 def is_datetime_more_than_days_after(
     dt1: Optional[datetime],
@@ -26,7 +24,9 @@ def is_datetime_more_than_days_after(
 
 
 @typechecked
-def is_datetime_more_than_hours_after(dt1: datetime, dt2: datetime, hours: float) -> bool:
+def is_datetime_more_than_hours_after(
+    dt1: datetime, dt2: datetime, hours: float
+) -> bool:
     """
     Return True if dt1 is more than `hours` after dt2.
     Args:

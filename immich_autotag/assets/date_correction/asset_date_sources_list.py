@@ -14,7 +14,6 @@ from .asset_date_candidates import AssetDateCandidate, AssetDateCandidates
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
-
     """
     Holds a list of AssetDateCandidates sets, one for each duplicate asset (AssetResponseWrapper).
     Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
@@ -125,4 +124,4 @@ class AssetDateSourcesList:
             lines.append(f"--- Duplicado #{i+1} ---")
             lines.append(candidate_set.format_info())
             lines.append("")
-        return '\n'.join(lines)
+        return "\n".join(lines)

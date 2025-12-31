@@ -64,7 +64,8 @@ def _check_filename_candidate_and_fix(
     if not filename_candidates:
         return DateCorrectionStepResult.CONTINUE
     filename_candidate = min(filename_candidates, key=lambda c: c.get_aware_date())
-    from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
+    from immich_autotag.utils.date_compare import \
+        is_datetime_more_than_days_after
 
     # Usar 1.1 días como umbral
     if is_datetime_more_than_days_after(

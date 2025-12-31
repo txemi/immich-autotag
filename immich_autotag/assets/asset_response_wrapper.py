@@ -86,7 +86,11 @@ class AssetResponseWrapper:
         tag_mod_report = TagModificationReport.get_instance()
         user_obj = get_current_user(self.context)
         user_id = getattr(user_obj, "id", None)
-        user_name = getattr(user_obj, "name", None) or getattr(user_obj, "username", None) or user_id
+        user_name = (
+            getattr(user_obj, "name", None)
+            or getattr(user_obj, "username", None)
+            or user_id
+        )
         asset_url = self.get_immich_photo_url().geturl()
         tag_mod_report.add_modification(
             kind="UPDATE_ASSET_DATE",
@@ -109,19 +113,25 @@ class AssetResponseWrapper:
             )
         # If the response has an 'error' attribute and it is not None, fail fast (static access only)
         # This assumes that if present, 'error' is a public attribute of the response object
+        import time
+
         from immich_client.api.assets import get_asset_info
 
-        import time
         max_retries = 3
         retry_delay = 1.5  # segundos
         for attempt in range(max_retries):
             updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
             updated_created_at = updated_asset.created_at
-            if updated_created_at is not None and updated_created_at.isoformat() == new_date.isoformat():
+            if (
+                updated_created_at is not None
+                and updated_created_at.isoformat() == new_date.isoformat()
+            ):
                 self.asset = updated_asset
                 return
             if attempt < max_retries - 1:
-                print(f"[WARN] Fecha no actualizada aún tras update (intento {attempt+1}/{max_retries}), esperando {retry_delay}s...")
+                print(
+                    f"[WARN] Fecha no actualizada aún tras update (intento {attempt+1}/{max_retries}), esperando {retry_delay}s..."
+                )
                 time.sleep(retry_delay)
         # Si tras los reintentos sigue sin actualizar, imprimir todas las fechas y warning
         print("[DEBUG][AFTER UPDATE] Fechas del asset actualizado:")
@@ -129,7 +139,9 @@ class AssetResponseWrapper:
         print(f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}")
         print(f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}")
         print(f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}")
-        print(f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})")
+        print(
+            f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
+        )
         self.asset = updated_asset
         return
 
@@ -807,10 +819,14 @@ class AssetResponseWrapper:
             link = "(sin enlace)"
         lines.append(f"  Enlace: {link}")
         lines.append(f"  created_at: {getattr(self.asset, 'created_at', None)}")
-        lines.append(f"  file_created_at: {getattr(self.asset, 'file_created_at', None)}")
-        lines.append(f"  exif_created_at: {getattr(self.asset, 'exif_created_at', None)}")
+        lines.append(
+            f"  file_created_at: {getattr(self.asset, 'file_created_at', None)}"
+        )
+        lines.append(
+            f"  exif_created_at: {getattr(self.asset, 'exif_created_at', None)}"
+        )
         lines.append(f"  updated_at: {getattr(self.asset, 'updated_at', None)}")
         lines.append(f"  Tags: {self.get_tag_names()}")
         lines.append(f"  Albums: {self.get_album_names()}")
         lines.append(f"  Path: {getattr(self.asset, 'original_path', None)}")
-        return '\n'.join(lines)
+        return "\n".join(lines)

@@ -12,7 +12,6 @@ from .date_source_kind import DateSourceKind
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidates:
-
     """
     Representa la colección de fechas candidatas proporcionadas por un único asset (activo).
     Cada instancia de esta clase agrupa todas las posibles fechas extraídas de distintas fuentes (Immich, filename, EXIF, etc.) para ese asset concreto.
@@ -98,15 +97,18 @@ class AssetDateCandidates:
     def has_kind(self, kind: DateSourceKind) -> bool:
         """Return True if there is at least one candidate of the given kind."""
         return any(c.source_kind == kind for c in self.candidates)
-    @typechecked    
+
+    @typechecked
     def format_info(self) -> str:
         aw = self.asset_wrapper
         lines = [f"[AssetDateCandidates] Asset: {aw.id} | {aw.original_file_name}"]
         lines.append(f"  Enlace: {aw.get_immich_photo_url().geturl()}")
-        lines.append(f"  Fechas principales: created_at={aw.asset.created_at}, file_created_at={getattr(aw.asset, 'file_created_at', None)}, exif_created_at={getattr(aw.asset, 'exif_created_at', None)}")
+        lines.append(
+            f"  Fechas principales: created_at={aw.asset.created_at}, file_created_at={getattr(aw.asset, 'file_created_at', None)}, exif_created_at={getattr(aw.asset, 'exif_created_at', None)}"
+        )
         lines.append(f"  Tags: {aw.get_tag_names()}")
         lines.append(f"  Albums: {aw.get_album_names()}")
         lines.append("  Candidatos de fecha:")
         for c in self.candidates:
             lines.append("    " + c.format_info())
-        return '\n'.join(lines)
+        return "\n".join(lines)
