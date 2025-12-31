@@ -98,6 +98,13 @@ class AssetResponseWrapper:
             raise DateIntegrityError(
                 f"[ERROR] update_asset.sync did not return AssetResponseDto, got {type(response)}: {response} for asset.id={self.id} ({self.original_file_name})"
             )
+        # If the response has an 'error' attribute and it is not None, fail fast (static access only)
+        # This assumes that if present, 'error' is a public attribute of the response object
+
+        if response.error is not None:
+            raise DateIntegrityError(
+                f"[ERROR] update_asset.sync returned error: {response.error} for asset.id={self.id} ({self.original_file_name})"
+            )
         # Recarga el asset para reflejar el cambio
         from immich_client.api.assets import get_asset_info
 
