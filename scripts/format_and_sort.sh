@@ -4,8 +4,9 @@
 # Directorio a formatear (por defecto, el actual)
 TARGET_DIR="${1:-.}"
 
-# Excluye .venv y librerías externas
-EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts"
+
+# Exclusiones robustas para evitar formatear .venv y otros directorios externos
+EXCLUDES="--exclude .venv/ --exclude .venv\\/ --exclude '*/.venv/*' --exclude immich-client --exclude scripts"
 
 
 # Activa el entorno virtual del proyecto de forma robusta
