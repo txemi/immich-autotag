@@ -1,3 +1,4 @@
+
 from datetime import datetime
 from typing import Optional
 from zoneinfo import ZoneInfo
@@ -32,8 +33,35 @@ def _is_precise_and_rounded_midnight_close(
         and dt_midnight.minute == 0
         and dt_midnight.second == 0
     )
+from enum import Enum, auto
 
-
+# Enum for control flow in date correction steps
+class DateCorrectionStepResult(Enum):
+    CONTINUE = auto()  # Continue processing
+    EXIT = auto()      # Stop processing, nothing to do
+    FIXED = auto()     # Date was fixed, stop processing
+@typechecked
+def _check_filename_candidate_and_fix(asset_wrapper: AssetResponseWrapper, date_sources_list: AssetDateSourcesList, immich_date: datetime) -> "DateCorrectionStepResult":
+    """
+    Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.
+    If no correction is needed, returns CONTINUE. If a condition is met to exit early, returns EXIT.
+    """
+    filename_candidates = date_sources_list.filename_candidates()
+    if not filename_candidates:
+        return DateCorrectionStepResult.CONTINUE
+    filename_candidate = min(filename_candidates, key=lambda c: c.get_aware_date())
+    if is_datetime_more_than_days_after(
+        immich_date, filename_candidate.get_aware_date(), days=2
+    ):
+        print(
+            f"[DATE CORRECTION] Updating Immich date to the one from the filename (not WhatsApp): {filename_candidate.get_aware_date()} (label: {filename_candidate.source_kind})"
+        )
+        asset_wrapper.update_date(filename_candidate.get_aware_date())
+        print(
+            f"[DATE CORRECTION] Immich date successfully updated to {filename_candidate.get_aware_date()}"
+        )
+        return DateCorrectionStepResult.FIXED
+    return DateCorrectionStepResult.CONTINUE
 @typechecked
 def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -> None:
     """
@@ -110,20 +138,15 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         )
         return
 
-    filename_candidates = date_sources_list.filename_candidates()
-    if filename_candidates:
-        filename_candidate = min(filename_candidates, key=lambda c: c.get_aware_date())
-        if is_datetime_more_than_days_after(
-            immich_date, filename_candidate.get_aware_date(), days=2
-        ):
-            print(
-                f"[DATE CORRECTION] Updating Immich date to the one from the filename (not WhatsApp): {filename_candidate.get_aware_date()} (label: {filename_candidate.source_kind})"
-            )
-            asset_wrapper.update_date(filename_candidate.get_aware_date())
-            print(
-                f"[DATE CORRECTION] Immich date successfully updated to {filename_candidate.get_aware_date()}"
-            )
-            return
+    # Check if filename-based correction should be applied
+    step_result = _check_filename_candidate_and_fix(asset_wrapper, date_sources_list, immich_date)
+    if step_result == DateCorrectionStepResult.FIXED:
+        return
+    elif step_result == DateCorrectionStepResult.EXIT:
+        return
+    # else, continue processing
+
+
     # If none of the above conditions are met, raise an error as before
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
