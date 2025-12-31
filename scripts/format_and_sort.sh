@@ -3,8 +3,17 @@
 set -x
 set -e
 
-# Directorio a formatear (por defecto, el actual)
-TARGET_DIR="${1:-.}"
+
+# Detecta la raíz del proyecto y el paquete principal
+SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
+PROJECT_ROOT="$SCRIPT_DIR/.."
+PACKAGE_NAME="immich_autotag"
+
+# Posiciónate en la raíz del proyecto
+cd "$PROJECT_ROOT"
+
+# Directorio a formatear (por defecto, la carpeta del paquete principal)
+TARGET_DIR="${1:-$PACKAGE_NAME}"
 
 
 
