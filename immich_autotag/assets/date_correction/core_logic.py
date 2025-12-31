@@ -37,9 +37,14 @@ from enum import Enum, auto
 
 # Enum for control flow in date correction steps
 class DateCorrectionStepResult(Enum):
+
     CONTINUE = auto()  # Continue processing
     EXIT = auto()      # Stop processing, nothing to do
     FIXED = auto()     # Date was fixed, stop processing
+    @staticmethod
+    def should_exit(result: "DateCorrectionStepResult") -> bool:
+        """Return True if the result means processing should exit (FIXED or EXIT)."""
+        return result in (DateCorrectionStepResult.FIXED, DateCorrectionStepResult.EXIT)    
 @typechecked
 def _check_filename_candidate_and_fix(asset_wrapper: AssetResponseWrapper, date_sources_list: AssetDateSourcesList, immich_date: datetime) -> "DateCorrectionStepResult":
     """
@@ -140,9 +145,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
 
     # Check if filename-based correction should be applied
     step_result = _check_filename_candidate_and_fix(asset_wrapper, date_sources_list, immich_date)
-    if step_result == DateCorrectionStepResult.FIXED:
-        return
-    elif step_result == DateCorrectionStepResult.EXIT:
+    if DateCorrectionStepResult.should_exit(step_result):
         return
     # else, continue processing
 
