@@ -38,7 +38,15 @@ def _is_precise_and_rounded_midnight_close(
 def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -> None:
     """
     Main entry point for asset date correction logic.
+
+    Policy and structure:
+    - This function is intentionally organized as a sequence of early returns for all conditions where no action is needed (fail-fast, exit-early philosophy).
+    - For conditions where a correction is clearly required, the update is performed immediately and the function returns.
+    - Only if none of the above conditions match (i.e., an unhandled or ambiguous case), an error is raised at the end to ensure no silent failures.
+    - This approach prioritizes clarity, explicitness, and robustness over minimalism, making the logic easy to audit and debug.
+
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
+    Applies all relevant heuristics and thresholds to avoid false positives.
     """
     # Always consider all possible date sources, even if there are no duplicates
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
