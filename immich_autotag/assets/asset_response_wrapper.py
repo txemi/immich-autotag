@@ -103,7 +103,7 @@ class AssetResponseWrapper:
         """
         Devuelve la URL web de Immich para este asset como ParseResult.
         """
-        from immich_autotag.utils.helpers import get_immich_photo_url
+        from immich_autotag.utils.url_helpers import get_immich_photo_url
 
         return get_immich_photo_url(self.uuid)
 
@@ -678,7 +678,7 @@ class AssetResponseWrapper:
         """
         from urllib.parse import ParseResult, urlparse
 
-        from immich_autotag.utils.helpers import get_immich_photo_url
+        from immich_autotag.utils.url_helpers import get_immich_photo_url
 
         url = get_immich_photo_url(self.uuid)
         return urlparse(url)
