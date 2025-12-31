@@ -37,10 +37,14 @@ class AssetDateCandidate:
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
 
-    def __str__(self):
+    from typeguard import typechecked
+
+    @typechecked
+    def __str__(self) -> str:
         return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={getattr(self.asset_wrapper, 'id', None)})"
 
-    def get_aware_date(self, user_tz=None):
+    @typechecked
+    def get_aware_date(self, user_tz: Optional[str] = None) -> datetime:
         """
         Devuelve la fecha como datetime aware (con zona horaria).
         Si la fecha es naive, usa la zona horaria de usuario (user_tz) o la definida en la configuración (DATE_EXTRACTION_TIMEZONE).
@@ -50,13 +54,17 @@ class AssetDateCandidate:
             return dt
         from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
         tz = user_tz or DATE_EXTRACTION_TIMEZONE
+        from zoneinfo import ZoneInfo
         return dt.replace(tzinfo=ZoneInfo(tz))
-    def __lt__(self, other):
+
+    @typechecked
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, AssetDateCandidate):
             return NotImplemented
         return self.get_aware_date() < other.get_aware_date()
 
-    def __eq__(self, other):
+    @typechecked
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, AssetDateCandidate):
             return NotImplemented
         return self.get_aware_date() == other.get_aware_date()
