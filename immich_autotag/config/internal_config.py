@@ -4,6 +4,7 @@
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
 from immich_autotag.config.user import IMMICH_HOST, IMMICH_PORT
+
 IMMICH_WEB_BASE_URL = f"http://{IMMICH_HOST}:{IMMICH_PORT}"
 IMMICH_BASE_URL = f"{IMMICH_WEB_BASE_URL}/api"
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"

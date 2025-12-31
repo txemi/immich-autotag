@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import attrs
@@ -26,12 +25,18 @@ class AlbumCollectionWrapper:
             if album_wrapper.has_asset(asset):
                 album_names.append(album_wrapper.album.album_name)
         return album_names
+
     @typechecked
-    def albums_for_asset_wrapper(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
+    def albums_for_asset_wrapper(
+        self, asset_wrapper: "AssetResponseWrapper"
+    ) -> list[str]:
         """Returns the names of the albums the asset (wrapped) belongs to."""
-        return self.albums_for_asset(asset_wrapper.asset)    
+        return self.albums_for_asset(asset_wrapper.asset)
+
     @typechecked
-    def albums_wrappers_for_asset_wrapper(self, asset_wrapper: "AssetResponseWrapper") -> list[AlbumResponseWrapper]:
+    def albums_wrappers_for_asset_wrapper(
+        self, asset_wrapper: "AssetResponseWrapper"
+    ) -> list[AlbumResponseWrapper]:
         """Returns the AlbumResponseWrapper objects for all albums the asset (wrapped) belongs to.
         This is more robust than using album names, as names may not be unique."""
         result = []
@@ -39,14 +44,14 @@ class AlbumCollectionWrapper:
             if album_wrapper.has_asset(asset_wrapper.asset):
                 result.append(album_wrapper)
         return result
-    
+
     @typechecked
     def create_or_get_album_with_user(
         self,
         album_name: str,
         client: Client,
-        tag_mod_report: TagModificationReport | None = None
-    ) -> 'AlbumResponseWrapper':
+        tag_mod_report: TagModificationReport | None = None,
+    ) -> "AlbumResponseWrapper":
         """
         Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.
         Updates the internal collection if created.
@@ -64,24 +69,34 @@ class AlbumCollectionWrapper:
         from immich_client.models.album_user_role import AlbumUserRole
         from immich_client.models.album_response_dto import AlbumResponseDto
         from immich_client.models.create_album_dto import CreateAlbumDto
+
         # (import removed, already imported at module level)
 
-        album = create_album.sync(client=client, body=CreateAlbumDto(album_name=album_name))
+        album = create_album.sync(
+            client=client, body=CreateAlbumDto(album_name=album_name)
+        )
         user = get_my_user.sync(client=client)
         user_id = user.id
         try:
             add_users_to_album.sync(
                 id=album.id,
                 client=client,
-                body=AddUsersDto(album_users=[AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)])
+                body=AddUsersDto(
+                    album_users=[
+                        AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)
+                    ]
+                ),
             )
         except Exception as e:
-            raise RuntimeError(f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}") from e
+            raise RuntimeError(
+                f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
+            ) from e
         wrapper = AlbumResponseWrapper(album=album)
         # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
         if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
+
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.CREATE_ALBUM,
                 album_id=album.id,

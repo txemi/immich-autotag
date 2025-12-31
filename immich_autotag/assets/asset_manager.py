@@ -14,7 +14,9 @@ class AssetManager:
     client: Client
     _assets: Dict[UUID, AssetResponseWrapper] = attrs.field(factory=dict, init=False)
 
-    def iter_assets(self, context: "ImmichContext", max_assets: Optional[int] = None) -> Iterator[AssetResponseWrapper]:
+    def iter_assets(
+        self, context: "ImmichContext", max_assets: Optional[int] = None
+    ) -> Iterator[AssetResponseWrapper]:
         """
         Itera sobre todos los assets, usando el generador original,
         y los va almacenando en la caché interna.
@@ -24,16 +26,21 @@ class AssetManager:
             self._assets[asset_uuid] = asset
             yield asset
 
-    def get_asset(self, asset_id: Union[str, UUID], context: "ImmichContext") -> Optional[AssetResponseWrapper]:
+    def get_asset(
+        self, asset_id: Union[str, UUID], context: "ImmichContext"
+    ) -> Optional[AssetResponseWrapper]:
         """
         Devuelve un asset por su ID, usando la caché si está disponible,
         o pidiéndolo a la API y almacenándolo si no.
         """
-        asset_uuid = UUID(asset_id) if isinstance(asset_id, str) else asset_id  # Si falla, que lance
+        asset_uuid = (
+            UUID(asset_id) if isinstance(asset_id, str) else asset_id
+        )  # Si falla, que lance
         if asset_uuid in self._assets:
             return self._assets[asset_uuid]
         # Si no está, pedirlo a la API y envolverlo
         from immich_client.api.assets import get_asset_info
+
         dto = get_asset_info.sync(id=str(asset_uuid), client=self.client)
         if dto is None:
             return None

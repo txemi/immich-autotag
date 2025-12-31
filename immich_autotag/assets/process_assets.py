@@ -16,6 +16,7 @@ from immich_autotag.assets.process_single_asset import process_single_asset
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
     from immich_autotag.utils.helpers import AdaptiveTimeEstimator
+
     estimator = AdaptiveTimeEstimator(alpha=0.05)
     import time
     from immich_client.api.server import get_server_statistics
@@ -47,7 +48,9 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         # Use thread pool regardless of MAX_WORKERS value
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
-            for asset_wrapper in context.asset_manager.iter_assets(context, max_assets=max_assets):
+            for asset_wrapper in context.asset_manager.iter_assets(
+                context, max_assets=max_assets
+            ):
                 t0 = time.time()
                 future = executor.submit(
                     process_single_asset, asset_wrapper, tag_mod_report, lock
@@ -68,7 +71,9 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                     print(f"[ERROR] Asset processing failed: {e}")
     else:
         # Direct loop (sequential), no thread pool
-        for asset_wrapper in context.asset_manager.iter_assets(context, max_assets=max_assets):
+        for asset_wrapper in context.asset_manager.iter_assets(
+            context, max_assets=max_assets
+        ):
             t0 = time.time()
             process_single_asset(asset_wrapper, tag_mod_report, lock)
             t1 = time.time()

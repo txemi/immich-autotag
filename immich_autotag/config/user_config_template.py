@@ -36,7 +36,6 @@ CLASSIFIED_TAGS = [
     # These are not considered relevant family/event photos and should not be mixed with albums of vacations, events, or important memories.
     # This tag helps keep the main photo library focused on meaningful content, while still allowing you to keep memes and similar images for fun or reference.
     "autotag_input_meme",
-
     # autotag_input_adult_meme: Used to tag memes or images that are not suitable for all audiences (NSFW, adult, or sensitive content).
     # The purpose of this tag is to quickly identify and separate content that should not accidentally end up in family albums or be visible in general browsing.
     # This helps maintain a safe and appropriate environment in your main photo library, especially when sharing with family or children.
@@ -85,9 +84,13 @@ AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT = "autotag_output_duplicate_asset_album_c
 
 # AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT: This tag is applied to assets that have a conflict of classification tags between duplicates (i.e., two or more duplicate assets have different classification tags, which is an organizational inconsistency).
 # Filtering by this tag in the Immich interface allows you to quickly find and resolve these duplicate classification conflicts, ensuring that all duplicates are consistently organized.
-AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = "autotag_output_duplicate_asset_classification_conflict"
+AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = (
+    "autotag_output_duplicate_asset_classification_conflict"
+)
 # Prefix for group-specific duplicate classification conflict tag
-AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = "autotag_output_duplicate_asset_classification_conflict_"
+AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = (
+    "autotag_output_duplicate_asset_classification_conflict_"
+)
 
 
 # Feature flag: Remove leading/trailing spaces from album names (default: True)

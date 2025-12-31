@@ -1,11 +1,12 @@
-
 from __future__ import annotations
 from datetime import datetime
 from typing import List
 
+
 # Excepción para integridad de fechas
 class DateIntegrityError(Exception):
     pass
+
 
 from typing import TYPE_CHECKING
 
@@ -20,20 +21,31 @@ from typeguard import typechecked
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_client.api.assets import get_asset_info
 from immich_autotag.utils.helpers import get_immich_photo_url
-from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_CATEGORY_UNKNOWN, AUTOTAG_CATEGORY_CONFLICT, ENABLE_ALBUM_DETECTION_FROM_FOLDERS
-from immich_autotag.classification.match_classification_result import MatchClassificationResult
+from immich_autotag.config.user import (
+    CLASSIFIED_TAGS,
+    ALBUM_PATTERN,
+    AUTOTAG_CATEGORY_UNKNOWN,
+    AUTOTAG_CATEGORY_CONFLICT,
+    ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
+)
+from immich_autotag.classification.match_classification_result import (
+    MatchClassificationResult,
+)
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
-
-
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
 
     @typechecked
-    def update_date(self, new_date: datetime, tag_mod_report: "TagModificationReport | None" = None, user: str = None) -> None:
+    def update_date(
+        self,
+        new_date: datetime,
+        tag_mod_report: "TagModificationReport | None" = None,
+        user: str = None,
+    ) -> None:
         """
         Actualiza la fecha principal (created_at) del asset usando la API de Immich.
         Si se proporciona tag_mod_report, registra la modificación.
@@ -41,17 +53,16 @@ class AssetResponseWrapper:
         from immich_client.api.assets import update_asset
         from immich_client.models.asset_update_dto import AssetUpdateDto
         import pytz
+
         old_date = self.asset.created_at
         # Asegura que la fecha es timezone-aware en UTC
         if new_date.tzinfo is None:
             import zoneinfo
+
             new_date = new_date.replace(tzinfo=zoneinfo.ZoneInfo("UTC"))
         else:
             new_date = new_date.astimezone(pytz.UTC)
-        dto = AssetUpdateDto(
-            id=self.id,
-            created_at=new_date.isoformat()
-        )
+        dto = AssetUpdateDto(id=self.id, created_at=new_date.isoformat())
         # Log and print before updating the asset
         log_msg = (
             f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
@@ -66,21 +77,23 @@ class AssetResponseWrapper:
                 old_name=str(old_date) if old_date else None,
                 new_name=str(new_date) if new_date else None,
                 user=user,
-                extra={"pre_update": True}
+                extra={"pre_update": True},
             )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
         # Recarga el asset para reflejar el cambio
         from immich_client.api.assets import get_asset_info
+
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
         self.asset = updated_asset
         return
 
     @typechecked
-    def get_immich_photo_url(self) -> 'ParseResult':
+    def get_immich_photo_url(self) -> "ParseResult":
         """
         Devuelve la URL web de Immich para este asset como ParseResult.
         """
         from immich_autotag.utils.helpers import get_immich_photo_url
+
         return get_immich_photo_url(self.uuid)
 
     @typechecked
@@ -105,16 +118,21 @@ class AssetResponseWrapper:
         best_date = min(date_candidates)
         for d in date_candidates:
             if d < best_date:
-                raise DateIntegrityError(f"Integridad rota: se encontró una fecha ({d}) anterior a la mejor fecha seleccionada ({best_date}) para el asset {self.asset.id}")
+                raise DateIntegrityError(
+                    f"Integridad rota: se encontró una fecha ({d}) anterior a la mejor fecha seleccionada ({best_date}) para el asset {self.asset.id}"
+                )
         return best_date
 
     @typechecked
-    def get_all_duplicate_wrappers(self, include_self: bool = True) -> list["AssetResponseWrapper"]:
+    def get_all_duplicate_wrappers(
+        self, include_self: bool = True
+    ) -> list["AssetResponseWrapper"]:
         """
         Returns a list of AssetResponseWrapper objects for all duplicates of this asset.
         If include_self is True, includes this asset as well.
         """
         from uuid import UUID
+
         context = self.context
         duplicate_id = self.duplicate_id_as_uuid
         wrappers = []
@@ -199,6 +217,7 @@ class AssetResponseWrapper:
             removed_any = True
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
@@ -216,6 +235,7 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
@@ -251,20 +271,25 @@ class AssetResponseWrapper:
             tag = self.context.tag_collection.create_tag_if_not_exists(
                 tag_name, self.context.client
             )
-        # Check if the asset already has the tag
+            # Check if the asset already has the tag
             if self.has_tag(tag_name):
                 if fail_if_exists:
-                    raise ValueError(f"[INFO] Asset.id={self.id} already has tag '{tag_name}'")
+                    raise ValueError(
+                        f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
+                    )
                 else:
                     if verbose:
-                        print(f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping.")
+                        print(
+                            f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping."
+                        )
                     return False
         # Extra checks and logging before API call
-        if not tag or not getattr(tag, 'id', None):
+        if not tag or not getattr(tag, "id", None):
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
             print(error_msg)
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
@@ -279,6 +304,7 @@ class AssetResponseWrapper:
             print(error_msg)
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=None,
                     asset_name=self.original_file_name,
@@ -289,7 +315,9 @@ class AssetResponseWrapper:
                 )
             return False
         if verbose:
-            print(f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}")
+            print(
+                f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}"
+            )
         try:
             response = tag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
@@ -299,6 +327,7 @@ class AssetResponseWrapper:
             print(error_msg)
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
@@ -322,6 +351,7 @@ class AssetResponseWrapper:
             print(error_msg)
             if tag_mod_report:
                 from immich_autotag.tags.modification_kind import ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
@@ -332,9 +362,12 @@ class AssetResponseWrapper:
                 )
             return False
         if info:
-            print(f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}")
+            print(
+                f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}"
+            )
         if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
+
             tag_mod_report.add_modification(
                 asset_id=self.id_as_uuid,
                 asset_name=self.original_file_name,
@@ -406,6 +439,7 @@ class AssetResponseWrapper:
     @property
     def original_path(self) -> "Path":
         from pathlib import Path
+
         path = Path(self.asset.original_path)
 
         return path
@@ -416,6 +450,7 @@ class AssetResponseWrapper:
         Devuelve el duplicate_id como UUID (o None si no está presente o es inválido).
         """
         from uuid import UUID
+
         val = self.asset.duplicate_id
         if val is None:
             return None
@@ -459,6 +494,7 @@ class AssetResponseWrapper:
         n_matches = len(match_detail.tags_matched) + len(match_detail.albums_matched)
         if n_matches > 1:
             import uuid
+
             photo_url = get_immich_photo_url(uuid.UUID(self.id))
             msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by more than one criterion: tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
             if fail_fast:
@@ -536,6 +572,7 @@ class AssetResponseWrapper:
         All actions are logged in tag_mod_report if provided.
         """
         from immich_client.api.assets import get_asset_info
+
         for conv in tag_conversions:
             origin = conv["origin"]
             dest = conv["destination"]
@@ -577,24 +614,34 @@ class AssetResponseWrapper:
             return None
         analyzer = AlbumFolderAnalyzer(self.original_path)
         return analyzer.get_album_name()
+
     @property
     def id_as_uuid(self) -> "UUID":
         from uuid import UUID
+
         return UUID(self.asset.id)
+
     @classmethod
-    def from_dto(cls: type["AssetResponseWrapper"], dto: AssetResponseDto, context: "ImmichContext") -> "AssetResponseWrapper":
+    def from_dto(
+        cls: type["AssetResponseWrapper"],
+        dto: AssetResponseDto,
+        context: "ImmichContext",
+    ) -> "AssetResponseWrapper":
         """
         Crea un AssetResponseWrapper a partir de un DTO y un contexto.
         """
         return cls(asset=dto, context=context)
+
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
         """
         Compare classification tags between self and another AssetResponseWrapper.
         Returns True if tags are equal, False otherwise.
         """
-        return set(self.get_classification_tags()) == set(other.get_classification_tags())
-    
+        return set(self.get_classification_tags()) == set(
+            other.get_classification_tags()
+        )
+
     @typechecked
     def get_classification_tags(self) -> list[str]:
         """
@@ -603,6 +650,7 @@ class AssetResponseWrapper:
         This version does NOT lowercase tags and REMOVES the origins (keys) of TAG_CONVERSIONS from the relevant set.
         """
         from immich_autotag.config.user import CLASSIFIED_TAGS, TAG_CONVERSIONS
+
         relevant_tags = set(CLASSIFIED_TAGS)
         # Remove origins from TAG_CONVERSIONS (list of dicts)
         if TAG_CONVERSIONS:
@@ -611,8 +659,11 @@ class AssetResponseWrapper:
                 if origin:
                     relevant_tags.discard(origin)
         # Filter asset tags to only those relevant for classification (case-sensitive)
-        return [tag.name for tag in self.asset.tags if tag.name in relevant_tags] if self.asset.tags else []
-
+        return (
+            [tag.name for tag in self.asset.tags if tag.name in relevant_tags]
+            if self.asset.tags
+            else []
+        )
 
     @typechecked
     def get_link(self) -> ParseResult:
@@ -621,6 +672,7 @@ class AssetResponseWrapper:
         """
         from urllib.parse import urlparse, ParseResult
         from immich_autotag.utils.helpers import get_immich_photo_url
+
         url = get_immich_photo_url(self.uuid)
         return urlparse(url)
 
@@ -640,6 +692,7 @@ class AssetResponseWrapper:
         Returns a list of AssetResponseWrapper objects for all duplicates of this asset (excluding itself).
         """
         from uuid import UUID
+
         context = self.context
         duplicate_id = self.duplicate_id_as_uuid
         wrappers = []
@@ -652,8 +705,6 @@ class AssetResponseWrapper:
                 if dup_asset is not None:
                     wrappers.append(dup_asset)
         return wrappers
-    
-
 
     @typechecked
     def ensure_autotag_duplicate_album_conflict(
@@ -669,24 +720,39 @@ class AssetResponseWrapper:
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
         from immich_autotag.config.user import AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
+
         tag_name = AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
         # Generic tag
         if conflict:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
-                print(f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'.")
+                print(
+                    f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'."
+                )
         else:
             if self.has_tag(tag_name):
-                print(f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved.")
-                self.remove_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
+                print(
+                    f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved."
+                )
+                self.remove_tag_by_name(
+                    tag_name, tag_mod_report=tag_mod_report, user=user
+                )
         # Per-duplicate-set tag
         if duplicate_id:
             tag_for_set = f"{tag_name}_{duplicate_id}"
             if conflict:
                 if not self.has_tag(tag_for_set):
-                    self.add_tag_by_name(tag_for_set, tag_mod_report=tag_mod_report, user=user)
-                    print(f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'.")
+                    self.add_tag_by_name(
+                        tag_for_set, tag_mod_report=tag_mod_report, user=user
+                    )
+                    print(
+                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'."
+                    )
             else:
                 if self.has_tag(tag_for_set):
-                    print(f"[INFO] Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved.")
-                    self.remove_tag_by_name(tag_for_set, tag_mod_report=tag_mod_report, user=user)
+                    print(
+                        f"[INFO] Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved."
+                    )
+                    self.remove_tag_by_name(
+                        tag_for_set, tag_mod_report=tag_mod_report, user=user
+                    )

@@ -9,6 +9,7 @@ from typing import Optional, Any, Union
 from uuid import UUID
 from immich_autotag.tags.modification_kind import ModificationKind
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ModificationEntry:
     datetime: str
@@ -24,16 +25,15 @@ class ModificationEntry:
     link: Optional[str] = None
     extra: Optional[dict[str, Any]] = None
 
+
 # TODO: la siguiente clase es mas generiga que tag, requiere refactorizar nombre y ubicacion
 
+
 @attrs.define(auto_attribs=True, slots=True)
-
 class TagModificationReport:
-
 
     _instance = None  # Singleton instance
     _instance_created = False  # Class-level flag
-
 
     import os, datetime as dt
 
@@ -60,11 +60,12 @@ class TagModificationReport:
         validator=attrs.validators.instance_of(bool),
     )
 
-
     def __attrs_post_init__(self):
         cls = self.__class__
-        if getattr(cls, '_instance_created', False):
-            raise RuntimeError("TagModificationReport instance already exists. Use TagModificationReport.get_instance() instead of creating a new one.")
+        if getattr(cls, "_instance_created", False):
+            raise RuntimeError(
+                "TagModificationReport instance already exists. Use TagModificationReport.get_instance() instead of creating a new one."
+            )
         cls._instance_created = True
         cls._instance = self
 
@@ -75,6 +76,7 @@ class TagModificationReport:
         return TagModificationReport._instance
 
     from typeguard import typechecked
+
     @typechecked
     def add_modification(
         self,
@@ -95,6 +97,7 @@ class TagModificationReport:
         """
         if not self._cleared_report:
             import os
+
             try:
                 os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
                 with open(self.report_path, "w", encoding="utf-8") as f:
@@ -139,7 +142,11 @@ class TagModificationReport:
         tag_name: str,
         user: Optional[str] = None,
     ) -> None:
-        assert kind in {ModificationKind.ADD_TAG_TO_ASSET, ModificationKind.REMOVE_TAG_FROM_ASSET, ModificationKind.REMOVE_TAG_GLOBALLY}
+        assert kind in {
+            ModificationKind.ADD_TAG_TO_ASSET,
+            ModificationKind.REMOVE_TAG_FROM_ASSET,
+            ModificationKind.REMOVE_TAG_GLOBALLY,
+        }
         self.add_modification(
             kind=kind,
             asset_id=asset_id,
@@ -158,7 +165,11 @@ class TagModificationReport:
         new_name: Optional[str] = None,
         user: Optional[str] = None,
     ) -> None:
-        assert kind in {ModificationKind.CREATE_ALBUM, ModificationKind.DELETE_ALBUM, ModificationKind.RENAME_ALBUM}
+        assert kind in {
+            ModificationKind.CREATE_ALBUM,
+            ModificationKind.DELETE_ALBUM,
+            ModificationKind.RENAME_ALBUM,
+        }
         self.add_modification(
             kind=kind,
             album_id=album_id,
@@ -178,7 +189,10 @@ class TagModificationReport:
         album_name: Optional[str] = None,
         user: Optional[str] = None,
     ) -> None:
-        assert kind in {ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM}
+        assert kind in {
+            ModificationKind.ASSIGN_ASSET_TO_ALBUM,
+            ModificationKind.REMOVE_ASSET_FROM_ALBUM,
+        }
         self.add_modification(
             kind=kind,
             asset_id=asset_id,
@@ -187,39 +201,67 @@ class TagModificationReport:
             album_name=album_name,
             user=user,
         )
+
     @typechecked
     def flush(self) -> None:
         """Flushes the report to file (append)."""
         if not self.modifications or self._since_last_flush == 0:
             return
         import os
+
         os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
         with open(self.report_path, "a", encoding="utf-8") as f:
             for entry in self.modifications[-self._since_last_flush :]:
                 f.write(self._format_modification_entry(entry) + "\n")
         self._since_last_flush = 0
+
     @typechecked
     def print_summary(self) -> None:
         print("\n[SUMMARY] Modifications:")
         for entry in self.modifications:
             print(self._format_modification_entry(entry))
         print(f"Total modifications: {len(self.modifications)}")
+
     @typechecked
-    def _build_link(self, kind: ModificationKind, asset_id: Optional[UUID], album_id: Optional[UUID]) -> Optional[ParseResult]:
+    def _build_link(
+        self, kind: ModificationKind, asset_id: Optional[UUID], album_id: Optional[UUID]
+    ) -> Optional[ParseResult]:
         """
         Build a link for the modification entry based on kind and ids.
         """
         from immich_autotag.utils.helpers import get_immich_photo_url
-        if kind in {ModificationKind.ADD_TAG_TO_ASSET, ModificationKind.REMOVE_TAG_FROM_ASSET, ModificationKind.REMOVE_TAG_GLOBALLY, ModificationKind.ASSIGN_ASSET_TO_ALBUM, ModificationKind.REMOVE_ASSET_FROM_ALBUM} and asset_id:
+
+        if (
+            kind
+            in {
+                ModificationKind.ADD_TAG_TO_ASSET,
+                ModificationKind.REMOVE_TAG_FROM_ASSET,
+                ModificationKind.REMOVE_TAG_GLOBALLY,
+                ModificationKind.ASSIGN_ASSET_TO_ALBUM,
+                ModificationKind.REMOVE_ASSET_FROM_ALBUM,
+            }
+            and asset_id
+        ):
             return get_immich_photo_url(asset_id)
-        elif kind in {ModificationKind.CREATE_ALBUM, ModificationKind.DELETE_ALBUM, ModificationKind.RENAME_ALBUM} and album_id:
+        elif (
+            kind
+            in {
+                ModificationKind.CREATE_ALBUM,
+                ModificationKind.DELETE_ALBUM,
+                ModificationKind.RENAME_ALBUM,
+            }
+            and album_id
+        ):
             return f"/albums/{album_id}"
         return None
+
     @typechecked
     def _format_modification_entry(self, entry: ModificationEntry) -> str:
         parts = [f"{entry.datetime}"]
         # Always include the operation/enum (kind)
-        parts.append(f"kind={entry.kind.name if hasattr(entry.kind, 'name') else entry.kind}")
+        parts.append(
+            f"kind={entry.kind.name if hasattr(entry.kind, 'name') else entry.kind}"
+        )
         # Removed 'entity' and 'action' as they are not attributes of ModificationEntry
         if entry.asset_id:
             parts.append(f"asset_id={entry.asset_id}")

@@ -6,14 +6,17 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.config.user import CLASSIFIED_TAGS, ALBUM_PATTERN, AUTOTAG_UNKNOWN_CATEGORY, AUTOTAG_CATEGORY_CONFLICT
+from immich_autotag.config.user import (
+    CLASSIFIED_TAGS,
+    ALBUM_PATTERN,
+    AUTOTAG_UNKNOWN_CATEGORY,
+    AUTOTAG_CATEGORY_CONFLICT,
+)
 from .match_classification_result import MatchClassificationResult
 
 if TYPE_CHECKING:
     from .immich_context import ImmichContext
     from .main import TagModificationReport
-
-
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -346,6 +349,7 @@ class AssetResponseWrapper:
         All actions are logged in tag_mod_report if provided.
         """
         from immich_client.api.assets import get_asset_info
+
         for conv in tag_conversions:
             origin = conv["origin"]
             dest = conv["destination"]

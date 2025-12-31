@@ -9,16 +9,20 @@ from typeguard import typechecked
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.tags.tag_modification_report import TagModificationReport
 
-from immich_autotag.assets.asset_validation import validate_and_update_asset_classification
+from immich_autotag.assets.asset_validation import (
+    validate_and_update_asset_classification,
+)
 from immich_autotag.config.user import TAG_CONVERSIONS, ALBUM_PATTERN
 from immich_autotag.tags.modification_kind import ModificationKind
 
 
-
 import attrs
 from uuid import UUID
+
 # Date correction config flag
 from immich_autotag.config.user import ENABLE_DATE_CORRECTION
+
+
 # Date correction logic
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAlbumsInfo:
@@ -27,14 +31,21 @@ class DuplicateAlbumsInfo:
 
     def all_album_names(self) -> set[str]:
         """Return a set with all album names found among duplicates."""
-        return {album for wrapper in self._mapping.values() for album in wrapper.get_album_names()}
+        return {
+            album
+            for wrapper in self._mapping.values()
+            for album in wrapper.get_album_names()
+        }
 
     def get_details(self) -> Dict[UUID, AssetResponseWrapper]:
         """Return the full mapping (read-only)."""
         return dict(self._mapping)
 
+
 @typechecked
-def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> DuplicateAlbumsInfo:
+def get_album_from_duplicates(
+    asset_wrapper: "AssetResponseWrapper",
+) -> DuplicateAlbumsInfo:
     """
     For a given asset, if it is a duplicate, returns a DuplicateAlbumsInfo object encapsulating the mapping from each duplicate AssetResponseWrapper (excluding itself)
     to the list of album names it belongs to. This allows for richer traceability and future extensibility.
@@ -49,12 +60,14 @@ def get_album_from_duplicates(asset_wrapper: "AssetResponseWrapper") -> Duplicat
 
 import attrs
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumDecision:
     """
     Encapsulates the decision logic for album assignment, including all album info from duplicates (as DuplicateAlbumsInfo)
     and the album detected from folder structure (if any).
     """
+
     duplicates_info: DuplicateAlbumsInfo
     album_from_folder: str | None
 
@@ -65,8 +78,9 @@ class AlbumDecision:
     def all_options(self) -> set[str]:
         import re
         from immich_autotag.config.user import ALBUM_PATTERN
+
         opts = set(self.duplicates_info.all_album_names())
-        opts= {a for a in opts if re.match(ALBUM_PATTERN, a)}
+        opts = {a for a in opts if re.match(ALBUM_PATTERN, a)}
         if self.album_from_folder:
             opts.add(self.album_from_folder)
         # Solo devolver álbumes que cumplen el patrón de evento
@@ -74,6 +88,7 @@ class AlbumDecision:
 
     def valid_albums(self) -> set[str]:
         import re
+
         return {a for a in self.all_options() if re.match(ALBUM_PATTERN, a)}
 
     def is_unique(self) -> bool:
@@ -128,23 +143,38 @@ def analyze_and_assign_album(
     conflict = album_decision.has_conflict()
     duplicate_id = asset_wrapper.asset.duplicate_id
     # Aplica la lógica de la etiqueta de conflicto a todos los duplicados
-    all_wrappers = [asset_wrapper] + list(album_decision.duplicates_info.get_details().values())
+    all_wrappers = [asset_wrapper] + list(
+        album_decision.duplicates_info.get_details().values()
+    )
     for wrapper in all_wrappers:
-        wrapper.ensure_autotag_duplicate_album_conflict(conflict, tag_mod_report=tag_mod_report, duplicate_id=duplicate_id)
+        wrapper.ensure_autotag_duplicate_album_conflict(
+            conflict, tag_mod_report=tag_mod_report, duplicate_id=duplicate_id
+        )
 
     if album_decision.is_unique():
         detected_album = album_decision.get_unique()
         if detected_album:
             album_origin = album_decision.get_album_origin(detected_album)
-            _process_album_detection(asset_wrapper, tag_mod_report, detected_album, album_origin, suppress_album_already_belongs_log=suppress_album_already_belongs_log)
+            _process_album_detection(
+                asset_wrapper,
+                tag_mod_report,
+                detected_album,
+                album_origin,
+                suppress_album_already_belongs_log=suppress_album_already_belongs_log,
+            )
         else:
-            print(f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed.")
+            print(
+                f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed."
+            )
     elif conflict:
         from immich_autotag.utils.helpers import get_immich_photo_url
+
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
         albums_info = album_decision.duplicates_info
-        print(f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}")
+        print(
+            f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}"
+        )
         details = []
         for _, dup_wrapper in albums_info.get_details().items():
             albums = dup_wrapper.get_album_names()
@@ -152,7 +182,9 @@ def analyze_and_assign_album(
                 f"{dup_wrapper.get_link().geturl()} | file: {dup_wrapper.asset.original_file_name} | date: {dup_wrapper.asset.created_at} | albums: {albums or '[unavailable]'}"
             )
         if details:
-            print(f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details))
+            print(
+                f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details)
+            )
         if fail_on_duplicate_album_conflict:
             raise NotImplementedError(
                 f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
@@ -162,7 +194,9 @@ def analyze_and_assign_album(
 
 
 @typechecked
-def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper") -> None:
+def analyze_duplicate_classification_tags(
+    asset_wrapper: "AssetResponseWrapper",
+) -> None:
     """
     If the asset has duplicates, checks the classification tags of each duplicate.
     If the classification tags (from config) do not match, raises an exception.
@@ -171,13 +205,21 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
     duplicate_id = asset_wrapper.asset.duplicate_id
     if not duplicate_id:
         return
-    wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context)
-    from immich_autotag.config.user import AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX
+    wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(
+        asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context
+    )
+    from immich_autotag.config.user import (
+        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX,
+    )
+
     for dup_asset_wrapper in wrappers:
         if dup_asset_wrapper.asset.id == asset_wrapper.asset.id:
             continue
         if dup_asset_wrapper is None:
-            raise RuntimeError(f"Duplicate asset wrapper not found for asset {dup_asset_wrapper.asset.id}. This should not happen.")
+            raise RuntimeError(
+                f"Duplicate asset wrapper not found for asset {dup_asset_wrapper.asset.id}. This should not happen."
+            )
         # Compare tags using a method on AssetResponseWrapper
         if not asset_wrapper.has_same_classification_tags_as(dup_asset_wrapper):
             tags1 = set(asset_wrapper.get_classification_tags())
@@ -186,12 +228,16 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
             diff2 = tags2 - tags1
             if tags1 and not tags2 and len(tags1) == 1:
                 tag_to_add = next(iter(tags1))
-                print(f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {dup_asset_wrapper.asset.id}")
+                print(
+                    f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {dup_asset_wrapper.asset.id}"
+                )
                 dup_asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
                 continue
             elif tags2 and not tags1 and len(tags2) == 1:
                 tag_to_add = next(iter(tags2))
-                print(f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}")
+                print(
+                    f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}"
+                )
                 asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
                 continue
             # Otherwise, print and tag all duplicates with conflict tags
@@ -203,22 +249,22 @@ def analyze_duplicate_classification_tags(asset_wrapper: "AssetResponseWrapper")
                 link = w.get_link().geturl()
                 tags = w.get_classification_tags()
                 details.append(f"{w.asset.id} | {link} | Tags: {list(tags)}")
-            msg = (
-                f"[ERROR] Classification tags differ for duplicates:\n"
-                + "\n".join(details)
+            msg = f"[ERROR] Classification tags differ for duplicates:\n" + "\n".join(
+                details
             )
             print(msg)
             # Tag all duplicates with generic and group-specific conflict tags
             group_tag = f"{AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX}{asset_wrapper.duplicate_id_as_uuid}"
             for w in all_wrappers:
-                w.add_tag_by_name(AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, verbose=True)
+                w.add_tag_by_name(
+                    AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, verbose=True
+                )
                 w.add_tag_by_name(group_tag, verbose=True)
             # No exception raised; process continues
             return
 
 
 @typechecked
-
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "TagModificationReport",
@@ -230,10 +276,13 @@ def process_single_asset(
     # Date correction step (configurable)
     if ENABLE_DATE_CORRECTION:
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
+
         correct_asset_date(asset_wrapper)
 
     analyze_duplicate_classification_tags(asset_wrapper)
-    analyze_and_assign_album(asset_wrapper, tag_mod_report, suppress_album_already_belongs_log)
+    analyze_and_assign_album(
+        asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
+    )
 
     # If there is no valid album, none is assigned
 
@@ -243,6 +292,7 @@ def process_single_asset(
     )
     with lock:
         tag_mod_report.flush()
+
 
 @typechecked
 def _process_album_detection(
@@ -281,7 +331,9 @@ def _process_album_detection(
             raise
         # Validación estricta del resultado
         if not isinstance(result, list):
-            print(f"[ERROR] Unexpected return type from add_assets_to_album: {type(result)}")
+            print(
+                f"[ERROR] Unexpected return type from add_assets_to_album: {type(result)}"
+            )
             raise RuntimeError("add_assets_to_album did not return a list")
         found = False
         for item in result:
@@ -289,7 +341,9 @@ def _process_album_detection(
                 _id = item.id
                 _success = item.success
             except AttributeError:
-                raise RuntimeError(f"Item in add_assets_to_album response missing required attributes: {item}")
+                raise RuntimeError(
+                    f"Item in add_assets_to_album response missing required attributes: {item}"
+                )
             if _id == str(asset_wrapper.id):
                 found = True
                 if not _success:
@@ -299,10 +353,15 @@ def _process_album_detection(
                     except AttributeError:
                         pass
                     from immich_autotag.utils.helpers import get_immich_photo_url
-                    from immich_autotag.utils.get_immich_album_url import get_immich_album_url
+                    from immich_autotag.utils.get_immich_album_url import (
+                        get_immich_album_url,
+                    )
+
                     asset_url = get_immich_photo_url(asset_wrapper.id_as_uuid)
                     album_url = get_immich_album_url(album.id)
-                    print(f"[ERROR] Asset {asset_wrapper.id} was not successfully added to album {album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}")
+                    print(
+                        f"[ERROR] Asset {asset_wrapper.id} was not successfully added to album {album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                    )
                     print(f"[DEBUG] Full add_assets_to_album response: {result}")
                     raise RuntimeError(
                         f"Asset {asset_wrapper.id} was not successfully added to album {album.id}. "
@@ -310,13 +369,16 @@ def _process_album_detection(
                         f"Asset link: {asset_url}\nAlbum link: {album_url}"
                     )
         if not found:
-            print(f"[ERROR] Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}")
+            print(
+                f"[ERROR] Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}"
+            )
             print(f"[DEBUG] Full add_assets_to_album response: {result}")
             raise RuntimeError(
                 f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}. "
                 f"Full response: {result}"
             )
         from uuid import UUID
+
         tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
             asset_id=asset_wrapper.id_as_uuid,
@@ -329,6 +391,3 @@ def _process_album_detection(
             print(
                 f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' already in album '{detected_album}' (origin: {album_origin}), no action taken."
             )
-
-
-
