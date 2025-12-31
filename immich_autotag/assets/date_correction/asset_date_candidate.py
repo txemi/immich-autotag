@@ -30,29 +30,27 @@ class AssetDateCandidate:
     )
     source_kind: DateSourceKind = attrs.field(
         validator=attrs.validators.instance_of(DateSourceKind)
-    )
-    date: datetime = attrs.field(validator=attrs.validators.instance_of(datetime))
+    )    
+    _date: datetime = attrs.field(validator=attrs.validators.instance_of(datetime))
     file_path: Optional[str] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
 
     def __str__(self):
-        return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.date}, file_path={self.file_path}, asset_id={getattr(self.asset_wrapper, 'id', None)})"
+        return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={getattr(self.asset_wrapper, 'id', None)})"
 
     def get_aware_date(self, user_tz=None):
         """
-        Devuelve la fecha garantizando que tiene zona horaria.
+        Devuelve la fecha como datetime aware (con zona horaria).
         Si la fecha es naive, usa la zona horaria de usuario (user_tz) o la definida en la configuración (DATE_EXTRACTION_TIMEZONE).
         """
-        dt = self.date
+        dt = self._date
         if dt.tzinfo is not None:
             return dt
-        if user_tz is None:
-            from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
-            from zoneinfo import ZoneInfo
-            user_tz = ZoneInfo(DATE_EXTRACTION_TIMEZONE)
-        return dt.replace(tzinfo=user_tz)
+        from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
+        tz = user_tz or DATE_EXTRACTION_TIMEZONE
+        return dt.replace(tzinfo=ZoneInfo(tz))
     def __lt__(self, other):
         if not isinstance(other, AssetDateCandidate):
             return NotImplemented

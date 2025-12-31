@@ -40,11 +40,11 @@ class AssetDateCandidates:
 
     @typechecked
     def oldest(self) -> Optional[datetime]:
-        return min((c.date for c in self.candidates), default=None)
+        return min((c.get_aware_date() for c in self.candidates), default=None)
 
     @typechecked
     def all_dates(self) -> List[datetime]:
-        return [c.date for c in self.candidates]
+        return [c.get_aware_date() for c in self.candidates]
 
     @typechecked
     def __len__(self) -> int:
@@ -59,7 +59,7 @@ class AssetDateCandidates:
         """
         Returns True if immich_date is less than or equal to all candidate dates.
         """
-        return all(immich_date <= c.date for c in self.candidates)
+        return all(immich_date <= c.get_aware_date() for c in self.candidates)
 
     @typechecked
     def filename_candidates(self):
@@ -92,7 +92,7 @@ class AssetDateCandidates:
     def oldest_by_kind(self, kind: DateSourceKind) -> Optional[AssetDateCandidate]:
         """Return the oldest candidate of a given DateSourceKind, or None if none found."""
         filtered = self.candidates_by_kind(kind)
-        return min(filtered, key=lambda c: c.date) if filtered else None
+        return min(filtered, key=lambda c: c.get_aware_date()) if filtered else None
 
     @typechecked
     def has_kind(self, kind: DateSourceKind) -> bool:

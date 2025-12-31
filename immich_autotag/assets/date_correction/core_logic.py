@@ -51,11 +51,12 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     if log:
         print("[DEBUG] Fechas candidatas y sus tipos/tzinfo:")
         for candidate in flat_candidates:
-            print(f"  {candidate.source_kind}: {candidate.date!r} (type={type(candidate.date)}, tzinfo={getattr(candidate.date, 'tzinfo', None)})")
+            aware_date = candidate.get_aware_date()
+            print(f"  {candidate.source_kind}: {aware_date!r} (type={type(aware_date)}, tzinfo={getattr(aware_date, 'tzinfo', None)})")
     # Usar el método de la lista para obtener el candidato más antiguo (normalizado)
     oldest_candidate = date_sources_list.oldest_candidate()
     assert oldest_candidate is not None
-    oldest: Optional[datetime] = oldest_candidate.date if oldest_candidate else None
+    oldest: Optional[datetime] = oldest_candidate.get_aware_date() if oldest_candidate else None
     assert oldest is not None
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
@@ -99,16 +100,16 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
 
     filename_candidates = date_candidates.filename_candidates()
     if filename_candidates:
-        filename_candidate = min(filename_candidates, key=lambda c: c.date)
+        filename_candidate = min(filename_candidates, key=lambda c: c.get_aware_date())
         if is_datetime_more_than_days_after(
-            immich_date, filename_candidate.date, days=2
+            immich_date, filename_candidate.get_aware_date(), days=2
         ):
             print(
-                f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero (no WhatsApp): {filename_candidate.date} (label: {filename_candidate.source_kind})"
+                f"[DATE CORRECTION] Actualizando fecha de Immich a la del nombre del fichero (no WhatsApp): {filename_candidate.get_aware_date()} (label: {filename_candidate.source_kind})"
             )
-            asset_wrapper.update_date(filename_candidate.date)
+            asset_wrapper.update_date(filename_candidate.get_aware_date())
             print(
-                f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {filename_candidate.date}"
+                f"[DATE CORRECTION] Fecha de Immich actualizada correctamente a {filename_candidate.get_aware_date()}"
             )
             return
     # Si no se cumple la condición, lanzar excepción como antes

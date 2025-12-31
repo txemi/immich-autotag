@@ -72,7 +72,7 @@ class AssetDateSourcesList:
         from .date_source_kind import DateSourceKind
 
         dates = [
-            c.date
+            c.get_aware_date()
             for candidate_set in self.candidates_list
             for c in candidate_set.candidates
             if c.source_kind == DateSourceKind.WHATSAPP_FILENAME
