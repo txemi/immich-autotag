@@ -90,6 +90,14 @@ class AssetResponseWrapper:
             extra={"pre_update": True},
         )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
+        # Fail-fast: check response type and status directly, no dynamic attribute access
+        # If the API returns a response object with status_code, check it; otherwise, assume success if no exception was raised
+        # If the response is an AssetResponseDto, we expect no error field and no status_code
+        # If the API changes and returns a dict or error object, this will fail fast
+        if not isinstance(response, AssetResponseDto):
+            raise DateIntegrityError(
+                f"[ERROR] update_asset.sync did not return AssetResponseDto, got {type(response)}: {response} for asset.id={self.id} ({self.original_file_name})"
+            )
         # Recarga el asset para reflejar el cambio
         from immich_client.api.assets import get_asset_info
 
