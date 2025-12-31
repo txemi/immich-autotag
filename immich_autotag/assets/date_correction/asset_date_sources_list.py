@@ -29,23 +29,24 @@ class AssetDateSourcesList:
     """
 
     asset_wrapper: "AssetResponseWrapper" = attrs.field()
-    candidates_list: list[AssetDateCandidates] = attrs.field(factory=list)
+    # Cada elemento representa los candidatos de fecha de un asset duplicado
+    date_candidates_per_duplicate: list[AssetDateCandidates] = attrs.field(factory=list)
 
     @typechecked
     def add(self, candidate_set: AssetDateCandidates) -> None:
-        self.candidates_list.append(candidate_set)
+        self.date_candidates_per_duplicate.append(candidate_set)
 
     @typechecked
     def extend(self, candidate_sets: list[AssetDateCandidates]) -> None:
-        self.candidates_list.extend(candidate_sets)
+        self.date_candidates_per_duplicate.extend(candidate_sets)
 
     @typechecked
     def __len__(self) -> int:
-        return len(self.candidates_list)
+        return len(self.date_candidates_per_duplicate)
 
     @typechecked
     def __iter__(self):
-        return iter(self.candidates_list)
+        return iter(self.date_candidates_per_duplicate)
 
     @staticmethod
     @typechecked
@@ -72,7 +73,7 @@ class AssetDateSourcesList:
 
         dates = [
             c.get_aware_date()
-            for candidate_set in self.candidates_list
+            for candidate_set in self.date_candidates_per_duplicate
             for c in candidate_set.candidates
             if c.source_kind == DateSourceKind.WHATSAPP_FILENAME
         ]
@@ -85,7 +86,7 @@ class AssetDateSourcesList:
         """
         return [
             c
-            for candidate_set in self.candidates_list
+            for candidate_set in self.date_candidates_per_duplicate
             for c in candidate_set.candidates
         ]
 
@@ -95,7 +96,7 @@ class AssetDateSourcesList:
         Devuelve todos los candidatos de tipo FILENAME de todos los sets de candidatos.
         """
         result = []
-        for candidate_set in self.candidates_list:
+        for candidate_set in self.date_candidates_per_duplicate:
             result.extend(candidate_set.filename_candidates())
         return result
 
@@ -106,7 +107,7 @@ class AssetDateSourcesList:
         """
         all_candidates = [
             cset.oldest_candidate()
-            for cset in self.candidates_list
+            for cset in self.date_candidates_per_duplicate
             if cset.oldest_candidate() is not None
         ]
         if not all_candidates:
