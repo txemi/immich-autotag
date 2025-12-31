@@ -3,11 +3,14 @@ from typeguard import typechecked
 from typing import Optional
 import pandas as pd
 
+
+
 @attrs.define(auto_attribs=True, slots=True)
 class AdaptiveTimeEstimator:
     """
     Estima el tiempo restante usando una media móvil exponencial (EWMA) sobre los tiempos por asset.
     """
+
     alpha: float = 0.2
     times: list[float] = attrs.field(factory=list)
     ewma: Optional[float] = None

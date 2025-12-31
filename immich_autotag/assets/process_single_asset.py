@@ -163,7 +163,7 @@ def analyze_and_assign_album(
                 f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed."
             )
     elif conflict:
-        from immich_autotag.utils.helpers import get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
@@ -350,8 +350,7 @@ def _process_album_detection(
                         pass
                     from immich_autotag.utils.get_immich_album_url import \
                         get_immich_album_url
-                    from immich_autotag.utils.helpers import \
-                        get_immich_photo_url
+                    from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
                     asset_url = get_immich_photo_url(asset_wrapper.id_as_uuid)
                     album_url = get_immich_album_url(album.id)

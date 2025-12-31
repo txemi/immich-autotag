@@ -2,6 +2,8 @@ from typeguard import typechecked
 from typing import Optional
 from .estimator import AdaptiveTimeEstimator
 
+
+
 @typechecked
 def print_perf(
     count: int,

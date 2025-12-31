@@ -66,7 +66,7 @@ class DuplicateCollectionWrapper:
         Returns a list of ParseResult (standard URL objects) for all assets in the duplicate group.
         duplicate_id: UUID
         """
-        from immich_autotag.utils.helpers import get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         if duplicate_id is None:
             return []

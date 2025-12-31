@@ -230,7 +230,7 @@ class TagModificationReport:
         """
         Build a link for the modification entry based on kind and ids.
         """
-        from immich_autotag.utils.helpers import get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         if (
             kind

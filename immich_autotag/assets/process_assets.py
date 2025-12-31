@@ -9,12 +9,12 @@ from immich_autotag.assets.process_single_asset import process_single_asset
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.tags.tag_modification_report import TagModificationReport
-from immich_autotag.utils.helpers import print_perf
+from immich_autotag.utils.perf.print_perf import print_perf
 
 
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
-    from immich_autotag.utils.helpers import AdaptiveTimeEstimator
+    from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 
     estimator = AdaptiveTimeEstimator(alpha=0.05)
     import time

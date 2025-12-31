@@ -28,7 +28,7 @@ from immich_autotag.config.user import (ALBUM_PATTERN,
                                         CLASSIFIED_TAGS,
                                         ENABLE_ALBUM_DETECTION_FROM_FOLDERS)
 from immich_autotag.tags.tag_modification_report import TagModificationReport
-from immich_autotag.utils.helpers import get_immich_photo_url
+from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
@@ -77,7 +77,7 @@ class AssetResponseWrapper:
         )
         print(log_msg)
         from immich_autotag.tags.tag_modification_report import TagModificationReport
-        from immich_autotag.utils.helpers import get_current_user
+        from immich_autotag.utils.user_helpers import get_current_user
         tag_mod_report = TagModificationReport.get_instance()
         user_obj = get_current_user(self.context)
         user_id = getattr(user_obj, "id", None)
@@ -267,7 +267,7 @@ class AssetResponseWrapper:
         from immich_client.api.tags import tag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-        from immich_autotag.utils.helpers import get_current_user
+        from immich_autotag.utils.user_helpers import get_current_user
         user = get_current_user(self.context).id
 
         tag = self.context.tag_collection.find_by_name(tag_name)
