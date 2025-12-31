@@ -70,7 +70,8 @@ class AssetResponseWrapper:
             new_date = new_date.astimezone(pytz.UTC)
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, incluyendo enlace a la foto en Immich
-        photo_url = self.get_immich_photo_url()
+        photo_url_obj = self.get_immich_photo_url()
+        photo_url = photo_url_obj.geturl()
         log_msg = (
             f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
             f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
@@ -99,12 +100,11 @@ class AssetResponseWrapper:
         return
 
     @typechecked
-    def get_immich_photo_url(self) -> "ParseResult":
+    def get_immich_photo_url(self) -> str:
         """
-        Devuelve la URL web de Immich para este asset como ParseResult.
+        Devuelve la URL web de Immich para este asset como string.
         """
         from immich_autotag.utils.url_helpers import get_immich_photo_url
-
         return get_immich_photo_url(self.uuid)
 
     @typechecked
