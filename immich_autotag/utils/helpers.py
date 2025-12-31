@@ -1,3 +1,11 @@
+from immich_client.api.users import get_my_user
+
+def get_current_user(context):
+    """
+    Devuelve el usuario actual usando el cliente del contexto Immich.
+    Retorna el objeto usuario completo (puedes acceder a .id, .email, .name, etc.).
+    """
+    return get_my_user.sync(client=context.client)
 import uuid
 from typing import Optional, Union
 from urllib.parse import ParseResult, urlparse

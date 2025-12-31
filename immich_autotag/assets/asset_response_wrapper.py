@@ -41,9 +41,6 @@ class AssetResponseWrapper:
     context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(object)
     )
-    tag_mod_report: TagModificationReport = attrs.field(
-        validator=attrs.validators.instance_of(TagModificationReport)
-    )
     def __attrs_post_init__(self) -> None:
         # Avoid direct reference to ImmichContext to prevent NameError/circular import
 
@@ -55,8 +52,6 @@ class AssetResponseWrapper:
     def update_date(
         self,
         new_date: datetime,
-        tag_mod_report: "TagModificationReport | None" = None,
-        user: str = None,
     ) -> None:
         """
         Actualiza la fecha principal (created_at) del asset usando la API de Immich.
@@ -80,16 +75,20 @@ class AssetResponseWrapper:
             f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
         )
         print(log_msg)
-        if tag_mod_report is not None:
-            tag_mod_report.add_modification(
-                kind="UPDATE_ASSET_DATE",
-                asset_id=self.id_as_uuid,
-                asset_name=self.original_file_name,
-                old_name=str(old_date) if old_date else None,
-                new_name=str(new_date) if new_date else None,
-                user=user,
-                extra={"pre_update": True},
-            )
+        from immich_autotag.tags.tag_modification_report import TagModificationReport
+        from immich_autotag.utils.helpers import get_current_user
+        tag_mod_report = TagModificationReport.get_instance()
+        user_obj = get_current_user(self.context)
+        user_id = getattr(user_obj, "id", None)
+        tag_mod_report.add_modification(
+            kind="UPDATE_ASSET_DATE",
+            asset_id=self.id_as_uuid,
+            asset_name=self.original_file_name,
+            old_name=str(old_date) if old_date else None,
+            new_name=str(new_date) if new_date else None,
+            user=user_id,
+            extra={"pre_update": True},
+        )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
         # Recarga el asset para reflejar el cambio
         from immich_client.api.assets import get_asset_info
@@ -256,10 +255,10 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
+        user: str,
+        tag_mod_report: "TagModificationReport",
         verbose: bool = False,
         info: bool = True,
-        tag_mod_report: "TagModificationReport | None" = None,
-        user: str | None = None,
     ) -> bool:
         """
         Adds a tag to the asset by name using the Immich API if it doesn't have it already.
@@ -371,22 +370,24 @@ class AssetResponseWrapper:
             print(
                 f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}"
             )
-        if tag_mod_report:
-            from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.tags.modification_kind import ModificationKind
 
-            tag_mod_report.add_modification(
-                asset_id=self.id_as_uuid,
-                asset_name=self.original_file_name,
-                kind=ModificationKind.ADD_TAG_TO_ASSET,
-                tag_name=tag_name,
-                user=user,
-            )
+        tag_mod_report.add_modification(
+            asset_id=self.id_as_uuid,
+            asset_name=self.original_file_name,
+            kind=ModificationKind.ADD_TAG_TO_ASSET,
+            tag_name=tag_name,
+            user=user,
+        )
         return True
 
     @typechecked
     def _get_current_tag_ids(self) -> list[str]:
         """Returns the IDs of the asset's current tags."""
-        # No longer using getattr, accessing self.asset.tags directly
+        if not hasattr(self.asset, "tags"):
+            raise AttributeError("AssetResponseDto is missing 'tags' attribute.")
+        if self.asset.tags is None:
+            return []
         return [t.id for t in self.asset.tags]
 
     @typechecked
