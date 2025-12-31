@@ -1,26 +1,21 @@
 from __future__ import annotations
-from typing import Set, Dict, List
 
 from threading import Lock
+from typing import Dict, List, Set
+from uuid import UUID
 
+import attrs
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.tags.tag_modification_report import TagModificationReport
-
-from immich_autotag.assets.asset_validation import (
-    validate_and_update_asset_classification,
-)
-from immich_autotag.config.user import TAG_CONVERSIONS, ALBUM_PATTERN
-from immich_autotag.tags.modification_kind import ModificationKind
-
-
-import attrs
-from uuid import UUID
-
+from immich_autotag.assets.asset_validation import \
+    validate_and_update_asset_classification
 # Date correction config flag
-from immich_autotag.config.user import ENABLE_DATE_CORRECTION
+from immich_autotag.config.user import (ALBUM_PATTERN, ENABLE_DATE_CORRECTION,
+                                        TAG_CONVERSIONS)
+from immich_autotag.tags.modification_kind import ModificationKind
+from immich_autotag.tags.tag_modification_report import TagModificationReport
 
 
 # Date correction logic
@@ -77,6 +72,7 @@ class AlbumDecision:
 
     def all_options(self) -> set[str]:
         import re
+
         from immich_autotag.config.user import ALBUM_PATTERN
 
         opts = set(self.duplicates_info.all_album_names())
@@ -210,8 +206,7 @@ def analyze_duplicate_classification_tags(
     )
     from immich_autotag.config.user import (
         AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX,
-    )
+        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX)
 
     for dup_asset_wrapper in wrappers:
         if dup_asset_wrapper.asset.id == asset_wrapper.asset.id:
@@ -275,7 +270,8 @@ def process_single_asset(
 
     # Date correction step (configurable)
     if ENABLE_DATE_CORRECTION:
-        from immich_autotag.assets.date_correction.core_logic import correct_asset_date
+        from immich_autotag.assets.date_correction.core_logic import \
+            correct_asset_date
 
         correct_asset_date(asset_wrapper)
 
@@ -352,10 +348,10 @@ def _process_album_detection(
                         error_msg = item.error
                     except AttributeError:
                         pass
-                    from immich_autotag.utils.helpers import get_immich_photo_url
-                    from immich_autotag.utils.get_immich_album_url import (
-                        get_immich_album_url,
-                    )
+                    from immich_autotag.utils.get_immich_album_url import \
+                        get_immich_album_url
+                    from immich_autotag.utils.helpers import \
+                        get_immich_photo_url
 
                     asset_url = get_immich_photo_url(asset_wrapper.id_as_uuid)
                     album_url = get_immich_album_url(album.id)

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from immich_client import Client
-from immich_client.api.albums import get_all_albums, get_album_info, update_album_info
+from immich_client.api.albums import (get_album_info, get_all_albums,
+                                      update_album_info)
 from immich_client.models.update_album_dto import UpdateAlbumDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.album_collection_wrapper import \
+    AlbumCollectionWrapper
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
 
@@ -17,7 +19,8 @@ def list_albums(client: Client) -> AlbumCollectionWrapper:
     albums = get_all_albums.sync(client=client)
     albums_full: list[AlbumResponseWrapper] = []
     print("\nAlbums:")
-    from immich_autotag.tags.tag_modification_report import TagModificationReport
+    from immich_autotag.tags.tag_modification_report import \
+        TagModificationReport
 
     tag_mod_report = TagModificationReport.get_instance()
     for album in albums:

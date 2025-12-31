@@ -1,15 +1,13 @@
 import uuid
-from immich_autotag.config.internal_config import (
-    IMMICH_WEB_BASE_URL,
-    IMMICH_PHOTO_PATH_TEMPLATE,
-)
-
-
-from typeguard import typechecked
-import pandas as pd
 from typing import Optional, Union
+from urllib.parse import ParseResult, urlparse
+
 import attrs
-from urllib.parse import urlparse, ParseResult
+import pandas as pd
+from typeguard import typechecked
+
+from immich_autotag.config.internal_config import (IMMICH_PHOTO_PATH_TEMPLATE,
+                                                   IMMICH_WEB_BASE_URL)
 
 
 @attrs.define(auto_attribs=True, slots=True)

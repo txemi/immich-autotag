@@ -1,9 +1,11 @@
-from immich_autotag.assets.get_all_assets import get_all_assets
-import attrs
-from typing import Dict, Iterator, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Dict, Iterator, Optional, Union
 from uuid import UUID
+
+import attrs
 from immich_client import Client
+
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.get_all_assets import get_all_assets
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext

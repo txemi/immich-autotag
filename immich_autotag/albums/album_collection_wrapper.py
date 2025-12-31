@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import attrs
+from immich_client.client import Client
+from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-
-from immich_client.models.asset_response_dto import AssetResponseDto
-from immich_client.client import Client
 from immich_autotag.tags.tag_modification_report import TagModificationReport
 
 
@@ -62,12 +61,12 @@ class AlbumCollectionWrapper:
                 return album_wrapper
 
         # If it does not exist, create and assign user
-        from immich_client.api.albums import create_album, add_users_to_album
+        from immich_client.api.albums import add_users_to_album, create_album
         from immich_client.api.users import get_my_user
         from immich_client.models.add_users_dto import AddUsersDto
+        from immich_client.models.album_response_dto import AlbumResponseDto
         from immich_client.models.album_user_add_dto import AlbumUserAddDto
         from immich_client.models.album_user_role import AlbumUserRole
-        from immich_client.models.album_response_dto import AlbumResponseDto
         from immich_client.models.create_album_dto import CreateAlbumDto
 
         # (import removed, already imported at module level)

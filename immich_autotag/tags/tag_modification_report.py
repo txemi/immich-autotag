@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import datetime
+from typing import Any, Optional, Union
 from urllib.parse import ParseResult
+from uuid import UUID
 
 import attrs
 
-from typing import Optional, Any, Union
-from uuid import UUID
 from immich_autotag.tags.modification_kind import ModificationKind
 
 
@@ -35,7 +35,8 @@ class TagModificationReport:
     _instance = None  # Singleton instance
     _instance_created = False  # Class-level flag
 
-    import os, datetime as dt
+    import datetime as dt
+    import os
 
     log_dir: str = attrs.field(
         default="logs", validator=attrs.validators.instance_of(str)

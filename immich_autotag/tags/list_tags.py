@@ -3,8 +3,8 @@ from __future__ import annotations
 from immich_client import Client
 from typeguard import typechecked
 
-from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.tags.print_tags import print_tags
+from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
 
 @typechecked

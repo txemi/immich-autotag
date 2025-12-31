@@ -5,8 +5,10 @@
 TARGET_DIR="${1:-.}"
 
 
+
 # Exclusiones robustas para evitar formatear .venv y otros directorios externos
-EXCLUDES="--exclude .venv/ --exclude .venv\\/ --exclude '*/.venv/*' --exclude immich-client --exclude scripts"
+BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts"
+ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts"
 
 
 # Activa el entorno virtual del proyecto de forma robusta
@@ -21,7 +23,7 @@ fi
 source "$VENV_PATH"
 
 # Formatea el código con Black
-black $EXCLUDES "$TARGET_DIR"
+black $BLACK_EXCLUDES "$TARGET_DIR"
 
 # Organiza los imports con isort
-isort $EXCLUDES "$TARGET_DIR"
+isort $ISORT_SKIPS "$TARGET_DIR"

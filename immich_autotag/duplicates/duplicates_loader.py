@@ -1,10 +1,11 @@
-import attrs
-from immich_autotag.duplicates.duplicate_collection_wrapper import (
-    DuplicateCollectionWrapper,
-)
-from immich_client import Client
 from typing import Optional
+
+import attrs
+from immich_client import Client
 from immich_client.api.duplicates import get_asset_duplicates
+
+from immich_autotag.duplicates.duplicate_collection_wrapper import \
+    DuplicateCollectionWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True)

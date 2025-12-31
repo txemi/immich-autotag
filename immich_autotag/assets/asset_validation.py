@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.config.internal_config import PRINT_ASSET_DETAILS
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.config.internal_config import PRINT_ASSET_DETAILS
 from immich_autotag.tags.tag_modification_report import TagModificationReport
 
 

@@ -1,16 +1,15 @@
-from urllib.parse import urlparse, ParseResult
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from urllib.parse import ParseResult, urlparse
+from uuid import UUID
 
 import attrs
-from typeguard import typechecked
-from typing import Any, Dict, List
-from uuid import UUID
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
-
-from typing import Optional, TYPE_CHECKING
+from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.assets.asset_manager import AssetManager
+    from immich_autotag.assets.asset_response_wrapper import \
+        AssetResponseWrapper
     from immich_autotag.context.immich_context import ImmichContext
 
 

@@ -5,12 +5,11 @@ from threading import Lock
 
 from typeguard import typechecked
 
+from immich_autotag.assets.process_single_asset import process_single_asset
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.tags.tag_modification_report import TagModificationReport
-
 from immich_autotag.utils.helpers import print_perf
-from immich_autotag.assets.process_single_asset import process_single_asset
 
 
 @typechecked
@@ -19,6 +18,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
 
     estimator = AdaptiveTimeEstimator(alpha=0.05)
     import time
+
     from immich_client.api.server import get_server_statistics
 
     tag_mod_report = TagModificationReport.get_instance()

@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import Iterator, List, Optional
 
 import attrs
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from typeguard import typechecked
+
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 from .asset_date_candidate import AssetDateCandidate
 from .date_source_kind import DateSourceKind

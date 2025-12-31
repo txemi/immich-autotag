@@ -1,17 +1,18 @@
 from __future__ import annotations
-from immich_autotag.config.user import API_KEY
+
 from immich_client import Client
-from immich_autotag.config.internal_config import IMMICH_BASE_URL
-from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.assets.process_assets import process_assets
-from immich_autotag.albums.list_albums import list_albums
-from immich_autotag.tags.list_tags import list_tags
-from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
-from immich_autotag.assets.asset_manager import AssetManager
 from typeguard import typechecked
-from immich_autotag.duplicates.duplicate_collection_wrapper import (
-    DuplicateCollectionWrapper,
-)
+
+from immich_autotag.albums.list_albums import list_albums
+from immich_autotag.assets.asset_manager import AssetManager
+from immich_autotag.assets.process_assets import process_assets
+from immich_autotag.config.internal_config import IMMICH_BASE_URL
+from immich_autotag.config.user import API_KEY
+from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.duplicates.duplicate_collection_wrapper import \
+    DuplicateCollectionWrapper
+from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
+from immich_autotag.tags.list_tags import list_tags
 
 
 @typechecked

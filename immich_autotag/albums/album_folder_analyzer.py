@@ -66,6 +66,7 @@ class AlbumFolderAnalyzer:
         Returns True if the folder path matches any exclusion pattern.
         """
         import re
+
         from immich_autotag.config.user import ALBUM_DETECTION_EXCLUDED_PATHS
 
         # Compose the full folder path as a string (joined by /)

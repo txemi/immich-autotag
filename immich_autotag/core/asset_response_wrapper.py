@@ -6,12 +6,11 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.config.user import (
-    CLASSIFIED_TAGS,
-    ALBUM_PATTERN,
-    AUTOTAG_UNKNOWN_CATEGORY,
-    AUTOTAG_CATEGORY_CONFLICT,
-)
+from immich_autotag.config.user import (ALBUM_PATTERN,
+                                        AUTOTAG_CATEGORY_CONFLICT,
+                                        AUTOTAG_UNKNOWN_CATEGORY,
+                                        CLASSIFIED_TAGS)
+
 from .match_classification_result import MatchClassificationResult
 
 if TYPE_CHECKING:

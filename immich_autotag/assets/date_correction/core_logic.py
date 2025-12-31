@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Optional
 from zoneinfo import ZoneInfo
 
+from typeguard import typechecked
+
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
-from typeguard import typechecked
 
 from .asset_date_candidates import AssetDateCandidates
 from .asset_date_sources_list import AssetDateSourcesList

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from datetime import datetime
 from typing import List
 
@@ -9,28 +10,24 @@ class DateIntegrityError(Exception):
 
 
 from typing import TYPE_CHECKING
-
-from immich_autotag.tags.tag_modification_report import TagModificationReport
 from urllib.parse import ParseResult
 from uuid import UUID
 
 import attrs
+from immich_client.api.assets import get_asset_info
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
-from immich_client.api.assets import get_asset_info
+from immich_autotag.classification.match_classification_result import \
+    MatchClassificationResult
+from immich_autotag.config.user import (ALBUM_PATTERN,
+                                        AUTOTAG_CATEGORY_CONFLICT,
+                                        AUTOTAG_CATEGORY_UNKNOWN,
+                                        CLASSIFIED_TAGS,
+                                        ENABLE_ALBUM_DETECTION_FROM_FOLDERS)
+from immich_autotag.tags.tag_modification_report import TagModificationReport
 from immich_autotag.utils.helpers import get_immich_photo_url
-from immich_autotag.config.user import (
-    CLASSIFIED_TAGS,
-    ALBUM_PATTERN,
-    AUTOTAG_CATEGORY_UNKNOWN,
-    AUTOTAG_CATEGORY_CONFLICT,
-    ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
-)
-from immich_autotag.classification.match_classification_result import (
-    MatchClassificationResult,
-)
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
@@ -50,9 +47,9 @@ class AssetResponseWrapper:
         Actualiza la fecha principal (created_at) del asset usando la API de Immich.
         Si se proporciona tag_mod_report, registra la modificación.
         """
+        import pytz
         from immich_client.api.assets import update_asset
         from immich_client.models.asset_update_dto import AssetUpdateDto
-        import pytz
 
         old_date = self.asset.created_at
         # Asegura que la fecha es timezone-aware en UTC
@@ -216,7 +213,8 @@ class AssetResponseWrapper:
                 )
             removed_any = True
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
@@ -234,7 +232,8 @@ class AssetResponseWrapper:
         if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
@@ -288,7 +287,8 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
@@ -303,7 +303,8 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=None,
@@ -326,7 +327,8 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
@@ -350,7 +352,8 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
@@ -670,7 +673,8 @@ class AssetResponseWrapper:
         """
         Returns a ParseResult URL object for this asset.
         """
-        from urllib.parse import urlparse, ParseResult
+        from urllib.parse import ParseResult, urlparse
+
         from immich_autotag.utils.helpers import get_immich_photo_url
 
         url = get_immich_photo_url(self.uuid)
@@ -719,7 +723,8 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-        from immich_autotag.config.user import AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
+        from immich_autotag.config.user import \
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
 
         tag_name = AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
         # Generic tag
