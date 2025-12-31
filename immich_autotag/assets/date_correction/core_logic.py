@@ -55,28 +55,25 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
             print(f"  {candidate.source_kind}: {aware_date!r} (type={type(aware_date)}, tzinfo={getattr(aware_date, 'tzinfo', None)})")
     # Usar el método de la lista para obtener el candidato más antiguo (normalizado)
     oldest_candidate = date_sources_list.oldest_candidate()
-    assert oldest_candidate is not None
-    oldest: Optional[datetime] = oldest_candidate.get_aware_date() if oldest_candidate else None
-    assert oldest is not None
+    oldest: datetime = oldest_candidate.get_aware_date()
     # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
     # Si la fecha de Immich es la más antigua o igual a la más antigua sugerida, no se hace nada
-    if oldest is not None and immich_date <= oldest:
+    if immich_date <= oldest:
         if log:
             print(
                 f"[DATE CORRECTION] Immich date {immich_date} ya es la más antigua o igual a la más antigua sugerida ({oldest}), no se hace nada."
             )
         return
     # If Immich date is the same day as the oldest, do nothing
-    if oldest is not None and immich_date.date() == oldest.date():
+    if immich_date.date() == oldest.date():
         if log:
             print(
                 f"[DATE CORRECTION] Immich date {immich_date} es del mismo día que la más antigua {oldest}, no se hace nada."
             )
         return
     # Si la mejor candidata es redondeada a medianoche y está muy cerca (<4h) de la de Immich, y la de Immich tiene hora precisa, no se hace nada
-
-    if oldest is not None and _is_precise_and_rounded_midnight_close(
+    if _is_precise_and_rounded_midnight_close(
         immich_date, oldest
     ):
         if log:
@@ -122,7 +119,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         return dt.astimezone(ZoneInfo("UTC")) if dt.tzinfo else dt
 
     immich_utc = to_utc(immich_date)
-    oldest_utc = to_utc(oldest) if oldest is not None else None
+    oldest_utc = to_utc(oldest)
     msg = (
         f"[DATE CORRECTION] Caso no implementado: Immich date {immich_date} y oldest {oldest} (asset {asset_wrapper.asset.id})\n"
         f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
