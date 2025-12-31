@@ -73,10 +73,15 @@ class AssetDateCandidates:
         """Return all AssetDateCandidate objects (alias for list(self))."""
         return list(self.candidates)
 
+    # Versión simplificada y robusta, usando la comparación de AssetDateCandidate
     @typechecked
     def oldest_candidate(self) -> Optional[AssetDateCandidate]:
-        """Return the AssetDateCandidate with the oldest date, or None if none found."""
-        return min(self.candidates, key=lambda c: c.date) if self.candidates else None
+        """
+        Devuelve el AssetDateCandidate con la fecha más antigua para este asset.
+        """
+        if not self.candidates:
+            return None
+        return min(self.candidates)
 
     @typechecked
     def candidates_by_kind(self, kind: DateSourceKind) -> List[AssetDateCandidate]:
@@ -93,11 +98,3 @@ class AssetDateCandidates:
     def has_kind(self, kind: DateSourceKind) -> bool:
         """Return True if there is at least one candidate of the given kind."""
         return any(c.source_kind == kind for c in self.candidates)
-    @typechecked
-    def oldest_candidate(self) -> Optional["AssetDateCandidate"]:
-        """
-        Devuelve el AssetDateCandidate con la fecha más antigua para este asset.
-        """
-        if not self.candidates:
-            return None
-        return min(self.candidates)
