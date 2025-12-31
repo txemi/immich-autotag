@@ -15,6 +15,7 @@ from .asset_date_candidates import AssetDateCandidate, AssetDateCandidates
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateSourcesList:
+
     """
     Holds a list of AssetDateCandidates sets, one for each duplicate asset (AssetResponseWrapper).
     Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
@@ -89,6 +90,16 @@ class AssetDateSourcesList:
             for candidate_set in self.candidates_list
             for c in candidate_set.candidates
         ]
+
+    @typechecked
+    def filename_candidates(self) -> list[AssetDateCandidate]:
+        """
+        Devuelve todos los candidatos de tipo FILENAME de todos los sets de candidatos.
+        """
+        result = []
+        for candidate_set in self.candidates_list:
+            result.extend(candidate_set.filename_candidates())
+        return result
     @typechecked
     def oldest_candidate(self) -> Optional["AssetDateCandidate"]:
         """

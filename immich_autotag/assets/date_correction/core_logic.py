@@ -95,7 +95,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         )
         return
 
-    filename_candidates = date_candidates.filename_candidates()
+    filename_candidates = date_sources_list.filename_candidates()
     if filename_candidates:
         filename_candidate = min(filename_candidates, key=lambda c: c.get_aware_date())
         if is_datetime_more_than_days_after(
