@@ -32,6 +32,7 @@ from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
+    from immich_autotag.tags.tag_modification_report import TagModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -301,7 +302,7 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        tag_mod_report: "TagModificationReport" = None,
+        tag_mod_report: TagModificationReport | None = None,
         verbose: bool = False,
         info: bool = True,
     ) -> bool:
@@ -725,7 +726,7 @@ class AssetResponseWrapper:
         from immich_autotag.utils.url_helpers import get_immich_photo_url
 
         url = get_immich_photo_url(self.uuid)
-        return urlparse(url)
+        return url
 
     @property
     def uuid(self) -> UUID:
