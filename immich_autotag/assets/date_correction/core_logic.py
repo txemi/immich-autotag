@@ -55,6 +55,7 @@ def _check_filename_candidate_and_fix(
     asset_wrapper: AssetResponseWrapper,
     date_sources_list: AssetDateSourcesList,
     immich_date: datetime,
+    verbose: bool = False,
 ) -> "DateCorrectionStepResult":
     """
     Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.
@@ -81,34 +82,38 @@ def _check_filename_candidate_and_fix(
     if is_datetime_more_than_days_after(
         immich_date, candidate_date, days=1.1
     ):
-        print("[DATE CORRECTION][DIAGNÓSTICO COMPLETO]")
-        print(date_sources_list.format_full_info())
-        print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
-        print(best_candidate.format_info())
-        print(
-            f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
-        )
-        asset_wrapper.update_date(candidate_date)
-        print(
-            f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
-        )
+        if verbose:
+            print("[DATE CORRECTION][DIAGNÓSTICO COMPLETO]")
+            print(date_sources_list.format_full_info())
+            print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
+            print(best_candidate.format_info())
+            print(
+                f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
+            )
+        asset_wrapper.update_date(candidate_date, verbose=verbose)
+        if verbose:
+            print(
+                f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
+            )
         return DateCorrectionStepResult.FIXED
     # Caso 2: misma fecha, Immich a medianoche, el candidato tiene hora real y es más antiguo
     if (
         candidate_has_time
         and candidate_date < immich_date
     ):
-        print("[DATE CORRECTION][PRECISIÓN HORARIA]")
-        print(date_sources_list.format_full_info())
-        print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
-        print(best_candidate.format_info())
-        print(
-            f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
-        )
-        asset_wrapper.update_date(candidate_date)
-        print(
-            f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
-        )
+        if verbose:
+            print("[DATE CORRECTION][PRECISIÓN HORARIA]")
+            print(date_sources_list.format_full_info())
+            print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
+            print(best_candidate.format_info())
+            print(
+                f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
+            )
+        asset_wrapper.update_date(candidate_date, verbose=verbose)
+        if verbose:
+            print(
+                f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
+            )
         return DateCorrectionStepResult.FIXED
     return DateCorrectionStepResult.CONTINUE
 
