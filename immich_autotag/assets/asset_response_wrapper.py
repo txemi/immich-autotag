@@ -542,7 +542,7 @@ class AssetResponseWrapper:
         )
 
     @typechecked
-    def check_unique_classification(self, fail_fast: bool = True) -> bool:
+    def check_unique_classification(self, fail_fast: bool = True, verbose: bool = False) -> bool:
         """
         Checks if the asset is classified by more than one criterion (tag or album).
         Now considers conflict if the total number of matching tags and albums is greater than 1.
@@ -559,7 +559,8 @@ class AssetResponseWrapper:
             if fail_fast:
                 raise Exception(msg)
             else:
-                print(msg)
+                if verbose:
+                    print(msg)
             return True
         return False
 
