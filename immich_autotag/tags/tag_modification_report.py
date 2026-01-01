@@ -81,9 +81,8 @@ class TagModificationReport:
     @typechecked
     def add_modification(
         self,
-        kind: Union[ModificationKind, str],
-        asset_id: Optional[UUID] = None,
-        asset_name: Optional[str] = None,
+        kind: ModificationKind,
+        asset_wrapper: Any,
         tag_name: Optional[str] = None,
         album_id: Optional[UUID] = None,
         album_name: Optional[str] = None,
@@ -107,13 +106,9 @@ class TagModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
-        # Permitir str para facilitar migración, pero convertir a Enum
-        if isinstance(kind, str):
-            kind = ModificationKind[kind]
-
-        # Build link (asset or album)
-        link = self._build_link(kind, asset_id, album_id)
-
+        asset_id = asset_wrapper.id_as_uuid
+        asset_name = asset_wrapper.original_file_name
+        link = asset_wrapper.get_immich_photo_url().geturl()
         entry = ModificationEntry(
             datetime=datetime.datetime.now().isoformat(),
             kind=kind,

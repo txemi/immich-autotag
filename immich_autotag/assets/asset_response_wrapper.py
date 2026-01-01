@@ -92,14 +92,13 @@ class AssetResponseWrapper:
             or user_id
         )
         asset_url = self.get_immich_photo_url().geturl()
+        from immich_autotag.tags.modification_kind import ModificationKind
         tag_mod_report.add_modification(
-            kind="UPDATE_ASSET_DATE",
-            asset_id=self.id_as_uuid,
-            asset_name=self.original_file_name,
+            kind=ModificationKind.UPDATE_ASSET_DATE,
+            asset_wrapper=self,
             old_name=str(old_date) if old_date else None,
             new_name=str(new_date) if new_date else None,
             user=user_name,
-            link=asset_url,
             extra={"pre_update": True},
         )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)

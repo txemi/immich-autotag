@@ -73,10 +73,13 @@ def _check_filename_candidate_and_fix(
     if is_datetime_more_than_days_after(
         immich_date, best_candidate.get_aware_date(), days=1.1
     ):
+        print("[DATE CORRECTION][DIAGNÓSTICO COMPLETO]")
+        print(date_sources_list.format_full_info())
+        print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
+        print(best_candidate.format_info())
         print(
             f"[DATE CORRECTION] Updating Immich date to the one from candidate: {best_candidate.get_aware_date()} (label: {best_candidate.source_kind})"
         )
-        # todo: utiliza date_sources_list.format_full_info() para el diagnóstico completo y tambien logea best_candidate con la funcion format_info()
         asset_wrapper.update_date(best_candidate.get_aware_date())
         print(
             f"[DATE CORRECTION] Immich date successfully updated to {best_candidate.get_aware_date()}"
