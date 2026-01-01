@@ -301,7 +301,7 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        tag_mod_report: "TagModificationReport",
+        tag_mod_report: "TagModificationReport" = None,
         verbose: bool = False,
         info: bool = True,
     ) -> bool:
@@ -313,7 +313,9 @@ class AssetResponseWrapper:
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         from immich_autotag.utils.user_helpers import get_current_user
-
+        if tag_mod_report is None:
+            from immich_autotag.tags.tag_modification_report import TagModificationReport
+            tag_mod_report = TagModificationReport.get_instance()
         user = get_current_user(self.context).id
 
         tag = self.context.tag_collection.find_by_name(tag_name)
