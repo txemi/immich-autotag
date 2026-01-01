@@ -131,6 +131,21 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
     date_sources_list = AssetDateSourcesList.from_wrappers(asset_wrapper, wrappers)
     flat_candidates = date_sources_list.to_flat_candidates()
+
+    # Get the Immich date (the one visible and modifiable in the UI)
+    immich_date: datetime = asset_wrapper.get_best_date()
+
+    # Ya no es necesario el caso WhatsApp: la lógica unificada lo cubre
+
+    # Check if filename-based correction should be applied
+    step_result = _check_filename_candidate_and_fix(
+        asset_wrapper, date_sources_list, immich_date
+    )
+    if DateCorrectionStepResult.should_exit(step_result):
+        return
+    # else, continue processing
+
+
     if not flat_candidates:
         if log:
             print(
@@ -147,8 +162,6 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     # Use the list method to get the oldest candidate (normalized)
     oldest_candidate = date_sources_list.oldest_candidate()
     oldest: datetime = oldest_candidate.get_aware_date()
-    # Get the Immich date (the one visible and modifiable in the UI)
-    immich_date: datetime = asset_wrapper.get_best_date()
 
     # If the Immich date is the oldest or equal to the oldest suggested, do nothing
     if immich_date <= oldest:
@@ -179,15 +192,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
                 f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do."
             )
         return
-    # Ya no es necesario el caso WhatsApp: la lógica unificada lo cubre
 
-    # Check if filename-based correction should be applied
-    step_result = _check_filename_candidate_and_fix(
-        asset_wrapper, date_sources_list, immich_date
-    )
-    if DateCorrectionStepResult.should_exit(step_result):
-        return
-    # else, continue processing
 
     # If none of the above conditions are met, raise an error as before
     photo_url_obj = asset_wrapper.get_immich_photo_url()
