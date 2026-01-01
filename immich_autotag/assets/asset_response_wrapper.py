@@ -265,9 +265,8 @@ class AssetResponseWrapper:
                     ModificationKind
 
                 tag_mod_report.add_modification(
-                    asset_id=self.id_as_uuid,
-                    asset_name=self.original_file_name,
                     kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
+                    asset_wrapper=self,
                     tag_name=tag_name,
                     user=user,
                 )
@@ -284,9 +283,8 @@ class AssetResponseWrapper:
                     ModificationKind
 
                 tag_mod_report.add_modification(
-                    asset_id=self.id_as_uuid,
-                    asset_name=self.original_file_name,
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    asset_wrapper=self,
                     tag_name=tag_name,
                     user=user,
                     extra={"error": error_msg},
@@ -341,9 +339,8 @@ class AssetResponseWrapper:
                     ModificationKind
 
                 tag_mod_report.add_modification(
-                    asset_id=self.id_as_uuid,
-                    asset_name=self.original_file_name,
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    asset_wrapper=self,
                     tag_name=tag_name,
                     user=user,
                     extra={"error": error_msg},
@@ -421,9 +418,8 @@ class AssetResponseWrapper:
         from immich_autotag.tags.modification_kind import ModificationKind
 
         tag_mod_report.add_modification(
-            asset_id=self.id_as_uuid,
-            asset_name=self.original_file_name,
             kind=ModificationKind.ADD_TAG_TO_ASSET,
+            asset_wrapper=self,
             tag_name=tag_name,
             user=user,
         )
