@@ -781,7 +781,7 @@ class AssetResponseWrapper:
         # Generic tag
         if conflict:
             if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report, user=user)
+                self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
                 print(
                     f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'."
                 )
