@@ -70,19 +70,44 @@ def _check_filename_candidate_and_fix(
     from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
     # Usar 1.1 días como umbral
+    candidate_date = best_candidate.get_aware_date()
+    immich_time_is_midnight = (
+        immich_date.hour == 0 and immich_date.minute == 0 and immich_date.second == 0
+    )
+    candidate_has_time = (
+        candidate_date.hour != 0 or candidate_date.minute != 0 or candidate_date.second != 0
+    )
+    # Caso 1: diferencia de días grande (como antes)
     if is_datetime_more_than_days_after(
-        immich_date, best_candidate.get_aware_date(), days=1.1
+        immich_date, candidate_date, days=1.1
     ):
         print("[DATE CORRECTION][DIAGNÓSTICO COMPLETO]")
         print(date_sources_list.format_full_info())
         print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
         print(best_candidate.format_info())
         print(
-            f"[DATE CORRECTION] Updating Immich date to the one from candidate: {best_candidate.get_aware_date()} (label: {best_candidate.source_kind})"
+            f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
         )
-        asset_wrapper.update_date(best_candidate.get_aware_date())
+        asset_wrapper.update_date(candidate_date)
         print(
-            f"[DATE CORRECTION] Immich date successfully updated to {best_candidate.get_aware_date()}"
+            f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
+        )
+        return DateCorrectionStepResult.FIXED
+    # Caso 2: misma fecha, Immich a medianoche, el candidato tiene hora real y es más antiguo
+    if (
+        candidate_has_time
+        and candidate_date < immich_date
+    ):
+        print("[DATE CORRECTION][PRECISIÓN HORARIA]")
+        print(date_sources_list.format_full_info())
+        print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
+        print(best_candidate.format_info())
+        print(
+            f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
+        )
+        asset_wrapper.update_date(candidate_date)
+        print(
+            f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
         )
         return DateCorrectionStepResult.FIXED
     return DateCorrectionStepResult.CONTINUE
