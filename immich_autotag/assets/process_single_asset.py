@@ -163,22 +163,22 @@ def analyze_and_assign_album(
                 f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed."
             )
     elif conflict:
-        from immich_autotag.utils.get_immich_album_url import \
-            get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)
         albums_info = album_decision.duplicates_info
-        print(
-            f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}"
-        )
+        if verbose:
+            print(
+                f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}"
+            )
         details = []
         for _, dup_wrapper in albums_info.get_details().items():
             albums = dup_wrapper.get_album_names()
             details.append(
                 f"{dup_wrapper.get_link().geturl()} | file: {dup_wrapper.asset.original_file_name} | date: {dup_wrapper.asset.created_at} | albums: {albums or '[unavailable]'}"
             )
-        if details:
+        if details and verbose:
             print(
                 f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details)
             )
