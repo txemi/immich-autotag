@@ -770,6 +770,7 @@ class AssetResponseWrapper:
         tag_mod_report: "TagModificationReport | None" = None,
         user: str | None = None,
         duplicate_id: str | None = None,
+        verbose: bool = False,
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
@@ -784,14 +785,16 @@ class AssetResponseWrapper:
         if conflict:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
-                print(
-                    f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'."
-                )
+                if verbose:
+                    print(
+                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'."
+                    )
         else:
             if self.has_tag(tag_name):
-                print(
-                    f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved."
-                )
+                if verbose:
+                    print(
+                        f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved."
+                    )
                 self.remove_tag_by_name(
                     tag_name, tag_mod_report=tag_mod_report, user=user
                 )
@@ -803,14 +806,16 @@ class AssetResponseWrapper:
                     self.add_tag_by_name(
                         tag_for_set, tag_mod_report=tag_mod_report
                     )
-                    print(
-                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'."
-                    )
+                    if verbose:
+                        print(
+                            f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'."
+                        )
             else:
                 if self.has_tag(tag_for_set):
-                    print(
-                        f"[INFO] Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved."
-                    )
+                    if verbose:
+                        print(
+                            f"[INFO] Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved."
+                        )
                     self.remove_tag_by_name(
                         tag_for_set, tag_mod_report=tag_mod_report, user=user
                     )
