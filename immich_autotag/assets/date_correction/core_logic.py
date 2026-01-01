@@ -90,7 +90,7 @@ def _check_filename_candidate_and_fix(
             print(
                 f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
             )
-        asset_wrapper.update_date(candidate_date, verbose=verbose)
+        asset_wrapper.update_date(candidate_date)
         if verbose:
             print(
                 f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
@@ -109,7 +109,7 @@ def _check_filename_candidate_and_fix(
             print(
                 f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
             )
-        asset_wrapper.update_date(candidate_date, verbose=verbose)
+        asset_wrapper.update_date(candidate_date)
         if verbose:
             print(
                 f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"

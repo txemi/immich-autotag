@@ -223,8 +223,8 @@ class AssetResponseWrapper:
     def remove_tag_by_name(
         self,
         tag_name: str,
-        verbose: bool = True,
-        tag_mod_report: "TagModificationReport | None" = None,
+        verbose: bool = False,
+        tag_mod_report: TagModificationReport | None = None,
         user: str | None = None,
         fail_on_error: bool = False,
     ) -> bool:
@@ -247,18 +247,19 @@ class AssetResponseWrapper:
                 print(f"[INFO] Asset id={self.id} does not have the tag '{tag_name}'")
             return False
 
-        print(
-            f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
-        )
-        print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
+        if verbose:
+            print(
+                f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
+            )
+            print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
 
         removed_any = False
         for tag in tags_to_remove:
             response = untag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
             )
-            print(f"[DEBUG] Full untag_assets response for tag_id={tag.id}: {response}")
             if verbose:
+                print(f"[DEBUG] Full untag_assets response for tag_id={tag.id}: {response}")
                 print(
                     f"[INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}"
                 )
@@ -277,7 +278,8 @@ class AssetResponseWrapper:
         # Reload asset and check if tag is still present
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
         self.asset = updated_asset
-        print(f"[DEBUG] Tags after removal: {self.get_tag_names()}")
+        if verbose:
+            print(f"[DEBUG] Tags after removal: {self.get_tag_names()}")
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
@@ -292,7 +294,8 @@ class AssetResponseWrapper:
                     user=user,
                     extra={"error": error_msg},
                 )
-            print(error_msg)
+            if verbose:
+                print(error_msg)
             if fail_on_error:
                 raise RuntimeError(error_msg)
             # else: just log and continue
