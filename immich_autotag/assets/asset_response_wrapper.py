@@ -56,8 +56,9 @@ class AssetResponseWrapper:
     def update_date(
         self,
         new_date: datetime,
-            check_update_applied: bool = False,
-        ) -> None:
+        check_update_applied: bool = False,
+        verbose: bool = False,
+    ) -> None:
         """
         Actualiza la fecha principal (created_at) del asset usando la API de Immich.
         Si se proporciona tag_mod_report, registra la modificación.
@@ -74,13 +75,14 @@ class AssetResponseWrapper:
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, incluyendo enlace a la foto en Immich
-        photo_url_obj = self.get_immich_photo_url()
-        photo_url = photo_url_obj.geturl()
-        log_msg = (
-            f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
-            f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
-        )
-        print(log_msg)
+        if verbose:
+            photo_url_obj = self.get_immich_photo_url()
+            photo_url = photo_url_obj.geturl()
+            log_msg = (
+                f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
+                f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
+            )
+            print(log_msg)
         from immich_autotag.tags.tag_modification_report import \
             TagModificationReport
         from immich_autotag.utils.user_helpers import get_current_user
