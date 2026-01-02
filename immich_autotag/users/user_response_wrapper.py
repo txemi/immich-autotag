@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, Optional
 
 import attrs
 from typeguard import typechecked
@@ -11,11 +11,11 @@ if TYPE_CHECKING:
 
 
 
-@typechecked
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
     user: "UserResponseDto"
-    _cached_user_wrapper: Optional["UserResponseWrapper"] = None
+    _cached_user_wrapper = None  # Variable de clase para cachear el usuario
 
     @property
     @typechecked
