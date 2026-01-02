@@ -1,3 +1,4 @@
+from typeguard import typechecked
 from typing import TYPE_CHECKING, Dict, Iterator, Optional, Union
 from uuid import UUID
 
@@ -13,9 +14,12 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetManager:
+
+
     client: Client
     _assets: Dict[UUID, AssetResponseWrapper] = attrs.field(factory=dict, init=False)
 
+    @typechecked
     def iter_assets(
         self, context: "ImmichContext", max_assets: Optional[int] = None
     ) -> Iterator[AssetResponseWrapper]:
@@ -28,6 +32,7 @@ class AssetManager:
             self._assets[asset_uuid] = asset
             yield asset
 
+    @typechecked
     def get_asset(
         self, asset_id: Union[str, UUID], context: "ImmichContext"
     ) -> Optional[AssetResponseWrapper]:
@@ -49,3 +54,14 @@ class AssetManager:
         asset = AssetResponseWrapper.from_dto(dto, context)
         self._assets[asset_uuid] = asset
         return asset
+    @typechecked
+    def get_wrapper_for_asset(self, asset_dto: object, context: "ImmichContext") -> AssetResponseWrapper:
+        """
+        Given an asset DTO, return the corresponding AssetResponseWrapper from cache or create it.
+        """
+        asset_uuid = UUID(asset_dto.id)
+        if asset_uuid in self._assets:
+            return self._assets[asset_uuid]
+        wrapper = AssetResponseWrapper.from_dto(asset_dto, context)
+        self._assets[asset_uuid] = wrapper
+        return wrapper
