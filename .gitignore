@@ -3,3 +3,4 @@ __pycache__
 /immich-client
 /logs
 /.idea
+/profile.stats
