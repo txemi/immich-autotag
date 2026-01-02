@@ -1,3 +1,4 @@
+
 """
 Modulo de auditoría y reporte de modificaciones de entidades (tags, álbumes, assets, etc.)
 """
@@ -17,7 +18,8 @@ if TYPE_CHECKING:
 from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-
+_instance = None  # Singleton instance
+_instance_created = False  # Class-level flag
 
 # Aquí irán las clases:
 # - ModificationEntry
@@ -27,9 +29,6 @@ from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 class ModificationReport:
 
 
-
-    _instance: "ModificationReport | None" = None  # Singleton instance
-    _instance_created = False  # Class-level flag
 
     import datetime as dt
     import os
@@ -58,19 +57,20 @@ class ModificationReport:
     )
 
     def __attrs_post_init__(self):
-        cls = self.__class__
-        if getattr(cls, "_instance_created", False):
+        global _instance, _instance_created
+        if _instance_created:
             raise RuntimeError(
                 "TagModificationReport instance already exists. Use TagModificationReport.get_instance() instead of creating a new one."
             )
-        cls._instance_created = True
-        cls._instance = self
+        _instance_created = True
+        _instance = self
 
     @staticmethod
     def get_instance() -> "ModificationReport":
-        if ModificationReport._instance is None:
+        global _instance
+        if _instance is None:
             ModificationReport()
-        return ModificationReport._instance  # type: ignore[return-value]
+        return _instance  # type: ignore[return-value]
 
     from typeguard import typechecked
     # todo: tag se esta pasando como string en varias funciones, valorar usar wrapper
