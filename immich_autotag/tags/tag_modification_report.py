@@ -18,17 +18,53 @@ if TYPE_CHECKING:
 
 
 
+
+# --- Versión rica: con objetos ---
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ModificationEntry:
     datetime: str
     kind: ModificationKind
-    asset_id: Optional[UUID] = None
-    asset_name: Optional[str] = None
-    tag_name: Optional[str] = None
+    asset_wrapper: Any = None
+    tag: Optional["TagResponseWrapper"] = None
     album: Optional[AlbumResponseWrapper] = None
     old_name: Optional[str] = None
     new_name: Optional[str] = None
     user: Optional[UserResponseWrapper] = None
+    link: Optional[str] = None
+    extra: Optional[dict[str, Any]] = None
+
+    def to_serializable(self) -> "SerializableModificationEntry":
+        """
+        Convierte la entrada rica en una versión solo con datos serializables.
+        """
+        return SerializableModificationEntry(
+            datetime=self.datetime,
+            kind=self.kind.name if hasattr(self.kind, 'name') else str(self.kind),
+            asset_id=getattr(self.asset_wrapper, 'id_as_uuid', None),
+            asset_name=getattr(self.asset_wrapper, 'original_file_name', None),
+            tag_name=getattr(self.tag, 'tag_name', None),
+            album_id=getattr(self.album.album, 'id', None) if self.album else None,
+            album_name=getattr(self.album.album, 'album_name', None) if self.album else None,
+            old_name=self.old_name,
+            new_name=self.new_name,
+            user_id=getattr(self.user, 'user_id', None),
+            link=self.link,
+            extra=self.extra,
+        )
+
+# --- Versión serializable: solo datos simples ---
+@attrs.define(auto_attribs=True, slots=True, frozen=True)
+class SerializableModificationEntry:
+    datetime: str
+    kind: str
+    asset_id: Optional[UUID] = None
+    asset_name: Optional[str] = None
+    tag_name: Optional[str] = None
+    album_id: Optional[str] = None
+    album_name: Optional[str] = None
+    old_name: Optional[str] = None
+    new_name: Optional[str] = None
+    user_id: Optional[str] = None
     link: Optional[str] = None
     extra: Optional[dict[str, Any]] = None
 
