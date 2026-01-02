@@ -15,6 +15,7 @@ T = TypeVar("T", bound="UserResponseWrapper")
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
     user: "UserResponseDto"
+    _cached_user_wrapper: Optional["UserResponseWrapper"] = None
 
     @property
     def id(self) -> str:
@@ -35,14 +36,12 @@ class UserResponseWrapper:
     def from_context(cls: Type[T], context: "ImmichContext") -> T:
         """
         Obtiene el usuario actual usando el cliente/contexto y devuelve un UserResponseWrapper.
-        El resultado se cachea por id del cliente para optimizar (asume usuario inmutable en la sesión).
+        El resultado se cachea en una variable de clase (asume usuario inmutable en la sesión).
         """
-        cache_key = id(context.client)
-        return _get_user_wrapper_cached(cls, context, cache_key)
+        if cls._cached_user_wrapper is not None:
+            return cls._cached_user_wrapper  # type: ignore
+        from immich_autotag.utils.user_helpers import get_current_user
+        user_dto = get_current_user(context)
+        cls._cached_user_wrapper = cls(user=user_dto)
+        return cls._cached_user_wrapper  # type: ignore
 
-
-@lru_cache(maxsize=2)
-def _get_user_wrapper_cached(cls: Type[UserResponseWrapper], context: "ImmichContext", cache_key: int) -> UserResponseWrapper:
-    from immich_autotag.utils.user_helpers import get_current_user
-    user_dto = get_current_user(context)
-    return cls(user=user_dto)
