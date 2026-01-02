@@ -35,7 +35,7 @@ class ModificationReport:
         default="logs", validator=attrs.validators.instance_of(str)
     )
     report_path: str = attrs.field(
-        default=f"logs/tag_modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt",
+        default=f"logs/modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt",
         validator=attrs.validators.instance_of(str),
     )
     batch_size: int = attrs.field(
