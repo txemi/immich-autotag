@@ -1,4 +1,3 @@
-
 # Immich user configuration template
 # Copy this file to 'immich_user_config.py' and edit the values for your instance.
 
@@ -105,6 +104,13 @@ ENABLE_ALBUM_NAME_STRIP = True
 # Feature flag: Enable album detection from folder names (default: False)
 ENABLE_ALBUM_DETECTION_FROM_FOLDERS = False
 
+# Lista de patrones regex para excluir carpetas de la detección de álbumes por nombre de carpeta.
+# Ejemplo: r"whatsapp" excluye cualquier carpeta que contenga 'whatsapp' en la ruta.
+ALBUM_DETECTION_EXCLUDED_PATHS = [
+    r"whatsapp",  # Excluye carpetas de WhatsApp
+    # Añade aquí otros patrones si quieres excluir más carpetas
+]
+
 # Feature flag: Enable date correction for assets (default: False)
 ENABLE_DATE_CORRECTION = False
 # Zona horaria para fechas extraídas de nombres de archivo/carpeta (por defecto UTC, cambiar si tus fotos son siempre de otra zona)
@@ -118,3 +124,4 @@ VERBOSE_LOGGING = False
 # When disabled, the script will always start from the beginning (ignores checkpoint).
 # Recommended: Enable for long runs or production. Disable for full reprocessing or debugging.
 ENABLE_CHECKPOINT_RESUME = False
+
