@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
 
 
-T = TypeVar("T", bound="UserResponseWrapper")
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
@@ -33,7 +32,7 @@ class UserResponseWrapper:
         return self.name or self.id or "<unknown user>"
 
     @classmethod
-    def from_context(cls: Type[T], context: "ImmichContext") -> T:
+    def from_context(cls, context: "ImmichContext") -> "UserResponseWrapper":
         """
         Obtiene el usuario actual usando el cliente/contexto y devuelve un UserResponseWrapper.
         El resultado se cachea en una variable de clase (asume usuario inmutable en la sesión).
