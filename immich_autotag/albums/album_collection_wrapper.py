@@ -12,6 +12,8 @@ from immich_autotag.tags.tag_modification_report import TagModificationReport
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
 
+
+
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
@@ -100,3 +102,29 @@ class AlbumCollectionWrapper:
                 album=wrapper,
             )
         return wrapper
+    @classmethod
+    def from_client(cls, client) -> "AlbumCollectionWrapper":
+        """
+        Fetches all albums from the API, wraps them, and trims names if needed.
+        """
+        from immich_client.api.albums import get_album_info, get_all_albums
+        from immich_autotag.tags.tag_modification_report import TagModificationReport
+        tag_mod_report = TagModificationReport.get_instance()
+        albums = get_all_albums.sync(client=client)
+        albums_full: list[AlbumResponseWrapper] = []
+        print("\nAlbums:")
+        for album in albums:
+            album_full = get_album_info.sync(id=album.id, client=client)
+            n_assets = len(album_full.assets) if album_full.assets else 0
+            print(f"- {album_full.album_name} (assets: {n_assets})")
+            wrapper = AlbumResponseWrapper(album=album_full)
+            wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
+            albums_full.append(wrapper)
+        tag_mod_report.flush()
+        print(f"Total albums: {len(albums_full)}\n")
+        MIN_ALBUMS = 326
+        if len(albums_full) < MIN_ALBUMS:
+            raise Exception(
+                f"ERROR: Unexpectedly low number of albums: {len(albums_full)} < {MIN_ALBUMS}"
+            )
+        return cls(albums=albums_full)
