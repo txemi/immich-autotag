@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
-    user: "UserResponseDto"
+    user: "UserResponseDto" = attrs.field(validator=attrs.validators.instance_of(UserResponseDto))
     _cached_user_wrapper = None  # Variable de clase para cachear el usuario
 
     @property
