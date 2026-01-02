@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Type, TypeVar
 
 import attrs
-from functools import lru_cache
+from typeguard import typechecked
 
 if TYPE_CHECKING:
     from immich_client.models.user_response_dto import UserResponseDto
@@ -11,27 +11,33 @@ if TYPE_CHECKING:
 
 
 
+@typechecked
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
     user: "UserResponseDto"
     _cached_user_wrapper: Optional["UserResponseWrapper"] = None
 
     @property
+    @typechecked
     def id(self) -> str:
         return self.user.id
 
     @property
+    @typechecked
     def name(self) -> str:
         return self.user.name
 
     @property
+    @typechecked
     def email(self) -> str:
         return self.user.email
 
+    @typechecked
     def __str__(self) -> str:
         return self.name or self.id or "<unknown user>"
 
     @classmethod
+    @typechecked
     def from_context(cls, context: "ImmichContext") -> "UserResponseWrapper":
         """
         Obtiene el usuario actual usando el cliente/contexto y devuelve un UserResponseWrapper.
