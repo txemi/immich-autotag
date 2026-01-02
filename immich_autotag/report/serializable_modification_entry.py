@@ -69,8 +69,7 @@ class SerializableModificationEntry:
     def to_log_string(self) -> str:
         parts = [f"{self.datetime}"]
         parts.append(f"kind={self.kind}")
-        if self.asset_id:
-            parts.append(f"asset_id={self.asset_id}")
+        # asset_id oculto, ya no se imprime en el log
         if self.asset_link:
             parts.append(f"asset_link={self.asset_link}")
         if self.asset_name:
