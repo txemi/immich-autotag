@@ -43,7 +43,7 @@ def get_all_assets(
                 raise RuntimeError(
                     f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
                 )
-        print(f"Page {page}: {len(assets_page)} assets (full info)")
+        print(f"Page {page}: {len(assets_page)} assets (full info) | Processed so far: {count}")
         if max_assets is not None and count >= max_assets:
             break
         if not response.parsed.assets.next_page:
