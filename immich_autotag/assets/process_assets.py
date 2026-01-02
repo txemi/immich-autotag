@@ -102,6 +102,12 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         print(
             "[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning."
         )
+    total_to_process = None
+    if total_assets is not None:
+        total_to_process = total_assets
+        if skip_n:
+            total_to_process = max(1, total_assets - skip_n)
+
     if USE_THREADPOOL:
         print(
             "[WARN] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature."
@@ -122,7 +128,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                 now = time.time()
                 if now - last_log_time >= LOG_INTERVAL:
                     elapsed = now - start_time
-                    print_perf(count, elapsed, total_assets, estimator)
+                    print_perf(count, elapsed, total_to_process, estimator)
                     last_log_time = now
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -142,7 +148,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             now = time.time()
             if now - last_log_time >= LOG_INTERVAL:
                 elapsed = now - start_time
-                print_perf(count, elapsed, total_assets, estimator)
+                print_perf(count, elapsed, total_to_process, estimator)
                 last_log_time = now
 
     total_time = time.time() - start_time
