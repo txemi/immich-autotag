@@ -94,3 +94,16 @@ class AlbumResponseWrapper:
                 pass
             print(f"Renamed album '{self.album.album_name}' to '{cleaned_name}'")
             
+
+
+
+    @typechecked
+    def get_immich_album_url(self) -> "ParseResult":
+        """
+        Devuelve la URL web de Immich para este álbum como ParseResult.
+        """
+        from urllib.parse import urlparse
+        from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL
+        # Suponemos que la URL de álbum es /albums/<id>
+        url = f"{IMMICH_WEB_BASE_URL}/albums/{self.album.id}"
+        return urlparse(url)
