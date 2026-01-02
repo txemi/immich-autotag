@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import concurrent.futures
@@ -11,6 +12,37 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.perf.print_perf import print_perf
 
+import os
+from typeguard import typechecked
+CHECKPOINT_FILE = ".autotag_checkpoint"
+
+# --- Checkpoint helpers (moved to end for style) ---
+
+@typechecked
+def load_checkpoint() -> tuple[str | None, int]:
+    """
+    Returns (last_processed_id, count) or (None, 0) if no checkpoint.
+    """
+    if os.path.exists(CHECKPOINT_FILE):
+        with open(CHECKPOINT_FILE, "r") as f:
+            line = f.read().strip()
+            if not line:
+                return None, 0
+            if "," in line:
+                asset_id, count = line.split(",", 1)
+                try:
+                    return asset_id, int(count)
+                except Exception:
+                    return asset_id, 0
+            else:
+                # legacy: only id stored
+                return line, 0
+    return None, 0
+
+@typechecked
+def save_checkpoint(asset_id: str, count: int) -> None:
+    with open(CHECKPOINT_FILE, "w") as f:
+        f.write(f"{asset_id},{count}")
 
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
@@ -44,17 +76,22 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     # print_perf now imported from helpers
     # Usage: print_perf(count, elapsed, total_assets)
 
+    last_processed_id, skip_n = load_checkpoint()
+    OVERLAP = 100
+    if skip_n > 0:
+        adjusted_skip_n = max(0, skip_n - OVERLAP)
+        if adjusted_skip_n != skip_n:
+            print(f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {OVERLAP})")
+        else:
+            print(f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).")
+        skip_n = adjusted_skip_n
     if USE_THREADPOOL:
-        # Use thread pool regardless of MAX_WORKERS value
+        print("[WARN] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.")
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
-            for asset_wrapper in context.asset_manager.iter_assets(
-                context, max_assets=max_assets
-            ):
+            for asset_wrapper in context.asset_manager.iter_assets(context, max_assets=max_assets):
                 t0 = time.time()
-                future = executor.submit(
-                    process_single_asset, asset_wrapper, tag_mod_report, lock
-                )
+                future = executor.submit(process_single_asset, asset_wrapper, tag_mod_report, lock)
                 futures.append(future)
                 t1 = time.time()
                 estimator.update(t1 - t0)
@@ -70,20 +107,20 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                 except Exception as e:
                     print(f"[ERROR] Asset processing failed: {e}")
     else:
-        # Direct loop (sequential), no thread pool
-        for asset_wrapper in context.asset_manager.iter_assets(
-            context, max_assets=max_assets
-        ):
+        for asset_wrapper in context.asset_manager.iter_assets(context, max_assets=max_assets, skip_n=skip_n):
             t0 = time.time()
             process_single_asset(asset_wrapper, tag_mod_report, lock)
+            count += 1
+            save_checkpoint(asset_wrapper.id, skip_n + count)
             t1 = time.time()
             estimator.update(t1 - t0)
-            count += 1
             now = time.time()
             if now - last_log_time >= LOG_INTERVAL:
                 elapsed = now - start_time
                 print_perf(count, elapsed, total_assets, estimator)
                 last_log_time = now
+
+
     total_time = time.time() - start_time
     print(f"Total assets: {count}")
     print(

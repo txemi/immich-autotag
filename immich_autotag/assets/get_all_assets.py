@@ -14,13 +14,15 @@ from immich_autotag.context.immich_context import ImmichContext
 
 @typechecked
 def get_all_assets(
-    context: "ImmichContext", max_assets: int | None = None
+    context: "ImmichContext", max_assets: int | None = None, skip_n: int = 0
 ) -> "Generator[AssetResponseWrapper, None, None]":
     """
     Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
+    Skips the first `skip_n` assets efficiently (without fetching their full info).
     """
     page = 1
     count = 0
+    skipped = 0
     while True:
         body = MetadataSearchDto(page=page)
         response = search_assets.sync_detailed(client=context.client, body=body)
@@ -28,6 +30,9 @@ def get_all_assets(
             raise RuntimeError(f"Error: {response.status_code} - {response.content}")
         assets_page = response.parsed.assets.items
         for asset in assets_page:
+            if skip_n and skipped < skip_n:
+                skipped += 1
+                continue
             if max_assets is not None and count >= max_assets:
                 break
             asset_full = get_asset_info.sync(id=asset.id, client=context.client)

@@ -20,14 +20,14 @@ class AssetManager:
 
     @typechecked
     def iter_assets(
-        self, context: "ImmichContext", max_assets: Optional[int] = None
+        self, context: "ImmichContext", max_assets: Optional[int] = None, skip_n: int = 0
     ) -> Iterator[AssetResponseWrapper]:
         """
-        Itera sobre todos los assets, usando el generador original,
-        y los va almacenando en la caché interna.
+        Iterates over all assets, using the original generator, and stores them in the internal cache.
+        Supports skipping the first `skip_n` assets efficiently.
         """
-        for asset in get_all_assets(context, max_assets=max_assets):
-            asset_uuid = UUID(asset.id)  # Si falla, que lance
+        for asset in get_all_assets(context, max_assets=max_assets, skip_n=skip_n):
+            asset_uuid = UUID(asset.id)
             self._assets[asset_uuid] = asset
             yield asset
 
