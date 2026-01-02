@@ -47,7 +47,7 @@ def get_all_assets(
         abs_pos = skipped + count
         response_assets=response.parsed.assets
         assert isinstance(response_assets, SearchAssetResponseDto)
-        total_assets = response_assets.todal
+        total_assets = response_assets.total
         msg = f"Page {page}: {len(assets_page)} assets (full info) | Processed so far: {count} (absolute: {abs_pos}"
         if total_assets:
             msg += f"/{total_assets}"
