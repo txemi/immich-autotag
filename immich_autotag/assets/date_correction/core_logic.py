@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.config.user_config_template import VERBOSE_LOGGING
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
 from .asset_date_candidates import AssetDateCandidates
