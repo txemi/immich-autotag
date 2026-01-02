@@ -57,10 +57,16 @@ class ModificationEntry:
     def to_serializable(self) -> "SerializableModificationEntry":
         """
         Converts the rich entry to a serializable version (only simple types).
-        The link is not stored, but can be derived from asset/album/user if needed.
+        Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         """
         album_id = self.album.album.id if self.album is not None else None
         album_name = self.album.album.album_name if self.album is not None else None
+        asset_link = None
+        if self.asset_wrapper is not None:
+            try:
+                asset_link = self.asset_wrapper.get_immich_photo_url().geturl()
+            except Exception:
+                asset_link = None
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
@@ -79,6 +85,7 @@ class ModificationEntry:
             album_name=album_name,
             old_value=str(self.old_value) if self.old_value is not None else None,
             new_value=str(self.new_value) if self.new_value is not None else None,
-            user_id=self.user.user_id if self.user is not None else None,
+            user_id=self.user.id if self.user is not None else None,
+            asset_link=asset_link,
             extra=self.extra,
         )
