@@ -5,6 +5,7 @@ from typing import List
 
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+from immich_autotag.report.modification_report import ModificationReport
 
 
 # Excepción para integridad de fechas
@@ -333,10 +334,8 @@ class AssetResponseWrapper:
             UserResponseWrapper
 
         if tag_mod_report is None:
-            from immich_autotag.tags.tag_modification_report import \
-                TagModificationReport
-
-            tag_mod_report = TagModificationReport.get_instance()
+            from immich_autotag.report.modification_report import ModificationReport
+            tag_mod_report = ModificationReport.get_instance()
 
         # Obtener el UserWrapper de forma limpia y encapsulada
         user_wrapper = UserResponseWrapper.from_context(self.context)
