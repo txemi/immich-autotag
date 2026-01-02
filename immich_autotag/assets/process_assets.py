@@ -76,15 +76,22 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     # print_perf now imported from helpers
     # Usage: print_perf(count, elapsed, total_assets)
 
-    last_processed_id, skip_n = load_checkpoint()
-    OVERLAP = 100
-    if skip_n > 0:
-        adjusted_skip_n = max(0, skip_n - OVERLAP)
-        if adjusted_skip_n != skip_n:
-            print(f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {OVERLAP})")
+    from immich_autotag.config.user import ENABLE_CHECKPOINT_RESUME
+    if ENABLE_CHECKPOINT_RESUME:
+        last_processed_id, skip_n = load_checkpoint()
+        OVERLAP = 100
+        if skip_n > 0:
+            adjusted_skip_n = max(0, skip_n - OVERLAP)
+            if adjusted_skip_n != skip_n:
+                print(f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {OVERLAP})")
+            else:
+                print(f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).")
+            skip_n = adjusted_skip_n
         else:
             print(f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).")
-        skip_n = adjusted_skip_n
+    else:
+        last_processed_id, skip_n = None, 0
+        print("[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning.")
     if USE_THREADPOOL:
         print("[WARN] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.")
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:

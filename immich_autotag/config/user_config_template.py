@@ -1,3 +1,4 @@
+
 # Immich user configuration template
 # Copy this file to 'immich_user_config.py' and edit the values for your instance.
 
@@ -111,3 +112,9 @@ DATE_EXTRACTION_TIMEZONE = "UTC"
 
 # Global flag to control verbose logging throughout the application
 VERBOSE_LOGGING = False
+
+# Feature flag: Enable checkpoint resume (continue from last processed asset on restart).
+# When enabled, the script will resume from the last processed asset using the checkpoint file.
+# When disabled, the script will always start from the beginning (ignores checkpoint).
+# Recommended: Enable for long runs or production. Disable for full reprocessing or debugging.
+ENABLE_CHECKPOINT_RESUME = False
