@@ -18,12 +18,17 @@ class UserResponseWrapper:
         if value is None:
             raise ValueError("user cannot be None")
         try:
+            from immich_client.models.user_admin_response_dto import \
+                UserAdminResponseDto
             from immich_client.models.user_response_dto import UserResponseDto
-            from immich_client.models.user_admin_response_dto import UserAdminResponseDto
         except ImportError:
-            raise TypeError("UserResponseDto/UserAdminResponseDto type cannot be imported for validation")
+            raise TypeError(
+                "UserResponseDto/UserAdminResponseDto type cannot be imported for validation"
+            )
         if not isinstance(value, (UserResponseDto, UserAdminResponseDto)):
-            raise TypeError(f"user must be a UserResponseDto or UserAdminResponseDto, got {type(value)}")
+            raise TypeError(
+                f"user must be a UserResponseDto or UserAdminResponseDto, got {type(value)}"
+            )
 
     user: "UserResponseDto" = attrs.field(validator=_validate_user)
     _cached_user_wrapper = None  # Variable de clase para cachear el usuario
