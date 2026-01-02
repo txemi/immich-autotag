@@ -615,11 +615,11 @@ class AssetResponseWrapper:
 
     @typechecked
     def ensure_autotag_conflict_category(
-        self,
-        conflict: bool,
-        # tag_mod_report parameter removed
-        user: UserResponseWrapper | None = None,
-    ) -> None:
+            self,
+            conflict: bool,
+            user: UserResponseWrapper | None = None,
+            verbose: bool = VERBOSE_LOGGING,
+        ) -> None:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
@@ -632,14 +632,16 @@ class AssetResponseWrapper:
         if conflict:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
-                print(
-                    f"[WARN] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tagged as '{tag_name}'."
-                )
+                if verbose:
+                    print(
+                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tagged as '{tag_name}'."
+                    )
         else:
             if self.has_tag(tag_name):
-                print(
-                    f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it's no longer in conflict."
-                )
+                if verbose:
+                    print(
+                        f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it's no longer in conflict."
+                    )
                 # Si user es None, obtener el wrapper desde el contexto
                 if user is None:
                     user = UserResponseWrapper.from_context(self.context)
