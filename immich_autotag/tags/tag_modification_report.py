@@ -22,6 +22,12 @@ if TYPE_CHECKING:
 # --- Versión rica: con objetos ---
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ModificationEntry:
+    """
+    Representa una modificación en el sistema usando objetos ricos (wrappers, DTOs, etc.).
+    Esta clase se usa para lógica interna, validaciones, formateo avanzado y acceso a todos los datos de alto nivel.
+    No está pensada para persistencia directa ni para exportación, sino para manipulación y consulta en memoria.
+    Para persistir, exportar o imprimir, convierte cada instancia a SerializableModificationEntry.
+    """
     datetime: str
     kind: ModificationKind
     asset_wrapper: Any = None
@@ -55,6 +61,13 @@ class ModificationEntry:
 # --- Versión serializable: solo datos simples ---
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class SerializableModificationEntry:
+    """
+    Representa una modificación lista para ser persistida, exportada o impresa.
+    Todos los campos son tipos simples y serializables (str, UUID, etc.),
+    y corresponden a las columnas de la tabla/log final.
+    Esta clase es inmutable y robusta, ideal para auditoría, logs y exportaciones.
+    Se obtiene siempre a partir de ModificationEntry mediante el método to_serializable().
+    """
     datetime: str
     kind: str
     asset_id: Optional[UUID] = None
