@@ -106,6 +106,12 @@ class ModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
+        # Si el usuario es None, obtenerlo usando el contexto del asset_wrapper (si existe)
+        user_instance = user
+        if user_instance is None :
+            from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+            user_instance = UserResponseWrapper.from_context(asset_wrapper.context)
+
         entry = ModificationEntry(
             datetime=datetime.datetime.now(),
             kind=kind,
@@ -114,7 +120,7 @@ class ModificationReport:
             album=album,
             old_value=old_value,
             new_value=new_value,
-            user=user,
+            user=user_instance,
             extra=extra,
         )
         self.modifications.append(entry)
