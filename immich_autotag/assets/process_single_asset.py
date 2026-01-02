@@ -13,7 +13,7 @@ from immich_autotag.assets.asset_validation import \
     validate_and_update_asset_classification
 # Date correction config flag
 from immich_autotag.config.user import (ALBUM_PATTERN, ENABLE_DATE_CORRECTION,
-                                        TAG_CONVERSIONS)
+                                        TAG_CONVERSIONS, VERBOSE_LOGGING)
 from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.report.modification_report import ModificationReport
 
@@ -130,11 +130,9 @@ def analyze_and_assign_album(
     tag_mod_report: "ModificationReport",
     suppress_album_already_belongs_log: bool = True,
     fail_on_duplicate_album_conflict: bool = False,
-    verbose: bool = None,
+    verbose: bool = VERBOSE_LOGGING,
 ) -> None:
-    if verbose is None:
-        from immich_autotag.config.user import VERBOSE_LOGGING
-        verbose = VERBOSE_LOGGING
+
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
     """
