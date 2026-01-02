@@ -8,6 +8,8 @@ from uuid import UUID
 
 import attrs
 
+from typeguard import typechecked
+
 
 # class SerializableModificationEntry: ...
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
