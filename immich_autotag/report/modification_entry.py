@@ -85,7 +85,7 @@ class ModificationEntry:
             album_name=album_name,
             old_value=str(self.old_value) if self.old_value is not None else None,
             new_value=str(self.new_value) if self.new_value is not None else None,
-            user_id=self.user.id if self.user is not None else None,
+            user_name=self.user.name if self.user is not None else None,
             asset_link=asset_link,
             extra=self.extra,
         )

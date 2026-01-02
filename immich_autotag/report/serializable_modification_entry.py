@@ -52,7 +52,7 @@ class SerializableModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
-    user_id: Optional[str] = attrs.field(
+    user_name: Optional[str] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
@@ -85,8 +85,8 @@ class SerializableModificationEntry:
             parts.append(f"old_value={self.old_value}")
         if self.new_value is not None:
             parts.append(f"new_value={self.new_value}")
-        if self.user_id:
-            parts.append(f"user_id={self.user_id}")
+        if self.user_name:
+            parts.append(f"user={self.user_name}")
         if self.extra:
             parts.append(f"extra={self.extra}")
         return " | ".join(parts)
