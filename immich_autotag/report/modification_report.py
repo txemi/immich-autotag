@@ -9,7 +9,11 @@ from urllib.parse import ParseResult
 
 import attrs
 
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from typing import TYPE_CHECKING, Optional, Any
+if TYPE_CHECKING:
+    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+
+
 from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
@@ -77,12 +81,16 @@ class ModificationReport:
         kind: ModificationKind,
         asset_wrapper: Any,
         tag: Any = None,
-        album: Optional[AlbumResponseWrapper] = None,
+        album: Optional["AlbumResponseWrapper"] = None,
         old_value: Any = None,
         new_value: Any = None,
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
+        # Import local para evitar circularidad
+        if album is not None:
+            from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+            assert isinstance(album, AlbumResponseWrapper)
         """
         Registers a modification for any entity (tag, album, assignment, etc.).
         """
