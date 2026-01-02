@@ -53,36 +53,40 @@ class AlbumResponseWrapper:
         if not self.album.assets:
             return []
         return [
-            context.asset_manager.get_wrapper_for_asset(a) for a in self.album.assets
+            context.asset_manager.get_wrapper_for_asset(a, context) for a in self.album.assets
         ]
+    from typing import Optional
+    from immich_client.client import Client
+    from immich_autotag.tags.tag_modification_report import TagModificationReport
+
     @typechecked
     def trim_name_if_needed(
         self,
-        client: object = None,
-        tag_mod_report: object = None,
+        client: Client,
+        tag_mod_report: TagModificationReport,
     ) -> None:
         """
         If the album name starts with a space, trim it and update via API. Optionally logs the change.
         """
         if self.album.album_name.startswith(" "):
             cleaned_name = self.album.album_name.strip()
-            if client is not None:
-                from immich_client.models.update_album_dto import UpdateAlbumDto
-                from immich_client.api.albums import update_album_info
-                update_body = UpdateAlbumDto(album_name=cleaned_name)
-                update_album_info.sync(
-                    id=self.album.id,
-                    client=client,
-                    body=update_body,
-                )
-            if tag_mod_report is not None:
-                from immich_autotag.tags.modification_kind import ModificationKind
-                tag_mod_report.add_album_modification(
-                    kind=ModificationKind.RENAME_ALBUM,
-                    album=self,
-                    old_name=self.album.album_name,
-                    new_name=cleaned_name,
-                )
+            from immich_client.models.update_album_dto import UpdateAlbumDto
+            from immich_client.api.albums import update_album_info
+            update_body = UpdateAlbumDto(album_name=cleaned_name)
+            # update_album_info.sync expects id as UUID and client as AuthenticatedClient
+            from uuid import UUID
+            update_album_info.sync(
+                id=UUID(self.album.id),
+                client=client,  # FIXME: should be AuthenticatedClient if available
+                body=update_body,
+            )
+            from immich_autotag.tags.modification_kind import ModificationKind
+            tag_mod_report.add_album_modification(
+                kind=ModificationKind.RENAME_ALBUM,
+                album=self,
+                old_name=self.album.album_name,
+                new_name=cleaned_name,
+            )
             # Actually update the name in the DTO (if mutable)
             try:
                 object.__setattr__(self.album, 'album_name', cleaned_name)
