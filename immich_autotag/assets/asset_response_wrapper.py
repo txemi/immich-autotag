@@ -431,8 +431,8 @@ class AssetResponseWrapper:
                     ModificationKind
 
                 tag_mod_report.add_modification(
-                    asset_id=self.id_as_uuid,
-                    asset_name=self.original_file_name,
+
+                    asset_wrapper=self,
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     tag=tag,
                     user=user_wrapper,
