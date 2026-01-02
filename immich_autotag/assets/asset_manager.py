@@ -34,25 +34,22 @@ class AssetManager:
 
     @typechecked
     def get_asset(
-        self, asset_id: Union[str, UUID], context: "ImmichContext"
+        self, asset_id: UUID, context: "ImmichContext"
     ) -> Optional[AssetResponseWrapper]:
         """
-        Devuelve un asset por su ID, usando la caché si está disponible,
+        Devuelve un asset por su UUID, usando la caché si está disponible,
         o pidiéndolo a la API y almacenándolo si no.
         """
-        asset_uuid = (
-            UUID(asset_id) if isinstance(asset_id, str) else asset_id
-        )  # Si falla, que lance
-        if asset_uuid in self._assets:
-            return self._assets[asset_uuid]
+        if asset_id in self._assets:
+            return self._assets[asset_id]
         # Si no está, pedirlo a la API y envolverlo
         from immich_client.api.assets import get_asset_info
 
-        dto = get_asset_info.sync(id=str(asset_uuid), client=self.client)
+        dto = get_asset_info.sync(id=str(asset_id), client=self.client)
         if dto is None:
             return None
         asset = AssetResponseWrapper.from_dto(dto, context)
-        self._assets[asset_uuid] = asset
+        self._assets[asset_id] = asset
         return asset
     from immich_client.models.asset_response_dto import AssetResponseDto
 
