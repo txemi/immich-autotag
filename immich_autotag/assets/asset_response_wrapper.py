@@ -36,8 +36,6 @@ from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
-    from immich_autotag.tags.tag_modification_report import \
-        TagModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -88,11 +86,10 @@ class AssetResponseWrapper:
                 f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
             )
             print(log_msg)
-        from immich_autotag.tags.tag_modification_report import \
-            TagModificationReport
+        from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.utils.user_helpers import get_current_user
 
-        tag_mod_report = TagModificationReport.get_instance()
+        tag_mod_report = ModificationReport.get_instance()
         user_obj = get_current_user(self.context)
         user_id = getattr(user_obj, "id", None)
         user_name = (
