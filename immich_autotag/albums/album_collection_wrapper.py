@@ -103,13 +103,14 @@ class AlbumCollectionWrapper:
             )
         return wrapper
     @classmethod
-    def from_client(cls, client) -> "AlbumCollectionWrapper":
+    def from_client(cls, client:Client) -> "AlbumCollectionWrapper":
         """
         Fetches all albums from the API, wraps them, and trims names if needed.
         """
         from immich_client.api.albums import get_album_info, get_all_albums
         from immich_autotag.report.modification_report import  ModificationReport
         tag_mod_report = ModificationReport.get_instance()
+        assert isinstance(tag_mod_report, ModificationReport)
         albums = get_all_albums.sync(client=client)
         albums_full: list[AlbumResponseWrapper] = []
         print("\nAlbums:")
