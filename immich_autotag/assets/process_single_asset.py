@@ -195,6 +195,7 @@ def analyze_and_assign_album(
 @typechecked
 def analyze_duplicate_classification_tags(
     asset_wrapper: "AssetResponseWrapper",
+    verbose: bool = VERBOSE_LOGGING,
 ) -> None:
     """
     If the asset has duplicates, checks the classification tags of each duplicate.
@@ -226,17 +227,19 @@ def analyze_duplicate_classification_tags(
             diff2 = tags2 - tags1
             if tags1 and not tags2 and len(tags1) == 1:
                 tag_to_add = next(iter(tags1))
-                print(
-                    f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {dup_asset_wrapper.asset.id}"
-                )
-                dup_asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
+                if verbose:
+                    print(
+                        f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {dup_asset_wrapper.asset.id}"
+                    )
+                dup_asset_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
                 continue
             elif tags2 and not tags1 and len(tags2) == 1:
                 tag_to_add = next(iter(tags2))
-                print(
-                    f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}"
-                )
-                asset_wrapper.add_tag_by_name(tag_to_add, verbose=True)
+                if verbose:
+                    print(
+                        f"[AUTO-FIX] Adding missing classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}"
+                    )
+                asset_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
                 continue
             # Otherwise, print and tag all duplicates with conflict tags
             all_wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(
@@ -250,14 +253,15 @@ def analyze_duplicate_classification_tags(
             msg = f"[ERROR] Classification tags differ for duplicates:\n" + "\n".join(
                 details
             )
-            print(msg)
+            if verbose:
+                print(msg)
             # Tag all duplicates with generic and group-specific conflict tags
             group_tag = f"{AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX}{asset_wrapper.duplicate_id_as_uuid}"
             for w in all_wrappers:
                 w.add_tag_by_name(
-                    AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, verbose=True
+                    AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, verbose=verbose
                 )
-                w.add_tag_by_name(group_tag, verbose=True)
+                w.add_tag_by_name(group_tag, verbose=verbose)
             # No exception raised; process continues
             return
 
