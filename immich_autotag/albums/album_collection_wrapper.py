@@ -12,8 +12,6 @@ from immich_autotag.report.modification_report import ModificationReport
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
 
-
-
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
@@ -97,18 +95,23 @@ class AlbumCollectionWrapper:
         self.albums.append(wrapper)
         if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
+
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.CREATE_ALBUM,
                 album=wrapper,
             )
         return wrapper
+
     @classmethod
-    def from_client(cls, client:Client) -> "AlbumCollectionWrapper":
+    def from_client(cls, client: Client) -> "AlbumCollectionWrapper":
         """
         Fetches all albums from the API, wraps them, and trims names if needed.
         """
         from immich_client.api.albums import get_album_info, get_all_albums
-        from immich_autotag.report.modification_report import  ModificationReport
+
+        from immich_autotag.report.modification_report import \
+            ModificationReport
+
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
         albums = get_all_albums.sync(client=client)

@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from immich_client import Client
@@ -10,8 +9,6 @@ from typeguard import typechecked
 from immich_autotag.albums.album_collection_wrapper import \
     AlbumCollectionWrapper
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-
-
 
 
 @typechecked

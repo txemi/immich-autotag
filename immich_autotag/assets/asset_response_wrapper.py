@@ -26,14 +26,15 @@ from immich_autotag.config.user import (ALBUM_PATTERN,
                                         AUTOTAG_CATEGORY_CONFLICT,
                                         AUTOTAG_CATEGORY_UNKNOWN,
                                         CLASSIFIED_TAGS,
-                                        ENABLE_ALBUM_DETECTION_FROM_FOLDERS)
+                                        ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
+                                        VERBOSE_LOGGING)
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
-from immich_autotag.config.user import VERBOSE_LOGGING
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
-    from immich_autotag.tags.tag_modification_report import TagModificationReport
+    from immich_autotag.tags.tag_modification_report import \
+        TagModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -98,6 +99,7 @@ class AssetResponseWrapper:
         )
         asset_url = self.get_immich_photo_url().geturl()
         from immich_autotag.tags.modification_kind import ModificationKind
+
         tag_mod_report.add_modification(
             kind=ModificationKind.UPDATE_ASSET_DATE,
             asset_wrapper=self,
@@ -125,7 +127,9 @@ class AssetResponseWrapper:
             max_retries = 3
             retry_delay = 1.5  # segundos
             for attempt in range(max_retries):
-                updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
+                updated_asset = get_asset_info.sync(
+                    id=self.id, client=self.context.client
+                )
                 updated_created_at = updated_asset.created_at
                 if (
                     updated_created_at is not None
@@ -141,8 +145,12 @@ class AssetResponseWrapper:
             # Si tras los reintentos sigue sin actualizar, imprimir todas las fechas y warning
             print("[DEBUG][AFTER UPDATE] Fechas del asset actualizado:")
             print(f"  created_at:      {getattr(updated_asset, 'created_at', None)}")
-            print(f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}")
-            print(f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}")
+            print(
+                f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}"
+            )
+            print(
+                f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}"
+            )
             print(f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}")
             print(
                 f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
@@ -262,7 +270,9 @@ class AssetResponseWrapper:
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
             )
             if verbose:
-                print(f"[DEBUG] Full untag_assets response for tag_id={tag.id}: {response}")
+                print(
+                    f"[DEBUG] Full untag_assets response for tag_id={tag.id}: {response}"
+                )
                 print(
                     f"[INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}"
                 )
@@ -320,8 +330,11 @@ class AssetResponseWrapper:
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         from immich_autotag.utils.user_helpers import get_current_user
+
         if tag_mod_report is None:
-            from immich_autotag.tags.tag_modification_report import TagModificationReport
+            from immich_autotag.tags.tag_modification_report import \
+                TagModificationReport
+
             tag_mod_report = TagModificationReport.get_instance()
         user = get_current_user(self.context).id
 
@@ -543,7 +556,9 @@ class AssetResponseWrapper:
         )
 
     @typechecked
-    def check_unique_classification(self, fail_fast: bool = True, verbose: bool = VERBOSE_LOGGING) -> bool:
+    def check_unique_classification(
+        self, fail_fast: bool = True, verbose: bool = VERBOSE_LOGGING
+    ) -> bool:
         """
         Checks if the asset is classified by more than one criterion (tag or album).
         Now considers conflict if the total number of matching tags and albums is greater than 1.
@@ -805,9 +820,7 @@ class AssetResponseWrapper:
             tag_for_set = f"{tag_name}_{duplicate_id}"
             if conflict:
                 if not self.has_tag(tag_for_set):
-                    self.add_tag_by_name(
-                        tag_for_set, tag_mod_report=tag_mod_report
-                    )
+                    self.add_tag_by_name(tag_for_set, tag_mod_report=tag_mod_report)
                     if verbose:
                         print(
                             f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'."

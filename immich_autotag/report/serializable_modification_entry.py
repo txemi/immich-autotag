@@ -1,13 +1,13 @@
 """
 Clase SerializableModificationEntry: versión serializable de una modificación para persistencia/exportación.
 """
+
 from __future__ import annotations
 
-from typing import Optional, Any
+from typing import Any, Optional
 from uuid import UUID
 
 import attrs
-
 from typeguard import typechecked
 
 
@@ -21,17 +21,46 @@ class SerializableModificationEntry:
     This class is immutable and robust, ideal for audit, logs, and exports.
     It is always obtained from ModificationEntry via the to_serializable() method.
     """
+
     datetime: str = attrs.field(validator=attrs.validators.instance_of(str))
     kind: str = attrs.field(validator=attrs.validators.instance_of(str))
-    asset_id: Optional[UUID] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(UUID)))
-    asset_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    tag_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    album_id: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    album_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    old_value: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    new_value: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    user_id: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    extra: Optional[dict[str, Any]] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(dict)))
+    asset_id: Optional[UUID] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(UUID)),
+    )
+    asset_name: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
+    tag_name: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
+    album_id: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
+    album_name: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
+    old_value: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
+    new_value: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
+    user_id: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
+    extra: Optional[dict[str, Any]] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(dict)),
+    )
+
     @typechecked
     def to_log_string(self) -> str:
         parts = [f"{self.datetime}"]

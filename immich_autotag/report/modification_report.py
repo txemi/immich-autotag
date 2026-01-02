@@ -1,25 +1,25 @@
-
 """
 Modulo de auditoría y reporte de modificaciones de entidades (tags, álbumes, assets, etc.)
 """
+
 from __future__ import annotations
 
 import datetime
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import ParseResult
 
 import attrs
 
-from typing import TYPE_CHECKING, Optional, Any
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-
 
 from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+
 _instance = None  # Singleton instance
 _instance_created = False  # Class-level flag
+
 
 # Aquí irán las clases:
 # - ModificationEntry
@@ -27,8 +27,6 @@ _instance_created = False  # Class-level flag
 # - TagModificationReport (posiblemente renombrada)
 @attrs.define(auto_attribs=True, slots=True)
 class ModificationReport:
-
-
 
     import datetime as dt
     import os
@@ -73,6 +71,7 @@ class ModificationReport:
         return _instance  # type: ignore[return-value]
 
     from typeguard import typechecked
+
     # todo: tag se esta pasando como string en varias funciones, valorar usar wrapper
     # todo: asset_wrapper se esta pasando como Any en varias funciones, tipar bien
     @typechecked
@@ -89,13 +88,16 @@ class ModificationReport:
     ) -> None:
         # Import local para evitar circularidad
         if album is not None:
-            from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+            from immich_autotag.albums.album_response_wrapper import \
+                AlbumResponseWrapper
+
             assert isinstance(album, AlbumResponseWrapper)
         """
         Registers a modification for any entity (tag, album, assignment, etc.).
         """
         if not self._cleared_report:
             import os
+
             try:
                 os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
                 with open(self.report_path, "w", encoding="utf-8"):
@@ -119,6 +121,7 @@ class ModificationReport:
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
+
     # todo: revisar old_name y new_name el uso, ya que no solo se usan para nombres, puede ser mejor old_value y new_value?
     # Métodos específicos para cada tipo de acción
     @typechecked
@@ -144,6 +147,7 @@ class ModificationReport:
             new_value=new_value,
             user=user,
         )
+
     @typechecked
     def add_album_modification(
         self,
@@ -171,6 +175,7 @@ class ModificationReport:
             user=user,
             extra=extra,
         )
+
     @typechecked
     def add_assignment_modification(
         self,
@@ -212,12 +217,17 @@ class ModificationReport:
 
     @typechecked
     def _build_link(
-        self, kind: ModificationKind, asset_wrapper: Any = None, album_wrapper: Any = None
+        self,
+        kind: ModificationKind,
+        asset_wrapper: Any = None,
+        album_wrapper: Any = None,
     ) -> Optional["ParseResult"]:
         """
         Build a link for the modification entry based on kind and wrappers.
         """
-        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import \
+            get_immich_photo_url
+
         # Si es asset, usar el método del wrapper
         if (
             kind

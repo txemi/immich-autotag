@@ -14,8 +14,8 @@ from immich_autotag.assets.asset_validation import \
 # Date correction config flag
 from immich_autotag.config.user import (ALBUM_PATTERN, ENABLE_DATE_CORRECTION,
                                         TAG_CONVERSIONS, VERBOSE_LOGGING)
-from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.tags.modification_kind import ModificationKind
 
 
 # Date correction logic
@@ -132,7 +132,6 @@ def analyze_and_assign_album(
     fail_on_duplicate_album_conflict: bool = False,
     verbose: bool = VERBOSE_LOGGING,
 ) -> None:
-
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
     """
@@ -165,7 +164,8 @@ def analyze_and_assign_album(
                 f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed."
             )
     elif conflict:
-        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import \
+            get_immich_photo_url
 
         asset_id = asset_wrapper.id_as_uuid
         immich_url = get_immich_photo_url(asset_id)

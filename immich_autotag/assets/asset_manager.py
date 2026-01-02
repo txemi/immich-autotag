@@ -1,9 +1,9 @@
-from typeguard import typechecked
 from typing import TYPE_CHECKING, Dict, Iterator, Optional, Union
 from uuid import UUID
 
 import attrs
 from immich_client import Client
+from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.get_all_assets import get_all_assets
@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetManager:
-
 
     client: Client
     _assets: Dict[UUID, AssetResponseWrapper] = attrs.field(factory=dict, init=False)
@@ -51,10 +50,13 @@ class AssetManager:
         asset = AssetResponseWrapper.from_dto(dto, context)
         self._assets[asset_id] = asset
         return asset
+
     from immich_client.models.asset_response_dto import AssetResponseDto
 
     @typechecked
-    def get_wrapper_for_asset(self, asset_dto: AssetResponseDto, context: "ImmichContext") -> AssetResponseWrapper:
+    def get_wrapper_for_asset(
+        self, asset_dto: AssetResponseDto, context: "ImmichContext"
+    ) -> AssetResponseWrapper:
         """
         Given an asset DTO, return the corresponding AssetResponseWrapper from cache or create it.
         """

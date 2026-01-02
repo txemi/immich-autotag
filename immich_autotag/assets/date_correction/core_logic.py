@@ -62,14 +62,21 @@ def _check_filename_candidate_and_fix(
     Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.
     If no correction is needed, returns CONTINUE. If a condition is met to exit early, returns EXIT.
     """
-    from immich_autotag.assets.date_correction.date_source_kind import DateSourceKind
+    from immich_autotag.assets.date_correction.date_source_kind import \
+        DateSourceKind
+
     # Unificamos: FILENAME, WHATSAPP_FILENAME, IMMICH
-    kinds = [DateSourceKind.FILENAME, DateSourceKind.WHATSAPP_FILENAME, DateSourceKind.IMMICH]
+    kinds = [
+        DateSourceKind.FILENAME,
+        DateSourceKind.WHATSAPP_FILENAME,
+        DateSourceKind.IMMICH,
+    ]
     candidates = date_sources_list.candidates_by_kinds(kinds)
     if not candidates:
         return DateCorrectionStepResult.CONTINUE
     best_candidate = min(candidates, key=lambda c: c.get_aware_date())
-    from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
+    from immich_autotag.utils.date_compare import \
+        is_datetime_more_than_days_after
 
     # Usar 1.1 días como umbral
     candidate_date = best_candidate.get_aware_date()
@@ -77,12 +84,12 @@ def _check_filename_candidate_and_fix(
         immich_date.hour == 0 and immich_date.minute == 0 and immich_date.second == 0
     )
     candidate_has_time = (
-        candidate_date.hour != 0 or candidate_date.minute != 0 or candidate_date.second != 0
+        candidate_date.hour != 0
+        or candidate_date.minute != 0
+        or candidate_date.second != 0
     )
     # Caso 1: diferencia de días grande (como antes)
-    if is_datetime_more_than_days_after(
-        immich_date, candidate_date, days=1.1
-    ):
+    if is_datetime_more_than_days_after(immich_date, candidate_date, days=1.1):
         if verbose:
             print("[DATE CORRECTION][DIAGNÓSTICO COMPLETO]")
             print(date_sources_list.format_full_info())
@@ -98,10 +105,7 @@ def _check_filename_candidate_and_fix(
             )
         return DateCorrectionStepResult.FIXED
     # Caso 2: misma fecha, Immich a medianoche, el candidato tiene hora real y es más antiguo
-    if (
-        candidate_has_time
-        and candidate_date < immich_date
-    ):
+    if candidate_has_time and candidate_date < immich_date:
         if verbose:
             print("[DATE CORRECTION][PRECISIÓN HORARIA]")
             print(date_sources_list.format_full_info())
@@ -151,7 +155,6 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         return
     # else, continue processing
 
-
     if not flat_candidates:
         if log:
             print(
@@ -198,7 +201,6 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
                 f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do."
             )
         return
-
 
     # If none of the above conditions are met, raise an error as before
     photo_url_obj = asset_wrapper.get_immich_photo_url()
