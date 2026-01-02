@@ -271,14 +271,13 @@ class TagModificationReport:
 
     @typechecked
     def _build_link(
-        self, kind: ModificationKind, asset_id: Optional[UUID], album_id: Optional[UUID]
-    ) -> Optional[ParseResult]:
+        self, kind: ModificationKind, asset_wrapper: Any = None, album_wrapper: Any = None
+    ) -> Optional["ParseResult"]:
         """
-        Build a link for the modification entry based on kind and ids.
+        Build a link for the modification entry based on kind and wrappers.
         """
-        from immich_autotag.utils.get_immich_album_url import \
-            get_immich_photo_url
-
+        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
+        # Si es asset, usar el método del wrapper
         if (
             kind
             in {
@@ -288,9 +287,13 @@ class TagModificationReport:
                 ModificationKind.ASSIGN_ASSET_TO_ALBUM,
                 ModificationKind.REMOVE_ASSET_FROM_ALBUM,
             }
-            and asset_id
+            and asset_wrapper is not None
         ):
-            return get_immich_photo_url(asset_id)
+            if hasattr(asset_wrapper, "get_immich_photo_url"):
+                return asset_wrapper.get_immich_photo_url()
+            asset_id = getattr(asset_wrapper, "id_as_uuid", None)
+            if asset_id is not None:
+                return get_immich_photo_url(asset_id)
         elif (
             kind
             in {
@@ -298,45 +301,37 @@ class TagModificationReport:
                 ModificationKind.DELETE_ALBUM,
                 ModificationKind.RENAME_ALBUM,
             }
-            and album_id
+            and album_wrapper is not None
         ):
-            # todo: Aquí estamos creando el enlace al álbum directamente sin utilizar una función de ayuda cuando en el resto del proyecto estamos utilizando funciones de helper para construir enlaces de hecho el la clase activo tiene un método para construir su propio su propio su propio enlace que aquí nos gastamos un poco saltando y el árbol estamos construyendo a pelo sin utilizar creo que lo suyo sería que el que el roaper de álbum tuviese un método para conseguir el enlace sería lo más limpio lo más simétrico y lo más bonito Si es preciso aquí podríamos pasar como argumento no lo sudes sino directamente el Roper de el Roper de álbum y de activo para que este método lo haga lo más limpio y elegante posible
-
-            return f"/albums/{album_id}"
+            if hasattr(album_wrapper, "get_immich_album_url"):
+                return album_wrapper.get_immich_album_url()
         return None
 
     @typechecked
     def _format_modification_entry(self, entry: ModificationEntry) -> str:
-        parts = [f"{entry.datetime}"]
-        # Always include the operation/enum (kind)
-        # todo: Este otro método está creando directamente la lo que se escupe al fichero directamente desde la clase con objetos sin pasar por la clase serializada que no sé si el objetivo era eso y sería también lo más limpio de hecho esta lógica podría estar repartida entre las dos clases que hemos creado para esto en este en este en este fichero habíamos creado una una clase para tener una entrada de log con objetos y otra con datos serializados y estas dos clases podrían colaborar por construyendo en dos pasos el lo que al final finalmente se coloca en el fichero eh por 
+        # Serializar primero y delegar el formateo a la clase serializable
+        serializable = entry.to_serializable()
+        return serializable.to_log_string()
 
-        parts.append(
-            f"kind={entry.kind.name if hasattr(entry.kind, 'name') else entry.kind}"
-        )
-        # asset_wrapper may be None
-        if entry.asset_wrapper is not None:
-            if hasattr(entry.asset_wrapper, 'id_as_uuid'):
-                parts.append(f"asset_id={entry.asset_wrapper.id_as_uuid}")
-            if hasattr(entry.asset_wrapper, 'original_file_name'):
-                parts.append(f"name={entry.asset_wrapper.original_file_name}")
-        if entry.tag is not None and hasattr(entry.tag, 'tag_name'):
-            parts.append(f"tag={entry.tag.tag_name}")
-        if entry.album is not None and hasattr(entry.album, 'album'):
-            album_obj = entry.album.album
-            if hasattr(album_obj, 'id'):
-                parts.append(f"album_id={album_obj.id}")
-            if hasattr(album_obj, 'album_name'):
-                parts.append(f"album_name={album_obj.album_name}")
-        if entry.old_value is not None:
-            parts.append(f"old_value={entry.old_value}")
-        if entry.new_value is not None:
-            parts.append(f"new_value={entry.new_value}")
-        if entry.user is not None:
-            # Try to print user_id if available
-            user_id = getattr(entry.user, 'user_id', None)
-            if user_id is not None:
-                parts.append(f"user_id={user_id}")
-            else:
-                parts.append(f"user={entry.user}")
+    def to_log_string(self) -> str:
+        parts = [f"{self.datetime}"]
+        parts.append(f"kind={self.kind}")
+        if self.asset_id:
+            parts.append(f"asset_id={self.asset_id}")
+        if self.asset_name:
+            parts.append(f"name={self.asset_name}")
+        if self.tag_name:
+            parts.append(f"tag={self.tag_name}")
+        if self.album_id:
+            parts.append(f"album_id={self.album_id}")
+        if self.album_name:
+            parts.append(f"album_name={self.album_name}")
+        if self.old_value is not None:
+            parts.append(f"old_value={self.old_value}")
+        if self.new_value is not None:
+            parts.append(f"new_value={self.new_value}")
+        if self.user_id:
+            parts.append(f"user_id={self.user_id}")
+        if self.extra:
+            parts.append(f"extra={self.extra}")
         return " | ".join(parts)
