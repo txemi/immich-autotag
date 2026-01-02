@@ -164,11 +164,7 @@ def analyze_and_assign_album(
                 f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed."
             )
     elif conflict:
-        from immich_autotag.utils.get_immich_album_url import \
-            get_immich_photo_url
-
-        asset_id = asset_wrapper.id_as_uuid
-        immich_url = get_immich_photo_url(asset_id)
+        immich_url = asset_wrapper.get_immich_photo_url().geturl()
         albums_info = album_decision.duplicates_info
         if verbose:
             print(
@@ -323,6 +319,7 @@ def _process_album_detection(
         print(
             f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' assigned to album '{detected_album}' (origin: {album_origin})"
         )
+        # todo: La operación de añadir un activo a un álbum estaría mejor encapsulada en un método del roaper de álbum o de activo elige tú lo que tenga más sentido así quedará más claro la llamada que hacemos aquí
         try:
             result = add_assets_to_album.sync(
                 id=album.id,
@@ -355,11 +352,8 @@ def _process_album_detection(
                         error_msg = item.error
                     except AttributeError:
                         pass
-                    from immich_autotag.utils.get_immich_album_url import (
-                        get_immich_album_url, get_immich_photo_url)
-
-                    asset_url = get_immich_photo_url(asset_wrapper.id_as_uuid)
-                    album_url = get_immich_album_url(album.id)
+                    asset_url = asset_wrapper.get_immich_photo_url().geturl()
+                    album_url = album.get_immich_album_url().geturl()
                     print(
                         f"[ERROR] Asset {asset_wrapper.id} was not successfully added to album {album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                     )
