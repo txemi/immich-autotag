@@ -657,7 +657,7 @@ class AssetResponseWrapper:
             has_dest = self.has_tag(dest)
             if has_origin and not has_dest:
                 try:
-                    self.add_tag_by_name(dest, tag_mod_report=tag_mod_report)
+                    self.add_tag_by_name(dest)
                     # Reload asset to ensure state is up-to-date before removing origin
                     updated = get_asset_info.sync(
                         id=self.id, client=self.context.client
@@ -667,7 +667,7 @@ class AssetResponseWrapper:
                     print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
                 self.remove_tag_by_name(origin)
             elif has_origin and has_dest:
-                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
+                self.remove_tag_by_name(origin)
 
     @typechecked
     def try_detect_album_from_folders(self) -> str | None:
