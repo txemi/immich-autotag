@@ -310,7 +310,7 @@ class AssetResponseWrapper:
         tag_name: str,
         tag_mod_report: TagModificationReport | None = None,
         verbose: bool = VERBOSE_LOGGING,
-        info: bool = True,
+        info: bool = VERBOSE_LOGGING,
     ) -> bool:
         """
         Adds a tag to the asset by name using the Immich API if it doesn't have it already.
