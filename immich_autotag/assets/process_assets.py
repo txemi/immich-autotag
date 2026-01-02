@@ -8,7 +8,7 @@ from typeguard import typechecked
 from immich_autotag.assets.process_single_asset import process_single_asset
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.report.modification_report import TagModificationReport
+from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.perf.print_perf import print_perf
 
 
@@ -21,7 +21,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
 
     from immich_client.api.server import get_server_statistics
 
-    tag_mod_report = TagModificationReport.get_instance()
+    tag_mod_report = ModificationReport.get_instance()
     lock = Lock()
     count = 0
     LOG_INTERVAL = 5  # seconds

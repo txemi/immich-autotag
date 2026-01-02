@@ -57,13 +57,13 @@ class AlbumResponseWrapper:
         ]
     from typing import Optional
     from immich_client.client import Client
-    from immich_autotag.report.modification_report import TagModificationReport
+    from immich_autotag.report.modification_report import ModificationReport
 
     @typechecked
     def trim_name_if_needed(
         self,
         client: Client,
-        tag_mod_report: TagModificationReport,
+        tag_mod_report: ModificationReport,
     ) -> None:
         """
         If the album name starts with a space, trim it and update via API. Optionally logs the change.

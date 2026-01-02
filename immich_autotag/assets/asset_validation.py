@@ -4,13 +4,13 @@ from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.config.internal_config import PRINT_ASSET_DETAILS
-from immich_autotag.report.modification_report import TagModificationReport
+from immich_autotag.report.modification_report import ModificationReport
 
 
 @typechecked
 def validate_and_update_asset_classification(
     asset_wrapper: AssetResponseWrapper,
-    tag_mod_report: "TagModificationReport" = None,
+    tag_mod_report: "ModificationReport" = None,
 ) -> tuple[bool, bool]:
     """
     Prints asset information, including the names of the albums it belongs to,

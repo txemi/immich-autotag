@@ -6,7 +6,7 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.report.modification_report import TagModificationReport
+from immich_autotag.report.modification_report import ModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -51,7 +51,7 @@ class AlbumCollectionWrapper:
         self,
         album_name: str,
         client: Client,
-        tag_mod_report: TagModificationReport | None = None,
+        tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
         Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.

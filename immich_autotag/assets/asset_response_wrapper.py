@@ -27,7 +27,7 @@ from immich_autotag.config.user import (ALBUM_PATTERN,
                                         AUTOTAG_CATEGORY_UNKNOWN,
                                         CLASSIFIED_TAGS,
                                         ENABLE_ALBUM_DETECTION_FROM_FOLDERS)
-from immich_autotag.report.modification_report import TagModificationReport
+from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 from immich_autotag.config.user import VERBOSE_LOGGING
 
@@ -227,7 +227,7 @@ class AssetResponseWrapper:
         self,
         tag_name: str,
         verbose: bool = VERBOSE_LOGGING,
-        tag_mod_report: TagModificationReport | None = None,
+        tag_mod_report: ModificationReport | None = None,
         user: str | None = None,
         fail_on_error: bool = False,
     ) -> bool:
@@ -308,7 +308,7 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        tag_mod_report: TagModificationReport | None = None,
+        tag_mod_report: ModificationReport | None = None,
         verbose: bool = VERBOSE_LOGGING,
         info: bool = VERBOSE_LOGGING,
     ) -> bool:
@@ -569,7 +569,7 @@ class AssetResponseWrapper:
     def ensure_autotag_category_unknown(
         self,
         classified: bool,
-        tag_mod_report: "TagModificationReport | None" = None,
+        tag_mod_report: "ModificationReport | None" = None,
     ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
@@ -594,7 +594,7 @@ class AssetResponseWrapper:
     def ensure_autotag_conflict_category(
         self,
         conflict: bool,
-        tag_mod_report: "TagModificationReport | None" = None,
+        tag_mod_report: "ModificationReport | None" = None,
         user: str | None = None,
     ) -> None:
         """
@@ -621,7 +621,7 @@ class AssetResponseWrapper:
     def apply_tag_conversions(
         self,
         tag_conversions: list,
-        tag_mod_report: "TagModificationReport | None" = None,
+        tag_mod_report: "ModificationReport | None" = None,
     ) -> None:
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
@@ -769,7 +769,7 @@ class AssetResponseWrapper:
     def ensure_autotag_duplicate_album_conflict(
         self,
         conflict: bool,
-        tag_mod_report: "TagModificationReport | None" = None,
+        tag_mod_report: "ModificationReport | None" = None,
         user: str | None = None,
         duplicate_id: str | None = None,
         verbose: bool = VERBOSE_LOGGING,

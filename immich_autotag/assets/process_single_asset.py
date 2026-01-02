@@ -15,7 +15,7 @@ from immich_autotag.assets.asset_validation import \
 from immich_autotag.config.user import (ALBUM_PATTERN, ENABLE_DATE_CORRECTION,
                                         TAG_CONVERSIONS)
 from immich_autotag.tags.modification_kind import ModificationKind
-from immich_autotag.report.modification_report import TagModificationReport
+from immich_autotag.report.modification_report import ModificationReport
 
 
 # Date correction logic
@@ -127,7 +127,7 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
 @typechecked
 def analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
-    tag_mod_report: "TagModificationReport",
+    tag_mod_report: "ModificationReport",
     suppress_album_already_belongs_log: bool = True,
     fail_on_duplicate_album_conflict: bool = False,
     verbose: bool = None,
@@ -267,7 +267,7 @@ def analyze_duplicate_classification_tags(
 @typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
-    tag_mod_report: "TagModificationReport",
+    tag_mod_report: "ModificationReport",
     lock: Lock,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
@@ -298,7 +298,7 @@ def process_single_asset(
 @typechecked
 def _process_album_detection(
     asset_wrapper: "AssetResponseWrapper",
-    tag_mod_report: "TagModificationReport",
+    tag_mod_report: "ModificationReport",
     detected_album: str,
     album_origin: str,
     suppress_album_already_belongs_log: bool = True,

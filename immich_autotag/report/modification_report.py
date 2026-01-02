@@ -20,11 +20,11 @@ from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 # - SerializableModificationEntry
 # - TagModificationReport (posiblemente renombrada)
 @attrs.define(auto_attribs=True, slots=True)
-class TagModificationReport:
+class ModificationReport:
 
 
 
-    _instance: "TagModificationReport | None" = None  # Singleton instance
+    _instance: "ModificationReport | None" = None  # Singleton instance
     _instance_created = False  # Class-level flag
 
     import datetime as dt
@@ -63,10 +63,10 @@ class TagModificationReport:
         cls._instance = self
 
     @staticmethod
-    def get_instance() -> "TagModificationReport":
-        if TagModificationReport._instance is None:
-            TagModificationReport()
-        return TagModificationReport._instance  # type: ignore[return-value]
+    def get_instance() -> "ModificationReport":
+        if ModificationReport._instance is None:
+            ModificationReport()
+        return ModificationReport._instance  # type: ignore[return-value]
 
     from typeguard import typechecked
     # todo: tag se esta pasando como string en varias funciones, valorar usar wrapper
