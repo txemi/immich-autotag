@@ -1,17 +1,18 @@
 import attrs
 from immich_client import Client
 from immich_client.models.tag_response_dto import TagResponseDto
+from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from typeguard import typechecked
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-    tags: list[TagResponseDto] = attrs.field(
+    tags: list[TagWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
 
     @typechecked
-    def create_tag_if_not_exists(self, name: str, client) -> TagResponseDto:
+    def create_tag_if_not_exists(self, name: str, client) -> TagWrapper:
         """
         Creates the tag in Immich if it doesn't exist and adds it to the local collection.
         Returns the corresponding TagResponseDto.
@@ -23,7 +24,8 @@ class TagCollectionWrapper:
         from immich_client.models.tag_create_dto import TagCreateDto
 
         tag_create = TagCreateDto(name=name)
-        new_tag = create_tag.sync(client=client, body=tag_create)
+        new_tag_dto = create_tag.sync(client=client, body=tag_create)
+        new_tag = TagWrapper(new_tag_dto)
         self.tags.append(new_tag)
         return new_tag
 
@@ -35,11 +37,12 @@ class TagCollectionWrapper:
         """
         from immich_client.api.tags import get_all_tags
 
-        tags = get_all_tags.sync(client=client)
+        tags_dto = get_all_tags.sync(client=client)
+        tags = [TagWrapper(tag) for tag in tags_dto]
         return TagCollectionWrapper(tags=tags)
 
     @typechecked
-    def find_by_name(self, name: str) -> TagResponseDto | None:
+    def find_by_name(self, name: str) -> TagWrapper | None:
         for tag in self.tags:
             if tag.name == name:
                 return tag
