@@ -130,7 +130,11 @@ def analyze_and_assign_album(
     tag_mod_report: "TagModificationReport",
     suppress_album_already_belongs_log: bool = True,
     fail_on_duplicate_album_conflict: bool = False,
+    verbose: bool = None,
 ) -> None:
+    if verbose is None:
+        from immich_autotag.config.user import VERBOSE_LOGGING
+        verbose = VERBOSE_LOGGING
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
     """
@@ -372,14 +376,11 @@ def _process_album_detection(
                 f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}. "
                 f"Full response: {result}"
             )
-        from uuid import UUID
 
         tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
-            asset_id=asset_wrapper.id_as_uuid,
-            asset_name=asset_wrapper.original_file_name,
-            album_id=UUID(album.id),
-            album_name=detected_album,
+            asset_wrapper=asset_wrapper,
+            album=album_wrapper,
         )
     else:
         if not suppress_album_already_belongs_log:

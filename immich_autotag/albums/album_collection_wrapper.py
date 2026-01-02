@@ -95,10 +95,8 @@ class AlbumCollectionWrapper:
         self.albums.append(wrapper)
         if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
-
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.CREATE_ALBUM,
-                album_id=album.id,
-                album_name=album_name,
+                album=wrapper,
             )
         return wrapper
