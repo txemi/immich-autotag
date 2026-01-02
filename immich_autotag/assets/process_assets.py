@@ -108,7 +108,10 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         if skip_n:
             total_to_process = max(1, total_assets - skip_n)
 
-    def perf_log(count, elapsed, estimator):
+    from typeguard import typechecked
+
+    @typechecked
+    def perf_log(count: int, elapsed: float, estimator: "AdaptiveTimeEstimator") -> None:
         print_perf(
             count,
             elapsed,
