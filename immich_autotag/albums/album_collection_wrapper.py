@@ -108,8 +108,8 @@ class AlbumCollectionWrapper:
         Fetches all albums from the API, wraps them, and trims names if needed.
         """
         from immich_client.api.albums import get_album_info, get_all_albums
-        from immich_autotag.tags.tag_modification_report import TagModificationReport
-        tag_mod_report = TagModificationReport.get_instance()
+        from immich_autotag.report.modification_report import  ModificationReport
+        tag_mod_report = ModificationReport.get_instance()
         albums = get_all_albums.sync(client=client)
         albums_full: list[AlbumResponseWrapper] = []
         print("\nAlbums:")
