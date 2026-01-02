@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
 
@@ -10,6 +10,12 @@ import attrs
 from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+if TYPE_CHECKING:
+    from immich_autotag.tags.tag_response_wrapper import TagResponseWrapper
+
+# todo: Tengo claro cuál es el objetivo de esta clase si el objetivo es tener los campos que van a ir al fichero y debería ser todo string o si el objetivo es tener toda la información de un registro entonces podría ser todo objetos en vez de en vez de strings esto se creó utilizando bike coding por get hat copilot y ahora me parece que hay una especie de mezcla y no tengo claro cuál es la intención de la clase estaría bien pensarlo para hacer lo que tenga más sentido Nación es que hay una función que se dedica a formatear la salida y que esto podría ser un conjunto de objetos que quedaría más claro y robusto pero no me atrevo a decirlo hasta que no lo analicemos
+
+
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -87,7 +93,7 @@ class TagModificationReport:
         self,
         kind: ModificationKind,
         asset_wrapper: Any,
-        tag_name: Optional[str] = None,
+        tag: Optional["TagResponseWrapper"] = None,
         album: Optional[AlbumResponseWrapper] = None,
         old_name: Optional[str] = None,
         new_name: Optional[str] = None,
@@ -109,9 +115,10 @@ class TagModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
-        asset_id = asset_wrapper.id_as_uuid
-        asset_name = asset_wrapper.original_file_name
-        link = asset_wrapper.get_immich_photo_url().geturl()
+        asset_id = asset_wrapper.id_as_uuid if asset_wrapper is not None else None
+        asset_name = asset_wrapper.original_file_name if asset_wrapper is not None else None
+        link = asset_wrapper.get_immich_photo_url().geturl() if asset_wrapper is not None else None
+        tag_name = tag.tag_name if tag is not None else None
         entry = ModificationEntry(
             datetime=datetime.datetime.now().isoformat(),
             kind=kind,
@@ -136,7 +143,7 @@ class TagModificationReport:
         self,
         kind: ModificationKind,
         asset_wrapper: Any,
-        tag_name: Optional[str] = None,
+        tag: Optional["TagResponseWrapper"] = None,
         old_name: Optional[str] = None,
         new_name: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
@@ -149,7 +156,7 @@ class TagModificationReport:
         self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
-            tag_name=tag_name,
+            tag=tag,
             old_name=old_name,
             new_name=new_name,
             user=user,
@@ -279,8 +286,6 @@ class TagModificationReport:
             parts.append(f"link={entry.link}")
         if entry.user:
             parts.append(f"user={entry.user}")
-        # todo: podemos estar metidendo algun atrivuto varias veces?
-        if entry.album:
-            parts.append(f"album_id={entry.album.album.id}")
-            parts.append(f"album_name={entry.album.album.album_name}")
+        # Evitar duplicados de album_id y album_name
+        # (el bloque anterior ya los añade si entry.album existe)
         return " | ".join(parts)
