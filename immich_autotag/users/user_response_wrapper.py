@@ -17,18 +17,13 @@ class UserResponseWrapper:
 
 
     @property
-    def name(self) -> Optional[str]:
-        # Prefer 'name', then 'username', then id
-        if hasattr(self.user, 'name') and self.user.name:
-            return self.user.name
-        if hasattr(self.user, 'username') and self.user.username:
-            return self.user.username
-        return self.id
+    def name(self) -> str:
+        return self.user.name
 
 
     @property
-    def email(self) -> Optional[str]:
-        return self.user.email if hasattr(self.user, 'email') else None
+    def email(self) -> str:
+        return self.user.email
 
     def __str__(self):
         return self.name or self.id or '<unknown user>'
