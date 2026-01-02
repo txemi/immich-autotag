@@ -108,8 +108,7 @@ class ModificationReport:
 
         # Si el usuario es None, obtenerlo usando el contexto del asset_wrapper (si existe)
         user_instance = user
-        if user_instance is None :
-            from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        if user_instance is None:
             user_instance = UserResponseWrapper.from_context(asset_wrapper.context)
 
         entry = ModificationEntry(
