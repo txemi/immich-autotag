@@ -633,7 +633,6 @@ class AssetResponseWrapper:
                 )
                 # Si user es None, obtener el wrapper desde el contexto
                 if user is None:
-                    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
                     user = UserResponseWrapper.from_context(self.context)
                 self.remove_tag_by_name(
                     tag_name, tag_mod_report=tag_mod_report, user=user
