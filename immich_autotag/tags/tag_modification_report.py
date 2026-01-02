@@ -12,6 +12,7 @@ from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagResponseWrapper
+from typing import Any
 
 # todo: Tengo claro cuál es el objetivo de esta clase si el objetivo es tener los campos que van a ir al fichero y debería ser todo string o si el objetivo es tener toda la información de un registro entonces podría ser todo objetos en vez de en vez de strings esto se creó utilizando bike coding por get hat copilot y ahora me parece que hay una especie de mezcla y no tengo claro cuál es la intención de la clase estaría bien pensarlo para hacer lo que tenga más sentido Nación es que hay una función que se dedica a formatear la salida y que esto podría ser un conjunto de objetos que quedaría más claro y robusto pero no me atrevo a decirlo hasta que no lo analicemos
 
@@ -28,42 +29,40 @@ class ModificationEntry:
     It is not meant for direct persistence or export, but for in-memory manipulation and querying.
     For persistence, export, or printing, convert each instance to SerializableModificationEntry.
     """
-    datetime: str = attrs.field(validator=attrs.validators.instance_of(str))
+    datetime: datetime.datetime = attrs.field(validator=attrs.validators.instance_of(datetime.datetime))
     kind: ModificationKind = attrs.field(validator=attrs.validators.instance_of(ModificationKind))
     asset_wrapper: Any = attrs.field(default=None)
     tag: Optional["TagResponseWrapper"] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(object)))
     album: Optional[AlbumResponseWrapper] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(AlbumResponseWrapper)))
-    old_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    new_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    old_value: Any = attrs.field(default=None)
+    new_value: Any = attrs.field(default=None)
     user: Optional[UserResponseWrapper] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(UserResponseWrapper)))
-    link: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
     extra: Optional[dict[str, Any]] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(dict)))
 
 
 
     def to_serializable(self) -> "SerializableModificationEntry":
         """
-        Convierte la entrada rica en una versión solo con datos serializables, sin getattr/hasattr.
+        Converts the rich entry to a serializable version (only simple types).
+        The link is not stored, but can be derived from asset/album/user if needed.
         """
         return SerializableModificationEntry(
-            datetime=self.datetime,
+            datetime=self.datetime.isoformat(),
             kind=self.kind.name,
             asset_id=self.asset_wrapper.id_as_uuid if self.asset_wrapper is not None else None,
             asset_name=self.asset_wrapper.original_file_name if self.asset_wrapper is not None else None,
             tag_name=self.tag.tag_name if self.tag is not None else None,
             album_id=self.album.album.id if self.album is not None else None,
             album_name=self.album.album.album_name if self.album is not None else None,
-            old_name=self.old_name,
-            new_name=self.new_name,
+            old_value=str(self.old_value) if self.old_value is not None else None,
+            new_value=str(self.new_value) if self.new_value is not None else None,
             user_id=self.user.user_id if self.user is not None else None,
-            link=self.link,
             extra=self.extra,
         )
 
 # --- Versión serializable: solo datos simples ---
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class SerializableModificationEntry:
-
     """
     Represents a modification ready to be persisted, exported, or printed.
     All fields are simple and serializable types (str, UUID, etc.),
@@ -78,10 +77,9 @@ class SerializableModificationEntry:
     tag_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
     album_id: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
     album_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    old_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    new_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    old_value: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    new_value: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
     user_id: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
-    link: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
     extra: Optional[dict[str, Any]] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(dict)))
 
 
@@ -145,20 +143,18 @@ class TagModificationReport:
         self,
         kind: ModificationKind,
         asset_wrapper: Any,
-        tag: Optional["TagResponseWrapper"] = None,
+        tag: Any = None,
         album: Optional[AlbumResponseWrapper] = None,
-        old_name: Optional[str] = None,
-        new_name: Optional[str] = None,
+        old_value: Any = None,
+        new_value: Any = None,
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
         """
         Registers a modification for any entity (tag, album, assignment, etc.).
-        Maintains compatibility with previous usage.
         """
         if not self._cleared_report:
             import os
-
             try:
                 os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
                 with open(self.report_path, "w", encoding="utf-8"):
@@ -167,17 +163,15 @@ class TagModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
-        link = asset_wrapper.get_immich_photo_url().geturl() if asset_wrapper is not None else None
         entry = ModificationEntry(
-            datetime=datetime.datetime.now().isoformat(),
+            datetime=datetime.datetime.now(),
             kind=kind,
             asset_wrapper=asset_wrapper,
             tag=tag,
             album=album,
-            old_name=old_name,
-            new_name=new_name,
+            old_value=old_value,
+            new_value=new_value,
             user=user,
-            link=link,
             extra=extra,
         )
         self.modifications.append(entry)
@@ -191,9 +185,9 @@ class TagModificationReport:
         self,
         kind: ModificationKind,
         asset_wrapper: Any,
-        tag: Optional["TagResponseWrapper"] = None,
-        old_name: Optional[str] = None,
-        new_name: Optional[str] = None,
+        tag: Any = None,
+        old_value: Optional[str] = None,
+        new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
     ) -> None:
         assert kind in {
@@ -205,8 +199,8 @@ class TagModificationReport:
             kind=kind,
             asset_wrapper=asset_wrapper,
             tag=tag,
-            old_name=old_name,
-            new_name=new_name,
+            old_value=old_value,
+            new_value=new_value,
             user=user,
         )
     @typechecked
@@ -214,10 +208,10 @@ class TagModificationReport:
         self,
         kind: ModificationKind,
         album: AlbumResponseWrapper,
-        old_name: str = None,
-        new_name: str = None,
-        user: UserResponseWrapper = None,
-        extra: dict[str, Any] = None,
+        old_value: Optional[str] = None,
+        new_value: Optional[str] = None,
+        user: Optional[UserResponseWrapper] = None,
+        extra: Optional[dict[str, Any]] = None,
     ) -> None:
         """
         Registers a modification related to an album (e.g., rename, create).
@@ -231,8 +225,8 @@ class TagModificationReport:
             kind=kind,
             asset_wrapper=None,
             album=album,
-            old_name=old_name,
-            new_name=new_name,
+            old_value=old_value,
+            new_value=new_value,
             user=user,
             extra=extra,
         )
@@ -316,24 +310,29 @@ class TagModificationReport:
         parts.append(
             f"kind={entry.kind.name if hasattr(entry.kind, 'name') else entry.kind}"
         )
-        # Removed 'entity' and 'action' as they are not attributes of ModificationEntry
-        if entry.asset_id:
-            parts.append(f"asset_id={entry.asset_id}")
-        if entry.asset_name:
-            parts.append(f"name={entry.asset_name}")
-        if entry.tag_name:
-            parts.append(f"tag={entry.tag_name}")
-        if entry.album:
-            parts.append(f"album_id={entry.album.album.id}")
-            parts.append(f"album_name={entry.album.album.album_name}")
-        if entry.old_name:
-            parts.append(f"old_name={entry.old_name}")
-        if entry.new_name:
-            parts.append(f"new_name={entry.new_name}")
-        if entry.link:
-            parts.append(f"link={entry.link}")
-        if entry.user:
-            parts.append(f"user={entry.user}")
-        # Evitar duplicados de album_id y album_name
-        # (el bloque anterior ya los añade si entry.album existe)
+        # asset_wrapper may be None
+        if entry.asset_wrapper is not None:
+            if hasattr(entry.asset_wrapper, 'id_as_uuid'):
+                parts.append(f"asset_id={entry.asset_wrapper.id_as_uuid}")
+            if hasattr(entry.asset_wrapper, 'original_file_name'):
+                parts.append(f"name={entry.asset_wrapper.original_file_name}")
+        if entry.tag is not None and hasattr(entry.tag, 'tag_name'):
+            parts.append(f"tag={entry.tag.tag_name}")
+        if entry.album is not None and hasattr(entry.album, 'album'):
+            album_obj = entry.album.album
+            if hasattr(album_obj, 'id'):
+                parts.append(f"album_id={album_obj.id}")
+            if hasattr(album_obj, 'album_name'):
+                parts.append(f"album_name={album_obj.album_name}")
+        if entry.old_value is not None:
+            parts.append(f"old_value={entry.old_value}")
+        if entry.new_value is not None:
+            parts.append(f"new_value={entry.new_value}")
+        if entry.user is not None:
+            # Try to print user_id if available
+            user_id = getattr(entry.user, 'user_id', None)
+            if user_id is not None:
+                parts.append(f"user_id={user_id}")
+            else:
+                parts.append(f"user={entry.user}")
         return " | ".join(parts)
