@@ -80,7 +80,8 @@ class TagModificationReport:
         return TagModificationReport._instance  # type: ignore[return-value]
 
     from typeguard import typechecked
-
+    # todo: tag se esta pasando como string en varias funciones, valorar usar wrapper
+    # todo: asset_wrapper se esta pasando como Any en varias funciones, tipar bien
     @typechecked
     def add_modification(
         self,
@@ -128,7 +129,7 @@ class TagModificationReport:
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
-
+    # todo: revisar old_name y new_name el uso, ya que no solo se usan para nombres, puede ser mejor old_value y new_value?
     # Métodos específicos para cada tipo de acción
     @typechecked
     def add_tag_modification(
@@ -278,6 +279,7 @@ class TagModificationReport:
             parts.append(f"link={entry.link}")
         if entry.user:
             parts.append(f"user={entry.user}")
+        # todo: podemos estar metidendo algun atrivuto varias veces?
         if entry.album:
             parts.append(f"album_id={entry.album.album.id}")
             parts.append(f"album_name={entry.album.album.album_name}")
