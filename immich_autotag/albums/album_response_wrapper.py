@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.client import Client
-from immich_autotag.report.modification_report import ModificationReport
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.report.modification_report import ModificationReport
 from typeguard import typechecked
 
 if TYPE_CHECKING:
@@ -65,8 +67,9 @@ class AlbumResponseWrapper:
     def trim_name_if_needed(
         self,
         client: Client,
-        tag_mod_report: ModificationReport,
+        tag_mod_report: "ModificationReport",
     ) -> None:
+
         """
         If the album name starts with a space, trim it and update via API. Optionally logs the change.
         """
