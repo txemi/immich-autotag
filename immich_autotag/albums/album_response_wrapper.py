@@ -94,8 +94,8 @@ class AlbumResponseWrapper:
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.RENAME_ALBUM,
                 album=self,
-                old_name=self.album.album_name,
-                new_name=cleaned_name,
+                old_value=self.album.album_name,
+                new_value=cleaned_name,
             )
             # Actually update the name in the DTO (if mutable)
             try:
