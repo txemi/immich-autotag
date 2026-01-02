@@ -44,15 +44,16 @@ def get_all_assets(
                     f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
                 )
         abs_pos = skipped + count
+        response_assets=response.parsed.assets
+        asser isinstance(response_assets, SearchAssetResponseDto)
+        total_assets = response_assets.todal
         msg = f"Page {page}: {len(assets_page)} assets (full info) | Processed so far: {count} (absolute: {abs_pos}"
-        # Si el contexto tiene total_assets, lo mostramos
-        total_assets = getattr(context, 'total_assets', None)
         if total_assets:
             msg += f"/{total_assets}"
         msg += ")"
         print(msg)
         if max_assets is not None and count >= max_assets:
             break
-        if not response.parsed.assets.next_page:
+        if not response_assets.next_page:
             break
         page += 1
