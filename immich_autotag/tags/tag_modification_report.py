@@ -300,6 +300,8 @@ class TagModificationReport:
             }
             and album_id
         ):
+            # todo: Aquí estamos creando el enlace al álbum directamente sin utilizar una función de ayuda cuando en el resto del proyecto estamos utilizando funciones de helper para construir enlaces de hecho el la clase activo tiene un método para construir su propio su propio su propio enlace que aquí nos gastamos un poco saltando y el árbol estamos construyendo a pelo sin utilizar creo que lo suyo sería que el que el roaper de álbum tuviese un método para conseguir el enlace sería lo más limpio lo más simétrico y lo más bonito Si es preciso aquí podríamos pasar como argumento no lo sudes sino directamente el Roper de el Roper de álbum y de activo para que este método lo haga lo más limpio y elegante posible
+
             return f"/albums/{album_id}"
         return None
 
@@ -307,6 +309,8 @@ class TagModificationReport:
     def _format_modification_entry(self, entry: ModificationEntry) -> str:
         parts = [f"{entry.datetime}"]
         # Always include the operation/enum (kind)
+        # todo: Este otro método está creando directamente la lo que se escupe al fichero directamente desde la clase con objetos sin pasar por la clase serializada que no sé si el objetivo era eso y sería también lo más limpio de hecho esta lógica podría estar repartida entre las dos clases que hemos creado para esto en este en este en este fichero habíamos creado una una clase para tener una entrada de log con objetos y otra con datos serializados y estas dos clases podrían colaborar por construyendo en dos pasos el lo que al final finalmente se coloca en el fichero eh por 
+
         parts.append(
             f"kind={entry.kind.name if hasattr(entry.kind, 'name') else entry.kind}"
         )
