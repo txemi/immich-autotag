@@ -35,19 +35,19 @@ class ModificationEntry:
 
     def to_serializable(self) -> "SerializableModificationEntry":
         """
-        Convierte la entrada rica en una versión solo con datos serializables.
+        Convierte la entrada rica en una versión solo con datos serializables, sin getattr/hasattr.
         """
         return SerializableModificationEntry(
             datetime=self.datetime,
-            kind=self.kind.name if hasattr(self.kind, 'name') else str(self.kind),
-            asset_id=getattr(self.asset_wrapper, 'id_as_uuid', None),
-            asset_name=getattr(self.asset_wrapper, 'original_file_name', None),
-            tag_name=getattr(self.tag, 'tag_name', None),
-            album_id=getattr(self.album.album, 'id', None) if self.album else None,
-            album_name=getattr(self.album.album, 'album_name', None) if self.album else None,
+            kind=self.kind.name,
+            asset_id=self.asset_wrapper.id_as_uuid if self.asset_wrapper is not None else None,
+            asset_name=self.asset_wrapper.original_file_name if self.asset_wrapper is not None else None,
+            tag_name=self.tag.tag_name if self.tag is not None else None,
+            album_id=self.album.album.id if self.album is not None else None,
+            album_name=self.album.album.album_name if self.album is not None else None,
             old_name=self.old_name,
             new_name=self.new_name,
-            user_id=getattr(self.user, 'user_id', None),
+            user_id=self.user.user_id if self.user is not None else None,
             link=self.link,
             extra=self.extra,
         )
@@ -151,16 +151,12 @@ class TagModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
-        asset_id = asset_wrapper.id_as_uuid if asset_wrapper is not None else None
-        asset_name = asset_wrapper.original_file_name if asset_wrapper is not None else None
         link = asset_wrapper.get_immich_photo_url().geturl() if asset_wrapper is not None else None
-        tag_name = tag.tag_name if tag is not None else None
         entry = ModificationEntry(
             datetime=datetime.datetime.now().isoformat(),
             kind=kind,
-            asset_id=asset_id,
-            asset_name=asset_name,
-            tag_name=tag_name,
+            asset_wrapper=asset_wrapper,
+            tag=tag,
             album=album,
             old_name=old_name,
             new_name=new_name,
