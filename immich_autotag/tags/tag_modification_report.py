@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 # --- Versión rica: con objetos ---
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class ModificationEntry:
     """
     Represents a modification in the system using rich objects (wrappers, DTOs, etc.).
@@ -28,16 +28,18 @@ class ModificationEntry:
     It is not meant for direct persistence or export, but for in-memory manipulation and querying.
     For persistence, export, or printing, convert each instance to SerializableModificationEntry.
     """
-    datetime: str
-    kind: ModificationKind
-    asset_wrapper: Any = None
-    tag: Optional["TagResponseWrapper"] = None
-    album: Optional[AlbumResponseWrapper] = None
-    old_name: Optional[str] = None
-    new_name: Optional[str] = None
-    user: Optional[UserResponseWrapper] = None
-    link: Optional[str] = None
-    extra: Optional[dict[str, Any]] = None
+    datetime: str = attrs.field(validator=attrs.validators.instance_of(str))
+    kind: ModificationKind = attrs.field(validator=attrs.validators.instance_of(ModificationKind))
+    asset_wrapper: Any = attrs.field(default=None)
+    tag: Optional["TagResponseWrapper"] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(object)))
+    album: Optional[AlbumResponseWrapper] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(AlbumResponseWrapper)))
+    old_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    new_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    user: Optional[UserResponseWrapper] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(UserResponseWrapper)))
+    link: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    extra: Optional[dict[str, Any]] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(dict)))
+
+
 
     def to_serializable(self) -> "SerializableModificationEntry":
         """
@@ -59,8 +61,9 @@ class ModificationEntry:
         )
 
 # --- Versión serializable: solo datos simples ---
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class SerializableModificationEntry:
+
     """
     Represents a modification ready to be persisted, exported, or printed.
     All fields are simple and serializable types (str, UUID, etc.),
@@ -68,18 +71,18 @@ class SerializableModificationEntry:
     This class is immutable and robust, ideal for audit, logs, and exports.
     It is always obtained from ModificationEntry via the to_serializable() method.
     """
-    datetime: str
-    kind: str
-    asset_id: Optional[UUID] = None
-    asset_name: Optional[str] = None
-    tag_name: Optional[str] = None
-    album_id: Optional[str] = None
-    album_name: Optional[str] = None
-    old_name: Optional[str] = None
-    new_name: Optional[str] = None
-    user_id: Optional[str] = None
-    link: Optional[str] = None
-    extra: Optional[dict[str, Any]] = None
+    datetime: str = attrs.field(validator=attrs.validators.instance_of(str))
+    kind: str = attrs.field(validator=attrs.validators.instance_of(str))
+    asset_id: Optional[UUID] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(UUID)))
+    asset_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    tag_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    album_id: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    album_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    old_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    new_name: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    user_id: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    link: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
+    extra: Optional[dict[str, Any]] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(dict)))
 
 
 # TODO: la siguiente clase es mas generiga que tag, requiere refactorizar nombre y ubicacion
