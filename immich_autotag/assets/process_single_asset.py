@@ -319,65 +319,7 @@ def _process_album_detection(
         print(
             f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' assigned to album '{detected_album}' (origin: {album_origin})"
         )
-        # todo: La operación de añadir un activo a un álbum estaría mejor encapsulada en un método del roaper de álbum o de activo elige tú lo que tenga más sentido así quedará más claro la llamada que hacemos aquí
-        try:
-            result = add_assets_to_album.sync(
-                id=album.id,
-                client=client,
-                body=BulkIdsDto(ids=[asset_wrapper.id]),
-            )
-        except Exception as e:
-            print(f"[ERROR] Exception when adding asset to album: {e}")
-            raise
-        # Validación estricta del resultado
-        if not isinstance(result, list):
-            print(
-                f"[ERROR] Unexpected return type from add_assets_to_album: {type(result)}"
-            )
-            raise RuntimeError("add_assets_to_album did not return a list")
-        found = False
-        for item in result:
-            try:
-                _id = item.id
-                _success = item.success
-            except AttributeError:
-                raise RuntimeError(
-                    f"Item in add_assets_to_album response missing required attributes: {item}"
-                )
-            if _id == str(asset_wrapper.id):
-                found = True
-                if not _success:
-                    error_msg = None
-                    try:
-                        error_msg = item.error
-                    except AttributeError:
-                        pass
-                    asset_url = asset_wrapper.get_immich_photo_url().geturl()
-                    album_url = album.get_immich_album_url().geturl()
-                    print(
-                        f"[ERROR] Asset {asset_wrapper.id} was not successfully added to album {album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
-                    )
-                    print(f"[DEBUG] Full add_assets_to_album response: {result}")
-                    raise RuntimeError(
-                        f"Asset {asset_wrapper.id} was not successfully added to album {album.id}. "
-                        f"Error: {error_msg}. Full response: {result}\n"
-                        f"Asset link: {asset_url}\nAlbum link: {album_url}"
-                    )
-        if not found:
-            print(
-                f"[ERROR] Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}"
-            )
-            print(f"[DEBUG] Full add_assets_to_album response: {result}")
-            raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {album.id}. "
-                f"Full response: {result}"
-            )
-
-        tag_mod_report.add_assignment_modification(
-            kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
-            asset_wrapper=asset_wrapper,
-            album=album_wrapper,
-        )
+        album_wrapper.add_asset(asset_wrapper, client, tag_mod_report=tag_mod_report)
     else:
         if not suppress_album_already_belongs_log:
             print(
