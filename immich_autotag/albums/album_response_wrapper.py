@@ -15,6 +15,8 @@ from immich_autotag.context.immich_context import ImmichContext
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
 
+
+
     album: AlbumResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AlbumResponseDto)
     )
@@ -53,3 +55,38 @@ class AlbumResponseWrapper:
         return [
             context.asset_manager.get_wrapper_for_asset(a) for a in self.album.assets
         ]
+    @typechecked
+    def trim_name_if_needed(
+        self,
+        client: object = None,
+        tag_mod_report: object = None,
+    ) -> None:
+        """
+        If the album name starts with a space, trim it and update via API. Optionally logs the change.
+        """
+        if self.album.album_name.startswith(" "):
+            cleaned_name = self.album.album_name.strip()
+            if client is not None:
+                from immich_client.models.update_album_dto import UpdateAlbumDto
+                from immich_client.api.albums import update_album_info
+                update_body = UpdateAlbumDto(album_name=cleaned_name)
+                update_album_info.sync(
+                    id=self.album.id,
+                    client=client,
+                    body=update_body,
+                )
+            if tag_mod_report is not None:
+                from immich_autotag.tags.modification_kind import ModificationKind
+                tag_mod_report.add_album_modification(
+                    kind=ModificationKind.RENAME_ALBUM,
+                    album=self,
+                    old_name=self.album.album_name,
+                    new_name=cleaned_name,
+                )
+            # Actually update the name in the DTO (if mutable)
+            try:
+                object.__setattr__(self.album, 'album_name', cleaned_name)
+            except Exception:
+                pass
+            print(f"Renamed album '{self.album.album_name}' to '{cleaned_name}'")
+            
