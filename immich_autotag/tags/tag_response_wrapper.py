@@ -1,8 +1,10 @@
 import attrs
 from immich_client.models.tag_response_dto import TagResponseDto
+from typeguard import typechecked
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagWrapper:
+
     """
     Wrapper para TagResponseDto que permite añadir métodos y propiedades útiles.
     """
@@ -26,3 +28,9 @@ class TagWrapper:
 
     def to_dto(self) -> TagResponseDto:
         return self.tag
+    @typechecked
+    def get_name(self) -> str:
+        """
+        Devuelve el nombre del tag de forma robusta y encapsulada.
+        """
+        return self.name

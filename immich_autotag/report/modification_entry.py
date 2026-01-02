@@ -74,7 +74,7 @@ class ModificationEntry:
                 if self.asset_wrapper is not None
                 else None
             ),
-            tag_name=self.tag.tag_name if self.tag is not None else None,
+            tag_name=self.tag.get_name() if self.tag is not None else None,
             album_id=album_id,
             album_name=album_name,
             old_value=str(self.old_value) if self.old_value is not None else None,
