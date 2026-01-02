@@ -179,8 +179,7 @@ class TagModificationReport:
     def add_assignment_modification(
         self,
         kind: ModificationKind,
-        asset_id: UUID,
-        asset_name: str,
+        asset_wrapper: "AssetResponseWrapper",
         album_id: UUID,
         album_name: Optional[str] = None,
         user: Optional[str] = None,
@@ -191,8 +190,7 @@ class TagModificationReport:
         }
         self.add_modification(
             kind=kind,
-            asset_id=asset_id,
-            asset_name=asset_name,
+            asset_wrapper=asset_wrapper,
             album_id=album_id,
             album_name=album_name,
             user=user,
