@@ -124,4 +124,3 @@ VERBOSE_LOGGING = False
 # When disabled, the script will always start from the beginning (ignores checkpoint).
 # Recommended: Enable for long runs or production. Disable for full reprocessing or debugging.
 ENABLE_CHECKPOINT_RESUME = False
-

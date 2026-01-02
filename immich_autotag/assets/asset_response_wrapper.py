@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
+from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-from immich_autotag.report.modification_report import ModificationReport
 
 
 # Excepción para integridad de fechas
@@ -87,9 +87,11 @@ class AssetResponseWrapper:
                 f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
             )
             print(log_msg)
-        from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        from immich_autotag.report.modification_report import \
+            ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.users.user_response_wrapper import \
+            UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
         user_wrapper = UserResponseWrapper.from_context(self.context)
@@ -266,7 +268,9 @@ class AssetResponseWrapper:
         tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
 
         removed_any = False
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
+
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
             response = untag_assets.sync(
@@ -281,6 +285,7 @@ class AssetResponseWrapper:
                 )
             removed_any = True
             from immich_autotag.tags.modification_kind import ModificationKind
+
             tag_mod_report.add_modification(
                 kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
                 asset_wrapper=self,
@@ -297,6 +302,7 @@ class AssetResponseWrapper:
         if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             from immich_autotag.tags.modification_kind import ModificationKind
+
             tag_mod_report.add_modification(
                 kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                 asset_wrapper=self,
@@ -326,10 +332,11 @@ class AssetResponseWrapper:
         from immich_client.api.tags import tag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
+        from immich_autotag.report.modification_report import \
+            ModificationReport
         from immich_autotag.users.user_response_wrapper import \
             UserResponseWrapper
 
-        from immich_autotag.report.modification_report import ModificationReport
         tag_mod_report = ModificationReport.get_instance()
 
         # Obtener el UserWrapper de forma limpia y encapsulada
@@ -589,7 +596,9 @@ class AssetResponseWrapper:
         Idempotent: does nothing if already in correct state.
         """
         tag_name = AUTOTAG_CATEGORY_UNKNOWN
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
+
         tag_mod_report = ModificationReport.get_instance()
         if not classified:
             if not self.has_tag(tag_name):
@@ -616,7 +625,9 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         """
         tag_name = AUTOTAG_CATEGORY_CONFLICT
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
+
         tag_mod_report = ModificationReport.get_instance()
         if conflict:
             if not self.has_tag(tag_name):
@@ -632,9 +643,7 @@ class AssetResponseWrapper:
                 # Si user es None, obtener el wrapper desde el contexto
                 if user is None:
                     user = UserResponseWrapper.from_context(self.context)
-                self.remove_tag_by_name(
-                    tag_name, user=user
-                )
+                self.remove_tag_by_name(tag_name, user=user)
 
     @typechecked
     def apply_tag_conversions(
@@ -816,9 +825,7 @@ class AssetResponseWrapper:
                     print(
                         f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved."
                     )
-                self.remove_tag_by_name(
-                    tag_name, user=user
-                )
+                self.remove_tag_by_name(tag_name, user=user)
         # Per-duplicate-set tag
         if duplicate_id:
             tag_for_set = f"{tag_name}_{duplicate_id}"
@@ -835,9 +842,7 @@ class AssetResponseWrapper:
                         print(
                             f"[INFO] Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved."
                         )
-                    self.remove_tag_by_name(
-                        tag_for_set, user=user
-                    )
+                    self.remove_tag_by_name(tag_for_set, user=user)
 
     @typechecked
     def format_info(self) -> str:

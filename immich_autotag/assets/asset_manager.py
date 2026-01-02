@@ -20,7 +20,10 @@ class AssetManager:
 
     @typechecked
     def iter_assets(
-        self, context: "ImmichContext", max_assets: Optional[int] = None, skip_n: int = 0
+        self,
+        context: "ImmichContext",
+        max_assets: Optional[int] = None,
+        skip_n: int = 0,
     ) -> Iterator[AssetResponseWrapper]:
         """
         Iterates over all assets, using the original generator, and stores them in the internal cache.
