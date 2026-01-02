@@ -135,23 +135,25 @@ class AssetResponseWrapper:
                     self.asset = updated_asset
                     return
                 if attempt < max_retries - 1:
-                    print(
-                        f"[WARN] Fecha no actualizada aún tras update (intento {attempt+1}/{max_retries}), esperando {retry_delay}s..."
-                    )
+                    if verbose:
+                        print(
+                            f"[WARN] Fecha no actualizada aún tras update (intento {attempt+1}/{max_retries}), esperando {retry_delay}s..."
+                        )
                     time.sleep(retry_delay)
             # Si tras los reintentos sigue sin actualizar, imprimir todas las fechas y warning
-            print("[DEBUG][AFTER UPDATE] Fechas del asset actualizado:")
-            print(f"  created_at:      {getattr(updated_asset, 'created_at', None)}")
-            print(
-                f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}"
-            )
-            print(
-                f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}"
-            )
-            print(f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}")
-            print(
-                f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
-            )
+            if verbose:
+                print("[DEBUG][AFTER UPDATE] Fechas del asset actualizado:")
+                print(f"  created_at:      {getattr(updated_asset, 'created_at', None)}")
+                print(
+                    f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}"
+                )
+                print(
+                    f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}"
+                )
+                print(f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}")
+                print(
+                    f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
+                )
             self.asset = updated_asset
             return
 
