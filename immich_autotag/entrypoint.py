@@ -3,7 +3,7 @@ from __future__ import annotations
 from immich_client import Client
 from typeguard import typechecked
 
-from immich_autotag.albums.list_albums import list_albums
+from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.config.internal_config import IMMICH_BASE_URL
@@ -41,7 +41,7 @@ def run_main():
         raise_on_unexpected_status=True,
     )
     tag_collection = list_tags(client)
-    albums_collection = list_albums(client)
+    albums_collection = AlbumCollectionWrapper.from_client(client)
     # Load duplicates
     duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)
