@@ -446,8 +446,7 @@ class AssetResponseWrapper:
 
         tag_mod_report.add_modification(
             kind=ModificationKind.ADD_TAG_TO_ASSET,
-            asset_wrapper=self,
-            tag_name=tag_name,
+            asset_wrapper=self,tag=tag,
             user=user,
         )
         return True
