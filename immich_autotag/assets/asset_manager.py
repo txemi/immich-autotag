@@ -54,8 +54,10 @@ class AssetManager:
         asset = AssetResponseWrapper.from_dto(dto, context)
         self._assets[asset_uuid] = asset
         return asset
+    from immich_client.models.asset_response_dto import AssetResponseDto
+
     @typechecked
-    def get_wrapper_for_asset(self, asset_dto: object, context: "ImmichContext") -> AssetResponseWrapper:
+    def get_wrapper_for_asset(self, asset_dto: AssetResponseDto, context: "ImmichContext") -> AssetResponseWrapper:
         """
         Given an asset DTO, return the corresponding AssetResponseWrapper from cache or create it.
         """
