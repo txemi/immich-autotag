@@ -27,7 +27,7 @@ from immich_autotag.config.user import (ALBUM_PATTERN,
                                         AUTOTAG_CATEGORY_UNKNOWN,
                                         CLASSIFIED_TAGS,
                                         ENABLE_ALBUM_DETECTION_FROM_FOLDERS)
-from immich_autotag.tags.tag_modification_report import TagModificationReport
+from immich_autotag.report.modification_report import TagModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 from immich_autotag.config.user import VERBOSE_LOGGING
 

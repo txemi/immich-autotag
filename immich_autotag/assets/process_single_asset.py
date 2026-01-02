@@ -15,7 +15,7 @@ from immich_autotag.assets.asset_validation import \
 from immich_autotag.config.user import (ALBUM_PATTERN, ENABLE_DATE_CORRECTION,
                                         TAG_CONVERSIONS)
 from immich_autotag.tags.modification_kind import ModificationKind
-from immich_autotag.tags.tag_modification_report import TagModificationReport
+from immich_autotag.report.modification_report import TagModificationReport
 
 
 # Date correction logic

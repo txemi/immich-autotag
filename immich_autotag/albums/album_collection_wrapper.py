@@ -6,7 +6,7 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.tags.tag_modification_report import TagModificationReport
+from immich_autotag.report.modification_report import TagModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)

@@ -57,7 +57,7 @@ class AlbumResponseWrapper:
         ]
     from typing import Optional
     from immich_client.client import Client
-    from immich_autotag.tags.tag_modification_report import TagModificationReport
+    from immich_autotag.report.modification_report import TagModificationReport
 
     @typechecked
     def trim_name_if_needed(
