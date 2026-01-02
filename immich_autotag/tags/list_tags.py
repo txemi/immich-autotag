@@ -10,5 +10,5 @@ from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 @typechecked
 def list_tags(client: Client) -> TagCollectionWrapper:
     tag_collection = TagCollectionWrapper.from_api(client)
-    print_tags(tag_collection.tags)
+    print_tags(tag_collection)
     return tag_collection

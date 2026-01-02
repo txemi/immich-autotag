@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 from immich_autotag.report.serializable_modification_entry import SerializableModificationEntry
 from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-from immich_autotag.tags.tag_response_wrapper import TagResponseWrapper
+from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 
 # class ModificationEntry: ...
@@ -36,9 +36,9 @@ class ModificationEntry:
         validator=attrs.validators.instance_of(ModificationKind)
     )
     asset_wrapper: Any = attrs.field(default=None)
-    tag: Optional["TagResponseWrapper"] = attrs.field(
+    tag: Optional["TagWrapper"] = attrs.field(
         default=None,
-        validator=attrs.validators.optional(attrs.validators.instance_of(TagResponseWrapper)),
+        validator=attrs.validators.optional(attrs.validators.instance_of(TagWrapper)),
     )
     album: Optional["AlbumResponseWrapper"] = attrs.field(default=None)
     old_value: Any = attrs.field(default=None)

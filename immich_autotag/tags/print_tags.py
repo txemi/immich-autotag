@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from immich_client.models.tag_response_dto import TagResponseDto
-from typeguard import typechecked
 
+from typeguard import typechecked
+from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
 @typechecked
-def print_tags(tags: list[TagResponseDto]) -> None:
+def print_tags(tag_collection: TagCollectionWrapper) -> None:
     print("Tags:")
-    for tag in tags:
+    for tag in tag_collection:
         print(f"- {tag.name}")
-    print(f"Total tags: {len(tags)}\n")
+    print(f"Total tags: {len(tag_collection)}\n")
     MIN_TAGS = 57
-    if len(tags) < MIN_TAGS:
+    if len(tag_collection) < MIN_TAGS:
         raise Exception(
-            f"ERROR: Unexpectedly low number of tags: {len(tags)} < {MIN_TAGS}"
+            f"ERROR: Unexpectedly low number of tags: {len(tag_collection)} < {MIN_TAGS}"
         )
