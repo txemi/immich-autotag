@@ -86,27 +86,20 @@ class AssetResponseWrapper:
                 f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
             )
             print(log_msg)
-        from immich_autotag.report.modification_report import \
-            ModificationReport
-        from immich_autotag.utils.user_helpers import get_current_user
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        from immich_autotag.tags.modification_kind import ModificationKind
 
         tag_mod_report = ModificationReport.get_instance()
-        user_obj = get_current_user(self.context)
-        user_id = getattr(user_obj, "id", None)
-        user_name = (
-            getattr(user_obj, "name", None)
-            or getattr(user_obj, "username", None)
-            or user_id
-        )
+        user_wrapper = UserResponseWrapper.from_context(self.context)
         asset_url = self.get_immich_photo_url().geturl()
-        from immich_autotag.tags.modification_kind import ModificationKind
 
         tag_mod_report.add_modification(
             kind=ModificationKind.UPDATE_ASSET_DATE,
             asset_wrapper=self,
             old_value=str(old_date) if old_date else None,
             new_value=str(new_date) if new_date else None,
-            user=user_name,
+            user=user_wrapper,
             extra={"pre_update": True},
         )
         response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
@@ -620,7 +613,7 @@ class AssetResponseWrapper:
         self,
         conflict: bool,
         tag_mod_report: "ModificationReport | None" = None,
-        user: str | None = None,
+        user: UserResponseWrapper | None = None,
     ) -> None:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
@@ -638,6 +631,10 @@ class AssetResponseWrapper:
                 print(
                     f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it's no longer in conflict."
                 )
+                # Si user es None, obtener el wrapper desde el contexto
+                if user is None:
+                    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+                    user = UserResponseWrapper.from_context(self.context)
                 self.remove_tag_by_name(
                     tag_name, tag_mod_report=tag_mod_report, user=user
                 )
