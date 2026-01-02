@@ -14,7 +14,17 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
-    user: "UserResponseDto" = attrs.field(validator=attrs.validators.instance_of(UserResponseDto))
+    @staticmethod
+    def _validate_user(instance, attribute, value):
+        if value is None:
+            raise ValueError("user cannot be None")
+        try:
+            from immich_client.models.user_response_dto import UserResponseDto
+        except ImportError:
+            raise TypeError("UserResponseDto type cannot be imported for validation")
+        if not isinstance(value, UserResponseDto):
+            raise TypeError(f"user must be a UserResponseDto, got {type(value)}")
+    user: "UserResponseDto" = attrs.field(validator=_validate_user)
     _cached_user_wrapper = None  # Variable de clase para cachear el usuario
 
     @property
