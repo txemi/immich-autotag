@@ -56,6 +56,10 @@ class SerializableModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
+    asset_link: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
     extra: Optional[dict[str, Any]] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(dict)),
@@ -67,6 +71,8 @@ class SerializableModificationEntry:
         parts.append(f"kind={self.kind}")
         if self.asset_id:
             parts.append(f"asset_id={self.asset_id}")
+        if self.asset_link:
+            parts.append(f"asset_link={self.asset_link}")
         if self.asset_name:
             parts.append(f"name={self.asset_name}")
         if self.tag_name:
