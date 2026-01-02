@@ -585,10 +585,10 @@ class AssetResponseWrapper:
 
     @typechecked
     def ensure_autotag_category_unknown(
-        self,
-        classified: bool,
-        # tag_mod_report parameter removed
-    ) -> None:
+            self,
+            classified: bool,
+            verbose: bool = VERBOSE_LOGGING,
+        ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
@@ -602,14 +602,16 @@ class AssetResponseWrapper:
         if not classified:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
-                print(
-                    f"[WARN] asset.id={self.id} ({self.original_file_name}) is not classified. Tagged as '{tag_name}'."
-                )
+                if verbose:
+                    print(
+                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is not classified. Tagged as '{tag_name}'."
+                    )
         else:
             if self.has_tag(tag_name):
-                print(
-                    f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it is now classified."
-                )
+                if verbose:
+                    print(
+                        f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it is now classified."
+                    )
                 self.remove_tag_by_name(tag_name)
 
     @typechecked
