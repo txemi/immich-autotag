@@ -75,9 +75,7 @@ AUTOTAG_CATEGORY_UNKNOWN = "autotag_output_unknown"
 # The ideal is that each photo belongs to only one event album. If a photo is in several, it means the organization needs to be reviewed.
 # Filtering by this tag in the Immich interface allows you to quickly focus on and resolve these conflicts: either by moving the photo to the correct album, removing it from extra albums, or reclassifying it (e.g., as meme or ignore).
 AUTOTAG_CATEGORY_CONFLICT = "autotag_output_conflict"
-# todo: refactorizar a AUTOTAG_CATEGORY_CONFLICT
 
-#
 # AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT: This tag is applied to assets that have a conflict of album assignment between duplicates (i.e., two or more duplicate assets are assigned to different event albums, which is an organizational inconsistency).
 # Filtering by this tag in the Immich interface allows you to quickly find and resolve these duplicate album conflicts, ensuring that all duplicates are consistently organized.
 AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT = "autotag_output_duplicate_asset_album_conflict"
