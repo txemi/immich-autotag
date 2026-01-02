@@ -5,6 +5,7 @@ from typing import List
 
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+from immich_autotag.report.modification_report import ModificationReport
 
 
 # Excepción para integridad de fechas
