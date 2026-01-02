@@ -665,7 +665,7 @@ class AssetResponseWrapper:
                     object.__setattr__(self, "asset", updated)
                 except Exception as e:
                     print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
-                self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
+                self.remove_tag_by_name(origin)
             elif has_origin and has_dest:
                 self.remove_tag_by_name(origin, tag_mod_report=tag_mod_report)
 
