@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
+from immich_client.client import Client
+from immich_autotag.report.modification_report import ModificationReport
 from typeguard import typechecked
 
 if TYPE_CHECKING:
@@ -56,7 +58,7 @@ class AlbumResponseWrapper:
             context.asset_manager.get_wrapper_for_asset(a, context) for a in self.album.assets
         ]
     from typing import Optional
-    from immich_client.client import Client
+    # from immich_client.client import Client (already imported at top)
     from immich_autotag.report.modification_report import ModificationReport
 
     @typechecked
