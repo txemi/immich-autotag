@@ -37,7 +37,7 @@ class ModificationEntry:
     asset_wrapper: Any = attrs.field(default=None)
     tag: Optional["TagResponseWrapper"] = attrs.field(
         default=None,
-        validator=attrs.validators.optional(attrs.validators.instance_of(object)),
+        validator=attrs.validators.optional(attrs.validators.instance_of(TagResponseWrapper)),
     )
     album: Optional["AlbumResponseWrapper"] = attrs.field(default=None)
     old_value: Any = attrs.field(default=None)

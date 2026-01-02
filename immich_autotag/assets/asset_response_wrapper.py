@@ -3,6 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
+from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+
 
 # Excepción para integridad de fechas
 class DateIntegrityError(Exception):
@@ -236,20 +239,20 @@ class AssetResponseWrapper:
         tag_name: str,
         verbose: bool = VERBOSE_LOGGING,
         tag_mod_report: ModificationReport | None = None,
-        user: str | None = None,
+        user: UserResponseWrapper | None = None,
         fail_on_error: bool = False,
     ) -> bool:
         """
         Removes all tags from the asset with the given name (case-insensitive), even if they have different IDs (e.g., global and nested tags).
         Returns True if at least one was removed, False if none were found.
         After removal, reloads the asset and checks if the tag is still present. Raises if any remain.
+        Uses TagWrapper from the tag collection for all reporting.
         """
         from immich_client.api.assets import get_asset_info
         from immich_client.api.tags import untag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         # Find all tag objects on the asset with the given name (case-insensitive)
-        # todo: revisar por que hacemos tolower, tiene sentido?
         tags_to_remove = [
             tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
         ]
@@ -263,6 +266,10 @@ class AssetResponseWrapper:
                 f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
             )
             print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
+
+        # Get the TagWrapper from the tag collection for reporting, robust and explicit
+        assert isinstance(self.context.tag_collection, TagCollectionWrapper), "context.tag_collection must be an object"
+        tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
 
         removed_any = False
         for tag in tags_to_remove:
@@ -278,13 +285,11 @@ class AssetResponseWrapper:
                 )
             removed_any = True
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
+                from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
                     kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
                     asset_wrapper=self,
-                    tag_name=tag_name,
+                    tag=tag_wrapper,
                     user=user,
                 )
 
@@ -297,13 +302,11 @@ class AssetResponseWrapper:
         if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
+                from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     asset_wrapper=self,
-                    tag_name=tag_name,
+                    tag=tag_wrapper,
                     user=user,
                     extra={"error": error_msg},
                 )
