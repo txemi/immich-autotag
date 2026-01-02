@@ -104,8 +104,8 @@ class AssetResponseWrapper:
         tag_mod_report.add_modification(
             kind=ModificationKind.UPDATE_ASSET_DATE,
             asset_wrapper=self,
-            old_name=str(old_date) if old_date else None,
-            new_name=str(new_date) if new_date else None,
+            old_value=str(old_date) if old_date else None,
+            new_value=str(new_date) if new_date else None,
             user=user_name,
             extra={"pre_update": True},
         )
