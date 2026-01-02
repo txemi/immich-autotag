@@ -145,7 +145,7 @@ def analyze_and_assign_album(
     )
     for wrapper in all_wrappers:
         wrapper.ensure_autotag_duplicate_album_conflict(
-            conflict, tag_mod_report=tag_mod_report, duplicate_id=duplicate_id
+            conflict, duplicate_id=duplicate_id
         )
 
     if album_decision.is_unique():
@@ -269,7 +269,7 @@ def process_single_asset(
     lock: Lock,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
-    asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS, tag_mod_report=tag_mod_report)
+    asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS)
 
     # Date correction step (configurable)
     if ENABLE_DATE_CORRECTION:

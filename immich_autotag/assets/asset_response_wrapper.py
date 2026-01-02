@@ -230,7 +230,7 @@ class AssetResponseWrapper:
         self,
         tag_name: str,
         verbose: bool = VERBOSE_LOGGING,
-        tag_mod_report: ModificationReport | None = None,
+        # tag_mod_report parameter removed
         user: UserResponseWrapper | None = None,
         fail_on_error: bool = False,
     ) -> bool:
@@ -266,6 +266,8 @@ class AssetResponseWrapper:
         tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
 
         removed_any = False
+        from immich_autotag.report.modification_report import ModificationReport
+        tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
             response = untag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
@@ -278,16 +280,13 @@ class AssetResponseWrapper:
                     f"[INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}"
                 )
             removed_any = True
-            if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
-                tag_mod_report.add_modification(
-                    kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
-                    asset_wrapper=self,
-                    tag=tag_wrapper,
-                    user=user,
-                )
+            from immich_autotag.tags.modification_kind import ModificationKind
+            tag_mod_report.add_modification(
+                kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
+                asset_wrapper=self,
+                tag=tag_wrapper,
+                user=user,
+            )
 
         # Reload asset and check if tag is still present
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
@@ -297,17 +296,14 @@ class AssetResponseWrapper:
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
-            if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
-                tag_mod_report.add_modification(
-                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
-                    asset_wrapper=self,
-                    tag=tag_wrapper,
-                    user=user,
-                    extra={"error": error_msg},
-                )
+            from immich_autotag.tags.modification_kind import ModificationKind
+            tag_mod_report.add_modification(
+                kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                asset_wrapper=self,
+                tag=tag_wrapper,
+                user=user,
+                extra={"error": error_msg},
+            )
             if verbose:
                 print(error_msg)
             if fail_on_error:
@@ -319,7 +315,7 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        tag_mod_report: ModificationReport | None = None,
+        # tag_mod_report parameter removed
         verbose: bool = VERBOSE_LOGGING,
         info: bool = VERBOSE_LOGGING,
     ) -> bool:
@@ -333,9 +329,8 @@ class AssetResponseWrapper:
         from immich_autotag.users.user_response_wrapper import \
             UserResponseWrapper
 
-        if tag_mod_report is None:
-            from immich_autotag.report.modification_report import ModificationReport
-            tag_mod_report = ModificationReport.get_instance()
+        from immich_autotag.report.modification_report import ModificationReport
+        tag_mod_report = ModificationReport.get_instance()
 
         # Obtener el UserWrapper de forma limpia y encapsulada
         user_wrapper = UserResponseWrapper.from_context(self.context)
@@ -586,7 +581,7 @@ class AssetResponseWrapper:
     def ensure_autotag_category_unknown(
         self,
         classified: bool,
-        tag_mod_report: "ModificationReport | None" = None,
+        # tag_mod_report parameter removed
     ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
@@ -594,9 +589,11 @@ class AssetResponseWrapper:
         Idempotent: does nothing if already in correct state.
         """
         tag_name = AUTOTAG_CATEGORY_UNKNOWN
+        from immich_autotag.report.modification_report import ModificationReport
+        tag_mod_report = ModificationReport.get_instance()
         if not classified:
             if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
+                self.add_tag_by_name(tag_name)
                 print(
                     f"[WARN] asset.id={self.id} ({self.original_file_name}) is not classified. Tagged as '{tag_name}'."
                 )
@@ -605,13 +602,13 @@ class AssetResponseWrapper:
                 print(
                     f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it is now classified."
                 )
-                self.remove_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
+                self.remove_tag_by_name(tag_name)
 
     @typechecked
     def ensure_autotag_conflict_category(
         self,
         conflict: bool,
-        tag_mod_report: "ModificationReport | None" = None,
+        # tag_mod_report parameter removed
         user: UserResponseWrapper | None = None,
     ) -> None:
         """
@@ -619,9 +616,11 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         """
         tag_name = AUTOTAG_CATEGORY_CONFLICT
+        from immich_autotag.report.modification_report import ModificationReport
+        tag_mod_report = ModificationReport.get_instance()
         if conflict:
             if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
+                self.add_tag_by_name(tag_name)
                 print(
                     f"[WARN] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tagged as '{tag_name}'."
                 )
@@ -634,14 +633,14 @@ class AssetResponseWrapper:
                 if user is None:
                     user = UserResponseWrapper.from_context(self.context)
                 self.remove_tag_by_name(
-                    tag_name, tag_mod_report=tag_mod_report, user=user
+                    tag_name, user=user
                 )
 
     @typechecked
     def apply_tag_conversions(
         self,
         tag_conversions: list,
-        tag_mod_report: "ModificationReport | None" = None,
+        # tag_mod_report parameter removed
     ) -> None:
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
@@ -789,7 +788,7 @@ class AssetResponseWrapper:
     def ensure_autotag_duplicate_album_conflict(
         self,
         conflict: bool,
-        tag_mod_report: "ModificationReport | None" = None,
+        # tag_mod_report parameter removed
         user: str | None = None,
         duplicate_id: str | None = None,
         verbose: bool = VERBOSE_LOGGING,
@@ -806,7 +805,7 @@ class AssetResponseWrapper:
         # Generic tag
         if conflict:
             if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name, tag_mod_report=tag_mod_report)
+                self.add_tag_by_name(tag_name)
                 if verbose:
                     print(
                         f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'."
@@ -818,14 +817,14 @@ class AssetResponseWrapper:
                         f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved."
                     )
                 self.remove_tag_by_name(
-                    tag_name, tag_mod_report=tag_mod_report, user=user
+                    tag_name, user=user
                 )
         # Per-duplicate-set tag
         if duplicate_id:
             tag_for_set = f"{tag_name}_{duplicate_id}"
             if conflict:
                 if not self.has_tag(tag_for_set):
-                    self.add_tag_by_name(tag_for_set, tag_mod_report=tag_mod_report)
+                    self.add_tag_by_name(tag_for_set)
                     if verbose:
                         print(
                             f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'."
@@ -837,7 +836,7 @@ class AssetResponseWrapper:
                             f"[INFO] Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved."
                         )
                     self.remove_tag_by_name(
-                        tag_for_set, tag_mod_report=tag_mod_report, user=user
+                        tag_for_set, user=user
                     )
 
     @typechecked
