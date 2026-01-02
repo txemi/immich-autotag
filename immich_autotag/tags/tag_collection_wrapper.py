@@ -1,15 +1,14 @@
 import attrs
 from immich_client import Client
 from immich_client.models.tag_response_dto import TagResponseDto
-from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from typeguard import typechecked
+
+from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-    tags: list[TagWrapper] = attrs.field(
-        validator=attrs.validators.instance_of(list)
-    )
+    tags: list[TagWrapper] = attrs.field(validator=attrs.validators.instance_of(list))
 
     @typechecked
     def create_tag_if_not_exists(self, name: str, client) -> TagWrapper:

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-
 from typeguard import typechecked
+
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+
 
 @typechecked
 def print_tags(tag_collection: TagCollectionWrapper) -> None:

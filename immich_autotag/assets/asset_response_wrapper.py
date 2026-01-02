@@ -86,7 +86,8 @@ class AssetResponseWrapper:
                 f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
             )
             print(log_msg)
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
         from immich_autotag.utils.user_helpers import get_current_user
 
         tag_mod_report = ModificationReport.get_instance()
@@ -265,7 +266,9 @@ class AssetResponseWrapper:
             print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
 
         # Get the TagWrapper from the tag collection for reporting, robust and explicit
-        assert isinstance(self.context.tag_collection, TagCollectionWrapper), "context.tag_collection must be an object"
+        assert isinstance(
+            self.context.tag_collection, TagCollectionWrapper
+        ), "context.tag_collection must be an object"
         tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
 
         removed_any = False
@@ -282,7 +285,9 @@ class AssetResponseWrapper:
                 )
             removed_any = True
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
+
                 tag_mod_report.add_modification(
                     kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
                     asset_wrapper=self,
@@ -299,7 +304,9 @@ class AssetResponseWrapper:
         if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
+
                 tag_mod_report.add_modification(
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     asset_wrapper=self,
@@ -329,11 +336,13 @@ class AssetResponseWrapper:
         from immich_client.api.tags import tag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-
-        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        from immich_autotag.users.user_response_wrapper import \
+            UserResponseWrapper
 
         if tag_mod_report is None:
-            from immich_autotag.tags.tag_modification_report import TagModificationReport
+            from immich_autotag.tags.tag_modification_report import \
+                TagModificationReport
+
             tag_mod_report = TagModificationReport.get_instance()
 
         # Obtener el UserWrapper de forma limpia y encapsulada
@@ -360,7 +369,9 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
+
                 tag_mod_report.add_modification(
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     asset_wrapper=self,
@@ -373,7 +384,9 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=None,
                     asset_name=self.original_file_name,
@@ -395,7 +408,9 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,
@@ -418,7 +433,9 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
+
                 tag_mod_report.add_modification(
                     asset_id=self.id_as_uuid,
                     asset_name=self.original_file_name,

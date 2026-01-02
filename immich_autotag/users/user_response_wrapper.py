@@ -7,9 +7,8 @@ from typeguard import typechecked
 
 if TYPE_CHECKING:
     from immich_client.models.user_response_dto import UserResponseDto
+
     from immich_autotag.context.immich_context import ImmichContext
-
-
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -24,6 +23,7 @@ class UserResponseWrapper:
             raise TypeError("UserResponseDto type cannot be imported for validation")
         if not isinstance(value, UserResponseDto):
             raise TypeError(f"user must be a UserResponseDto, got {type(value)}")
+
     user: "UserResponseDto" = attrs.field(validator=_validate_user)
     _cached_user_wrapper = None  # Variable de clase para cachear el usuario
 
@@ -56,7 +56,7 @@ class UserResponseWrapper:
         if cls._cached_user_wrapper is not None:
             return cls._cached_user_wrapper  # type: ignore
         from immich_autotag.utils.user_helpers import get_current_user
+
         user_dto = get_current_user(context)
         cls._cached_user_wrapper = cls(user=user_dto)
         return cls._cached_user_wrapper  # type: ignore
-
