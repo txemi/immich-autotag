@@ -55,7 +55,7 @@ def _check_filename_candidate_and_fix(
     asset_wrapper: AssetResponseWrapper,
     date_sources_list: AssetDateSourcesList,
     immich_date: datetime,
-    verbose: bool = False,
+    verbose: bool = VERBOSE_LOGGING,
 ) -> "DateCorrectionStepResult":
     """
     Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.

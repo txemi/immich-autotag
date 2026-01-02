@@ -29,6 +29,7 @@ from immich_autotag.config.user import (ALBUM_PATTERN,
                                         ENABLE_ALBUM_DETECTION_FROM_FOLDERS)
 from immich_autotag.tags.tag_modification_report import TagModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
+from immich_autotag.config.user import VERBOSE_LOGGING
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
@@ -57,7 +58,7 @@ class AssetResponseWrapper:
         self,
         new_date: datetime,
         check_update_applied: bool = False,
-        verbose: bool = False,
+        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Actualiza la fecha principal (created_at) del asset usando la API de Immich.
@@ -225,7 +226,7 @@ class AssetResponseWrapper:
     def remove_tag_by_name(
         self,
         tag_name: str,
-        verbose: bool = False,
+        verbose: bool = VERBOSE_LOGGING,
         tag_mod_report: TagModificationReport | None = None,
         user: str | None = None,
         fail_on_error: bool = False,
@@ -308,7 +309,7 @@ class AssetResponseWrapper:
         self,
         tag_name: str,
         tag_mod_report: TagModificationReport | None = None,
-        verbose: bool = False,
+        verbose: bool = VERBOSE_LOGGING,
         info: bool = True,
     ) -> bool:
         """
@@ -542,7 +543,7 @@ class AssetResponseWrapper:
         )
 
     @typechecked
-    def check_unique_classification(self, fail_fast: bool = True, verbose: bool = False) -> bool:
+    def check_unique_classification(self, fail_fast: bool = True, verbose: bool = VERBOSE_LOGGING) -> bool:
         """
         Checks if the asset is classified by more than one criterion (tag or album).
         Now considers conflict if the total number of matching tags and albums is greater than 1.
@@ -771,7 +772,7 @@ class AssetResponseWrapper:
         tag_mod_report: "TagModificationReport | None" = None,
         user: str | None = None,
         duplicate_id: str | None = None,
-        verbose: bool = False,
+        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
