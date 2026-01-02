@@ -81,7 +81,29 @@ class SerializableModificationEntry:
     new_value: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
     user_id: Optional[str] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(str)))
     extra: Optional[dict[str, Any]] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(dict)))
-
+    @typechecked
+    def to_log_string(self) -> str:
+        parts = [f"{self.datetime}"]
+        parts.append(f"kind={self.kind}")
+        if self.asset_id:
+            parts.append(f"asset_id={self.asset_id}")
+        if self.asset_name:
+            parts.append(f"name={self.asset_name}")
+        if self.tag_name:
+            parts.append(f"tag={self.tag_name}")
+        if self.album_id:
+            parts.append(f"album_id={self.album_id}")
+        if self.album_name:
+            parts.append(f"album_name={self.album_name}")
+        if self.old_value is not None:
+            parts.append(f"old_value={self.old_value}")
+        if self.new_value is not None:
+            parts.append(f"new_value={self.new_value}")
+        if self.user_id:
+            parts.append(f"user_id={self.user_id}")
+        if self.extra:
+            parts.append(f"extra={self.extra}")
+        return " | ".join(parts)
 
 # TODO: la siguiente clase es mas generiga que tag, requiere refactorizar nombre y ubicacion
 
@@ -313,25 +335,3 @@ class TagModificationReport:
         serializable = entry.to_serializable()
         return serializable.to_log_string()
 
-    def to_log_string(self) -> str:
-        parts = [f"{self.datetime}"]
-        parts.append(f"kind={self.kind}")
-        if self.asset_id:
-            parts.append(f"asset_id={self.asset_id}")
-        if self.asset_name:
-            parts.append(f"name={self.asset_name}")
-        if self.tag_name:
-            parts.append(f"tag={self.tag_name}")
-        if self.album_id:
-            parts.append(f"album_id={self.album_id}")
-        if self.album_name:
-            parts.append(f"album_name={self.album_name}")
-        if self.old_value is not None:
-            parts.append(f"old_value={self.old_value}")
-        if self.new_value is not None:
-            parts.append(f"new_value={self.new_value}")
-        if self.user_id:
-            parts.append(f"user_id={self.user_id}")
-        if self.extra:
-            parts.append(f"extra={self.extra}")
-        return " | ".join(parts)
