@@ -127,7 +127,7 @@ class ModificationReport:
         if self._since_last_flush >= self.batch_size:
             self.flush()
 
-    # todo: revisar old_name y new_name el uso, ya que no solo se usan para nombres, puede ser mejor old_value y new_value?
+    # todo: review old_name and new_name usage, since they are not only used for names, it might be better to use old_value and new_value?
     # Specific methods for each action type
     @typechecked
     def add_tag_modification(
