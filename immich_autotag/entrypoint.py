@@ -125,3 +125,7 @@ def run_main():
         # You can change the max_assets value here or pass it as an external argument
         max_assets = None
         process_assets(context, max_assets=max_assets)
+
+    from immich_autotag.logging.utils import log
+    from immich_autotag.logging.levels import LogLevel
+    log("[OK] Proceso principal finalizado correctamente.", level=LogLevel.FOCUS)

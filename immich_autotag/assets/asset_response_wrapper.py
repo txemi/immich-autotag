@@ -657,15 +657,17 @@ class AssetResponseWrapper:
     def apply_tag_conversions(
         self,
         tag_conversions: list,
-        # tag_mod_report parameter removed
     ) -> None:
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
         - If it does not have the destination tag, add it and reload the asset, then remove the origin tag.
         - If it has both, just remove the origin tag.
-        All actions are logged in tag_mod_report if provided.
+        En modo foco, reporta por log si se ha añadido, quitado o no se ha hecho nada.
         """
         from immich_client.api.assets import get_asset_info
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
+        changes = []
 
         for conv in tag_conversions:
             origin = conv["origin"]
@@ -680,11 +682,21 @@ class AssetResponseWrapper:
                         id=self.id, client=self.context.client
                     )
                     object.__setattr__(self, "asset", updated)
+                    changes.append(f"Añadida etiqueta '{dest}' y eliminada '{origin}'")
                 except Exception as e:
-                    print(f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}")
+                    msg = f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}"
+                    print(msg)
+                    changes.append(f"Fallo al añadir '{dest}', eliminada '{origin}'")
                 self.remove_tag_by_name(origin)
             elif has_origin and has_dest:
                 self.remove_tag_by_name(origin)
+                changes.append(f"Eliminada etiqueta redundante '{origin}' (ya tenía '{dest}')")
+        if changes:
+            for c in changes:
+                log(f"[TAG CONVERSION] {c} en asset {self.id} ({self.original_file_name})", level=LogLevel.FOCUS)
+        else:
+            log(f"[TAG CONVERSION] No se han realizado cambios de etiquetas en asset {self.id} ({self.original_file_name})", level=LogLevel.FOCUS)
+        log(f"[TAG CONVERSION] Finalizada conversión de etiquetas para asset {self.id} ({self.original_file_name})", level=LogLevel.FOCUS)
 
     @typechecked
     def try_detect_album_from_folders(self) -> str | None:
@@ -820,19 +832,21 @@ class AssetResponseWrapper:
 
         tag_name = AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
         # Generic tag
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
         if conflict:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
-                if verbose:
-                    print(
-                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'."
-                    )
+                log(
+                    f"asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'.",
+                    level=LogLevel.FOCUS
+                )
         else:
             if self.has_tag(tag_name):
-                if verbose:
-                    print(
-                        f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved."
-                    )
+                log(
+                    f"Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved.",
+                    level=LogLevel.FOCUS
+                )
                 self.remove_tag_by_name(tag_name, user=user)
         # Per-duplicate-set tag
         if duplicate_id:
@@ -840,16 +854,16 @@ class AssetResponseWrapper:
             if conflict:
                 if not self.has_tag(tag_for_set):
                     self.add_tag_by_name(tag_for_set)
-                    if verbose:
-                        print(
-                            f"[WARN] asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'."
-                        )
+                    log(
+                        f"asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'.",
+                        level=LogLevel.FOCUS
+                    )
             else:
                 if self.has_tag(tag_for_set):
-                    if verbose:
-                        print(
-                            f"[INFO] Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved."
-                        )
+                    log(
+                        f"Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved.",
+                        level=LogLevel.FOCUS
+                    )
                     self.remove_tag_by_name(tag_for_set, user=user)
 
     @typechecked
