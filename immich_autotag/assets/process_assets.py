@@ -177,3 +177,10 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         raise Exception(
             f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
         )
+    # Eliminar el checkpoint si todo termina correctamente
+    if os.path.exists(CHECKPOINT_FILE):
+        try:
+            os.remove(CHECKPOINT_FILE)
+            print(f"[CHECKPOINT] Checkpoint file '{CHECKPOINT_FILE}' deleted after successful run.")
+        except Exception as e:
+            print(f"[WARN] Could not delete checkpoint file '{CHECKPOINT_FILE}': {e}")
