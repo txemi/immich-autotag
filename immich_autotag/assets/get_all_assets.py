@@ -30,6 +30,8 @@ def get_all_assets(
         if response.status_code != 200:
             raise RuntimeError(f"Error: {response.status_code} - {response.content}")
         assets_page = response.parsed.assets.items
+        if not assets_page:
+            break  # No hay más activos, termina el generador
         for asset in assets_page:
             if skip_n and skipped < skip_n:
                 skipped += 1
@@ -45,7 +47,7 @@ def get_all_assets(
                     f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
                 )
         abs_pos = skipped + count
-        response_assets=response.parsed.assets
+        response_assets = response.parsed.assets
         assert isinstance(response_assets, SearchAssetResponseDto)
         total_assets = response_assets.total
         msg = f"Page {page}: {len(assets_page)} assets (full info) | Processed so far: {count} (absolute: {abs_pos}"
@@ -58,3 +60,4 @@ def get_all_assets(
         if not response_assets.next_page:
             break
         page += 1
+    # Garantiza que siempre es un generador: si no hay activos, simplemente termina sin return None
