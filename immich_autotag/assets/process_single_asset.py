@@ -164,21 +164,24 @@ def analyze_and_assign_album(
                 f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed."
             )
     elif conflict:
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
         immich_url = asset_wrapper.get_immich_photo_url().geturl()
         albums_info = album_decision.duplicates_info
-        if verbose:
-            print(
-                f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}"
-            )
+        log(
+            f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}",
+            level=LogLevel.FOCUS
+        )
         details = []
         for _, dup_wrapper in albums_info.get_details().items():
             albums = dup_wrapper.get_album_names()
             details.append(
                 f"{dup_wrapper.get_link().geturl()} | file: {dup_wrapper.asset.original_file_name} | date: {dup_wrapper.asset.created_at} | albums: {albums or '[unavailable]'}"
             )
-        if details and verbose:
-            print(
-                f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details)
+        if details:
+            log(
+                f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details),
+                level=LogLevel.FOCUS
             )
         if fail_on_duplicate_album_conflict:
             raise NotImplementedError(
@@ -269,6 +272,22 @@ def process_single_asset(
     lock: Lock,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
+
+    from immich_autotag.logging.utils import log
+    from immich_autotag.logging.levels import LogLevel
+    try:
+        asset_url = asset_wrapper.get_immich_photo_url().geturl()
+    except Exception as e:
+        asset_name = getattr(asset_wrapper, "original_file_name", None) or getattr(asset_wrapper, "filename", None) or '[sin nombre]'
+        from pprint import pformat
+        details = pformat(vars(asset_wrapper))
+        log(f"[ERROR] No se pudo obtener la URL Immich del asset. Nombre: {asset_name}\nDetalles: {details}", level=LogLevel.FOCUS)
+        raise RuntimeError(f"No se pudo obtener la URL Immich del asset. Nombre: {asset_name}. Excepción: {e}\nDetalles: {details}")
+    asset_name = asset_wrapper.original_file_name 
+    if not asset_name:
+        asset_name = '[sin nombre]'
+    log(f"Procesando asset: {asset_url} | Nombre: {asset_name}", level=LogLevel.FOCUS)
+
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS)
 
     # Date correction step (configurable)
