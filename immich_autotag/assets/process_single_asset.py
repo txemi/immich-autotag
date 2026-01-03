@@ -79,7 +79,7 @@ class AlbumDecision:
         opts = {a for a in opts if re.match(ALBUM_PATTERN, a)}
         if self.album_from_folder:
             opts.add(self.album_from_folder)
-        # Solo devolver álbumes que cumplen el patrón de evento
+        # Only return albums that match the event pattern
         return opts
 
     def valid_albums(self) -> set[str]:
@@ -135,10 +135,10 @@ def analyze_and_assign_album(
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
     """
     album_decision = decide_album_for_asset(asset_wrapper)
-    # Si hay conflicto de álbumes entre duplicados, añade la etiqueta; si no, la elimina si está presente
+    # If there is an album conflict among duplicates, add the conflict tag; otherwise, remove it if present
     conflict = album_decision.has_conflict()
     duplicate_id = asset_wrapper.asset.duplicate_id
-    # Aplica la lógica de la etiqueta de conflicto a todos los duplicados
+    # Apply the conflict tag logic to all duplicates
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()
     )
@@ -204,7 +204,7 @@ def analyze_and_assign_album(
         )
 
 
-# API pública del subpaquete para lógica de etiquetas de duplicados (ubicado dentro de assets)
+ # Public API of the subpackage for duplicate tag logic (located inside assets)
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import \
     analyze_duplicate_classification_tags
 
@@ -236,7 +236,7 @@ def process_single_asset(
             level=LogLevel.FOCUS,
         )
         raise RuntimeError(
-            f"No se pudo obtener la URL Immich del asset. Nombre: {asset_name}. Excepción: {e}\nDetalles: {details}"
+            f"Could not obtain Immich URL for asset. Name: {asset_name}. Exception: {e}\nDetails: {details}"
         )
     asset_name = asset_wrapper.original_file_name
     if not asset_name:

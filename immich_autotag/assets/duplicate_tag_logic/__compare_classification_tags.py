@@ -16,8 +16,8 @@ def compare_classification_tags(
     asset1: "AssetResponseWrapper", asset2: "AssetResponseWrapper"
 ) -> _ClassificationTagComparisonResultObj:
     """
-    Compara las etiquetas de clasificación de dos assets.
-    Devuelve ("equal", None), ("autofix_other", tag), ("autofix_self", tag) o ("conflict", (tags1, tags2)).
+    Compares the classification tags of two assets.
+    Returns ("equal", None), ("autofix_other", tag), ("autofix_self", tag) or ("conflict", (tags1, tags2)).
     """
     tags1: Set[str] = set(asset1.get_classification_tags())
     tags2: Set[str] = set(asset2.get_classification_tags())
