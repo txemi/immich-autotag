@@ -12,37 +12,10 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.perf.print_perf import print_perf
 
-CHECKPOINT_FILE = ".autotag_checkpoint"
 
 # --- Checkpoint helpers (moved to end for style) ---
 
 
-@typechecked
-def load_checkpoint() -> tuple[str | None, int]:
-    """
-    Returns (last_processed_id, count) or (None, 0) if no checkpoint.
-    """
-    if os.path.exists(CHECKPOINT_FILE):
-        with open(CHECKPOINT_FILE, "r") as f:
-            line = f.read().strip()
-            if not line:
-                return None, 0
-            if "," in line:
-                asset_id, count = line.split(",", 1)
-                try:
-                    return asset_id, int(count)
-                except Exception:
-                    return asset_id, 0
-            else:
-                # legacy: only id stored
-                return line, 0
-    return None, 0
-
-
-@typechecked
-def save_checkpoint(asset_id: str, count: int) -> None:
-    with open(CHECKPOINT_FILE, "w") as f:
-        f.write(f"{asset_id},{count}")
 
 
 @typechecked
@@ -178,9 +151,5 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
         )
     # Eliminar el checkpoint si todo termina correctamente
-    if os.path.exists(CHECKPOINT_FILE):
-        try:
-            os.remove(CHECKPOINT_FILE)
-            print(f"[CHECKPOINT] Checkpoint file '{CHECKPOINT_FILE}' deleted after successful run.")
-        except Exception as e:
-            print(f"[WARN] Could not delete checkpoint file '{CHECKPOINT_FILE}': {e}")
+    from immich_autotag.assets.checkpoint_utils import delete_checkpoint
+    delete_checkpoint()
