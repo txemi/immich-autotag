@@ -14,7 +14,7 @@ class DuplicatesLoader:
     duplicates: Optional[DuplicateCollectionWrapper] = None
 
     def load(self):
-        # Usa la función de alto nivel del cliente para obtener duplicados
+        # Use the high-level client function to get duplicates
         duplicates_dto_list = get_asset_duplicates.sync(client=self.client)
         self.duplicates = DuplicateCollectionWrapper.from_api_response(
             duplicates_dto_list

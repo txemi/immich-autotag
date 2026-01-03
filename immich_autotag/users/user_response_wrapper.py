@@ -31,7 +31,7 @@ class UserResponseWrapper:
             )
 
     user: "UserResponseDto" = attrs.field(validator=_validate_user)
-    _cached_user_wrapper = None  # Variable de clase para cachear el usuario
+    _cached_user_wrapper = None  # Class variable to cache the user
 
     @property
     @typechecked
@@ -56,8 +56,8 @@ class UserResponseWrapper:
     @typechecked
     def from_context(cls, context: "ImmichContext") -> "UserResponseWrapper":
         """
-        Obtiene el usuario actual usando el cliente/contexto y devuelve un UserResponseWrapper.
-        El resultado se cachea en una variable de clase (asume usuario inmutable en la sesión).
+        Gets the current user using the client/context and returns a UserResponseWrapper.
+        The result is cached in a class variable (assumes immutable user in the session).
         """
         if cls._cached_user_wrapper is not None:
             return cls._cached_user_wrapper  # type: ignore

@@ -43,7 +43,7 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
         """Returns True if the wrapped asset belongs to this album (high-level API).
-        Si use_cache=True, usa el set cacheado (rápido). Si False, usa búsqueda lineal (lento, solo para pruebas).
+        If use_cache=True, uses the cached set (fast). If False, uses linear search (slow, for testing only).
         """
         if use_cache:
             return asset_wrapper.asset.id in self.asset_ids
@@ -133,7 +133,7 @@ class AlbumResponseWrapper:
 
         from immich_autotag.tags.modification_kind import ModificationKind
 
-        # Evita añadir si ya está
+        # Avoid adding if already present
         if asset_wrapper.id in [a.id for a in self.album.assets or []]:
             return
         result = add_assets_to_album.sync(
@@ -141,7 +141,7 @@ class AlbumResponseWrapper:
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
-        # Validación estricta del resultado
+        # Strict validation of the result
         if not isinstance(result, list):
             raise RuntimeError(
                 f"add_assets_to_album did not return a list, got {type(result)}"
@@ -194,7 +194,7 @@ class AlbumResponseWrapper:
                 asset_wrapper=asset_wrapper,
                 album=self,
             )
-        # Si se solicita, invalidar la caché tras la operación
+        # If requested, invalidate cache after operation
         self.reload_from_api(client)
         self.invalidate_cache()
         # Check that the asset is really in the album after reloading

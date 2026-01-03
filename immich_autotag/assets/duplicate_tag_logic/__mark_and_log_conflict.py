@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 @typechecked
 def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper", verbose: bool) -> None:
     """
-    Marca y loguea el conflicto de etiquetas de clasificación entre duplicados.
+    Marks and logs the classification tag conflict between duplicates.
     """
     from immich_autotag.config.user import (
         AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
@@ -23,7 +23,7 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper", verbose: bool) 
     duplicate_wrappers = get_duplicate_wrappers(asset_wrapper)
     details = [w.format_info() for w in duplicate_wrappers]
     msg = (
-        f"[DUPLICATE TAGS][CONFLICT] Classification tags differ for duplicates. Información detallada de todos los implicados:\n"
+        f"[DUPLICATE TAGS][CONFLICT] Classification tags differ for duplicates. Detailed information of all involved:\n"
         + "\n".join(details)
     )
     log(msg, level=LogLevel.FOCUS)

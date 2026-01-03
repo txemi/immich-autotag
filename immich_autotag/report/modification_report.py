@@ -21,10 +21,10 @@ _instance = None  # Singleton instance
 _instance_created = False  # Class-level flag
 
 
-# Aquí irán las clases:
+# Classes that will go here:
 # - ModificationEntry
 # - SerializableModificationEntry
-# - TagModificationReport (posiblemente renombrada)
+# - TagModificationReport (possibly renamed)
 @attrs.define(auto_attribs=True, slots=True)
 class ModificationReport:
 
@@ -128,7 +128,7 @@ class ModificationReport:
             self.flush()
 
     # todo: revisar old_name y new_name el uso, ya que no solo se usan para nombres, puede ser mejor old_value y new_value?
-    # Métodos específicos para cada tipo de acción
+    # Specific methods for each action type
     @typechecked
     def add_tag_modification(
         self,
@@ -233,7 +233,7 @@ class ModificationReport:
         from immich_autotag.utils.get_immich_album_url import \
             get_immich_photo_url
 
-        # Si es asset, usar el método del wrapper
+        # If it's an asset, use the wrapper method
         if (
             kind
             in {

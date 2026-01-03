@@ -42,7 +42,7 @@ class DuplicateCollectionWrapper:
         cls: type["DuplicateCollectionWrapper"], data: list[DuplicateResponseDto]
     ) -> "DuplicateCollectionWrapper":
         """
-        Construye el mapping de duplicados a partir de la respuesta de la API, usando duplicate_id como clave y la lista de assets como DuplicateAssetGroup.
+        Builds the duplicate mapping from the API response, using duplicate_id as key and the asset list as DuplicateAssetGroup.
         """
         mapping: Dict[UUID, DuplicateAssetGroup] = {}
         for group in data:

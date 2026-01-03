@@ -39,12 +39,12 @@ class AssetManager:
         self, asset_id: UUID, context: "ImmichContext"
     ) -> Optional[AssetResponseWrapper]:
         """
-        Devuelve un asset por su UUID, usando la caché si está disponible,
-        o pidiéndolo a la API y almacenándolo si no.
+        Returns an asset by its UUID, using the cache if available,
+        or requesting it from the API and storing it if not.
         """
         if asset_id in self._assets:
             return self._assets[asset_id]
-        # Si no está, pedirlo a la API y envolverlo
+        # If not cached, request it from the API and wrap it
         from immich_client.api.assets import get_asset_info
 
         dto = get_asset_info.sync(id=str(asset_id), client=self.client)

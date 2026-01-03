@@ -210,7 +210,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         f"[DATE CORRECTION] Unhandled case: Immich date {immich_date} and oldest {oldest} (asset {asset_wrapper.asset.id})\n"
         f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
         f"[DATE CORRECTION][DIFF] Immich date - oldest: {diff_timedelta} ({diff_seconds:.1f} seconds)\n"
-        f"\n[DIAGNÓSTICO COMPLETO]\n{date_sources_list.format_full_info()}"
+        f"\n[COMPLETE DIAGNOSIS]\n{date_sources_list.format_full_info()}"
     )
     log(msg, level=LogLevel.FOCUS)
     raise NotImplementedError(msg)

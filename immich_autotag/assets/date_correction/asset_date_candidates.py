@@ -72,7 +72,7 @@ class AssetDateCandidates:
         """Return all AssetDateCandidate objects (alias for list(self))."""
         return list(self.candidates)
 
-    # Versión simplificada y robusta, usando la comparación de AssetDateCandidate
+    # Simplified and robust version, using AssetDateCandidate comparison
     @typechecked
     def oldest_candidate(self) -> Optional[AssetDateCandidate]:
         """
