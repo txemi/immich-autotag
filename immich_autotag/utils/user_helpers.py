@@ -7,7 +7,7 @@ from typeguard import typechecked
 @typechecked
 def get_current_user(context: Any) -> Any:
     """
-    Devuelve el usuario actual usando el cliente del contexto Immich.
-    Retorna el objeto usuario completo (puedes acceder a .id, .email, .name, etc.).
+    Returns the current user using the Immich context client.
+    Returns the complete user object (you can access .id, .email, .name, etc.).
     """
     return get_my_user.sync(client=context.client)

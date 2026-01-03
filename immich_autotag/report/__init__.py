@@ -1,1 +1,1 @@
-# Paquete de reportes y auditoría de modificaciones
+# Package for reports and modification auditing

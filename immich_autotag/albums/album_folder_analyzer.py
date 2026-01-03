@@ -82,9 +82,9 @@ class AlbumFolderAnalyzer:
             return None
         import re
 
-        SEPARATOR = "/"  # Cambia aquí para modificar el separador en todos los casos
+        SEPARATOR = "/"  # Change here to modify the separator in all cases
         DATE_FORMAT_STR = "YYYY-MM-DD"
-        MAX_ALBUM_DEPTH = 3  # Máximo de carpetas a concatenar tras la fecha
+        MAX_ALBUM_DEPTH = 3  # Maximum folders to concatenate after the date
 
         # 0 date folders: look for folder starting with date (but not only date)
         if self.num_date_folders() == 0:
@@ -107,11 +107,11 @@ class AlbumFolderAnalyzer:
             )
         # 1 date folder
         idx = self.date_folder_indices()[0]
-        # Si la carpeta de fecha está al final y es solo la fecha, ignorar
+        # If the date folder is at the end and is only the date, ignore it
         folder_name = self.folders[idx]
         if idx == len(self.folders) - 1 and len(folder_name) == len(DATE_FORMAT_STR):
             return None
-        # Concatenar desde la carpeta de fecha hasta un máximo de MAX_ALBUM_DEPTH carpetas siguientes
+        # Concatenate from the date folder up to a maximum of MAX_ALBUM_DEPTH following folders
         end_idx = min(idx + 1 + MAX_ALBUM_DEPTH, len(self.folders))
         album_parts = self.folders[idx:end_idx]
         album_name = SEPARATOR.join(album_parts)
@@ -119,6 +119,6 @@ class AlbumFolderAnalyzer:
             raise NotImplementedError(
                 f"Detected album name is suspiciously short: '{album_name}'"
             )
-        # Excluir por patrón en la ruta de carpetas
+        # Exclude by pattern in folder path
 
         return album_name

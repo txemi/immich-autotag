@@ -1,5 +1,5 @@
 """
-Modulo de auditoría y reporte de modificaciones de entidades (tags, álbumes, assets, etc.)
+Module for auditing and reporting entity modifications (tags, albums, assets, etc.)
 """
 
 from __future__ import annotations

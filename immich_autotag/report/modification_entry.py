@@ -1,5 +1,5 @@
 """
-Clase ModificationEntry: representa una modificación rica (con objetos) en el sistema.
+ModificationEntry class: represents a rich modification (with objects) in the system.
 """
 
 from __future__ import annotations

@@ -57,7 +57,7 @@ def get_asset_date_candidates(
             )
         )
 
-    # Detectar fechas en nombres de fichero tipo cámara (FILENAME)
+    # Detect dates in camera-style filenames (FILENAME)
     from immich_autotag.assets.date_correction.extract_date_from_filename import \
         extract_date_from_filename
 

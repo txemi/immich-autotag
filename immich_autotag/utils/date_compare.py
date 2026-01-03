@@ -11,11 +11,11 @@ def is_datetime_more_than_days_after(
     days: float = 1.0,
 ) -> bool:
     """
-    Returns True if dt1 is more than `days` after dt2. Permite días en coma flotante.
+    Returns True if dt1 is more than `days` after dt2. Allows floating-point days.
     Args:
-        dt1 (datetime): Fecha posterior
-        dt2 (datetime): Fecha anterior
-        days (float): Umbral en días (puede ser decimal)
+        dt1 (datetime): Later date
+        dt2 (datetime): Earlier date
+        days (float): Threshold in days (can be decimal)
     """
     if dt1 is None or dt2 is None:
         return False
@@ -30,8 +30,8 @@ def is_datetime_more_than_hours_after(
     """
     Return True if dt1 is more than `hours` after dt2.
     Args:
-        dt1 (datetime): Fecha posterior
-        dt2 (datetime): Fecha anterior
-        hours (float): Umbral en horas
+        dt1 (datetime): Later date
+        dt2 (datetime): Earlier date
+        hours (float): Threshold in hours
     """
     return (dt1 - dt2).total_seconds() > hours * 3600
