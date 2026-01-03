@@ -5,6 +5,7 @@ from typeguard import typechecked
 
 from .estimator import AdaptiveTimeEstimator
 from .estimate_utils import adjust_estimates
+from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 
 @typechecked
@@ -15,6 +16,7 @@ def print_perf(
     estimator: Optional[AdaptiveTimeEstimator] = None,
     skip_n: Optional[int] = None,
     total_assets: Optional[int] = None,
+    estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR,
 ) -> None:
     """
     Print performance statistics for asset processing.
@@ -26,7 +28,7 @@ def print_perf(
     avg = elapsed / count if count else 0
     if total_to_process and count > 0:
         remaining = total_to_process - count
-        if estimator is not None and estimator.get_estimated_time_per_asset() > 0:
+        if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
             ewma = estimator.get_estimated_time_per_asset()
             est_total = ewma * total_to_process
             est_remaining = ewma * remaining
