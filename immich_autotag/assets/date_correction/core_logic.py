@@ -137,81 +137,49 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
     Applies all relevant heuristics and thresholds to avoid false positives.
     """
-    # Always consider all possible date sources, even if there are no duplicates
+    from immich_autotag.logging.utils import log
+    from immich_autotag.logging.levels import LogLevel
+
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
     date_sources_list = AssetDateSourcesList.from_wrappers(asset_wrapper, wrappers)
     flat_candidates = date_sources_list.to_flat_candidates()
-
-    # Get the Immich date (the one visible and modifiable in the UI)
     immich_date: datetime = asset_wrapper.get_best_date()
 
-    # Ya no es necesario el caso WhatsApp: la lógica unificada lo cubre
-
-    # Check if filename-based correction should be applied
     step_result = _check_filename_candidate_and_fix(
         asset_wrapper, date_sources_list, immich_date
     )
     if DateCorrectionStepResult.should_exit(step_result):
+        log(f"[DATE CORRECTION] Fecha corregida por filename para asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})", level=LogLevel.FOCUS)
         return
-    # else, continue processing
 
     if not flat_candidates:
-        if log:
-            print(
-                f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id}"
-            )
+        log(f"[DATE CORRECTION] No date candidates found para asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})", level=LogLevel.FOCUS)
         return
-    if log:
-        print("[DEBUG] Candidate dates and their types/tzinfo:")
-        for candidate in flat_candidates:
-            aware_date = candidate.get_aware_date()
-            print(
-                f"  {candidate.source_kind}: {aware_date!r} (type={type(aware_date)}, tzinfo={getattr(aware_date, 'tzinfo', None)})"
-            )
-    # Use the list method to get the oldest candidate (normalized)
+
     oldest_candidate = date_sources_list.oldest_candidate()
     oldest: datetime = oldest_candidate.get_aware_date()
 
-    # If the Immich date is the oldest or equal to the oldest suggested, do nothing
     if immich_date <= oldest:
-        if log:
-            print(
-                f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do."
-            )
+        log(f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})", level=LogLevel.FOCUS)
         return
-    # If Immich date is the same day as the oldest, do nothing
     if immich_date.date() == oldest.date():
-        if log:
-            print(
-                f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do."
-            )
+        log(f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})", level=LogLevel.FOCUS)
         return
-    # If the best candidate is rounded to midnight and is very close (<4h) to the Immich date, and the Immich date is precise, do nothing
     if _is_precise_and_rounded_midnight_close(immich_date, oldest):
-        if log:
-            print(
-                f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do."
-            )
+        log(f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})", level=LogLevel.FOCUS)
         return
-    # If the difference between Immich date and the oldest is less than a threshold of hours, do nothing (to avoid false positives). This threshold will be reduced as we test and fix more cases.
     diff_seconds_abs = abs((immich_date - oldest).total_seconds())
     if diff_seconds_abs < 20 * 3600:
-        if log:
-            print(
-                f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do."
-            )
+        log(f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})", level=LogLevel.FOCUS)
         return
 
-    # If none of the above conditions are met, raise an error as before
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
-    print(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}")
+    log(f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}", level=LogLevel.FOCUS)
 
-    # Print both dates in UTC for clarity
     def to_utc(dt: datetime) -> datetime:
         return dt.astimezone(ZoneInfo("UTC")) if dt.tzinfo else dt
 
-    # Print the difference between Immich date and the oldest candidate for debugging
     diff_seconds = (immich_date - oldest).total_seconds()
     diff_timedelta = immich_date - oldest
 
@@ -223,5 +191,5 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         f"[DATE CORRECTION][DIFF] Immich date - oldest: {diff_timedelta} ({diff_seconds:.1f} seconds)\n"
         f"\n[DIAGNÓSTICO COMPLETO]\n{date_sources_list.format_full_info()}"
     )
-    print(msg)
+    log(msg, level=LogLevel.FOCUS)
     raise NotImplementedError(msg)
