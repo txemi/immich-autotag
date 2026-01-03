@@ -60,4 +60,5 @@ def get_all_assets(
         if not response_assets.next_page:
             break
         page += 1
+    yield from ()  # Garantiza que siempre es un generador, incluso si no hay activos
     # Garantiza que siempre es un generador: si no hay activos, simplemente termina sin return None
