@@ -30,7 +30,7 @@ class AssetDateSourcesList:
     """
 
     asset_wrapper: "AssetResponseWrapper" = attrs.field()
-    # Cada elemento representa los candidatos de fecha de un asset duplicado
+    # Each element represents the date candidates of a duplicate asset
     date_candidates_per_duplicate: list[AssetDateCandidates] = attrs.field(factory=list)
 
     @typechecked
@@ -94,7 +94,7 @@ class AssetDateSourcesList:
     @typechecked
     def filename_candidates(self) -> list[AssetDateCandidate]:
         """
-        Devuelve todos los candidatos de tipo FILENAME de todos los sets de candidatos.
+        Returns all FILENAME type candidates from all candidate sets.
         """
         result = []
         for candidate_set in self.date_candidates_per_duplicate:
@@ -104,7 +104,7 @@ class AssetDateSourcesList:
     @typechecked
     def oldest_candidate(self) -> Optional["AssetDateCandidate"]:
         """
-        Devuelve el AssetDateCandidate más antiguo entre todos los duplicados.
+        Returns the oldest AssetDateCandidate among all duplicates.
         """
         all_candidates = [
             cset.oldest_candidate()
@@ -118,11 +118,11 @@ class AssetDateSourcesList:
     @typechecked
     def format_full_info(self) -> str:
         lines = []
-        lines.append("==== [AssetDateSourcesList] Diagnóstico completo ====")
-        lines.append(f"Activo principal: {self.asset_wrapper.format_info()}")
+        lines.append("==== [AssetDateSourcesList] Complete diagnosis ====")
+        lines.append(f"Main asset: {self.asset_wrapper.format_info()}")
         lines.append("")
         for i, candidate_set in enumerate(self.date_candidates_per_duplicate):
-            lines.append(f"--- Duplicado #{i+1} ---")
+            lines.append(f"--- Duplicate #{i+1} ---")
             lines.append(candidate_set.format_info())
             lines.append("")
         return "\n".join(lines)
@@ -131,7 +131,7 @@ class AssetDateSourcesList:
     def candidates_by_kinds(
         self, kinds: list[DateSourceKind]
     ) -> list[AssetDateCandidate]:
-        """Devuelve todos los candidatos de todos los duplicados cuyo source_kind está en la lista kinds."""
+        """Returns all candidates from all duplicates whose source_kind is in the kinds list."""
         result = []
         for candidate_set in self.date_candidates_per_duplicate:
             result.extend(candidate_set.candidates_by_kinds(kinds))

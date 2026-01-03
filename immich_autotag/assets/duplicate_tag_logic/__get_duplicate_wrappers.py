@@ -15,7 +15,7 @@ def get_duplicate_wrappers(
     asset_wrapper: AssetResponseWrapper,
 ) -> list[AssetResponseWrapper]:
     """
-    Devuelve la lista de AssetResponseWrapper duplicados para el asset dado.
+    Returns the list of duplicate AssetResponseWrapper for the given asset.
     """
     context = asset_wrapper.context
     return context.duplicates_collection.get_duplicate_asset_wrappers(

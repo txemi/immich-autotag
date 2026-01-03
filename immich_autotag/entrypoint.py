@@ -44,7 +44,7 @@ def run_main():
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import setup_logging
 
-    # Inicializa logging antes de cualquier procesamiento
+    # Initialize logging before any processing
     initialize_logging()
 
     client = Client(
@@ -128,4 +128,4 @@ def run_main():
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
-    log("[OK] Proceso principal finalizado correctamente.", level=LogLevel.FOCUS)
+    log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)

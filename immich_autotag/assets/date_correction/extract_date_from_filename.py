@@ -1,19 +1,19 @@
 """
-Patrones de fechas en nombres de fichero y su origen:
+Date patterns in filenames and their origin:
 
 - WhatsApp: IMG-YYYYMMDD-WAxxxx.jpg, WhatsApp Image YYYY-MM-DD at HH.MM.SS.jpg
-  Origen: Fotos y vídeos enviados/recibidos por WhatsApp.
+  Origin: Photos and videos sent/received via WhatsApp.
   Enum: WHATSAPP_FILENAME, WHATSAPP_PATH
 
-- Android/Samsung cámara: YYYYMMDD_HHMMSS.jpg
-  Origen: Fotos tomadas con la app de cámara de Android/Samsung (por defecto en muchos móviles).
+- Android/Samsung camera: YYYYMMDD_HHMMSS.jpg
+  Origin: Photos taken with the Android/Samsung camera app (default on many mobiles).
   Enum: FILENAME
 
 - iPhone: YYYY-MM-DD_HHMMSS.jpg
-  Origen: Fotos tomadas con la app de cámara de iPhone.
+  Origin: Photos taken with the iPhone camera app.
   Enum: FILENAME
 
-- Otras apps/cámaras: Pueden variar, pero suelen seguir patrones similares.
+- Other apps/cameras: May vary, but usually follow similar patterns.
 
 """
 
@@ -27,11 +27,11 @@ from typeguard import typechecked
 @typechecked
 def extract_date_from_filename(filename: str) -> Optional[datetime]:
     """
-    Extrae fechas de nombres de fichero comunes en móviles/cámaras.
-    Patrones soportados:
+    Extracts dates from common mobile/camera filenames.
+    Supported patterns:
     - Android/Samsung: YYYYMMDD_HHMMSS.jpg
     - iPhone: YYYY-MM-DD_HHMMSS.jpg
-    - Otros: se pueden añadir aquí
+    - Others: can be added here
     """
     # Android/Samsung: 20251215_092429.jpg
     m = re.search(r"(\d{8})[_-](\d{6})", filename)

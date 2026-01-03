@@ -28,7 +28,7 @@ def analyze_duplicate_classification_tags(
     duplicate_id = asset_wrapper.asset.duplicate_id
     if not duplicate_id:
         log(
-            f"[DUPLICATE TAGS] Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name}) no tiene duplicados. Nada que comprobar.",
+            f"[DUPLICATE TAGS] Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name}) has no duplicates. Nothing to check.",
             level=LogLevel.FOCUS,
         )
         return
@@ -62,6 +62,6 @@ def analyze_duplicate_classification_tags(
             return
     if not any_autofix:
         log(
-            f"[DUPLICATE TAGS] No se han realizado cambios de etiquetas de clasificación para asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DUPLICATE TAGS] No classification tag changes were made for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )

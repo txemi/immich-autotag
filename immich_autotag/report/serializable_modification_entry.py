@@ -1,5 +1,5 @@
 """
-Clase SerializableModificationEntry: versión serializable de una modificación para persistencia/exportación.
+SerializableModificationEntry class: serializable version of a modification for persistence/export.
 """
 
 from __future__ import annotations

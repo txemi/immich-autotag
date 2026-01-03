@@ -11,15 +11,15 @@ from .date_source_kind import DateSourceKind
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidate:
     """
-    Representa una fecha candidata ofrecida por un asset (puede ser el asset principal o un duplicado).
-    Cada instancia corresponde a una posible fuente de fecha para ese asset, como la fecha de Immich, la fecha extraída del nombre de archivo, del path, EXIF, etc.
+    Represents a candidate date offered by an asset (can be the main asset or a duplicate).
+    Each instance corresponds to a possible date source for that asset, such as the Immich date, the date extracted from the filename, from the path, EXIF, etc.
 
-    - source_kind: Indica el tipo de fuente de la fecha (ver DateSourceKind).
-    - date: La fecha concreta ofrecida por esa fuente.
-    - file_path: Ruta o nombre de archivo relevante para la fuente (puede ser None).
-    - asset_wrapper: Referencia al asset que ofrece esta fecha (puede ser el principal o un duplicado).
+    - source_kind: Indicates the type of date source (see DateSourceKind).
+    - date: The specific date offered by that source.
+    - file_path: Path or filename relevant to the source (can be None).
+    - asset_wrapper: Reference to the asset offering this date (can be the main or a duplicate).
 
-    Ejemplo: Un asset puede tener varias fechas candidatas (Immich, filename, EXIF, etc.), cada una representada por una instancia de esta clase.
+    Example: An asset can have several candidate dates (Immich, filename, EXIF, etc.), each represented by an instance of this class.
     """
 
     asset_wrapper: AssetResponseWrapper = attrs.field(
@@ -43,8 +43,8 @@ class AssetDateCandidate:
     @typechecked
     def get_aware_date(self, user_tz: Optional[str] = None) -> datetime:
         """
-        Devuelve la fecha como datetime aware (con zona horaria).
-        Si la fecha es naive, usa la zona horaria de usuario (user_tz) o la definida en la configuración (DATE_EXTRACTION_TIMEZONE).
+        Returns the date as an aware datetime (with timezone).
+        If the date is naive, uses the user timezone (user_tz) or the one defined in configuration (DATE_EXTRACTION_TIMEZONE).
         """
         dt = self._date
         if dt.tzinfo is not None:
@@ -74,6 +74,6 @@ class AssetDateCandidate:
         link = (
             aw.get_immich_photo_url().geturl()
             if hasattr(aw, "get_immich_photo_url")
-            else "(sin enlace)"
+            else "(no link)"
         )
-        return f"[{self.source_kind.name}] fecha={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.id} | enlace={link}"
+        return f"[{self.source_kind.name}] date={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.id} | link={link}"

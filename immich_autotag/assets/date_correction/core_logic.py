@@ -78,7 +78,7 @@ def _check_filename_candidate_and_fix(
     from immich_autotag.utils.date_compare import \
         is_datetime_more_than_days_after
 
-    # Usar 1.1 días como umbral
+    # Use 1.1 days as threshold
     candidate_date = best_candidate.get_aware_date()
     immich_time_is_midnight = (
         immich_date.hour == 0 and immich_date.minute == 0 and immich_date.second == 0
@@ -88,12 +88,12 @@ def _check_filename_candidate_and_fix(
         or candidate_date.minute != 0
         or candidate_date.second != 0
     )
-    # Caso 1: diferencia de días grande (como antes)
+    # Case 1: large day difference (as before)
     if is_datetime_more_than_days_after(immich_date, candidate_date, days=1.1):
         if verbose:
-            print("[DATE CORRECTION][DIAGNÓSTICO COMPLETO]")
+            print("[DATE CORRECTION][COMPLETE DIAGNOSIS]")
             print(date_sources_list.format_full_info())
-            print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
+            print("[DATE CORRECTION][SELECTED CANDIDATE]")
             print(best_candidate.format_info())
             print(
                 f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
@@ -104,12 +104,12 @@ def _check_filename_candidate_and_fix(
                 f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
             )
         return DateCorrectionStepResult.FIXED
-    # Caso 2: misma fecha, Immich a medianoche, el candidato tiene hora real y es más antiguo
+    # Case 2: same date, Immich at midnight, candidate has real time and is older
     if candidate_has_time and candidate_date < immich_date:
         if verbose:
-            print("[DATE CORRECTION][PRECISIÓN HORARIA]")
+            print("[DATE CORRECTION][TIME PRECISION]")
             print(date_sources_list.format_full_info())
-            print("[DATE CORRECTION][CANDIDATO ELEGIDO]")
+            print("[DATE CORRECTION][SELECTED CANDIDATE]")
             print(best_candidate.format_info())
             print(
                 f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
@@ -210,7 +210,7 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
         f"[DATE CORRECTION] Unhandled case: Immich date {immich_date} and oldest {oldest} (asset {asset_wrapper.asset.id})\n"
         f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
         f"[DATE CORRECTION][DIFF] Immich date - oldest: {diff_timedelta} ({diff_seconds:.1f} seconds)\n"
-        f"\n[DIAGNÓSTICO COMPLETO]\n{date_sources_list.format_full_info()}"
+        f"\n[COMPLETE DIAGNOSIS]\n{date_sources_list.format_full_info()}"
     )
     log(msg, level=LogLevel.FOCUS)
     raise NotImplementedError(msg)

@@ -1,5 +1,5 @@
 # get_asset_date_sources.py
-# Función: get_asset_date_sources
+# Function: get_asset_date_sources
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.date_correction.asset_date_candidate import \
     AssetDateCandidate
@@ -57,7 +57,7 @@ def get_asset_date_candidates(
             )
         )
 
-    # Detectar fechas en nombres de fichero tipo cámara (FILENAME)
+    # Detect dates in camera-style filenames (FILENAME)
     from immich_autotag.assets.date_correction.extract_date_from_filename import \
         extract_date_from_filename
 

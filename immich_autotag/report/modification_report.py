@@ -1,5 +1,5 @@
 """
-Modulo de auditoría y reporte de modificaciones de entidades (tags, álbumes, assets, etc.)
+Module for auditing and reporting entity modifications (tags, albums, assets, etc.)
 """
 
 from __future__ import annotations
@@ -21,10 +21,10 @@ _instance = None  # Singleton instance
 _instance_created = False  # Class-level flag
 
 
-# Aquí irán las clases:
+# Classes that will go here:
 # - ModificationEntry
 # - SerializableModificationEntry
-# - TagModificationReport (posiblemente renombrada)
+# - TagModificationReport (possibly renamed)
 @attrs.define(auto_attribs=True, slots=True)
 class ModificationReport:
 
@@ -127,8 +127,8 @@ class ModificationReport:
         if self._since_last_flush >= self.batch_size:
             self.flush()
 
-    # todo: revisar old_name y new_name el uso, ya que no solo se usan para nombres, puede ser mejor old_value y new_value?
-    # Métodos específicos para cada tipo de acción
+    # todo: review old_name and new_name usage, since they are not only used for names, it might be better to use old_value and new_value?
+    # Specific methods for each action type
     @typechecked
     def add_tag_modification(
         self,
@@ -233,7 +233,7 @@ class ModificationReport:
         from immich_autotag.utils.get_immich_album_url import \
             get_immich_photo_url
 
-        # Si es asset, usar el método del wrapper
+        # If it's an asset, use the wrapper method
         if (
             kind
             in {

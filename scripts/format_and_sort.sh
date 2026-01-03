@@ -1,51 +1,51 @@
 #!/bin/bash
-# Script para formatear y organizar imports en el proyecto, evitando .venv y librerías externas
+# Script to format and organize imports in the project, avoiding .venv and external libraries
 set -x
 set -e
 
 
-# Detecta la raíz del proyecto y el paquete principal
+# Detect project root and main package
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
 PROJECT_ROOT="$SCRIPT_DIR/.."
 PACKAGE_NAME="immich_autotag"
 
-# Posiciónate en la raíz del proyecto
+# Move to project root
 cd "$PROJECT_ROOT"
 
-# Directorio a formatear (por defecto, la carpeta del paquete principal)
+# Directory to format (default: main package folder)
 TARGET_DIR="${1:-$PACKAGE_NAME}"
 
 
 
-# Exclusiones robustas para evitar formatear .venv y otros directorios externos
+# Robust exclusions to avoid formatting .venv and other external directories
 BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts"
 ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts"
 
 
-# Activa el entorno virtual del proyecto de forma robusta
+# Activate project virtual environment robustly
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
 PROJECT_ROOT="$SCRIPT_DIR/.."
 VENV_PATH="$PROJECT_ROOT/.venv/bin/activate"
 if [ ! -f "$VENV_PATH" ]; then
-	echo "[ERROR] No se ha encontrado el entorno virtual en $VENV_PATH"
-	echo "Ejecuta primero el script de setup: bash setup_venv.sh"
+	echo "[ERROR] Virtual environment not found at $VENV_PATH"
+	echo "First run the setup script: bash setup_venv.sh"
 	exit 1
 fi
 
 source "$VENV_PATH"
 
-# Instala black e isort si no están disponibles
+# Install black and isort if not available
 if ! "$PROJECT_ROOT/.venv/bin/python" -c "import black" 2>/dev/null; then
-	echo "Instalando black en el entorno virtual..."
+	echo "Installing black in the virtual environment..."
 	"$PROJECT_ROOT/.venv/bin/python" -m pip install black
 fi
 if ! "$PROJECT_ROOT/.venv/bin/python" -c "import isort" 2>/dev/null; then
-	echo "Instalando isort en el entorno virtual..."
+	echo "Installing isort in the virtual environment..."
 	"$PROJECT_ROOT/.venv/bin/python" -m pip install isort
 fi
 
-# Formatea el código con Black usando el Python del entorno virtual
+# Format code with Black using the virtual environment Python
 "$PROJECT_ROOT/.venv/bin/python" -m black $BLACK_EXCLUDES "$TARGET_DIR"
 
-# Organiza los imports con isort usando el Python del entorno virtual
+# Organize imports with isort using the virtual environment Python
 "$PROJECT_ROOT/.venv/bin/python" -m isort $ISORT_SKIPS "$TARGET_DIR"

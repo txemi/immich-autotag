@@ -13,13 +13,13 @@ from .date_source_kind import DateSourceKind
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidates:
     """
-    Representa la colección de fechas candidatas proporcionadas por un único asset (activo).
-    Cada instancia de esta clase agrupa todas las posibles fechas extraídas de distintas fuentes (Immich, filename, EXIF, etc.) para ese asset concreto.
+    Represents the collection of candidate dates provided by a single asset (active).
+    Each instance of this class groups all possible dates extracted from different sources (Immich, filename, EXIF, etc.) for that specific asset.
 
-    - asset_wrapper: Referencia al asset del que se han extraído las fechas candidatas.
-    - candidates: Lista de AssetDateCandidate, cada una representando una fuente de fecha para este asset.
+    - asset_wrapper: Reference to the asset from which candidate dates were extracted.
+    - candidates: List of AssetDateCandidate, each representing a date source for this asset.
 
-    Ejemplo: Un asset puede tener fechas de Immich, del nombre de archivo, del path, EXIF, etc. Todas esas fechas se agrupan aquí.
+    Example: An asset can have dates from Immich, filename, path, EXIF, etc. All those dates are grouped here.
     """
 
     asset_wrapper: AssetResponseWrapper = attrs.field()
@@ -72,11 +72,11 @@ class AssetDateCandidates:
         """Return all AssetDateCandidate objects (alias for list(self))."""
         return list(self.candidates)
 
-    # Versión simplificada y robusta, usando la comparación de AssetDateCandidate
+    # Simplified and robust version, using AssetDateCandidate comparison
     @typechecked
     def oldest_candidate(self) -> Optional[AssetDateCandidate]:
         """
-        Devuelve el AssetDateCandidate con la fecha más antigua para este asset.
+        Returns the AssetDateCandidate with the oldest date for this asset.
         """
         if not self.candidates:
             return None
@@ -102,13 +102,13 @@ class AssetDateCandidates:
     def format_info(self) -> str:
         aw = self.asset_wrapper
         lines = [f"[AssetDateCandidates] Asset: {aw.id} | {aw.original_file_name}"]
-        lines.append(f"  Enlace: {aw.get_immich_photo_url().geturl()}")
+        lines.append(f"  Link: {aw.get_immich_photo_url().geturl()}")
         lines.append(
-            f"  Fechas principales: created_at={aw.asset.created_at}, file_created_at={getattr(aw.asset, 'file_created_at', None)}, exif_created_at={getattr(aw.asset, 'exif_created_at', None)}"
+            f"  Main dates: created_at={aw.asset.created_at}, file_created_at={getattr(aw.asset, 'file_created_at', None)}, exif_created_at={getattr(aw.asset, 'exif_created_at', None)}"
         )
         lines.append(f"  Tags: {aw.get_tag_names()}")
         lines.append(f"  Albums: {aw.get_album_names()}")
-        lines.append("  Candidatos de fecha:")
+        lines.append("  Date candidates:")
         for c in self.candidates:
             lines.append("    " + c.format_info())
         return "\n".join(lines)
@@ -117,5 +117,5 @@ class AssetDateCandidates:
     def candidates_by_kinds(
         self, kinds: list[DateSourceKind]
     ) -> List[AssetDateCandidate]:
-        """Devuelve todos los candidatos cuyo source_kind está en la lista kinds."""
+        """Returns all candidates whose source_kind is in the kinds list."""
         return [c for c in self.candidates if c.source_kind in kinds]

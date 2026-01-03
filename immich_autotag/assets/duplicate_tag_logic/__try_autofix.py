@@ -19,7 +19,7 @@ def try_autofix(
     verbose: bool,
 ) -> None:
     """
-    Realiza el autofix de etiquetas de clasificación entre duplicados.
+    Performs autofix of classification tags between duplicates.
     """
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
@@ -27,14 +27,14 @@ def try_autofix(
     if fix_type == _ClassificationTagComparisonResult.AUTOFIX_OTHER:
         duplicate_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
         log(
-            f"[DUPLICATE TAGS][AUTO-FIX] Añadida etiqueta de clasificación '{tag_to_add}' a asset {duplicate_wrapper.asset.id}",
+            f"[DUPLICATE TAGS][AUTO-FIX] Added classification tag '{tag_to_add}' to asset {duplicate_wrapper.asset.id}",
             level=LogLevel.FOCUS,
         )
     elif fix_type == _ClassificationTagComparisonResult.AUTOFIX_SELF:
         asset_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
         log(
-            f"[DUPLICATE TAGS][AUTO-FIX] Añadida etiqueta de clasificación '{tag_to_add}' a asset {asset_wrapper.asset.id}",
+            f"[DUPLICATE TAGS][AUTO-FIX] Added classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}",
             level=LogLevel.FOCUS,
         )
     else:
-        raise ValueError(f"Tipo de autofix desconocido: {fix_type}")
+        raise ValueError(f"Unknown autofix type: {fix_type}")

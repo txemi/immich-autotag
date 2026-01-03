@@ -70,7 +70,7 @@ TAG_CONVERSIONS = [
 # These are typically photos that are not yet organized, and need to be reviewed. You can use the Immich interface to filter by this tag and quickly find all unclassified assets.
 # The goal is to ensure every photo belongs to exactly one event album or is intentionally excluded (e.g., meme, ignore, etc.).
 AUTOTAG_CATEGORY_UNKNOWN = "autotag_output_unknown"
-# TODO: refactorizar a AUTOTAG_CATEGORY_UNKNOWN
+# TODO: refactor to AUTOTAG_CATEGORY_UNKNOWN
 #
 # AUTOTAG_CATEGORY_CONFLICT: This tag is applied to assets that are assigned to more than one event album (i.e., they match multiple groups, which is considered a classification conflict).
 # The ideal is that each photo belongs to only one event album. If a photo is in several, it means the organization needs to be reviewed.
@@ -103,16 +103,16 @@ ENABLE_ALBUM_NAME_STRIP = True
 # Feature flag: Enable album detection from folder names (default: False)
 ENABLE_ALBUM_DETECTION_FROM_FOLDERS = False
 
-# Lista de patrones regex para excluir carpetas de la detección de álbumes por nombre de carpeta.
-# Ejemplo: r"whatsapp" excluye cualquier carpeta que contenga 'whatsapp' en la ruta.
+# List of regex patterns to exclude folders from album detection by folder name.
+# Example: r"whatsapp" excludes any folder containing 'whatsapp' in the path.
 ALBUM_DETECTION_EXCLUDED_PATHS = [
-    r"whatsapp",  # Excluye carpetas de WhatsApp
-    # Añade aquí otros patrones si quieres excluir más carpetas
+    r"whatsapp",  # Excludes WhatsApp folders
+    # Add more patterns here if you want to exclude additional folders
 ]
 
 # Feature flag: Enable date correction for assets (default: False)
 ENABLE_DATE_CORRECTION = False
-# Zona horaria para fechas extraídas de nombres de archivo/carpeta (por defecto UTC, cambiar si tus fotos son siempre de otra zona)
+# Timezone for dates extracted from file/folder names (default UTC, change if your photos are always from another timezone)
 DATE_EXTRACTION_TIMEZONE = "UTC"
 
 # Global flag to control verbose logging throughout the application

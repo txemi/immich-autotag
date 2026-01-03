@@ -1,5 +1,5 @@
 # extract_whatsapp_date_from_path.py
-# Función: extract_whatsapp_date_from_path
+# Function: extract_whatsapp_date_from_path
 import re
 from datetime import datetime
 from typing import Optional
@@ -20,12 +20,12 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
     Returns a datetime if found, else None.
 
     ---
-    # Historial de casos reales que han motivado cambios en la función:
-    - 'VID-20251229-WA0004.mp4'  # Caso real: no detectado inicialmente, añadido soporte robusto para este patrón
+    # History of real cases that motivated changes to the function:
+    - 'VID-20251229-WA0004.mp4'  # Real case: not initially detected, robust support added for this pattern
     ---
     """
-    # Pattern 1: IMG-YYYYMMDD-WAxxxx or VID-YYYYMMDD-WAxxxx (más robusto)
-    # Permite guiones, subrayados, espacios, y extensiones
+    # Pattern 1: IMG-YYYYMMDD-WAxxxx or VID-YYYYMMDD-WAxxxx (more robust)
+    # Allows hyphens, underscores, spaces, and extensions
     m = re.search(
         r"(?:IMG|VID)[-_]?(\d{4})(\d{2})(\d{2})-WA\d+", str(path), re.IGNORECASE
     )

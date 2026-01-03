@@ -30,7 +30,7 @@ class AlbumResponseWrapper:
 
     @cached_property
     def asset_ids(self) -> set[str]:
-        """Set de IDs de assets del álbum, cacheado para acceso O(1) en has_asset."""
+        """Set of album asset IDs, cached for O(1) access in has_asset."""
         return set(a.id for a in self.album.assets) if self.album.assets else set()
 
     @typechecked
@@ -43,7 +43,7 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
         """Returns True if the wrapped asset belongs to this album (high-level API).
-        Si use_cache=True, usa el set cacheado (rápido). Si False, usa búsqueda lineal (lento, solo para pruebas).
+        If use_cache=True, uses the cached set (fast). If False, uses linear search (slow, for testing only).
         """
         if use_cache:
             return asset_wrapper.asset.id in self.asset_ids
@@ -108,13 +108,13 @@ class AlbumResponseWrapper:
     @typechecked
     def get_immich_album_url(self) -> "ParseResult":
         """
-        Devuelve la URL web de Immich para este álbum como ParseResult.
+        Returns the Immich web URL for this album as ParseResult.
         """
         from urllib.parse import urlparse
 
         from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL
 
-        # Suponemos que la URL de álbum es /albums/<id>
+        # Assume album URL is /albums/<id>
         url = f"{IMMICH_WEB_BASE_URL}/albums/{self.album.id}"
         return urlparse(url)
 
@@ -126,14 +126,14 @@ class AlbumResponseWrapper:
         tag_mod_report: "ModificationReport" = None,
     ) -> None:
         """
-        Añade el asset al álbum usando la API y valida el resultado. Lanza excepción si falla.
+        Adds the asset to the album using the API and validates the result. Raises exception if it fails.
         """
         from immich_client.api.albums import add_assets_to_album
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         from immich_autotag.tags.modification_kind import ModificationKind
 
-        # Evita añadir si ya está
+        # Avoid adding if already present
         if asset_wrapper.id in [a.id for a in self.album.assets or []]:
             return
         result = add_assets_to_album.sync(
@@ -141,7 +141,7 @@ class AlbumResponseWrapper:
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
-        # Validación estricta del resultado
+        # Strict validation of the result
         if not isinstance(result, list):
             raise RuntimeError(
                 f"add_assets_to_album did not return a list, got {type(result)}"
@@ -194,13 +194,13 @@ class AlbumResponseWrapper:
                 asset_wrapper=asset_wrapper,
                 album=self,
             )
-        # Si se solicita, invalidar la caché tras la operación
+        # If requested, invalidate cache after operation
         self.reload_from_api(client)
         self.invalidate_cache()
-        # Comprobar que el asset realmente está en el álbum tras recargar
+        # Check that the asset is really in the album after reloading
         if not self.has_asset(asset_wrapper.asset):
             print(
-                f"[WARN] Tras recargar el álbum desde la API, el asset {asset_wrapper.id} NO aparece en el álbum {self.album.id}. Puede ser un problema de consistencia eventual o de la API."
+                f"[WARN] After reloading the album from the API, asset {asset_wrapper.id} does NOT appear in album {self.album.id}. This may be an eventual consistency or API issue."
             )
 
     def invalidate_cache(self):
@@ -212,7 +212,7 @@ class AlbumResponseWrapper:
                 pass
 
     def reload_from_api(self, client: Client):
-        """Recarga el DTO del álbum desde la API y limpia la caché."""
+        """Reloads the album DTO from the API and clears the cache."""
         from immich_client.api.albums import get_album_info
 
         album_dto = get_album_info.sync(id=self.album.id, client=client)
@@ -229,7 +229,7 @@ class AlbumResponseWrapper:
         tag_mod_report: "ModificationReport | None" = None,
     ) -> "AlbumResponseWrapper":
         """
-        Obtiene un álbum por ID, lo envuelve y recorta el nombre si es necesario.
+        Gets an album by ID, wraps it, and trims the name if necessary.
         """
         from immich_client.api.albums import get_album_info
 

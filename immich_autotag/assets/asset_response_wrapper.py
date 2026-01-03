@@ -8,7 +8,7 @@ from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 
-# Excepción para integridad de fechas
+# Exception for date integrity
 class DateIntegrityError(Exception):
     pass
 
@@ -528,7 +528,7 @@ class AssetResponseWrapper:
     @property
     def duplicate_id_as_uuid(self) -> "UUID | None":
         """
-        Devuelve el duplicate_id como UUID (o None si no está presente o es inválido).
+        Returns the duplicate_id as UUID (or None if not present or invalid).
         """
         from uuid import UUID
 
