@@ -3,6 +3,7 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.config.user import VERBOSE_LOGGING
 from .__get_duplicate_wrappers import get_duplicate_wrappers
 from .__compare_classification_tags import compare_classification_tags
+from ._classification_tag_comparison_result_obj import _ClassificationTagComparisonResultObj
 from .__try_autofix import try_autofix
 from .__mark_and_log_conflict import mark_and_log_conflict
 from ._classification_tag_comparison_result import _ClassificationTagComparisonResult
@@ -28,14 +29,14 @@ def analyze_duplicate_classification_tags(
         if duplicate_wrapper.asset.id == asset_wrapper.asset.id:
             continue
         log(f"[DUPLICATE TAGS][INFO] Duplicate asset info:\n{duplicate_wrapper.format_info()}", level=LogLevel.FOCUS)
-        result, tag_info = compare_classification_tags(asset_wrapper, duplicate_wrapper)
-        if result == _ClassificationTagComparisonResult.EQUAL:
+        comp_result = compare_classification_tags(asset_wrapper, duplicate_wrapper)
+        if comp_result.result == _ClassificationTagComparisonResult.EQUAL:
             continue
-        elif result in (_ClassificationTagComparisonResult.AUTOFIX_OTHER, _ClassificationTagComparisonResult.AUTOFIX_SELF):
-            try_autofix(asset_wrapper, duplicate_wrapper, result, tag_info, verbose)
+        elif comp_result.result in (_ClassificationTagComparisonResult.AUTOFIX_OTHER, _ClassificationTagComparisonResult.AUTOFIX_SELF):
+            try_autofix(asset_wrapper, duplicate_wrapper, comp_result.result, comp_result.tag_info, verbose)
             any_autofix = True
             continue
-        elif result == _ClassificationTagComparisonResult.CONFLICT:
+        elif comp_result.result == _ClassificationTagComparisonResult.CONFLICT:
             mark_and_log_conflict(asset_wrapper, verbose)
             return
     if not any_autofix:
