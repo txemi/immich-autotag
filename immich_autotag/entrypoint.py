@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from immich_client import Client
 from typeguard import typechecked
+from immich_autotag.logging.init import initialize_logging
 
 from immich_autotag.albums.album_collection_wrapper import \
     AlbumCollectionWrapper
@@ -36,6 +37,17 @@ def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
 
 @typechecked
 def run_main():
+
+    from immich_autotag.logging.utils import setup_logging
+    from immich_autotag.logging.levels import LogLevel
+
+    from immich_autotag.config.user import FILTER_ASSET_LINKS, VERBOSE_LOGGING
+    import re
+
+
+    # Inicializa logging antes de cualquier procesamiento
+    initialize_logging()
+
     client = Client(
         base_url=IMMICH_BASE_URL,
         headers={"x-api-key": API_KEY},
