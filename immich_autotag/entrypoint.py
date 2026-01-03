@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from immich_client import Client
 from typeguard import typechecked
-from immich_autotag.logging.init import initialize_logging
 
 from immich_autotag.albums.album_collection_wrapper import \
     AlbumCollectionWrapper
@@ -14,6 +13,7 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.duplicates.duplicate_collection_wrapper import \
     DuplicateCollectionWrapper
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
+from immich_autotag.logging.init import initialize_logging
 from immich_autotag.tags.list_tags import list_tags
 
 
@@ -38,12 +38,11 @@ def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
 @typechecked
 def run_main():
 
-    from immich_autotag.logging.utils import setup_logging
-    from immich_autotag.logging.levels import LogLevel
-
-    from immich_autotag.config.user import FILTER_ASSET_LINKS, VERBOSE_LOGGING
     import re
 
+    from immich_autotag.config.user import FILTER_ASSET_LINKS, VERBOSE_LOGGING
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import setup_logging
 
     # Inicializa logging antes de cualquier procesamiento
     initialize_logging()
@@ -126,6 +125,7 @@ def run_main():
         max_assets = None
         process_assets(context, max_assets=max_assets)
 
-    from immich_autotag.logging.utils import log
     from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+
     log("[OK] Proceso principal finalizado correctamente.", level=LogLevel.FOCUS)

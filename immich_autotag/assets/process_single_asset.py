@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from threading import Lock
@@ -123,6 +122,7 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
     detected_album = asset_wrapper.try_detect_album_from_folders()
     return AlbumDecision(duplicates_info=albums_info, album_from_folder=detected_album)
 
+
 @typechecked
 def analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
@@ -147,8 +147,9 @@ def analyze_and_assign_album(
             conflict, duplicate_id=duplicate_id
         )
 
-    from immich_autotag.logging.utils import log
     from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+
     asset_name = asset_wrapper.original_file_name
     asset_id = asset_wrapper.id
     immich_url = asset_wrapper.get_immich_photo_url().geturl()
@@ -158,7 +159,7 @@ def analyze_and_assign_album(
             album_origin = album_decision.get_album_origin(detected_album)
             log(
                 f"[ALBUM ASSIGNMENT] Asset '{asset_name}' will be assigned to album '{detected_album}' (origin: {album_origin}).",
-                level=LogLevel.FOCUS
+                level=LogLevel.FOCUS,
             )
             _process_album_detection(
                 asset_wrapper,
@@ -170,13 +171,13 @@ def analyze_and_assign_album(
         else:
             log(
                 f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_name}'. No assignment performed.",
-                level=LogLevel.FOCUS
+                level=LogLevel.FOCUS,
             )
     elif conflict:
         albums_info = album_decision.duplicates_info
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_name}' not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}",
-            level=LogLevel.FOCUS
+            level=LogLevel.FOCUS,
         )
         details = []
         for _, dup_wrapper in albums_info.get_details().items():
@@ -186,8 +187,9 @@ def analyze_and_assign_album(
             )
         if details:
             log(
-                f"[ALBUM ASSIGNMENT] Duplicates of {asset_wrapper.uuid}:\n" + "\n".join(details),
-                level=LogLevel.FOCUS
+                f"[ALBUM ASSIGNMENT] Duplicates of {asset_wrapper.uuid}:\n"
+                + "\n".join(details),
+                level=LogLevel.FOCUS,
             )
         if fail_on_duplicate_album_conflict:
             raise NotImplementedError(
@@ -198,13 +200,13 @@ def analyze_and_assign_album(
     else:
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_name}' was not assigned to any album. No valid or conflicting options found.",
-            level=LogLevel.FOCUS
+            level=LogLevel.FOCUS,
         )
 
 
-
 # API pública del subpaquete para lógica de etiquetas de duplicados (ubicado dentro de assets)
-from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import analyze_duplicate_classification_tags
+from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import \
+    analyze_duplicate_classification_tags
 
 
 @typechecked
@@ -215,19 +217,30 @@ def process_single_asset(
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
 
-    from immich_autotag.logging.utils import log
     from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+
     try:
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
     except Exception as e:
-        asset_name = getattr(asset_wrapper, "original_file_name", None) or getattr(asset_wrapper, "filename", None) or '[sin nombre]'
+        asset_name = (
+            getattr(asset_wrapper, "original_file_name", None)
+            or getattr(asset_wrapper, "filename", None)
+            or "[sin nombre]"
+        )
         from pprint import pformat
+
         details = pformat(vars(asset_wrapper))
-        log(f"[ERROR] No se pudo obtener la URL Immich del asset. Nombre: {asset_name}\nDetalles: {details}", level=LogLevel.FOCUS)
-        raise RuntimeError(f"No se pudo obtener la URL Immich del asset. Nombre: {asset_name}. Excepción: {e}\nDetalles: {details}")
-    asset_name = asset_wrapper.original_file_name 
+        log(
+            f"[ERROR] No se pudo obtener la URL Immich del asset. Nombre: {asset_name}\nDetalles: {details}",
+            level=LogLevel.FOCUS,
+        )
+        raise RuntimeError(
+            f"No se pudo obtener la URL Immich del asset. Nombre: {asset_name}. Excepción: {e}\nDetalles: {details}"
+        )
+    asset_name = asset_wrapper.original_file_name
     if not asset_name:
-        asset_name = '[sin nombre]'
+        asset_name = "[sin nombre]"
     log(f"Procesando asset: {asset_url} | Nombre: {asset_name}", level=LogLevel.FOCUS)
 
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS)
@@ -262,12 +275,13 @@ def _process_album_detection(
     album_origin: str,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
-    from immich_autotag.logging.utils import log
     from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+
     # Log candidate album always at FOCUS level
     log(
         f"[ALBUM CHECK] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (origin: {album_origin})",
-        level=LogLevel.FOCUS
+        level=LogLevel.FOCUS,
     )
     from immich_client.api.albums import add_assets_to_album
     from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
@@ -281,11 +295,11 @@ def _process_album_detection(
     if asset_wrapper.id not in [a.id for a in album.assets or []]:
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' assigned to album '{detected_album}' (origin: {album_origin})",
-            level=LogLevel.FOCUS
+            level=LogLevel.FOCUS,
         )
         album_wrapper.add_asset(asset_wrapper, client, tag_mod_report=tag_mod_report)
     else:
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' already in album '{detected_album}' (origin: {album_origin}), no action taken.",
-            level=LogLevel.FOCUS
+            level=LogLevel.FOCUS,
         )

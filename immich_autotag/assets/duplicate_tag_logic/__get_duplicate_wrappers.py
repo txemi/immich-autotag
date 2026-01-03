@@ -1,13 +1,19 @@
-from typeguard import typechecked
 from typing import TYPE_CHECKING, List
+
+from typeguard import typechecked
+
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 from typeguard import typechecked
+
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
+
 @typechecked
-def get_duplicate_wrappers(asset_wrapper: AssetResponseWrapper) -> list[AssetResponseWrapper]:
+def get_duplicate_wrappers(
+    asset_wrapper: AssetResponseWrapper,
+) -> list[AssetResponseWrapper]:
     """
     Devuelve la lista de AssetResponseWrapper duplicados para el asset dado.
     """

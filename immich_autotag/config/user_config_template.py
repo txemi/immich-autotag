@@ -31,15 +31,12 @@ CLASSIFIED_TAGS = [
     # This will help future maintainers understand the intent and avoid confusion.
     # Example tags (modify as needed for your use case)
     "meme",  # (LEGACY) Meme: humorous images, no prefix. Keep for compatibility.
-
     "adult_meme",  # (LEGACY) Adult meme: memes with sensitive/NSFW content, no prefix. Keep for compatibility.
-
     "autotag_input_ignore",  # Ignore: photos with no value, discarded from workflow
     # autotag_input_meme: Used to tag images (memes, jokes, viral content, etc.) that are uploaded indiscriminately from mobile devices to Immich.
     # These are not considered relevant family/event photos and should not be mixed with albums of vacations, events, or important memories.
     # This tag helps keep the main photo library focused on meaningful content, while still allowing you to keep memes and similar images for fun or reference.
     "autotag_input_meme",
-
     # autotag_input_adult_meme: Used to tag memes or images that are not suitable for all audiences (NSFW, adult, or sensitive content).
     # The purpose of this tag is to quickly identify and separate content that should not accidentally end up in family albums or be visible in general browsing.
     # This helps maintain a safe and appropriate environment in your main photo library, especially when sharing with family or children.

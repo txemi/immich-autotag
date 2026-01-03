@@ -82,11 +82,16 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             total_to_process = max(1, total_assets - skip_n)
 
     from typeguard import typechecked
-    from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
+
+    from immich_autotag.utils.perf.time_estimation_mode import \
+        TimeEstimationMode
 
     @typechecked
     def perf_log(
-        count: int, elapsed: float, estimator: "AdaptiveTimeEstimator", estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR
+        count: int,
+        elapsed: float,
+        estimator: "AdaptiveTimeEstimator",
+        estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR,
     ) -> None:
         print_perf(
             count,

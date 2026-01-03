@@ -1,6 +1,8 @@
-
 from typing import Optional
+
 from typeguard import typechecked
+
+
 @typechecked
 def adjust_estimates(
     elapsed: float,

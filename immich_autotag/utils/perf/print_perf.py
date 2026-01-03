@@ -2,10 +2,10 @@ from typing import Optional
 
 from typeguard import typechecked
 
-
-from .estimator import AdaptiveTimeEstimator
-from .estimate_utils import adjust_estimates
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
+
+from .estimate_utils import adjust_estimates
+from .estimator import AdaptiveTimeEstimator
 
 
 @typechecked
@@ -28,7 +28,11 @@ def print_perf(
     avg = elapsed / count if count else 0
     if total_to_process and count > 0:
         remaining = total_to_process - count
-        if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
+        if (
+            estimation_mode == TimeEstimationMode.EWMA
+            and estimator is not None
+            and estimator.get_estimated_time_per_asset() > 0
+        ):
             ewma = estimator.get_estimated_time_per_asset()
             est_total = ewma * total_to_process
             est_remaining = ewma * remaining
@@ -58,4 +62,6 @@ def print_perf(
         msg += f") assets processed. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
         print(msg)
     else:
-        print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s. Elapsed: {elapsed:.1f} s")
+        print(
+            f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s. Elapsed: {elapsed:.1f} s"
+        )
