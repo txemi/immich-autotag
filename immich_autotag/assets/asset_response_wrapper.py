@@ -688,7 +688,7 @@ class AssetResponseWrapper:
         For each tag conversion (origin -> destination), if the asset has the origin tag:
         - If it does not have the destination tag, add it and reload the asset, then remove the origin tag.
         - If it has both, just remove the origin tag.
-        En modo foco, reporta por log si se ha añadido, quitado o no se ha hecho nada.
+        In focus mode, logs if a tag was added, removed, or nothing was done.
         """
         from immich_client.api.assets import get_asset_info
 
@@ -710,30 +710,30 @@ class AssetResponseWrapper:
                         id=self.id, client=self.context.client
                     )
                     object.__setattr__(self, "asset", updated)
-                    changes.append(f"Añadida etiqueta '{dest}' y eliminada '{origin}'")
+                    changes.append(f"Added tag '{dest}' and removed '{origin}'")
                 except Exception as e:
                     msg = f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}"
                     print(msg)
-                    changes.append(f"Fallo al añadir '{dest}', eliminada '{origin}'")
+                    changes.append(f"Failed to add '{dest}', removed '{origin}'")
                 self.remove_tag_by_name(origin)
             elif has_origin and has_dest:
                 self.remove_tag_by_name(origin)
                 changes.append(
-                    f"Eliminada etiqueta redundante '{origin}' (ya tenía '{dest}')"
+                    f"Removed redundant tag '{origin}' (already had '{dest}')"
                 )
         if changes:
             for c in changes:
                 log(
-                    f"[TAG CONVERSION] {c} en asset {self.id} ({self.original_file_name})",
+                    f"[TAG CONVERSION] {c} on asset {self.id} ({self.original_file_name})",
                     level=LogLevel.FOCUS,
                 )
         else:
             log(
-                f"[TAG CONVERSION] No se han realizado cambios de etiquetas en asset {self.id} ({self.original_file_name})",
+                f"[TAG CONVERSION] No tag changes performed on asset {self.id} ({self.original_file_name})",
                 level=LogLevel.FOCUS,
             )
         log(
-            f"[TAG CONVERSION] Finalizada conversión de etiquetas para asset {self.id} ({self.original_file_name})",
+            f"[TAG CONVERSION] Tag conversion finished for asset {self.id} ({self.original_file_name})",
             level=LogLevel.FOCUS,
         )
 
@@ -753,7 +753,7 @@ class AssetResponseWrapper:
         # If already classified by tag or album, skip
         if self.is_asset_classified():
             return None
-        # TODO: REVISAR SI LA LOGICA DE ABAJO ESTA EN EL METODO ANTERIOR is_asset_classified
+        # TODO: REVIEW IF THE LOGIC BELOW IS IN THE PREVIOUS METHOD is_asset_classified
         # If already in an album matching ALBUM_PATTERN, skip
         if any(re.match(ALBUM_PATTERN, name) for name in self.get_album_names()):
             return None
@@ -773,7 +773,7 @@ class AssetResponseWrapper:
         context: "ImmichContext",
     ) -> "AssetResponseWrapper":
         """
-        Crea un AssetResponseWrapper a partir de un DTO y un contexto.
+        Creates an AssetResponseWrapper from a DTO and a context.
         """
         return cls(asset=dto, context=context)
 
@@ -912,8 +912,8 @@ class AssetResponseWrapper:
         try:
             link = self.get_immich_photo_url().geturl()
         except Exception:
-            link = "(sin enlace)"
-        lines.append(f"  Enlace: {link}")
+            link = "(no link)"
+        lines.append(f"  Link: {link}")
         lines.append(f"  created_at: {getattr(self.asset, 'created_at', None)}")
         lines.append(
             f"  file_created_at: {getattr(self.asset, 'file_created_at', None)}"
