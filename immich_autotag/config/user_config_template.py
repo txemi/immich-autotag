@@ -1,7 +1,6 @@
 # Immich user configuration template
 # Copy this file to 'immich_user_config.py' and edit the values for your instance.
 
-
 # DISCLAIMER: CONFIGURATION AS CODE (TEMPORARY)
 # =============================================
 # WARNING! This configuration is written as Python code and is located inside the main package for refactoring and development agility reasons.
@@ -9,7 +8,6 @@
 # This decision is TEMPORARY and allows us to include small code fragments and logic in the configuration during this period of major changes.
 # There is an open issue to decide the future of the configuration system and migrate to a more standard format once refactoring is complete.
 # If you have questions or suggestions, please check the relevant issue and don't worry: this will be fixed!
-
 
 # Immich host or domain (can be IP or DNS name)
 # Example: "immich.example.com" or "192.168.1.100"
@@ -20,6 +18,7 @@ IMMICH_PORT = 2283
 
 # Immich API key (replace with your own key)
 API_KEY = "YOUR_IMMICH_API_KEY_HERE"
+
 # List of asset links or IDs to filter processing. If empty, all assets are processed. If not empty, only these assets will be processed and verbose logging will be enabled automatically.
 FILTER_ASSET_LINKS = []
 
@@ -32,12 +31,15 @@ CLASSIFIED_TAGS = [
     # This will help future maintainers understand the intent and avoid confusion.
     # Example tags (modify as needed for your use case)
     "meme",  # (LEGACY) Meme: humorous images, no prefix. Keep for compatibility.
+
     "adult_meme",  # (LEGACY) Adult meme: memes with sensitive/NSFW content, no prefix. Keep for compatibility.
+
     "autotag_input_ignore",  # Ignore: photos with no value, discarded from workflow
     # autotag_input_meme: Used to tag images (memes, jokes, viral content, etc.) that are uploaded indiscriminately from mobile devices to Immich.
     # These are not considered relevant family/event photos and should not be mixed with albums of vacations, events, or important memories.
     # This tag helps keep the main photo library focused on meaningful content, while still allowing you to keep memes and similar images for fun or reference.
     "autotag_input_meme",
+
     # autotag_input_adult_meme: Used to tag memes or images that are not suitable for all audiences (NSFW, adult, or sensitive content).
     # The purpose of this tag is to quickly identify and separate content that should not accidentally end up in family albums or be visible in general browsing.
     # This helps maintain a safe and appropriate environment in your main photo library, especially when sharing with family or children.
