@@ -21,13 +21,6 @@ from immich_autotag.context.immich_context import ImmichContext
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
-    def reload_from_api(self, client: Client):
-        """Recarga el DTO del álbum desde la API y limpia la caché."""
-        from immich_client.api.albums import get_album_by_id
-        album_dto = get_album_by_id.sync(id=self.album.id, client=client)
-        object.__setattr__(self, "album", album_dto)
-        self.invalidate_cache()
-
 
 
 
@@ -132,7 +125,6 @@ class AlbumResponseWrapper:
         asset_wrapper: "AssetResponseWrapper",
         client: Client,
         tag_mod_report: "ModificationReport" = None,
-        invalidate_cache: bool = False,
     ) -> None:
         """
         Añade el asset al álbum usando la API y valida el resultado. Lanza excepción si falla.
@@ -194,8 +186,9 @@ class AlbumResponseWrapper:
                 album=self,
             )
         # Si se solicita, invalidar la caché tras la operación
-        if invalidate_cache:
-            self.invalidate_cache()
+        self.reload_from_api(client)
+        self.invalidate_cache()
+        # todo: chequear que lo que hemos recargado tienen el asset añadido
     def invalidate_cache(self):
         """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
         if hasattr(self, "asset_ids"):
@@ -203,3 +196,10 @@ class AlbumResponseWrapper:
                 del self.asset_ids
             except Exception:
                 pass
+    def reload_from_api(self, client: Client):
+        """Recarga el DTO del álbum desde la API y limpia la caché."""
+        from immich_client.api.albums import get_album_by_id
+        album_dto = get_album_by_id.sync(id=self.album.id, client=client)
+        object.__setattr__(self, "album", album_dto)
+        self.invalidate_cache()
+
