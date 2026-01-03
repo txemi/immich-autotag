@@ -180,7 +180,7 @@ def analyze_and_assign_album(
             )
         if details:
             log(
-                f"[ALBUM ASSIGNMENT] Duplicates of {asset_id}:\n" + "\n".join(details),
+                f"[ALBUM ASSIGNMENT] Duplicates of {asset_wrapper.uuid}:\n" + "\n".join(details),
                 level=LogLevel.FOCUS
             )
         if fail_on_duplicate_album_conflict:
