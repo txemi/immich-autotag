@@ -52,9 +52,9 @@ class AssetResponseWrapper:
     def __attrs_post_init__(self) -> None:
         # Avoid direct reference to ImmichContext to prevent NameError/circular import
 
-        # todo: esto refactoriza mal, hacer un import no mirar el nombre de la clase
+        # TODO: this refactors poorly, do an import, do not check the class name
         if self.context.__class__.__name__ != "ImmichContext":
-            raise TypeError(f"context debe ser ImmichContext, no {type(self.context)}")
+            raise TypeError(f"context must be ImmichContext, not {type(self.context)}")
 
     @typechecked
     def update_date(
@@ -64,21 +64,21 @@ class AssetResponseWrapper:
         verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
-        Actualiza la fecha principal (created_at) del asset usando la API de Immich.
-        Si se proporciona tag_mod_report, registra la modificación.
+        Updates the main date (created_at) of the asset using the Immich API.
+        If tag_mod_report is provided, logs the modification.
         """
         import pytz
         from immich_client.api.assets import update_asset
         from immich_client.models.update_asset_dto import UpdateAssetDto
 
         old_date = self.asset.created_at
-        # Asegura que la fecha es timezone-aware en UTC
+        # Ensure the date is timezone-aware in UTC
         if new_date.tzinfo is None:
             raise ValueError(
-                "[ERROR] new_date debe ser timezone-aware. Recibido naive datetime. No se actualiza el asset."
+                "[ERROR] new_date must be timezone-aware. Received naive datetime. Asset will not be updated."
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
-        # Log and print before updating the asset, incluyendo enlace a la foto en Immich
+        # Log and print before updating the asset, including link to the photo in Immich
         if verbose:
             photo_url_obj = self.get_immich_photo_url()
             photo_url = photo_url_obj.geturl()
@@ -122,7 +122,7 @@ class AssetResponseWrapper:
 
         if check_update_applied:
             max_retries = 3
-            retry_delay = 1.5  # segundos
+            retry_delay = 1.5  # seconds
             for attempt in range(max_retries):
                 updated_asset = get_asset_info.sync(
                     id=self.id, client=self.context.client
@@ -137,12 +137,12 @@ class AssetResponseWrapper:
                 if attempt < max_retries - 1:
                     if verbose:
                         print(
-                            f"[WARN] Fecha no actualizada aún tras update (intento {attempt+1}/{max_retries}), esperando {retry_delay}s..."
+                            f"[WARN] Date not updated yet after update (attempt {attempt+1}/{max_retries}), waiting {retry_delay}s..."
                         )
                     time.sleep(retry_delay)
-            # Si tras los reintentos sigue sin actualizar, imprimir todas las fechas y warning
+            # If after retries it is still not updated, print all dates and warning
             if verbose:
-                print("[DEBUG][AFTER UPDATE] Fechas del asset actualizado:")
+                print("[DEBUG][AFTER UPDATE] Dates of the updated asset:")
                 print(
                     f"  created_at:      {getattr(updated_asset, 'created_at', None)}"
                 )
@@ -164,7 +164,7 @@ class AssetResponseWrapper:
     @typechecked
     def get_immich_photo_url(self) -> ParseResult:
         """
-        Devuelve la URL web de Immich para este asset como string.
+        Returns the Immich web URL for this asset as a string.
         """
         from immich_autotag.utils.url_helpers import get_immich_photo_url
 
@@ -173,27 +173,27 @@ class AssetResponseWrapper:
     @typechecked
     def get_best_date(self) -> datetime:
         """
-        Devuelve la mejor fecha posible para el asset, usando solo campos del DTO:
+        Returns the best possible date for the asset, using only DTO fields:
         - created_at
         - file_created_at
         - exif_created_at
-        Elige la más antigua y lanza excepción si alguna es anterior a la elegida.
+        Chooses the oldest and raises an exception if any is earlier than the chosen one.
         """
         date_candidates: List[datetime] = []
-        # Solo fechas del DTO
+        # Only DTO dates
         for attr in ("created_at", "file_created_at", "exif_created_at"):
             dt = getattr(self.asset, attr, None)
             if dt is not None:
                 if not isinstance(dt, datetime):
-                    raise TypeError(f"{attr} no es datetime: {dt!r}")
+                    raise TypeError(f"{attr} is not datetime: {dt!r}")
                 date_candidates.append(dt)
         if not date_candidates:
-            raise ValueError("No se pudo determinar ninguna fecha para el asset.")
+            raise ValueError("Could not determine any date for the asset.")
         best_date = min(date_candidates)
         for d in date_candidates:
             if d < best_date:
                 raise DateIntegrityError(
-                    f"Integridad rota: se encontró una fecha ({d}) anterior a la mejor fecha seleccionada ({best_date}) para el asset {self.asset.id}"
+                    f"Integrity broken: found a date ({d}) earlier than the best selected date ({best_date}) for asset {self.asset.id}"
                 )
         return best_date
 
