@@ -122,8 +122,6 @@ def decide_album_for_asset(asset_wrapper: "AssetResponseWrapper") -> AlbumDecisi
     detected_album = asset_wrapper.try_detect_album_from_folders()
     return AlbumDecision(duplicates_info=albums_info, album_from_folder=detected_album)
 
-
-@typechecked
 @typechecked
 def analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
@@ -148,10 +146,19 @@ def analyze_and_assign_album(
             conflict, duplicate_id=duplicate_id
         )
 
+    from immich_autotag.logging.utils import log
+    from immich_autotag.logging.levels import LogLevel
+    asset_name = asset_wrapper.original_file_name
+    asset_id = asset_wrapper.id
+    immich_url = asset_wrapper.get_immich_photo_url().geturl()
     if album_decision.is_unique():
         detected_album = album_decision.get_unique()
         if detected_album:
             album_origin = album_decision.get_album_origin(detected_album)
+            log(
+                f"[ALBUM ASSIGNMENT] Asset '{asset_name}' will be assigned to album '{detected_album}' (origin: {album_origin}).",
+                level=LogLevel.FOCUS
+            )
             _process_album_detection(
                 asset_wrapper,
                 tag_mod_report,
@@ -160,16 +167,14 @@ def analyze_and_assign_album(
                 suppress_album_already_belongs_log=suppress_album_already_belongs_log,
             )
         else:
-            print(
-                f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_wrapper.original_file_name}'. No assignment performed."
+            log(
+                f"[ALBUM ASSIGNMENT] No valid album found for asset '{asset_name}'. No assignment performed.",
+                level=LogLevel.FOCUS
             )
     elif conflict:
-        from immich_autotag.logging.utils import log
-        from immich_autotag.logging.levels import LogLevel
-        immich_url = asset_wrapper.get_immich_photo_url().geturl()
         albums_info = album_decision.duplicates_info
         log(
-            f"[ALBUM ASSIGNMENT] Asset {asset_wrapper.original_file_name} not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}",
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' not assigned to any album due to conflict: multiple valid album options {album_decision.valid_albums()}\nSee asset: {immich_url}",
             level=LogLevel.FOCUS
         )
         details = []
@@ -189,6 +194,11 @@ def analyze_and_assign_album(
             )
         # No assignment performed debido a ambigüedad/conflicto
         return
+    else:
+        log(
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' was not assigned to any album. No valid or conflicting options found.",
+            level=LogLevel.FOCUS
+        )
 
 
 @typechecked
@@ -319,11 +329,13 @@ def _process_album_detection(
     album_origin: str,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
-    # Only log candidate album if not suppressing already-belongs log (i.e., in dry-run/check mode)
-    if not suppress_album_already_belongs_log:
-        print(
-            f"[ALBUM CHECK] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (origin: {album_origin})"
-        )
+    from immich_autotag.logging.utils import log
+    from immich_autotag.logging.levels import LogLevel
+    # Log candidate album always at FOCUS level
+    log(
+        f"[ALBUM CHECK] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (origin: {album_origin})",
+        level=LogLevel.FOCUS
+    )
     from immich_client.api.albums import add_assets_to_album
     from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
 
@@ -334,12 +346,13 @@ def _process_album_detection(
     )
     album = album_wrapper.album
     if asset_wrapper.id not in [a.id for a in album.assets or []]:
-        print(
-            f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' assigned to album '{detected_album}' (origin: {album_origin})"
+        log(
+            f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' assigned to album '{detected_album}' (origin: {album_origin})",
+            level=LogLevel.FOCUS
         )
         album_wrapper.add_asset(asset_wrapper, client, tag_mod_report=tag_mod_report)
     else:
-        if not suppress_album_already_belongs_log:
-            print(
-                f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' already in album '{detected_album}' (origin: {album_origin}), no action taken."
-            )
+        log(
+            f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' already in album '{detected_album}' (origin: {album_origin}), no action taken.",
+            level=LogLevel.FOCUS
+        )
