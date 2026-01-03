@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generator
+from typing import Generator, Optional
 
 from immich_client.api.assets import get_asset_info
 from immich_client.api.search import search_assets
@@ -16,7 +16,9 @@ from immich_autotag.context.immich_context import ImmichContext
 @typechecked
 def get_all_assets(
     context: "ImmichContext", max_assets: int | None = None, skip_n: int = 0
-) -> "Generator[AssetResponseWrapper, None, None]":
+) -> Optional[Generator[AssetResponseWrapper, None, None]]:
+    # NOTA: El typeguard de Python no soporta bien generadores vacíos, por eso permitimos Optional en el retorno.
+    # Si no hay activos, la función puede devolver None y no un generador vacío.
     """
     Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
     Skips the first `skip_n` assets efficiently (without fetching their full info).
@@ -60,5 +62,4 @@ def get_all_assets(
         if not response_assets.next_page:
             break
         page += 1
-    yield from ()  # Garantiza que siempre es un generador, incluso si no hay activos
     # Garantiza que siempre es un generador: si no hay activos, simplemente termina sin return None
