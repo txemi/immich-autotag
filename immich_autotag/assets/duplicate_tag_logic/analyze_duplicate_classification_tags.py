@@ -5,6 +5,7 @@ from .__get_duplicate_wrappers import get_duplicate_wrappers
 from .__compare_classification_tags import compare_classification_tags
 from .__try_autofix import try_autofix
 from .__mark_and_log_conflict import mark_and_log_conflict
+from ._classification_tag_comparison_result import _ClassificationTagComparisonResult
 
 @typechecked
 def analyze_duplicate_classification_tags(
@@ -28,13 +29,13 @@ def analyze_duplicate_classification_tags(
             continue
         log(f"[DUPLICATE TAGS][INFO] Duplicate asset info:\n{duplicate_wrapper.format_info()}", level=LogLevel.FOCUS)
         result, tag_info = compare_classification_tags(asset_wrapper, duplicate_wrapper)
-        if result == "equal":
+        if result == _ClassificationTagComparisonResult.EQUAL:
             continue
-        elif result in ("autofix_other", "autofix_self"):
+        elif result in (_ClassificationTagComparisonResult.AUTOFIX_OTHER, _ClassificationTagComparisonResult.AUTOFIX_SELF):
             try_autofix(asset_wrapper, duplicate_wrapper, result, tag_info, verbose)
             any_autofix = True
             continue
-        elif result == "conflict":
+        elif result == _ClassificationTagComparisonResult.CONFLICT:
             mark_and_log_conflict(asset_wrapper, verbose)
             return
     if not any_autofix:
