@@ -6,7 +6,7 @@ from typeguard import typechecked
 @attrs.define(auto_attribs=True, slots=True)
 class TagWrapper:
     """
-    Wrapper para TagResponseDto que permite añadir métodos y propiedades útiles.
+    Wrapper for TagResponseDto that allows adding useful methods and properties.
     """
 
     tag: TagResponseDto
@@ -33,6 +33,6 @@ class TagWrapper:
     @typechecked
     def get_name(self) -> str:
         """
-        Devuelve el nombre del tag de forma robusta y encapsulada.
+        Returns the tag name in a robust and encapsulated manner.
         """
         return self.name
