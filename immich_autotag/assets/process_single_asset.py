@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from threading import Lock
@@ -201,78 +202,9 @@ def analyze_and_assign_album(
         )
 
 
-@typechecked
-def analyze_duplicate_classification_tags(
-    asset_wrapper: "AssetResponseWrapper",
-    verbose: bool = VERBOSE_LOGGING,
-) -> None:
-    """
-    If the asset has duplicates, checks the classification tags of each duplicate.
-    If the classification tags (from config) do not match, raises an exception.
-    """
-    from immich_autotag.logging.utils import log
-    from immich_autotag.logging.levels import LogLevel
-    context = asset_wrapper.context
-    duplicate_id = asset_wrapper.asset.duplicate_id
-    if not duplicate_id:
-        log(f"[DUPLICATE TAGS] Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name}) no tiene duplicados. Nada que comprobar.", level=LogLevel.FOCUS)
-        return
-    duplicate_wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(
-        asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context
-    )
-    # todo: imprimir aqui en modo focus una lista de los duplicados?
-    from immich_autotag.config.user import (
-        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX)
 
-    autofix = False
-    conflict = False
-    for duplicate_wrapper in duplicate_wrappers:
-        if duplicate_wrapper.asset.id == asset_wrapper.asset.id:
-            continue
-        if duplicate_wrapper is None:
-            raise RuntimeError(
-                f"Duplicate asset wrapper not found for asset {duplicate_wrapper.asset.id}. This should not happen."
-            )
-        # Log info of each duplicate at the start of the iteration
-        log(f"[DUPLICATE TAGS][INFO] Duplicate asset info:\n{duplicate_wrapper.format_info()}", level=LogLevel.FOCUS)
-        # Compare tags using a method on AssetResponseWrapper
-        if not asset_wrapper.has_same_classification_tags_as(duplicate_wrapper):
-            tags1 = set(asset_wrapper.get_classification_tags())
-            tags2 = set(duplicate_wrapper.get_classification_tags())
-            diff1 = tags1 - tags2
-            diff2 = tags2 - tags1
-            if tags1 and not tags2 and len(tags1) == 1:
-                tag_to_add = next(iter(tags1))
-                duplicate_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
-                log(f"[DUPLICATE TAGS][AUTO-FIX] Añadida etiqueta de clasificación '{tag_to_add}' a asset {duplicate_wrapper.asset.id}", level=LogLevel.FOCUS)
-                autofix = True
-                continue
-            elif tags2 and not tags1 and len(tags2) == 1:
-                tag_to_add = next(iter(tags2))
-                asset_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
-                log(f"[DUPLICATE TAGS][AUTO-FIX] Añadida etiqueta de clasificación '{tag_to_add}' a asset {asset_wrapper.asset.id}", level=LogLevel.FOCUS)
-                autofix = True
-                continue
-            # Otherwise, print and tag all duplicates with conflict tags
-            all_wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(
-                asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context
-            )
-            details = []
-            for w in all_wrappers:
-                details.append(w.format_info())
-            msg = f"[DUPLICATE TAGS][CONFLICT] Classification tags differ for duplicates. Información detallada de todos los implicados:\n" + "\n".join(details)
-            log(msg, level=LogLevel.FOCUS)
-            group_tag = f"{AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX}{asset_wrapper.duplicate_id_as_uuid}"
-            for w in all_wrappers:
-                w.add_tag_by_name(
-                    AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT, verbose=verbose
-                )
-                w.add_tag_by_name(group_tag, verbose=verbose)
-            conflict = True
-            return
-    if not autofix and not conflict:
-        log(f"[DUPLICATE TAGS] No se han realizado cambios de etiquetas de clasificación para asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})", level=LogLevel.FOCUS)
+# API pública del subpaquete para lógica de etiquetas de duplicados (ubicado dentro de assets)
+from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import analyze_duplicate_classification_tags
 
 
 @typechecked
