@@ -18,6 +18,8 @@ def validate_and_update_asset_classification(
     If conflict_list is passed, adds the asset to the list if there is a classification conflict.
     """
 
+    from immich_autotag.logging.utils import log
+    from immich_autotag.logging.levels import LogLevel
     tag_names = asset_wrapper.get_tag_names()
     album_names = asset_wrapper.get_album_names()
     classified = asset_wrapper.is_asset_classified()  # Now returns bool
@@ -28,8 +30,8 @@ def validate_and_update_asset_classification(
     asset_wrapper.ensure_autotag_category_unknown(classified)
     asset_wrapper.ensure_autotag_conflict_category(conflict)
 
-    if PRINT_ASSET_DETAILS:
-        print(
-            f"ID: {asset_wrapper.id} | Name: {asset_wrapper.original_file_name} | Favorite: {asset_wrapper.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Classified: {classified} | Date: {asset_wrapper.created_at} | original_path: {asset_wrapper.original_path}"
-        )
+    log(
+        f"[CLASSIFICATION] Asset {asset_wrapper.id} | Name: {asset_wrapper.original_file_name} | Favorite: {asset_wrapper.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Classified: {classified} | Conflict: {conflict} | Date: {asset_wrapper.created_at} | original_path: {asset_wrapper.original_path}",
+        level=LogLevel.FOCUS
+    )
     return bool(tag_names), bool(album_names)

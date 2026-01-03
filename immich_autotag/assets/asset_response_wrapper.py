@@ -599,25 +599,23 @@ class AssetResponseWrapper:
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
         Idempotent: does nothing if already in correct state.
         """
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
         tag_name = AUTOTAG_CATEGORY_UNKNOWN
-        from immich_autotag.report.modification_report import \
-            ModificationReport
-
+        from immich_autotag.report.modification_report import ModificationReport
         tag_mod_report = ModificationReport.get_instance()
         if not classified:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
-                if verbose:
-                    print(
-                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is not classified. Tagged as '{tag_name}'."
-                    )
+                log(f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is not classified. Tagged as '{tag_name}'.", level=LogLevel.FOCUS)
+            else:
+                log(f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is not classified. Tag '{tag_name}' already present.", level=LogLevel.FOCUS)
         else:
             if self.has_tag(tag_name):
-                if verbose:
-                    print(
-                        f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it is now classified."
-                    )
+                log(f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} ({self.original_file_name}) because it is now classified.", level=LogLevel.FOCUS)
                 self.remove_tag_by_name(tag_name)
+            else:
+                log(f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is classified. Tag '{tag_name}' not present.", level=LogLevel.FOCUS)
 
     @typechecked
     def ensure_autotag_conflict_category(
@@ -630,28 +628,26 @@ class AssetResponseWrapper:
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         """
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
         tag_name = AUTOTAG_CATEGORY_CONFLICT
-        from immich_autotag.report.modification_report import \
-            ModificationReport
-
+        from immich_autotag.report.modification_report import ModificationReport
         tag_mod_report = ModificationReport.get_instance()
         if conflict:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
-                if verbose:
-                    print(
-                        f"[WARN] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tagged as '{tag_name}'."
-                    )
+                log(f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tagged as '{tag_name}'.", level=LogLevel.FOCUS)
+            else:
+                log(f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tag '{tag_name}' already present.", level=LogLevel.FOCUS)
         else:
             if self.has_tag(tag_name):
-                if verbose:
-                    print(
-                        f"[INFO] Removing tag '{tag_name}' from asset.id={self.id} because it's no longer in conflict."
-                    )
+                log(f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} ({self.original_file_name}) because it's no longer in conflict.", level=LogLevel.FOCUS)
                 # Si user es None, obtener el wrapper desde el contexto
                 if user is None:
                     user = UserResponseWrapper.from_context(self.context)
                 self.remove_tag_by_name(tag_name, user=user)
+            else:
+                log(f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is not in conflict. Tag '{tag_name}' not present.", level=LogLevel.FOCUS)
 
     @typechecked
     def apply_tag_conversions(
