@@ -3,6 +3,8 @@ import os
 from typeguard import typechecked
 
 CHECKPOINT_FILE = ".autotag_checkpoint"
+
+
 @typechecked
 def load_checkpoint() -> tuple[str | None, int]:
     """
@@ -23,15 +25,21 @@ def load_checkpoint() -> tuple[str | None, int]:
                 # legacy: only id stored
                 return line, 0
     return None, 0
+
+
 @typechecked
 def save_checkpoint(asset_id: str, count: int) -> None:
     with open(CHECKPOINT_FILE, "w") as f:
         f.write(f"{asset_id},{count}")
+
+
 @typechecked
 def delete_checkpoint() -> None:
     if os.path.exists(CHECKPOINT_FILE):
         try:
             os.remove(CHECKPOINT_FILE)
-            print(f"[CHECKPOINT] Checkpoint file '{CHECKPOINT_FILE}' deleted after successful run.")
+            print(
+                f"[CHECKPOINT] Checkpoint file '{CHECKPOINT_FILE}' deleted after successful run."
+            )
         except Exception as e:
             print(f"[WARN] Could not delete checkpoint file '{CHECKPOINT_FILE}': {e}")

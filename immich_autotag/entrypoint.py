@@ -41,9 +41,10 @@ def run_main():
         headers={"x-api-key": API_KEY},
         raise_on_unexpected_status=True,
     )
-    from immich_autotag.config.user import FILTER_ASSET_LINKS
-    from immich_autotag.config.user import VERBOSE_LOGGING
     import re
+
+    from immich_autotag.config.user import FILTER_ASSET_LINKS, VERBOSE_LOGGING
+
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client(client)
     # Load duplicates
@@ -60,38 +61,53 @@ def run_main():
     if FILTER_ASSET_LINKS and len(FILTER_ASSET_LINKS) > 0:
         # Activate verbose logging
         import immich_autotag.config.user as user_config
+
         user_config.VERBOSE_LOGGING = True
         asset_ids = []
         # Accept any URL containing a UUID (v4) as asset ID, regardless of path
-        uuid_pattern = re.compile(r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})")
+        uuid_pattern = re.compile(
+            r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
+        )
         for link in FILTER_ASSET_LINKS:
             match = uuid_pattern.search(link)
             if not match:
-                raise RuntimeError(f"[ERROR] Could not extract asset ID from link: {link}")
+                raise RuntimeError(
+                    f"[ERROR] Could not extract asset ID from link: {link}"
+                )
             asset_ids.append(match.group(1))
         # Load only the specified assets
         wrappers = []
         from uuid import UUID
+
         for asset_id in asset_ids:
             try:
                 asset_uuid = UUID(asset_id)
             except Exception:
-                raise RuntimeError(f"[ERROR] Invalid asset ID (not a valid UUID): {asset_id}")
+                raise RuntimeError(
+                    f"[ERROR] Invalid asset ID (not a valid UUID): {asset_id}"
+                )
             wrapper = asset_manager.get_asset(asset_uuid, context)
             if wrapper is None:
-                raise RuntimeError(f"[ERROR] Asset with ID {asset_id} could not be loaded from API.")
+                raise RuntimeError(
+                    f"[ERROR] Asset with ID {asset_id} could not be loaded from API."
+                )
             wrappers.append(wrapper)
-        print(f"[INFO] Filtered mode: Only processing {len(wrappers)} asset(s) from FILTER_ASSET_LINKS.")
-        from immich_autotag.assets.process_single_asset import process_single_asset
+        print(
+            f"[INFO] Filtered mode: Only processing {len(wrappers)} asset(s) from FILTER_ASSET_LINKS."
+        )
         from threading import Lock
+
+        from immich_autotag.assets.process_single_asset import \
+            process_single_asset
+
         lock = Lock()
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
+
         tag_mod_report = ModificationReport.get_instance()
         for wrapper in wrappers:
             process_single_asset(
-                asset_wrapper=wrapper,
-                tag_mod_report=tag_mod_report,
-                lock=lock
+                asset_wrapper=wrapper, tag_mod_report=tag_mod_report, lock=lock
             )
     else:
         # You can change the max_assets value here or pass it as an external argument

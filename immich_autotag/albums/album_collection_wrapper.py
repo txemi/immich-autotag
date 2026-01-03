@@ -118,7 +118,9 @@ class AlbumCollectionWrapper:
         albums_full: list[AlbumResponseWrapper] = []
         print("\nAlbums:")
         for album in albums:
-            wrapper = AlbumResponseWrapper.from_id(client, album.id, tag_mod_report=tag_mod_report)
+            wrapper = AlbumResponseWrapper.from_id(
+                client, album.id, tag_mod_report=tag_mod_report
+            )
             n_assets = len(wrapper.album.assets) if wrapper.album.assets else 0
             print(f"- {wrapper.album.album_name} (assets: {n_assets})")
             albums_full.append(wrapper)
