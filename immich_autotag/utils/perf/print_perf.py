@@ -2,7 +2,9 @@ from typing import Optional
 
 from typeguard import typechecked
 
+
 from .estimator import AdaptiveTimeEstimator
+from .estimate_utils import adjust_estimates
 
 
 @typechecked
@@ -31,6 +33,8 @@ def print_perf(
         else:
             est_total = avg * total_to_process
             est_remaining = est_total - elapsed
+        # Adjust estimates so est_total >= elapsed and est_remaining >= 0
+        est_total, est_remaining = adjust_estimates(elapsed, est_total, est_remaining)
         percent_rel = (count / total_to_process) * 100
         percent_abs = None
         abs_count = count
@@ -49,7 +53,7 @@ def print_perf(
         msg = f"[PERF] {count}/{total_to_process} ({percent_rel:.1f}% relativo"
         if percent_abs is not None:
             msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absoluto)"
-        msg += f") assets processed. Avg: {avg:.3f} s. Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
+        msg += f") assets processed. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
         print(msg)
     else:
-        print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s")
+        print(f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s. Elapsed: {elapsed:.1f} s")
