@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -200,8 +201,18 @@ class AlbumResponseWrapper:
                 pass
     def reload_from_api(self, client: Client):
         """Recarga el DTO del álbum desde la API y limpia la caché."""
-        from immich_client.api.albums import get_album_by_id
-        album_dto = get_album_by_id.sync(id=self.album.id, client=client)
+        from immich_client.api.albums import get_album_info
+        album_dto = get_album_info.sync(id=self.album.id, client=client)
         object.__setattr__(self, "album", album_dto)
         self.invalidate_cache()
 
+    @staticmethod
+    def from_id(client, album_id, tag_mod_report=None):
+        """
+        Obtiene un álbum por ID, lo envuelve y recorta el nombre si es necesario.
+        """
+        from immich_client.api.albums import get_album_info
+        album_full = get_album_info.sync(id=album_id, client=client)
+        wrapper = AlbumResponseWrapper(album=album_full)
+        wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
+        return wrapper
