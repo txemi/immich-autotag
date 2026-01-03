@@ -206,8 +206,15 @@ class AlbumResponseWrapper:
         object.__setattr__(self, "album", album_dto)
         self.invalidate_cache()
 
+    from typeguard import typechecked
+
     @staticmethod
-    def from_id(client, album_id, tag_mod_report=None):
+    @typechecked
+    def from_id(
+        client: "Client",
+        album_id: str,
+        tag_mod_report: "ModificationReport | None" = None
+    ) -> "AlbumResponseWrapper":
         """
         Obtiene un álbum por ID, lo envuelve y recorta el nombre si es necesario.
         """
