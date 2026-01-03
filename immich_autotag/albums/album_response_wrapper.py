@@ -188,7 +188,9 @@ class AlbumResponseWrapper:
         # Si se solicita, invalidar la caché tras la operación
         self.reload_from_api(client)
         self.invalidate_cache()
-        # todo: chequear que lo que hemos recargado tienen el asset añadido
+        # Comprobar que el asset realmente está en el álbum tras recargar
+        if not self.has_asset(asset_wrapper.asset):
+            print(f"[WARN] Tras recargar el álbum desde la API, el asset {asset_wrapper.id} NO aparece en el álbum {self.album.id}. Puede ser un problema de consistencia eventual o de la API.")
     def invalidate_cache(self):
         """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
         if hasattr(self, "asset_ids"):
