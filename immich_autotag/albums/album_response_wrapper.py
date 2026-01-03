@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -22,8 +21,6 @@ from immich_autotag.context.immich_context import ImmichContext
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumResponseWrapper:
-
-
 
     album: AlbumResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AlbumResponseDto)
@@ -120,6 +117,7 @@ class AlbumResponseWrapper:
         # Suponemos que la URL de álbum es /albums/<id>
         url = f"{IMMICH_WEB_BASE_URL}/albums/{self.album.id}"
         return urlparse(url)
+
     @typechecked
     def add_asset(
         self,
@@ -132,7 +130,9 @@ class AlbumResponseWrapper:
         """
         from immich_client.api.albums import add_assets_to_album
         from immich_client.models.bulk_ids_dto import BulkIdsDto
+
         from immich_autotag.tags.modification_kind import ModificationKind
+
         # Evita añadir si ya está
         if asset_wrapper.id in [a.id for a in self.album.assets or []]:
             return
@@ -143,33 +143,41 @@ class AlbumResponseWrapper:
         )
         # Validación estricta del resultado
         if not isinstance(result, list):
-            raise RuntimeError(f"add_assets_to_album did not return a list, got {type(result)}")
+            raise RuntimeError(
+                f"add_assets_to_album did not return a list, got {type(result)}"
+            )
         found = False
         for item in result:
             try:
                 _id = item.id
                 _success = item.success
             except AttributeError:
-                raise RuntimeError(f"Item in add_assets_to_album response missing required attributes: {item}")
+                raise RuntimeError(
+                    f"Item in add_assets_to_album response missing required attributes: {item}"
+                )
             if _id == str(asset_wrapper.id):
                 found = True
                 if not _success:
-                    error_msg = getattr(item, 'error', None)
+                    error_msg = getattr(item, "error", None)
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
                     # Si el error es 'duplicate', solo warning y registrar
-                    if error_msg and 'duplicate' in str(error_msg).lower():
-                        warning_msg = (
-                            f"[WARN] Asset {asset_wrapper.id} is already in album {self.album.id}: duplicate\nAsset link: {asset_url}\nAlbum link: {album_url}"
-                        )
+                    if error_msg and "duplicate" in str(error_msg).lower():
+                        warning_msg = f"[WARN] Asset {asset_wrapper.id} is already in album {self.album.id}: duplicate\nAsset link: {asset_url}\nAlbum link: {album_url}"
                         print(warning_msg)
-                        from immich_autotag.tags.modification_kind import ModificationKind
+                        from immich_autotag.tags.modification_kind import \
+                            ModificationKind
+
                         if tag_mod_report:
                             tag_mod_report.add_assignment_modification(
                                 kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
                                 asset_wrapper=asset_wrapper,
                                 album=self,
-                                extra={"error": error_msg, "asset_url": asset_url, "album_url": album_url},
+                                extra={
+                                    "error": error_msg,
+                                    "asset_url": asset_url,
+                                    "album_url": album_url,
+                                },
                             )
                         return
                     else:
@@ -191,7 +199,10 @@ class AlbumResponseWrapper:
         self.invalidate_cache()
         # Comprobar que el asset realmente está en el álbum tras recargar
         if not self.has_asset(asset_wrapper.asset):
-            print(f"[WARN] Tras recargar el álbum desde la API, el asset {asset_wrapper.id} NO aparece en el álbum {self.album.id}. Puede ser un problema de consistencia eventual o de la API.")
+            print(
+                f"[WARN] Tras recargar el álbum desde la API, el asset {asset_wrapper.id} NO aparece en el álbum {self.album.id}. Puede ser un problema de consistencia eventual o de la API."
+            )
+
     def invalidate_cache(self):
         """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
         if hasattr(self, "asset_ids"):
@@ -199,9 +210,11 @@ class AlbumResponseWrapper:
                 del self.asset_ids
             except Exception:
                 pass
+
     def reload_from_api(self, client: Client):
         """Recarga el DTO del álbum desde la API y limpia la caché."""
         from immich_client.api.albums import get_album_info
+
         album_dto = get_album_info.sync(id=self.album.id, client=client)
         object.__setattr__(self, "album", album_dto)
         self.invalidate_cache()
@@ -213,12 +226,13 @@ class AlbumResponseWrapper:
     def from_id(
         client: "Client",
         album_id: str,
-        tag_mod_report: "ModificationReport | None" = None
+        tag_mod_report: "ModificationReport | None" = None,
     ) -> "AlbumResponseWrapper":
         """
         Obtiene un álbum por ID, lo envuelve y recorta el nombre si es necesario.
         """
         from immich_client.api.albums import get_album_info
+
         album_full = get_album_info.sync(id=album_id, client=client)
         wrapper = AlbumResponseWrapper(album=album_full)
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)

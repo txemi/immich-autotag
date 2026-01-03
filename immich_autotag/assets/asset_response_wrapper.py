@@ -143,14 +143,18 @@ class AssetResponseWrapper:
             # Si tras los reintentos sigue sin actualizar, imprimir todas las fechas y warning
             if verbose:
                 print("[DEBUG][AFTER UPDATE] Fechas del asset actualizado:")
-                print(f"  created_at:      {getattr(updated_asset, 'created_at', None)}")
+                print(
+                    f"  created_at:      {getattr(updated_asset, 'created_at', None)}"
+                )
                 print(
                     f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}"
                 )
                 print(
                     f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}"
                 )
-                print(f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}")
+                print(
+                    f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}"
+                )
                 print(
                     f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
                 )
@@ -432,7 +436,6 @@ class AssetResponseWrapper:
                     ModificationKind
 
                 tag_mod_report.add_modification(
-
                     asset_wrapper=self,
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     tag=tag,
@@ -587,10 +590,10 @@ class AssetResponseWrapper:
 
     @typechecked
     def ensure_autotag_category_unknown(
-            self,
-            classified: bool,
-            verbose: bool = VERBOSE_LOGGING,
-        ) -> None:
+        self,
+        classified: bool,
+        verbose: bool = VERBOSE_LOGGING,
+    ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
@@ -618,11 +621,11 @@ class AssetResponseWrapper:
 
     @typechecked
     def ensure_autotag_conflict_category(
-            self,
-            conflict: bool,
-            user: UserResponseWrapper | None = None,
-            verbose: bool = VERBOSE_LOGGING,
-        ) -> None:
+        self,
+        conflict: bool,
+        user: UserResponseWrapper | None = None,
+        verbose: bool = VERBOSE_LOGGING,
+    ) -> None:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.

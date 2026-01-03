@@ -6,17 +6,16 @@ from threading import Lock
 
 from typeguard import typechecked
 
+from immich_autotag.assets.checkpoint_utils import (delete_checkpoint,
+                                                    load_checkpoint,
+                                                    save_checkpoint)
 from immich_autotag.assets.process_single_asset import process_single_asset
-from immich_autotag.assets.checkpoint_utils import load_checkpoint, save_checkpoint, delete_checkpoint
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.perf.print_perf import print_perf
 
-
 # --- Checkpoint helpers (moved to end for style) ---
-
-
 
 
 @typechecked
@@ -85,7 +84,9 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     from typeguard import typechecked
 
     @typechecked
-    def perf_log(count: int, elapsed: float, estimator: "AdaptiveTimeEstimator") -> None:
+    def perf_log(
+        count: int, elapsed: float, estimator: "AdaptiveTimeEstimator"
+    ) -> None:
         print_perf(
             count,
             elapsed,
@@ -153,4 +154,5 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         )
     # Eliminar el checkpoint si todo termina correctamente
     from immich_autotag.assets.checkpoint_utils import delete_checkpoint
+
     delete_checkpoint()

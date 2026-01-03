@@ -20,6 +20,8 @@ IMMICH_PORT = 2283
 
 # Immich API key (replace with your own key)
 API_KEY = "YOUR_IMMICH_API_KEY_HERE"
+# List of asset links or IDs to filter processing. If empty, all assets are processed. If not empty, only these assets will be processed and verbose logging will be enabled automatically.
+FILTER_ASSET_LINKS = []
 
 # NOTE: We no longer use real tag hierarchy (slashes '/').
 # All tags use underscores '_' instead of slashes. The namespace is only virtual/documentary.
