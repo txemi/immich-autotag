@@ -217,32 +217,35 @@ def analyze_duplicate_classification_tags(
     if not duplicate_id:
         log(f"[DUPLICATE TAGS] Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name}) no tiene duplicados. Nada que comprobar.", level=LogLevel.FOCUS)
         return
-    wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(
+    duplicate_wrappers = context.duplicates_collection.get_duplicate_asset_wrappers(
         asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context
     )
+    # todo: imprimir aqui en modo focus una lista de los duplicados?
     from immich_autotag.config.user import (
         AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
         AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX)
 
     autofix = False
     conflict = False
-    for dup_asset_wrapper in wrappers:
-        if dup_asset_wrapper.asset.id == asset_wrapper.asset.id:
+    for duplicate_wrapper in duplicate_wrappers:
+        if duplicate_wrapper.asset.id == asset_wrapper.asset.id:
             continue
-        if dup_asset_wrapper is None:
+        if duplicate_wrapper is None:
             raise RuntimeError(
-                f"Duplicate asset wrapper not found for asset {dup_asset_wrapper.asset.id}. This should not happen."
+                f"Duplicate asset wrapper not found for asset {duplicate_wrapper.asset.id}. This should not happen."
             )
+        # Log info of each duplicate at the start of the iteration
+        log(f"[DUPLICATE TAGS][INFO] Duplicate asset info:\n{duplicate_wrapper.format_info()}", level=LogLevel.FOCUS)
         # Compare tags using a method on AssetResponseWrapper
-        if not asset_wrapper.has_same_classification_tags_as(dup_asset_wrapper):
+        if not asset_wrapper.has_same_classification_tags_as(duplicate_wrapper):
             tags1 = set(asset_wrapper.get_classification_tags())
-            tags2 = set(dup_asset_wrapper.get_classification_tags())
+            tags2 = set(duplicate_wrapper.get_classification_tags())
             diff1 = tags1 - tags2
             diff2 = tags2 - tags1
             if tags1 and not tags2 and len(tags1) == 1:
                 tag_to_add = next(iter(tags1))
-                dup_asset_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
-                log(f"[DUPLICATE TAGS][AUTO-FIX] Añadida etiqueta de clasificación '{tag_to_add}' a asset {dup_asset_wrapper.asset.id}", level=LogLevel.FOCUS)
+                duplicate_wrapper.add_tag_by_name(tag_to_add, verbose=verbose)
+                log(f"[DUPLICATE TAGS][AUTO-FIX] Añadida etiqueta de clasificación '{tag_to_add}' a asset {duplicate_wrapper.asset.id}", level=LogLevel.FOCUS)
                 autofix = True
                 continue
             elif tags2 and not tags1 and len(tags2) == 1:
@@ -257,10 +260,8 @@ def analyze_duplicate_classification_tags(
             )
             details = []
             for w in all_wrappers:
-                link = w.get_link().geturl()
-                tags = w.get_classification_tags()
-                details.append(f"{w.asset.id} | {link} | Tags: {list(tags)}")
-            msg = f"[DUPLICATE TAGS][CONFLICT] Classification tags differ for duplicates:\n" + "\n".join(details)
+                details.append(w.format_info())
+            msg = f"[DUPLICATE TAGS][CONFLICT] Classification tags differ for duplicates. Información detallada de todos los implicados:\n" + "\n".join(details)
             log(msg, level=LogLevel.FOCUS)
             group_tag = f"{AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX}{asset_wrapper.duplicate_id_as_uuid}"
             for w in all_wrappers:
