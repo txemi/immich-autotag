@@ -10,11 +10,11 @@ def compare_classification_tags(asset1: 'AssetResponseWrapper', asset2: 'AssetRe
     """
     tags1: Set[str] = set(asset1.get_classification_tags())
     tags2: Set[str] = set(asset2.get_classification_tags())
-    if tags1 == tags2:
-        return "equal", None
-    if tags1 and not tags2 and len(tags1) == 1:
-        return "autofix_other", next(iter(tags1))
-    if tags2 and not tags1 and len(tags2) == 1:
-        return "autofix_self", next(iter(tags2))
-    return "conflict", (tags1, tags2)
+        if tags1 == tags2:
+            return _ClassificationTagComparisonResult.EQUAL, None
+        if tags1 and not tags2 and len(tags1) == 1:
+            return _ClassificationTagComparisonResult.AUTOFIX_OTHER, next(iter(tags1))
+        if tags2 and not tags1 and len(tags2) == 1:
+            return _ClassificationTagComparisonResult.AUTOFIX_SELF, next(iter(tags2))
+        return _ClassificationTagComparisonResult.CONFLICT, (tags1, tags2)
 
