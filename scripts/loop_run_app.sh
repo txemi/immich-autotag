@@ -9,7 +9,7 @@
 # Get the directory where this script is located, regardless of where it's called from
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
-while true; do
+while sleep 60; do
     "$SCRIPT_DIR/../run_app.sh"
     echo "Waiting 1 minute before next run..."
     sleep 60
