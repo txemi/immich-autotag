@@ -6,8 +6,11 @@
 # Between each execution, the script waits for 1 minute to avoid excessive load.
 # Use with caution!
 
+# Get the directory where this script is located, regardless of where it's called from
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
 while true; do
-    ./run_app.sh
+    "$SCRIPT_DIR/../run_app.sh"
     echo "Waiting 1 minute before next run..."
     sleep 60
 done
