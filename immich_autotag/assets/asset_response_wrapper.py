@@ -61,7 +61,6 @@ class AssetResponseWrapper:
         self,
         new_date: datetime,
         check_update_applied: bool = False,
-        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Updates the main date (created_at) of the asset using the Immich API.
@@ -79,14 +78,15 @@ class AssetResponseWrapper:
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, including link to the photo in Immich
-        if verbose:
+        from immich_autotag.logging.utils import log_debug, is_log_level_enabled
+        if is_log_level_enabled("DEBUG"):
             photo_url_obj = self.get_immich_photo_url()
             photo_url = photo_url_obj.geturl()
             log_msg = (
                 f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
                 f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
             )
-            print(log_msg)
+            log_debug(f"[BUG] {log_msg}")
         from immich_autotag.report.modification_report import \
             ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
@@ -135,29 +135,17 @@ class AssetResponseWrapper:
                     self.asset = updated_asset
                     return
                 if attempt < max_retries - 1:
-                    if verbose:
-                        print(
-                            f"[WARN] Date not updated yet after update (attempt {attempt+1}/{max_retries}), waiting {retry_delay}s..."
-                        )
+                    if is_log_level_enabled("DEBUG"):
+                        log_debug(f"[BUG][WARN] Date not updated yet after update (attempt {attempt+1}/{max_retries}), waiting {retry_delay}s...")
                     time.sleep(retry_delay)
             # If after retries it is still not updated, print all dates and warning
-            if verbose:
-                print("[DEBUG][AFTER UPDATE] Dates of the updated asset:")
-                print(
-                    f"  created_at:      {getattr(updated_asset, 'created_at', None)}"
-                )
-                print(
-                    f"  file_created_at: {getattr(updated_asset, 'file_created_at', None)}"
-                )
-                print(
-                    f"  exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}"
-                )
-                print(
-                    f"  updated_at:      {getattr(updated_asset, 'updated_at', None)}"
-                )
-                print(
-                    f"[WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
-                )
+            if is_log_level_enabled("DEBUG"):
+                log_debug("[BUG][AFTER UPDATE] Dates of the updated asset:")
+                log_debug(f"[BUG]   created_at:      {getattr(updated_asset, 'created_at', None)}")
+                log_debug(f"[BUG]   file_created_at: {getattr(updated_asset, 'file_created_at', None)}")
+                log_debug(f"[BUG]   exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}")
+                log_debug(f"[BUG]   updated_at:      {getattr(updated_asset, 'updated_at', None)}")
+                log_debug(f"[BUG][WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})")
             self.asset = updated_asset
             return
 
@@ -237,9 +225,7 @@ class AssetResponseWrapper:
     def remove_tag_by_name(
         self,
         tag_name: str,
-        verbose: bool = VERBOSE_LOGGING,
-        # tag_mod_report parameter removed
-        user: UserResponseWrapper | None = None,
+        user: 'UserResponseWrapper | None' = None,
         fail_on_error: bool = False,
     ) -> bool:
         """
@@ -251,21 +237,20 @@ class AssetResponseWrapper:
         from immich_client.api.assets import get_asset_info
         from immich_client.api.tags import untag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
+        from immich_autotag.logging.utils import log_debug, is_log_level_enabled
 
         # Find all tag objects on the asset with the given name (case-insensitive)
         tags_to_remove = [
             tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
         ]
         if not tags_to_remove:
-            if verbose:
-                print(f"[INFO] Asset id={self.id} does not have the tag '{tag_name}'")
+            if is_log_level_enabled("DEBUG"):
+                log_debug(f"[BUG][INFO] Asset id={self.id} does not have the tag '{tag_name}'")
             return False
 
-        if verbose:
-            print(
-                f"[DEBUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
-            )
-            print(f"[DEBUG] Tags before removal: {self.get_tag_names()}")
+        if is_log_level_enabled("DEBUG"):
+            log_debug(f"[BUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}")
+            log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
 
         # Get the TagWrapper from the tag collection for reporting, robust and explicit
         assert isinstance(
@@ -282,13 +267,9 @@ class AssetResponseWrapper:
             response = untag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
             )
-            if verbose:
-                print(
-                    f"[DEBUG] Full untag_assets response for tag_id={tag.id}: {response}"
-                )
-                print(
-                    f"[INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}"
-                )
+            if is_log_level_enabled("DEBUG"):
+                log_debug(f"[BUG] Full untag_assets response for tag_id={tag.id}: {response}")
+                log_debug(f"[BUG][INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}")
             removed_any = True
             from immich_autotag.tags.modification_kind import ModificationKind
 
@@ -302,8 +283,8 @@ class AssetResponseWrapper:
         # Reload asset and check if tag is still present
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
         self.asset = updated_asset
-        if verbose:
-            print(f"[DEBUG] Tags after removal: {self.get_tag_names()}")
+        if is_log_level_enabled("DEBUG"):
+            log_debug(f"[BUG] Tags after removal: {self.get_tag_names()}")
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
             error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
@@ -316,7 +297,7 @@ class AssetResponseWrapper:
                 user=user,
                 extra={"error": error_msg},
             )
-            if verbose:
+            if is_log_level_enabled("DEBUG"):
                 print(error_msg)
             if fail_on_error:
                 raise RuntimeError(error_msg)
@@ -367,18 +348,16 @@ class AssetResponseWrapper:
         # Extra checks and logging before API call
         if not tag or tag.id is None:
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
-            print(error_msg)
-            if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
-                tag_mod_report.add_modification(
-                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
-                    asset_wrapper=self,
-                    tag=tag,
-                    user=user_wrapper,
-                    extra={"error": error_msg},
-                )
+            from immich_autotag.logging.utils import log
+            log(error_msg, level="ERROR")
+            from immich_autotag.tags.modification_kind import ModificationKind
+            tag_mod_report.add_modification(
+                kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                asset_wrapper=self,
+                tag=tag,
+                user=user_wrapper,
+                extra={"error": error_msg},
+            )
             return False
         if not self.id:
             error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"

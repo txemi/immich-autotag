@@ -1,3 +1,4 @@
+
 import logging
 from typing import Any
 
@@ -5,11 +6,13 @@ from typeguard import typechecked
 
 from .levels import LogLevel
 
+
+
 # Map our custom levels to logging module levels
 LOGLEVEL_TO_LOGGING = {
-    LogLevel.FOCUS: 15,  # Menor que INFO (20)
     LogLevel.IMPORTANT: logging.WARNING,
     LogLevel.PROGRESS: logging.INFO,
+    LogLevel.FOCUS: 15,  # Menor que INFO (20)
     LogLevel.DEBUG: logging.DEBUG,
 }
 
@@ -20,17 +23,21 @@ if not hasattr(logging, "FOCUS"):
 
 @typechecked
 def log(msg: str, level: LogLevel = LogLevel.PROGRESS) -> None:
-    lvl = LOGLEVEL_TO_LOGGING.get(level, logging.INFO)
-    # Only emit FOCUS logs if the current logging level is set to FOCUS (15)
-    current_level = logging.getLogger().getEffectiveLevel()
-    if level == LogLevel.FOCUS and current_level > lvl:
-        return  # Suppress FOCUS logs in PROGRESS or higher modes
-    logging.log(lvl, msg)
+    # Si FORCE_LOG_LEVEL está definido, forzamos ese nivel
+    # El nivel de log es el que se pasa en la llamada
+    logging.log(LOGLEVEL_TO_LOGGING[level], msg)
 
 
 @typechecked
 def setup_logging(level: LogLevel = LogLevel.PROGRESS) -> None:
+    # Si FORCE_LOG_LEVEL está definido, usarlo como nivel global
     logging.basicConfig(
         format="[%(levelname)s] %(message)s",
         level=LOGLEVEL_TO_LOGGING.get(level, logging.INFO),
     )
+@typechecked
+def log_debug(msg: str) -> None:
+    """
+    Log a debug message with [BUG] tag, always at DEBUG level.
+    """
+    logging.log(logging.DEBUG, msg)

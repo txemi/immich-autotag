@@ -6,14 +6,13 @@ from threading import Lock
 
 from typeguard import typechecked
 
-from immich_autotag.assets.checkpoint_utils import (delete_checkpoint,
-                                                    load_checkpoint,
-                                                    save_checkpoint)
+from immich_autotag.assets.checkpoint_utils import load_checkpoint, save_checkpoint, delete_checkpoint
 from immich_autotag.assets.process_single_asset import process_single_asset
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.perf.print_perf import print_perf
+from immich_autotag.logging.utils import log_debug
 
 # --- Checkpoint helpers (moved to end for style) ---
 
@@ -32,18 +31,17 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     count = 0
     LOG_INTERVAL = 5  # seconds
     last_log_time = time.time()
-    print(
-        f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}..."
-    )
+    log_debug(f"[BUG] Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+    log(f"Procesando assets con MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...", level=LogLevel.PROGRESS)
     # Get total assets before processing
     try:
         stats = get_server_statistics.sync(client=context.client)
         total_assets = stats.photos + stats.videos
-        print(
-            f"[INFO] Total assets (photos + videos) reported by Immich: {total_assets}"
-        )
+        log(f"Total assets (photos + videos) reportados por Immich: {total_assets}", level=LogLevel.PROGRESS)
     except Exception as e:
-        print(f"[WARN] Could not get total assets from API: {e}")
+        log(f"[ERROR] No se pudo obtener el total de assets desde la API: {e}", level=LogLevel.IMPORTANT)
         total_assets = None
     start_time = time.time()
 
@@ -58,23 +56,16 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         if skip_n > 0:
             adjusted_skip_n = max(0, skip_n - OVERLAP)
             if adjusted_skip_n != skip_n:
-                print(
-                    f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {OVERLAP})"
-                )
+                log(f"[CHECKPOINT] Overlapping: skip_n ajustado de {skip_n} a {adjusted_skip_n} (overlap {OVERLAP})", level=LogLevel.PROGRESS)
             else:
-                print(
-                    f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id})."
-                )
+                log(f"[CHECKPOINT] Se saltarán {skip_n} assets (desde checkpoint: id={last_processed_id}).", level=LogLevel.PROGRESS)
             skip_n = adjusted_skip_n
         else:
-            print(
-                f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id})."
-            )
+            log(f"[CHECKPOINT] Se saltarán {skip_n} assets (desde checkpoint: id={last_processed_id}).", level=LogLevel.PROGRESS)
     else:
         last_processed_id, skip_n = None, 0
-        print(
-            "[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning."
-        )
+
+        log("[CHECKPOINT] Checkpoint resume está deshabilitado. Empezando desde el principio.", level=LogLevel.PROGRESS)
     total_to_process = None
     if total_assets is not None:
         total_to_process = total_assets
@@ -104,9 +95,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         )
 
     if USE_THREADPOOL:
-        print(
-            "[WARN] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature."
-        )
+        log("[CHECKPOINT] El checkpoint/resume solo está soportado en modo secuencial. Desactiva USE_THREADPOOL para esta función.", level=LogLevel.PROGRESS)
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
             for asset_wrapper in context.asset_manager.iter_assets(
@@ -129,28 +118,44 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                 try:
                     future.result()
                 except Exception as e:
-                    print(f"[ERROR] Asset processing failed: {e}")
+                    log(f"[ERROR] Fallo al procesar un asset en el threadpool: {e}", level=LogLevel.IMPORTANT)
     else:
-        for asset_wrapper in context.asset_manager.iter_assets(
-            context, max_assets=max_assets, skip_n=skip_n
-        ):
-            t0 = time.time()
-            process_single_asset(asset_wrapper, tag_mod_report, lock)
-            count += 1
-            save_checkpoint(asset_wrapper.id, skip_n + count)
-            t1 = time.time()
-            estimator.update(t1 - t0)
-            now = time.time()
-            if now - last_log_time >= LOG_INTERVAL:
-                elapsed = now - start_time
-                perf_log(count, elapsed, estimator)
-                last_log_time = now
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+        log("Entrando en el bucle de procesamiento de assets...", level=LogLevel.PROGRESS)
+        log("[DEBUG] Antes de iterar assets (inicio del for)", level=LogLevel.DEBUG)
+        try:
+            for asset_wrapper in context.asset_manager.iter_assets(
+                context, max_assets=max_assets, skip_n=skip_n
+            ):
+                log_debug(f"[BUG] Procesando asset: {getattr(asset_wrapper, 'id', asset_wrapper)}")
+                t0 = time.time()
+                process_single_asset(asset_wrapper, tag_mod_report, lock)
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+                log(f"Iteración completada para asset: {getattr(asset_wrapper, 'id', asset_wrapper)}", level=LogLevel.DEBUG)
+                count += 1
+                save_checkpoint(asset_wrapper.id, skip_n + count)
+                t1 = time.time()
+                estimator.update(t1 - t0)
+                now = time.time()
+                if now - last_log_time >= LOG_INTERVAL:
+                    elapsed = now - start_time
+                    perf_log(count, elapsed, estimator)
+                    last_log_time = now
+        except Exception as e:
+            import traceback
+            tb = traceback.format_exc()
+            log(f"[ERROR] Excepción inesperada en el bucle principal de assets: {e}\nTraceback:\n{tb}", level=LogLevel.IMPORTANT)
+            raise
+        finally:
+            log("Bucle de procesamiento de assets finalizado.", level=LogLevel.PROGRESS)
+            log("El bucle for de assets ha terminado (no quedan más assets en el iterador).", level=LogLevel.PROGRESS)
 
     total_time = time.time() - start_time
-    print(f"Total assets: {count}")
-    print(
-        f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s"
-    )
+
+    log(f"Total de assets procesados: {count}", level=LogLevel.PROGRESS)
+    log(f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s", level=LogLevel.PROGRESS)
     if len(tag_mod_report.modifications) > 0:
         tag_mod_report.print_summary()
         tag_mod_report.flush()

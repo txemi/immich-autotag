@@ -1,4 +1,6 @@
+
 from __future__ import annotations
+from immich_autotag.logging.utils import log_debug
 
 from threading import Lock
 from typing import Dict, List, Set
@@ -209,6 +211,8 @@ from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_
     analyze_duplicate_classification_tags
 
 
+
+
 @typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
@@ -216,11 +220,13 @@ def process_single_asset(
     lock: Lock,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
-
+    log_debug(f"[BUG] INICIO process_single_asset {getattr(asset_wrapper, 'id', None)}")
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
+    log(f"[DEBUG] [process_single_asset] INICIO asset_id={getattr(asset_wrapper, 'id', None)}", level=LogLevel.FOCUS)
     try:
+        log("[DEBUG] Obteniendo URL del asset...", level=LogLevel.FOCUS)
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
     except Exception as e:
         asset_name = (
@@ -229,7 +235,6 @@ def process_single_asset(
             or "[sin nombre]"
         )
         from pprint import pformat
-
         details = pformat(vars(asset_wrapper))
         log(
             f"[ERROR] No se pudo obtener la URL Immich del asset. Nombre: {asset_name}\nDetalles: {details}",
@@ -243,28 +248,33 @@ def process_single_asset(
         asset_name = "[sin nombre]"
     log(f"Procesando asset: {asset_url} | Nombre: {asset_name}", level=LogLevel.FOCUS)
 
+    log("[DEBUG] Aplicando conversiones de tags...", level=LogLevel.FOCUS)
     asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS)
 
-    # Date correction step (configurable)
     if ENABLE_DATE_CORRECTION:
-        from immich_autotag.assets.date_correction.core_logic import \
-            correct_asset_date
-
+        log("[DEBUG] Corrigiendo fecha del asset...", level=LogLevel.FOCUS)
+        from immich_autotag.assets.date_correction.core_logic import correct_asset_date
         correct_asset_date(asset_wrapper)
 
+    log("[DEBUG] Analizando tags de clasificación de duplicados...", level=LogLevel.FOCUS)
     analyze_duplicate_classification_tags(asset_wrapper)
+
+    log("[DEBUG] Analizando y asignando álbum...", level=LogLevel.FOCUS)
     analyze_and_assign_album(
         asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
     )
 
-    # If there is no valid album, none is assigned
-
+    log("[DEBUG] Validando y actualizando clasificación del asset...", level=LogLevel.FOCUS)
     validate_and_update_asset_classification(
         asset_wrapper,
         tag_mod_report=tag_mod_report,
     )
+
+    log("[DEBUG] Intentando adquirir lock para flush del reporte...", level=LogLevel.FOCUS)
     with lock:
+        log("[DEBUG] Lock adquirido, haciendo flush del reporte...", level=LogLevel.FOCUS)
         tag_mod_report.flush()
+    log(f"[DEBUG] [process_single_asset] FIN asset_id={getattr(asset_wrapper, 'id', None)}", level=LogLevel.FOCUS)
 
 
 @typechecked
