@@ -21,8 +21,6 @@ def _process_album_detection(
         f"[ALBUM CHECK] Asset '{asset_wrapper.original_file_name}' candidate album: '{detected_album}' (origin: {album_origin})",
         level=LogLevel.FOCUS,
     )
-    from immich_client.api.albums import add_assets_to_album
-    from immich_client.models.albums_add_assets_dto import AlbumsAddAssetsDto
 
     client = asset_wrapper.context.client
     albums_collection = asset_wrapper.context.albums_collection
