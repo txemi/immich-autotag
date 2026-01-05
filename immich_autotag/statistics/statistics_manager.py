@@ -21,8 +21,13 @@ from threading import RLock
 
 import attr
 
+# Singleton de módulo
+_instance = None
+
 
 @attr.s(auto_attribs=True, kw_only=True)
+
+
 class StatisticsManager:
     """
     Singleton manager de estadísticas: gestiona la carga, guardado y actualización de estadísticas de ejecución.
@@ -38,12 +43,19 @@ class StatisticsManager:
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
     def __attrs_post_init__(self) -> None:
-        self.stats_dir.mkdir(exist_ok=True)
+        self.stats_dir.mkdir(exist_ok=True) 
+        global _instance
+        if _instance is not None and _instance is not self:
+            raise RuntimeError("StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one.")
 
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "_singleton_instance") or cls._singleton_instance is None:
-            cls._singleton_instance = super().__new__(cls)
-        return cls._singleton_instance
+        _instance = self
+
+    @staticmethod
+    def get_instance() -> "StatisticsManager":
+        global _instance
+        if _instance is None:
+            StatisticsManager()
+        return _instance
 
     @typechecked
     def start_run(self, initial_stats: Optional[RunStatistics] = None) -> None:
@@ -103,3 +115,83 @@ class StatisticsManager:
                 f.unlink()
             except Exception as e:
                 print(f"[WARN] Could not delete statistics file '{f}': {e}")
+
+
+
+
+
+    @typechecked
+    def process_asset_tags(self, tag_names: list[str]) -> None:
+        """
+        Procesa la lista de etiquetas de un activo y actualiza los contadores totales de las etiquetas de salida relevantes.
+        """
+        from immich_autotag.config.user import (
+            AUTOTAG_CATEGORY_UNKNOWN,
+            AUTOTAG_CATEGORY_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+        )
+        relevant = {
+            AUTOTAG_CATEGORY_UNKNOWN,
+            AUTOTAG_CATEGORY_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+        }
+        stats = self.get_stats()
+        for tag in relevant:
+            if tag in tag_names:
+                if tag not in stats.output_tag_counters:
+                    from .run_statistics import OutputTagCounter
+                    stats.output_tag_counters[tag] = OutputTagCounter()
+                stats.output_tag_counters[tag].total += 1
+        self._save_to_file()
+
+    @typechecked
+    def increment_tag_added(self, tag: str) -> None:
+        """
+        Incrementa el contador de añadidos para una etiqueta relevante.
+        """
+        from immich_autotag.config.user import (
+            AUTOTAG_CATEGORY_UNKNOWN,
+            AUTOTAG_CATEGORY_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+        )
+        relevant = {
+            AUTOTAG_CATEGORY_UNKNOWN,
+            AUTOTAG_CATEGORY_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+        }
+        if tag in relevant:
+            stats = self.get_stats()
+            if tag not in stats.output_tag_counters:
+                from .run_statistics import OutputTagCounter
+                stats.output_tag_counters[tag] = OutputTagCounter()
+            stats.output_tag_counters[tag].added += 1
+            self._save_to_file()
+
+    @typechecked
+    def increment_tag_removed(self, tag: str) -> None:
+        """
+        Incrementa el contador de eliminados para una etiqueta relevante.
+        """
+        from immich_autotag.config.user import (
+            AUTOTAG_CATEGORY_UNKNOWN,
+            AUTOTAG_CATEGORY_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+        )
+        relevant = {
+            AUTOTAG_CATEGORY_UNKNOWN,
+            AUTOTAG_CATEGORY_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+        }
+        if tag in relevant:
+            stats = self.get_stats()
+            if tag not in stats.output_tag_counters:
+                from .run_statistics import OutputTagCounter
+                stats.output_tag_counters[tag] = OutputTagCounter()
+            stats.output_tag_counters[tag].removed += 1
+            self._save_to_file()

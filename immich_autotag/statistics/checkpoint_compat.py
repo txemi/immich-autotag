@@ -8,7 +8,7 @@ from typeguard import typechecked
 from immich_autotag.statistics.statistics_manager import (RunStatistics,
                                                           StatisticsManager)
 
-_stats_manager = StatisticsManager()
+_stats_manager = StatisticsManager.get_instance()
 
 
 @typechecked

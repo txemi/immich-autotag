@@ -1,3 +1,4 @@
+
 from typeguard import typechecked
 
 """
@@ -10,9 +11,18 @@ from typing import Any, Dict, Optional
 
 import yaml
 from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field
+from typing import Dict
 
+
+# Tipado estricto para los contadores de etiquetas de salida
+class OutputTagCounter(BaseModel):
+    total: int = 0
+    added: int = 0
+    removed: int = 0
 
 class RunStatistics(BaseModel):
+
     last_processed_id: Optional[str] = Field(
         None, description="ID of the last processed asset"
     )
@@ -24,7 +34,9 @@ class RunStatistics(BaseModel):
     extra: Dict[str, Any] = Field(
         default_factory=dict, description="Extensible field for future stats"
     )
-
+    output_tag_counters: Dict[str, OutputTagCounter] = Field(
+        default_factory=dict, description="Contadores por etiqueta de salida"
+    )
     @typechecked
     def to_yaml(self) -> str:
         return yaml.safe_dump(

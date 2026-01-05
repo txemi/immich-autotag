@@ -6,7 +6,9 @@ from typing import List
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
 # Exception for date integrity
@@ -260,6 +262,9 @@ class AssetResponseWrapper:
         tags_to_remove = [
             tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
         ]
+        # Estadísticas: cuenta intento de eliminación (solo si hay alguno a eliminar)
+        if tags_to_remove:
+            StatisticsManager.get_instance().increment_tag_removed(tag_name)
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -334,9 +339,9 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        # tag_mod_report parameter removed
         verbose: bool = VERBOSE_LOGGING,
         info: bool = VERBOSE_LOGGING,
+        fail_if_exists: bool = False,
     ) -> bool:
         """
         Adds a tag to the asset by name using the Immich API if it doesn't have it already.
@@ -360,17 +365,17 @@ class AssetResponseWrapper:
             tag = self.context.tag_collection.create_tag_if_not_exists(
                 tag_name, self.context.client
             )
-            # Check if the asset already has the tag
-            if self.has_tag(tag_name):
-                if fail_if_exists:
-                    raise ValueError(
-                        f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
-                    )
-                if verbose:
-                    print(
-                        f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping."
-                    )
-                return False
+        # Check if the asset already has the tag
+        if self.has_tag(tag_name):
+            if fail_if_exists:
+                raise ValueError(
+                    f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
+                )
+            if verbose:
+                print(
+                    f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping."
+                )
+            return False
         # Extra checks and logging before API call
         if not tag or tag.id is None:
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
@@ -407,6 +412,8 @@ class AssetResponseWrapper:
             print(
                 f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}"
             )
+        # Estadísticas: cuenta añadido
+        StatisticsManager.get_instance().increment_tag_added(tag_name)
         try:
             response = tag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])

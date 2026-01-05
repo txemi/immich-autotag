@@ -289,6 +289,9 @@ def process_single_asset(
             level=LogLevel.FOCUS,
         )
         tag_mod_report.flush()
+    # Actualiza los contadores totales de etiquetas de salida para este asset
+    from immich_autotag.statistics.statistics_manager import StatisticsManager
+    StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     log(
         f"[DEBUG] [process_single_asset] FIN asset_id={getattr(asset_wrapper, 'id', None)}",
         level=LogLevel.FOCUS,
