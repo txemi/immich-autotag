@@ -22,6 +22,15 @@ class OutputTagCounter(BaseModel):
     removed: int = 0
 
 class RunStatistics(BaseModel):
+    total_assets: Optional[int] = Field(
+        None, description="Total de elementos reportados por el sistema al inicio"
+    )
+    max_assets: Optional[int] = Field(
+        None, description="Máximo de elementos a procesar en esta ejecución (None = todos)"
+    )
+    skip_n: Optional[int] = Field(
+        None, description="Número de elementos a saltar al inicio (offset)"
+    )
 
     last_processed_id: Optional[str] = Field(
         None, description="ID of the last processed asset"

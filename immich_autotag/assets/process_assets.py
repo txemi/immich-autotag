@@ -49,6 +49,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             f"Total assets (photos + videos) reported by Immich: {total_assets}",
             level=LogLevel.PROGRESS,
         )
+        StatisticsManager.get_instance().set_total_assets(total_assets)
     except Exception as e:
         log(
             f"[ERROR] Could not get total assets from API: {e}",
@@ -89,11 +90,13 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             )
     else:
         last_processed_id, skip_n = None, 0
-
         log(
             "[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning.",
             level=LogLevel.PROGRESS,
         )
+    # Guardar parámetros de ejecución en estadísticas
+    StatisticsManager.get_instance().set_max_assets(max_assets if max_assets is not None else -1)
+    StatisticsManager.get_instance().set_skip_n(skip_n)
     total_to_process = None
     if total_assets is not None:
         total_to_process = total_assets

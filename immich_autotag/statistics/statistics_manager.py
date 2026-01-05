@@ -29,6 +29,8 @@ _instance = None
 
 
 class StatisticsManager:
+
+
     """
     Singleton manager de estadísticas: gestiona la carga, guardado y actualización de estadísticas de ejecución.
     Solo crea y actualiza un fichero por ejecución.
@@ -185,3 +187,26 @@ class StatisticsManager:
                 stats.output_tag_counters[tag] = OutputTagCounter()
             stats.output_tag_counters[tag].removed += 1
             self._save_to_file()
+    @typechecked
+    def set_total_assets(self, total_assets: int) -> None:
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            self._current_stats.total_assets = total_assets
+            self._save_to_file()
+
+    @typechecked
+    def set_max_assets(self, max_assets: int) -> None:
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            self._current_stats.max_assets = max_assets
+            self._save_to_file()
+
+    @typechecked
+    def set_skip_n(self, skip_n: int) -> None:
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            self._current_stats.skip_n = skip_n
+            self._save_to_file()            
