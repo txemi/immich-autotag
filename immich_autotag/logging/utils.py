@@ -1,4 +1,5 @@
 
+
 import logging
 from typing import Any
 
@@ -41,3 +42,14 @@ def log_debug(msg: str) -> None:
     Log a debug message with [BUG] tag, always at DEBUG level.
     """
     logging.log(logging.DEBUG, msg)
+
+
+@typechecked
+def is_log_level_enabled(level: LogLevel) -> bool:
+    """
+    Returns True if the given log level is enabled for the root logger.
+    Usage: if is_log_level_enabled(LogLevel.DEBUG): ...
+    """
+    import logging
+    py_level = LOGLEVEL_TO_LOGGING.get(level, logging.INFO)
+    return logging.getLogger().isEnabledFor(py_level)    

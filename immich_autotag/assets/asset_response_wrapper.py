@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
+from immich_autotag.logging.levels import LogLevel
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
@@ -79,7 +80,7 @@ class AssetResponseWrapper:
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, including link to the photo in Immich
         from immich_autotag.logging.utils import log_debug, is_log_level_enabled
-        if is_log_level_enabled("DEBUG"):
+        if is_log_level_enabled(LogLevel.DEBUG):        
             photo_url_obj = self.get_immich_photo_url()
             photo_url = photo_url_obj.geturl()
             log_msg = (
@@ -135,11 +136,11 @@ class AssetResponseWrapper:
                     self.asset = updated_asset
                     return
                 if attempt < max_retries - 1:
-                    if is_log_level_enabled("DEBUG"):
+                    if is_log_level_enabled(LogLevel.DEBUG):
                         log_debug(f"[BUG][WARN] Date not updated yet after update (attempt {attempt+1}/{max_retries}), waiting {retry_delay}s...")
                     time.sleep(retry_delay)
             # If after retries it is still not updated, print all dates and warning
-            if is_log_level_enabled("DEBUG"):
+            if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug("[BUG][AFTER UPDATE] Dates of the updated asset:")
                 log_debug(f"[BUG]   created_at:      {getattr(updated_asset, 'created_at', None)}")
                 log_debug(f"[BUG]   file_created_at: {getattr(updated_asset, 'file_created_at', None)}")
@@ -244,11 +245,11 @@ class AssetResponseWrapper:
             tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
         ]
         if not tags_to_remove:
-            if is_log_level_enabled("DEBUG"):
+            if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(f"[BUG][INFO] Asset id={self.id} does not have the tag '{tag_name}'")
             return False
 
-        if is_log_level_enabled("DEBUG"):
+        if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(f"[BUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}")
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
 
@@ -267,7 +268,7 @@ class AssetResponseWrapper:
             response = untag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
             )
-            if is_log_level_enabled("DEBUG"):
+            if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(f"[BUG] Full untag_assets response for tag_id={tag.id}: {response}")
                 log_debug(f"[BUG][INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}")
             removed_any = True
@@ -283,7 +284,7 @@ class AssetResponseWrapper:
         # Reload asset and check if tag is still present
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
         self.asset = updated_asset
-        if is_log_level_enabled("DEBUG"):
+        if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(f"[BUG] Tags after removal: {self.get_tag_names()}")
         tag_still_present = self.has_tag(tag_name)
         if tag_still_present:
@@ -297,8 +298,8 @@ class AssetResponseWrapper:
                 user=user,
                 extra={"error": error_msg},
             )
-            if is_log_level_enabled("DEBUG"):
-                print(error_msg)
+            from immich_autotag.logging.utils import log
+            log(error_msg, level=LogLevel.IMPORTANT)
             if fail_on_error:
                 raise RuntimeError(error_msg)
             # else: just log and continue
