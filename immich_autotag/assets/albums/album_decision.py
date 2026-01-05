@@ -31,7 +31,8 @@ class AlbumDecision:
         return opts
 
     def valid_albums(self) -> set[str]:
-        return {a for a in self.all_options() if re.match(ALBUM_PATTERN, a)}
+        # all_options() already filters by ALBUM_PATTERN
+        return self.all_options()
 
     def is_unique(self) -> bool:
         valid = self.valid_albums()

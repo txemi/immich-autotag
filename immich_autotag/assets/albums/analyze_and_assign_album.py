@@ -80,7 +80,7 @@ def analyze_and_assign_album(
             raise NotImplementedError(
                 f"Ambiguous album assignment for asset {asset_id}: multiple valid albums {album_decision.valid_albums()}\nSee asset: {immich_url}\nDuplicates: {', '.join(details) if details else '-'}"
             )
-        # No assignment performed debido a ambigüedad/conflicto
+        # No assignment performed due to ambiguity/conflict
         return
     else:
         log(
