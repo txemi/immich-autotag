@@ -218,5 +218,5 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         raise Exception(
             f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
         )
-    # Eliminar el checkpoint si todo termina correctamente
-    StatisticsManager.get_instance().delete_all()
+    # Marcar finalización de estadísticas
+    StatisticsManager.get_instance().finish_run()

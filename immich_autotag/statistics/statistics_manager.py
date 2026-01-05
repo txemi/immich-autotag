@@ -108,13 +108,25 @@ class StatisticsManager:
                 return stats
         return None
 
+
     @typechecked
     def delete_all(self) -> None:
-        for f in self.stats_dir.glob("run_statistics_*.yaml"):
-            try:
-                f.unlink()
-            except Exception as e:
-                print(f"[WARN] Could not delete statistics file '{f}': {e}")
+        """
+        [OBSOLETO] Ya no se deben eliminar estadísticas. Se mantiene solo por compatibilidad.
+        """
+        print("[WARN] StatisticsManager.delete_all() está obsoleto y no debe usarse. Las estadísticas se conservan para registro.")
+
+    @typechecked
+    def finish_run(self) -> None:
+        """
+        Marca la fecha de finalización de la ejecución en las estadísticas.
+        """
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            from datetime import datetime, timezone
+            self._current_stats.finished_at = datetime.now(timezone.utc)
+            self._save_to_file()
 
 
 
