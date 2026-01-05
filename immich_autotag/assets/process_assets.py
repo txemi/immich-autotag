@@ -2,33 +2,33 @@ from __future__ import annotations
 
 import concurrent.futures
 import os
+import time
 from threading import Lock
 
+from immich_client.api.server import get_server_statistics
 from typeguard import typechecked
 
-from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.assets.process_single_asset import process_single_asset
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
+from immich_autotag.config.user import ENABLE_CHECKPOINT_RESUME
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.logging.utils import log_debug
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.statistics.statistics_manager import StatisticsManager
+from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.print_perf import print_perf
+from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 # --- Checkpoint helpers (moved to end for style) ---
 
-from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
-import time
-from immich_client.api.server import get_server_statistics
-from immich_autotag.config.user import ENABLE_CHECKPOINT_RESUME
-from immich_autotag.logging.levels import LogLevel
-from immich_autotag.logging.utils import log
-from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 
 @typechecked
-
 def log_execution_parameters() -> None:
-    log_debug(f"[BUG] Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
+    log_debug(
+        f"[BUG] Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}..."
+    )
     log(
         f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...",
         level=LogLevel.PROGRESS,
@@ -36,7 +36,6 @@ def log_execution_parameters() -> None:
 
 
 @typechecked
-
 def fetch_total_assets(context: ImmichContext) -> int | None:
     try:
         stats = get_server_statistics.sync(client=context.client)
@@ -56,7 +55,6 @@ def fetch_total_assets(context: ImmichContext) -> int | None:
 
 
 @typechecked
-
 def resolve_checkpoint() -> tuple[str | None, int]:
     if ENABLE_CHECKPOINT_RESUME:
         stats = StatisticsManager.get_instance().load_latest()
@@ -93,21 +91,23 @@ def resolve_checkpoint() -> tuple[str | None, int]:
 
 
 @typechecked
-
-def register_execution_parameters(total_assets: int | None, max_assets: int | None, skip_n: int) -> None:
-    StatisticsManager.get_instance().set_max_assets(max_assets if max_assets is not None else -1)
+def register_execution_parameters(
+    total_assets: int | None, max_assets: int | None, skip_n: int
+) -> None:
+    StatisticsManager.get_instance().set_max_assets(
+        max_assets if max_assets is not None else -1
+    )
     StatisticsManager.get_instance().set_skip_n(skip_n)
 
 
 @typechecked
-
 def perf_log(
     count: int,
     elapsed: float,
     estimator: AdaptiveTimeEstimator,
     total_to_process: int | None,
     skip_n: int,
-    total_assets: int | None
+    total_assets: int | None,
 ) -> None:
     print_perf(
         count,
@@ -121,7 +121,6 @@ def perf_log(
 
 
 @typechecked
-
 def process_assets_threadpool(
     context: ImmichContext,
     max_assets: int | None,
@@ -132,7 +131,7 @@ def process_assets_threadpool(
     skip_n: int,
     total_assets: int | None,
     LOG_INTERVAL: int,
-    start_time: float
+    start_time: float,
 ) -> None:
     log(
         "[CHECKPOINT] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.",
@@ -156,7 +155,9 @@ def process_assets_threadpool(
             now = time.time()
             if now - last_log_time >= LOG_INTERVAL:
                 elapsed = now - start_time
-                perf_log(count, elapsed, estimator, total_to_process, skip_n, total_assets)
+                perf_log(
+                    count, elapsed, estimator, total_to_process, skip_n, total_assets
+                )
                 last_log_time = now
         for future in concurrent.futures.as_completed(futures):
             try:
@@ -169,7 +170,6 @@ def process_assets_threadpool(
 
 
 @typechecked
-
 def process_assets_sequential(
     context: ImmichContext,
     max_assets: int | None,
@@ -181,7 +181,7 @@ def process_assets_sequential(
     total_to_process: int | None,
     LOG_INTERVAL: int,
     start_time: float,
-    total_assets: int | None
+    total_assets: int | None,
 ) -> int:
     log(
         "Entrando en el bucle de procesamiento de assets...",
@@ -204,16 +204,21 @@ def process_assets_sequential(
                 level=LogLevel.DEBUG,
             )
             count += 1
-            StatisticsManager.get_instance().update_checkpoint(asset_wrapper.id, skip_n + count)
+            StatisticsManager.get_instance().update_checkpoint(
+                asset_wrapper.id, skip_n + count
+            )
             t1 = time.time()
             estimator.update(t1 - t0)
             now = time.time()
             if now - last_log_time >= LOG_INTERVAL:
                 elapsed = now - start_time
-                perf_log(count, elapsed, estimator, total_to_process, skip_n, total_assets)
+                perf_log(
+                    count, elapsed, estimator, total_to_process, skip_n, total_assets
+                )
                 last_log_time = now
     except Exception as e:
         import traceback
+
         tb = traceback.format_exc()
         log(
             f"[ERROR] Unexpected exception in main asset loop: {e}\nTraceback:\n{tb}",
@@ -230,11 +235,8 @@ def process_assets_sequential(
 
 
 @typechecked
-
 def log_final_summary(
-    count: int,
-    tag_mod_report: ModificationReport,
-    start_time: float
+    count: int, tag_mod_report: ModificationReport, start_time: float
 ) -> None:
     total_time = time.time() - start_time
     log(f"Total assets processed: {count}", level=LogLevel.PROGRESS)
@@ -250,6 +252,7 @@ def log_final_summary(
         raise Exception(
             f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
         )
+
 
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
@@ -271,13 +274,32 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
 
     if USE_THREADPOOL:
         process_assets_threadpool(
-            context, max_assets, tag_mod_report, lock, estimator, total_to_process, skip_n, total_assets, LOG_INTERVAL, start_time
+            context,
+            max_assets,
+            tag_mod_report,
+            lock,
+            estimator,
+            total_to_process,
+            skip_n,
+            total_assets,
+            LOG_INTERVAL,
+            start_time,
         )
         # No checkpoint update in threadpool mode, so count is not tracked here
         count = None
     else:
         count = process_assets_sequential(
-            context, max_assets, skip_n, last_processed_id, tag_mod_report, lock, estimator, total_to_process, LOG_INTERVAL, start_time, total_assets
+            context,
+            max_assets,
+            skip_n,
+            last_processed_id,
+            tag_mod_report,
+            lock,
+            estimator,
+            total_to_process,
+            LOG_INTERVAL,
+            start_time,
+            total_assets,
         )
     log_final_summary(count if count is not None else 0, tag_mod_report, start_time)
     # Marcar finalización de estadísticas

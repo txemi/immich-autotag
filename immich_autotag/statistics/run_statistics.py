@@ -1,4 +1,3 @@
-
 from typeguard import typechecked
 
 """
@@ -11,8 +10,6 @@ from typing import Any, Dict, Optional
 
 import yaml
 from pydantic import BaseModel, Field
-from pydantic import BaseModel, Field
-from typing import Dict
 
 
 # Tipado estricto para los contadores de etiquetas de salida
@@ -21,12 +18,14 @@ class OutputTagCounter(BaseModel):
     added: int = 0
     removed: int = 0
 
+
 class RunStatistics(BaseModel):
     total_assets: Optional[int] = Field(
         None, description="Total de elementos reportados por el sistema al inicio"
     )
     max_assets: Optional[int] = Field(
-        None, description="Máximo de elementos a procesar en esta ejecución (None = todos)"
+        None,
+        description="Máximo de elementos a procesar en esta ejecución (None = todos)",
     )
     skip_n: Optional[int] = Field(
         None, description="Número de elementos a saltar al inicio (offset)"
@@ -46,6 +45,7 @@ class RunStatistics(BaseModel):
     output_tag_counters: Dict[str, OutputTagCounter] = Field(
         default_factory=dict, description="Contadores por etiqueta de salida"
     )
+
     @typechecked
     def to_yaml(self) -> str:
         return yaml.safe_dump(

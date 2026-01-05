@@ -5,10 +5,9 @@ from typing import List
 
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
-
-from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.statistics.statistics_manager import StatisticsManager
+from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 
 # Exception for date integrity

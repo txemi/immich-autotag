@@ -26,11 +26,7 @@ _instance = None
 
 
 @attr.s(auto_attribs=True, kw_only=True)
-
-
 class StatisticsManager:
-
-
     """
     Singleton manager de estadísticas: gestiona la carga, guardado y actualización de estadísticas de ejecución.
     Solo crea y actualiza un fichero por ejecución.
@@ -45,10 +41,12 @@ class StatisticsManager:
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
     def __attrs_post_init__(self) -> None:
-        self.stats_dir.mkdir(exist_ok=True) 
+        self.stats_dir.mkdir(exist_ok=True)
         global _instance
         if _instance is not None and _instance is not self:
-            raise RuntimeError("StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one.")
+            raise RuntimeError(
+                "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
+            )
 
         _instance = self
 
@@ -110,13 +108,14 @@ class StatisticsManager:
                 return stats
         return None
 
-
     @typechecked
     def delete_all(self) -> None:
         """
         [OBSOLETO] Ya no se deben eliminar estadísticas. Se mantiene solo por compatibilidad.
         """
-        print("[WARN] StatisticsManager.delete_all() está obsoleto y no debe usarse. Las estadísticas se conservan para registro.")
+        print(
+            "[WARN] StatisticsManager.delete_all() está obsoleto y no debe usarse. Las estadísticas se conservan para registro."
+        )
 
     @typechecked
     def finish_run(self) -> None:
@@ -127,20 +126,16 @@ class StatisticsManager:
             if self._current_stats is None:
                 self.start_run()
             from datetime import datetime, timezone
+
             self._current_stats.finished_at = datetime.now(timezone.utc)
             self._save_to_file()
 
-
-
-
-
     # Tags relevantes para estadísticas (atributo de clase)
     from immich_autotag.config.user import (
-        AUTOTAG_CATEGORY_UNKNOWN,
-        AUTOTAG_CATEGORY_CONFLICT,
+        AUTOTAG_CATEGORY_CONFLICT, AUTOTAG_CATEGORY_UNKNOWN,
         AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-    )
+        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT)
+
     RELEVANT_TAGS = {
         AUTOTAG_CATEGORY_UNKNOWN,
         AUTOTAG_CATEGORY_CONFLICT,
@@ -158,6 +153,7 @@ class StatisticsManager:
             if tag in tag_names:
                 if tag not in stats.output_tag_counters:
                     from .run_statistics import OutputTagCounter
+
                     stats.output_tag_counters[tag] = OutputTagCounter()
                 stats.output_tag_counters[tag].total += 1
         self._save_to_file()
@@ -171,6 +167,7 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag] = OutputTagCounter()
             stats.output_tag_counters[tag].added += 1
             self._save_to_file()
@@ -184,9 +181,11 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag] = OutputTagCounter()
             stats.output_tag_counters[tag].removed += 1
             self._save_to_file()
+
     @typechecked
     def set_total_assets(self, total_assets: int) -> None:
         with self._lock:
@@ -209,4 +208,4 @@ class StatisticsManager:
             if self._current_stats is None:
                 self.start_run()
             self._current_stats.skip_n = skip_n
-            self._save_to_file()            
+            self._save_to_file()
