@@ -179,7 +179,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                     level=LogLevel.DEBUG,
                 )
                 count += 1
-                StatisticsManager.get_instance().update(last_processed_id=asset_wrapper.id, count=skip_n + count)
+                StatisticsManager.get_instance().update_checkpoint(asset_wrapper.id, skip_n + count)
                 t1 = time.time()
                 estimator.update(t1 - t0)
                 now = time.time()

@@ -82,15 +82,15 @@ class StatisticsManager:
         return self._current_stats
 
     @typechecked
-    def update(self, **kwargs: Any) -> RunStatistics:
+    def update_checkpoint(self, last_processed_id: str, count: int) -> RunStatistics:
+        """
+        Actualiza el checkpoint de procesamiento (último id procesado y contador).
+        """
         with self._lock:
             if self._current_stats is None:
                 self.start_run()
-            for k, v in kwargs.items():
-                if hasattr(self._current_stats, k):
-                    setattr(self._current_stats, k, v)
-                else:
-                    self._current_stats.extra[k] = v
+            self._current_stats.last_processed_id = last_processed_id
+            self._current_stats.count = count
             self._save_to_file()
             return self._current_stats
 
