@@ -34,14 +34,14 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     log_debug(f"[BUG] Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
-    log(f"Procesando assets con MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...", level=LogLevel.PROGRESS)
+    log(f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...", level=LogLevel.PROGRESS)
     # Get total assets before processing
     try:
         stats = get_server_statistics.sync(client=context.client)
         total_assets = stats.photos + stats.videos
-        log(f"Total assets (photos + videos) reportados por Immich: {total_assets}", level=LogLevel.PROGRESS)
+        log(f"Total assets (photos + videos) reported by Immich: {total_assets}", level=LogLevel.PROGRESS)
     except Exception as e:
-        log(f"[ERROR] No se pudo obtener el total de assets desde la API: {e}", level=LogLevel.IMPORTANT)
+        log(f"[ERROR] Could not get total assets from API: {e}", level=LogLevel.IMPORTANT)
         total_assets = None
     start_time = time.time()
 
@@ -56,16 +56,16 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         if skip_n > 0:
             adjusted_skip_n = max(0, skip_n - OVERLAP)
             if adjusted_skip_n != skip_n:
-                log(f"[CHECKPOINT] Overlapping: skip_n ajustado de {skip_n} a {adjusted_skip_n} (overlap {OVERLAP})", level=LogLevel.PROGRESS)
+                log(f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {OVERLAP})", level=LogLevel.PROGRESS)
             else:
-                log(f"[CHECKPOINT] Se saltarán {skip_n} assets (desde checkpoint: id={last_processed_id}).", level=LogLevel.PROGRESS)
+                log(f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).", level=LogLevel.PROGRESS)
             skip_n = adjusted_skip_n
         else:
-            log(f"[CHECKPOINT] Se saltarán {skip_n} assets (desde checkpoint: id={last_processed_id}).", level=LogLevel.PROGRESS)
+            log(f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).", level=LogLevel.PROGRESS)
     else:
         last_processed_id, skip_n = None, 0
 
-        log("[CHECKPOINT] Checkpoint resume está deshabilitado. Empezando desde el principio.", level=LogLevel.PROGRESS)
+        log("[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning.", level=LogLevel.PROGRESS)
     total_to_process = None
     if total_assets is not None:
         total_to_process = total_assets
@@ -95,7 +95,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         )
 
     if USE_THREADPOOL:
-        log("[CHECKPOINT] El checkpoint/resume solo está soportado en modo secuencial. Desactiva USE_THREADPOOL para esta función.", level=LogLevel.PROGRESS)
+        log("[CHECKPOINT] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.", level=LogLevel.PROGRESS)
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
             for asset_wrapper in context.asset_manager.iter_assets(
@@ -146,16 +146,16 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         except Exception as e:
             import traceback
             tb = traceback.format_exc()
-            log(f"[ERROR] Excepción inesperada en el bucle principal de assets: {e}\nTraceback:\n{tb}", level=LogLevel.IMPORTANT)
+            log(f"[ERROR] Unexpected exception in main asset loop: {e}\nTraceback:\n{tb}", level=LogLevel.IMPORTANT)
             raise
         finally:
-            log("Bucle de procesamiento de assets finalizado.", level=LogLevel.PROGRESS)
-            log("El bucle for de assets ha terminado (no quedan más assets en el iterador).", level=LogLevel.PROGRESS)
+            log("Asset processing loop finished.", level=LogLevel.PROGRESS)
+            log("The asset for-loop has ended (no more assets in the iterator).", level=LogLevel.PROGRESS)
 
     total_time = time.time() - start_time
 
-    log(f"Total de assets procesados: {count}", level=LogLevel.PROGRESS)
-    log(f"[PERF] Tiempo total: {total_time:.2f} s. Media por asset: {total_time/count if count else 0:.3f} s", level=LogLevel.PROGRESS)
+    log(f"Total assets processed: {count}", level=LogLevel.PROGRESS)
+    log(f"[PERF] Total time: {total_time:.2f} s. Average per asset: {total_time/count if count else 0:.3f} s", level=LogLevel.PROGRESS)
     if len(tag_mod_report.modifications) > 0:
         tag_mod_report.print_summary()
         tag_mod_report.flush()
