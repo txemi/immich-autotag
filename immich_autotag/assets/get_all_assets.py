@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generator, Optional
+from typing import TYPE_CHECKING, Generator, Optional
 
 from immich_client.api.assets import get_asset_info
 from immich_client.api.search import search_assets
@@ -10,14 +10,11 @@ from immich_client.models.search_asset_response_dto import \
     SearchAssetResponseDto
 from typeguard import typechecked
 
-
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-
 from immich_autotag.logging.utils import log_debug
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
-
 
 
 @typechecked
@@ -35,6 +32,7 @@ def get_all_assets(
     skipped = 0
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
+
     log("Starting get_all_assets generator...", level=LogLevel.PROGRESS)
     while True:
         log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
@@ -45,16 +43,25 @@ def get_all_assets(
             log_debug(f"[BUG] Error: {response.status_code} - {response.content}")
             raise RuntimeError(f"Error: {response.status_code} - {response.content}")
         assets_page = response.parsed.assets.items
-        log(f"[PROGRESS] Page {page}: {len(assets_page)} assets received from API.", level=LogLevel.PROGRESS)
+        log(
+            f"[PROGRESS] Page {page}: {len(assets_page)} assets received from API.",
+            level=LogLevel.PROGRESS,
+        )
         if not assets_page:
-            log(f"[PROGRESS] No more assets in page {page}, ending loop.", level=LogLevel.PROGRESS)
+            log(
+                f"[PROGRESS] No more assets in page {page}, ending loop.",
+                level=LogLevel.PROGRESS,
+            )
             break  # No more assets, terminate the generator
         for asset in assets_page:
             if skip_n and skipped < skip_n:
                 skipped += 1
                 continue
             if max_assets is not None and count >= max_assets:
-                log(f"[PROGRESS] max_assets reached on page {page} (count={count})", level=LogLevel.PROGRESS)
+                log(
+                    f"[PROGRESS] max_assets reached on page {page} (count={count})",
+                    level=LogLevel.PROGRESS,
+                )
                 break
             log_debug(f"[BUG] Before get_asset_info.sync, asset_id={asset.id}")
             asset_full = get_asset_info.sync(id=asset.id, client=context.client)
@@ -64,7 +71,9 @@ def get_all_assets(
                 yield AssetResponseWrapper(asset=asset_full, context=context)
                 count += 1
             else:
-                log_debug(f"[BUG] [ERROR] Could not load asset with id={asset.id}. get_asset_info returned None.")
+                log_debug(
+                    f"[BUG] [ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
+                )
                 raise RuntimeError(
                     f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
                 )
@@ -78,10 +87,19 @@ def get_all_assets(
         msg += ")"
         log(msg, level=LogLevel.PROGRESS)
         if max_assets is not None and count >= max_assets:
-            log(f"[PROGRESS] max_assets reached after processing page {page} (count={count})", level=LogLevel.PROGRESS)
+            log(
+                f"[PROGRESS] max_assets reached after processing page {page} (count={count})",
+                level=LogLevel.PROGRESS,
+            )
             break
         if not response_assets.next_page:
-            log(f"[PROGRESS] No next_page in response after page {page}, ending loop.", level=LogLevel.PROGRESS)
+            log(
+                f"[PROGRESS] No next_page in response after page {page}, ending loop.",
+                level=LogLevel.PROGRESS,
+            )
             break
         page += 1
-    log("get_all_assets generator finished (no more pages or assets).", level=LogLevel.PROGRESS)
+    log(
+        "get_all_assets generator finished (no more pages or assets).",
+        level=LogLevel.PROGRESS,
+    )

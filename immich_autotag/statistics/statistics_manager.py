@@ -1,4 +1,5 @@
 from typeguard import typechecked
+
 """
 statistics_manager.py
 
@@ -7,18 +8,19 @@ Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
 
-from typing import Optional, Any
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional
+
 from .run_statistics import RunStatistics
 
 STATISTICS_DIR = Path("logs")
 
 
-import attr
+from threading import RLock
 
 import attr
-from threading import RLock
+
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
@@ -26,17 +28,20 @@ class StatisticsManager:
     Singleton manager de estadísticas: gestiona la carga, guardado y actualización de estadísticas de ejecución.
     Solo crea y actualiza un fichero por ejecución.
     """
+
     stats_dir: Path = STATISTICS_DIR
-    _instance: 'StatisticsManager' = attr.ib(default=None, init=False, repr=False)
+    _instance: "StatisticsManager" = attr.ib(default=None, init=False, repr=False)
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
-    _current_stats: Optional[RunStatistics] = attr.ib(default=None, init=False, repr=False)
+    _current_stats: Optional[RunStatistics] = attr.ib(
+        default=None, init=False, repr=False
+    )
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
     def __attrs_post_init__(self) -> None:
         self.stats_dir.mkdir(exist_ok=True)
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, '_singleton_instance') or cls._singleton_instance is None:
+        if not hasattr(cls, "_singleton_instance") or cls._singleton_instance is None:
             cls._singleton_instance = super().__new__(cls)
         return cls._singleton_instance
 
@@ -46,7 +51,9 @@ class StatisticsManager:
         with self._lock:
             if self._current_stats is not None:
                 return  # Ya inicializado
-            self._current_stats = initial_stats or RunStatistics(last_processed_id=None, count=0)
+            self._current_stats = initial_stats or RunStatistics(
+                last_processed_id=None, count=0
+            )
             timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             self._current_file = self.stats_dir / f"run_statistics_{timestamp}.yaml"
             self._save_to_file()

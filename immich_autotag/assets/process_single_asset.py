@@ -1,6 +1,4 @@
-
 from __future__ import annotations
-from immich_autotag.logging.utils import log_debug
 
 from threading import Lock
 from typing import Dict, List, Set
@@ -16,6 +14,7 @@ from immich_autotag.assets.asset_validation import \
 # Date correction config flag
 from immich_autotag.config.user import (ALBUM_PATTERN, ENABLE_DATE_CORRECTION,
                                         TAG_CONVERSIONS, VERBOSE_LOGGING)
+from immich_autotag.logging.utils import log_debug
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.modification_kind import ModificationKind
 
@@ -206,11 +205,9 @@ def analyze_and_assign_album(
         )
 
 
- # Public API of the subpackage for duplicate tag logic (located inside assets)
+# Public API of the subpackage for duplicate tag logic (located inside assets)
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import \
     analyze_duplicate_classification_tags
-
-
 
 
 @typechecked
@@ -224,7 +221,10 @@ def process_single_asset(
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
-    log(f"[DEBUG] [process_single_asset] INICIO asset_id={getattr(asset_wrapper, 'id', None)}", level=LogLevel.FOCUS)
+    log(
+        f"[DEBUG] [process_single_asset] INICIO asset_id={getattr(asset_wrapper, 'id', None)}",
+        level=LogLevel.FOCUS,
+    )
     try:
         log("[DEBUG] Obteniendo URL del asset...", level=LogLevel.FOCUS)
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
@@ -235,6 +235,7 @@ def process_single_asset(
             or "[sin nombre]"
         )
         from pprint import pformat
+
         details = pformat(vars(asset_wrapper))
         log(
             f"[ERROR] No se pudo obtener la URL Immich del asset. Nombre: {asset_name}\nDetalles: {details}",
@@ -253,10 +254,15 @@ def process_single_asset(
 
     if ENABLE_DATE_CORRECTION:
         log("[DEBUG] Corrigiendo fecha del asset...", level=LogLevel.FOCUS)
-        from immich_autotag.assets.date_correction.core_logic import correct_asset_date
+        from immich_autotag.assets.date_correction.core_logic import \
+            correct_asset_date
+
         correct_asset_date(asset_wrapper)
 
-    log("[DEBUG] Analizando tags de clasificación de duplicados...", level=LogLevel.FOCUS)
+    log(
+        "[DEBUG] Analizando tags de clasificación de duplicados...",
+        level=LogLevel.FOCUS,
+    )
     analyze_duplicate_classification_tags(asset_wrapper)
 
     log("[DEBUG] Analizando y asignando álbum...", level=LogLevel.FOCUS)
@@ -264,17 +270,29 @@ def process_single_asset(
         asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
     )
 
-    log("[DEBUG] Validando y actualizando clasificación del asset...", level=LogLevel.FOCUS)
+    log(
+        "[DEBUG] Validando y actualizando clasificación del asset...",
+        level=LogLevel.FOCUS,
+    )
     validate_and_update_asset_classification(
         asset_wrapper,
         tag_mod_report=tag_mod_report,
     )
 
-    log("[DEBUG] Intentando adquirir lock para flush del reporte...", level=LogLevel.FOCUS)
+    log(
+        "[DEBUG] Intentando adquirir lock para flush del reporte...",
+        level=LogLevel.FOCUS,
+    )
     with lock:
-        log("[DEBUG] Lock adquirido, haciendo flush del reporte...", level=LogLevel.FOCUS)
+        log(
+            "[DEBUG] Lock adquirido, haciendo flush del reporte...",
+            level=LogLevel.FOCUS,
+        )
         tag_mod_report.flush()
-    log(f"[DEBUG] [process_single_asset] FIN asset_id={getattr(asset_wrapper, 'id', None)}", level=LogLevel.FOCUS)
+    log(
+        f"[DEBUG] [process_single_asset] FIN asset_id={getattr(asset_wrapper, 'id', None)}",
+        level=LogLevel.FOCUS,
+    )
 
 
 @typechecked

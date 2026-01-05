@@ -1,13 +1,9 @@
-
-
 import logging
 from typing import Any
 
 from typeguard import typechecked
 
 from .levels import LogLevel
-
-
 
 # Map our custom levels to logging module levels
 LOGLEVEL_TO_LOGGING = {
@@ -36,6 +32,8 @@ def setup_logging(level: LogLevel = LogLevel.PROGRESS) -> None:
         format="[%(levelname)s] %(message)s",
         level=LOGLEVEL_TO_LOGGING.get(level, logging.INFO),
     )
+
+
 @typechecked
 def log_debug(msg: str) -> None:
     """
@@ -51,5 +49,6 @@ def is_log_level_enabled(level: LogLevel) -> bool:
     Usage: if is_log_level_enabled(LogLevel.DEBUG): ...
     """
     import logging
+
     py_level = LOGLEVEL_TO_LOGGING.get(level, logging.INFO)
-    return logging.getLogger().isEnabledFor(py_level)    
+    return logging.getLogger().isEnabledFor(py_level)
