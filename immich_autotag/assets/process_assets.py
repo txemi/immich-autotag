@@ -6,9 +6,7 @@ from threading import Lock
 
 from typeguard import typechecked
 
-from immich_autotag.assets.checkpoint_utils import (delete_checkpoint,
-                                                    load_checkpoint,
-                                                    save_checkpoint)
+from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.assets.process_single_asset import process_single_asset
 from immich_autotag.config.internal_config import MAX_WORKERS, USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
@@ -65,7 +63,11 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     from immich_autotag.config.user import ENABLE_CHECKPOINT_RESUME
 
     if ENABLE_CHECKPOINT_RESUME:
-        last_processed_id, skip_n = load_checkpoint()
+        stats = StatisticsManager.get_instance().load_latest()
+        if stats:
+            last_processed_id, skip_n = stats.last_processed_id, stats.count
+        else:
+            last_processed_id, skip_n = None, 0
         OVERLAP = 100
         if skip_n > 0:
             adjusted_skip_n = max(0, skip_n - OVERLAP)
@@ -177,7 +179,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
                     level=LogLevel.DEBUG,
                 )
                 count += 1
-                save_checkpoint(asset_wrapper.id, skip_n + count)
+                StatisticsManager.get_instance().update(last_processed_id=asset_wrapper.id, count=skip_n + count)
                 t1 = time.time()
                 estimator.update(t1 - t0)
                 now = time.time()
@@ -217,6 +219,4 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             f"ERROR: Unexpectedly low number of assets: {count} < {MIN_ASSETS}"
         )
     # Eliminar el checkpoint si todo termina correctamente
-    from immich_autotag.assets.checkpoint_utils import delete_checkpoint
-
-    delete_checkpoint()
+    StatisticsManager.get_instance().delete_all()
