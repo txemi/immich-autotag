@@ -27,7 +27,7 @@ from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 @typechecked
 
-def log_execution_parameters():
+def log_execution_parameters() -> None:
     log_debug(f"[BUG] Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...")
     log(
         f"Processing assets with MAX_WORKERS={MAX_WORKERS}, USE_THREADPOOL={USE_THREADPOOL}...",
@@ -37,7 +37,7 @@ def log_execution_parameters():
 
 @typechecked
 
-def fetch_total_assets(context):
+def fetch_total_assets(context: ImmichContext) -> int | None:
     try:
         stats = get_server_statistics.sync(client=context.client)
         total_assets = stats.photos + stats.videos
@@ -57,7 +57,7 @@ def fetch_total_assets(context):
 
 @typechecked
 
-def resolve_checkpoint():
+def resolve_checkpoint() -> tuple[str | None, int]:
     if ENABLE_CHECKPOINT_RESUME:
         stats = StatisticsManager.get_instance().load_latest()
         if stats:
@@ -94,14 +94,21 @@ def resolve_checkpoint():
 
 @typechecked
 
-def register_execution_parameters(total_assets, max_assets, skip_n):
+def register_execution_parameters(total_assets: int | None, max_assets: int | None, skip_n: int) -> None:
     StatisticsManager.get_instance().set_max_assets(max_assets if max_assets is not None else -1)
     StatisticsManager.get_instance().set_skip_n(skip_n)
 
 
 @typechecked
 
-def perf_log(count, elapsed, estimator, total_to_process, skip_n, total_assets):
+def perf_log(
+    count: int,
+    elapsed: float,
+    estimator: AdaptiveTimeEstimator,
+    total_to_process: int | None,
+    skip_n: int,
+    total_assets: int | None
+) -> None:
     print_perf(
         count,
         elapsed,
@@ -115,7 +122,18 @@ def perf_log(count, elapsed, estimator, total_to_process, skip_n, total_assets):
 
 @typechecked
 
-def process_assets_threadpool(context, max_assets, tag_mod_report, lock, estimator, total_to_process, skip_n, total_assets, LOG_INTERVAL, start_time):
+def process_assets_threadpool(
+    context: ImmichContext,
+    max_assets: int | None,
+    tag_mod_report: ModificationReport,
+    lock: Lock,
+    estimator: AdaptiveTimeEstimator,
+    total_to_process: int | None,
+    skip_n: int,
+    total_assets: int | None,
+    LOG_INTERVAL: int,
+    start_time: float
+) -> None:
     log(
         "[CHECKPOINT] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.",
         level=LogLevel.PROGRESS,
@@ -152,7 +170,19 @@ def process_assets_threadpool(context, max_assets, tag_mod_report, lock, estimat
 
 @typechecked
 
-def process_assets_sequential(context, max_assets, skip_n, last_processed_id, tag_mod_report, lock, estimator, total_to_process, LOG_INTERVAL, start_time, total_assets):
+def process_assets_sequential(
+    context: ImmichContext,
+    max_assets: int | None,
+    skip_n: int,
+    last_processed_id: str | None,
+    tag_mod_report: ModificationReport,
+    lock: Lock,
+    estimator: AdaptiveTimeEstimator,
+    total_to_process: int | None,
+    LOG_INTERVAL: int,
+    start_time: float,
+    total_assets: int | None
+) -> int:
     log(
         "Entrando en el bucle de procesamiento de assets...",
         level=LogLevel.PROGRESS,
@@ -201,7 +231,11 @@ def process_assets_sequential(context, max_assets, skip_n, last_processed_id, ta
 
 @typechecked
 
-def log_final_summary(count, tag_mod_report, start_time):
+def log_final_summary(
+    count: int,
+    tag_mod_report: ModificationReport,
+    start_time: float
+) -> None:
     total_time = time.time() - start_time
     log(f"Total assets processed: {count}", level=LogLevel.PROGRESS)
     log(
