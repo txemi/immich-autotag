@@ -39,3 +39,40 @@ El objetivo es mover los símbolos uno a uno, probando tras cada movimiento para
 - Mantener los ficheros originales hasta que todo esté probado, luego limpiar.
 
 ¿Quieres que prepare el primer movimiento (DuplicateAlbumsInfo) y su actualización de imports?
+
+# Refactorización complementaria: simplificación de process_assets
+
+El método `process_assets` en `assets/process_assets.py` es demasiado grande y difícil de mantener. Se propone dividirlo en sub-funciones con responsabilidades claras:
+
+| Sub-función sugerida                | Responsabilidad principal                                                                 |
+|-------------------------------------|------------------------------------------------------------------------------------------|
+| `log_execution_parameters`          | Loguear los parámetros de ejecución y configuración                                      |
+| `fetch_total_assets`                | Consultar y registrar el total de assets disponibles                                     |
+| `resolve_checkpoint`                | Calcular `last_processed_id` y `skip_n` según el modo de reanudación                     |
+| `register_execution_parameters`     | Guardar en estadísticas: total_assets, max_assets, skip_n                                |
+| `process_assets_threadpool`         | Procesar assets usando ThreadPoolExecutor                                                |
+| `process_assets_sequential`         | Procesar assets secuencialmente (con checkpoint/resume y estadísticas)                   |
+| `log_final_summary`                 | Loguear resumen final, tiempo total, y flush de reportes                                 |
+
+### Estructura sugerida
+
+```python
+def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
+    log_execution_parameters()
+    total_assets = fetch_total_assets(context)
+    last_processed_id, skip_n = resolve_checkpoint()
+    register_execution_parameters(total_assets, max_assets, skip_n)
+    if USE_THREADPOOL:
+        process_assets_threadpool(context, max_assets)
+    else:
+        process_assets_sequential(context, max_assets, skip_n, last_processed_id)
+    log_final_summary()
+```
+
+- Cada sub-función puede estar definida como función interna o externa según convenga.
+- El cuerpo principal queda reducido a una secuencia clara de pasos.
+- El código de logging, estadísticas y control de errores se encapsula en funciones pequeñas y reutilizables.
+
+**Recomendación:**
+- Este refactor es complementario al plan de modularización de process_single_asset.py y puede abordarse en paralelo.
+- Tras aplicar ambos, el flujo de procesamiento de assets será mucho más mantenible y escalable.
