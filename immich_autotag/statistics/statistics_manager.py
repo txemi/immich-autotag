@@ -120,25 +120,27 @@ class StatisticsManager:
 
 
 
+    # Tags relevantes para estadísticas (atributo de clase)
+    from immich_autotag.config.user import (
+        AUTOTAG_CATEGORY_UNKNOWN,
+        AUTOTAG_CATEGORY_CONFLICT,
+        AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+    )
+    RELEVANT_TAGS = {
+        AUTOTAG_CATEGORY_UNKNOWN,
+        AUTOTAG_CATEGORY_CONFLICT,
+        AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
+        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
+    }
+
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
         """
         Procesa la lista de etiquetas de un activo y actualiza los contadores totales de las etiquetas de salida relevantes.
         """
-        from immich_autotag.config.user import (
-            AUTOTAG_CATEGORY_UNKNOWN,
-            AUTOTAG_CATEGORY_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        )
-        relevant = {
-            AUTOTAG_CATEGORY_UNKNOWN,
-            AUTOTAG_CATEGORY_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        }
         stats = self.get_stats()
-        for tag in relevant:
+        for tag in self.RELEVANT_TAGS:
             if tag in tag_names:
                 if tag not in stats.output_tag_counters:
                     from .run_statistics import OutputTagCounter
@@ -151,19 +153,7 @@ class StatisticsManager:
         """
         Incrementa el contador de añadidos para una etiqueta relevante.
         """
-        from immich_autotag.config.user import (
-            AUTOTAG_CATEGORY_UNKNOWN,
-            AUTOTAG_CATEGORY_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        )
-        relevant = {
-            AUTOTAG_CATEGORY_UNKNOWN,
-            AUTOTAG_CATEGORY_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        }
-        if tag in relevant:
+        if tag in self.RELEVANT_TAGS:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
@@ -176,19 +166,7 @@ class StatisticsManager:
         """
         Incrementa el contador de eliminados para una etiqueta relevante.
         """
-        from immich_autotag.config.user import (
-            AUTOTAG_CATEGORY_UNKNOWN,
-            AUTOTAG_CATEGORY_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        )
-        relevant = {
-            AUTOTAG_CATEGORY_UNKNOWN,
-            AUTOTAG_CATEGORY_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-            AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        }
-        if tag in relevant:
+        if tag in self.RELEVANT_TAGS:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
