@@ -1,4 +1,3 @@
-
 from typeguard import typechecked
 
 """
@@ -8,7 +7,6 @@ Core statistics management logic for tracking progress, statistics, and historic
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
-
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -16,8 +14,6 @@ from typing import Any, Optional
 from .run_statistics import RunStatistics
 
 STATISTICS_DIR = Path("logs")
-
-
 
 from threading import RLock
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
@@ -27,53 +23,53 @@ import attr
 # Singleton de módulo
 _instance = None
 
-
-
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
+    _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
 
+    def _try_init_perf_tracker(self):
+        if self._perf_tracker is not None:
+            return
+        total = self._current_stats.total_assets or self._current_stats.max_assets
+        if total is not None:
+            from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
+            from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
+            import time
+            self._perf_tracker = PerformanceTracker(
+                start_time=time.time(),
+                log_interval=5,
+                estimator=AdaptiveTimeEstimator(),
+                estimation_mode=TimeEstimationMode.LINEAR,
+                total_to_process=total,
+                total_assets=self._current_stats.total_assets,
+                skip_n=self._current_stats.skip_n,
+            )
 
-    # Performance tracking
-    _perf_tracker: PerformanceTracker = attr.ib(factory=lambda: PerformanceTracker(
-        start_time=0.0,
-        log_interval=5,
-        estimator=None,
-        estimation_mode=None,
-        total_to_process=1,
-        total_assets=None,
-        skip_n=None
-    ), init=False, repr=False)
+    def set_total_assets(self, total_assets: int) -> None:
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            self._current_stats.total_assets = total_assets
+            self._save_to_file()
+            self._try_init_perf_tracker()
 
-
-    def set_progress_timing(self, start_time: float, log_interval: int = 5, estimator=None, estimation_mode=None, total_to_process=None, total_assets=None, skip_n=None) -> None:
-        """Inicializa el PerformanceTracker para impresión de progreso."""
-        self._perf_tracker = PerformanceTracker(
-            start_time=start_time,
-            log_interval=log_interval,
-            estimator=estimator,
-            estimation_mode=estimation_mode,
-            total_to_process=total_to_process,
-            total_assets=total_assets,
-            skip_n=skip_n,
-        )
+    def set_max_assets(self, max_assets: int) -> None:
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            self._current_stats.max_assets = max_assets
+            self._save_to_file()
+            self._try_init_perf_tracker()
 
     def maybe_print_progress(self, count: int) -> None:
-        """
-        Delegates progress printing to the PerformanceTracker.
-        """
-        if self._perf_tracker is not None:
-            self._perf_tracker.update(count)
+        if self._perf_tracker is None:
+            raise RuntimeError("PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar.")
+        self._perf_tracker.update(count)
 
     def print_progress(self, count: int) -> None:
-        """
-        Llama al PerformanceTracker para imprimir el progreso actual.
-        """
-        if self._perf_tracker is not None:
-            self._perf_tracker.print_progress(count)
-    """
-    Singleton statistics manager: handles loading, saving, and updating run statistics.
-    Only creates and updates one file per run.
-    """
+        if self._perf_tracker is None:
+            raise RuntimeError("PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar.")
+        self._perf_tracker.print_progress(count)
 
     stats_dir: Path = STATISTICS_DIR
     _instance: "StatisticsManager" = attr.ib(default=None, init=False, repr=False)
@@ -90,7 +86,6 @@ class StatisticsManager:
             raise RuntimeError(
                 "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
             )
-
         _instance = self
 
     @staticmethod
@@ -102,10 +97,9 @@ class StatisticsManager:
 
     @typechecked
     def start_run(self, initial_stats: Optional[RunStatistics] = None) -> None:
-        """Inicializa el estado para una nueva ejecución."""
         with self._lock:
             if self._current_stats is not None:
-                return  # Ya inicializado
+                return
             self._current_stats = initial_stats or RunStatistics(
                 last_processed_id=None, count=0
             )
@@ -126,16 +120,12 @@ class StatisticsManager:
 
     @typechecked
     def update_checkpoint(self, last_processed_id: str, count: int) -> RunStatistics:
-        """
-        Actualiza el checkpoint de procesamiento (último id procesado y contador) y decide si imprimir progreso.
-        """
         with self._lock:
             if self._current_stats is None:
                 self.start_run()
             self._current_stats.last_processed_id = last_processed_id
             self._current_stats.count = count
             self._save_to_file()
-        # Lógica de impresión de progreso
         self.maybe_print_progress(count)
         return self._current_stats
 
@@ -155,27 +145,19 @@ class StatisticsManager:
 
     @typechecked
     def delete_all(self) -> None:
-        """
-        [OBSOLETO] Ya no se deben eliminar estadísticas. Se mantiene solo por compatibilidad.
-        """
         print(
             "[WARN] StatisticsManager.delete_all() está obsoleto y no debe usarse. Las estadísticas se conservan para registro."
         )
 
     @typechecked
     def finish_run(self) -> None:
-        """
-        Marca la fecha de finalización de la ejecución en las estadísticas.
-        """
         with self._lock:
             if self._current_stats is None:
                 self.start_run()
             from datetime import datetime, timezone
-
             self._current_stats.finished_at = datetime.now(timezone.utc)
             self._save_to_file()
 
-    # Tags relevantes para estadísticas (atributo de clase)
     from immich_autotag.config.user import (
         AUTOTAG_CATEGORY_CONFLICT, AUTOTAG_CATEGORY_UNKNOWN,
         AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
@@ -190,61 +172,33 @@ class StatisticsManager:
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
-        """
-        Procesa la lista de etiquetas de un activo y actualiza los contadores totales de las etiquetas de salida relevantes.
-        """
         stats = self.get_stats()
         for tag in self.RELEVANT_TAGS:
             if tag in tag_names:
                 if tag not in stats.output_tag_counters:
                     from .run_statistics import OutputTagCounter
-
                     stats.output_tag_counters[tag] = OutputTagCounter()
                 stats.output_tag_counters[tag].total += 1
         self._save_to_file()
 
     @typechecked
     def increment_tag_added(self, tag: str) -> None:
-        """
-        Incrementa el contador de añadidos para una etiqueta relevante.
-        """
         if tag in self.RELEVANT_TAGS:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
-
                 stats.output_tag_counters[tag] = OutputTagCounter()
             stats.output_tag_counters[tag].added += 1
             self._save_to_file()
 
     @typechecked
     def increment_tag_removed(self, tag: str) -> None:
-        """
-        Incrementa el contador de eliminados para una etiqueta relevante.
-        """
         if tag in self.RELEVANT_TAGS:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
-
                 stats.output_tag_counters[tag] = OutputTagCounter()
             stats.output_tag_counters[tag].removed += 1
-            self._save_to_file()
-
-    @typechecked
-    def set_total_assets(self, total_assets: int) -> None:
-        with self._lock:
-            if self._current_stats is None:
-                self.start_run()
-            self._current_stats.total_assets = total_assets
-            self._save_to_file()
-
-    @typechecked
-    def set_max_assets(self, max_assets: int) -> None:
-        with self._lock:
-            if self._current_stats is None:
-                self.start_run()
-            self._current_stats.max_assets = max_assets
             self._save_to_file()
 
     @typechecked
@@ -254,14 +208,9 @@ class StatisticsManager:
                 self.start_run()
             self._current_stats.skip_n = skip_n
             self._save_to_file()
+
     @typechecked
     def get_effective_skip_n(self) -> tuple[str | None, int]:
-        """
-        Devuelve el (last_processed_id, skip_n) efectivo según la configuración de usuario y el estado previo.
-        Si ENABLE_CHECKPOINT_RESUME está activo y hay estado previo, lo usa; si no, devuelve (None, 0).
-        Aplica la lógica de overlap si corresponde.
-        Además, sincroniza y persiste skip_n en el estado actual para que quede reflejado en el fichero de estadísticas.
-        """
         from immich_autotag.config.user import ENABLE_CHECKPOINT_RESUME
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
@@ -296,6 +245,5 @@ class StatisticsManager:
                 "[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning.",
                 level=LogLevel.PROGRESS,
             )
-        # Sincroniza y persiste skip_n en el estado actual
         self.set_skip_n(skip_n)
         return last_processed_id, skip_n
