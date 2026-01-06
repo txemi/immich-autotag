@@ -26,36 +26,37 @@ import attr
 _instance = None
 
 
+
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
+    def print_progress(
+        self,
+        count: int,
+        elapsed: float,
+        total_to_process: Optional[int] = None,
+        estimator: Optional[Any] = None,
+        skip_n: Optional[int] = None,
+        total_assets: Optional[int] = None,
+        estimation_mode: Any = None,
+    ) -> None:
+        """
+        Calls the performance manager to print current progress.
+        Does not move logic, just centralizes the call.
+        """
+        from immich_autotag.utils.perf.print_perf import print_perf
+        print_perf(
+            count=count,
+            elapsed=elapsed,
+            total_to_process=total_to_process,
+            estimator=estimator,
+            skip_n=skip_n,
+            total_assets=total_assets,
+            estimation_mode=estimation_mode,
+        )
 
-        def print_progress(
-            self,
-            count: int,
-            elapsed: float,
-            total_to_process: Optional[int] = None,
-            estimator: Optional[Any] = None,
-            skip_n: Optional[int] = None,
-            total_assets: Optional[int] = None,
-            estimation_mode: Any = None,
-        ) -> None:
-            """
-            Llama al gestor de rendimiento para imprimir el progreso actual.
-            No mueve lógica, solo centraliza la llamada.
-            """
-            from immich_autotag.utils.perf.print_perf import print_perf
-            print_perf(
-                count=count,
-                elapsed=elapsed,
-                total_to_process=total_to_process,
-                estimator=estimator,
-                skip_n=skip_n,
-                total_assets=total_assets,
-                estimation_mode=estimation_mode,
-            )
     """
-    Singleton manager de estadísticas: gestiona la carga, guardado y actualización de estadísticas de ejecución.
-    Solo crea y actualiza un fichero por ejecución.
+    Singleton statistics manager: handles loading, saving, and updating run statistics.
+    Only creates and updates one file per run.
     """
 
     stats_dir: Path = STATISTICS_DIR
