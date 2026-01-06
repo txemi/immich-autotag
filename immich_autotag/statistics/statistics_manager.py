@@ -26,6 +26,7 @@ import attr
 _instance = None
 
 
+
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
 
@@ -92,8 +93,8 @@ class StatisticsManager:
             estimation_mode=estimation_mode,
         )
     """
-    Singleton manager de estadísticas: gestiona la carga, guardado y actualización de estadísticas de ejecución.
-    Solo crea y actualiza un fichero por ejecución.
+    Singleton statistics manager: handles loading, saving, and updating run statistics.
+    Only creates and updates one file per run.
     """
 
     stats_dir: Path = STATISTICS_DIR
