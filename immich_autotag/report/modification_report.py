@@ -112,6 +112,11 @@ class ModificationReport:
         if user_instance is None:
             user_instance = UserResponseWrapper.from_context(asset_wrapper.context)
 
+        # Calcular progreso usando StatisticsManager (sin try/except)
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+        stats = StatisticsManager.get_instance().get_stats()
+        progress_str = stats.format_progress()
+
         entry = ModificationEntry(
             datetime=datetime.datetime.now(),
             kind=kind,
@@ -122,6 +127,7 @@ class ModificationReport:
             new_value=new_value,
             user=user_instance,
             extra=extra,
+            progress=progress_str,
         )
         self.modifications.append(entry)
         self._since_last_flush += 1

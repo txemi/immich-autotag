@@ -64,6 +64,10 @@ class SerializableModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(dict)),
     )
+    progress: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
 
     @typechecked
     def to_log_string(self) -> str:
@@ -88,4 +92,6 @@ class SerializableModificationEntry:
             parts.append(f"user={self.user_name}")
         if self.extra:
             parts.append(f"extra={self.extra}")
+        if self.progress:
+            parts.append(f"progress={self.progress}")
         return " | ".join(parts)

@@ -53,6 +53,10 @@ class ModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(dict)),
     )
+    progress: Optional[str] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+    )
 
     def to_serializable(self) -> "SerializableModificationEntry":
         """
@@ -88,4 +92,5 @@ class ModificationEntry:
             user_name=self.user.name if self.user is not None else None,
             asset_link=asset_link,
             extra=self.extra,
+            progress=self.progress,
         )
