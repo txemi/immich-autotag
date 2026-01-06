@@ -7,13 +7,13 @@ Core statistics management logic for tracking progress, statistics, and historic
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
+
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
 from .run_statistics import RunStatistics
-
-STATISTICS_DIR = Path("logs")
+from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 from threading import RLock
 
@@ -81,7 +81,7 @@ class StatisticsManager:
             )
         self._perf_tracker.print_progress(count)
 
-    stats_dir: Path = STATISTICS_DIR
+    stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
     _instance: "StatisticsManager" = attr.ib(default=None, init=False, repr=False)
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
     _current_stats: Optional[RunStatistics] = attr.ib(
@@ -90,7 +90,7 @@ class StatisticsManager:
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
     def __attrs_post_init__(self) -> None:
-        self.stats_dir.mkdir(exist_ok=True)
+        # La carpeta ya la crea get_run_output_dir
         global _instance
         if _instance is not None and _instance is not self:
             raise RuntimeError(
@@ -113,8 +113,7 @@ class StatisticsManager:
             self._current_stats = initial_stats or RunStatistics(
                 last_processed_id=None, count=0
             )
-            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-            self._current_file = self.stats_dir / f"run_statistics_{timestamp}.yaml"
+            self._current_file = self.stats_dir / "run_statistics.yaml"
             self._save_to_file()
 
     def _save_to_file(self) -> None:

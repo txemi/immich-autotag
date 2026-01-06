@@ -8,6 +8,9 @@ import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import ParseResult
 
+
+from immich_autotag.utils.run_output_dir import get_run_output_dir
+from pathlib import Path
 import attrs
 
 if TYPE_CHECKING:
@@ -31,12 +34,12 @@ class ModificationReport:
     import datetime as dt
     import os
 
-    log_dir: str = attrs.field(
-        default="logs", validator=attrs.validators.instance_of(str)
+    log_dir: Path = attrs.field(
+        default=get_run_output_dir(), validator=attrs.validators.instance_of(Path)
     )
-    report_path: str = attrs.field(
-        default=f"logs/modification_report_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}_{os.getpid()}.txt",
-        validator=attrs.validators.instance_of(str),
+    report_path: Path = attrs.field(
+        factory=lambda: get_run_output_dir() / "modification_report.txt",
+        validator=attrs.validators.instance_of(Path),
     )
     batch_size: int = attrs.field(
         default=1, validator=attrs.validators.instance_of(int)
@@ -96,11 +99,9 @@ class ModificationReport:
         Registers a modification for any entity (tag, album, assignment, etc.).
         """
         if not self._cleared_report:
-            import os
-
             try:
-                os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
-                with open(self.report_path, "w", encoding="utf-8"):
+                self.report_path.parent.mkdir(parents=True, exist_ok=True)
+                with self.report_path.open("w", encoding="utf-8"):
                     pass  # Truncate the file
             except Exception as e:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
