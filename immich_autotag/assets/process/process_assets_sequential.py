@@ -50,15 +50,9 @@ def process_assets_sequential(
                 level=LogLevel.DEBUG,
             )
             count += 1
-            from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
             StatisticsManager.get_instance().update_checkpoint(
                 asset_wrapper.id,
                 skip_n + count,
-                estimator=estimator,
-                total_to_process=total_to_process,
-                skip_n=skip_n,
-                total_assets=total_assets,
-                estimation_mode=TimeEstimationMode.LINEAR,
             )
             t1 = time.time()
             estimator.update(t1 - t0)

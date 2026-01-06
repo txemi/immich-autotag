@@ -18,7 +18,9 @@ from .run_statistics import RunStatistics
 STATISTICS_DIR = Path("logs")
 
 
+
 from threading import RLock
+from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
 import attr
 
@@ -30,68 +32,44 @@ _instance = None
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
 
-    # Variables internas para control de impresión periódica de progreso
-    _last_log_time: float = attr.ib(default=0.0, init=False, repr=False)
-    _log_interval: int = attr.ib(default=5, init=False, repr=False)  # segundos
-    _start_time: float = attr.ib(default=0.0, init=False, repr=False)
 
-    def set_progress_timing(self, start_time: float, log_interval: int = 5) -> None:
-        """Inicializa el control de tiempo para impresión de progreso."""
-        self._start_time = start_time
-        self._last_log_time = start_time
-        self._log_interval = log_interval
+    # Performance tracking
+    _perf_tracker: PerformanceTracker = attr.ib(factory=lambda: PerformanceTracker(
+        start_time=0.0,
+        log_interval=5,
+        estimator=None,
+        estimation_mode=None,
+        total_to_process=1,
+        total_assets=None,
+        skip_n=None
+    ), init=False, repr=False)
 
-    def maybe_print_progress(
-        self,
-        count: int,
-        estimator: Optional[Any] = None,
-        total_to_process: Optional[int] = None,
-        skip_n: Optional[int] = None,
-        total_assets: Optional[int] = None,
-        estimation_mode: Any = None,
-    ) -> None:
-        """
-        Imprime el progreso si ha pasado suficiente tiempo desde el último log.
-        """
-        import time
-        now = time.time()
-        if now - self._last_log_time >= self._log_interval:
-            elapsed = now - self._start_time
-            self.print_progress(
-                count=count,
-                elapsed=elapsed,
-                estimator=estimator,
-                total_to_process=total_to_process,
-                skip_n=skip_n,
-                total_assets=total_assets,
-                estimation_mode=estimation_mode,
-            )
-            self._last_log_time = now
 
-    def print_progress(
-        self,
-        count: int,
-        elapsed: float,
-        total_to_process: Optional[int] = None,
-        estimator: Optional[Any] = None,
-        skip_n: Optional[int] = None,
-        total_assets: Optional[int] = None,
-        estimation_mode: Any = None,
-    ) -> None:
-        """
-        Llama al gestor de rendimiento para imprimir el progreso actual.
-        No mueve lógica, solo centraliza la llamada.
-        """
-        from immich_autotag.utils.perf.print_perf import print_perf
-        print_perf(
-            count=count,
-            elapsed=elapsed,
-            total_to_process=total_to_process,
+    def set_progress_timing(self, start_time: float, log_interval: int = 5, estimator=None, estimation_mode=None, total_to_process=None, total_assets=None, skip_n=None) -> None:
+        """Inicializa el PerformanceTracker para impresión de progreso."""
+        self._perf_tracker = PerformanceTracker(
+            start_time=start_time,
+            log_interval=log_interval,
             estimator=estimator,
-            skip_n=skip_n,
-            total_assets=total_assets,
             estimation_mode=estimation_mode,
+            total_to_process=total_to_process,
+            total_assets=total_assets,
+            skip_n=skip_n,
         )
+
+    def maybe_print_progress(self, count: int) -> None:
+        """
+        Delegates progress printing to the PerformanceTracker.
+        """
+        if self._perf_tracker is not None:
+            self._perf_tracker.update(count)
+
+    def print_progress(self, count: int) -> None:
+        """
+        Llama al PerformanceTracker para imprimir el progreso actual.
+        """
+        if self._perf_tracker is not None:
+            self._perf_tracker.print_progress(count)
     """
     Singleton statistics manager: handles loading, saving, and updating run statistics.
     Only creates and updates one file per run.
@@ -147,7 +125,7 @@ class StatisticsManager:
         return self._current_stats
 
     @typechecked
-    def update_checkpoint(self, last_processed_id: str, count: int, estimator: Optional[Any] = None, total_to_process: Optional[int] = None, skip_n: Optional[int] = None, total_assets: Optional[int] = None, estimation_mode: Any = None) -> RunStatistics:
+    def update_checkpoint(self, last_processed_id: str, count: int) -> RunStatistics:
         """
         Actualiza el checkpoint de procesamiento (último id procesado y contador) y decide si imprimir progreso.
         """
@@ -158,14 +136,7 @@ class StatisticsManager:
             self._current_stats.count = count
             self._save_to_file()
         # Lógica de impresión de progreso
-        self.maybe_print_progress(
-            count=count,
-            estimator=estimator,
-            total_to_process=total_to_process,
-            skip_n=skip_n,
-            total_assets=total_assets,
-            estimation_mode=estimation_mode,
-        )
+        self.maybe_print_progress(count)
         return self._current_stats
 
     @typechecked
