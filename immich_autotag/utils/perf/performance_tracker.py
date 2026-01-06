@@ -1,10 +1,13 @@
-from typing import Optional
 import time
+from typing import Optional
+
 import attr
 from typeguard import typechecked
+
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
-from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 from immich_autotag.utils.perf.print_perf import print_perf
+from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
+
 
 @typechecked
 @attr.s(auto_attribs=True, kw_only=True)
@@ -22,9 +25,13 @@ class PerformanceTracker:
         self.last_log_time = self.start_time
         # Validación estricta: si falta algo esencial, peta
         if self.estimation_mode == TimeEstimationMode.EWMA and self.estimator is None:
-            raise ValueError("[PERFORMANCE TRACKER] El modo EWMA requiere un estimator válido. No se puede inicializar el tracker.")
+            raise ValueError(
+                "[PERFORMANCE TRACKER] El modo EWMA requiere un estimator válido. No se puede inicializar el tracker."
+            )
         if self.total_to_process is None:
-            raise ValueError("[PERFORMANCE TRACKER] total_to_process no está definido. No se puede inicializar el tracker.")
+            raise ValueError(
+                "[PERFORMANCE TRACKER] total_to_process no está definido. No se puede inicializar el tracker."
+            )
 
     def set_progress_timing(self, start_time: float, log_interval: int = 5):
         self.start_time = start_time

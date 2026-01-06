@@ -16,12 +16,14 @@ from .run_statistics import RunStatistics
 STATISTICS_DIR = Path("logs")
 
 from threading import RLock
-from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
 import attr
 
+from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
+
 # Singleton de módulo
 _instance = None
+
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
@@ -32,9 +34,13 @@ class StatisticsManager:
             return
         total = self._current_stats.total_assets or self._current_stats.max_assets
         if total is not None:
-            from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
-            from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
             import time
+
+            from immich_autotag.utils.perf.estimator import \
+                AdaptiveTimeEstimator
+            from immich_autotag.utils.perf.time_estimation_mode import \
+                TimeEstimationMode
+
             self._perf_tracker = PerformanceTracker(
                 start_time=time.time(),
                 log_interval=5,
@@ -63,12 +69,16 @@ class StatisticsManager:
 
     def maybe_print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
-            raise RuntimeError("PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar.")
+            raise RuntimeError(
+                "PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar."
+            )
         self._perf_tracker.update(count)
 
     def print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
-            raise RuntimeError("PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar.")
+            raise RuntimeError(
+                "PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar."
+            )
         self._perf_tracker.print_progress(count)
 
     stats_dir: Path = STATISTICS_DIR
@@ -155,6 +165,7 @@ class StatisticsManager:
             if self._current_stats is None:
                 self.start_run()
             from datetime import datetime, timezone
+
             self._current_stats.finished_at = datetime.now(timezone.utc)
             self._save_to_file()
 
@@ -177,6 +188,7 @@ class StatisticsManager:
             if tag in tag_names:
                 if tag not in stats.output_tag_counters:
                     from .run_statistics import OutputTagCounter
+
                     stats.output_tag_counters[tag] = OutputTagCounter()
                 stats.output_tag_counters[tag].total += 1
         self._save_to_file()
@@ -187,6 +199,7 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag] = OutputTagCounter()
             stats.output_tag_counters[tag].added += 1
             self._save_to_file()
@@ -197,6 +210,7 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag] = OutputTagCounter()
             stats.output_tag_counters[tag].removed += 1
             self._save_to_file()
@@ -214,6 +228,7 @@ class StatisticsManager:
         from immich_autotag.config.user import ENABLE_CHECKPOINT_RESUME
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
+
         OVERLAP = 100
         if ENABLE_CHECKPOINT_RESUME:
             stats = self.load_latest()

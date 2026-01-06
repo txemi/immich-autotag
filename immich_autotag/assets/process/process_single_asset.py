@@ -4,10 +4,13 @@ from threading import Lock
 
 from typeguard import typechecked
 
+from immich_autotag.assets.albums.analyze_and_assign_album import \
+    analyze_and_assign_album
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.validation.validate_and_update_asset_classification import validate_and_update_asset_classification
-from immich_autotag.assets.albums.analyze_and_assign_album import analyze_and_assign_album
-from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import analyze_duplicate_classification_tags
+from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import \
+    analyze_duplicate_classification_tags
+from immich_autotag.assets.validation.validate_and_update_asset_classification import \
+    validate_and_update_asset_classification
 from immich_autotag.config.user import ENABLE_DATE_CORRECTION, TAG_CONVERSIONS
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
@@ -23,7 +26,7 @@ def process_single_asset(
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
     log_debug(f"[BUG] INICIO process_single_asset {getattr(asset_wrapper, 'id', None)}")
-    
+
     log(
         f"[DEBUG] [process_single_asset] INICIO asset_id={getattr(asset_wrapper, 'id', None)}",
         level=LogLevel.FOCUS,
@@ -57,7 +60,8 @@ def process_single_asset(
 
     if ENABLE_DATE_CORRECTION:
         log("[DEBUG] Corrigiendo fecha del asset...", level=LogLevel.FOCUS)
-        from immich_autotag.assets.date_correction.core_logic import correct_asset_date
+        from immich_autotag.assets.date_correction.core_logic import \
+            correct_asset_date
 
         correct_asset_date(asset_wrapper)
 

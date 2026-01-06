@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typeguard import typechecked
 from immich_client.api.server import get_server_statistics
+from typeguard import typechecked
 
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.albums.album_decision import AlbumDecision
-from immich_autotag.assets.duplicates._get_album_from_duplicates import get_album_from_duplicates
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.duplicates._get_album_from_duplicates import \
+    get_album_from_duplicates
 
 
 @typechecked
