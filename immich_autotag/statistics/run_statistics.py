@@ -21,6 +21,7 @@ class OutputTagCounter(BaseModel):
 
 
 class RunStatistics(BaseModel):
+    update_asset_date_count: int = Field(0, description="Number of asset date updates")
 
     total_assets: Optional[int] = Field(
         None, description="Total de elementos reportados por el sistema al inicio"

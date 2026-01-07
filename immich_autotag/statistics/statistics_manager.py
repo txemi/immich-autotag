@@ -289,5 +289,10 @@ class StatisticsManager:
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].errors += 1
             self._save_to_file()
+        elif kind == ModificationKind.UPDATE_ASSET_DATE:
+            # Count asset date updates globally
+            stats = self.get_stats()
+            stats.update_asset_date_count += 1
+            self._save_to_file()
         else:
             raise NotImplementedError(f"increment_tag_action: ModificationKind '{kind}' not implemented for tag statistics.")
