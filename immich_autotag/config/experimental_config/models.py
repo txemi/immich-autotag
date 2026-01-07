@@ -9,24 +9,25 @@ from pydantic import BaseModel, Field
 class ServerConfig(BaseModel):
     host: str
     port: int
-    use_ssl: bool
+    api_key: str
 
-class ClassificationRule(BaseModel):
-    type: str
-    patterns: List[str]
-    labels: List[str]
+class TagClassificationRule(BaseModel):
+    tag_names: List[str]
+
+class AlbumClassificationRule(BaseModel):
+    album_name_patterns: List[str]
 
 class Conversion(BaseModel):
-    source: ClassificationRule
-    destination: ClassificationRule
-
-class AutoTag(BaseModel):
-    name: str
-    criteria: List[str]
+    source: TagClassificationRule
+    destination: TagClassificationRule
 
 class AutoTagsConfig(BaseModel):
     enabled: bool
-    tags: List[AutoTag]
+    category_unknown: str
+    category_conflict: str
+    duplicate_asset_album_conflict: str
+    duplicate_asset_classification_conflict: str
+    duplicate_asset_classification_conflict_prefix: str
 
 class AdvancedFeatureConfig(BaseModel):
     enabled: bool
@@ -36,10 +37,18 @@ class FeaturesConfig(BaseModel):
     enable_album_detection: bool
     enable_tag_suggestion: bool
     advanced_feature: Optional[AdvancedFeatureConfig]
+    enable_album_name_strip: bool
+    enable_album_detection_from_folders: bool
+    album_detection_excluded_paths: List[str]
+    enable_date_correction: bool
+    date_extraction_timezone: str
+    enable_checkpoint_resume: bool
 
 class UserConfig(BaseModel):
     server: ServerConfig
-    classification_rules: List[ClassificationRule]
+    filter_out_asset_links: List[str]
+    tag_classification_rules: List[TagClassificationRule]
+    album_classification_rules: List[AlbumClassificationRule]
     conversions: List[Conversion]
     auto_tags: AutoTagsConfig
     features: FeaturesConfig
