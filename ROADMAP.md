@@ -1,5 +1,8 @@
 # 1. Roadmap: Immich AutoTag
 
+> **Note:** This roadmap is pending update. For the most up-to-date information, please refer to the [Changelog](./CHANGELOG.md).
+
+
 This document lists upcoming rules, features, and improvements planned for the Immich AutoTag project. Please update this file as new ideas or requirements arise.
 
 Note: This roadmap lists upcoming features in order of priority, based on a subjective assessment of what delivers the most value and quick wins for the project.
