@@ -21,6 +21,16 @@ It helps to:
 - Highlight possible errors, such as assets classified under multiple conflicting criteria.
 - Speed up the review and mass organization of your photo library.
 
+#### Other Features
+
+In addition to its core focus on helping classify and organize photos, the project also provides several advanced features to streamline large-scale photo management:
+
+- **Automatic date repair:** The system can automatically detect and fix incorrect or missing dates for assets based on file names and duplicate analysis.
+- **Automatic classification based on duplicates:** Photos are automatically classified by analyzing duplicate assets, reducing manual work.
+- **Continuous tagging loop script:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, making it easier to keep up with rapid changes.
+- **Asset exclusion by web link:** You can exclude specific sets of assets from processing by specifying their web link, giving you more control over what gets classified.
+- **Modification and statistics logs:** The system generates detailed modification reports and statistics files, including counters for unclassified assets and detected conflicts, to help you track progress and quality.
+
 ## 1.2. Practical Use Case: How to Take Advantage of This Script
 
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
