@@ -280,5 +280,14 @@ class StatisticsManager:
             self.increment_tag_added(tag)
         elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
             self.increment_tag_removed(tag)
+        elif kind == ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED:
+            # Count as error for this tag
+            tag_name = tag.name
+            stats = self.get_stats()
+            if tag_name not in stats.output_tag_counters:
+                from .run_statistics import OutputTagCounter
+                stats.output_tag_counters[tag_name] = OutputTagCounter()
+            stats.output_tag_counters[tag_name].errors += 1
+            self._save_to_file()
         else:
             raise NotImplementedError(f"increment_tag_action: ModificationKind '{kind}' not implemented for tag statistics.")

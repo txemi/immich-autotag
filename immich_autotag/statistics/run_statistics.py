@@ -17,6 +17,7 @@ class OutputTagCounter(BaseModel):
     total: int = 0
     added: int = 0
     removed: int = 0
+    errors: int = 0  # New: count errors for this tag
 
 
 class RunStatistics(BaseModel):
