@@ -133,11 +133,9 @@ class ModificationReport:
         )
         self.modifications.append(entry)
         # Centralized statistics update for tag actions (now encapsulated in StatisticsManager)
-        if tag is not None:
-            from immich_autotag.statistics.statistics_manager import StatisticsManager
-            StatisticsManager.get_instance().increment_tag_action(tag, kind)
-        else:
-            raise ValueError("Tag name could not be determined for statistics update.")
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_tag_action(tag, kind)
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
