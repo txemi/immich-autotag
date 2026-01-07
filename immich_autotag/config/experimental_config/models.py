@@ -11,16 +11,16 @@ class ServerConfig(BaseModel):
     port: int
     api_key: str
 
-# todo: las dos siguientes clases las juntaria en una sola
-class TagClassificationRule(BaseModel):
-    tag_names: List[str]
 
-class AlbumClassificationRule(BaseModel):
-    album_name_patterns: List[str]
+# Unified classification rule: can be by tag_names or album_name_patterns
+from typing import Optional
+class ClassificationRule(BaseModel):
+    tag_names: Optional[List[str]] = None
+    album_name_patterns: Optional[List[str]] = None
 
 class Conversion(BaseModel):
-    source: TagClassificationRule
-    destination: TagClassificationRule
+    source: ClassificationRule
+    destination: ClassificationRule
 
 class AutoTagsConfig(BaseModel):
     enabled: bool
@@ -51,8 +51,7 @@ class FeaturesConfig(BaseModel):
 class UserConfig(BaseModel):
     server: ServerConfig
     filter_out_asset_links: List[str]
-    tag_classification_rules: List[TagClassificationRule]
-    album_classification_rules: List[AlbumClassificationRule]
+    classification_rules: List[ClassificationRule]
     conversions: List[Conversion]
     auto_tags: AutoTagsConfig
     features: FeaturesConfig
