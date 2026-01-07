@@ -1,4 +1,6 @@
-/__pycache__
+__pycache__
 /.venv
 /immich-client
 /logs
+/.idea
+/profile.stats

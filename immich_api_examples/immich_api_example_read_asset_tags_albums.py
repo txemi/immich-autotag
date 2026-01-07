@@ -1,13 +1,14 @@
 
-from immich_client import Client
-from immich_client.api.assets import get_asset_info
-from immich_client.api.albums import get_all_albums
-from immich_client.models import AlbumResponseDto
 from typing import List
+
+from immich_client import Client
+from immich_client.api.albums import get_all_albums
+from immich_client.api.assets import get_asset_info
+from immich_client.models import AlbumResponseDto
 from typeguard import typechecked
 
 # Import configuration from the centralized module
-from immich_user_config import IMMICH_HOST, IMMICH_PORT, API_KEY
+from immich_autotag.config.user import IMMICH_HOST, IMMICH_PORT, API_KEY
 
 IMMICH_BASE_URL = f"http://{IMMICH_HOST}:{IMMICH_PORT}/api"
 PHOTO_ID = "abc02a80-ae50-4989-aebd-55263da48191"
@@ -34,7 +35,7 @@ def get_tags_for_asset(asset_id: str, client: Client) -> List[str]:
 
 @typechecked
 def main() -> None:
-    client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY})
+    client = Client(base_url=IMMICH_BASE_URL, headers={"x-api-key": API_KEY}, raise_on_unexpected_status=True)
     print(f"Searching albums and tags for photo {PHOTO_ID}\n")
     albums = get_albums_for_asset(PHOTO_ID, client)
     tags = get_tags_for_asset(PHOTO_ID, client)

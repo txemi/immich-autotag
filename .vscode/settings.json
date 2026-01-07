@@ -1,0 +1,4 @@
+{
+  "editor.formatOnSave": false,
+  "python.formatting.provider": "none"
+}
