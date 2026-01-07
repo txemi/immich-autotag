@@ -5,9 +5,9 @@ All versions follow [Semantic Versioning](https://semver.org/).
 ## [0.10] - 2025-12-23
 ### Added
 # **Info:** The official release tag for version 0.10 is [`v0.10`](https://github.com/txemi/immich-autotag/releases/tag/v0.10) on the `main` branch.
-- Clear definition of asset categories using configuration files.
-- Automatic tags to inform users about categorized and uncategorized assets.
-- Conflict tags when categorization issues are detected.
+- Clear definition of asset categories using configuration files. ([issue](docs/issues/0010-core-tagging-feature/))
+- Automatic tags to inform users about categorized and uncategorized assets. ([issue](docs/issues/0010-core-tagging-feature/))
+- Conflict tags when categorization issues are detected. ([issue](docs/issues/0010-core-tagging-feature/))
 
 # [0.20] - 2026-01-07
 ### Added
