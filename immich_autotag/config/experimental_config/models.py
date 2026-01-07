@@ -35,17 +35,23 @@ class AdvancedFeatureConfig(BaseModel):
     enabled: bool
     threshold: float
 
+
+# Agrupación de campos acoplados en subclases
+class AlbumDetectionFromFoldersConfig(BaseModel):
+    enabled: bool
+    excluded_paths: List[str]
+
+class DateCorrectionConfig(BaseModel):
+    enabled: bool
+    extraction_timezone: str
+
 class FeaturesConfig(BaseModel):
     enable_album_detection: bool
     enable_tag_suggestion: bool
     advanced_feature: Optional[AdvancedFeatureConfig]
     enable_album_name_strip: bool
-    # todo: las dos siguientes están acopladas, podrían ser una clase 
-    enable_album_detection_from_folders: bool
-    album_detection_excluded_paths: List[str]
-    # todo: las dos siguientes estan acopladas, podrían ser una clase
-    enable_date_correction: bool
-    date_extraction_timezone: str
+    album_detection_from_folders: AlbumDetectionFromFoldersConfig
+    date_correction: DateCorrectionConfig
     enable_checkpoint_resume: bool
 
 class UserConfig(BaseModel):
