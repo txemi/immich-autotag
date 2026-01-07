@@ -21,7 +21,7 @@ It helps to:
 - Highlight possible errors, such as assets classified under multiple conflicting criteria.
 - Speed up the review and mass organization of your photo library.
 
-#### Other Features
+#### Other Features 
 
 In addition to its core focus on helping classify and organize photos, the project also provides several advanced features to streamline large-scale photo management:
 
@@ -30,6 +30,8 @@ In addition to its core focus on helping classify and organize photos, the proje
 - **Continuous tagging loop script:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, making it easier to keep up with rapid changes.
 - **Asset exclusion by web link:** You can exclude specific sets of assets from processing by specifying their web link, giving you more control over what gets classified.
 - **Modification and statistics logs:** The system generates detailed modification reports and statistics files, including counters for unclassified assets and detected conflicts, to help you track progress and quality.
+
+> For more details and upcoming features, see the [Roadmap](./ROADMAP.md) and [Changelog](./CHANGELOG.md).
 
 ## 1.2. Practical Use Case: How to Take Advantage of This Script
 
