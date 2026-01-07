@@ -14,6 +14,9 @@ _instance_created = False
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ExperimentalConfigManager:
+
+
+
     config: Optional[UserConfig] = None
 
     def __attrs_post_init__(self):
@@ -35,16 +38,22 @@ class ExperimentalConfigManager:
             data = yaml.safe_load(f)
         self.config = UserConfig.model_validate(data)
 
+    def load_config_from_real_python(self):
+        """
+        Carga la configuración importando directamente user_real_config de user_real_config_pydantic.py.
+        No usa importlib ni lógica dinámica, solo import explícito.
+        """
+        from .user_real_config_pydantic import user_real_config
+        self.config = user_real_config        
 # --- Carga automática al inicio (ejemplo de uso) ---
 def load_experimental_config_at_startup():
-    config_path = Path(__file__).parent / "user_config_template.yaml"
+    config_path = Path(__file__).parent / "user_real_config.yaml"
     # Si el archivo no existe, lanza un error claro
     if not config_path.exists():
         raise FileNotFoundError(f"No se encontró la plantilla de configuración experimental en: {config_path}")
     # Solo crear el singleton si no existe
     manager = ExperimentalConfigManager.get_instance()
-    manager.load_config(config_path)
+    manager.load_config_from_real_python()
     # Imprimir la configuración cargada para ver el resultado
     import pprint
     pprint.pprint(manager.config.model_dump() if manager.config else None)
-    pass
