@@ -11,6 +11,7 @@ class ServerConfig(BaseModel):
     port: int
     api_key: str
 
+# todo: las dos siguientes clases las juntaria en una sola
 class TagClassificationRule(BaseModel):
     tag_names: List[str]
 
@@ -29,6 +30,7 @@ class AutoTagsConfig(BaseModel):
     duplicate_asset_classification_conflict: str
     duplicate_asset_classification_conflict_prefix: str
 
+# todo: esto no se que es , estaba en el fichero de config original?
 class AdvancedFeatureConfig(BaseModel):
     enabled: bool
     threshold: float
@@ -38,8 +40,10 @@ class FeaturesConfig(BaseModel):
     enable_tag_suggestion: bool
     advanced_feature: Optional[AdvancedFeatureConfig]
     enable_album_name_strip: bool
+    # todo: las dos siguientes están acopladas, podrían ser una clase 
     enable_album_detection_from_folders: bool
     album_detection_excluded_paths: List[str]
+    # todo: las dos siguientes estan acopladas, podrían ser una clase
     enable_date_correction: bool
     date_extraction_timezone: str
     enable_checkpoint_resume: bool
