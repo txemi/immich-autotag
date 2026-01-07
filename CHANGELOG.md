@@ -12,12 +12,12 @@ All versions follow [Semantic Versioning](https://semver.org/).
 # [0.20] - 2026-01-07
 ### Added
 - Automatic detection and **date repair** of asset dates based on file names and duplicate analysis.
-- Auto-assignment of classification tags and albums based on duplicate assets.
+- **Automatic classification of photos based on duplicates:** auto-assignment of classification tags and albums when duplicate assets are detected.
 - Option to remove leading/trailing spaces from album names for cleaner organization.
 - New loop script for continuous asset tagging/classification during heavy editing sessions.
-- Ability to exclude sets of assets from processing by specifying their web link (asset link exclusion).
-- New log file for modification reports, tracking all changes made during processing.
-- New statistics file with counters for the number of assets remaining to be classified and the number of conflicts detected.
+- Ability to **exclude sets of assets** from processing by specifying their web link (asset link exclusion).
+- **New log** file for modification reports, tracking all changes made during processing.
+- **New statistics** file with counters for the number of assets remaining to be classified and the number of conflicts detected.
 - **Experimental:** Ability to resume processing from the last processed asset (checkpoint resume). *(Not enabled by default; will be improved in the next version.)*
 - **Experimental:** Ability to create and assign albums based on folders from the file system library. *(Not enabled by default; will be improved in the next version.)*
 
