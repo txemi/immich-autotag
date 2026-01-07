@@ -135,7 +135,7 @@ class ModificationReport:
         # Centralized statistics update for tag actions (now encapsulated in StatisticsManager)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
-        StatisticsManager.get_instance().increment_tag_action(tag, kind)
+        StatisticsManager.get_instance().increment_tag_action(tag=tag, kind=kind,album= album)
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
