@@ -265,7 +265,6 @@ class AssetResponseWrapper:
         if tags_to_remove:
             # Usar el TagWrapper para estadísticas, no el string
             tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
-            StatisticsManager.get_instance().increment_tag_removed(tag_wrapper)
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -414,7 +413,7 @@ class AssetResponseWrapper:
                 f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}"
             )
 
-        StatisticsManager.get_instance().increment_tag_added(tag)
+        # Statistics update is handled by modification_report, not directly here
         try:
             response = tag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
