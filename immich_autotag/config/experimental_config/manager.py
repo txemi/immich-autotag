@@ -41,6 +41,10 @@ def load_experimental_config_at_startup():
     # Si el archivo no existe, lanza un error claro
     if not config_path.exists():
         raise FileNotFoundError(f"No se encontró la plantilla de configuración experimental en: {config_path}")
-    ExperimentalConfigManager()
-    ExperimentalConfigManager.get_instance().load_config(config_path)
-    ExperimentalConfigManager(config_path)
+    # Solo crear el singleton si no existe
+    manager = ExperimentalConfigManager.get_instance()
+    manager.load_config(config_path)
+    # Imprimir la configuración cargada para ver el resultado
+    import pprint
+    pprint.pprint(manager.config.model_dump() if manager.config else None)
+    pass
