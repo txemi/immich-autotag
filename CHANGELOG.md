@@ -19,7 +19,7 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - **New log** file for modification reports, tracking all changes made during processing. ([issue](docs/issues/0008-statistics-checkpoint/))
 - **New statistics** file with counters for the number of assets remaining to be classified and the number of conflicts detected. ([issue](docs/issues/0008-statistics-checkpoint/))
 - **Experimental:** Ability to resume processing from the last processed asset (checkpoint resume). *(Not enabled by default; will be improved in the next version.)* ([issue](docs/issues/0008-statistics-checkpoint/))
-- **Experimental:** Ability to create and assign albums based on folders from the file system library. *(Not enabled by default; will be improved in the next version.)* ([issue](docs/issues/0004-album-detection/))
+- **Experimental:** Ability to **automatically create and assign albums** based on folders from the file system library. *(Not enabled by default; will be improved in the next version.)* ([issue](docs/issues/0004-album-detection/))
 
 
 
