@@ -1,3 +1,9 @@
+---
+status: Done
+version: v0.10
+created: 2025-12-23
+updated: 2025-12-23
+---
 # 0010 - Core Tagging Feature (v0.10)
 
 **Tech Stack:** #Python #Tagging #Immich #Core
