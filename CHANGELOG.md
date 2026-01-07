@@ -11,9 +11,10 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 # [0.20] - 2026-01-07
 ### Added
-- Automatic detection and repair of asset dates based on file names and duplicate analysis.
+- Automatic detection and **date repair** of asset dates based on file names and duplicate analysis.
 - Auto-assignment of classification tags and albums based on duplicate assets.
 - Option to remove leading/trailing spaces from album names for cleaner organization.
+- New loop script for continuous asset tagging/classification during heavy editing sessions.
 - Ability to exclude sets of assets from processing by specifying their web link (asset link exclusion).
 - New log file for modification reports, tracking all changes made during processing.
 - New statistics file with counters for the number of assets remaining to be classified and the number of conflicts detected.
