@@ -30,11 +30,11 @@ Note: This roadmap lists upcoming features in order of priority, based on a subj
 	- Conflict tags when categorization issues are detected. ([issue](docs/issues/0010-core-tagging-feature/))
 
 3. **Refactor and modularize codebase:**
-	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution).
+	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution). ([issue](docs/issues/0009-config-system-refactor/))
 4. **Similar photo detection:**
-	Implement logic to detect duplicate or near-duplicate photos (e.g., WhatsApp copies) using available metadata.
+	Implement logic to detect duplicate or near-duplicate photos (e.g., WhatsApp copies) using available metadata. ([issue](docs/issues/0003-duplicates-management/))
 5. **Date correction for assets:**
-	Many photos have incorrect dates. Analyze strategies to recover the true date, e.g., from folder names or from similar/identical photos with correct dates.
+	Many photos have incorrect dates. Analyze strategies to recover the true date, e.g., from folder names or from similar/identical photos with correct dates. ([issue](docs/issues/0008-statistics-checkpoint/))
 6. **Containerization:**
 	Some users have requested a containerized version of this application. This is under consideration. See: https://github.com/txemi/immich-autotag/issues/1
 
@@ -53,8 +53,8 @@ The following are integrity rules, which ensure that the tagging and classificat
 ## 1.3. Automation and Utilities
 
 
-1. Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums).
-2. Assist in the detection and management of duplicate folders or files within the photo library.
+1. Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums). ([issue](docs/issues/0004-album-detection/))
+2. Assist in the detection and management of duplicate folders or files within the photo library. ([issue](docs/issues/0003-duplicates-management/))
 3. Provide an official Docker image for easy deployment and usage (requested by users).
 
 
