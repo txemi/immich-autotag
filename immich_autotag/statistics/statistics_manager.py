@@ -10,8 +10,14 @@ Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.tags.modification_kind import ModificationKind
+# ...existing code...
 from .run_statistics import RunStatistics
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
@@ -27,6 +33,7 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
+
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
 
     def _try_init_perf_tracker(self):
@@ -193,25 +200,28 @@ class StatisticsManager:
         self._save_to_file()
 
     @typechecked
-    def increment_tag_added(self, tag: str) -> None:
-        if tag in self.RELEVANT_TAGS:
+    def increment_tag_added(self, tag: "TagWrapper") -> None:
+        tag_name = tag.name
+        if tag_name in self.RELEVANT_TAGS:
             stats = self.get_stats()
-            if tag not in stats.output_tag_counters:
+            if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
-
-                stats.output_tag_counters[tag] = OutputTagCounter()
-            stats.output_tag_counters[tag].added += 1
+                stats.output_tag_counters[tag_name] = OutputTagCounter()
+            stats.output_tag_counters[tag_name].added += 1
             self._save_to_file()
 
     @typechecked
-    def increment_tag_removed(self, tag: str) -> None:
-        if tag in self.RELEVANT_TAGS:
+    def increment_tag_removed(self, tag: "TagWrapper") -> None:
+        # Enforce TagWrapper type
+        if not hasattr(tag, "name"):
+            raise TypeError(f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}")
+        tag_name = tag.name
+        if tag_name in self.RELEVANT_TAGS:
             stats = self.get_stats()
-            if tag not in stats.output_tag_counters:
+            if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
-
-                stats.output_tag_counters[tag] = OutputTagCounter()
-            stats.output_tag_counters[tag].removed += 1
+                stats.output_tag_counters[tag_name] = OutputTagCounter()
+            stats.output_tag_counters[tag_name].removed += 1
             self._save_to_file()
 
     @typechecked
@@ -261,3 +271,14 @@ class StatisticsManager:
             )
         self.set_skip_n(skip_n)
         return last_processed_id, skip_n
+    @typechecked
+    def increment_tag_action(self, tag: "TagWrapper", kind: "ModificationKind") -> None:
+        # Local import to avoid UnboundLocalError and cyclic import
+
+        from immich_autotag.tags.modification_kind import ModificationKind
+        if kind == ModificationKind.ADD_TAG_TO_ASSET:
+            self.increment_tag_added(tag)
+        elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
+            self.increment_tag_removed(tag)
+        else:
+            raise NotImplementedError(f"increment_tag_action: ModificationKind '{kind}' not implemented for tag statistics.")

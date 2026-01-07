@@ -5,7 +5,7 @@ Module for auditing and reporting entity modifications (tags, albums, assets, et
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional, Any
 from urllib.parse import ParseResult
 
 
@@ -15,6 +15,8 @@ import attrs
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.tags.modification_kind import ModificationKind
@@ -81,11 +83,11 @@ class ModificationReport:
     def add_modification(
         self,
         kind: ModificationKind,
-        asset_wrapper: Any,
-        tag: Any = None,
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+        tag: Optional["TagWrapper"] = None,
         album: Optional["AlbumResponseWrapper"] = None,
-        old_value: Any = None,
-        new_value: Any = None,
+        old_value: Optional[str] = None,
+        new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
@@ -130,6 +132,12 @@ class ModificationReport:
             progress=progress_str,
         )
         self.modifications.append(entry)
+        # Centralized statistics update for tag actions (now encapsulated in StatisticsManager)
+        if tag is not None:
+            from immich_autotag.statistics.statistics_manager import StatisticsManager
+            StatisticsManager.get_instance().increment_tag_action(tag, kind)
+        else:
+            raise ValueError("Tag name could not be determined for statistics update.")
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
@@ -140,8 +148,8 @@ class ModificationReport:
     def add_tag_modification(
         self,
         kind: ModificationKind,
-        asset_wrapper: Any,
-        tag: Any = None,
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+        tag: Optional["TagWrapper"] = None,
         old_value: Optional[str] = None,
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
@@ -164,7 +172,7 @@ class ModificationReport:
     def add_album_modification(
         self,
         kind: ModificationKind,
-        album: AlbumResponseWrapper,
+        album: "AlbumResponseWrapper",
         old_value: Optional[str] = None,
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
@@ -192,8 +200,8 @@ class ModificationReport:
     def add_assignment_modification(
         self,
         kind: ModificationKind,
-        asset_wrapper: Any,
-        album: Optional[AlbumResponseWrapper] = None,
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+        album: Optional["AlbumResponseWrapper"] = None,
         user: Optional[UserResponseWrapper] = None,
     ) -> None:
         assert kind in {

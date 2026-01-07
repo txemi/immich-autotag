@@ -261,9 +261,11 @@ class AssetResponseWrapper:
         tags_to_remove = [
             tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
         ]
-        # Estadísticas: cuenta intento de eliminación (solo si hay alguno a eliminar)
+
         if tags_to_remove:
-            StatisticsManager.get_instance().increment_tag_removed(tag_name)
+            # Usar el TagWrapper para estadísticas, no el string
+            tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
+            StatisticsManager.get_instance().increment_tag_removed(tag_wrapper)
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -411,8 +413,8 @@ class AssetResponseWrapper:
             print(
                 f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}"
             )
-        # Estadísticas: cuenta añadido
-        StatisticsManager.get_instance().increment_tag_added(tag_name)
+
+        StatisticsManager.get_instance().increment_tag_added(tag)
         try:
             response = tag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
