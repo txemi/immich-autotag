@@ -12,12 +12,21 @@ import yaml
 from pydantic import BaseModel, Field
 
 
+
 # Tipado estricto para los contadores de etiquetas de salida
 class OutputTagCounter(BaseModel):
     total: int = 0
     added: int = 0
     removed: int = 0
     errors: int = 0  # New: count errors for this tag
+
+# Tipado estricto para los contadores de álbumes de salida
+class OutputAlbumCounter(BaseModel):
+    total: int = 0
+    assigned: int = 0
+    removed: int = 0
+    errors: int = 0
+
 
 
 class RunStatistics(BaseModel):
@@ -47,6 +56,9 @@ class RunStatistics(BaseModel):
     )
     output_tag_counters: Dict[str, OutputTagCounter] = Field(
         default_factory=dict, description="Contadores por etiqueta de salida"
+    )
+    output_album_counters: Dict[str, OutputAlbumCounter] = Field(
+        default_factory=dict, description="Contadores por álbum de salida"
     )
 
     @typechecked
