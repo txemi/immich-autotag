@@ -1,6 +1,6 @@
 # Issue Registry
 
-| ID   | Title                   | Status   | Created Date | Versión | Lead |
+| ID   | Title                   | Status   | Created Date | Version | Lead |
 |------|-------------------------|----------|--------------|---------|------|
 | 0001 | System Initialization   | Done | 2026-01-07   | v0.1+ | [link](0001-system-initialization/) |
 | 0002 | Adopt Local Issue System | In Progress | 2026-01-07   | v0.22 | [link](0002-adopt-local-issue-system/) |
