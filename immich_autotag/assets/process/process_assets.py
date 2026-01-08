@@ -75,5 +75,5 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             total_assets,
         )
     log_final_summary(count if count is not None else 0, tag_mod_report, start_time)
-    # Marcar finalización de estadísticas
+    # Mark statistics completion
     StatisticsManager.get_instance().finish_run()

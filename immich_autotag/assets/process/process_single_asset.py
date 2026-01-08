@@ -41,13 +41,13 @@ def process_single_asset(
         asset_name = (
             getattr(asset_wrapper, "original_file_name", None)
             or getattr(asset_wrapper, "filename", None)
-            or "[sin nombre]"
+            or "[no name]"
         )
         from pprint import pformat
 
         details = pformat(vars(asset_wrapper))
         log(
-            f"[ERROR] No se pudo obtener la URL Immich del asset. Nombre: {asset_name}\nDetalles: {details}",
+            f"[ERROR] Could not obtain the Immich URL for the asset. Name: {asset_name}\nDetails: {details}",
             level=LogLevel.FOCUS,
         )
         raise RuntimeError(
@@ -55,7 +55,7 @@ def process_single_asset(
         )
     asset_name = asset_wrapper.original_file_name
     if not asset_name:
-        asset_name = "[sin nombre]"
+        asset_name = "[no name]"
     log(f"Procesando asset: {asset_url} | Nombre: {asset_name}", level=LogLevel.FOCUS)
 
     log("[DEBUG] Aplicando conversiones de tags...", level=LogLevel.FOCUS)
@@ -68,18 +68,18 @@ def process_single_asset(
         correct_asset_date(asset_wrapper)
 
     log(
-        "[DEBUG] Analizando tags de clasificación de duplicados...",
+        "[DEBUG] Analyzing duplicate classification tags...",
         level=LogLevel.FOCUS,
     )
     analyze_duplicate_classification_tags(asset_wrapper)
 
-    log("[DEBUG] Analizando y asignando álbum...", level=LogLevel.FOCUS)
+    log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
     analyze_and_assign_album(
         asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
     )
 
     log(
-        "[DEBUG] Validando y actualizando clasificación del asset...",
+        "[DEBUG] Validating and updating asset classification...",
         level=LogLevel.FOCUS,
     )
     validate_and_update_asset_classification(
@@ -88,16 +88,16 @@ def process_single_asset(
     )
 
     log(
-        "[DEBUG] Intentando adquirir lock para flush del reporte...",
+        "[DEBUG] Attempting to acquire lock for report flush...",
         level=LogLevel.FOCUS,
     )
     with lock:
         log(
-            "[DEBUG] Lock adquirido, haciendo flush del reporte...",
+            "[DEBUG] Lock acquired, flushing report...",
             level=LogLevel.FOCUS,
         )
         tag_mod_report.flush()
-    # Actualiza los contadores totales de etiquetas de salida para este asset
+    # Update total output tag counters for this asset
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     log(
         f"[DEBUG] [process_single_asset] FIN asset_id={getattr(asset_wrapper, 'id', None)}",

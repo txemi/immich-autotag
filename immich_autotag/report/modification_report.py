@@ -110,7 +110,7 @@ class ModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
-        # Si el usuario es None, obtenerlo usando el contexto del asset_wrapper (si existe)
+        # If user is None, obtain it using the asset_wrapper context (if it exists)
         user_instance = user
         if user_instance is None:
             user_instance = UserResponseWrapper.from_context(asset_wrapper.context)

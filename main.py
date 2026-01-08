@@ -6,6 +6,6 @@ from immich_autotag.entrypoint import run_main
 
 if __name__ == "__main__":
     if False:
-        # Carga experimental de configuración estructurada (no afecta al flujo principal)
+        # Experimental loading of structured configuration (does not affect main flow)
         load_experimental_config_at_startup()
     run_main()

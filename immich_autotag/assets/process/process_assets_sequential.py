@@ -30,7 +30,7 @@ def process_assets_sequential(
     total_assets: int | None,
 ) -> int:
     log(
-        "Entrando en el bucle de procesamiento de assets...",
+        "Entering asset processing loop...",
         level=LogLevel.PROGRESS,
     )
     log("[DEBUG] Antes de iterar assets (inicio del for)", level=LogLevel.DEBUG)

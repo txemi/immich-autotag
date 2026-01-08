@@ -1,7 +1,7 @@
 """
 manager.py
 
-Gestor Singleton para la nueva configuración experimental.
+Singleton Manager for the new experimental configuration.
 """
 
 from pathlib import Path
@@ -46,8 +46,8 @@ class ExperimentalConfigManager:
     @typechecked
     def load_config_from_real_python(self):
         """
-        Carga la configuración importando directamente user_real_config de user_real_config_pydantic.py.
-        No usa importlib ni lógica dinámica, solo import explícito.
+        Loads the configuration by directly importing user_real_config from user_real_config_pydantic.py.
+        Does not use importlib or dynamic logic, only explicit import.
         """
         from .user_real_config_pydantic import user_real_config
 
@@ -55,9 +55,9 @@ class ExperimentalConfigManager:
 
     @typechecked
     def dump_to_yaml(self, path: str = None):
-        """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
+        """Dumps the current configuration to a YAML file in the default logs/output folder."""
         if self.config is None:
-            raise RuntimeError("No hay configuración cargada para volcar a YAML.")
+            raise RuntimeError("No configuration loaded to dump to YAML.")
         import yaml
         from immich_autotag.utils.run_output_dir import get_run_output_dir
         if path is None:
@@ -69,9 +69,9 @@ class ExperimentalConfigManager:
             )
 
     def print_config(self):
-        """Imprime la configuración actual por pantalla de forma legible."""
+        """Prints the current configuration to screen in a readable format."""
         if self.config is None:
-            print("[WARN] No hay configuración cargada.")
+            print("[WARN] No configuration loaded.")
             return
         import pprint
 
@@ -84,15 +84,15 @@ class ExperimentalConfigManager:
 @typechecked
 def load_experimental_config_at_startup():
     config_path = Path(__file__).parent / "user_real_config.yaml"
-    # Si el archivo no existe, lanza un error claro
+    # If the file does not exist, raise a clear error
     if not config_path.exists():
         raise FileNotFoundError(
-            f"No se encontró la plantilla de configuración experimental en: {config_path}"
+            f"Experimental configuration template not found at: {config_path}"
         )
-    # Solo crear el singleton si no existe
+    # Only create the singleton if it does not exist
     manager = ExperimentalConfigManager.get_instance()
     manager.load_config_from_real_python()
-    # Imprimir la configuración cargada para ver el resultado
+    # Print the loaded configuration to see the result
     import pprint
 
     pprint.pprint(manager.config.model_dump() if manager.config else None)

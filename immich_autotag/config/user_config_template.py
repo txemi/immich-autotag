@@ -9,11 +9,11 @@
 # There is an open issue to decide the future of the configuration system and migrate to a more standard format once refactoring is complete.
 # If you have questions or suggestions, please check the relevant issue and don't worry: this will be fixed!
 # --- Logging configuration ---
-# Si se define, fuerza el nivel de log en toda la app (LogLevel.FOCUS, LogLevel.IMPORTANT, etc.)
-# Si es None, se autodetecta según el modo de ejecución (pocos/muchos ficheros)
+# If defined, forces the log level throughout the app (LogLevel.FOCUS, LogLevel.IMPORTANT, etc.)
+# If None, auto-detect based on execution mode (few/many files)
 from immich_autotag.logging.levels import LogLevel
 
-FORCE_LOG_LEVEL: LogLevel | None = None  # None para autodetectar
+FORCE_LOG_LEVEL: LogLevel | None = None  # None for auto-detect
 
 # Immich host or domain (can be IP or DNS name)
 # Example: "immich.example.com" or "192.168.1.100"
