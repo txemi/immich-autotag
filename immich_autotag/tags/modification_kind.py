@@ -6,6 +6,7 @@ class ModificationKind(Enum):
     REMOVE_TAG_FROM_ASSET = auto()  # Tag removed from asset
     REMOVE_TAG_GLOBALLY = auto()  # Tag deleted globally
     WARNING_TAG_REMOVAL_FROM_ASSET_FAILED = auto()  # Tag removal from asset failed
+    WARNING_ASSET_ALREADY_IN_ALBUM = auto()  # Asset already in album (duplicate warning)
     CREATE_ALBUM = auto()  # Album created
     DELETE_ALBUM = auto()  # Album deleted
     RENAME_ALBUM = auto()  # Album renamed
