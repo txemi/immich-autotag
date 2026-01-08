@@ -28,6 +28,9 @@ class ExperimentalConfigManager:
             )
         _instance_created = True
         _instance = self
+        # Cargar la configuración automáticamente al crear el singleton
+        self.load_config_from_real_python()
+        self.print_config()
 
     @staticmethod
     @typechecked
@@ -35,10 +38,6 @@ class ExperimentalConfigManager:
         global _instance
         if _instance is None:
             ExperimentalConfigManager()
-        # Auto-load config if not loaded
-        if _instance.config is None:
-            _instance.load_config_from_real_python() 
-            _instance.print_config()
         return _instance
 
     @typechecked
