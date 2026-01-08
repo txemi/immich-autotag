@@ -10,7 +10,7 @@ from typeguard import typechecked
 class AlbumFolderAnalyzer:
 
     original_path: Path = attrs.field(validator=attrs.validators.instance_of(Path))
-    folders: list = attrs.field(
+    folders: list[str] = attrs.field(
         init=False, validator=attrs.validators.instance_of(list)
     )
     date_pattern: str = attrs.field(
@@ -23,11 +23,7 @@ class AlbumFolderAnalyzer:
         import re
 
         # Convert to Path if not already and resolve to canonical path (removes '.', '..', etc)
-        path = (
-            self.original_path
-            if isinstance(self.original_path, Path)
-            else Path(self.original_path)
-        ).resolve()
+        path = self.original_path.resolve()
         folders = [
             part for part in path.parts if part not in (path.root, path.anchor, "")
         ]
@@ -67,11 +63,14 @@ class AlbumFolderAnalyzer:
         """
         import re
 
-        from immich_autotag.config.user import ALBUM_DETECTION_EXCLUDED_PATHS
 
         # Compose the full folder path as a string (joined by /)
         folder_path_str = "/".join(self.folders).lower()
-        for pattern in ALBUM_DETECTION_EXCLUDED_PATHS:
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+        manager = ExperimentalConfigManager.get_instance()
+        if not manager or not manager.config or not manager.config.features:
+            raise RuntimeError("ExperimentalConfigManager or features config not initialized")
+        for pattern in manager.config.features.album_detection_from_folders.excluded_paths:
             if re.search(pattern, folder_path_str, re.IGNORECASE):
                 return True
         return False
