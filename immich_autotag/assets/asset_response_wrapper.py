@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
+from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
@@ -28,7 +29,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_autotag.classification.match_classification_result import \
     MatchClassificationResult
-from immich_autotag.config.user import (ALBUM_PATTERN,
+from immich_autotag.config.user import (
                                         AUTOTAG_CATEGORY_CONFLICT,
                                         AUTOTAG_CATEGORY_UNKNOWN,
                                         ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
@@ -716,6 +717,7 @@ class AssetResponseWrapper:
         changes = []
 
         for conv in tag_conversions:
+            assert isinstance(conv, ConversionWrapper), f"Tag conversion must be a dict, got {type(conv)}"
             origin = conv["origin"]
             dest = conv["destination"]
             has_origin = self.has_tag(origin)

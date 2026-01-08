@@ -6,7 +6,7 @@ import attrs
 
 from immich_autotag.assets.duplicates._duplicate_albums_info import \
     DuplicateAlbumsInfo
-from immich_autotag.config.user import ALBUM_PATTERN
+
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -25,8 +25,13 @@ class AlbumDecision:
 
     def all_options(self) -> set[str]:
         opts = set(self.duplicates_info.all_album_names())
-        opts = {a for a in opts if re.match(ALBUM_PATTERN, a)}
-        if self.album_from_folder:
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+        from immich_autotag.conversions.classification_rule_set import ClassificationRuleSet
+        config_manager = ExperimentalConfigManager.get_instance()
+        config = config_manager.config
+        rule_set = ClassificationRuleSet(getattr(config, "classification_rules", []))
+        opts = {a for a in opts if rule_set.matches_album(a)}
+        if self.album_from_folder and rule_set.matches_album(self.album_from_folder):
             opts.add(self.album_from_folder)
         # Only return albums that match the event pattern
         return opts

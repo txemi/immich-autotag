@@ -70,3 +70,15 @@ class ClassificationRuleSet:
                 "ExperimentalConfigManager or classification_rules not initialized"
             )
         return ClassificationRuleSet(rules=manager.config.classification_rules)
+    @typechecked
+    def matches_album(self, album_name: str) -> bool:
+        """
+        Returns True if the album_name matches any album_name_patterns in the rules.
+        """
+        for rule in self.rules:
+            patterns = getattr(rule, "album_name_patterns", None)
+            if patterns:
+                for pattern in patterns:
+                    if re.match(pattern, album_name):
+                        return True
+        return False
