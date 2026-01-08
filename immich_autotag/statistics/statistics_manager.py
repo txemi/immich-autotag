@@ -219,17 +219,20 @@ class StatisticsManager:
             self._current_stats.finished_at = datetime.now(timezone.utc)
             self._save_to_file()
 
-    from immich_autotag.config.user import (
-        AUTOTAG_CATEGORY_CONFLICT, AUTOTAG_CATEGORY_UNKNOWN,
-        AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT)
-
-    RELEVANT_TAGS = {
-        AUTOTAG_CATEGORY_UNKNOWN,
-        AUTOTAG_CATEGORY_CONFLICT,
-        AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT,
-        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-    }
+    @property
+    def RELEVANT_TAGS(self):
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+        manager = ExperimentalConfigManager.get_instance()
+        config = manager.config
+        try:
+            return {
+                config.autotag_category_unknown,
+                config.autotag_category_conflict,
+                config.autotag_duplicate_asset_album_conflict,
+                config.autotag_duplicate_asset_classification_conflict,
+            }
+        except AttributeError as e:
+            raise RuntimeError(f"Missing expected autotag category in config: {e}")
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
