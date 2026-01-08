@@ -406,17 +406,17 @@ class AssetResponseWrapper:
         log(f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}", level=LogLevel.DEBUG)
 
         # Statistics update is handled by modification_report, not directly here
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
         try:
             response = tag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
             )
         except Exception as e:
             error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
-            print(error_msg)
+            log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
+                from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
                     asset_wrapper=self,
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
@@ -425,22 +425,18 @@ class AssetResponseWrapper:
                     extra={"error": error_msg},
                 )
             return False
-        if verbose:
-            print(f"[DEBUG] Response tag_assets: {response}")
+        log(f"[DEBUG] Response tag_assets: {response}", level=LogLevel.DEBUG)
         # Request the asset again and check if the tag is applied
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
-        if verbose:
-            print(f"[DEBUG] Asset after tag_assets: {updated_asset}")
+        log(f"[DEBUG] Asset after tag_assets: {updated_asset}", level=LogLevel.DEBUG)
         tag_names = (
             [tag.name for tag in updated_asset.tags] if updated_asset.tags else []
         )
         if tag_name not in tag_names:
             error_msg = f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
-            print(error_msg)
+            log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
+                from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
                     asset_wrapper=self,
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
@@ -449,10 +445,10 @@ class AssetResponseWrapper:
                     extra={"error": error_msg},
                 )
             return False
-        if info:
-            print(
-                f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}"
-            )
+        log(
+            f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}",
+            level=LogLevel.DEBUG,
+        )
         from immich_autotag.tags.modification_kind import ModificationKind
 
         tag_mod_report.add_modification(
