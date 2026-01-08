@@ -7,16 +7,9 @@ from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrappe
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.config.internal_config import get_immich_base_url
-
-# from immich_autotag.config.user import API_KEY
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.duplicates.duplicate_collection_wrapper import (
-    DuplicateCollectionWrapper,
-)
-from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
-from immich_autotag.duplicates.load_duplicates_collection import (
-    load_duplicates_collection,
-)
+from immich_autotag.duplicates.load_duplicates_collection import load_duplicates_collection
 from immich_autotag.logging.init import initialize_logging
 from immich_autotag.tags.list_tags import list_tags
 
@@ -27,7 +20,6 @@ def run_main():
     import re
 
     from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.logging.utils import setup_logging
 
     # Initialize logging before any processing
     initialize_logging()
@@ -35,7 +27,6 @@ def run_main():
     # Get API_KEY from experimental config manager singleton
     from immich_autotag.config.experimental_config.manager import (
         ExperimentalConfigManager,
-        load_experimental_config_at_startup,
     )
 
     manager = ExperimentalConfigManager.get_instance()
@@ -64,7 +55,7 @@ def run_main():
     # Asset filtering logic
     filter_asset_links = manager.config.filter_out_asset_links
     if filter_asset_links and len(filter_asset_links) > 0:
-        asset_ids = []
+        asset_ids: list[str] = []
         # Accept any URL containing a UUID (v4) as asset ID, regardless of path
         uuid_pattern = re.compile(
             r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
@@ -77,7 +68,7 @@ def run_main():
                 )
             asset_ids.append(match.group(1))
         # Load only the specified assets
-        wrappers = []
+        wrappers: list[AssetResponseWrapper] = []
         from uuid import UUID
 
         for asset_id in asset_ids:
