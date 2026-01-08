@@ -548,25 +548,11 @@ class AssetResponseWrapper:
         """
         Returns an object with the detail of the tags and albums that matched classification.
         """
-        import re
-
-        tags_matched = []
-        albums_matched = []
-        # Tags
-        from immich_autotag.classification.classification_rule_set import \
-            ClassificationRuleSet
-
+        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-
-        asset_tags = self.get_tag_names()
-        for tag in asset_tags:
-            if rule_set.has_tag(tag):
-                tags_matched.append(tag)
-        # Albums
-        album_names = self.get_album_names()
-        for name in album_names:
-            if re.match(ALBUM_PATTERN, name):
-                albums_matched.append(name)
+        match_results = rule_set.matching_rules(self)
+        tags_matched = [m.tag_name for m in match_results if m.tag_name is not None]
+        albums_matched = [m.album_name for m in match_results if m.album_name is not None]
         return MatchClassificationResult(
             tags_matched=tags_matched, albums_matched=albums_matched
         )

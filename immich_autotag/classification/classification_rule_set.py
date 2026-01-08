@@ -1,3 +1,6 @@
+
+# Importa la clase MatchResult desde el nuevo archivo
+from immich_autotag.classification.match_result import MatchResult
 # Example usage:
 # rule_set = get_rule_set_from_config_manager()
 # if rule_set.has_tag("autotag_input_meme"):
@@ -91,20 +94,20 @@ class ClassificationRuleSet:
     @typechecked
     def matching_rules(
         self, asset_wrapper: "AssetResponseWrapper"
-    ) -> List[ClassificationRuleWrapper]:
+    ) -> List["MatchResult"]:
         """
-        Devuelve la lista de reglas de clasificación que hacen match con el asset dado.
-        Un match puede ser por tag o por patrón de nombre de álbum.
+        Devuelve una lista de MatchResult: cada uno indica la regla y el elemento (tag o álbum) que ha macheado.
         """
         asset_tags = set(asset_wrapper.get_tag_names())
         album_names = set(asset_wrapper.get_album_names())
-        matched_wrappers: List[ClassificationRuleWrapper] = []
+        matches: list[MatchResult] = []
         for wrapper in self.rules:
-            matched = False
-            if any(wrapper.has_tag(tag) for tag in asset_tags):
-                matched = True
-            if any(wrapper.__matches_album(album) for album in album_names):
-                matched = True
-            if matched:
-                matched_wrappers.append(wrapper)
-        return matched_wrappers
+            # Match por tag
+            for tag in asset_tags:
+                if wrapper.has_tag(tag):
+                    matches.append(MatchResult(rule=wrapper, tag_name=tag))
+            # Match por álbum
+            for album in album_names:
+                if wrapper.matches_album(album):
+                    matches.append(MatchResult(rule=wrapper, album_name=album))
+        return matches
