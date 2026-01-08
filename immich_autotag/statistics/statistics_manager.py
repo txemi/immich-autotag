@@ -39,6 +39,7 @@ from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 from .run_statistics import RunStatistics
 from .checkpoint_manager import CheckpointManager
+from .tag_stats_manager import TagStatsManager
 
 # Module singleton
 _instance = None
@@ -64,6 +65,8 @@ class StatisticsManager:
                 "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
             )
         _instance = self
+        self.checkpoint = CheckpointManager(stats_manager=self)
+        self.tags = TagStatsManager(stats_manager=self)
         self.checkpoint = CheckpointManager(stats_manager=self)
 
     @typechecked
@@ -217,44 +220,15 @@ class StatisticsManager:
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
-        stats = self.get_stats()
-        for tag in self.RELEVANT_TAGS:
-            if tag in tag_names:
-                if tag not in stats.output_tag_counters:
-                    from .run_statistics import OutputTagCounter
-
-                    stats.output_tag_counters[tag] = OutputTagCounter()
-                stats.output_tag_counters[tag].total += 1
-        self._save_to_file()
+        self.tags.process_asset_tags(tag_names)
 
     @typechecked
     def increment_tag_added(self, tag: "TagWrapper") -> None:
-        tag_name = tag.name
-        if tag_name in self.RELEVANT_TAGS:
-            stats = self.get_stats()
-            if tag_name not in stats.output_tag_counters:
-                from .run_statistics import OutputTagCounter
-
-                stats.output_tag_counters[tag_name] = OutputTagCounter()
-            stats.output_tag_counters[tag_name].added += 1
-            self._save_to_file()
+        self.tags.increment_tag_added(tag)
 
     @typechecked
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
-        # Enforce TagWrapper type
-        if not hasattr(tag, "name"):
-            raise TypeError(
-                f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}"
-            )
-        tag_name = tag.name
-        if tag_name in self.RELEVANT_TAGS:
-            stats = self.get_stats()
-            if tag_name not in stats.output_tag_counters:
-                from .run_statistics import OutputTagCounter
-
-                stats.output_tag_counters[tag_name] = OutputTagCounter()
-            stats.output_tag_counters[tag_name].removed += 1
-            self._save_to_file()
+        self.tags.increment_tag_removed(tag)
 
     @typechecked
     def set_skip_n(self, skip_n: int) -> None:
@@ -275,58 +249,6 @@ class StatisticsManager:
         kind: "ModificationKind",
         album: "AlbumResponseWrapper | None",
     ) -> None:
-        """
-        album: AlbumResponseWrapper or None. Only used for album cases (e.g.: ASSIGN_ASSET_TO_ALBUM).
-        """
-        from immich_autotag.tags.modification_kind import ModificationKind
-        if kind == ModificationKind.ADD_TAG_TO_ASSET:
-            self._increment_tag_added(tag)
-        elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
-            self._increment_tag_removed(tag)
-        elif kind == ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED:
-            self._increment_tag_error(tag)
-        elif kind == ModificationKind.UPDATE_ASSET_DATE:
-            self._increment_asset_date_update()
-        elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
-            self._increment_album_assignment(album)
-        else:
-            raise NotImplementedError(
-                f"increment_tag_action not implemented for ModificationKind: {kind}"
-            )
+        self.tags.increment_tag_action(tag, kind, album)
 
-    def _increment_tag_added(self, tag: "TagWrapper") -> None:
-        self.increment_tag_added(tag)
-
-    def _increment_tag_removed(self, tag: "TagWrapper") -> None:
-        self.increment_tag_removed(tag)
-
-    def _increment_tag_error(self, tag: "TagWrapper") -> None:
-        tag_name = tag.name
-        stats = self.get_stats()
-        if tag_name not in stats.output_tag_counters:
-            from .run_statistics import OutputTagCounter
-            stats.output_tag_counters[tag_name] = OutputTagCounter()
-        stats.output_tag_counters[tag_name].errors += 1
-        self._save_to_file()
-
-    def _increment_asset_date_update(self) -> None:
-        stats = self.get_stats()
-        stats.update_asset_date_count += 1
-        self._save_to_file()
-
-    def _increment_album_assignment(self, album: "AlbumResponseWrapper | None") -> None:
-        if album is not None:
-            from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-            assert isinstance(album, AlbumResponseWrapper)
-            album_name = album.album.album_name
-            stats = self.get_stats()
-            if album_name not in stats.output_album_counters:
-                from .run_statistics import OutputAlbumCounter
-                stats.output_album_counters[album_name] = OutputAlbumCounter()
-            stats.output_album_counters[album_name].assigned += 1
-            stats.output_album_counters[album_name].total += 1
-            self._save_to_file()
-        else:
-            raise RuntimeError(
-                "AlbumResponseWrapper is required to count ASSIGN_ASSET_TO_ALBUM"
-            )
+    # Métodos de tags/álbumes delegados a TagStatsManager
