@@ -42,6 +42,8 @@ class ExperimentalConfigManager:
         with open(config_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
         self.config = UserConfig.model_validate(data)
+        # Save a record of the loaded config to logs/output
+        self.dump_to_yaml()
 
     @typechecked
     def load_config_from_real_python(self):
@@ -52,30 +54,37 @@ class ExperimentalConfigManager:
         from .user_real_config_pydantic import user_real_config
 
         self.config = user_real_config
+        # Save a record of the loaded config to logs/output
+        self.dump_to_yaml()
 
     @typechecked
-    def dump_to_yaml(self, path: str = None):
+    def dump_to_yaml(self, path: 'str | Path | None' = None):
         """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
         if self.config is None:
             raise RuntimeError("No hay configuración cargada para volcar a YAML.")
         import yaml
+        from pathlib import Path as _Path
         from immich_autotag.utils.run_output_dir import get_run_output_dir
         if path is None:
             out_dir = get_run_output_dir()
             path = out_dir / "user_config_dump.yaml"
-        with open(path, "w", encoding="utf-8") as f:
+        if not isinstance(path, (str, _Path)):
+            raise TypeError(f"path must be str, Path or None, got {type(path)}")
+        with open(str(path), "w", encoding="utf-8") as f:
             yaml.safe_dump(
                 self.config.model_dump(), f, allow_unicode=True, sort_keys=False
             )
 
     def print_config(self):
-        """Imprime la configuración actual por pantalla de forma legible."""
+        """Imprime la configuración actual usando el sistema de logs (nivel FOCUS)."""
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
         if self.config is None:
-            print("[WARN] No hay configuración cargada.")
-            return
+            log("[WARN] No configuration loaded.", level=LogLevel.FOCUS)
+            raise RuntimeError("No hay configuración cargada para imprimir.")   
         import pprint
-
-        pprint.pprint(self.config.model_dump())
+        config_str = pprint.pformat(self.config.model_dump())
+        log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
 
 
 # --- Carga automática al inicio (ejemplo de uso) ---

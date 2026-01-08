@@ -7,7 +7,7 @@ from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrappe
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.config.internal_config import get_immich_base_url
-from immich_autotag.config.user import API_KEY
+#from immich_autotag.config.user import API_KEY
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.duplicates.duplicate_collection_wrapper import (
     DuplicateCollectionWrapper,
@@ -69,9 +69,15 @@ def run_main():
     # Initialize logging before any processing
     initialize_logging()
 
+    # Get API_KEY from experimental config manager singleton
+    from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+    manager = ExperimentalConfigManager.get_instance()
+    if not manager or not manager.config or not manager.config.server:
+        raise RuntimeError("ExperimentalConfigManager or server config not initialized")
+    api_key = manager.config.server.api_key
     client = Client(
         base_url=get_immich_base_url(),
-        headers={"x-api-key": API_KEY},
+        headers={"x-api-key": api_key},
         raise_on_unexpected_status=True,
     )
     import re
