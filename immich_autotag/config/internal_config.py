@@ -3,11 +3,18 @@
 
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
-from immich_autotag.config.user import IMMICH_HOST, IMMICH_PORT
+
+def _get_host_and_port():
+	# Get host and port from the experimental config singleton
+	from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+	manager = ExperimentalConfigManager.get_instance()
+	if not manager or not manager.config or not manager.config.server:
+		raise RuntimeError("ExperimentalConfigManager or server config not initialized")
+	return manager.config.server.host, manager.config.server.port
 
 def get_immich_web_base_url():
-	# In the future, IMMICH_HOST and IMMICH_PORT will be loaded dynamically from a singleton
-	return f"http://{IMMICH_HOST}:{IMMICH_PORT}"
+	host, port = _get_host_and_port()
+	return f"http://{host}:{port}"
 
 def get_immich_base_url():
 	# In the future, IMMICH_HOST and IMMICH_PORT will be loaded dynamically from a singleton
