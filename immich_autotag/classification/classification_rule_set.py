@@ -43,7 +43,7 @@ class ClassificationRuleSet:
 
     # Add more utility methods as needed for rule matching, filtering, etc.
     @typechecked
-    def has_tag(self, tag_name: str) -> bool:
+    def __has_tag(self, tag_name: str) -> bool:
         """
         Returns True if the given tag_name exists in any rule's tag_names list.
         """
@@ -77,7 +77,7 @@ class ClassificationRuleSet:
         return ClassificationRuleSet(rules=wrappers)
 
     @typechecked
-    def matches_album(self, album_name: str) -> bool:
+    def __matches_album(self, album_name: str) -> bool:
         """
         Returns True if the album_name matches any album_name_patterns in the rules.
         """
@@ -103,9 +103,9 @@ class ClassificationRuleSet:
         matched_wrappers: List[ClassificationRuleWrapper] = []
         for wrapper in self.rules:
             matched = False
-            if any(wrapper.has_tag(tag) for tag in asset_tags):
+            if any(wrapper.__has_tag(tag) for tag in asset_tags):
                 matched = True
-            if any(wrapper.matches_album(album) for album in album_names):
+            if any(wrapper.__matches_album(album) for album in album_names):
                 matched = True
             if matched:
                 matched_wrappers.append(wrapper)

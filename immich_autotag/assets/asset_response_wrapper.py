@@ -499,24 +499,10 @@ class AssetResponseWrapper:
         - Has any of the tags in CLASSIFIED_TAGS.
         - Belongs to an album whose name matches ALBUM_PATTERN.
         """
-        import re
-
-        from immich_autotag.classification.classification_rule_set import \
-            ClassificationRuleSet
-
+        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        asset_tags = self.get_tag_names()
-        for tag in asset_tags:
-            if rule_set.has_tag(tag):
-                return True
-
-        # Check albums
-        album_names = self.get_album_names()
-        for name in album_names:
-            if re.match(ALBUM_PATTERN, name):
-                return True
-
-        return False
+        # If any rule matches, asset is classified
+        return bool(rule_set.matching_rules(self))
 
     @property
     def original_file_name(self) -> str:
