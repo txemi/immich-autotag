@@ -2,18 +2,24 @@
 Checks for consistency between asset date and album date (from album name).
 If the difference is greater than a threshold (default: 6 months), logs it in the ModificationReport.
 """
+
 from __future__ import annotations
+
 import re
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
 from typeguard import typechecked
 
-from immich_autotag.tags.modification_kind import ModificationKind
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.tags.modification_kind import ModificationKind
+
 
 @typechecked
-def check_album_date_consistency(asset_wrapper, tag_mod_report, months_threshold: int = 6):
+def check_album_date_consistency(
+    asset_wrapper, tag_mod_report, months_threshold: int = 6
+):
     """
     For each album whose name starts with a date (YYYY-MM-DD, YYYY-MM, or YYYY),
     compare the album date to the asset's best date. If the difference is greater than
@@ -23,11 +29,16 @@ def check_album_date_consistency(asset_wrapper, tag_mod_report, months_threshold
     try:
         asset_date = asset_wrapper.get_best_date()
     except Exception as e:
-        log(f"[ALBUM_DATE_CONSISTENCY] Could not determine asset date: {e}", level=LogLevel.FOCUS)
+        log(
+            f"[ALBUM_DATE_CONSISTENCY] Could not determine asset date: {e}",
+            level=LogLevel.FOCUS,
+        )
         return
 
     # Get album wrappers for this asset
-    albums = asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(asset_wrapper)
+    albums = asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
+        asset_wrapper
+    )
     for album_wrapper in albums:
         album_name = album_wrapper.album.album_name
         # Match YYYY-MM-DD, YYYY-MM, or YYYY at the start
@@ -40,7 +51,10 @@ def check_album_date_consistency(asset_wrapper, tag_mod_report, months_threshold
         try:
             album_date = datetime(year, month, day, tzinfo=asset_date.tzinfo)
         except Exception as e:
-            log(f"[ALBUM_DATE_CONSISTENCY] Could not parse album date from '{album_name}': {e}", level=LogLevel.FOCUS)
+            log(
+                f"[ALBUM_DATE_CONSISTENCY] Could not parse album date from '{album_name}': {e}",
+                level=LogLevel.FOCUS,
+            )
             continue
         diff = relativedelta(asset_date, album_date)
         diff_months = abs(diff.years * 12 + diff.months)

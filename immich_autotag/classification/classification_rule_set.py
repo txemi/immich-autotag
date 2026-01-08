@@ -16,8 +16,6 @@ from immich_autotag.classification.match_result_list import MatchResultList
 #     print("Tag exists in rules!")
 
 
-
-
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 

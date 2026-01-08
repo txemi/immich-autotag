@@ -43,18 +43,17 @@ user_config = UserConfig(
                 "autotag_input_meme",  # Memes/jokes uploaded indiscriminately, not events.
             ]
         ),
-
         ClassificationRule(
             tag_names=[
                 "adult_meme",  # (LEGACY) Adult meme: NSFW content, no prefix. Compatibility.
                 "autotag_input_adult_meme",  # NSFW/adult memes, separate from family environment.
             ]
-        ),    
+        ),
         ClassificationRule(
             tag_names=[
                 "autotag_input_pending_review",  # Pending review: decide destination.
             ]
-        ),           
+        ),
         ClassificationRule(
             tag_names=[
                 "autotag_input_ignore",  # Ignore: photos discarded from main flow.

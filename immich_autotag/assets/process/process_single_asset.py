@@ -141,7 +141,10 @@ def process_single_asset(
     _validate_and_update_classification(asset_wrapper, tag_mod_report)
 
     # Album date consistency check (after all other processing)
-    from immich_autotag.assets.consistency_checks._album_date_consistency import check_album_date_consistency
+    from immich_autotag.assets.consistency_checks._album_date_consistency import (
+        check_album_date_consistency,
+    )
+
     check_album_date_consistency(asset_wrapper, tag_mod_report)
 
     _flush_report_with_lock(lock, tag_mod_report)
