@@ -1,3 +1,4 @@
+
 import attrs
 from typing import List
 from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
@@ -20,3 +21,5 @@ class TagConversions:
         return self._conversions
 
     # Métodos utilitarios para buscar, filtrar, etc. pueden añadirse aquí
+    def __iter__(self):
+        return iter(self._conversions)
