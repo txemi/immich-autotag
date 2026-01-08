@@ -30,6 +30,7 @@ class OutputAlbumCounter(BaseModel):
 
 
 class RunStatistics(BaseModel):
+
     update_asset_date_count: int = Field(0, description="Number of asset date updates")
 
     total_assets: Optional[int] = Field(
@@ -60,7 +61,9 @@ class RunStatistics(BaseModel):
     output_album_counters: Dict[str, OutputAlbumCounter] = Field(
         default_factory=dict, description="Contadores por álbum de salida"
     )
-
+    progress_description: Optional[str] = Field(
+        None, description="Descripción textual del progreso actual (porcentaje, tiempo estimado, etc.)"
+    )
     @typechecked
     def to_yaml(self) -> str:
         return yaml.safe_dump(

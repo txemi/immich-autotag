@@ -37,6 +37,7 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
+
    
    _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
@@ -356,3 +357,12 @@ class StatisticsManager:
             raise NotImplementedError(
                 f"increment_tag_action no implementado para ModificationKind: {kind}"
             )
+    def update_progress_description(self) -> None:
+        """
+        Actualiza el campo progress_description en el objeto de estadísticas actual.
+        """
+        if self._current_stats is not None:
+            self._current_stats.progress_description = self.get_progress_description()
+            self._save_to_file()
+
+        
