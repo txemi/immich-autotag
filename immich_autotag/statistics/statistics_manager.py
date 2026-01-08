@@ -288,34 +288,45 @@ class StatisticsManager:
         from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
-
+        from immich_autotag.statistics._find_max_skip_n_recent import get_max_skip_n_from_recent
         OVERLAP = 100
         config = ExperimentalConfigManager.get_instance().config
         enable_checkpoint_resume = config.features.enable_checkpoint_resume if config and config.features else False
         if enable_checkpoint_resume:
-            stats = self.load_latest()
-            if stats:
-                last_processed_id, skip_n = stats.last_processed_id, stats.count
+            # Buscar el máximo skip_n de los logs recientes (3h)
+            logs_dir = self.stats_dir.parent if self.stats_dir else Path("logs")
+            max_skip_n = get_max_skip_n_from_recent(logs_dir, max_age_hours=3, overlap=OVERLAP)
+            if max_skip_n is not None:
+                skip_n = max_skip_n
+                last_processed_id = None  # No tenemos el id, solo el count
+                log(
+                    f"[CHECKPOINT] Will skip {skip_n} assets (from most advanced run in last 3h).",
+                    level=LogLevel.PROGRESS,
+                )
             else:
-                last_processed_id, skip_n = None, 0
-            if skip_n > 0:
-                adjusted_skip_n = max(0, skip_n - OVERLAP)
-                if adjusted_skip_n != skip_n:
-                    log(
-                        f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {OVERLAP})",
-                        level=LogLevel.PROGRESS,
-                    )
+                stats = self.load_latest()
+                if stats:
+                    last_processed_id, skip_n = stats.last_processed_id, stats.count
+                else:
+                    last_processed_id, skip_n = None, 0
+                if skip_n > 0:
+                    adjusted_skip_n = max(0, skip_n - OVERLAP)
+                    if adjusted_skip_n != skip_n:
+                        log(
+                            f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {OVERLAP})",
+                            level=LogLevel.PROGRESS,
+                        )
+                    else:
+                        log(
+                            f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).",
+                            level=LogLevel.PROGRESS,
+                        )
+                    skip_n = adjusted_skip_n
                 else:
                     log(
                         f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).",
                         level=LogLevel.PROGRESS,
                     )
-                skip_n = adjusted_skip_n
-            else:
-                log(
-                    f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).",
-                    level=LogLevel.PROGRESS,
-                )
         else:
             last_processed_id, skip_n = None, 0
             log(
