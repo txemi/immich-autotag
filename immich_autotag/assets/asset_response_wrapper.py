@@ -30,9 +30,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_autotag.classification.match_classification_result import \
     MatchClassificationResult
-from immich_autotag.config.user import (
-    ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
-    VERBOSE_LOGGING)
+from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
@@ -338,8 +336,6 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        verbose: bool = VERBOSE_LOGGING,
-        info: bool = VERBOSE_LOGGING,
         fail_if_exists: bool = False,
     ) -> bool:
         """
@@ -370,19 +366,17 @@ class AssetResponseWrapper:
                 raise ValueError(
                     f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
                 )
-            if verbose:
-                print(
-                    f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping."
-                )
+            from immich_autotag.logging.utils import log
+            from immich_autotag.logging.levels import LogLevel
+            log(f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping.", level=LogLevel.DEBUG)
             return False
         # Extra checks and logging before API call
         if not tag or tag.id is None:
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
             from immich_autotag.logging.utils import log
-
-            log(error_msg, level="ERROR")
+            from immich_autotag.logging.levels import LogLevel
+            log(error_msg, level=LogLevel.ERROR)
             from immich_autotag.tags.modification_kind import ModificationKind
-
             tag_mod_report.add_modification(
                 kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                 asset_wrapper=self,
@@ -393,11 +387,11 @@ class AssetResponseWrapper:
             return False
         if not self.id:
             error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"
-            print(error_msg)
+            from immich_autotag.logging.utils import log
+            from immich_autotag.logging.levels import LogLevel
+            log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
-
+                from immich_autotag.tags.modification_kind import ModificationKind
                 tag_mod_report.add_modification(
                     asset_id=None,
                     asset_name=self.original_file_name,
@@ -407,10 +401,9 @@ class AssetResponseWrapper:
                     extra={"error": error_msg},
                 )
             return False
-        if verbose:
-            print(
-                f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}"
-            )
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
+        log(f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}", level=LogLevel.DEBUG)
 
         # Statistics update is handled by modification_report, not directly here
         try:
@@ -558,7 +551,7 @@ class AssetResponseWrapper:
 
     @typechecked
     def check_unique_classification(
-        self, fail_fast: bool = True, verbose: bool = VERBOSE_LOGGING
+        self, fail_fast: bool = True
     ) -> bool:
         """
         Checks if the asset is classified by more than one criterion (tag or album).
@@ -744,14 +737,14 @@ class AssetResponseWrapper:
     def try_detect_album_from_folders(self) -> str | None:
         """
         Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
-        Only runs if ENABLE_ALBUM_DETECTION_FROM_FOLDERS is True, the asset does not already belong to an album,
+        Only runs if enable_album_detection_from_folders (from config) is True, the asset does not already belong to an album,
         and does not have a classified tag. Returns the detected album name or None. Raises NotImplementedError for ambiguous cases.
         Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
         If the date is already in the containing folder, keep as before.
         """
         import re
 
-        if not ENABLE_ALBUM_DETECTION_FROM_FOLDERS:
+        if not ExperimentalConfigManager.get_instance().config.enable_album_detection_from_folders:
             return None
         # If already classified by tag or album, skip
         if self.is_asset_classified():
