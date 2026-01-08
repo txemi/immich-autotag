@@ -1,3 +1,6 @@
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from typeguard import typechecked
 
 from typing import TYPE_CHECKING
