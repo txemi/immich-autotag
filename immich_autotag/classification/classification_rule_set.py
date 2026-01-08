@@ -4,14 +4,16 @@
 #     print("Tag exists in rules!")
 
 from typing import Dict, List
+from typing import TYPE_CHECKING
 
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.classification.classification_rule_wrapper import \
     ClassificationRuleWrapper
 
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ClassificationRuleSet:
@@ -88,22 +90,18 @@ class ClassificationRuleSet:
 
     @typechecked
     def matching_rules(
-        self, asset_wrapper: AssetResponseWrapper
+        self, asset_wrapper: "AssetResponseWrapper"
     ) -> List[ClassificationRuleWrapper]:
         """
         Devuelve la lista de reglas de clasificación que hacen match con el asset dado.
         Un match puede ser por tag o por patrón de nombre de álbum.
         """
-        from immich_autotag.assets.asset_response_wrapper import \
-            AssetResponseWrapper
-
-        assert isinstance(asset_wrapper, AssetResponseWrapper)
         asset_tags = set(asset_wrapper.get_tag_names())
         album_names = set(asset_wrapper.get_album_names())
         matched_wrappers: List[ClassificationRuleWrapper] = []
         for wrapper in self.rules:
             matched = False
-            if any(wrapper.__has_tag(tag) for tag in asset_tags):
+            if any(wrapper.has_tag(tag) for tag in asset_tags):
                 matched = True
             if any(wrapper.__matches_album(album) for album in album_names):
                 matched = True
