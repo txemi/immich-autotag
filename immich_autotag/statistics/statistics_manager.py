@@ -37,9 +37,49 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
+   
+   _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
+    stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
+    _instance: "StatisticsManager" = attr.ib(default=None, init=False, repr=False)
+    _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
+    _current_stats: Optional[RunStatistics] = attr.ib(
+        default=None, init=False, repr=False
+    )
+    _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
-    _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
+    def __attrs_post_init__(self) -> None:
+        # La carpeta ya la crea get_run_output_dir
+        global _instance
+        if _instance is not None and _instance is not self:
+            raise RuntimeError(
+                "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
+            )
+        _instance = self
+    @typechecked
+    def get_progress_description(self) -> str:
+        """
+        Devuelve una descripción textual del progreso actual, incluyendo porcentaje y estimación de tiempo si está disponible.
+        """
+        if self._perf_tracker is None:
+            return "Progreso no disponible: PerformanceTracker no inicializado."
+        elapsed = None
+        import time
+        if hasattr(self._perf_tracker, "start_time"):
+            elapsed = time.time() - self._perf_tracker.start_time
+        else:
+            elapsed = 0.0
+        from immich_autotag.utils.perf.print_perf import format_perf_progress
+        return format_perf_progress(
+            count=self._current_stats.count if self._current_stats else 0,
+            elapsed=elapsed,
+            total_to_process=self._perf_tracker.total_to_process,
+            estimator=self._perf_tracker.estimator,
+            skip_n=self._perf_tracker.skip_n,
+            total_assets=self._perf_tracker.total_assets,
+            estimation_mode=self._perf_tracker.estimation_mode,
+        )
 
+    @typechecked
     def _try_init_perf_tracker(self):
         if self._perf_tracker is not None:
             return
@@ -62,6 +102,7 @@ class StatisticsManager:
                 skip_n=self._current_stats.skip_n,
             )
 
+    @typechecked
     def set_total_assets(self, total_assets: int) -> None:
         with self._lock:
             if self._current_stats is None:
@@ -70,6 +111,7 @@ class StatisticsManager:
             self._save_to_file()
             self._try_init_perf_tracker()
 
+    @typechecked
     def set_max_assets(self, max_assets: int) -> None:
         with self._lock:
             if self._current_stats is None:
@@ -85,6 +127,7 @@ class StatisticsManager:
             )
         self._perf_tracker.update(count)
 
+    @typechecked
     def print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
             raise RuntimeError(
@@ -92,22 +135,7 @@ class StatisticsManager:
             )
         self._perf_tracker.print_progress(count)
 
-    stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
-    _instance: "StatisticsManager" = attr.ib(default=None, init=False, repr=False)
-    _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
-    _current_stats: Optional[RunStatistics] = attr.ib(
-        default=None, init=False, repr=False
-    )
-    _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
-    def __attrs_post_init__(self) -> None:
-        # La carpeta ya la crea get_run_output_dir
-        global _instance
-        if _instance is not None and _instance is not self:
-            raise RuntimeError(
-                "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
-            )
-        _instance = self
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
