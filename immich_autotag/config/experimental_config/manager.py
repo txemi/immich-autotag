@@ -77,7 +77,7 @@ class ExperimentalConfigManager:
             yaml.safe_dump(
                 self.config.model_dump(), f, allow_unicode=True, sort_keys=False
             )
-
+    @typechecked
     def print_config(self):
         """Imprime la configuración actual usando el sistema de logs (nivel FOCUS)."""
         from immich_autotag.logging.utils import log
@@ -88,7 +88,12 @@ class ExperimentalConfigManager:
         import pprint
         config_str = pprint.pformat(self.config.model_dump())
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
-
+    @typechecked
+    def is_classification_tag(self, tag: str) -> bool:
+        """Devuelve True si el tag es clasificador según la configuración cargada."""
+        if not self.config or not hasattr(self.config, 'classification_tags'):
+            raise RuntimeError("No hay configuración o no se encuentra classification_tags en la config.")
+        return any(tag.lower() == t.lower() for t in self.config.classification_tags)
 
 # --- Carga automática al inicio (ejemplo de uso) ---
 
