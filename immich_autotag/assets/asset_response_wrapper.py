@@ -500,10 +500,13 @@ class AssetResponseWrapper:
         """
         import re
 
-        # Check tags
+
+        # Check tags using ClassificationRuleSet from config manager
+        from immich_autotag.config.experimental_config.manager import get_rule_set_from_config_manager
+        rule_set = get_rule_set_from_config_manager()
         asset_tags = self.get_tag_names()
         for tag in asset_tags:
-            if tag.lower() in [t.lower() for t in CLASSIFIED_TAGS]:
+            if rule_set.has_tag(tag):
                 return True
 
         # Check albums
@@ -563,9 +566,11 @@ class AssetResponseWrapper:
         tags_matched = []
         albums_matched = []
         # Tags
+        from immich_autotag.config.experimental_config.manager import get_rule_set_from_config_manager
+        rule_set = get_rule_set_from_config_manager()
         asset_tags = self.get_tag_names()
         for tag in asset_tags:
-            if tag.lower() in [t.lower() for t in CLASSIFIED_TAGS]:
+            if rule_set.has_tag(tag):
                 tags_matched.append(tag)
         # Albums
         album_names = self.get_album_names()
@@ -803,25 +808,12 @@ class AssetResponseWrapper:
     @typechecked
     def get_classification_tags(self) -> list[str]:
         """
-        Returns the classification tags for this asset, applying tag conversions if needed.
-        Only tags configured as relevant for classification in the user config are considered.
-        This version does NOT lowercase tags and REMOVES the origins (keys) of TAG_CONVERSIONS from the relevant set.
+        Returns the classification tags for this asset, using the ClassificationRuleSet from config manager.
+        Only tags configured as relevant for classification in the config are considered.
         """
-        from immich_autotag.config.user import CLASSIFIED_TAGS, TAG_CONVERSIONS
-
-        relevant_tags = set(CLASSIFIED_TAGS)
-        # Remove origins from TAG_CONVERSIONS (list of dicts)
-        if TAG_CONVERSIONS:
-            for conv in TAG_CONVERSIONS:
-                origin = conv.get("origin")
-                if origin:
-                    relevant_tags.discard(origin)
-        # Filter asset tags to only those relevant for classification (case-sensitive)
-        return (
-            [tag.name for tag in self.asset.tags if tag.name in relevant_tags]
-            if self.asset.tags
-            else []
-        )
+        from immich_autotag.config.experimental_config.manager import get_rule_set_from_config_manager
+        rule_set = get_rule_set_from_config_manager()
+        return [tag.name for tag in self.asset.tags if rule_set.has_tag(tag.name)] if self.asset.tags else []
 
     @typechecked
     def get_link(self) -> ParseResult:
