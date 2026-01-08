@@ -3,40 +3,39 @@
 # if rule_set.has_tag("autotag_input_meme"):
 #     print("Tag exists in rules!")
 
-from typing import List
+from typing import List, Dict
 
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.config.experimental_config.models import ClassificationRule
+
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ClassificationRuleSet:
-
-    rules: List[ClassificationRule]
+    rules: List[ClassificationRuleWrapper]
 
     @typechecked
     def __len__(self) -> int:
         return len(self.rules)
 
     @typechecked
-    def __getitem__(self, idx: int) -> ClassificationRule:
+    def __getitem__(self, idx: int) -> ClassificationRuleWrapper:
         return self.rules[idx]
 
     @typechecked
-    def as_dicts(self) -> List[dict]:
+    def as_dicts(self) -> List[Dict[str, object]]:
         """Return the rules as a list of dicts (for debugging/logging)."""
-        return [rule.model_dump() for rule in self.rules]
+        return [wrapper.rule.model_dump() for wrapper in self.rules]
 
     @typechecked
     def print_rules(self) -> None:
         """Log the current rules using the logging system (level FOCUS)."""
         import pprint
-
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
-
         rules_str = pprint.pformat(self.as_dicts())
         log(f"Loaded classification rules:\n{rules_str}", level=LogLevel.FOCUS)
 
@@ -46,8 +45,8 @@ class ClassificationRuleSet:
         """
         Returns True if the given tag_name exists in any rule's tag_names list.
         """
-        for rule in self.rules:
-            if rule.tag_names and tag_name in rule.tag_names:
+        for wrapper in self.rules:
+            if wrapper.has_tag(tag_name):
                 return True
         return False
 
@@ -57,9 +56,7 @@ class ClassificationRuleSet:
         """
         Utility to get a ClassificationRuleSet from the experimental config manager singleton.
         """
-        from immich_autotag.config.experimental_config.manager import \
-            ExperimentalConfigManager
-
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
         manager = ExperimentalConfigManager.get_instance()
         if (
             not manager
@@ -69,16 +66,35 @@ class ClassificationRuleSet:
             raise RuntimeError(
                 "ExperimentalConfigManager or classification_rules not initialized"
             )
-        return ClassificationRuleSet(rules=manager.config.classification_rules)
+        wrappers = [ClassificationRuleWrapper(rule) for rule in manager.config.classification_rules]
+        return ClassificationRuleSet(rules=wrappers)
     @typechecked
     def matches_album(self, album_name: str) -> bool:
         """
         Returns True if the album_name matches any album_name_patterns in the rules.
         """
-        for rule in self.rules:
-            patterns = getattr(rule, "album_name_patterns", None)
-            if patterns:
-                for pattern in patterns:
-                    if re.match(pattern, album_name):
-                        return True
+        for wrapper in self.rules:
+            if wrapper.matches_album(album_name):
+                return True
         return False
+
+    @typechecked
+    def matching_rules(self, asset_wrapper: AssetResponseWrapper) -> List[ClassificationRuleWrapper]:
+        """
+        Devuelve la lista de reglas de clasificación que hacen match con el asset dado.
+        Un match puede ser por tag o por patrón de nombre de álbum.
+        """
+        from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+        assert isinstance(asset_wrapper, AssetResponseWrapper)
+        asset_tags = set(asset_wrapper.get_tag_names())
+        album_names = set(asset_wrapper.get_album_names())
+        matched_wrappers: List[ClassificationRuleWrapper] = []
+        for wrapper in self.rules:
+            matched = False
+            if any(wrapper.has_tag(tag) for tag in asset_tags):
+                matched = True
+            if any(wrapper.matches_album(album) for album in album_names):
+                matched = True
+            if matched:
+                matched_wrappers.append(wrapper)
+        return matched_wrappers

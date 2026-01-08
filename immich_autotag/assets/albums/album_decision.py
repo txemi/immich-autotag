@@ -29,7 +29,7 @@ class AlbumDecision:
         from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
         config_manager = ExperimentalConfigManager.get_instance()
         config = config_manager.config
-        rule_set = ClassificationRuleSet(getattr(config, "classification_rules", []))
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         opts = {a for a in opts if rule_set.matches_album(a)}
         if self.album_from_folder and rule_set.matches_album(self.album_from_folder):
             opts.add(self.album_from_folder)
