@@ -499,9 +499,8 @@ class AssetResponseWrapper:
         - Belongs to an album whose name matches ALBUM_PATTERN.
         """
         import re
-        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
-        manager = ExperimentalConfigManager.get_instance()
-
+        from immich_autotag.classification.classification_rule_set import \
+            ClassificationRuleSet
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         asset_tags = self.get_tag_names()
         for tag in asset_tags:
