@@ -38,8 +38,8 @@ _instance = None
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
 
-   
-   _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
+
+    _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
     _instance: "StatisticsManager" = attr.ib(default=None, init=False, repr=False)
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
