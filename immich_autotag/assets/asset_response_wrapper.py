@@ -843,10 +843,8 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-        from immich_autotag.config.user import \
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
-
-        tag_name = AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+        tag_name = ExperimentalConfigManager.get_instance().config.auto_tags.duplicate_asset_album_conflict
         # Generic tag
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
