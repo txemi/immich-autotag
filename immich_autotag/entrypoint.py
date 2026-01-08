@@ -6,7 +6,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process_assets import process_assets
-from immich_autotag.config.internal_config import IMMICH_BASE_URL
+from immich_autotag.config.internal_config import get_immich_base_url
 from immich_autotag.config.user import API_KEY
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.duplicates.duplicate_collection_wrapper import (
@@ -23,15 +23,37 @@ def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
     Loads the duplicate collection from the Immich server and prints timing information.
     """
     import time
+    import os
+    import pickle
+    from datetime import datetime, timedelta
+    from immich_autotag.utils.run_output_dir import get_run_output_dir
 
-    print("[INFO] Requesting duplicates from Immich server... (this may take a while)")
-    t0 = time.perf_counter()
-    duplicates_loader = DuplicatesLoader(client=client)
-    duplicates_collection = duplicates_loader.load()
-    t1 = time.perf_counter()
-    print(
-        f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}"
-    )
+    cache_path = get_run_output_dir() / "duplicates_cache.pkl"
+    cache_fresh_hours = 3
+    duplicates_collection = None
+
+    # Try to load cache if it exists and is fresh
+    if cache_path.exists():
+        mtime = datetime.fromtimestamp(os.path.getmtime(cache_path))
+        if datetime.now() - mtime < timedelta(hours=cache_fresh_hours):
+            with open(cache_path, "rb") as f:
+                duplicates_collection = pickle.load(f)
+            print(f"[INFO] Loaded duplicates from cache ({cache_path})")
+
+    if duplicates_collection is None:
+        print("[INFO] Requesting duplicates from Immich server... (this may take a while)")
+        t0 = time.perf_counter()
+        duplicates_loader = DuplicatesLoader(client=client)
+        duplicates_collection = duplicates_loader.load()
+        t1 = time.perf_counter()
+        print(
+            f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}"
+        )
+        # Save to cache
+        with open(cache_path, "wb") as f:
+            pickle.dump(duplicates_collection, f)
+        print(f"[INFO] Duplicates cached to {cache_path}")
+
     return duplicates_collection
 
 
@@ -48,7 +70,7 @@ def run_main():
     initialize_logging()
 
     client = Client(
-        base_url=IMMICH_BASE_URL,
+        base_url=get_immich_base_url(),
         headers={"x-api-key": API_KEY},
         raise_on_unexpected_status=True,
     )

@@ -112,10 +112,10 @@ class AlbumResponseWrapper:
         """
         from urllib.parse import urlparse
 
-        from immich_autotag.config.internal_config import IMMICH_WEB_BASE_URL
+        from immich_autotag.config.internal_config import get_immich_web_base_url
 
         # Assume album URL is /albums/<id>
-        url = f"{IMMICH_WEB_BASE_URL}/albums/{self.album.id}"
+        url = f"{get_immich_web_base_url()}/albums/{self.album.id}"
         return urlparse(url)
 
     @typechecked

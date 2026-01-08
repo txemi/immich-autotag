@@ -5,8 +5,14 @@
 # These variables are automatically derived and should not be edited by the user.
 from immich_autotag.config.user import IMMICH_HOST, IMMICH_PORT
 
-IMMICH_WEB_BASE_URL = f"http://{IMMICH_HOST}:{IMMICH_PORT}"
-IMMICH_BASE_URL = f"{IMMICH_WEB_BASE_URL}/api"
+def get_immich_web_base_url():
+	# In the future, IMMICH_HOST and IMMICH_PORT will be loaded dynamically from a singleton
+	return f"http://{IMMICH_HOST}:{IMMICH_PORT}"
+
+def get_immich_base_url():
+	# In the future, IMMICH_HOST and IMMICH_PORT will be loaded dynamically from a singleton
+	return f"{get_immich_web_base_url()}/api"
+
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"
 # ==================== LOG CONFIGURATION ====================
 PRINT_ASSET_DETAILS = False  # Set to True to enable detailed per-asset logging
