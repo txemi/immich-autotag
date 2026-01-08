@@ -3,7 +3,7 @@ from typeguard import typechecked
 """
 run_statistics.py
 
-Modelo de datos para estadísticas de ejecución, serializable a YAML.
+Data model for execution statistics, serializable to YAML.
 """
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
@@ -12,7 +12,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 
-# Tipado estricto para los contadores de etiquetas de salida
+# Strict typing for output tag counters
 class OutputTagCounter(BaseModel):
     total: int = 0
     added: int = 0
@@ -20,7 +20,7 @@ class OutputTagCounter(BaseModel):
     errors: int = 0  # New: count errors for this tag
 
 
-# Tipado estricto para los contadores de álbumes de salida
+# Strict typing for output album counters
 class OutputAlbumCounter(BaseModel):
     total: int = 0
     assigned: int = 0
@@ -33,14 +33,14 @@ class RunStatistics(BaseModel):
     update_asset_date_count: int = Field(0, description="Number of asset date updates")
 
     total_assets: Optional[int] = Field(
-        None, description="Total de elementos reportados por el sistema al inicio"
+        None, description="Total elements reported by the system at startup"
     )
     max_assets: Optional[int] = Field(
         None,
-        description="Máximo de elementos a procesar en esta ejecución (None = todos)",
+        description="Maximum elements to process in this execution (None = all)",
     )
     skip_n: Optional[int] = Field(
-        None, description="Número de elementos a saltar al inicio (offset)"
+        None, description="Number of elements to skip at the beginning (offset)"
     )
 
     last_processed_id: Optional[str] = Field(
@@ -55,14 +55,14 @@ class RunStatistics(BaseModel):
         default_factory=dict, description="Extensible field for future stats"
     )
     output_tag_counters: Dict[str, OutputTagCounter] = Field(
-        default_factory=dict, description="Contadores por etiqueta de salida"
+        default_factory=dict, description="Counters per output tag"
     )
     output_album_counters: Dict[str, OutputAlbumCounter] = Field(
-        default_factory=dict, description="Contadores por álbum de salida"
+        default_factory=dict, description="Counters per output album"
     )
     progress_description: Optional[str] = Field(
         None,
-        description="Descripción textual del progreso actual (porcentaje, tiempo estimado, etc.)",
+        description="Textual description of current progress (percentage, estimated time, etc.)",
     )
 
     @typechecked

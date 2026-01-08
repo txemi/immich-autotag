@@ -40,7 +40,7 @@ class PerformanceTracker:
 
     def update(self, count: int):
         now = time.time()
-        # Si el tracker no está bien inicializado, nunca debería llegar aquí
+        # If the tracker is not properly initialized, it should never reach here
         if now - self.last_log_time >= self.log_interval:
             elapsed = now - self.start_time
             self.print_progress(count, elapsed)

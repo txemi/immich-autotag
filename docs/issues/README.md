@@ -4,11 +4,15 @@ This directory is the core of the project's task management, issues, and design 
 
 ## 📚 Standards and Conventions
 To avoid "reinventing the wheel", this system is based on the following industry standards:
+## 📚 Standards and Conventions
+To avoid "reinventing the wheel", this system is based on the following industry standards:
 
 1.  **[ADR (Architecture Decision Records)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions):** We follow Michael Nygard's pattern to record technical decisions in a numbered and chronological way.
 2.  **[RFC (Request for Comments)](https://github.com/rust-lang/rfcs):** We adopt the workflow of projects like Rust or React, where significant changes are proposed and documented before being implemented.
 3.  **[Documentation-as-Code](https://www.writethedocs.org/guide/documentation-as-code/):** We treat documentation with the same rigor as source code (versioned in Git, peer review, and Markdown format).
 
+## 🛠 System Structure
+Each task or "issue" resides in its own numbered folder (`XXXX-slug`):
 ## 🛠 System Structure
 Each task or "issue" resides in its own numbered folder (`XXXX-slug`):
 

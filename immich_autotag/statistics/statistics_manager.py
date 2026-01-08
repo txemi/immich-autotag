@@ -34,7 +34,7 @@ import attr
 
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-# Singleton de módulo
+# Module singleton
 _instance = None
 
 
@@ -52,7 +52,7 @@ class StatisticsManager:
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
     def __attrs_post_init__(self) -> None:
-        # La carpeta ya la crea get_run_output_dir
+        # The folder is already created by get_run_output_dir
         global _instance
         if _instance is not None and _instance is not self:
             raise RuntimeError(
@@ -62,10 +62,10 @@ class StatisticsManager:
     @typechecked
     def get_progress_description(self) -> str:
         """
-        Devuelve una descripción textual del progreso actual, incluyendo porcentaje y estimación de tiempo si está disponible.
+        Returns a textual description of current progress, including percentage and time estimation if available.
         """
         if self._perf_tracker is None:
-            return "Progreso no disponible: PerformanceTracker no inicializado."
+            return "Progress not available: PerformanceTracker not initialized."
         elapsed = None
         import time
         if hasattr(self._perf_tracker, "start_time"):
@@ -127,7 +127,7 @@ class StatisticsManager:
     def maybe_print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
             raise RuntimeError(
-                "PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar."
+                "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
         self._perf_tracker.update(count)
 
@@ -135,7 +135,7 @@ class StatisticsManager:
     def print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
             raise RuntimeError(
-                "PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar."
+                "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
         self._perf_tracker.print_progress(count)
 
@@ -161,7 +161,7 @@ class StatisticsManager:
 
     def _save_to_file(self) -> None:
         if self._current_stats and self._current_file:
-            # Actualiza siempre progress_description antes de guardar
+            # Always update progress_description before saving
             self._current_stats.progress_description = self.get_progress_description()
             with open(self._current_file, "w", encoding="utf-8") as f:
                 f.write(self._current_stats.to_yaml())
@@ -200,7 +200,7 @@ class StatisticsManager:
     @typechecked
     def delete_all(self) -> None:
         print(
-            "[WARN] StatisticsManager.delete_all() está obsoleto y no debe usarse. Las estadísticas se conservan para registro."
+            "[WARN] StatisticsManager.delete_all() is deprecated and should not be used. Statistics are preserved for logging."
         )
 
     @typechecked
@@ -317,7 +317,7 @@ class StatisticsManager:
         album: "AlbumResponseWrapper | None" ,
     ) -> None:
         """
-        album: AlbumResponseWrapper o None. Solo se usa para casos de álbum (ej: ASSIGN_ASSET_TO_ALBUM).
+        album: AlbumResponseWrapper or None. Only used for album cases (e.g.: ASSIGN_ASSET_TO_ALBUM).
         """
         # Local import to avoid UnboundLocalError and cyclic import
 
@@ -341,7 +341,7 @@ class StatisticsManager:
             stats.update_asset_date_count += 1
             self._save_to_file()
         elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
-            # Contar asignaciones de assets a álbumes usando output_album_counters
+            # Count asset assignments to albums using output_album_counters
             if album is not None:
                 assert isinstance(album, AlbumResponseWrapper)
                 album_name = album.album.name
@@ -353,14 +353,14 @@ class StatisticsManager:
                 stats.output_album_counters[album_name].total += 1
                 self._save_to_file()
             else:
-                # Si no se pasa album, no se puede contar
+                # If album is not passed, counting is not possible
                 raise RuntimeError(
-                    "AlbumResponseWrapper es requerido para contar ASSIGN_ASSET_TO_ALBUM"
+                    "AlbumResponseWrapper is required to count ASSIGN_ASSET_TO_ALBUM"
                 )
         else:
-            # Si se requiere, agregar otros casos aquí
+            # If needed, add other cases here
             raise NotImplementedError(
-                f"increment_tag_action no implementado para ModificationKind: {kind}"
+                f"increment_tag_action not implemented for ModificationKind: {kind}"
             )
 
         
