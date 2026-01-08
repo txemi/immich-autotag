@@ -1,6 +1,7 @@
 
 # Importa la clase MatchResult desde el nuevo archivo
 from immich_autotag.classification.match_result import MatchResult
+from immich_autotag.classification.match_result_list import MatchResultList
 # Example usage:
 # rule_set = get_rule_set_from_config_manager()
 # if rule_set.has_tag("autotag_input_meme"):
@@ -94,9 +95,9 @@ class ClassificationRuleSet:
     @typechecked
     def matching_rules(
         self, asset_wrapper: "AssetResponseWrapper"
-    ) -> List["MatchResult"]:
+    ) -> MatchResultList:
         """
-        Devuelve una lista de MatchResult: cada uno indica la regla y el elemento (tag o álbum) que ha macheado.
+        Devuelve un MatchResultList: cada uno indica la regla y el elemento (tag o álbum) que ha macheado.
         """
         asset_tags = set(asset_wrapper.get_tag_names())
         album_names = set(asset_wrapper.get_album_names())
@@ -110,4 +111,4 @@ class ClassificationRuleSet:
             for album in album_names:
                 if wrapper.matches_album(album):
                     matches.append(MatchResult(rule=wrapper, album_name=album))
-        return matches
+        return MatchResultList(matches=matches)

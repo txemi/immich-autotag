@@ -795,16 +795,10 @@ class AssetResponseWrapper:
         Returns the classification tags for this asset, using the ClassificationRuleSet from config manager.
         Only tags configured as relevant for classification in the config are considered.
         """
-        from immich_autotag.classification.classification_rule_set import \
-            ClassificationRuleSet
-
+        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-
-        return (
-            [tag.name for tag in self.asset.tags if rule_set.has_tag(tag.name)]
-            if self.asset.tags
-            else []
-        )
+        match_results = rule_set.matching_rules(self)
+        return match_results.tags()
 
     @typechecked
     def get_link(self) -> ParseResult:
