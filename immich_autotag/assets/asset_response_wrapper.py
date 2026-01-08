@@ -502,10 +502,7 @@ class AssetResponseWrapper:
         from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
         manager = ExperimentalConfigManager.get_instance()
 
-
-        # Check tags using ClassificationRuleSet from config manager
-        from immich_autotag.config.experimental_config.manager import get_rule_set_from_config_manager
-        rule_set = get_rule_set_from_config_manager()
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         asset_tags = self.get_tag_names()
         for tag in asset_tags:
             if rule_set.has_tag(tag):

@@ -51,22 +51,22 @@ class ClassificationRuleSet:
                 return True
         return False
 
+    @staticmethod
+    @typechecked
+    def get_rule_set_from_config_manager() -> "ClassificationRuleSet":
+        """
+        Utility to get a ClassificationRuleSet from the experimental config manager singleton.
+        """
+        from immich_autotag.config.experimental_config.manager import \
+            ExperimentalConfigManager
 
-@typechecked
-def get_rule_set_from_config_manager() -> "ClassificationRuleSet":
-    """
-    Utility to get a ClassificationRuleSet from the experimental config manager singleton.
-    """
-    from immich_autotag.config.experimental_config.manager import \
-        ExperimentalConfigManager
-
-    manager = ExperimentalConfigManager.get_instance()
-    if (
-        not manager
-        or not manager.config
-        or not hasattr(manager.config, "classification_rules")
-    ):
-        raise RuntimeError(
-            "ExperimentalConfigManager or classification_rules not initialized"
-        )
-    return ClassificationRuleSet(rules=manager.config.classification_rules)
+        manager = ExperimentalConfigManager.get_instance()
+        if (
+            not manager
+            or not manager.config
+            or not hasattr(manager.config, "classification_rules")
+        ):
+            raise RuntimeError(
+                "ExperimentalConfigManager or classification_rules not initialized"
+            )
+        return ClassificationRuleSet(rules=manager.config.classification_rules)
