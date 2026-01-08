@@ -1,7 +1,6 @@
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.config.user import VERBOSE_LOGGING
 
 from .__compare_classification_tags import compare_classification_tags
 from .__get_duplicate_wrappers import get_duplicate_wrappers
@@ -16,7 +15,6 @@ from ._classification_tag_comparison_result_obj import \
 @typechecked
 def analyze_duplicate_classification_tags(
     asset_wrapper: AssetResponseWrapper,
-    verbose: bool = VERBOSE_LOGGING,
 ) -> None:
     """
     If the asset has duplicates, checks the classification tags of each duplicate.

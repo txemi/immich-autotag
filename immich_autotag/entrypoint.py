@@ -24,7 +24,6 @@ def run_main():
 
     import re
 
-    from immich_autotag.config.user import FILTER_ASSET_LINKS, VERBOSE_LOGGING
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import setup_logging
 
@@ -46,7 +45,6 @@ def run_main():
     )
     import re
 
-    from immich_autotag.config.user import FILTER_ASSET_LINKS, VERBOSE_LOGGING
 
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client(client)
@@ -61,17 +59,14 @@ def run_main():
         asset_manager=asset_manager,
     )
     # Asset filtering logic
-    if FILTER_ASSET_LINKS and len(FILTER_ASSET_LINKS) > 0:
-        # Activate verbose logging
-        import immich_autotag.config.user as user_config
-
-        user_config.VERBOSE_LOGGING = True
+    filter_asset_links = manager.config.filter_out_asset_links 
+    if filter_asset_links and len(filter_asset_links) > 0:
         asset_ids = []
         # Accept any URL containing a UUID (v4) as asset ID, regardless of path
         uuid_pattern = re.compile(
             r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
         )
-        for link in FILTER_ASSET_LINKS:
+        for link in filter_asset_links:
             match = uuid_pattern.search(link)
             if not match:
                 raise RuntimeError(
@@ -96,7 +91,7 @@ def run_main():
                 )
             wrappers.append(wrapper)
         print(
-            f"[INFO] Filtered mode: Only processing {len(wrappers)} asset(s) from FILTER_ASSET_LINKS."
+            f"[INFO] Filtered mode: Only processing {len(wrappers)} asset(s) from filter_out_asset_links."
         )
         from threading import Lock
 
