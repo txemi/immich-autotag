@@ -1,4 +1,3 @@
-def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Path | None:
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
