@@ -6,6 +6,8 @@ from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 from .estimate_utils import adjust_estimates
 from .estimator import AdaptiveTimeEstimator
+
+
 @typechecked
 def format_perf_progress(
     count: int,
@@ -55,8 +57,6 @@ def format_perf_progress(
         return f"Procesados {count} elementos. Media por elemento: {avg:.3f} s. Transcurrido: {elapsed:.1f} s"
 
 
-
-
 @typechecked
 def print_perf(
     count: int,
@@ -74,12 +74,15 @@ def print_perf(
         elapsed (float): Elapsed time in seconds.
         total_assets (int, optional): Total number of assets to process.
     """
-    print("[PERF] " + format_perf_progress(
-        count=count,
-        elapsed=elapsed,
-        total_to_process=total_to_process,
-        estimator=estimator,
-        skip_n=skip_n,
-        total_assets=total_assets,
-        estimation_mode=estimation_mode,
-    ))
+    print(
+        "[PERF] "
+        + format_perf_progress(
+            count=count,
+            elapsed=elapsed,
+            total_to_process=total_to_process,
+            estimator=estimator,
+            skip_n=skip_n,
+            total_assets=total_assets,
+            estimation_mode=estimation_mode,
+        )
+    )

@@ -4,8 +4,7 @@ import re
 
 import attrs
 
-from immich_autotag.assets.duplicates._duplicate_albums_info import \
-    DuplicateAlbumsInfo
+from immich_autotag.assets.duplicates._duplicate_albums_info import DuplicateAlbumsInfo
 from immich_autotag.config.user import ALBUM_PATTERN
 
 

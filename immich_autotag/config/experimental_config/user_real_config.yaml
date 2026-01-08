@@ -1,0 +1,68 @@
+classification_rules:
+  - type: "tag"
+    patterns:
+      - "meme"
+      - "adult_meme"
+      - "autotag_input_ignore"
+      - "autotag_input_meme"
+      - "autotag_input_adult_meme"
+      - "autotag_input_pending_review"
+    labels:
+      - "clasificacion"
+  - type: "album"
+    patterns:
+      - "^\\d{4}-(\\d{2}(-\\d{2})?)?"  # ALBUM_PATTERN
+    labels:
+      - "evento"
+
+conversions:
+  - source:
+      type: "tag"
+      patterns: ["meme"]
+      labels: ["legacy"]
+    destination:
+      type: "tag"
+      patterns: ["autotag_input_meme"]
+      labels: ["nuevo"]
+  - source:
+      type: "tag"
+      patterns: ["adult_meme"]
+      labels: ["legacy"]
+    destination:
+      type: "tag"
+      patterns: ["autotag_input_adult_meme"]
+      labels: ["nuevo"]
+
+    - name: "autotag_output_unknown"
+  enabled: true
+  tags:
+    - name: "autotag_output_unknown"
+      criteria: ["sin_evento"]
+    - name: "autotag_output_conflict"
+      criteria: ["conflicto_evento"]
+    - name: "autotag_output_duplicate_asset_album_conflict"
+      criteria: ["conflicto_album_duplicado"]
+    - name: "autotag_output_duplicate_asset_classification_conflict"
+      criteria: ["conflicto_clasificacion_duplicado"]
+      criteria: ["sin_evento"]
+    - name: "autotag_output_conflict"
+      criteria: ["conflicto_evento"]
+    - name: "autotag_output_duplicate_asset_album_conflict"
+      criteria: ["conflicto_album_duplicado"]
+    - name: "autotag_output_duplicate_asset_classification_conflict"
+      criteria: ["conflicto_clasificacion_duplicado"]
+
+features:
+  enable_album_detection: true
+  enable_tag_suggestion: false
+  advanced_feature:
+    enabled: true
+    threshold: 0.8
+  enable_album_name_strip: true
+  enable_album_detection_from_folders: false
+  album_detection_excluded_paths:
+    - "whatsapp"
+  enable_date_correction: true
+  date_extraction_timezone: "Europe/Madrid"
+  verbose_logging: false
+  enable_checkpoint_resume: true

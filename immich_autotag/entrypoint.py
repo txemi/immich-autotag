@@ -3,15 +3,15 @@ from __future__ import annotations
 from immich_client import Client
 from typeguard import typechecked
 
-from immich_autotag.albums.album_collection_wrapper import \
-    AlbumCollectionWrapper
+from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.config.internal_config import IMMICH_BASE_URL
 from immich_autotag.config.user import API_KEY
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.duplicates.duplicate_collection_wrapper import \
-    DuplicateCollectionWrapper
+from immich_autotag.duplicates.duplicate_collection_wrapper import (
+    DuplicateCollectionWrapper,
+)
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
 from immich_autotag.logging.init import initialize_logging
 from immich_autotag.tags.list_tags import list_tags
@@ -108,12 +108,10 @@ def run_main():
         )
         from threading import Lock
 
-        from immich_autotag.assets.process_single_asset import \
-            process_single_asset
+        from immich_autotag.assets.process_single_asset import process_single_asset
 
         lock = Lock()
-        from immich_autotag.report.modification_report import \
-            ModificationReport
+        from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         for wrapper in wrappers:

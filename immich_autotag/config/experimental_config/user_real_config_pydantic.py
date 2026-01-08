@@ -1,10 +1,10 @@
 """
-user_config_template.py
+user_real_config_pydantic.py
 
-Plantilla de configuración para el sistema Immich autotag (sin datos privados).
-Puedes copiar y adaptar este fichero como user_real_config_pydantic.py para tu configuración real.
+Configuración real del usuario expresada directamente como instancias de modelos Pydantic.
+Permite discutir y validar el modelo en código antes de serializar a YAML.
 
-Esta plantilla está pensada para ser autoexplicativa y fácil de adaptar. Cada bloque incluye comentarios para guiarte.
+*NOTA: Esta configuración como código es temporal y está pensada para facilitar el refactor y la validación de modelos. El objetivo final es migrar a YAML u otro formato estándar, pero mientras tanto, toda la lógica y comentarios relevantes se mantienen aquí.*
 """
 
 from immich_autotag.config.experimental_config.models import (
@@ -19,14 +19,18 @@ from immich_autotag.config.experimental_config.models import (
     DateCorrectionConfig,
 )
 
-user_config_template = UserConfig(
+# Instancia de la configuración real del usuario.
+# Instancia de la configuración real
+user_real_config = UserConfig(
     # -------------------------------------------------------------------------
     # API y conexión: datos de acceso a Immich
     # host: Dominio o IP de Immich
     # port: Puerto donde escucha Immich
     # api_key: Clave API de Immich
     server=ServerConfig(
-        host="immich.example.com", port=2283, api_key="YOUR_API_KEY_HERE"
+        host="immich.ad3.lab",
+        port=2283,
+        api_key="j88ctYwFEBXt4p7Hed8YOq6ATjNMZeJDVvLtWvo",
     ),
     # -------------------------------------------------------------------------
     # FILTRO DE ASSETS: lista de enlaces o IDs de assets a procesar.
@@ -97,6 +101,7 @@ user_config_template = UserConfig(
 )
 
 if __name__ == "__main__":
+    # Mostrar la configuración cargada y validada
     import pprint
 
-    pprint.pprint(user_config_template.model_dump())
+    pprint.pprint(user_real_config.model_dump())

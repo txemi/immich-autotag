@@ -12,7 +12,6 @@ import yaml
 from pydantic import BaseModel, Field
 
 
-
 # Tipado estricto para los contadores de etiquetas de salida
 class OutputTagCounter(BaseModel):
     total: int = 0
@@ -20,13 +19,13 @@ class OutputTagCounter(BaseModel):
     removed: int = 0
     errors: int = 0  # New: count errors for this tag
 
+
 # Tipado estricto para los contadores de álbumes de salida
 class OutputAlbumCounter(BaseModel):
     total: int = 0
     assigned: int = 0
     removed: int = 0
     errors: int = 0
-
 
 
 class RunStatistics(BaseModel):
@@ -62,8 +61,10 @@ class RunStatistics(BaseModel):
         default_factory=dict, description="Contadores por álbum de salida"
     )
     progress_description: Optional[str] = Field(
-        None, description="Descripción textual del progreso actual (porcentaje, tiempo estimado, etc.)"
+        None,
+        description="Descripción textual del progreso actual (porcentaje, tiempo estimado, etc.)",
     )
+
     @typechecked
     def to_yaml(self) -> str:
         return yaml.safe_dump(
@@ -77,6 +78,7 @@ class RunStatistics(BaseModel):
     @typechecked
     def from_yaml(cls, data: str) -> "RunStatistics":
         return cls.model_validate(yaml.safe_load(data))
+
     @typechecked
     def format_progress(self) -> str:
         """

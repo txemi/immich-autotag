@@ -3,8 +3,10 @@ from urllib.parse import ParseResult, urlparse
 
 from typeguard import typechecked
 
-from immich_autotag.config.internal_config import (IMMICH_PHOTO_PATH_TEMPLATE,
-                                                   IMMICH_WEB_BASE_URL)
+from immich_autotag.config.internal_config import (
+    IMMICH_PHOTO_PATH_TEMPLATE,
+    IMMICH_WEB_BASE_URL,
+)
 
 
 @typechecked

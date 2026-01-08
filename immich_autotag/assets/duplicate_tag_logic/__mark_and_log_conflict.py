@@ -3,8 +3,7 @@ from typing import TYPE_CHECKING
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import \
-        AssetResponseWrapper
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @typechecked
@@ -14,7 +13,8 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper", verbose: bool) 
     """
     from immich_autotag.config.user import (
         AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,
-        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX)
+        AUTOTAG_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX,
+    )
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 

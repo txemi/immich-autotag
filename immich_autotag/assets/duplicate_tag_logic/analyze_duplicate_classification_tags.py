@@ -7,10 +7,10 @@ from .__compare_classification_tags import compare_classification_tags
 from .__get_duplicate_wrappers import get_duplicate_wrappers
 from .__mark_and_log_conflict import mark_and_log_conflict
 from .__try_autofix import try_autofix
-from ._classification_tag_comparison_result import \
-    _ClassificationTagComparisonResult
-from ._classification_tag_comparison_result_obj import \
-    _ClassificationTagComparisonResultObj
+from ._classification_tag_comparison_result import _ClassificationTagComparisonResult
+from ._classification_tag_comparison_result_obj import (
+    _ClassificationTagComparisonResultObj,
+)
 
 
 @typechecked

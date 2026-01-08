@@ -165,8 +165,9 @@ class AlbumResponseWrapper:
                     if error_msg and "duplicate" in str(error_msg).lower():
                         warning_msg = f"[WARN] Asset {asset_wrapper.id} is already in album {self.album.id}: duplicate\nAsset link: {asset_url}\nAlbum link: {album_url}"
                         print(warning_msg)
-                        from immich_autotag.tags.modification_kind import \
-                            ModificationKind
+                        from immich_autotag.tags.modification_kind import (
+                            ModificationKind,
+                        )
 
                         if tag_mod_report:
                             tag_mod_report.add_assignment_modification(

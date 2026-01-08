@@ -62,8 +62,7 @@ def _check_filename_candidate_and_fix(
     Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.
     If no correction is needed, returns CONTINUE. If a condition is met to exit early, returns EXIT.
     """
-    from immich_autotag.assets.date_correction.date_source_kind import \
-        DateSourceKind
+    from immich_autotag.assets.date_correction.date_source_kind import DateSourceKind
 
     # Unificamos: FILENAME, WHATSAPP_FILENAME, IMMICH
     kinds = [
@@ -75,8 +74,7 @@ def _check_filename_candidate_and_fix(
     if not candidates:
         return DateCorrectionStepResult.CONTINUE
     best_candidate = min(candidates, key=lambda c: c.get_aware_date())
-    from immich_autotag.utils.date_compare import \
-        is_datetime_more_than_days_after
+    from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
     # Use 1.1 days as threshold
     candidate_date = best_candidate.get_aware_date()
