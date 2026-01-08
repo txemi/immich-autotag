@@ -26,7 +26,7 @@ class AlbumDecision:
     def all_options(self) -> set[str]:
         opts = set(self.duplicates_info.all_album_names())
         from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
-        from immich_autotag.conversions.classification_rule_set import ClassificationRuleSet
+        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
         config_manager = ExperimentalConfigManager.get_instance()
         config = config_manager.config
         rule_set = ClassificationRuleSet(getattr(config, "classification_rules", []))
