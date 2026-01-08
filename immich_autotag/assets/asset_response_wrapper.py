@@ -738,7 +738,7 @@ class AssetResponseWrapper:
         """
         import re
 
-        if not ExperimentalConfigManager.get_instance().config.enable_album_detection_from_folders:
+        if not ExperimentalConfigManager.get_instance().config.features.album_detection_from_folders.enabled:
             return None
         # If already classified by tag or album, skip
         if self.is_asset_classified():
