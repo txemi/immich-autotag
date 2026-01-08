@@ -14,8 +14,11 @@ def analyze_duplicate_classification_tags(
     asset_wrapper: AssetResponseWrapper,
 ) -> None:
     """
-    If the asset has duplicates, checks the classification tags of each duplicate.
-    If the classification tags (from config) do not match, raises an exception.
+    Checks the classification tags of all duplicates of the given asset.
+    - If tags are equal, does nothing.
+    - If tags can be autofixed, attempts autofix.
+    - If there is a conflict, marks and logs the conflict.
+    - Does not raise exceptions; only logs and marks conflicts.
     """
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
