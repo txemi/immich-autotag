@@ -1,3 +1,4 @@
+
 """
 manager.py
 
@@ -77,7 +78,7 @@ class ExperimentalConfigManager:
             yaml.safe_dump(
                 self.config.model_dump(), f, allow_unicode=True, sort_keys=False
             )
-
+    @typechecked
     def print_config(self):
         """Imprime la configuración actual usando el sistema de logs (nivel FOCUS)."""
         from immich_autotag.logging.utils import log
@@ -88,7 +89,6 @@ class ExperimentalConfigManager:
         import pprint
         config_str = pprint.pformat(self.config.model_dump())
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
-
 
 # --- Carga automática al inicio (ejemplo de uso) ---
 
