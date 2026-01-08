@@ -109,7 +109,8 @@ class AlbumCollectionWrapper:
         """
         from immich_client.api.albums import get_album_info, get_all_albums
 
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)

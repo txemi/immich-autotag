@@ -1,11 +1,15 @@
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-from typeguard import typechecked
 
 from typing import TYPE_CHECKING
+
+from typeguard import typechecked
+
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album_response_wrapper import \
+        AlbumResponseWrapper
 
 """
 statistics_manager.py
@@ -17,30 +21,31 @@ Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
+
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from immich_autotag.tags.modification_kind import ModificationKind
 # ...existing code...
-from .run_statistics import RunStatistics
-from immich_autotag.utils.run_output_dir import get_run_output_dir
-
 from threading import RLock
 
 import attr
 
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
+from immich_autotag.utils.run_output_dir import get_run_output_dir
 
-# Singleton de módulo
+from .run_statistics import RunStatistics
+
+# Module singleton
 _instance = None
 
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
-
 
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
@@ -52,27 +57,30 @@ class StatisticsManager:
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
     def __attrs_post_init__(self) -> None:
-        # La carpeta ya la crea get_run_output_dir
+        # The folder is already created by get_run_output_dir
         global _instance
         if _instance is not None and _instance is not self:
             raise RuntimeError(
                 "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
             )
         _instance = self
+
     @typechecked
     def get_progress_description(self) -> str:
         """
-        Devuelve una descripción textual del progreso actual, incluyendo porcentaje y estimación de tiempo si está disponible.
+        Returns a textual description of current progress, including percentage and time estimation if available.
         """
         if self._perf_tracker is None:
-            return "Progreso no disponible: PerformanceTracker no inicializado."
+            return "Progress not available: PerformanceTracker not initialized."
         elapsed = None
         import time
+
         if hasattr(self._perf_tracker, "start_time"):
             elapsed = time.time() - self._perf_tracker.start_time
         else:
             elapsed = 0.0
         from immich_autotag.utils.perf.print_perf import format_perf_progress
+
         return format_perf_progress(
             count=self._current_stats.count if self._current_stats else 0,
             elapsed=elapsed,
@@ -127,7 +135,7 @@ class StatisticsManager:
     def maybe_print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
             raise RuntimeError(
-                "PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar."
+                "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
         self._perf_tracker.update(count)
 
@@ -135,11 +143,9 @@ class StatisticsManager:
     def print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
             raise RuntimeError(
-                "PerformanceTracker no inicializado: faltan totales. Llama a set_total_assets o set_max_assets antes de procesar."
+                "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
         self._perf_tracker.print_progress(count)
-
-
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
@@ -161,7 +167,7 @@ class StatisticsManager:
 
     def _save_to_file(self) -> None:
         if self._current_stats and self._current_file:
-            # Actualiza siempre progress_description antes de guardar
+            # Always update progress_description before saving
             self._current_stats.progress_description = self.get_progress_description()
             with open(self._current_file, "w", encoding="utf-8") as f:
                 f.write(self._current_stats.to_yaml())
@@ -200,7 +206,7 @@ class StatisticsManager:
     @typechecked
     def delete_all(self) -> None:
         print(
-            "[WARN] StatisticsManager.delete_all() está obsoleto y no debe usarse. Las estadísticas se conservan para registro."
+            "[WARN] StatisticsManager.delete_all() is deprecated and should not be used. Statistics are preserved for logging."
         )
 
     @typechecked
@@ -244,6 +250,7 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].added += 1
             self._save_to_file()
@@ -252,12 +259,15 @@ class StatisticsManager:
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
         # Enforce TagWrapper type
         if not hasattr(tag, "name"):
-            raise TypeError(f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}")
+            raise TypeError(
+                f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}"
+            )
         tag_name = tag.name
         if tag_name in self.RELEVANT_TAGS:
             stats = self.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].removed += 1
             self._save_to_file()
@@ -309,19 +319,21 @@ class StatisticsManager:
             )
         self.set_skip_n(skip_n)
         return last_processed_id, skip_n
+
     @typechecked
     def increment_tag_action(
         self,
         tag: "TagWrapper",
         kind: "ModificationKind",
-        album: "AlbumResponseWrapper | None" ,
+        album: "AlbumResponseWrapper | None",
     ) -> None:
         """
-        album: AlbumResponseWrapper o None. Solo se usa para casos de álbum (ej: ASSIGN_ASSET_TO_ALBUM).
+        album: AlbumResponseWrapper or None. Only used for album cases (e.g.: ASSIGN_ASSET_TO_ALBUM).
         """
         # Local import to avoid UnboundLocalError and cyclic import
 
         from immich_autotag.tags.modification_kind import ModificationKind
+
         if kind == ModificationKind.ADD_TAG_TO_ASSET:
             self.increment_tag_added(tag)
         elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
@@ -332,6 +344,7 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].errors += 1
             self._save_to_file()
@@ -341,26 +354,25 @@ class StatisticsManager:
             stats.update_asset_date_count += 1
             self._save_to_file()
         elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
-            # Contar asignaciones de assets a álbumes usando output_album_counters
+            # Count asset assignments to albums using output_album_counters
             if album is not None:
                 assert isinstance(album, AlbumResponseWrapper)
                 album_name = album.album.name
                 stats = self.get_stats()
                 if album_name not in stats.output_album_counters:
                     from .run_statistics import OutputAlbumCounter
+
                     stats.output_album_counters[album_name] = OutputAlbumCounter()
                 stats.output_album_counters[album_name].assigned += 1
                 stats.output_album_counters[album_name].total += 1
                 self._save_to_file()
             else:
-                # Si no se pasa album, no se puede contar
+                # If album is not passed, counting is not possible
                 raise RuntimeError(
-                    "AlbumResponseWrapper es requerido para contar ASSIGN_ASSET_TO_ALBUM"
+                    "AlbumResponseWrapper is required to count ASSIGN_ASSET_TO_ALBUM"
                 )
         else:
-            # Si se requiere, agregar otros casos aquí
+            # If needed, add other cases here
             raise NotImplementedError(
-                f"increment_tag_action no implementado para ModificationKind: {kind}"
+                f"increment_tag_action not implemented for ModificationKind: {kind}"
             )
-
-        

@@ -2,10 +2,12 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
-from ._classification_tag_comparison_result import _ClassificationTagComparisonResult
+from ._classification_tag_comparison_result import \
+    _ClassificationTagComparisonResult
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.assets.asset_response_wrapper import \
+        AssetResponseWrapper
 
 
 @typechecked

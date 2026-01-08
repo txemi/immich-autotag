@@ -1,14 +1,16 @@
 """
 manager.py
 
-Gestor Singleton para la nueva configuración experimental.
+Singleton Manager for the new experimental configuration.
 """
 
 from pathlib import Path
-from typeguard import typechecked
-import yaml
-import attrs
 from typing import Optional
+
+import attrs
+import yaml
+from typeguard import typechecked
+
 from .models import UserConfig
 
 _instance = None
@@ -51,8 +53,8 @@ class ExperimentalConfigManager:
     @typechecked
     def load_config_from_real_python(self):
         """
-        Carga la configuración importando directamente user_real_config de user_real_config_pydantic.py.
-        No usa importlib ni lógica dinámica, solo import explícito.
+        Loads the configuration by directly importing user_real_config from user_real_config_pydantic.py.
+        Does not use importlib or dynamic logic, only explicit import.
         """
         from .user_real_config_pydantic import user_real_config
 
@@ -61,13 +63,16 @@ class ExperimentalConfigManager:
         self.dump_to_yaml()
 
     @typechecked
-    def dump_to_yaml(self, path: 'str | Path | None' = None):
+    def dump_to_yaml(self, path: "str | Path | None" = None):
         """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
         if self.config is None:
-            raise RuntimeError("No hay configuración cargada para volcar a YAML.")
-        import yaml
+            raise RuntimeError("No configuration loaded to dump to YAML.")
         from pathlib import Path as _Path
+
+        import yaml
+
         from immich_autotag.utils.run_output_dir import get_run_output_dir
+
         if path is None:
             out_dir = get_run_output_dir()
             path = out_dir / "user_config_dump.yaml"
@@ -80,12 +85,14 @@ class ExperimentalConfigManager:
     @typechecked
     def print_config(self):
         """Imprime la configuración actual usando el sistema de logs (nivel FOCUS)."""
-        from immich_autotag.logging.utils import log
         from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
         if self.config is None:
             log("[WARN] No configuration loaded.", level=LogLevel.FOCUS)
-            raise RuntimeError("No hay configuración cargada para imprimir.")   
+            raise RuntimeError("No hay configuración cargada para imprimir.")
         import pprint
+
         config_str = pprint.pformat(self.config.model_dump())
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
     @typechecked
@@ -101,15 +108,15 @@ class ExperimentalConfigManager:
 @typechecked
 def load_experimental_config_at_startup():
     config_path = Path(__file__).parent / "user_real_config.yaml"
-    # Si el archivo no existe, lanza un error claro
+    # If the file does not exist, raise a clear error
     if not config_path.exists():
         raise FileNotFoundError(
-            f"No se encontró la plantilla de configuración experimental en: {config_path}"
+            f"Experimental configuration template not found at: {config_path}"
         )
-    # Solo crear el singleton si no existe
+    # Only create the singleton if it does not exist
     manager = ExperimentalConfigManager.get_instance()
     manager.load_config_from_real_python()
-    # Imprimir la configuración cargada para ver el resultado
+    # Print the loaded configuration to see the result
     import pprint
 
     pprint.pprint(manager.config.model_dump() if manager.config else None)

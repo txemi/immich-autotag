@@ -35,7 +35,7 @@ class AlbumResponseWrapper:
 
     @typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
-        """Returns True if the asset belongs to this album (optimizado con set)."""
+        """Returns True if the asset belongs to this album (optimized with set)."""
         return asset.id in self.asset_ids
 
     @typechecked
@@ -112,7 +112,8 @@ class AlbumResponseWrapper:
         """
         from urllib.parse import urlparse
 
-        from immich_autotag.config.internal_config import get_immich_web_base_url
+        from immich_autotag.config.internal_config import \
+            get_immich_web_base_url
 
         # Assume album URL is /albums/<id>
         url = f"{get_immich_web_base_url()}/albums/{self.album.id}"
@@ -161,13 +162,12 @@ class AlbumResponseWrapper:
                     error_msg = getattr(item, "error", None)
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
-                    # Si el error es 'duplicate', solo warning y registrar
+                    # If the error is 'duplicate', only warning and log
                     if error_msg and "duplicate" in str(error_msg).lower():
                         warning_msg = f"[WARN] Asset {asset_wrapper.id} is already in album {self.album.id}: duplicate\nAsset link: {asset_url}\nAlbum link: {album_url}"
                         print(warning_msg)
-                        from immich_autotag.tags.modification_kind import (
-                            ModificationKind,
-                        )
+                        from immich_autotag.tags.modification_kind import \
+                            ModificationKind
 
                         if tag_mod_report:
                             tag_mod_report.add_assignment_modification(

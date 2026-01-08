@@ -6,7 +6,8 @@ from immich_client.api.assets import get_asset_info
 from immich_client.api.search import search_assets
 from immich_client.models import MetadataSearchDto
 from immich_client.models.asset_response_dto import AssetResponseDto
-from immich_client.models.search_asset_response_dto import SearchAssetResponseDto
+from immich_client.models.search_asset_response_dto import \
+    SearchAssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper

@@ -1,10 +1,11 @@
 """
 models.py
 
-Modelos Pydantic para la nueva configuración estructurada (experimental).
+Pydantic models for the new structured configuration (experimental).
 """
 
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -37,13 +38,13 @@ class AutoTagsConfig(BaseModel):
     duplicate_asset_classification_conflict_prefix: str
 
 
-# todo: esto no se que es , estaba en el fichero de config original?
+# todo: not sure what this is, was it in the original config file?
 class AdvancedFeatureConfig(BaseModel):
     enabled: bool
     threshold: float
 
 
-# Agrupación de campos acoplados en subclases
+# Grouping of coupled fields in subclasses
 class AlbumDetectionFromFoldersConfig(BaseModel):
     enabled: bool
     excluded_paths: List[str]

@@ -1,60 +1,53 @@
 """
 user_config_template.py
 
-Plantilla de configuración para el sistema Immich autotag (sin datos privados).
-Puedes copiar y adaptar este fichero como user_real_config_pydantic.py para tu configuración real.
+Configuration template for the Immich autotag system (without private data).
+You can copy and adapt this file as user_real_config_pydantic.py for your actual configuration.
 
-Esta plantilla está pensada para ser autoexplicativa y fácil de adaptar. Cada bloque incluye comentarios para guiarte.
+This template is designed to be self-explanatory and easy to adapt. Each block includes comments to guide you.
 """
 
 from immich_autotag.config.experimental_config.models import (
-    ServerConfig,
-    ClassificationRule,
-    Conversion,
-    AutoTagsConfig,
-    AdvancedFeatureConfig,
-    FeaturesConfig,
-    UserConfig,
-    AlbumDetectionFromFoldersConfig,
-    DateCorrectionConfig,
-)
+    AdvancedFeatureConfig, AlbumDetectionFromFoldersConfig, AutoTagsConfig,
+    ClassificationRule, Conversion, DateCorrectionConfig, FeaturesConfig,
+    ServerConfig, UserConfig)
 
 user_config_template = UserConfig(
     # -------------------------------------------------------------------------
-    # API y conexión: datos de acceso a Immich
-    # host: Dominio o IP de Immich
-    # port: Puerto donde escucha Immich
-    # api_key: Clave API de Immich
+    # API and connection: Immich access credentials
+    # host: Immich domain or IP
+    # port: Port where Immich listens
+    # api_key: Immich API key
     server=ServerConfig(
         host="immich.example.com", port=2283, api_key="YOUR_API_KEY_HERE"
     ),
     # -------------------------------------------------------------------------
-    # FILTRO DE ASSETS: lista de enlaces o IDs de assets a procesar.
-    # Si está vacía, se procesan todos los assets. Si no, solo los indicados y logging detallado.
+    # ASSET FILTER: list of asset links or IDs to process.
+    # If empty, all assets are processed. If not empty, only those indicated and detailed logging.
     filter_out_asset_links=[],
     # -------------------------------------------------------------------------
-    # CLASIFICACIÓN Y REGLAS:
-    # Reglas para clasificar assets por tags o patrones de nombre de álbum.
-    # Ejemplo: solo los álbumes que empiezan por fecha (YYYY-, YYYY-MM, YYYY-MM-DD) se consideran "eventos".
+    # CLASSIFICATION AND RULES:
+    # Rules to classify assets by tags or album name patterns.
+    # Example: only albums starting with a date (YYYY-, YYYY-MM, YYYY-MM-DD) are considered "events".
     classification_rules=[
         ClassificationRule(
             tag_names=[
-                "meme",  # (LEGACY) Meme: imágenes humorísticas, sin prefijo. Compatibilidad.
-                "adult_meme",  # (LEGACY) Meme adulto: contenido NSFW, sin prefijo. Compatibilidad.
-                "autotag_input_ignore",  # Ignorar: fotos descartadas del flujo principal.
-                "autotag_input_meme",  # Memes/jokes subidos indiscriminadamente, no eventos.
-                "autotag_input_adult_meme",  # Memes/adultos NSFW, separar del entorno familiar.
-                "autotag_input_pending_review",  # Pendiente de revisión: decidir destino.
+                "meme",  # (LEGACY) Meme: humorous images, no prefix. Compatibility.
+                "adult_meme",  # (LEGACY) Adult meme: NSFW content, no prefix. Compatibility.
+                "autotag_input_ignore",  # Ignore: photos discarded from main workflow.
+                "autotag_input_meme",  # Memes/jokes uploaded indiscriminately, not events.
+                "autotag_input_adult_meme",  # NSFW memes/adults, separate from family environment.
+                "autotag_input_pending_review",  # Pending review: decide destination.
             ]
         ),
         ClassificationRule(
             album_name_patterns=[
                 r"^\d{4}-(\d{2}(-\d{2})?)?"
-            ]  # Solo álbumes con nombre de fecha son "eventos"
+            ]  # Only albums with date names are "events"
         ),
     ],
     # -------------------------------------------------------------------------
-    # CONVERSIONES DE TAGS: mapeo de tags antiguos a nuevos (compatibilidad/refactor)
+    # TAG CONVERSIONS: mapping of old tags to new ones (compatibility/refactor)
     conversions=[
         Conversion(
             source=ClassificationRule(tag_names=["meme"]),
@@ -66,33 +59,33 @@ user_config_template = UserConfig(
         ),
     ],
     # -------------------------------------------------------------------------
-    # TAGS DE SALIDA Y CONFLICTOS:
-    # Configuración de tags automáticos para activos no clasificados, conflictos, duplicados, etc.
-    # Todos los tags usan guiones bajos '_' (no jerarquía real) para evitar problemas con la API de Immich.
+    # OUTPUT TAGS AND CONFLICTS:
+    # Configuration of automatic tags for unclassified assets, conflicts, duplicates, etc.
+    # All tags use underscores '_' (no real hierarchy) to avoid problems with the Immich API.
     auto_tags=AutoTagsConfig(
         enabled=True,
-        category_unknown="autotag_output_unknown",  # Activos no asignados a ningún evento
-        category_conflict="autotag_output_conflict",  # Activos en más de un evento (conflicto)
-        duplicate_asset_album_conflict="autotag_output_duplicate_asset_album_conflict",  # Duplicados con conflicto de álbum
-        duplicate_asset_classification_conflict="autotag_output_duplicate_asset_classification_conflict",  # Duplicados con conflicto de clasificación
-        duplicate_asset_classification_conflict_prefix="autotag_output_duplicate_asset_classification_conflict_",  # Prefijo para conflictos de grupo
+        category_unknown="autotag_output_unknown",  # Assets not assigned to any event
+        category_conflict="autotag_output_conflict",  # Assets in more than one event (conflict)
+        duplicate_asset_album_conflict="autotag_output_duplicate_asset_album_conflict",  # Duplicates with album conflict
+        duplicate_asset_classification_conflict="autotag_output_duplicate_asset_classification_conflict",  # Duplicates with classification conflict
+        duplicate_asset_classification_conflict_prefix="autotag_output_duplicate_asset_classification_conflict_",  # Prefix for group conflicts
     ),
     # -------------------------------------------------------------------------
-    # FEATURES Y FLAGS: activar/desactivar funcionalidades avanzadas
+    # FEATURES AND FLAGS: enable/disable advanced functionalities
     features=FeaturesConfig(
-        enable_album_detection=True,  # Detección de álbumes por lógica estándar
-        enable_tag_suggestion=False,  # Sugerencia automática de tags (desactivado)
+        enable_album_detection=True,  # Album detection by standard logic
+        enable_tag_suggestion=False,  # Automatic tag suggestion (disabled)
         advanced_feature=AdvancedFeatureConfig(enabled=True, threshold=0.8),
-        enable_album_name_strip=True,  # Limpia espacios en nombres de álbumes
+        enable_album_name_strip=True,  # Clean spaces in album names
         album_detection_from_folders=AlbumDetectionFromFoldersConfig(
-            enabled=False,  # Crear álbumes a partir de carpetas (desactivado)
-            excluded_paths=[r"whatsapp"],  # Excluir carpetas por patrón
+            enabled=False,  # Create albums from folders (disabled)
+            excluded_paths=[r"whatsapp"],  # Exclude folders by pattern
         ),
         date_correction=DateCorrectionConfig(
-            enabled=False,  # Corrección de fechas por nombre de archivo/carpeta
-            extraction_timezone="UTC",  # Zona horaria para extracción de fechas
+            enabled=False,  # Date correction by file/folder name
+            extraction_timezone="UTC",  # Timezone for date extraction
         ),
-        enable_checkpoint_resume=False,  # Reanudar desde último asset procesado
+        enable_checkpoint_resume=False,  # Resume from last processed asset
     ),
 )
 
