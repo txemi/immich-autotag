@@ -1,7 +1,3 @@
-
-
-
-from immich_autotag.config.experimental_config.manager import load_experimental_config_at_startup
 from immich_autotag.entrypoint import run_main
 
 if __name__ == "__main__":
