@@ -91,7 +91,7 @@ class ModificationReport:
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
-        # Import local para evitar circularidad
+        # Local import to avoid circularity
         if album is not None:
             from immich_autotag.albums.album_response_wrapper import (
                 AlbumResponseWrapper,

@@ -1,17 +1,17 @@
-# Refactorización propuesta: `immich_autotag/assets/process_single_asset.py`
+# Proposed Refactoring: `immich_autotag/assets/process_single_asset.py`
 
 
-# Tabla de correspondencia: símbolo, fichero actual y destino
+# Mapping table: symbol, current file and destination
 
-| Clase/Método/Función                  | Fichero actual                                      | Fichero destino propuesto                                 | ¿Privado? |
+| Class/Method/Function                  | Current File                                      | Proposed Destination File                                 | Private? |
 |---------------------------------------|-----------------------------------------------------|----------------------------------------------------------|-----------|
-| DuplicateAlbumsInfo                   | assets/process_single_asset.py                      | assets/duplicates/_duplicate_albums_info.py               | Sí        |
-| get_album_from_duplicates             | assets/process_single_asset.py                      | assets/duplicates/_get_album_from_duplicates.py           | Sí        |
+| DuplicateAlbumsInfo                   | assets/process_single_asset.py                      | assets/duplicates/_duplicate_albums_info.py               | Yes        |
+| get_album_from_duplicates             | assets/process_single_asset.py                      | assets/duplicates/_get_album_from_duplicates.py           | Yes        |
 | AlbumDecision                         | assets/process_single_asset.py                      | assets/albums/album_decision.py                           | No        |
 | decide_album_for_asset                | assets/process_single_asset.py                      | assets/albums/decide_album_for_asset.py                   | No        |
 | analyze_and_assign_album              | assets/process_single_asset.py                      | assets/albums/analyze_and_assign_album.py                 | No        |
-| _process_album_detection              | assets/process_single_asset.py                      | assets/albums/_process_album_detection.py                 | Sí        |
-| analyze_duplicate_classification_tags  | assets/duplicate_tag_logic/analyze_duplicate_classification_tags.py | (sin cambio)                                 | No        |
+| _process_album_detection              | assets/process_single_asset.py                      | assets/albums/_process_album_detection.py                 | Yes        |
+| analyze_duplicate_classification_tags  | assets/duplicate_tag_logic/analyze_duplicate_classification_tags.py | (no change)                                 | No        |
 | process_single_asset                  | assets/process_single_asset.py                      | assets/process/process_single_asset.py                    | No        |
 | validate_and_update_asset_classification | assets/asset_validation.py                        | assets/validation/validate_and_update_asset_classification.py | No        |
 | log_execution_parameters              | assets/process_assets.py                            | assets/process/log_execution_parameters.py                | No        |
@@ -24,87 +24,87 @@
 | log_final_summary                     | assets/process_assets.py                            | assets/process/log_final_summary.py                        | No        |
 | process_assets                        | assets/process_assets.py                            | assets/process/process_assets.py                           | No        |
 
-# Plan de ejecución para el refactor progresivo de assets
+# Execution plan for progressive asset refactoring
 
-El objetivo es mover los símbolos uno a uno, probando tras cada movimiento para minimizar conflictos y asegurar que todo sigue funcionando. El orden propuesto prioriza dependencias y minimiza el riesgo de rotura.
+The goal is to move symbols one by one, testing after each move to minimize conflicts and ensure everything continues to work. The proposed order prioritizes dependencies and minimizes the risk of breakage.
 
-## Tabla de símbolos a refactorizar
+## Table of symbols to refactor
 
-| Orden | Símbolo/Fichero                       | Acción                                                                 |
+| Order | Symbol/File                       | Action                                                                 |
 |-------|----------------------------------------|------------------------------------------------------------------------|
-| 1     | DuplicateAlbumsInfo                    | Mover clase a _duplicate_albums_info.py y actualizar imports           |
-| 2     | get_album_from_duplicates              | Mover función a _get_album_from_duplicates.py y actualizar imports     |
-| 3     | AlbumDecision                          | Mover clase a album_decision.py y actualizar imports                   |
-| 4     | decide_album_for_asset                 | Mover función a decide_album_for_asset.py y actualizar imports         |
-| 5     | analyze_and_assign_album               | Mover función a analyze_and_assign_album.py y actualizar imports       |
-| 6     | _process_album_detection               | Mover función a _process_album_detection.py y actualizar imports       |
-| 7     | process_single_asset                   | Mover función a process_single_asset.py y actualizar imports           |
-| 8     | validate_and_update_asset_classification | Mover función a validate_and_update_asset_classification.py y actualizar imports |
-| 9     | log_execution_parameters               | Mover función a log_execution_parameters.py y actualizar imports       |
-| 10    | fetch_total_assets                     | Mover función a fetch_total_assets.py y actualizar imports             |
-| 11    | resolve_checkpoint                     | Mover función a resolve_checkpoint.py y actualizar imports             |
-| 12    | register_execution_parameters          | Mover función a register_execution_parameters.py y actualizar imports  |
-| 13    | perf_log                               | Mover función a perf_log.py y actualizar imports                       |
-| 14    | process_assets_threadpool              | Mover función a process_assets_threadpool.py y actualizar imports      |
-| 15    | process_assets_sequential              | Mover función a process_assets_sequential.py y actualizar imports      |
-| 16    | log_final_summary                      | Mover función a log_final_summary.py y actualizar imports              |
-| 17    | process_assets                         | Mover función a process_assets.py y actualizar imports                 |
+| 1     | DuplicateAlbumsInfo                    | Move class to _duplicate_albums_info.py and update imports           |
+| 2     | get_album_from_duplicates              | Move function to _get_album_from_duplicates.py and update imports     |
+| 3     | AlbumDecision                          | Move class to album_decision.py and update imports                   |
+| 4     | decide_album_for_asset                 | Move function to decide_album_for_asset.py and update imports         |
+| 5     | analyze_and_assign_album               | Move function to analyze_and_assign_album.py and update imports       |
+| 6     | _process_album_detection               | Move function to _process_album_detection.py and update imports       |
+| 7     | process_single_asset                   | Move function to process_single_asset.py and update imports           |
+| 8     | validate_and_update_asset_classification | Move function to validate_and_update_asset_classification.py and update imports |
+| 9     | log_execution_parameters               | Move function to log_execution_parameters.py and update imports       |
+| 10    | fetch_total_assets                     | Move function to fetch_total_assets.py and update imports             |
+| 11    | resolve_checkpoint                     | Move function to resolve_checkpoint.py and update imports             |
+| 12    | register_execution_parameters          | Move function to register_execution_parameters.py and update imports  |
+| 13    | perf_log                               | Move function to perf_log.py and update imports                       |
+| 14    | process_assets_threadpool              | Move function to process_assets_threadpool.py and update imports      |
+| 15    | process_assets_sequential              | Move function to process_assets_sequential.py and update imports      |
+| 16    | log_final_summary                      | Move function to log_final_summary.py and update imports              |
+| 17    | process_assets                         | Move function to process_assets.py and update imports                 |
 
-**Recomendaciones:**
-- Tras cada movimiento, ejecutar los tests o probar la funcionalidad relevante.
-- Actualizar los imports en todos los módulos afectados tras cada paso.
-- Si alguna función depende de otra que aún no se ha movido, mover primero la dependencia.
-- Mantener los ficheros originales hasta que todo esté probado, luego limpiar.
+**Recommendations:**
+- After each move, run the tests or test the relevant functionality.
+- Update imports in all affected modules after each step.
+- If a function depends on another that hasn't been moved yet, move the dependency first.
+- Keep the original files until everything is tested, then clean up.
 
-**Estrategia de orden:**
-- Primero mover las clases y funciones que no dependen de otras (privadas y utilitarias).
-- Después, mover las funciones que dependen de las anteriores.
-- Finalmente, mover las funciones principales (`process_single_asset`, `process_assets_sequential`, `process_assets_threadpool`, `process_assets`).
-- Probar tras cada paso para asegurar que la aplicación nunca deja de funcionar.
+**Order strategy:**
+- First move classes and functions that don't depend on others (private and utility).
+- Then, move functions that depend on the previous ones.
+- Finally, move the main functions (`process_single_asset`, `process_assets_sequential`, `process_assets_threadpool`, `process_assets`).
+- Test after each step to ensure the application never stops working.
 
-**Notas:**
-- Los ficheros marcados como "Sí" en la columna "¿Privado?" deberían llevar guion bajo inicial en el nombre del fichero y de la función/clase.
-- El resto forman parte de la API pública del paquete o subpaquete.
-- Puedes ajustar según el uso real en el proyecto.
+**Notes:**
+- Files marked as "Yes" in the "Private?" column should have an initial underscore in the file name and in the function/class name.
+- The rest are part of the public API of the package or subpackage.
+- You can adjust based on actual usage in the project.
 
-# Plan de ejecución para el refactor de process_single_asset.py
+# Execution plan for process_single_asset.py refactor
 
-El objetivo es mover los símbolos uno a uno, probando tras cada movimiento para minimizar conflictos y asegurar que todo sigue funcionando.
+The goal is to move symbols one by one, testing after each move to minimize conflicts and ensure everything continues to work.
 
-| Orden | Símbolo/Fichero                       | Acción                                                                 |
+| Order | Symbol/File                       | Action                                                                 |
 |-------|----------------------------------------|------------------------------------------------------------------------|
-| 1     | DuplicateAlbumsInfo                    | Mover clase a _duplicate_albums_info.py y actualizar imports           |
-| 2     | get_album_from_duplicates              | Mover función a _get_album_from_duplicates.py y actualizar imports     |
-| 3     | AlbumDecision                          | Mover clase a album_decision.py y actualizar imports                   |
-| 4     | decide_album_for_asset                 | Mover función a decide_album_for_asset.py y actualizar imports         |
-| 5     | analyze_and_assign_album               | Mover función a analyze_and_assign_album.py y actualizar imports       |
-| 6     | _process_album_detection               | Mover función a _process_album_detection.py y actualizar imports       |
-| 7     | process_single_asset                   | Mover función a process_single_asset.py y actualizar imports           |
-| 8     | validate_and_update_asset_classification | Mover función a validate_and_update_asset_classification.py y actualizar imports |
+| 1     | DuplicateAlbumsInfo                    | Move class to _duplicate_albums_info.py and update imports           |
+| 2     | get_album_from_duplicates              | Move function to _get_album_from_duplicates.py and update imports     |
+| 3     | AlbumDecision                          | Move class to album_decision.py and update imports                   |
+| 4     | decide_album_for_asset                 | Move function to decide_album_for_asset.py and update imports         |
+| 5     | analyze_and_assign_album               | Move function to analyze_and_assign_album.py and update imports       |
+| 6     | _process_album_detection               | Move function to _process_album_detection.py and update imports       |
+| 7     | process_single_asset                   | Move function to process_single_asset.py and update imports           |
+| 8     | validate_and_update_asset_classification | Move function to validate_and_update_asset_classification.py and update imports |
 
-**Recomendaciones:**
-- Tras cada movimiento, ejecutar los tests o probar la funcionalidad relevante.
-- Actualizar los imports en todos los módulos afectados tras cada paso.
-- Si alguna función depende de otra que aún no se ha movido, mover primero la dependencia.
-- Mantener los ficheros originales hasta que todo esté probado, luego limpiar.
+**Recommendations:**
+- After each move, run the tests or test the relevant functionality.
+- Update imports in all affected modules after each step.
+- If a function depends on another that hasn't been moved yet, move the dependency first.
+- Keep the original files until everything is tested, then clean up.
 
-¿Quieres que prepare el primer movimiento (DuplicateAlbumsInfo) y su actualización de imports?
+Do you want me to prepare the first move (DuplicateAlbumsInfo) and its import updates?
 
-# Refactorización complementaria: simplificación de process_assets
+# Complementary refactoring: simplification of process_assets
 
-El método `process_assets` en `assets/process_assets.py` es demasiado grande y difícil de mantener. Se propone dividirlo en sub-funciones con responsabilidades claras:
+The `process_assets` method in `assets/process_assets.py` is too large and difficult to maintain. It is proposed to divide it into sub-functions with clear responsibilities:
 
-| Sub-función sugerida                | Responsabilidad principal                                                                 |
+| Suggested sub-function                | Main responsibility                                                                 |
 |-------------------------------------|------------------------------------------------------------------------------------------|
-| `log_execution_parameters`          | Loguear los parámetros de ejecución y configuración                                      |
-| `fetch_total_assets`                | Consultar y registrar el total de assets disponibles                                     |
-| `resolve_checkpoint`                | Calcular `last_processed_id` y `skip_n` según el modo de reanudación                     |
-| `register_execution_parameters`     | Guardar en estadísticas: total_assets, max_assets, skip_n                                |
-| `process_assets_threadpool`         | Procesar assets usando ThreadPoolExecutor                                                |
-| `process_assets_sequential`         | Procesar assets secuencialmente (con checkpoint/resume y estadísticas)                   |
-| `log_final_summary`                 | Loguear resumen final, tiempo total, y flush de reportes                                 |
+| `log_execution_parameters`          | Log execution and configuration parameters                                      |
+| `fetch_total_assets`                | Query and record the total available assets                                     |
+| `resolve_checkpoint`                | Calculate `last_processed_id` and `skip_n` according to resume mode                     |
+| `register_execution_parameters`     | Save to statistics: total_assets, max_assets, skip_n                                |
+| `process_assets_threadpool`         | Process assets using ThreadPoolExecutor                                                |
+| `process_assets_sequential`         | Process assets sequentially (with checkpoint/resume and statistics)                   |
+| `log_final_summary`                 | Log final summary, total time, and flush reports                                 |
 
-### Estructura sugerida
+### Suggested structure
 
 ```python
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
@@ -119,10 +119,10 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     log_final_summary()
 ```
 
-- Cada sub-función puede estar definida como función interna o externa según convenga.
-- El cuerpo principal queda reducido a una secuencia clara de pasos.
-- El código de logging, estadísticas y control de errores se encapsula en funciones pequeñas y reutilizables.
+- Each sub-function can be defined as internal or external as appropriate.
+- The main body is reduced to a clear sequence of steps.
+- Logging, statistics, and error control code is encapsulated in small, reusable functions.
 
-**Recomendación:**
-- Este refactor es complementario al plan de modularización de process_single_asset.py y puede abordarse en paralelo.
-- Tras aplicar ambos, el flujo de procesamiento de assets será mucho más mantenible y escalable.
+**Recommendation:**
+- This refactor is complementary to the modularization plan for process_single_asset.py and can be addressed in parallel.
+- After applying both, the asset processing flow will be much more maintainable and scalable.
