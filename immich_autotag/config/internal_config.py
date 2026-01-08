@@ -4,7 +4,10 @@
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
 
-def _get_host_and_port():
+from typeguard import typechecked
+
+@typechecked
+def _get_host_and_port() -> tuple[str, int]:
 	# Get host and port from the experimental config singleton
 	from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
 	manager = ExperimentalConfigManager.get_instance()
@@ -12,7 +15,8 @@ def _get_host_and_port():
 		raise RuntimeError("ExperimentalConfigManager or server config not initialized")
 	return manager.config.server.host, manager.config.server.port
 
-def get_immich_web_base_url():
+@typechecked
+def get_immich_web_base_url() -> str:
 	host, port = _get_host_and_port()
 	return f"http://{host}:{port}"
 
