@@ -226,10 +226,10 @@ class StatisticsManager:
         config = manager.config
         try:
             return {
-                config.autotag_category_unknown,
-                config.autotag_category_conflict,
-                config.autotag_duplicate_asset_album_conflict,
-                config.autotag_duplicate_asset_classification_conflict,
+                config.auto_tags.category_unknown,
+                config.auto_tags.category_conflict,
+                config.auto_tags.duplicate_asset_album_conflict,
+                config.auto_tags.duplicate_asset_classification_conflict,
             }
         except AttributeError as e:
             raise RuntimeError(f"Missing expected autotag category in config: {e}")
