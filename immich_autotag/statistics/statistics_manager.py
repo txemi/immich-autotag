@@ -285,12 +285,14 @@ class StatisticsManager:
 
     @typechecked
     def get_effective_skip_n(self) -> tuple[str | None, int]:
-        from immich_autotag.config.user import ENABLE_CHECKPOINT_RESUME
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         OVERLAP = 100
-        if ENABLE_CHECKPOINT_RESUME:
+        config = ExperimentalConfigManager.get_instance().config
+        enable_checkpoint_resume = config.features.enable_checkpoint_resume if config and config.features else False
+        if enable_checkpoint_resume:
             stats = self.load_latest()
             if stats:
                 last_processed_id, skip_n = stats.last_processed_id, stats.count
