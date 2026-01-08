@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from immich_autotag.tags.modification_kind import ModificationKind
-# ...existing code...
 from threading import RLock
 
 import attr
@@ -67,29 +66,9 @@ class StatisticsManager:
 
     @typechecked
     def get_progress_description(self) -> str:
-        """
-        Returns a textual description of current progress, including percentage and time estimation if available.
-        """
-        if self._perf_tracker is None:
-            return "Progress not available: PerformanceTracker not initialized."
-        elapsed = None
-        import time
-
-        if hasattr(self._perf_tracker, "start_time"):
-            elapsed = time.time() - self._perf_tracker.start_time
-        else:
-            elapsed = 0.0
-        from immich_autotag.utils.perf.print_perf import format_perf_progress
-
-        return format_perf_progress(
-            count=self._current_stats.count if self._current_stats else 0,
-            elapsed=elapsed,
-            total_to_process=self._perf_tracker.total_to_process,
-            estimator=self._perf_tracker.estimator,
-            skip_n=self._perf_tracker.skip_n,
-            total_assets=self._perf_tracker.total_assets,
-            estimation_mode=self._perf_tracker.estimation_mode,
-        )
+        from immich_autotag.utils.formatting.progress_description import get_progress_description_from_perf_tracker
+        count = self._current_stats.count if self._current_stats else 0
+        return get_progress_description_from_perf_tracker(self._perf_tracker, current_count=count)
 
     @typechecked
     def _try_init_perf_tracker(self):
