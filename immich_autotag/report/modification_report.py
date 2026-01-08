@@ -118,8 +118,9 @@ class ModificationReport:
         # Calcular progreso usando StatisticsManager (sin try/except)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
-        stats = StatisticsManager.get_instance().get_stats()
-        progress_str = stats.format_progress()
+        stats_manager = StatisticsManager.get_instance()
+        stats = stats_manager.get_stats()
+        progress_str = stats_manager.get_progress_description()
 
         entry = ModificationEntry(
             datetime=datetime.datetime.now(),
