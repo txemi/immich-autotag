@@ -30,10 +30,9 @@ from typeguard import typechecked
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_autotag.classification.match_classification_result import \
     MatchClassificationResult
-from immich_autotag.config.user import (AUTOTAG_CATEGORY_CONFLICT,
-                                        AUTOTAG_CATEGORY_UNKNOWN,
-                                        ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
-                                        VERBOSE_LOGGING)
+from immich_autotag.config.user import (
+    ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
+    VERBOSE_LOGGING)
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
@@ -596,7 +595,8 @@ class AssetResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = AUTOTAG_CATEGORY_UNKNOWN
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+        tag_name = ExperimentalConfigManager.get_instance().config.autotag_category_unknown
         from immich_autotag.report.modification_report import \
             ModificationReport
 
@@ -640,7 +640,8 @@ class AssetResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = AUTOTAG_CATEGORY_CONFLICT
+        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+        tag_name = ExperimentalConfigManager.get_instance().config.autotag_category_conflict
         from immich_autotag.report.modification_report import \
             ModificationReport
 
