@@ -18,7 +18,7 @@ from immich_autotag.tags.list_tags import list_tags
 
 
 @typechecked
-def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
+def load_duplicates_collection(client:Client) -> DuplicateCollectionWrapper:
     """
     Loads the duplicate collection from the Immich server and prints timing information.
     """
@@ -27,20 +27,24 @@ def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
     import time
     from datetime import datetime, timedelta
 
-    from immich_autotag.utils.run_output_dir import get_run_output_dir
+    from immich_autotag.utils.run_output_dir import get_run_output_dir, get_previous_run_output_dir
 
-    cache_path = get_run_output_dir() / "duplicates_cache.pkl"
+    # Buscar la caché en el directorio de la ejecución previa
+    prev_dir = get_previous_run_output_dir()
     cache_fresh_hours = 3
     duplicates_collection = None
+    cache_path = None
+    if prev_dir is not None:
+        prev_cache = prev_dir / "duplicates_cache.pkl"
+        if prev_cache.exists():
+            mtime = datetime.fromtimestamp(os.path.getmtime(prev_cache))
+            if datetime.now() - mtime < timedelta(hours=cache_fresh_hours):
+                with open(prev_cache, "rb") as f:
+                    duplicates_collection = pickle.load(f)
+                cache_path = prev_cache
+                print(f"[INFO] Loaded duplicates from previous run cache ({prev_cache})")
 
-    # Try to load cache if it exists and is fresh
-    if cache_path.exists():
-        mtime = datetime.fromtimestamp(os.path.getmtime(cache_path))
-        if datetime.now() - mtime < timedelta(hours=cache_fresh_hours):
-            with open(cache_path, "rb") as f:
-                duplicates_collection = pickle.load(f)
-            print(f"[INFO] Loaded duplicates from cache ({cache_path})")
-
+    # Si no hay caché previa válida, usar la carpeta actual
     if duplicates_collection is None:
         print(
             "[INFO] Requesting duplicates from Immich server... (this may take a while)"
@@ -52,7 +56,8 @@ def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
         print(
             f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}"
         )
-        # Save to cache
+        # Guardar la caché en el directorio de la ejecución actual
+        cache_path = get_run_output_dir() / "duplicates_cache.pkl"
         with open(cache_path, "wb") as f:
             pickle.dump(duplicates_collection, f)
         print(f"[INFO] Duplicates cached to {cache_path}")
