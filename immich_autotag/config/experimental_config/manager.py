@@ -35,6 +35,10 @@ class ExperimentalConfigManager:
         global _instance
         if _instance is None:
             ExperimentalConfigManager()
+        # Auto-load config if not loaded
+        if _instance.config is None:
+            _instance.load_config_from_real_python() 
+            _instance.print_config()
         return _instance
 
     @typechecked

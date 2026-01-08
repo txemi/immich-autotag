@@ -70,7 +70,8 @@ def run_main():
     initialize_logging()
 
     # Get API_KEY from experimental config manager singleton
-    from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+    from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager, load_experimental_config_at_startup
+
     manager = ExperimentalConfigManager.get_instance()
     if not manager or not manager.config or not manager.config.server:
         raise RuntimeError("ExperimentalConfigManager or server config not initialized")
