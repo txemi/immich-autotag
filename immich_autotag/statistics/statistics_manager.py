@@ -325,50 +325,55 @@ class StatisticsManager:
         """
         album: AlbumResponseWrapper or None. Only used for album cases (e.g.: ASSIGN_ASSET_TO_ALBUM).
         """
-        # Local import to avoid UnboundLocalError and cyclic import
-
         from immich_autotag.tags.modification_kind import ModificationKind
-
         if kind == ModificationKind.ADD_TAG_TO_ASSET:
-            self.increment_tag_added(tag)
+            self._increment_tag_added(tag)
         elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
-            self.increment_tag_removed(tag)
+            self._increment_tag_removed(tag)
         elif kind == ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED:
-            # Count as error for this tag
-            tag_name = tag.name
-            stats = self.get_stats()
-            if tag_name not in stats.output_tag_counters:
-                from .run_statistics import OutputTagCounter
-
-                stats.output_tag_counters[tag_name] = OutputTagCounter()
-            stats.output_tag_counters[tag_name].errors += 1
-            self._save_to_file()
+            self._increment_tag_error(tag)
         elif kind == ModificationKind.UPDATE_ASSET_DATE:
-            # Count asset date updates globally
-            stats = self.get_stats()
-            stats.update_asset_date_count += 1
-            self._save_to_file()
+            self._increment_asset_date_update()
         elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
-            # Count asset assignments to albums using output_album_counters
-            if album is not None:
-                # Importar aquí para evitar NameError
-                from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-                assert isinstance(album, AlbumResponseWrapper)
-                album_name = album.album.album_name
-                stats = self.get_stats()
-                if album_name not in stats.output_album_counters:
-                    from .run_statistics import OutputAlbumCounter
-                    stats.output_album_counters[album_name] = OutputAlbumCounter()
-                stats.output_album_counters[album_name].assigned += 1
-                stats.output_album_counters[album_name].total += 1
-                self._save_to_file()
-            else:
-                # If album is not passed, counting is not possible
-                raise RuntimeError(
-                    "AlbumResponseWrapper is required to count ASSIGN_ASSET_TO_ALBUM"
-                )
+            self._increment_album_assignment(album)
         else:
-            # If needed, add other cases here
             raise NotImplementedError(
                 f"increment_tag_action not implemented for ModificationKind: {kind}"
+            )
+
+    def _increment_tag_added(self, tag: "TagWrapper") -> None:
+        self.increment_tag_added(tag)
+
+    def _increment_tag_removed(self, tag: "TagWrapper") -> None:
+        self.increment_tag_removed(tag)
+
+    def _increment_tag_error(self, tag: "TagWrapper") -> None:
+        tag_name = tag.name
+        stats = self.get_stats()
+        if tag_name not in stats.output_tag_counters:
+            from .run_statistics import OutputTagCounter
+            stats.output_tag_counters[tag_name] = OutputTagCounter()
+        stats.output_tag_counters[tag_name].errors += 1
+        self._save_to_file()
+
+    def _increment_asset_date_update(self) -> None:
+        stats = self.get_stats()
+        stats.update_asset_date_count += 1
+        self._save_to_file()
+
+    def _increment_album_assignment(self, album: "AlbumResponseWrapper | None") -> None:
+        if album is not None:
+            from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+            assert isinstance(album, AlbumResponseWrapper)
+            album_name = album.album.album_name
+            stats = self.get_stats()
+            if album_name not in stats.output_album_counters:
+                from .run_statistics import OutputAlbumCounter
+                stats.output_album_counters[album_name] = OutputAlbumCounter()
+            stats.output_album_counters[album_name].assigned += 1
+            stats.output_album_counters[album_name].total += 1
+            self._save_to_file()
+        else:
+            raise RuntimeError(
+                "AlbumResponseWrapper is required to count ASSIGN_ASSET_TO_ALBUM"
             )
