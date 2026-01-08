@@ -309,6 +309,7 @@ class StatisticsManager:
         elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
             # Contar asignaciones de assets a álbumes usando output_album_counters
             if album is not None:
+                assert isinstance(album, AlbumResponseWrapper)
                 album_name = album.album.name
                 stats = self.get_stats()
                 if album_name not in stats.output_album_counters:
