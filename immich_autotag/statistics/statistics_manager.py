@@ -356,12 +356,13 @@ class StatisticsManager:
         elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
             # Count asset assignments to albums using output_album_counters
             if album is not None:
+                # Importar aquí para evitar NameError
+                from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
                 assert isinstance(album, AlbumResponseWrapper)
                 album_name = album.album.name
                 stats = self.get_stats()
                 if album_name not in stats.output_album_counters:
                     from .run_statistics import OutputAlbumCounter
-
                     stats.output_album_counters[album_name] = OutputAlbumCounter()
                 stats.output_album_counters[album_name].assigned += 1
                 stats.output_album_counters[album_name].total += 1
