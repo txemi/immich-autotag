@@ -158,6 +158,8 @@ class StatisticsManager:
 
     def _save_to_file(self) -> None:
         if self._current_stats and self._current_file:
+            # Actualiza siempre progress_description antes de guardar
+            self._current_stats.progress_description = self.get_progress_description()
             with open(self._current_file, "w", encoding="utf-8") as f:
                 f.write(self._current_stats.to_yaml())
 
@@ -357,12 +359,5 @@ class StatisticsManager:
             raise NotImplementedError(
                 f"increment_tag_action no implementado para ModificationKind: {kind}"
             )
-    def update_progress_description(self) -> None:
-        """
-        Actualiza el campo progress_description en el objeto de estadísticas actual.
-        """
-        if self._current_stats is not None:
-            self._current_stats.progress_description = self.get_progress_description()
-            self._save_to_file()
 
         
