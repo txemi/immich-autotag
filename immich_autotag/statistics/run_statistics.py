@@ -79,15 +79,3 @@ class RunStatistics(BaseModel):
     def from_yaml(cls, data: str) -> "RunStatistics":
         return cls.model_validate(yaml.safe_load(data))
 
-    @typechecked
-    def format_progress(self) -> str:
-        """
-        Devuelve el progreso en formato 'actual/total (porcentaje%)'.
-        Si no hay total, devuelve solo el actual.
-        """
-        total = self.total_assets or self.max_assets
-        current = self.count
-        if total:
-            percent = (current / total) * 100
-            return f"{current}/{total} ({percent:.1f}%)"
-        return f"{current}"
