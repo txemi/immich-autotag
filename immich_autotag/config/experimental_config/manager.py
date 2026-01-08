@@ -1,3 +1,5 @@
+
+# Para cargar el checkpoint, importar desde immich_autotag.duplicates.checkpoint_loader
 """
 manager.py
 
@@ -32,6 +34,14 @@ class ExperimentalConfigManager:
         _instance = self
         # Cargar la configuración automáticamente al crear el singleton
         self.load_config_from_real_python()
+        # Inicializar skip_n con el contador de la última ejecución previa (con solapamiento)
+        try:
+            from immich_autotag.statistics.statistics_checkpoint import get_previous_skip_n
+            prev_skip_n = get_previous_skip_n()
+            if prev_skip_n is not None and hasattr(self.config, 'skip_n'):
+                self.config.skip_n = prev_skip_n
+        except Exception as e:
+            print(f"[WARN] No se pudo inicializar skip_n desde la estadística previa: {e}")
         self.print_config()
 
     @staticmethod
