@@ -30,8 +30,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_autotag.classification.match_classification_result import \
     MatchClassificationResult
-from immich_autotag.config.user import (
-                                        AUTOTAG_CATEGORY_CONFLICT,
+from immich_autotag.config.user import (AUTOTAG_CATEGORY_CONFLICT,
                                         AUTOTAG_CATEGORY_UNKNOWN,
                                         ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
                                         VERBOSE_LOGGING)
@@ -501,8 +500,10 @@ class AssetResponseWrapper:
         - Belongs to an album whose name matches ALBUM_PATTERN.
         """
         import re
+
         from immich_autotag.classification.classification_rule_set import \
             ClassificationRuleSet
+
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         asset_tags = self.get_tag_names()
         for tag in asset_tags:
@@ -568,8 +569,9 @@ class AssetResponseWrapper:
         # Tags
         from immich_autotag.classification.classification_rule_set import \
             ClassificationRuleSet
+
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        
+
         asset_tags = self.get_tag_names()
         for tag in asset_tags:
             if rule_set.has_tag(tag):
@@ -718,11 +720,15 @@ class AssetResponseWrapper:
         changes = []
 
         for conv in tag_conversions:
-            assert isinstance(conv, ConversionWrapper), f"Tag conversion must be a ConversionWrapper, got {type(conv)}"
+            assert isinstance(
+                conv, ConversionWrapper
+            ), f"Tag conversion must be a ConversionWrapper, got {type(conv)}"
             origin = conv.get_single_origin_tag()
             dest_tags = conv.destination_tags()
             if len(dest_tags) != 1:
-                raise NotImplementedError("Only single destination tag conversions are implemented.")
+                raise NotImplementedError(
+                    "Only single destination tag conversions are implemented."
+                )
             dest = dest_tags[0]
             has_origin = self.has_tag(origin)
             has_dest = self.has_tag(dest)
@@ -819,9 +825,14 @@ class AssetResponseWrapper:
         """
         from immich_autotag.classification.classification_rule_set import \
             ClassificationRuleSet
+
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        
-        return [tag.name for tag in self.asset.tags if rule_set.has_tag(tag.name)] if self.asset.tags else []
+
+        return (
+            [tag.name for tag in self.asset.tags if rule_set.has_tag(tag.name)]
+            if self.asset.tags
+            else []
+        )
 
     @typechecked
     def get_link(self) -> ParseResult:

@@ -8,7 +8,6 @@ from immich_autotag.assets.duplicates._duplicate_albums_info import \
     DuplicateAlbumsInfo
 
 
-
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumDecision:
     """
@@ -25,8 +24,11 @@ class AlbumDecision:
 
     def all_options(self) -> set[str]:
         opts = set(self.duplicates_info.all_album_names())
-        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
-        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
+        from immich_autotag.classification.classification_rule_set import \
+            ClassificationRuleSet
+        from immich_autotag.config.experimental_config.manager import \
+            ExperimentalConfigManager
+
         config_manager = ExperimentalConfigManager.get_instance()
         config = config_manager.config
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()

@@ -1,8 +1,11 @@
+from typing import List
 
 import attrs
-from typing import List
-from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+
+from immich_autotag.config.experimental_config.manager import \
+    ExperimentalConfigManager
 from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class TagConversions:

@@ -57,6 +57,7 @@ def process_single_asset(
 
     log("[DEBUG] Aplicando conversiones de tags...", level=LogLevel.FOCUS)
     from immich_autotag.conversions.tag_conversions import TagConversions
+
     tag_conversions = TagConversions.from_config_manager()
     asset_wrapper.apply_tag_conversions(tag_conversions)
 

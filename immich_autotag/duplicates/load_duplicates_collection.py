@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from immich_client import Client
 from typeguard import typechecked
-from immich_autotag.duplicates.duplicate_collection_wrapper import DuplicateCollectionWrapper
+
+from immich_autotag.duplicates.duplicate_collection_wrapper import \
+    DuplicateCollectionWrapper
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
-from immich_autotag.utils.run_output_dir import get_run_output_dir, get_previous_run_output_dir
+from immich_autotag.utils.run_output_dir import (get_previous_run_output_dir,
+                                                 get_run_output_dir)
+
 
 @typechecked
 def load_duplicates_collection(client: Client) -> DuplicateCollectionWrapper:
@@ -29,7 +33,9 @@ def load_duplicates_collection(client: Client) -> DuplicateCollectionWrapper:
                 with open(prev_cache, "rb") as f:
                     duplicates_collection = pickle.load(f)
                 cache_path = prev_cache
-                print(f"[INFO] Loaded duplicates from previous run cache ({prev_cache})")
+                print(
+                    f"[INFO] Loaded duplicates from previous run cache ({prev_cache})"
+                )
 
     # Si no hay caché previa válida, usar la carpeta actual
     if duplicates_collection is None:

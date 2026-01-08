@@ -3,10 +3,14 @@ statistics_checkpoint.py
 
 Utilidad para obtener el contador de la última ejecución previa (skip_n) a partir de run_statistics.yaml en el directorio de logs anterior.
 """
+
 from pathlib import Path
 from typing import Optional
+
 import yaml
+
 from immich_autotag.utils.run_output_dir import get_previous_run_output_dir
+
 
 def get_previous_skip_n(overlap: int = 100) -> Optional[int]:
     """

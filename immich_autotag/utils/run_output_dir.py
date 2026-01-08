@@ -4,12 +4,10 @@ from pathlib import Path
 
 from typeguard import typechecked
 
-
 _RUN_OUTPUT_DIR = None
 
 
 @typechecked
-
 def get_run_output_dir(base_dir="logs") -> Path:
     global _RUN_OUTPUT_DIR
     if _RUN_OUTPUT_DIR is None:
@@ -33,6 +31,7 @@ def get_previous_run_output_dir(base_dir="logs") -> Path | None:
     dirs = [d for d in base.iterdir() if d.is_dir() and "PID" in d.name]
     if not dirs:
         return None
+
     # Ordenar por fecha en el nombre (YYYYMMDD_HHMMSS)
     def extract_datetime(d):
         try:
@@ -40,6 +39,7 @@ def get_previous_run_output_dir(base_dir="logs") -> Path | None:
             return datetime.strptime(dt_str, "%Y%m%d_%H%M%S")
         except Exception:
             return datetime.min
+
     dirs.sort(key=extract_datetime, reverse=True)
     # Retornar la más reciente (que no sea la actual)
     current = get_run_output_dir(base_dir)

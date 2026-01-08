@@ -1,11 +1,14 @@
-
 import attrs
 from typeguard import typechecked
+
 from immich_autotag.config.experimental_config.models import Conversion
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class ConversionWrapper:
-    conversion: Conversion = attrs.field(validator=attrs.validators.instance_of(Conversion))
+    conversion: Conversion = attrs.field(
+        validator=attrs.validators.instance_of(Conversion)
+    )
 
     @typechecked
     def source_tags(self) -> list[str]:
