@@ -66,7 +66,7 @@ class StatisticsManager:
 
     @typechecked
     def get_progress_description(self) -> str:
-        from immich_autotag.utils.formatting.progress_description import get_progress_description_from_perf_tracker
+        from immich_autotag.utils.perf.progress_description import get_progress_description_from_perf_tracker
         count = self._current_stats.count if self._current_stats else 0
         return get_progress_description_from_perf_tracker(self._perf_tracker, current_count=count)
 
