@@ -4,3 +4,23 @@ version = "0.20.0"
 description = "Immich autotagging and album management system"
 authors = ["txemi"]
 license = "GPL-3.0-only"
+
+# ---- Formatting tools configuration ----
+# These sections ensure consistent formatting across all environments and contributors.
+# They follow widely accepted Python community standards and are compatible with most CI tools.
+
+[tool.black]
+# Maximum line length for code. Black's default is 88, which balances readability and line wrapping.
+line-length = 88
+# Target Python version for syntax and formatting rules. Adjust as needed for your project.
+target-version = ["py311"]
+# If false, Black will normalize string quotes and prefixes (recommended for consistency).
+skip-string-normalization = false
+
+[tool.isort]
+# Use the 'black' profile so isort and black agree on import formatting.
+profile = "black"
+# Match Black's line length for imports.
+line_length = 88
+# Skip these directories when sorting imports (virtualenv, generated, or external code).
+skip = [".venv", "immich-client", "scripts"]
