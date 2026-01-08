@@ -24,18 +24,11 @@ class AlbumDecision:
 
     def all_options(self) -> set[str]:
         opts = set(self.duplicates_info.all_album_names())
-        from immich_autotag.classification.classification_rule_set import \
-            ClassificationRuleSet
-        from immich_autotag.config.experimental_config.manager import \
-            ExperimentalConfigManager
-
-        config_manager = ExperimentalConfigManager.get_instance()
-        config = config_manager.config
+        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         opts = {a for a in opts if rule_set.matches_album(a)}
         if self.album_from_folder and rule_set.matches_album(self.album_from_folder):
             opts.add(self.album_from_folder)
-        # Only return albums that match the event pattern
         return opts
 
     def valid_albums(self) -> set[str]:

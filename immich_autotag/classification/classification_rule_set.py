@@ -82,11 +82,13 @@ class ClassificationRuleSet:
         ]
         return ClassificationRuleSet(rules=wrappers)
 
+
     @typechecked
-    def __matches_album(self, album_name: str) -> bool:
+    def matches_album(self, album_name: str) -> bool:
         """
-        Returns True if the album_name matches any album_name_patterns in the rules.
+        Returns True if the album_name matches any album_name_patterns in any rule.
         """
+        # Usar la lógica de MatchResultList para centralizar matches
         for wrapper in self.rules:
             if wrapper.matches_album(album_name):
                 return True
