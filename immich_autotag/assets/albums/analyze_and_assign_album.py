@@ -7,7 +7,6 @@ from immich_autotag.assets.albums._process_album_detection import \
 from immich_autotag.assets.albums.decide_album_for_asset import \
     decide_album_for_asset
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.config.user import VERBOSE_LOGGING
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
@@ -19,7 +18,6 @@ def analyze_and_assign_album(
     tag_mod_report: "ModificationReport",
     suppress_album_already_belongs_log: bool = True,
     fail_on_duplicate_album_conflict: bool = False,
-    verbose: bool = VERBOSE_LOGGING,
 ) -> None:
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
