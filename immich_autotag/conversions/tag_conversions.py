@@ -2,8 +2,7 @@ from typing import List
 
 import attrs
 
-from immich_autotag.config.experimental_config.manager import \
-    ExperimentalConfigManager
+from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
 from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
 
 

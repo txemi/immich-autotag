@@ -1,23 +1,26 @@
-
 # Importa la clase MatchResult desde el nuevo archivo
+from typing import TYPE_CHECKING, Dict, List
+
+import attrs
+from typeguard import typechecked
+
+from immich_autotag.classification.classification_rule_wrapper import (
+    ClassificationRuleWrapper,
+)
 from immich_autotag.classification.match_result import MatchResult
 from immich_autotag.classification.match_result_list import MatchResultList
+
 # Example usage:
 # rule_set = get_rule_set_from_config_manager()
 # if rule_set.has_tag("autotag_input_meme"):
 #     print("Tag exists in rules!")
 
-from typing import Dict, List
-from typing import TYPE_CHECKING
 
-import attrs
-from typeguard import typechecked
 
-from immich_autotag.classification.classification_rule_wrapper import \
-    ClassificationRuleWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ClassificationRuleSet:
@@ -64,8 +67,9 @@ class ClassificationRuleSet:
         """
         Utility to get a ClassificationRuleSet from the experimental config manager singleton.
         """
-        from immich_autotag.config.experimental_config.manager import \
-            ExperimentalConfigManager
+        from immich_autotag.config.experimental_config.manager import (
+            ExperimentalConfigManager,
+        )
 
         manager = ExperimentalConfigManager.get_instance()
         if (
@@ -82,7 +86,6 @@ class ClassificationRuleSet:
         ]
         return ClassificationRuleSet(rules=wrappers)
 
-
     @typechecked
     def matches_album(self, album_name: str) -> bool:
         """
@@ -95,9 +98,7 @@ class ClassificationRuleSet:
         return False
 
     @typechecked
-    def matching_rules(
-        self, asset_wrapper: "AssetResponseWrapper"
-    ) -> MatchResultList:
+    def matching_rules(self, asset_wrapper: "AssetResponseWrapper") -> MatchResultList:
         """
         Devuelve un MatchResultList: cada uno indica la regla y el elemento (tag o álbum) que ha macheado.
         """

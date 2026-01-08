@@ -35,8 +35,9 @@ class ExperimentalConfigManager:
         self.load_config_from_real_python()
         # Inicializar skip_n con el contador de la última ejecución previa (con solapamiento)
         try:
-            from immich_autotag.statistics.statistics_checkpoint import \
-                get_previous_skip_n
+            from immich_autotag.statistics.statistics_checkpoint import (
+                get_previous_skip_n,
+            )
 
             prev_skip_n = get_previous_skip_n()
             if prev_skip_n is not None and hasattr(self.config, "skip_n"):

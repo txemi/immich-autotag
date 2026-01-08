@@ -1,9 +1,11 @@
-from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Optional, List
+from pathlib import Path
+from typing import List, Optional
+
 from typeguard import typechecked
 
 from immich_autotag.statistics.run_statistics import RunStatistics
+
 
 @typechecked
 def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[Path]:
@@ -25,8 +27,11 @@ def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[
     recent_dirs.sort(reverse=True)
     return [d for _, d in recent_dirs]
 
+
 @typechecked
-def get_max_skip_n_from_recent(logs_dir: Path, max_age_hours: int = 3, overlap: int = 100) -> Optional[int]:
+def get_max_skip_n_from_recent(
+    logs_dir: Path, max_age_hours: int = 3, overlap: int = 100
+) -> Optional[int]:
     """
     Busca todos los run_statistics.yaml de las últimas max_age_hours horas y devuelve el máximo count menos overlap.
     """

@@ -6,7 +6,9 @@ if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 from ._classification_tag_comparison_result import ClassificationTagComparisonResult
-from ._classification_tag_comparison_result_obj import ClassificationTagComparisonResultObj
+from ._classification_tag_comparison_result_obj import (
+    ClassificationTagComparisonResultObj,
+)
 
 
 @typechecked

@@ -4,7 +4,6 @@ from typeguard import typechecked
 from immich_autotag.config.experimental_config.models import ClassificationRule
 
 
-
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class ClassificationRuleWrapper:
     rule: ClassificationRule = attrs.field(

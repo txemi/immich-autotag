@@ -1,7 +1,9 @@
-from pathlib import Path
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Optional
+
 from typeguard import typechecked
+
 
 @typechecked
 def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional[Path]:

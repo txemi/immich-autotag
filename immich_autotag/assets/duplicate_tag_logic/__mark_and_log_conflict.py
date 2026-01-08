@@ -3,8 +3,7 @@ from typing import TYPE_CHECKING
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import \
-        AssetResponseWrapper
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @typechecked
@@ -12,7 +11,9 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
     """
     Marks and logs the classification tag conflict between duplicates.
     """
-    from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+    from immich_autotag.config.experimental_config.manager import (
+        ExperimentalConfigManager,
+    )
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 

@@ -1,8 +1,13 @@
 import pickle
 from pathlib import Path
 from typing import Optional
+
 from typeguard import typechecked
-from immich_autotag.duplicates.duplicate_collection_wrapper import DuplicateCollectionWrapper
+
+from immich_autotag.duplicates.duplicate_collection_wrapper import (
+    DuplicateCollectionWrapper,
+)
+
 
 @typechecked
 def load_cache(cache_path: Path) -> Optional[DuplicateCollectionWrapper]:

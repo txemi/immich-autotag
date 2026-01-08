@@ -3,18 +3,20 @@ from __future__ import annotations
 from immich_client import Client
 from typeguard import typechecked
 
-from immich_autotag.albums.album_collection_wrapper import \
-    AlbumCollectionWrapper
+from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.config.internal_config import get_immich_base_url
+
 # from immich_autotag.config.user import API_KEY
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.duplicates.duplicate_collection_wrapper import \
-    DuplicateCollectionWrapper
+from immich_autotag.duplicates.duplicate_collection_wrapper import (
+    DuplicateCollectionWrapper,
+)
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
-from immich_autotag.duplicates.load_duplicates_collection import \
-    load_duplicates_collection
+from immich_autotag.duplicates.load_duplicates_collection import (
+    load_duplicates_collection,
+)
 from immich_autotag.logging.init import initialize_logging
 from immich_autotag.tags.list_tags import list_tags
 
@@ -32,7 +34,9 @@ def run_main():
 
     # Get API_KEY from experimental config manager singleton
     from immich_autotag.config.experimental_config.manager import (
-        ExperimentalConfigManager, load_experimental_config_at_startup)
+        ExperimentalConfigManager,
+        load_experimental_config_at_startup,
+    )
 
     manager = ExperimentalConfigManager.get_instance()
     if not manager or not manager.config or not manager.config.server:
@@ -44,7 +48,6 @@ def run_main():
         raise_on_unexpected_status=True,
     )
     import re
-
 
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client(client)
@@ -59,7 +62,7 @@ def run_main():
         asset_manager=asset_manager,
     )
     # Asset filtering logic
-    filter_asset_links = manager.config.filter_out_asset_links 
+    filter_asset_links = manager.config.filter_out_asset_links
     if filter_asset_links and len(filter_asset_links) > 0:
         asset_ids = []
         # Accept any URL containing a UUID (v4) as asset ID, regardless of path
@@ -95,12 +98,10 @@ def run_main():
         )
         from threading import Lock
 
-        from immich_autotag.assets.process_single_asset import \
-            process_single_asset
+        from immich_autotag.assets.process_single_asset import process_single_asset
 
         lock = Lock()
-        from immich_autotag.report.modification_report import \
-            ModificationReport
+        from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         for wrapper in wrappers:

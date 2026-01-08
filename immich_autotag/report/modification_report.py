@@ -93,8 +93,9 @@ class ModificationReport:
     ) -> None:
         # Local import to avoid circularity
         if album is not None:
-            from immich_autotag.albums.album_response_wrapper import \
-                AlbumResponseWrapper
+            from immich_autotag.albums.album_response_wrapper import (
+                AlbumResponseWrapper,
+            )
 
             assert isinstance(album, AlbumResponseWrapper)
         """
@@ -115,8 +116,7 @@ class ModificationReport:
             user_instance = UserResponseWrapper.from_context(asset_wrapper.context)
 
         # Calcular progreso usando StatisticsManager (sin try/except)
-        from immich_autotag.statistics.statistics_manager import \
-            StatisticsManager
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         stats_manager = StatisticsManager.get_instance()
         stats = stats_manager.get_stats()
@@ -136,8 +136,7 @@ class ModificationReport:
         )
         self.modifications.append(entry)
         # Centralized statistics update for tag actions (now encapsulated in StatisticsManager)
-        from immich_autotag.statistics.statistics_manager import \
-            StatisticsManager
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_tag_action(
             tag=tag, kind=kind, album=album
@@ -249,8 +248,7 @@ class ModificationReport:
         """
         Build a link for the modification entry based on kind and wrappers.
         """
-        from immich_autotag.utils.get_immich_album_url import \
-            get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         # If it's an asset, use the wrapper method
         if (

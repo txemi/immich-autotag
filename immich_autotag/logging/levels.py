@@ -1,7 +1,6 @@
 from enum import Enum, auto
 
 
-
 class LogLevel(Enum):
     ERROR = 40  # Error events that should be logged at a high level
     IMPORTANT = 30  # Important events, warnings, conflicts

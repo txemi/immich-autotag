@@ -1,37 +1,50 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+import attr
+from typeguard import typechecked
+
 from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.statistics._find_max_skip_n_recent import get_max_skip_n_from_recent
-import attr
-from typeguard import typechecked
 
-
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .statistics_manager import StatisticsManager
+
 
 @typechecked
 @attr.s(auto_attribs=True, kw_only=True)
 class CheckpointManager:
-    stats_manager: 'StatisticsManager' = attr.ib(validator=attr.validators.instance_of(object))
+    stats_manager: "StatisticsManager" = attr.ib(
+        validator=attr.validators.instance_of(object)
+    )
     OVERLAP: int = attr.ib(default=100, init=False)
 
     @stats_manager.validator
     def _validate_stats_manager(self, attribute, value):
         # Importación local para evitar ciclos
         from .statistics_manager import StatisticsManager
+
         if not isinstance(value, StatisticsManager):
-            raise TypeError(f"stats_manager must be a StatisticsManager, got {type(value)}")
+            raise TypeError(
+                f"stats_manager must be a StatisticsManager, got {type(value)}"
+            )
 
     @typechecked
     def get_effective_skip_n(self) -> tuple[str | None, int]:
         config = ExperimentalConfigManager.get_instance().config
-        enable_checkpoint_resume = config.features.enable_checkpoint_resume if config and config.features else False
+        enable_checkpoint_resume = (
+            config.features.enable_checkpoint_resume
+            if config and config.features
+            else False
+        )
         stats_dir = self.stats_manager.stats_dir
         if enable_checkpoint_resume:
             logs_dir = stats_dir.parent if stats_dir else Path("logs")
-            max_skip_n = get_max_skip_n_from_recent(logs_dir, max_age_hours=3, overlap=self.OVERLAP)
+            max_skip_n = get_max_skip_n_from_recent(
+                logs_dir, max_age_hours=3, overlap=self.OVERLAP
+            )
             if max_skip_n is not None:
                 skip_n = max_skip_n
                 last_processed_id = None

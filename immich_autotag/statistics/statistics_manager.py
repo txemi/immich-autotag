@@ -8,8 +8,7 @@ from typing import TYPE_CHECKING
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import \
-        AlbumResponseWrapper
+    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
 """
 statistics_manager.py
@@ -30,6 +29,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from immich_autotag.tags.modification_kind import ModificationKind
+
 from threading import RLock
 
 import attr
@@ -37,8 +37,8 @@ import attr
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
-from .run_statistics import RunStatistics
 from .checkpoint_manager import CheckpointManager
+from .run_statistics import RunStatistics
 from .tag_stats_manager import TagStatsManager
 
 # Module singleton
@@ -71,9 +71,14 @@ class StatisticsManager:
 
     @typechecked
     def get_progress_description(self) -> str:
-        from immich_autotag.utils.perf.progress_description import get_progress_description_from_perf_tracker
+        from immich_autotag.utils.perf.progress_description import (
+            get_progress_description_from_perf_tracker,
+        )
+
         count = self._current_stats.count if self._current_stats else 0
-        return get_progress_description_from_perf_tracker(self._perf_tracker, current_count=count)
+        return get_progress_description_from_perf_tracker(
+            self._perf_tracker, current_count=count
+        )
 
     @typechecked
     def _try_init_perf_tracker(self):
@@ -83,10 +88,10 @@ class StatisticsManager:
         if total is not None:
             import time
 
-            from immich_autotag.utils.perf.estimator import \
-                AdaptiveTimeEstimator
-            from immich_autotag.utils.perf.time_estimation_mode import \
-                TimeEstimationMode
+            from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
+            from immich_autotag.utils.perf.time_estimation_mode import (
+                TimeEstimationMode,
+            )
 
             self._perf_tracker = PerformanceTracker(
                 start_time=time.time(),
@@ -205,7 +210,10 @@ class StatisticsManager:
 
     @property
     def RELEVANT_TAGS(self):
-        from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+        from immich_autotag.config.experimental_config.manager import (
+            ExperimentalConfigManager,
+        )
+
         manager = ExperimentalConfigManager.get_instance()
         config = manager.config
         try:

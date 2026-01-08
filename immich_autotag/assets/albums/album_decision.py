@@ -4,8 +4,7 @@ import re
 
 import attrs
 
-from immich_autotag.assets.duplicates._duplicate_albums_info import \
-    DuplicateAlbumsInfo
+from immich_autotag.assets.duplicates._duplicate_albums_info import DuplicateAlbumsInfo
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -24,7 +23,10 @@ class AlbumDecision:
 
     def all_options(self) -> set[str]:
         opts = set(self.duplicates_info.all_album_names())
-        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
+        )
+
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         opts = {a for a in opts if rule_set.matches_album(a)}
         if self.album_from_folder and rule_set.matches_album(self.album_from_folder):
