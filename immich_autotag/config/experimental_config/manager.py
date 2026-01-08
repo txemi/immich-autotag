@@ -54,12 +54,15 @@ class ExperimentalConfigManager:
         self.config = user_real_config
 
     @typechecked
-    def dump_to_yaml(self, path: str = "user_config_dump.yaml"):
-        """Vuelca la configuración actual a un fichero YAML."""
+    def dump_to_yaml(self, path: str = None):
+        """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
         if self.config is None:
             raise RuntimeError("No hay configuración cargada para volcar a YAML.")
         import yaml
-
+        from immich_autotag.utils.run_output_dir import get_run_output_dir
+        if path is None:
+            out_dir = get_run_output_dir()
+            path = out_dir / "user_config_dump.yaml"
         with open(path, "w", encoding="utf-8") as f:
             yaml.safe_dump(
                 self.config.model_dump(), f, allow_unicode=True, sort_keys=False
