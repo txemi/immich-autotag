@@ -564,8 +564,10 @@ class AssetResponseWrapper:
         tags_matched = []
         albums_matched = []
         # Tags
-        from immich_autotag.config.experimental_config.manager import get_rule_set_from_config_manager
-        rule_set = get_rule_set_from_config_manager()
+        from immich_autotag.classification.classification_rule_set import \
+            ClassificationRuleSet
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        
         asset_tags = self.get_tag_names()
         for tag in asset_tags:
             if rule_set.has_tag(tag):
@@ -809,8 +811,10 @@ class AssetResponseWrapper:
         Returns the classification tags for this asset, using the ClassificationRuleSet from config manager.
         Only tags configured as relevant for classification in the config are considered.
         """
-        from immich_autotag.config.experimental_config.manager import get_rule_set_from_config_manager
-        rule_set = get_rule_set_from_config_manager()
+        from immich_autotag.classification.classification_rule_set import \
+            ClassificationRuleSet
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        
         return [tag.name for tag in self.asset.tags if rule_set.has_tag(tag.name)] if self.asset.tags else []
 
     @typechecked
