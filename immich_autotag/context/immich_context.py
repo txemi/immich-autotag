@@ -6,11 +6,11 @@ import attrs
 from immich_client import Client
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_collection_wrapper import \
-        AlbumCollectionWrapper
+    from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
     from immich_autotag.assets.asset_manager import AssetManager
-    from immich_autotag.duplicates.duplicate_collection_wrapper import \
-        DuplicateCollectionWrapper
+    from immich_autotag.duplicates.duplicate_collection_wrapper import (
+        DuplicateCollectionWrapper,
+    )
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
 

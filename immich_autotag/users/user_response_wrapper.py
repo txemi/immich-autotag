@@ -18,8 +18,9 @@ class UserResponseWrapper:
         if value is None:
             raise ValueError("user cannot be None")
         try:
-            from immich_client.models.user_admin_response_dto import \
-                UserAdminResponseDto
+            from immich_client.models.user_admin_response_dto import (
+                UserAdminResponseDto,
+            )
             from immich_client.models.user_response_dto import UserResponseDto
         except ImportError:
             raise TypeError(

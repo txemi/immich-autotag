@@ -6,8 +6,7 @@ from uuid import UUID
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.duplicates._duplicate_albums_info import \
-    DuplicateAlbumsInfo
+from immich_autotag.assets.duplicates._duplicate_albums_info import DuplicateAlbumsInfo
 
 
 @typechecked

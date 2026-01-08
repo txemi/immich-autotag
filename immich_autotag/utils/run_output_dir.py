@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 from datetime import datetime
@@ -6,6 +5,7 @@ from datetime import datetime
 from typeguard import typechecked
 
 _RUN_OUTPUT_DIR = None
+
 
 @typechecked
 def get_run_output_dir(base_dir="logs") -> Path:

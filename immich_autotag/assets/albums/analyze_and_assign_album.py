@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.assets.albums._process_album_detection import \
-    _process_album_detection
-from immich_autotag.assets.albums.decide_album_for_asset import \
-    decide_album_for_asset
+from immich_autotag.assets.albums._process_album_detection import (
+    _process_album_detection,
+)
+from immich_autotag.assets.albums.decide_album_for_asset import decide_album_for_asset
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.config.user import VERBOSE_LOGGING
 from immich_autotag.logging.levels import LogLevel

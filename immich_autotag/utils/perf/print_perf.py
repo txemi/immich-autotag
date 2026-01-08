@@ -9,7 +9,7 @@ from .estimator import AdaptiveTimeEstimator
 
 
 @typechecked
-def print_perf(
+def format_perf_progress(
     count: int,
     elapsed: float,
     total_to_process: Optional[int] = None,
@@ -17,14 +17,7 @@ def print_perf(
     skip_n: Optional[int] = None,
     total_assets: Optional[int] = None,
     estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR,
-) -> None:
-    """
-    Print performance statistics for asset processing.
-    Args:
-        count (int): Number of assets processed.
-        elapsed (float): Elapsed time in seconds.
-        total_assets (int, optional): Total number of assets to process.
-    """
+) -> str:
     avg = elapsed / count if count else 0
     if total_to_process and count > 0:
         remaining = total_to_process - count
@@ -39,7 +32,6 @@ def print_perf(
         else:
             est_total = avg * total_to_process
             est_remaining = est_total - elapsed
-        # Adjust estimates so est_total >= elapsed and est_remaining >= 0
         est_total, est_remaining = adjust_estimates(elapsed, est_total, est_remaining)
         percent_rel = (count / total_to_process) * 100
         percent_abs = None
@@ -56,12 +48,41 @@ def print_perf(
             else:
                 return f"{minutes:.1f} min"
 
-        msg = f"[PERF] {count}/{total_to_process} ({percent_rel:.1f}% relativo"
+        msg = f"{count}/{total_to_process} ({percent_rel:.1f}% relativo"
         if percent_abs is not None:
             msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absoluto)"
-        msg += f") assets processed. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
-        print(msg)
+        msg += f") procesados. Media: {avg:.3f} s. Transcurrido: {fmt_time(elapsed/60)}. Est. restante: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
+        return msg
     else:
-        print(
-            f"[PERF] Processed {count} assets. Average per asset: {avg:.3f} s. Elapsed: {elapsed:.1f} s"
+        return f"Procesados {count} elementos. Media por elemento: {avg:.3f} s. Transcurrido: {elapsed:.1f} s"
+
+
+@typechecked
+def print_perf(
+    count: int,
+    elapsed: float,
+    total_to_process: Optional[int] = None,
+    estimator: Optional[AdaptiveTimeEstimator] = None,
+    skip_n: Optional[int] = None,
+    total_assets: Optional[int] = None,
+    estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR,
+) -> None:
+    """
+    Print performance statistics for asset processing.
+    Args:
+        count (int): Number of assets processed.
+        elapsed (float): Elapsed time in seconds.
+        total_assets (int, optional): Total number of assets to process.
+    """
+    print(
+        "[PERF] "
+        + format_perf_progress(
+            count=count,
+            elapsed=elapsed,
+            total_to_process=total_to_process,
+            estimator=estimator,
+            skip_n=skip_n,
+            total_assets=total_assets,
+            estimation_mode=estimation_mode,
         )
+    )

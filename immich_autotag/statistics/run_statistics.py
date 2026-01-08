@@ -12,13 +12,13 @@ import yaml
 from pydantic import BaseModel, Field
 
 
-
 # Tipado estricto para los contadores de etiquetas de salida
 class OutputTagCounter(BaseModel):
     total: int = 0
     added: int = 0
     removed: int = 0
     errors: int = 0  # New: count errors for this tag
+
 
 # Tipado estricto para los contadores de álbumes de salida
 class OutputAlbumCounter(BaseModel):
@@ -28,8 +28,8 @@ class OutputAlbumCounter(BaseModel):
     errors: int = 0
 
 
-
 class RunStatistics(BaseModel):
+
     update_asset_date_count: int = Field(0, description="Number of asset date updates")
 
     total_assets: Optional[int] = Field(
@@ -60,6 +60,10 @@ class RunStatistics(BaseModel):
     output_album_counters: Dict[str, OutputAlbumCounter] = Field(
         default_factory=dict, description="Contadores por álbum de salida"
     )
+    progress_description: Optional[str] = Field(
+        None,
+        description="Descripción textual del progreso actual (porcentaje, tiempo estimado, etc.)",
+    )
 
     @typechecked
     def to_yaml(self) -> str:
@@ -74,15 +78,4 @@ class RunStatistics(BaseModel):
     @typechecked
     def from_yaml(cls, data: str) -> "RunStatistics":
         return cls.model_validate(yaml.safe_load(data))
-    @typechecked
-    def format_progress(self) -> str:
-        """
-        Devuelve el progreso en formato 'actual/total (porcentaje%)'.
-        Si no hay total, devuelve solo el actual.
-        """
-        total = self.total_assets or self.max_assets
-        current = self.count
-        if total:
-            percent = (current / total) * 100
-            return f"{current}/{total} ({percent:.1f}%)"
-        return f"{current}"
+
