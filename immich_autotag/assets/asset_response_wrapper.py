@@ -574,7 +574,6 @@ class AssetResponseWrapper:
     def ensure_autotag_category_unknown(
         self,
         classified: bool,
-        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
@@ -620,7 +619,6 @@ class AssetResponseWrapper:
         self,
         conflict: bool,
         user: UserResponseWrapper | None = None,
-        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
@@ -839,7 +837,6 @@ class AssetResponseWrapper:
         # tag_mod_report parameter removed
         user: str | None = None,
         duplicate_id: str | None = None,
-        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
