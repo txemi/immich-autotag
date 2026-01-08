@@ -1,3 +1,4 @@
+
 import attrs
 from typeguard import typechecked
 from immich_autotag.config.experimental_config.models import Conversion
@@ -23,3 +24,12 @@ class ConversionWrapper:
         return self.conversion.destination.album_name_patterns or []
 
     # Puedes añadir más métodos utilitarios según necesidades
+    @typechecked
+    def get_single_origin_tag(self) -> str:
+        tags = self.source_tags()
+        album_patterns = self.source_album_patterns()
+        if len(tags) == 1 and not album_patterns:
+            return tags[0]
+        raise NotImplementedError(
+            "Only single-tag origin conversions without album origin are implemented."
+        )

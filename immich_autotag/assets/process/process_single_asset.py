@@ -11,7 +11,7 @@ from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_
     analyze_duplicate_classification_tags
 from immich_autotag.assets.validation.validate_and_update_asset_classification import \
     validate_and_update_asset_classification
-from immich_autotag.config.user import ENABLE_DATE_CORRECTION, TAG_CONVERSIONS
+from immich_autotag.config.user import ENABLE_DATE_CORRECTION
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
@@ -56,7 +56,9 @@ def process_single_asset(
     log(f"Procesando asset: {asset_url} | Nombre: {asset_name}", level=LogLevel.FOCUS)
 
     log("[DEBUG] Aplicando conversiones de tags...", level=LogLevel.FOCUS)
-    asset_wrapper.apply_tag_conversions(TAG_CONVERSIONS)
+    from immich_autotag.conversions.tag_conversions import TagConversions
+    tag_conversions = TagConversions.from_config_manager()
+    asset_wrapper.apply_tag_conversions(tag_conversions)
 
     if ENABLE_DATE_CORRECTION:
         log("[DEBUG] Corrigiendo fecha del asset...", level=LogLevel.FOCUS)

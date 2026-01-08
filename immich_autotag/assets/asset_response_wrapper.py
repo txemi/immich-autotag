@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List
 
 from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
+from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
@@ -701,7 +702,7 @@ class AssetResponseWrapper:
     @typechecked
     def apply_tag_conversions(
         self,
-        tag_conversions: list,
+        tag_conversions: TagConversions,
     ) -> None:
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
@@ -717,9 +718,12 @@ class AssetResponseWrapper:
         changes = []
 
         for conv in tag_conversions:
-            assert isinstance(conv, ConversionWrapper), f"Tag conversion must be a dict, got {type(conv)}"
-            origin = conv["origin"]
-            dest = conv["destination"]
+            assert isinstance(conv, ConversionWrapper), f"Tag conversion must be a ConversionWrapper, got {type(conv)}"
+            origin = conv.get_single_origin_tag()
+            dest_tags = conv.destination_tags()
+            if len(dest_tags) != 1:
+                raise NotImplementedError("Only single destination tag conversions are implemented.")
+            dest = dest_tags[0]
             has_origin = self.has_tag(origin)
             has_dest = self.has_tag(dest)
             if has_origin and not has_dest:
