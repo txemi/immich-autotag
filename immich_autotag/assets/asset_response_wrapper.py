@@ -628,7 +628,7 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
-        tag_name = ExperimentalConfigManager.get_instance().config.autotag_category_conflict
+        tag_name = ExperimentalConfigManager.get_instance().config.auto_tags.category_conflict
         from immich_autotag.report.modification_report import \
             ModificationReport
 
