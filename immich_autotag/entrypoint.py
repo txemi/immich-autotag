@@ -3,15 +3,15 @@ from __future__ import annotations
 from immich_client import Client
 from typeguard import typechecked
 
-from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.album_collection_wrapper import \
+    AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.config.internal_config import get_immich_base_url
-#from immich_autotag.config.user import API_KEY
+# from immich_autotag.config.user import API_KEY
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.duplicates.duplicate_collection_wrapper import (
-    DuplicateCollectionWrapper,
-)
+from immich_autotag.duplicates.duplicate_collection_wrapper import \
+    DuplicateCollectionWrapper
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
 from immich_autotag.logging.init import initialize_logging
 from immich_autotag.tags.list_tags import list_tags
@@ -22,10 +22,11 @@ def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
     """
     Loads the duplicate collection from the Immich server and prints timing information.
     """
-    import time
     import os
     import pickle
+    import time
     from datetime import datetime, timedelta
+
     from immich_autotag.utils.run_output_dir import get_run_output_dir
 
     cache_path = get_run_output_dir() / "duplicates_cache.pkl"
@@ -41,7 +42,9 @@ def load_duplicates_collection(client) -> DuplicateCollectionWrapper:
             print(f"[INFO] Loaded duplicates from cache ({cache_path})")
 
     if duplicates_collection is None:
-        print("[INFO] Requesting duplicates from Immich server... (this may take a while)")
+        print(
+            "[INFO] Requesting duplicates from Immich server... (this may take a while)"
+        )
         t0 = time.perf_counter()
         duplicates_loader = DuplicatesLoader(client=client)
         duplicates_collection = duplicates_loader.load()
@@ -70,7 +73,8 @@ def run_main():
     initialize_logging()
 
     # Get API_KEY from experimental config manager singleton
-    from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager, load_experimental_config_at_startup
+    from immich_autotag.config.experimental_config.manager import (
+        ExperimentalConfigManager, load_experimental_config_at_startup)
 
     manager = ExperimentalConfigManager.get_instance()
     if not manager or not manager.config or not manager.config.server:
@@ -137,10 +141,12 @@ def run_main():
         )
         from threading import Lock
 
-        from immich_autotag.assets.process_single_asset import process_single_asset
+        from immich_autotag.assets.process_single_asset import \
+            process_single_asset
 
         lock = Lock()
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         for wrapper in wrappers:

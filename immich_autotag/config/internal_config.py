@@ -6,23 +6,29 @@
 
 from typeguard import typechecked
 
+
 @typechecked
 def _get_host_and_port() -> tuple[str, int]:
-	# Get host and port from the experimental config singleton
-	from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
-	manager = ExperimentalConfigManager.get_instance()
-	if not manager or not manager.config or not manager.config.server:
-		raise RuntimeError("ExperimentalConfigManager or server config not initialized")
-	return manager.config.server.host, manager.config.server.port
+    # Get host and port from the experimental config singleton
+    from immich_autotag.config.experimental_config.manager import \
+        ExperimentalConfigManager
+
+    manager = ExperimentalConfigManager.get_instance()
+    if not manager or not manager.config or not manager.config.server:
+        raise RuntimeError("ExperimentalConfigManager or server config not initialized")
+    return manager.config.server.host, manager.config.server.port
+
 
 @typechecked
 def get_immich_web_base_url() -> str:
-	host, port = _get_host_and_port()
-	return f"http://{host}:{port}"
+    host, port = _get_host_and_port()
+    return f"http://{host}:{port}"
+
 
 def get_immich_base_url():
-	# In the future, IMMICH_HOST and IMMICH_PORT will be loaded dynamically from a singleton
-	return f"{get_immich_web_base_url()}/api"
+    # In the future, IMMICH_HOST and IMMICH_PORT will be loaded dynamically from a singleton
+    return f"{get_immich_web_base_url()}/api"
+
 
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"
 # ==================== LOG CONFIGURATION ====================

@@ -6,7 +6,8 @@ from threading import Lock
 from typeguard import typechecked
 
 from immich_autotag.assets.process.perf_log import perf_log
-from immich_autotag.assets.process.process_single_asset import process_single_asset
+from immich_autotag.assets.process.process_single_asset import \
+    process_single_asset
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug

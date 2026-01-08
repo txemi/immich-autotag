@@ -8,16 +8,9 @@ This template is designed to be self-explanatory and easy to adapt. Each block i
 """
 
 from immich_autotag.config.experimental_config.models import (
-    ServerConfig,
-    ClassificationRule,
-    Conversion,
-    AutoTagsConfig,
-    AdvancedFeatureConfig,
-    FeaturesConfig,
-    UserConfig,
-    AlbumDetectionFromFoldersConfig,
-    DateCorrectionConfig,
-)
+    AdvancedFeatureConfig, AlbumDetectionFromFoldersConfig, AutoTagsConfig,
+    ClassificationRule, Conversion, DateCorrectionConfig, FeaturesConfig,
+    ServerConfig, UserConfig)
 
 user_config_template = UserConfig(
     # -------------------------------------------------------------------------

@@ -26,16 +26,13 @@ from immich_client.models.update_asset_dto import UpdateAssetDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
-from immich_autotag.classification.match_classification_result import (
-    MatchClassificationResult,
-)
-from immich_autotag.config.user import (
-    ALBUM_PATTERN,
-    AUTOTAG_CATEGORY_CONFLICT,
-    AUTOTAG_CATEGORY_UNKNOWN,
-    ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
-    VERBOSE_LOGGING,
-)
+from immich_autotag.classification.match_classification_result import \
+    MatchClassificationResult
+from immich_autotag.config.user import (ALBUM_PATTERN,
+                                        AUTOTAG_CATEGORY_CONFLICT,
+                                        AUTOTAG_CATEGORY_UNKNOWN,
+                                        ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
+                                        VERBOSE_LOGGING)
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
@@ -82,7 +79,8 @@ class AssetResponseWrapper:
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, including link to the photo in Immich
-        from immich_autotag.logging.utils import is_log_level_enabled, log_debug
+        from immich_autotag.logging.utils import (is_log_level_enabled,
+                                                  log_debug)
 
         if is_log_level_enabled(LogLevel.DEBUG):
             photo_url_obj = self.get_immich_photo_url()
@@ -92,9 +90,11 @@ class AssetResponseWrapper:
                 f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
             )
             log_debug(f"[BUG] {log_msg}")
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
-        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        from immich_autotag.users.user_response_wrapper import \
+            UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
         user_wrapper = UserResponseWrapper.from_context(self.context)
@@ -253,7 +253,8 @@ class AssetResponseWrapper:
         from immich_client.api.tags import untag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-        from immich_autotag.logging.utils import is_log_level_enabled, log_debug
+        from immich_autotag.logging.utils import (is_log_level_enabled,
+                                                  log_debug)
 
         # Find all tag objects on the asset with the given name (case-insensitive)
         tags_to_remove = [
@@ -283,7 +284,8 @@ class AssetResponseWrapper:
         tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
 
         removed_any = False
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
@@ -347,8 +349,10 @@ class AssetResponseWrapper:
         from immich_client.api.tags import tag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-        from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        from immich_autotag.report.modification_report import \
+            ModificationReport
+        from immich_autotag.users.user_response_wrapper import \
+            UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
 
@@ -391,7 +395,8 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=None,
@@ -416,7 +421,8 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_wrapper=self,
@@ -439,7 +445,8 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
             print(error_msg)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.tags.modification_kind import \
+                    ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_wrapper=self,
@@ -609,7 +616,8 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         tag_name = AUTOTAG_CATEGORY_UNKNOWN
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         if not classified:
@@ -652,7 +660,8 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         tag_name = AUTOTAG_CATEGORY_CONFLICT
-        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.report.modification_report import \
+            ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         if conflict:
@@ -870,7 +879,8 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-        from immich_autotag.config.user import AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
+        from immich_autotag.config.user import \
+            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
 
         tag_name = AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
         # Generic tag

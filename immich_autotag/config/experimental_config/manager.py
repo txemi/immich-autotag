@@ -1,4 +1,3 @@
-
 """
 manager.py
 
@@ -6,10 +5,12 @@ Singleton Manager for the new experimental configuration.
 """
 
 from pathlib import Path
-from typeguard import typechecked
-import yaml
-import attrs
 from typing import Optional
+
+import attrs
+import yaml
+from typeguard import typechecked
+
 from .models import UserConfig
 
 _instance = None
@@ -62,13 +63,16 @@ class ExperimentalConfigManager:
         self.dump_to_yaml()
 
     @typechecked
-    def dump_to_yaml(self, path: 'str | Path | None' = None):
+    def dump_to_yaml(self, path: "str | Path | None" = None):
         """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
         if self.config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
-        import yaml
         from pathlib import Path as _Path
+
+        import yaml
+
         from immich_autotag.utils.run_output_dir import get_run_output_dir
+
         if path is None:
             out_dir = get_run_output_dir()
             path = out_dir / "user_config_dump.yaml"
@@ -78,17 +82,21 @@ class ExperimentalConfigManager:
             yaml.safe_dump(
                 self.config.model_dump(), f, allow_unicode=True, sort_keys=False
             )
+
     @typechecked
     def print_config(self):
         """Imprime la configuración actual usando el sistema de logs (nivel FOCUS)."""
-        from immich_autotag.logging.utils import log
         from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
         if self.config is None:
             log("[WARN] No configuration loaded.", level=LogLevel.FOCUS)
-            raise RuntimeError("No hay configuración cargada para imprimir.")   
+            raise RuntimeError("No hay configuración cargada para imprimir.")
         import pprint
+
         config_str = pprint.pformat(self.config.model_dump())
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
+
 
 # --- Carga automática al inicio (ejemplo de uso) ---
 

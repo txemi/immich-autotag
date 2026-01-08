@@ -6,19 +6,15 @@ from threading import Lock
 from typeguard import typechecked
 
 from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets
-from immich_autotag.assets.process.log_execution_parameters import (
-    log_execution_parameters,
-)
+from immich_autotag.assets.process.log_execution_parameters import \
+    log_execution_parameters
 from immich_autotag.assets.process.log_final_summary import log_final_summary
-from immich_autotag.assets.process.process_assets_sequential import (
-    process_assets_sequential,
-)
-from immich_autotag.assets.process.process_assets_threadpool import (
-    process_assets_threadpool,
-)
-from immich_autotag.assets.process.register_execution_parameters import (
-    register_execution_parameters,
-)
+from immich_autotag.assets.process.process_assets_sequential import \
+    process_assets_sequential
+from immich_autotag.assets.process.process_assets_threadpool import \
+    process_assets_threadpool
+from immich_autotag.assets.process.register_execution_parameters import \
+    register_execution_parameters
 from immich_autotag.assets.process.resolve_checkpoint import resolve_checkpoint
 from immich_autotag.config.internal_config import USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext

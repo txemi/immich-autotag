@@ -78,4 +78,3 @@ class RunStatistics(BaseModel):
     @typechecked
     def from_yaml(cls, data: str) -> "RunStatistics":
         return cls.model_validate(yaml.safe_load(data))
-

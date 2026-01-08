@@ -5,10 +5,10 @@ from typeguard import typechecked
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
-from ._classification_tag_comparison_result import _ClassificationTagComparisonResult
-from ._classification_tag_comparison_result_obj import (
-    _ClassificationTagComparisonResultObj,
-)
+from ._classification_tag_comparison_result import \
+    _ClassificationTagComparisonResult
+from ._classification_tag_comparison_result_obj import \
+    _ClassificationTagComparisonResultObj
 
 
 @typechecked

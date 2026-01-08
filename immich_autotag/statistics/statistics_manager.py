@@ -1,11 +1,15 @@
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-from typeguard import typechecked
 
 from typing import TYPE_CHECKING
+
+from typeguard import typechecked
+
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album_response_wrapper import \
+        AlbumResponseWrapper
 
 """
 statistics_manager.py
@@ -17,22 +21,24 @@ Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
+
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from immich_autotag.tags.modification_kind import ModificationKind
 # ...existing code...
-from .run_statistics import RunStatistics
-from immich_autotag.utils.run_output_dir import get_run_output_dir
-
 from threading import RLock
 
 import attr
 
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
+from immich_autotag.utils.run_output_dir import get_run_output_dir
+
+from .run_statistics import RunStatistics
 
 # Module singleton
 _instance = None
@@ -40,7 +46,6 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
-
 
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
@@ -59,6 +64,7 @@ class StatisticsManager:
                 "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
             )
         _instance = self
+
     @typechecked
     def get_progress_description(self) -> str:
         """
@@ -68,11 +74,13 @@ class StatisticsManager:
             return "Progress not available: PerformanceTracker not initialized."
         elapsed = None
         import time
+
         if hasattr(self._perf_tracker, "start_time"):
             elapsed = time.time() - self._perf_tracker.start_time
         else:
             elapsed = 0.0
         from immich_autotag.utils.perf.print_perf import format_perf_progress
+
         return format_perf_progress(
             count=self._current_stats.count if self._current_stats else 0,
             elapsed=elapsed,
@@ -138,8 +146,6 @@ class StatisticsManager:
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
         self._perf_tracker.print_progress(count)
-
-
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
@@ -244,6 +250,7 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].added += 1
             self._save_to_file()
@@ -252,12 +259,15 @@ class StatisticsManager:
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
         # Enforce TagWrapper type
         if not hasattr(tag, "name"):
-            raise TypeError(f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}")
+            raise TypeError(
+                f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}"
+            )
         tag_name = tag.name
         if tag_name in self.RELEVANT_TAGS:
             stats = self.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].removed += 1
             self._save_to_file()
@@ -309,12 +319,13 @@ class StatisticsManager:
             )
         self.set_skip_n(skip_n)
         return last_processed_id, skip_n
+
     @typechecked
     def increment_tag_action(
         self,
         tag: "TagWrapper",
         kind: "ModificationKind",
-        album: "AlbumResponseWrapper | None" ,
+        album: "AlbumResponseWrapper | None",
     ) -> None:
         """
         album: AlbumResponseWrapper or None. Only used for album cases (e.g.: ASSIGN_ASSET_TO_ALBUM).
@@ -322,6 +333,7 @@ class StatisticsManager:
         # Local import to avoid UnboundLocalError and cyclic import
 
         from immich_autotag.tags.modification_kind import ModificationKind
+
         if kind == ModificationKind.ADD_TAG_TO_ASSET:
             self.increment_tag_added(tag)
         elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
@@ -332,6 +344,7 @@ class StatisticsManager:
             stats = self.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
+
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].errors += 1
             self._save_to_file()
@@ -348,6 +361,7 @@ class StatisticsManager:
                 stats = self.get_stats()
                 if album_name not in stats.output_album_counters:
                     from .run_statistics import OutputAlbumCounter
+
                     stats.output_album_counters[album_name] = OutputAlbumCounter()
                 stats.output_album_counters[album_name].assigned += 1
                 stats.output_album_counters[album_name].total += 1
@@ -362,5 +376,3 @@ class StatisticsManager:
             raise NotImplementedError(
                 f"increment_tag_action not implemented for ModificationKind: {kind}"
             )
-
-        
