@@ -31,9 +31,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - More abstract and flexible asset categorization, based on tags and albums, allowing for broader and more powerful organization than previous strict approaches. ([issue](docs/issues/0009-config-system-refactor/))
 
 
+
 ## [0.30] - YYYY-MM-DD
 ### Added
 
+- Support for running as a containerized service, enabling scheduled executions to keep tagging and corrections up to date automatically, without requiring manual script launches after manual updates or categorizations. ([issue](docs/issues/0011-container-scheduled-execution/))
 - The internal categorization flow has been adapted to fully leverage the new configuration system introduced in v0.25, enabling more versatile categorizations based on multiple tags and flexible album patterns. ([issue](docs/issues/0009-config-system-refactor/))
 - Consolidation of experimental features from version 0.20:
   - Resume processing from the last processed asset (checkpoint resume) is now stable and enabled by default. ([issue](docs/issues/0008-statistics-checkpoint/))
