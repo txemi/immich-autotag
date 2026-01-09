@@ -19,7 +19,7 @@ _instance_created = False
 
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
-class ExperimentalConfigManager:
+class ConfigManager:
 
     config: Optional[UserConfig] = None
 
@@ -27,7 +27,7 @@ class ExperimentalConfigManager:
         global _instance, _instance_created
         if _instance_created:
             raise RuntimeError(
-                "ExperimentalConfigManager instance already exists. Use get_instance()."
+                "ConfigManager instance already exists. Use get_instance()."
             )
         _instance_created = True
         _instance = self
@@ -50,10 +50,10 @@ class ExperimentalConfigManager:
 
     @staticmethod
     @typechecked
-    def get_instance() -> "ExperimentalConfigManager":
+    def get_instance() -> "ConfigManager":
         global _instance
         if _instance is None:
-            ExperimentalConfigManager()
+            ConfigManager()
         return _instance
 
     @typechecked
@@ -116,7 +116,7 @@ class ExperimentalConfigManager:
 
 
 @typechecked
-def load_experimental_config_at_startup():
+def load_config_at_startup():
     config_path = Path(__file__).parent / "user_real_config.yaml"
     # If the file does not exist, raise a clear error
     if not config_path.exists():
@@ -124,7 +124,7 @@ def load_experimental_config_at_startup():
             f"Experimental configuration template not found at: {config_path}"
         )
     # Only create the singleton if it does not exist
-    manager = ExperimentalConfigManager.get_instance()
+    manager = ConfigManager.get_instance()
     manager.load_config_from_real_python()
     # Print the loaded configuration to see the result
     import pprint

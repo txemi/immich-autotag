@@ -57,11 +57,9 @@ def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
 @typechecked
 def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper):
     """Correct the asset date if the feature is enabled in config."""
-    from immich_autotag.config.experimental_config.manager import (
-        ExperimentalConfigManager,
-    )
+    from immich_autotag.config.manager import ConfigManager
 
-    config = ExperimentalConfigManager.get_instance().config
+    config = ConfigManager.get_instance().config
     if config and config.features.date_correction.enabled:
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date

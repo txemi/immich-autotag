@@ -2,7 +2,7 @@ import logging
 
 from typeguard import typechecked
 
-from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+from immich_autotag.config.manager import ConfigManager
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, setup_logging
 
@@ -13,9 +13,9 @@ def initialize_logging() -> None:
     Initializes the logging system depending on whether there is an asset filter or not.
     """
 
-    manager = ExperimentalConfigManager.get_instance()
+    manager = ConfigManager.get_instance()
     if manager.config is None:
-        raise RuntimeError("ExperimentalConfigManager.config is not initialized!")
+        raise RuntimeError("ConfigManager.config is not initialized!")
     filter_asset_links = manager.config.filter_out_asset_links
     if filter_asset_links is None:
         raise RuntimeError("filter_out_asset_links is not set in configuration!")

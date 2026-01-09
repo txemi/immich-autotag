@@ -11,7 +11,7 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
     """
     Marks and logs the classification tag conflict between duplicates.
     """
-    from immich_autotag.config.experimental_config.manager import (
+    from immich_autotag.config.manager import (
         ExperimentalConfigManager,
     )
     from immich_autotag.logging.levels import LogLevel

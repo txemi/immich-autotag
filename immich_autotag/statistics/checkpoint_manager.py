@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import attr
 from typeguard import typechecked
 
-from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+from immich_autotag.config.manager import ConfigManager
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.statistics._find_max_skip_n_recent import get_max_skip_n_from_recent
@@ -33,7 +33,7 @@ class CheckpointManager:
 
     @typechecked
     def get_effective_skip_n(self) -> tuple[str | None, int]:
-        config = ExperimentalConfigManager.get_instance().config
+        config = ConfigManager.get_instance().config
         enable_checkpoint_resume = (
             config.features.enable_checkpoint_resume
             if config and config.features

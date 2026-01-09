@@ -65,18 +65,18 @@ class ClassificationRuleSet:
         """
         Utility to get a ClassificationRuleSet from the experimental config manager singleton.
         """
-        from immich_autotag.config.experimental_config.manager import (
-            ExperimentalConfigManager,
+        from immich_autotag.config.manager import (
+            ConfigManager,
         )
 
-        manager = ExperimentalConfigManager.get_instance()
+        manager = ConfigManager.get_instance()
         if (
             not manager
             or not manager.config
             or not hasattr(manager.config, "classification_rules")
         ):
             raise RuntimeError(
-                "ExperimentalConfigManager or classification_rules not initialized"
+                "ConfigManager or classification_rules not initialized"
             )
         wrappers = [
             ClassificationRuleWrapper(rule)

@@ -2,7 +2,7 @@ from typing import List
 
 import attrs
 
-from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+from immich_autotag.config.manager import ConfigManager
 from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
 
 
@@ -12,7 +12,7 @@ class TagConversions:
 
     @staticmethod
     def from_config_manager() -> "TagConversions":
-        config_manager = ExperimentalConfigManager.get_instance()
+        config_manager = ConfigManager.get_instance()
         config = config_manager.config
         if not config or not hasattr(config, "conversions"):
             raise RuntimeError("No conversions found in configuration.")
