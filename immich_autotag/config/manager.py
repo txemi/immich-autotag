@@ -12,7 +12,9 @@ import attrs
 import yaml
 from typeguard import typechecked
 
+
 from .models import UserConfig
+from .config_finder import find_user_config, load_python_config, load_yaml_config
 
 _instance = None
 _instance_created = False
@@ -31,14 +33,28 @@ class ConfigManager:
             )
         _instance_created = True
         _instance = self
-        # Load the configuration automatically when creating the singleton
-        self.load_config_from_real_python()
+        # --- Nueva lógica de búsqueda y carga de configuración ---
+        config_type, config_path = find_user_config()
+        if config_type == "python":
+            config_obj = load_python_config(config_path)
+            if isinstance(config_obj, UserConfig):
+                self.config = config_obj
+            else:
+                # Intentar validar si es un dict
+                self.config = UserConfig.model_validate(config_obj)
+        elif config_type == "yaml":
+            config_data = load_yaml_config(config_path)
+            self.config = UserConfig.model_validate(config_data)
+        else:
+            raise FileNotFoundError(
+                "No se encontró configuración válida en modo desarrollo ni en XDG/home. "
+                "Consulta la documentación para crear tu archivo de configuración."
+            )
         # Initialize skip_n with the counter from the last previous execution (with overlap)
         try:
             from immich_autotag.statistics.statistics_checkpoint import (
                 get_previous_skip_n,
             )
-
             prev_skip_n = get_previous_skip_n()
             if prev_skip_n is not None and hasattr(self.config, "skip_n"):
                 self.config.skip_n = prev_skip_n
@@ -67,13 +83,10 @@ class ConfigManager:
     @typechecked
     def load_config_from_real_python(self):
         """
-        Loads the configuration by directly importing user_config from user_config.py.
-        Does not use importlib or dynamic logic, only explicit import.
+        (Legacy) Loads the configuration by directly importing user_config from user_config.py (solo modo desarrollo).
         """
         from .user_config import user_config
-
         self.config = user_config
-        # Save a record of the loaded config to logs/output
         self.dump_to_yaml()
 
     @typechecked
