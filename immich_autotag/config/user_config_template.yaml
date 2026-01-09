@@ -1,50 +1,67 @@
-# Plantilla de configuración para immich-autotag
-# Puedes modificar este archivo para personalizar el comportamiento de la aplicación.
-# Los comentarios explican cada sección y opción disponible.
-
-# Configuración del servidor
 server:
-  host: "localhost"        # Dirección del servidor Immich
-  port: 8080               # Puerto de conexión
-  use_ssl: false           # ¿Usar SSL para la conexión?
-
-# Reglas de clasificación: definen cómo se seleccionan y agrupan los activos
-classification_rules:
-  - type: "tag"            # Tipo de regla: tag, album, etc.
-    patterns:               # Lista de patrones para seleccionar activos
-      - "vacaciones*"
-      - "familia*"
-    labels:                 # Etiquetas asociadas a la regla
-      - "personal"
-      - "viaje"
-  - type: "album"
-    patterns:
-      - "2025*"
-    labels:
-      - "año"
-
-# Conversiones entre tipos de clasificación (por ejemplo, de etiquetas a álbumes)
+  # Immich domain or IP (fill in by user)
+  host: "<YOUR_HOST_OR_IP_HERE>"
+  # Port where Immich listens
+  port: 2283
+  # Immich API key (fill in by user)
+  api_key: "<YOUR_API_KEY_HERE>"
+  # timezone: Timezone for date extraction and display (e.g. Europe/Madrid)
+  timezone: "Europe/Madrid"
+filter_out_asset_links: []  # List of asset links or IDs to process. Empty = all assets.
+classification_rules:  # Rules to classify assets by tags or album name patterns.
+- tag_names:
+  - meme
+  - autotag_input_meme
+  album_name_patterns: null
+- tag_names:
+  - adult_meme
+  - autotag_input_adult_meme
+  album_name_patterns: null
+- tag_names:
+  - autotag_input_pending_review
+  album_name_patterns: null
+- tag_names:
+  - autotag_input_ignore
+  album_name_patterns: null
+- tag_names: null
+  album_name_patterns:
+  - ^\d{4}-(\d{2}(-\d{2})?)?
 conversions:
-  - source:
-      type: "tag"
-      patterns: ["origen*"]
-      labels: ["origen"]
-    destination:
-      type: "album"
-      patterns: ["destino*"]
-      labels: ["destino"]
-
-# Configuración de auto-tags (producto final generado por la aplicación)
-auto_tags:
+- source:
+    tag_names:
+    - meme
+    album_name_patterns: null
+  destination:
+    tag_names:
+    - autotag_input_meme
+    album_name_patterns: null
+- source:
+    tag_names:
+    - adult_meme
+    album_name_patterns: null
+  destination:
+    tag_names:
+    - autotag_input_adult_meme
+    album_name_patterns: null
+auto_tags:  # Configuration of automatic tags for unclassified assets, conflicts, duplicates, etc.
   enabled: true
-  tags:
-    - name: "nuevo"
-      criteria: ["album:2025*", "tag:viaje"]
-
-# Flags y características avanzadas
-features:
-  enable_album_detection: true      # Activar detección automática de álbumes
-  enable_tag_suggestion: false      # Activar sugerencia automática de etiquetas
-  advanced_feature:
+  category_unknown: autotag_output_unknown
+  category_conflict: autotag_output_conflict
+  duplicate_asset_album_conflict: autotag_output_duplicate_asset_album_conflict
+  duplicate_asset_classification_conflict: autotag_output_duplicate_asset_classification_conflict
+  duplicate_asset_classification_conflict_prefix: autotag_output_duplicate_asset_classification_conflict_
+features:  # Advanced features and flags
+  enable_album_detection: true  # Album detection by standard logic
+  enable_tag_suggestion: false  # Automatic tag suggestion (disabled)
+  advanced_feature:  # Advanced feature config
     enabled: true
-    threshold: 0.8                 # Umbral para la característica avanzada
+    threshold: 0.8
+  enable_album_name_strip: true  # Trim spaces in album names
+  album_detection_from_folders:  # Album creation from folders
+    enabled: false  # Create albums from folders (disabled)
+    excluded_paths:
+    - whatsapp  # Exclude folders by pattern
+  date_correction:  # Date correction by file/folder name
+    enabled: false
+    extraction_timezone: Europe/Madrid  # Timezone for date extraction
+  enable_checkpoint_resume: false  # Resume from last processed asset
