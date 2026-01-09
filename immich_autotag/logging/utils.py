@@ -7,9 +7,13 @@ from .levels import LogLevel
 
 ## Ya no es necesario el mapeo LOGLEVEL_TO_LOGGING, usamos directamente LogLevel.value
 
-# Register custom level for FOCUS if not already present
-if not hasattr(logging, "FOCUS"):
-    logging.addLevelName(15, "FOCUS")
+
+# Registrar el nivel FOCUS SIEMPRE antes de cualquier setup_logging
+def register_focus_level():
+    if not hasattr(logging, "FOCUS"):
+        logging.addLevelName(15, "FOCUS")
+
+register_focus_level()
 
 
 @typechecked

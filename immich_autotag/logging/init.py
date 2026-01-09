@@ -12,10 +12,7 @@ def initialize_logging() -> None:
     """
     Initializes the logging system depending on whether there is an asset filter or not.
     """
-    # Silence HTTP logs from httpx and noisy dependencies
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-    logging.getLogger("httpcore").setLevel(logging.WARNING)
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
     manager = ExperimentalConfigManager.get_instance()
     if manager.config is None:
         raise RuntimeError("ExperimentalConfigManager.config is not initialized!")
@@ -31,6 +28,10 @@ def initialize_logging() -> None:
         )
     else:
         setup_logging(level=LogLevel.PROGRESS)
+        # Silence HTTP logs from httpx and noisy dependencies
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
     # Logs de prueba para cada nivel
     log("[TEST] Log ERROR", level=LogLevel.ERROR)
     log("[TEST] Log IMPORTANT", level=LogLevel.IMPORTANT)
