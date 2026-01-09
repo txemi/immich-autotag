@@ -15,3 +15,4 @@ pydantic
 
 # For packaging (required to build the project)
 build
+twine
