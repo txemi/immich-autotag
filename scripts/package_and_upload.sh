@@ -5,11 +5,16 @@
 
 set -euo pipefail
 set -x
-# Comprobar que el virtual environment estándar está activo
+# Comprobar y activar el virtual environment estándar si existe y no está activo
 if [ -z "${VIRTUAL_ENV:-}" ] || [ "$(basename "$VIRTUAL_ENV")" != ".venv" ]; then
-  echo "[ERROR] Debes activar el entorno virtual estándar (.venv) antes de ejecutar este script."
-  echo "Usa: source .venv/bin/activate"
-  exit 1
+  if [ -d ".venv" ]; then
+    echo "[INFO] Activando entorno virtual .venv..."
+    # shellcheck disable=SC1091
+    source .venv/bin/activate
+  else
+    echo "[ERROR] No se encontró el entorno virtual .venv. Por favor, créalo con 'python3 -m venv .venv' y vuelve a intentarlo."
+    exit 1
+  fi
 fi
 
 # Obtener el directorio donde está este script
@@ -33,22 +38,30 @@ else
   exit 1
 fi
 
+
 # Construir el paquete
- 
 # Limpiar la carpeta dist/ antes de construir
 if [ -d dist ]; then
   rm -rf dist/*
 fi
 
+# Instalar build si no está presente en el entorno virtual
+if ! python3 -m build --version &> /dev/null; then
+  echo "[INFO] Instalando build en el entorno virtual..."
+  pip install build
+fi
+
 python3 -m build
 
 # Subir a TestPyPI
+
+# Instalar twine en el entorno virtual si no está presente
 if ! command -v twine &> /dev/null; then
-  echo "twine no está instalado. Instalando..."
-  pip install --user twine
+  echo "[INFO] twine no está instalado. Instalando en el entorno virtual..."
+  pip install twine
 fi
 
-twine upload --repository testpypi dist/*
+twine upload --verbose --repository testpypi dist/*
 
 
 # Solo restaurar si el destino existe y el origen no
