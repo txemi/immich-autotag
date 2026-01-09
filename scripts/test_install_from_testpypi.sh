@@ -1,34 +1,38 @@
 #!/usr/bin/env bash
-# Script para descargar e instalar el artefacto desde TestPyPI y probar la instalación
+# Script para probar la instalación desde TestPyPI en un entorno limpio
 # Uso: ./scripts/test_install_from_testpypi.sh
 
 set -euo pipefail
 
-# Obtener el directorio donde está este script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Ir al directorio raíz del proyecto
-PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-cd "$PROJECT_ROOT"
+TEMP_DIR="prueba_instalacion_temp"
+PKG_NAME="immich-autotag"
 
-# Comprobar que el virtual environment estándar está activo
-if [ -z "${VIRTUAL_ENV:-}" ] || [ "$(basename "$VIRTUAL_ENV")" != ".venv" ]; then
-  echo "[ERROR] Debes activar el entorno virtual estándar (.venv) antes de ejecutar este script."
-  echo "Usa: source .venv/bin/activate"
-  exit 1
-fi
+# Crear carpeta temporal y entrar en ella
+rm -rf "$TEMP_DIR"
+mkdir "$TEMP_DIR"
+cd "$TEMP_DIR"
 
-# Instalar el paquete desde TestPyPI (reemplaza 'immich-autotag' y versión si es necesario)
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple immich-autotag
+# Crear y activar entorno virtual limpio
+python3 -m venv venv-test
+source venv-test/bin/activate
+
+# Instalar el paquete desde TestPyPI (sin dependencias para aislar la prueba)
+pip install --index-url https://test.pypi.org/simple/ --no-deps "$PKG_NAME"
 
 # Probar la importación del cliente generado
 python -c "import immich_client; print('Importación exitosa de immich_client')"
 
-# Probar el CLI si existe (reemplaza 'immich-autotag' por el nombre del comando si es diferente)
-if command -v immich-autotag &> /dev/null; then
+# Probar el CLI si existe
+if command -v "$PKG_NAME" &> /dev/null; then
   echo "Probando CLI:"
-  immich-autotag --help
+  "$PKG_NAME" --help
 else
-  echo "No se encontró el comando CLI 'immich-autotag'."
+  echo "No se encontró el comando CLI '$PKG_NAME'."
 fi
 
-echo "Prueba de instalación completada."
+# Salir del entorno virtual y limpiar
+deactivate
+cd ..
+rm -rf "$TEMP_DIR"
+
+echo "Prueba de instalación completada en entorno limpio."
