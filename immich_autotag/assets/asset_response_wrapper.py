@@ -582,6 +582,7 @@ class AssetResponseWrapper:
             else:
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
+
                 log(msg, level=LogLevel.ERROR)
             return True
         return False
@@ -602,9 +603,7 @@ class AssetResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = (
-            ConfigManager.get_instance().config.auto_tags.category_unknown
-        )
+        tag_name = ConfigManager.get_instance().config.auto_tags.category_unknown
         from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
@@ -649,9 +648,7 @@ class AssetResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = (
-            ConfigManager.get_instance().config.auto_tags.category_conflict
-        )
+        tag_name = ConfigManager.get_instance().config.auto_tags.category_conflict
         from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()

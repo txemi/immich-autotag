@@ -1,5 +1,6 @@
-import git  # GitPython
 from typing import TYPE_CHECKING
+
+import git  # GitPython
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
@@ -152,7 +153,7 @@ class StatisticsManager:
             # Obtener la versión de git usando GitPython
             try:
                 repo = git.Repo(search_parent_directories=True)
-                git_version = repo.git.describe('--tags', '--always', '--dirty')
+                git_version = repo.git.describe("--tags", "--always", "--dirty")
             except Exception:
                 git_version = None
             self._current_stats = initial_stats or RunStatistics(

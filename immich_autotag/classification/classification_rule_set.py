@@ -75,9 +75,7 @@ class ClassificationRuleSet:
             or not manager.config
             or not hasattr(manager.config, "classification_rules")
         ):
-            raise RuntimeError(
-                "ConfigManager or classification_rules not initialized"
-            )
+            raise RuntimeError("ConfigManager or classification_rules not initialized")
         wrappers = [
             ClassificationRuleWrapper(rule)
             for rule in manager.config.classification_rules

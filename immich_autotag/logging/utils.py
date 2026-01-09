@@ -13,6 +13,7 @@ def register_focus_level():
     if not hasattr(logging, "FOCUS"):
         logging.addLevelName(15, "FOCUS")
 
+
 register_focus_level()
 
 

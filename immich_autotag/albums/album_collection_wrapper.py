@@ -6,10 +6,10 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.report.modification_report import ModificationReport
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.report.modification_report import ModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)

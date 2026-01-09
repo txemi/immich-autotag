@@ -92,6 +92,7 @@ class TagStatsManager:
             raise NotImplementedError(
                 f"increment_tag_action not implemented for ModificationKind: {kind}"
             )
+
     @typechecked
     def _increment_album_date_mismatch(self) -> None:
         stats = self.stats_manager.get_stats()

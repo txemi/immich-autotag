@@ -5,11 +5,13 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.process_assets import process_assets
 from immich_autotag.config.internal_config import get_immich_base_url
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.duplicates.load_duplicates_collection import load_duplicates_collection
+from immich_autotag.duplicates.load_duplicates_collection import (
+    load_duplicates_collection,
+)
 from immich_autotag.logging.init import initialize_logging
 from immich_autotag.tags.list_tags import list_tags
 

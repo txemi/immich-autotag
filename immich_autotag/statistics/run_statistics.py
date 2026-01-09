@@ -32,7 +32,9 @@ class RunStatistics(BaseModel):
     git_version: Optional[str] = Field(
         None, description="Git version/tag of the code executed (from git describe)"
     )
-    album_date_mismatch_count: int = Field(0, description="Count of album/date mismatches")
+    album_date_mismatch_count: int = Field(
+        0, description="Count of album/date mismatches"
+    )
 
     update_asset_date_count: int = Field(0, description="Number of asset date updates")
 

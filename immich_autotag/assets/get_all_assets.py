@@ -17,28 +17,34 @@ if TYPE_CHECKING:
 
 from typeguard import typechecked
 
+
 @typechecked
-def _fetch_assets_page(context: 'ImmichContext', page: int) -> object:
-    from immich_autotag.logging.utils import log_debug
+def _fetch_assets_page(context: "ImmichContext", page: int) -> object:
     from immich_client.api.search import search_assets
     from immich_client.models import MetadataSearchDto
+
+    from immich_autotag.logging.utils import log_debug
+
     body = MetadataSearchDto(page=page)
     log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
     response = search_assets.sync_detailed(client=context.client, body=body)
     log_debug(f"[BUG] After search_assets.sync_detailed, page={page}")
     return response
 
+
 @typechecked
 def _yield_assets_from_page(
     assets_page: list,
     start_idx: int,
-    context: 'ImmichContext',
+    context: "ImmichContext",
     max_assets: int | None,
-    count: int
-) -> Generator['AssetResponseWrapper', None, None]:
-    from immich_autotag.logging.utils import log_debug
+    count: int,
+) -> Generator["AssetResponseWrapper", None, None]:
     from immich_client.api.assets import get_asset_info
+
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.logging.utils import log_debug
+
     yielded = 0
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
@@ -60,6 +66,7 @@ def _yield_assets_from_page(
                 f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
             )
 
+
 @typechecked
 def _log_page_progress(
     page: int,
@@ -67,13 +74,14 @@ def _log_page_progress(
     count: int,
     abs_pos: int,
     total_assets: int | None,
-    log: callable
+    log: callable,
 ) -> None:
     msg = f"[PROGRESS] Page {page}: {len(assets_page)} assets (full info) | Processed so far: {count} (absolute: {abs_pos}"
     if total_assets:
         msg += f"/{total_assets}"
     msg += ")"
     log(msg)
+
 
 @typechecked
 def get_all_assets(
@@ -102,9 +110,15 @@ def get_all_assets(
             log_debug(f"[BUG] Error: {response.status_code} - {response.content}")
             raise RuntimeError(f"Error: {response.status_code} - {response.content}")
         assets_page = response.parsed.assets.items
-        log(f"[PROGRESS] Page {page}: {len(assets_page)} assets received from API.", level=LogLevel.PROGRESS)
+        log(
+            f"[PROGRESS] Page {page}: {len(assets_page)} assets received from API.",
+            level=LogLevel.PROGRESS,
+        )
         if not assets_page:
-            log(f"[PROGRESS] No more assets in page {page}, ending loop.", level=LogLevel.PROGRESS)
+            log(
+                f"[PROGRESS] No more assets in page {page}, ending loop.",
+                level=LogLevel.PROGRESS,
+            )
             break
         if first_page:
             PAGE_SIZE = len(assets_page)
@@ -116,19 +130,34 @@ def get_all_assets(
                     continue
             first_page = False
         start_idx = skip_offset if skip_n and page == (skip_n // PAGE_SIZE) + 1 else 0
-        for asset_wrapper in _yield_assets_from_page(assets_page, start_idx, context, max_assets, count):
+        for asset_wrapper in _yield_assets_from_page(
+            assets_page, start_idx, context, max_assets, count
+        ):
             yield asset_wrapper
             count += 1
         abs_pos = skip_n + count
         response_assets = response.parsed.assets
         assert isinstance(response_assets, SearchAssetResponseDto)
         total_assets = response_assets.total
-        _log_page_progress(page, assets_page, count, abs_pos, total_assets, lambda m: log(m, level=LogLevel.PROGRESS))
+        _log_page_progress(
+            page,
+            assets_page,
+            count,
+            abs_pos,
+            total_assets,
+            lambda m: log(m, level=LogLevel.PROGRESS),
+        )
         if max_assets is not None and count >= max_assets:
-            log(f"[PROGRESS] max_assets reached after processing page {page} (count={count})", level=LogLevel.PROGRESS)
+            log(
+                f"[PROGRESS] max_assets reached after processing page {page} (count={count})",
+                level=LogLevel.PROGRESS,
+            )
             break
         if not response_assets.next_page:
-            log(f"[PROGRESS] No next_page in response after page {page}, ending loop.", level=LogLevel.PROGRESS)
+            log(
+                f"[PROGRESS] No next_page in response after page {page}, ending loop.",
+                level=LogLevel.PROGRESS,
+            )
             break
         page += 1
     log(
