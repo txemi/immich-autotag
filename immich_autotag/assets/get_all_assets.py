@@ -26,13 +26,17 @@ def get_all_assets(
     Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
     Skips the first `skip_n` assets efficiently (without fetching their full info).
     """
+    # El tamaño real de página lo determina el backend. Inicialmente asumimos 100, pero lo detectamos en la primera respuesta.
+    PAGE_SIZE = None
     page = 1
+    skip_offset = 0
     count = 0
     skipped = 0
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
     log("Starting get_all_assets generator...", level=LogLevel.PROGRESS)
+    first_page = True
     while True:
         log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
         body = MetadataSearchDto(page=page)
@@ -52,9 +56,21 @@ def get_all_assets(
                 level=LogLevel.PROGRESS,
             )
             break  # No more assets, terminate the generator
-        for asset in assets_page:
-            if skip_n and skipped < skip_n:
-                skipped += 1
+        if first_page:
+            PAGE_SIZE = len(assets_page)
+            # Recalcular página y offset si hay que saltar
+            if skip_n:
+                page = (skip_n // PAGE_SIZE) + 1
+                skip_offset = skip_n % PAGE_SIZE
+                # Si la página calculada no es la primera, volver a pedir la página correcta
+                if page > 1:
+                    first_page = False
+                    continue
+            first_page = False
+        # Solo saltar assets en la primera página relevante
+        start_idx = skip_offset if skip_n and page == (skip_n // PAGE_SIZE) + 1 else 0
+        for idx, asset in enumerate(assets_page):
+            if idx < start_idx:
                 continue
             if max_assets is not None and count >= max_assets:
                 log(
@@ -76,7 +92,7 @@ def get_all_assets(
                 raise RuntimeError(
                     f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
                 )
-        abs_pos = skipped + count
+        abs_pos = skip_n + count
         response_assets = response.parsed.assets
         assert isinstance(response_assets, SearchAssetResponseDto)
         total_assets = response_assets.total
