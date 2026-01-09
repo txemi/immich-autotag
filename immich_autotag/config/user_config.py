@@ -26,7 +26,9 @@ user_config = UserConfig(
     # port: Port where Immich listens
     # api_key: Immich API key
     server=ServerConfig(
-        host="immich.example.com", port=2283, api_key="YOUR_API_KEY_HERE"
+        host="immich.ad3.lab",
+        port=2283,
+        api_key="j88ctYwFEBXt4p7Hed8YOq6ATjNMZeJDVvLtWvo",
     ),
     # -------------------------------------------------------------------------
     # ASSET FILTER: list of asset links or IDs to process.
@@ -105,7 +107,7 @@ user_config = UserConfig(
         ),
         date_correction=DateCorrectionConfig(
             enabled=False,  # Date correction by file/folder name
-            extraction_timezone="UTC",  # Timezone for date extraction
+            extraction_timezone="Europe/Madrid",   # Timezone for date extraction
         ),
         enable_checkpoint_resume=False,  # Resume from last processed asset
     ),

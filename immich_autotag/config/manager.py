@@ -67,12 +67,12 @@ class ConfigManager:
     @typechecked
     def load_config_from_real_python(self):
         """
-        Loads the configuration by directly importing user_real_config from user_real_config.py.
+        Loads the configuration by directly importing user_config from user_config.py.
         Does not use importlib or dynamic logic, only explicit import.
         """
-        from .user_real_config import user_real_config
+        from .user_config import user_config
 
-        self.config = user_real_config
+        self.config = user_config
         # Save a record of the loaded config to logs/output
         self.dump_to_yaml()
 
@@ -117,7 +117,7 @@ class ConfigManager:
 
 @typechecked
 def load_config_at_startup():
-    config_path = Path(__file__).parent / "user_real_config.yaml"
+    config_path = Path(__file__).parent / "user_config.yaml"
     # If the file does not exist, raise a clear error
     if not config_path.exists():
         raise FileNotFoundError(
