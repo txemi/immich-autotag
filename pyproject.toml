@@ -36,7 +36,8 @@ dependencies = [
 	"urllib3",
 	"setuptools",
 	"requests",
-	"importlib-metadata; python_version<'3.8'"
+	"importlib-metadata; python_version<'3.8'",
+	"gitpython"
 ]
 # Include both packages in the distribution
 [tool.setuptools.packages.find]
