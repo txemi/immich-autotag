@@ -10,6 +10,15 @@ Place your configuration file at:
 
 This follows the XDG standard and keeps your home directory organized.
 
+## Configuration File Formats
+
+You can choose between two configuration formats:
+
+- **YAML file**: Recommended for most users. See the template: [user_config_template.yaml](./user_config_template.yaml)
+- **Python file**: For advanced users who want dynamic or programmatic configuration. See the template: [user_config_template.py](./user_config_template.py)
+
+Both templates are provided in this folder. You can copy and adapt either one to your needs.
+
 ## Example YAML Configuration
 
 ```yaml
@@ -64,6 +73,8 @@ features:
     extraction_timezone: "UTC"
   enable_checkpoint_resume: false
 ```
+
+
 
 ## More Information
 
