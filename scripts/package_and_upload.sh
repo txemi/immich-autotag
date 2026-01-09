@@ -22,14 +22,16 @@ IMMICH_CLIENT_ORIG="immich-client/immich_client"
 IMMICH_CLIENT_DEST="immich_client"
 IMMICH_CLIENT_BACKUP="immich-client/immich_client_backup_$(date +%s)"
 
-# Comprobar que la carpeta existe
-if [ ! -d "$IMMICH_CLIENT_ORIG" ]; then
-  echo "No se encontró $IMMICH_CLIENT_ORIG. Abortando."
+
+# Solo mover si el destino no existe y el origen sí
+if [ ! -d "$IMMICH_CLIENT_DEST" ] && [ -d "$IMMICH_CLIENT_ORIG" ]; then
+  mv "$IMMICH_CLIENT_ORIG" "$IMMICH_CLIENT_DEST"
+elif [ -d "$IMMICH_CLIENT_DEST" ]; then
+  echo "$IMMICH_CLIENT_DEST ya está en la raíz, no se mueve."
+else
+  echo "No se encontró $IMMICH_CLIENT_ORIG ni $IMMICH_CLIENT_DEST. Abortando."
   exit 1
 fi
-
-# Mover la carpeta a la raíz
-mv "$IMMICH_CLIENT_ORIG" "$IMMICH_CLIENT_DEST"
 
 # Construir el paquete
 python3 -m build
@@ -42,7 +44,12 @@ fi
 
 twine upload --repository testpypi dist/*
 
-# Restaurar la carpeta a su ubicación original
-mv "$IMMICH_CLIENT_DEST" "$IMMICH_CLIENT_ORIG"
+
+# Solo restaurar si el destino existe y el origen no
+if [ -d "$IMMICH_CLIENT_DEST" ] && [ ! -d "$IMMICH_CLIENT_ORIG" ]; then
+  mv "$IMMICH_CLIENT_DEST" "$IMMICH_CLIENT_ORIG"
+else
+  echo "No es necesario restaurar $IMMICH_CLIENT_DEST."
+fi
 
 echo "Operación completada."
