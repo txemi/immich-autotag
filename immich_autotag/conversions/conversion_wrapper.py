@@ -1,7 +1,7 @@
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.config.experimental_config.models import Conversion
+from immich_autotag.config.models import Conversion
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)

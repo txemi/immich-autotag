@@ -31,7 +31,7 @@ from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
 from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
 )
-from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
+from immich_autotag.config.manager import ConfigManager
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
@@ -596,14 +596,14 @@ class AssetResponseWrapper:
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
         Idempotent: does nothing if already in correct state.
         """
-        from immich_autotag.config.experimental_config.manager import (
-            ExperimentalConfigManager,
+        from immich_autotag.config.manager import (
+            ConfigManager,
         )
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         tag_name = (
-            ExperimentalConfigManager.get_instance().config.auto_tags.category_unknown
+            ConfigManager.get_instance().config.auto_tags.category_unknown
         )
         from immich_autotag.report.modification_report import ModificationReport
 
@@ -643,14 +643,14 @@ class AssetResponseWrapper:
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         """
-        from immich_autotag.config.experimental_config.manager import (
-            ExperimentalConfigManager,
+        from immich_autotag.config.manager import (
+            ConfigManager,
         )
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         tag_name = (
-            ExperimentalConfigManager.get_instance().config.auto_tags.category_conflict
+            ConfigManager.get_instance().config.auto_tags.category_conflict
         )
         from immich_autotag.report.modification_report import ModificationReport
 
@@ -761,7 +761,7 @@ class AssetResponseWrapper:
         import re
 
         if (
-            not ExperimentalConfigManager.get_instance().config.features.album_detection_from_folders.enabled
+            not ConfigManager.get_instance().config.features.album_detection_from_folders.enabled
         ):
             return None
         # If already classified by tag or album, skip
@@ -870,12 +870,12 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-        from immich_autotag.config.experimental_config.manager import (
-            ExperimentalConfigManager,
+        from immich_autotag.config.manager import (
+            ConfigManager,
         )
 
         tag_name = (
-            ExperimentalConfigManager.get_instance().config.auto_tags.duplicate_asset_album_conflict
+            ConfigManager.get_instance().config.auto_tags.duplicate_asset_album_conflict
         )
         # Generic tag
         from immich_autotag.logging.levels import LogLevel

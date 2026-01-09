@@ -210,11 +210,11 @@ class StatisticsManager:
 
     @property
     def RELEVANT_TAGS(self):
-        from immich_autotag.config.experimental_config.manager import (
-            ExperimentalConfigManager,
+        from immich_autotag.config.manager import (
+            ConfigManager,
         )
 
-        manager = ExperimentalConfigManager.get_instance()
+        manager = ConfigManager.get_instance()
         config = manager.config
         try:
             return {

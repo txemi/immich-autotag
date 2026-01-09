@@ -10,13 +10,13 @@ from typeguard import typechecked
 @typechecked
 def _get_host_and_port() -> tuple[str, int]:
     # Get host and port from the experimental config singleton
-    from immich_autotag.config.experimental_config.manager import (
-        ExperimentalConfigManager,
+    from immich_autotag.config.manager import (
+        ConfigManager,
     )
 
-    manager = ExperimentalConfigManager.get_instance()
+    manager = ConfigManager.get_instance()
     if not manager or not manager.config or not manager.config.server:
-        raise RuntimeError("ExperimentalConfigManager or server config not initialized")
+        raise RuntimeError("ConfigManager or server config not initialized")
     return manager.config.server.host, manager.config.server.port
 
 

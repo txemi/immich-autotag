@@ -53,10 +53,10 @@ class AssetDateCandidate:
         if user_tz:
             tz = user_tz
         else:
-            from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
-            manager = ExperimentalConfigManager.get_instance()
+            from immich_autotag.config.manager import ConfigManager
+            manager = ConfigManager.get_instance()
             if not manager or not manager.config or not manager.config.features:
-                raise RuntimeError("ExperimentalConfigManager or features config not initialized")
+                raise RuntimeError("ConfigManager or features config not initialized")
             tz = manager.config.features.date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
         return dt.replace(tzinfo=ZoneInfo(tz))

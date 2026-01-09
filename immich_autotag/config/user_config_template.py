@@ -7,7 +7,7 @@ You can copy and adapt this file as user_real_config_pydantic.py for your actual
 This template is designed to be self-explanatory and easy to adapt. Each block includes comments to guide you.
 """
 
-from immich_autotag.config.experimental_config.models import (
+from immich_autotag.config.models import (
     AdvancedFeatureConfig,
     AlbumDetectionFromFoldersConfig,
     AutoTagsConfig,
