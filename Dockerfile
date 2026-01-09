@@ -5,6 +5,10 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
+
+# Instalar git para soporte GitPython
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
 # Install immich-autotag from PyPI
 RUN pip install --no-cache-dir immich-autotag
 
