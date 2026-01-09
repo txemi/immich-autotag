@@ -21,7 +21,7 @@ It helps to:
 - Highlight possible errors, such as assets classified under multiple conflicting criteria.
 - Speed up the review and mass organization of your photo library.
 
-#### Other Features 
+#### 1.1.3.1. Other Features 
 
 In addition to its core focus on helping classify and organize photos, the project also provides several advanced features to streamline large-scale photo management:
 
@@ -33,7 +33,29 @@ In addition to its core focus on helping classify and organize photos, the proje
 
 > For more details and upcoming features, see the [Roadmap](./ROADMAP.md) and [Changelog](./CHANGELOG.md).
 
-## 1.2. Practical Use Case: How to Take Advantage of This Script
+## 1.2. Quick Start
+
+To get started quickly:
+
+1. **Copy the configuration file to your home directory**
+   - Place it at `~/.config/immich_autotag/config.yaml` (recommended XDG location).
+   - See the [Configuration Guide](./immich_autotag/config/README_config.md) for details and an example config file.
+
+2. **Run the CLI instantly using pipx**
+   - If you have pipx installed:
+     ```bash
+     pipx run immich-autotag --help
+     ```
+   - Or use the provided script:
+     ```bash
+     ./scripts/run_immich_autotag.sh --help
+     ```
+
+That's it! Your Immich autotagging tool is ready to use.
+
+---
+
+## 1.3. Practical Use Case: How to Take Advantage of This Script
 
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
 
@@ -49,7 +71,7 @@ After the motivation, let's describe a practical use case for this tool. The scr
 - Use Immich's date view to quickly identify all photos from the same event and add them to an album.
 - To find memes or photos that should be tagged to avoid being candidates for albums, use Immich's "find similar" feature (AI-powered), which helps you quickly locate and tag such photos in bulk.
 
-## 1.3. Future Directions
+## 1.4. Future Directions
 
 With the logic for adding and removing tags now solved in this project, it becomes very easy to add new features. In the future, this tagging system and codebase could be extended to:
 
@@ -60,7 +82,7 @@ With the logic for adding and removing tags now solved in this project, it becom
 
 This foundation makes it straightforward to build more advanced features for organizing and maintaining large photo and video collections in Immich.
 
-## 1.4. Installation and Automatic Client Generation
+## 1.5. Installation and Automatic Client Generation
 
 1. Clone the repository.
 2. Run the script to create and activate the virtual environment, install dependencies, and generate the client:
@@ -78,7 +100,7 @@ This script:
 
 3. If you want to regenerate the client, delete the `immich-client/` folder and rerun the script.
 
-## 1.5. Execution
+## 1.6. Execution
 
 Run the main application:
 
@@ -86,7 +108,7 @@ Run the main application:
 ./run_app.sh
 ```
 
-## 1.6. Structure
+## 1.7. Structure
 - `immich_api_examples/`: Example scripts showing how to use the Immich API and test integration:
 	- `immich_api_example_read_asset_tags_albums.py`: Example for reading asset tags and albums.
 	- `run_test_asset_albums_tags.sh`: Script to run the above example in the correct environment.
@@ -107,7 +129,7 @@ Run the main application:
 - `LICENSE`: GPL v3 license.
 - `README.md`: This file.
 
-## 1.7. Custom Configuration
+## 1.8. Custom Configuration
 
 
 For security reasons, **do not upload your `immich_autotag/config/user.py` file with private data** to the public repository.
@@ -122,6 +144,6 @@ The template file does not contain sensitive information and can be uploaded to 
 
 
 
-## 1.8. License
+## 1.9. License
 This project is licensed under the GNU GPL v3. See the LICENSE file for details.
 
