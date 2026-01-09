@@ -12,7 +12,8 @@ Track and manage all announcements and outreach efforts for the project across v
 | Platform/Forum                | Link                                      | Status         | Notes/Follow-up           |
 |-------------------------------|-------------------------------------------|----------------|---------------------------|
 | Immich Community Forum        | https://community.immich.app/             | Not started    | Official project forum    |
-| GitHub Discussions (Immich)   | https://github.com/immich-app/immich/discussions | Not started    |                           |
+| GitHub Discussions (Immich, old)   | https://github.com/immich-app/immich/discussions/24764 | Announced      | 2024 version, low impact |
+| GitHub Discussions (Immich, new)   | https://github.com/immich-app/immich/discussions/25164 | Announced      | 2026 version, main thread |
 | Reddit r/selfhosted           | https://www.reddit.com/r/selfhosted/      | Not started    | Popular for self-hosted   |
 | Reddit r/opensource           | https://www.reddit.com/r/opensource/      | Not started    | General open source       |
 | Reddit r/linux                | https://www.reddit.com/r/linux/           | Not started    | Linux community           |
