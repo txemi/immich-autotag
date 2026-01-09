@@ -74,7 +74,15 @@ if ! command -v twine &> /dev/null; then
   pip install twine
 fi
 
-twine upload --verbose --repository testpypi dist/*
+REPO="pypi"
+for arg in "$@"; do
+  if [ "$arg" = "--test" ] || [ "$arg" = "-t" ]; then
+    REPO="testpypi"
+  fi
+done
+
+echo "[INFO] Subiendo a repositorio: $REPO"
+twine upload --repository "$REPO" dist/*
 
 
 # Solo restaurar si el destino existe y el origen no
