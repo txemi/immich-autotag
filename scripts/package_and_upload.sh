@@ -34,6 +34,12 @@ else
 fi
 
 # Construir el paquete
+ 
+# Limpiar la carpeta dist/ antes de construir
+if [ -d dist ]; then
+  rm -rf dist/*
+fi
+
 python3 -m build
 
 # Subir a TestPyPI
