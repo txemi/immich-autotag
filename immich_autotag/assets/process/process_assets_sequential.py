@@ -33,7 +33,7 @@ def process_assets_sequential(
         "Entering asset processing loop...",
         level=LogLevel.PROGRESS,
     )
-    log("[DEBUG] Antes de iterar assets (inicio del for)", level=LogLevel.DEBUG)
+    log("[DEBUG] Before iterating assets (start of for loop)", level=LogLevel.DEBUG)
     count = 0
     last_log_time = time.time()
     try:
@@ -41,12 +41,12 @@ def process_assets_sequential(
             context, max_assets=max_assets, skip_n=skip_n
         ):
             log_debug(
-                f"[BUG] Procesando asset: {getattr(asset_wrapper, 'id', asset_wrapper)}"
+                f"[BUG] Processing asset: {getattr(asset_wrapper, 'id', asset_wrapper)}"
             )
             t0 = time.time()
             process_single_asset(asset_wrapper, tag_mod_report, lock)
             log(
-                f"Iteración completada para asset: {getattr(asset_wrapper, 'id', asset_wrapper)}",
+                f"Iteration completed for asset: {getattr(asset_wrapper, 'id', asset_wrapper)}",
                 level=LogLevel.DEBUG,
             )
             count += 1

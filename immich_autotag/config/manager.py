@@ -33,7 +33,7 @@ class ConfigManager:
             )
         _instance_created = True
         _instance = self
-        # --- Nueva lógica de búsqueda y carga de configuración ---
+        # --- New configuration search and loading logic ---
         config_type, config_path = find_user_config()
         if config_type == "python":
             config_obj = load_python_config(config_path)
@@ -84,7 +84,7 @@ class ConfigManager:
     @typechecked
     def load_config_from_real_python(self):
         """
-        (Legacy) Loads the configuration by directly importing user_config from user_config.py (solo modo desarrollo).
+        (Legacy) Loads the configuration by directly importing user_config from user_config.py (development mode only).
         """
         from .user_config import user_config
         self.config = user_config
@@ -126,7 +126,7 @@ class ConfigManager:
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
 
 
-# --- Carga automática al inicio (ejemplo de uso) ---
+# --- Automatic loading at startup (usage example) ---
 
 
 @typechecked
