@@ -85,6 +85,8 @@ With the logic for adding and removing tags now solved in this project, it becom
 
 This foundation makes it straightforward to build more advanced features for organizing and maintaining large photo and video collections in Immich.
 
+> For a complete and detailed list of features, improvements, and changes, see the [Changelog](./CHANGELOG.md).
+
 ## 1.5. Development
 
 For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md).
