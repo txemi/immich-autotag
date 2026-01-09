@@ -1,4 +1,4 @@
-# Developer Guide: Immich Autotag
+# 1. Developer Guide: Immich Autotag
 
 This document is intended for contributors and developers. It will contain information about project structure, development workflow, architecture, and technical details that are not relevant for end users.
 
@@ -7,7 +7,7 @@ For user documentation and quick start, see the main [README.md](../README.md).
 
 
 
-## 1.5. Installation and Automatic Client Generation
+## 1.1. Installation and Automatic Client Generation
 
 1. Clone the repository.
 2. Run the script to create and activate the virtual environment, install dependencies, and generate the client:
@@ -25,7 +25,7 @@ This script:
 
 3. If you want to regenerate the client, delete the `immich-client/` folder and rerun the script.
 
-## 1.6. Execution
+## 1.2. Execution
 
 Run the main application:
 
@@ -33,7 +33,7 @@ Run the main application:
 ./run_app.sh
 ```
 
-## 1.7. Structure
+## 1.3. Structure
 - `immich_api_examples/`: Example scripts showing how to use the Immich API and test integration:
 	- `immich_api_example_read_asset_tags_albums.py`: Example for reading asset tags and albums.
 	- `run_test_asset_albums_tags.sh`: Script to run the above example in the correct environment.
@@ -54,7 +54,7 @@ Run the main application:
 - `LICENSE`: GPL v3 license.
 - `README.md`: This file.
 
-## 1.8. Custom Configuration
+## 1.4. Custom Developer Configuration
 
 
 For security reasons, **do not upload your `immich_autotag/config/user.py` file with private data** to the public repository.
