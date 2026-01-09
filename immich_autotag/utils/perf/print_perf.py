@@ -48,9 +48,9 @@ def format_perf_progress(
             else:
                 return f"{minutes:.1f} min"
 
-        msg = f"{count}/{total_to_process} ({percent_rel:.1f}% relativo"
+        msg = f"{count}/{total_to_process} ({percent_rel:.1f}% relative"
         if percent_abs is not None:
-            msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absoluto)"
+            msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absolute)"
         msg += f") processed. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
         return msg
     else:
