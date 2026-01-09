@@ -42,16 +42,19 @@ To get started quickly:
    - See the [Configuration Guide](./immich_autotag/config/README_config.md) for details and an example config file.
 
 2. **Run the CLI instantly using pipx**
-   - If you have pipx installed:
+   - If you have pipx installed (**no requiere descargar el código**):
      ```bash
-     pipx run immich-autotag --help
+     pipx run immich-autotag 
      ```
-   - Or use the provided script:
+   - Or use the provided script (**requiere descargar el código**):
      ```bash
-     ./scripts/run_immich_autotag.sh --help
+     ./scripts/run_immich_autotag.sh
      ```
 
 That's it! Your Immich autotagging tool is ready to use.
+
+> **¿Prefieres descargar el código y ejecutarlo manualmente?**
+> Consulta la sección [Instalación y generación automática del cliente](./docs/development.md#15-installation-and-automatic-client-generation) en la [Guía de desarrollo](./docs/development.md).
 
 ---
 
@@ -86,7 +89,10 @@ This foundation makes it straightforward to build more advanced features for org
 
 For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md).
 
-## 1.6. License
+## 1.6. Support
+For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/txemi/immich-autotag/issues) ticketing system.
+
+## 1.7. License
 This project is licensed under the GNU GPL v3. See the LICENSE file for details.
 
 
