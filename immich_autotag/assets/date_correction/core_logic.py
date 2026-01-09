@@ -148,14 +148,14 @@ def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -
     )
     if DateCorrectionStepResult.should_exit(step_result):
         log(
-            f"[DATE CORRECTION] Fecha corregida por filename para asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] Date corrected by filename for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
         return
 
     if not flat_candidates:
         log(
-            f"[DATE CORRECTION] No date candidates found para asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
         return

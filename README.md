@@ -42,19 +42,19 @@ To get started quickly:
    - See the [Configuration Guide](./immich_autotag/config/README_config.md) for details and an example config file.
 
 2. **Run the CLI instantly using pipx**
-   - If you have pipx installed (**no requiere descargar el código**):
+   - If you have pipx installed (**no need to download the code**):
      ```bash
      pipx run immich-autotag 
      ```
-   - Or use the provided script (**requiere descargar el código**):
+   - Or use the provided script (**requires downloading the code**):
      ```bash
      ./scripts/run_immich_autotag.sh
      ```
 
 That's it! Your Immich autotagging tool is ready to use.
 
-> **¿Prefieres descargar el código y ejecutarlo manualmente?**
-> Consulta la sección [Instalación y generación automática del cliente](./docs/development.md#15-installation-and-automatic-client-generation) en la [Guía de desarrollo](./docs/development.md).
+> **Do you prefer to download the code and run it manually?**
+> See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) in the [Development Guide](./docs/development.md).
 
 ---
 
