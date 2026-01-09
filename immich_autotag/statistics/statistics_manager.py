@@ -150,7 +150,7 @@ class StatisticsManager:
         with self._lock:
             if self._current_stats is not None:
                 return
-            # Obtener la versión de git usando GitPython
+            # Get git version using GitPython
             try:
                 repo = git.Repo(search_parent_directories=True)
                 git_version = repo.git.describe("--tags", "--always", "--dirty")
@@ -267,4 +267,4 @@ class StatisticsManager:
     ) -> None:
         self.tags.increment_tag_action(tag, kind, album)
 
-    # Métodos de tags/álbumes delegados a TagStatsManager
+    # Tag/album methods delegated to TagStatsManager

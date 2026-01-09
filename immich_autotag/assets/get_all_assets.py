@@ -93,7 +93,7 @@ def get_all_assets(
     Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
     Skips the first `skip_n` assets efficiently (without fetching their full info).
     """
-    # El tamaño real de página lo determina el backend. Inicialmente asumimos 100, pero lo detectamos en la primera respuesta.
+    # The actual page size is determined by the backend. Initially we assume 100, but we detect it in the first response.
     PAGE_SIZE = None
     page = 1
     skip_offset = 0

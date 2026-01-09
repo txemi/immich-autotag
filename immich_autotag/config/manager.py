@@ -1,4 +1,4 @@
-# Para cargar el checkpoint, importar desde immich_autotag.duplicates.checkpoint_loader
+# To load the checkpoint, import from immich_autotag.duplicates.checkpoint_loader
 """
 manager.py
 
@@ -31,9 +31,9 @@ class ConfigManager:
             )
         _instance_created = True
         _instance = self
-        # Cargar la configuración automáticamente al crear el singleton
+        # Load the configuration automatically when creating the singleton
         self.load_config_from_real_python()
-        # Inicializar skip_n con el contador de la última ejecución previa (con solapamiento)
+        # Initialize skip_n with the counter from the last previous execution (with overlap)
         try:
             from immich_autotag.statistics.statistics_checkpoint import (
                 get_previous_skip_n,
@@ -44,7 +44,7 @@ class ConfigManager:
                 self.config.skip_n = prev_skip_n
         except Exception as e:
             print(
-                f"[WARN] No se pudo inicializar skip_n desde la estadística previa: {e}"
+                f"[WARN] Could not initialize skip_n from previous statistics: {e}"
             )
         self.print_config()
 
@@ -78,7 +78,7 @@ class ConfigManager:
 
     @typechecked
     def dump_to_yaml(self, path: "str | Path | None" = None):
-        """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
+        """Dumps the current configuration to a YAML file in the default logs/output folder."""
         if self.config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
         from pathlib import Path as _Path
@@ -99,13 +99,13 @@ class ConfigManager:
 
     @typechecked
     def print_config(self):
-        """Imprime la configuración actual usando el sistema de logs (nivel FOCUS)."""
+        """Prints the current configuration using the logging system (FOCUS level)."""
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         if self.config is None:
             log("[WARN] No configuration loaded.", level=LogLevel.FOCUS)
-            raise RuntimeError("No hay configuración cargada para imprimir.")
+            raise RuntimeError("No configuration loaded to print.")
         import pprint
 
         config_str = pprint.pformat(self.config.model_dump())

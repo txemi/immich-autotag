@@ -22,6 +22,6 @@ class TagConversions:
     def get_all(self) -> List[ConversionWrapper]:
         return self._conversions
 
-    # Métodos utilitarios para buscar, filtrar, etc. pueden añadirse aquí
+    # Utility methods for searching, filtering, etc. can be added here
     def __iter__(self):
         return iter(self._conversions)

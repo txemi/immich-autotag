@@ -77,8 +77,8 @@ class ModificationReport:
 
     from typeguard import typechecked
 
-    # todo: tag se esta pasando como string en varias funciones, valorar usar wrapper
-    # todo: asset_wrapper se esta pasando como Any en varias funciones, tipar bien
+    # todo: tag is being passed as string in several functions, consider using wrapper
+    # todo: asset_wrapper is being passed as Any in several functions, type correctly
     @typechecked
     def add_modification(
         self,
@@ -115,7 +115,7 @@ class ModificationReport:
         if user_instance is None:
             user_instance = UserResponseWrapper.from_context(asset_wrapper.context)
 
-        # Calcular progreso usando StatisticsManager (sin try/except)
+        # Calculate progress using StatisticsManager (without try/except)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         stats_manager = StatisticsManager.get_instance()
@@ -282,6 +282,6 @@ class ModificationReport:
 
     @typechecked
     def _format_modification_entry(self, entry: ModificationEntry) -> str:
-        # Serializar primero y delegar el formateo a la clase serializable
+        # Serialize first and delegate formatting to the serializable class
         serializable = entry.to_serializable()
         return serializable.to_log_string()
