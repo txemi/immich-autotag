@@ -11,4 +11,6 @@
 | 0007 | Refactor Process Single Asset | Open | 2026-01-07   | v0.20 | [link](0007-refactor-process-single-asset/) |
 | 0008 | Statistics Checkpoint | Open | 2026-01-07   | v0.20 | [link](0008-statistics-checkpoint/) |
 | 0009 | Configuration System Refactor | In Progress | 2026-01-07   | v0.30 | [link](0009-config-system-refactor/) |
+
 | 0010 | Core tagging system for asset categorization | Closed   | 2025-12-23   | v0.10 | [link](0010-core-tagging-feature/) |
+| 0011 | Announcement Tracking and Community Outreach | Open | 2026-01-09   | v0.30 | [link](0011-announcement-tracking/) |
