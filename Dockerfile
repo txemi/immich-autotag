@@ -15,5 +15,8 @@ USER autotaguser
 # Set working directory
 WORKDIR /home/autotaguser
 
+# Ensure ~/.local/bin is in PATH for user-installed scripts
+ENV PATH="/home/autotaguser/.local/bin:$PATH"
+
 # Default command (can be overridden)
 CMD ["immich-autotag", "--help"]
