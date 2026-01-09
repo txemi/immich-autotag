@@ -30,9 +30,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - New, more structured configuration system for easier and safer customization. ([issue](docs/issues/0009-config-system-refactor/))
 - More abstract and flexible asset categorization, based on tags and albums, allowing for broader and more powerful organization than previous strict approaches. ([issue](docs/issues/0009-config-system-refactor/))
 
+
 ## [0.30] - YYYY-MM-DD
 ### Added
 
+- The internal categorization flow has been adapted to fully leverage the new configuration system introduced in v0.25, enabling more versatile categorizations based on multiple tags and flexible album patterns. ([issue](docs/issues/0009-config-system-refactor/))
 - Consolidation of experimental features from version 0.20:
   - Resume processing from the last processed asset (checkpoint resume) is now stable and enabled by default. ([issue](docs/issues/0008-statistics-checkpoint/))
   - Creation and assignment of albums based on folders from the file system library is now stable and enabled by default. ([issue](docs/issues/0004-album-detection/))
