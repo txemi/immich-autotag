@@ -11,9 +11,7 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
     """
     Marks and logs the classification tag conflict between duplicates.
     """
-    from immich_autotag.config.manager import (
-        ExperimentalConfigManager,
-    )
+    from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
@@ -26,7 +24,7 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
         + "\n".join(details)
     )
     log(msg, level=LogLevel.FOCUS)
-    config = ExperimentalConfigManager.get_instance().config
+    config = ConfigManager.get_instance().config
     group_tag = f"{config.auto_tags.duplicate_asset_classification_conflict_prefix}{asset_wrapper.duplicate_id_as_uuid}"
     for w in duplicate_wrappers:
         w.add_tag_by_name(config.auto_tags.duplicate_asset_classification_conflict)
