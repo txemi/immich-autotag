@@ -14,10 +14,10 @@ This follows the XDG standard and keeps your home directory organized.
 
 You can choose between two configuration formats:
 
-- **YAML file**: Recommended for most users. See the template: [user_config_template.yaml](./user_config_template.yaml)
-- **Python file**: For advanced users who want dynamic or programmatic configuration. See the template: [user_config_template.py](./user_config_template.py)
+- **YAML file** (self-documented): Recommended for most users. See the template: [user_config_template.yaml](./user_config_template.yaml)
+- **Python file** (self-documented): For advanced users who want dynamic or programmatic configuration. See the template: [user_config_template.py](./user_config_template.py)
 
-Both templates are provided in this folder. You can copy and adapt either one to your needs.
+Both templates are provided in this folder. You can copy and adapt either one to your needs. Each template is self-documented with comments and field explanations inside the file.
 
 ## Example YAML Configuration
 
