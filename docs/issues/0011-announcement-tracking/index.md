@@ -26,6 +26,8 @@ Track and manage all announcements and outreach efforts for the project across v
 | Telegram (OSS groups)         |                                           | Not started    | Add relevant groups       |
 | Facebook Groups (OSS, Linux)  |                                           | Not started    | Add relevant groups       |
 | Other (suggest!)              |                                           |                |                           |
+| Reddit r/immich (2024)              | https://www.reddit.com/r/immich/comments/1pse1qk/comment/nvcmpf0/ | Announced      | Previous discussion, good feedback |
+| Reddit r/immich (2026)              | (pending/new link) | Planned        | New major release announcement |
 
 ## Acceptance Criteria
 - All relevant platforms are listed and links are provided.
