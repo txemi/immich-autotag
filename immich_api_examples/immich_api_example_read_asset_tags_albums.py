@@ -9,10 +9,10 @@ from typeguard import typechecked
 
 
 # Import configuration from the centralized module
-from immich_autotag.config.experimental_config.manager import ExperimentalConfigManager
-manager = ExperimentalConfigManager.get_instance()
+from immich_autotag.config.manager import ConfigManager
+manager = ConfigManager.get_instance()
 if not manager or not manager.config or not manager.config.server:
-    raise RuntimeError("ExperimentalConfigManager or server config not initialized")
+    raise RuntimeError("ConfigManager or server config not initialized")
 IMMICH_BASE_URL = f"http://{manager.config.server.host}:{manager.config.server.port}/api"
 API_KEY = manager.config.server.api_key
 PHOTO_ID = "abc02a80-ae50-4989-aebd-55263da48191"
