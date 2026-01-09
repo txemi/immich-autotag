@@ -1,5 +1,4 @@
-def print_welcome_links(config):
-def print_config_help():
+
 import webbrowser
 from typeguard import typechecked
 
