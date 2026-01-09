@@ -33,7 +33,7 @@ def process_assets_sequential(
         "Entering asset processing loop...",
         level=LogLevel.PROGRESS,
     )
-    log("[DEBUG] Antes de iterar assets (inicio del for)", level=LogLevel.DEBUG)
+    log("[DEBUG] Before iterating assets (start of for loop)", level=LogLevel.DEBUG)
     count = 0
     last_log_time = time.time()
     try:
