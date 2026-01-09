@@ -1,0 +1,31 @@
+# Exclude sensitive or user-specific config files from the package
+exclude immich_autotag/config/user_config.py
+exclude immich_autotag/config/user_config_template.yaml
+exclude immich_autotag/config/user.py
+exclude immich_autotag/config/user_real_config_pydantic.py
+exclude immich_autotag/config/user_real_config.yaml
+exclude immich_autotag/config/user_config.yaml
+exclude immich_autotag/config/user_real_config.py
+exclude immich_autotag/config/back
+
+# Exclude all __pycache__ directories
+prune **/__pycache__
+
+# Exclude test folders if any (add more as needed)
+prune tests
+
+# Exclude local virtual environments and editor folders
+exclude .venv
+exclude .vscode
+exclude .idea
+
+# Exclude logs and profile stats
+exclude logs
+exclude profile.stats
+
+# Exclude scripts and examples if not needed in the package
+prune scripts
+prune immich_api_examples
+
+# Exclude client folder if not needed in the package
+prune immich-client

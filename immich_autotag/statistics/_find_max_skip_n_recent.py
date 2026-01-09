@@ -10,7 +10,7 @@ from immich_autotag.statistics.run_statistics import RunStatistics
 @typechecked
 def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[Path]:
     """
-    Devuelve una lista de carpetas de logs de las últimas max_age_hours horas.
+    Returns a list of log folders from the last max_age_hours hours.
     """
     now = datetime.now()
     recent_dirs: List[tuple[datetime, Path]] = []
@@ -23,7 +23,7 @@ def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[
                     recent_dirs.append((dt, subdir))
             except Exception:
                 continue
-    # Ordenar por fecha descendente
+    # Sort by date descending
     recent_dirs.sort(reverse=True)
     return [d for _, d in recent_dirs]
 
@@ -33,7 +33,7 @@ def get_max_skip_n_from_recent(
     logs_dir: Path, max_age_hours: int = 3, overlap: int = 100
 ) -> Optional[int]:
     """
-    Busca todos los run_statistics.yaml de las últimas max_age_hours horas y devuelve el máximo count menos overlap.
+    Searches all run_statistics.yaml from the last max_age_hours hours and returns the maximum count minus overlap.
     """
     max_count = 0
     for d in find_recent_statistics_dirs(logs_dir, max_age_hours):

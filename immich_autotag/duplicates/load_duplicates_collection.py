@@ -41,7 +41,7 @@ def load_duplicates_collection(client: Client) -> DuplicateCollectionWrapper:
         print(
             f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}"
         )
-        # Guardar la caché en el directorio de la ejecución actual
+        # Save the cache in the current execution directory
         cache_path = get_run_output_dir() / "duplicates_cache.pkl"
         import pickle
 

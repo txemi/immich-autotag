@@ -5,7 +5,7 @@ from immich_autotag.classification.classification_rule_wrapper import (
 )
 
 
-# Representa el resultado de un match: referencia a la regla y al elemento macheado (tag o álbum)
+# Represents the result of a match: reference to the rule and the matched element (tag or album)
 @attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
 class MatchResult:
     rule: ClassificationRuleWrapper = attr.ib(
@@ -25,5 +25,5 @@ class MatchResult:
         has_album = self.album_name is not None
         if has_tag == has_album:
             raise ValueError(
-                f"MatchResult debe tener o tag_name o album_name, pero no ambos ni ninguno. tag_name={self.tag_name}, album_name={self.album_name}"
+                f"MatchResult must have either tag_name or album_name, but not both or neither. tag_name={self.tag_name}, album_name={self.album_name}"
             )

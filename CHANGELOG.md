@@ -21,8 +21,6 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - **Experimental:** Ability to resume processing from the last processed asset (checkpoint resume). *(Not enabled by default; will be improved in the next version.)* ([issue](docs/issues/0008-statistics-checkpoint/))
 - **Experimental:** Ability to **automatically create and assign albums** based on folders from the file system library. *(Not enabled by default; will be improved in the next version.)* ([issue](docs/issues/0004-album-detection/))
 
-
-
 # [0.25] - 2026-01-09
 ### Added
 - New, more structured and flexible configuration system, allowing configuration to be defined both in Python code and in a YAML text file. ([issue](docs/issues/0009-config-system-refactor/))
@@ -30,9 +28,15 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - New, more structured configuration system for easier and safer customization. ([issue](docs/issues/0009-config-system-refactor/))
 - More abstract and flexible asset categorization, based on tags and albums, allowing for broader and more powerful organization than previous strict approaches. ([issue](docs/issues/0009-config-system-refactor/))
 
+# [0.30] - 2026-01-09
+### Added
+- **Instant CLI execution from PyPI:** Users can now run the autotagging application with a single command, thanks to full pipx support and streamlined packaging. No manual setup or environment creation required—just copy your configuration and launch!
+- **Quick Start documentation:** Clear instructions and links for configuration, enabling new users to get started in seconds.
+- **Self-documented configuration templates:** Both YAML and Python configuration templates are now provided and fully documented, making setup and customization effortless.
 
+> This release marks a major milestone in usability: Immich autotag can be installed and executed directly from the repository or PyPI, making it accessible to everyone with minimal effort.
 
-## [0.30] - YYYY-MM-DD
+## [0.40] - YYYY-MM-DD
 ### Added
 
 - Support for running as a containerized service, enabling scheduled executions to keep tagging and corrections up to date automatically, without requiring manual script launches after manual updates or categorizations. ([issue](docs/issues/0011-container-scheduled-execution/))

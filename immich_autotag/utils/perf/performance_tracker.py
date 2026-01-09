@@ -23,14 +23,14 @@ class PerformanceTracker:
 
     def __attrs_post_init__(self):
         self.last_log_time = self.start_time
-        # Validación estricta: si falta algo esencial, peta
+        # Strict validation: if something essential is missing, crash
         if self.estimation_mode == TimeEstimationMode.EWMA and self.estimator is None:
             raise ValueError(
-                "[PERFORMANCE TRACKER] El modo EWMA requiere un estimator válido. No se puede inicializar el tracker."
+                "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
         if self.total_to_process is None:
             raise ValueError(
-                "[PERFORMANCE TRACKER] total_to_process no está definido. No se puede inicializar el tracker."
+                "[PERFORMANCE TRACKER] total_to_process is not defined. Cannot initialize the tracker."
             )
 
     def set_progress_timing(self, start_time: float, log_interval: int = 5):

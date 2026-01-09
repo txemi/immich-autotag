@@ -21,18 +21,18 @@ def get_run_output_dir(base_dir="logs") -> Path:
 @typechecked
 def get_previous_run_output_dir(base_dir="logs") -> Path | None:
     """
-    Busca el directorio de ejecución previa más reciente en base_dir.
-    Retorna Path o None si no hay ejecuciones previas.
+    Searches for the most recent previous execution directory in base_dir.
+    Returns Path or None if there are no previous executions.
     """
     base = Path(base_dir)
     if not base.exists() or not base.is_dir():
         return None
-    # Filtrar solo carpetas con formato esperado
+    # Filter only folders with expected format
     dirs = [d for d in base.iterdir() if d.is_dir() and "PID" in d.name]
     if not dirs:
         return None
 
-    # Ordenar por fecha en el nombre (YYYYMMDD_HHMMSS)
+    # Sort by date in the name (YYYYMMDD_HHMMSS)
     def extract_datetime(d):
         try:
             dt_str = d.name.split("_PID")[0]
@@ -41,7 +41,7 @@ def get_previous_run_output_dir(base_dir="logs") -> Path | None:
             return datetime.min
 
     dirs.sort(key=extract_datetime, reverse=True)
-    # Retornar la más reciente (que no sea la actual)
+    # Return the most recent (that is not the current one)
     current = get_run_output_dir(base_dir)
     for d in dirs:
         if d != current:

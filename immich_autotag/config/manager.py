@@ -1,4 +1,4 @@
-# Para cargar el checkpoint, importar desde immich_autotag.duplicates.checkpoint_loader
+# To load the checkpoint, import from immich_autotag.duplicates.checkpoint_loader
 """
 manager.py
 
@@ -12,7 +12,9 @@ import attrs
 import yaml
 from typeguard import typechecked
 
+
 from .models import UserConfig
+from .config_finder import find_user_config, load_python_config, load_yaml_config
 
 _instance = None
 _instance_created = False
@@ -31,20 +33,35 @@ class ConfigManager:
             )
         _instance_created = True
         _instance = self
-        # Cargar la configuración automáticamente al crear el singleton
-        self.load_config_from_real_python()
-        # Inicializar skip_n con el contador de la última ejecución previa (con solapamiento)
+        # --- New configuration search and loading logic ---
+        config_type, config_path = find_user_config()
+        if config_type == "python":
+            config_obj = load_python_config(config_path)
+            if isinstance(config_obj, UserConfig):
+                self.config = config_obj
+            else:
+                # Intentar validar si es un dict
+                self.config = UserConfig.model_validate(config_obj)
+        elif config_type == "yaml":
+            config_data = load_yaml_config(config_path)
+            self.config = UserConfig.model_validate(config_data)
+        else:
+            from immich_autotag.utils.user_help import print_config_help
+            print_config_help()
+            raise FileNotFoundError(
+                "No configuration found. See the configuration guide above."
+            )
+        # Initialize skip_n with the counter from the last previous execution (with overlap)
         try:
             from immich_autotag.statistics.statistics_checkpoint import (
                 get_previous_skip_n,
             )
-
             prev_skip_n = get_previous_skip_n()
             if prev_skip_n is not None and hasattr(self.config, "skip_n"):
                 self.config.skip_n = prev_skip_n
         except Exception as e:
             print(
-                f"[WARN] No se pudo inicializar skip_n desde la estadística previa: {e}"
+                f"[WARN] Could not initialize skip_n from previous statistics: {e}"
             )
         self.print_config()
 
@@ -67,18 +84,15 @@ class ConfigManager:
     @typechecked
     def load_config_from_real_python(self):
         """
-        Loads the configuration by directly importing user_config from user_config.py.
-        Does not use importlib or dynamic logic, only explicit import.
+        (Legacy) Loads the configuration by directly importing user_config from user_config.py (development mode only).
         """
         from .user_config import user_config
-
         self.config = user_config
-        # Save a record of the loaded config to logs/output
         self.dump_to_yaml()
 
     @typechecked
     def dump_to_yaml(self, path: "str | Path | None" = None):
-        """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
+        """Dumps the current configuration to a YAML file in the default logs/output folder."""
         if self.config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
         from pathlib import Path as _Path
@@ -99,20 +113,20 @@ class ConfigManager:
 
     @typechecked
     def print_config(self):
-        """Imprime la configuración actual usando el sistema de logs (nivel FOCUS)."""
+        """Prints the current configuration using the logging system (FOCUS level)."""
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         if self.config is None:
             log("[WARN] No configuration loaded.", level=LogLevel.FOCUS)
-            raise RuntimeError("No hay configuración cargada para imprimir.")
+            raise RuntimeError("No configuration loaded to print.")
         import pprint
 
         config_str = pprint.pformat(self.config.model_dump())
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
 
 
-# --- Carga automática al inicio (ejemplo de uso) ---
+# --- Automatic loading at startup (usage example) ---
 
 
 @typechecked

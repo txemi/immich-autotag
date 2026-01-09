@@ -26,7 +26,7 @@ class ConversionWrapper:
     def destination_album_patterns(self) -> list[str]:
         return self.conversion.destination.album_name_patterns or []
 
-    # Puedes añadir más métodos utilitarios según necesidades
+    # You can add more utility methods as needed
     @typechecked
     def get_single_origin_tag(self) -> str:
         tags = self.source_tags()

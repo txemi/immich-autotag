@@ -18,6 +18,7 @@ from immich_autotag.tags.list_tags import list_tags
 
 @typechecked
 def run_main():
+    from immich_autotag.utils.user_help import print_welcome_links
 
     import re
 
@@ -34,6 +35,7 @@ def run_main():
     manager = ConfigManager.get_instance()
     if not manager or not manager.config or not manager.config.server:
         raise RuntimeError("ConfigManager or server config not initialized")
+    print_welcome_links(manager.config)
     api_key = manager.config.server.api_key
     client = Client(
         base_url=get_immich_base_url(),
@@ -110,3 +112,4 @@ def run_main():
     from immich_autotag.logging.utils import log
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
+    print_welcome_links(manager.config)
