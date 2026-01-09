@@ -346,7 +346,7 @@ class AssetResponseWrapper:
 
         tag_mod_report = ModificationReport.get_instance()
 
-        # Obtener el UserWrapper de forma limpia y encapsulada
+        # Get the UserWrapper in a clean and encapsulated way
         user_wrapper = UserResponseWrapper.from_context(self.context)
 
         tag = self.context.tag_collection.find_by_name(tag_name)
@@ -670,7 +670,7 @@ class AssetResponseWrapper:
                     f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} ({self.original_file_name}) because it's no longer in conflict.",
                     level=LogLevel.FOCUS,
                 )
-                # Si user es None, obtener el wrapper desde el contexto
+                # If user is None, get the wrapper from the context
                 if user is None:
                     user = UserResponseWrapper.from_context(self.context)
                 self.remove_tag_by_name(tag_name, user=user)

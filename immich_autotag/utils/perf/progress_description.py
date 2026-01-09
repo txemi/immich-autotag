@@ -14,8 +14,8 @@ def get_progress_description_from_perf_tracker(
 ) -> str:
     """
     Returns a textual description of current progress, including percentage and time estimation if available.
-    perf_tracker: PerformanceTracker con los atributos necesarios.
-    current_count: número de elementos procesados (opcional, por defecto 0)
+    perf_tracker: PerformanceTracker with the necessary attributes.
+    current_count: number of processed elements (optional, default 0)
     """
     if perf_tracker is None:
         return "Progress not available: PerformanceTracker not initialized."

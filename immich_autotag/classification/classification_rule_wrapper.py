@@ -43,4 +43,4 @@ class ClassificationRuleWrapper:
             re.match(pattern, album_name) for pattern in self.rule.album_name_patterns
         )
 
-    # Puedes añadir más métodos utilitarios según necesidades
+    # You can add more utility methods as needed

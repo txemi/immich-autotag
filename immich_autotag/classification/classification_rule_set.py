@@ -1,4 +1,4 @@
-# Importa la clase MatchResult desde el nuevo archivo
+# Imports the MatchResult class from the new file
 from typing import TYPE_CHECKING, Dict, List
 
 import attrs
@@ -87,7 +87,7 @@ class ClassificationRuleSet:
         """
         Returns True if the album_name matches any album_name_patterns in any rule.
         """
-        # Usar la lógica de MatchResultList para centralizar matches
+        # Use MatchResultList logic to centralize matches
         for wrapper in self.rules:
             if wrapper.matches_album(album_name):
                 return True

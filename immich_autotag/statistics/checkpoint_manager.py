@@ -54,11 +54,11 @@ class CheckpointManager:
                 )
             else:
                 stats = self.stats_manager.load_latest()
-                # Si la última ejecución terminó correctamente, empezar de cero
+                # If the last execution finished correctly, start from zero
                 if stats and stats.finished_at:
                     last_processed_id, skip_n = None, 0
                     log(
-                        "[CHECKPOINT] Última ejecución terminó correctamente. Se empieza de cero.",
+                        "[CHECKPOINT] Last execution finished correctly. Starting from zero.",
                         level=LogLevel.PROGRESS,
                     )
                 elif stats:
