@@ -22,6 +22,7 @@ def setup_logging(level: LogLevel = LogLevel.PROGRESS) -> None:
     logging.basicConfig(
         format="[%(levelname)s] %(message)s",
         level=level.value,
+        force=True,
     )
 
 

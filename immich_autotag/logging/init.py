@@ -22,6 +22,7 @@ def initialize_logging() -> None:
     filter_asset_links = manager.config.filter_out_asset_links
     if filter_asset_links is None:
         raise RuntimeError("filter_out_asset_links is not set in configuration!")
+    # Siempre forzamos el nivel PROGRESS para ver los logs de paginado
     if filter_asset_links and len(filter_asset_links) > 0:
         setup_logging(level=LogLevel.FOCUS)
         log(
@@ -30,7 +31,13 @@ def initialize_logging() -> None:
         )
     else:
         setup_logging(level=LogLevel.PROGRESS)
-        log(
-            "[LOG] Logging system initialized: PROGRESS level (normal mode)",
-            level=LogLevel.PROGRESS,
-        )
+    # Logs de prueba para cada nivel
+    log("[TEST] Log ERROR", level=LogLevel.ERROR)
+    log("[TEST] Log IMPORTANT", level=LogLevel.IMPORTANT)
+    log("[TEST] Log PROGRESS", level=LogLevel.PROGRESS)
+    log("[TEST] Log FOCUS", level=LogLevel.FOCUS)
+    log("[TEST] Log DEBUG", level=LogLevel.DEBUG)
+    log(
+        "[LOG] Logging system initialized: PROGRESS level (forzado)",
+        level=LogLevel.PROGRESS,
+    )
