@@ -86,11 +86,20 @@ class TagStatsManager:
             self._increment_asset_date_update()
         elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
             self._increment_album_assignment(album)
+        elif kind == ModificationKind.ALBUM_DATE_MISMATCH:
+            self._increment_album_date_mismatch()
         else:
             raise NotImplementedError(
                 f"increment_tag_action not implemented for ModificationKind: {kind}"
             )
+    @typechecked
+    def _increment_album_date_mismatch(self) -> None:
+        stats = self.stats_manager.get_stats()
+        if not hasattr(stats, "album_date_mismatch_count"):
+            stats.album_date_mismatch_count = 0
+        stats.album_date_mismatch_count += 1
 
+    @typechecked
     def _increment_tag_error(self, tag: "TagWrapper") -> None:
         tag_name = tag.name
         stats = self.stats_manager.get_stats()
@@ -101,11 +110,13 @@ class TagStatsManager:
         stats.output_tag_counters[tag_name].errors += 1
         self.stats_manager._save_to_file()
 
+    @typechecked
     def _increment_asset_date_update(self) -> None:
         stats = self.stats_manager.get_stats()
         stats.update_asset_date_count += 1
         self.stats_manager._save_to_file()
 
+    @typechecked
     def _increment_album_assignment(self, album: "AlbumResponseWrapper | None") -> None:
         if album is not None:
             from immich_autotag.albums.album_response_wrapper import (
