@@ -580,8 +580,9 @@ class AssetResponseWrapper:
             if fail_fast:
                 raise Exception(msg)
             else:
-                if verbose:
-                    print(msg)
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+                log(msg, level=LogLevel.ERROR)
             return True
         return False
 
