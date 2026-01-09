@@ -1,3 +1,4 @@
+
 [project]
 name = "immich-autotag"
 version = "0.20.0"
@@ -19,6 +20,9 @@ classifiers = [
 	"Topic :: Multimedia :: Graphics :: Graphics Conversion",
 	"Topic :: Utilities"
 ]
+# Incluir ambos paquetes en la distribución
+[tool.setuptools.packages.find]
+include = ["immich_autotag*", "immich_client*"]
 dependencies = [
 	"httpx>=0.23.0,<0.29.0",
 	"attrs>=22.2.0",
