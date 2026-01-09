@@ -18,6 +18,16 @@ from immich_autotag.tags.list_tags import list_tags
 
 @typechecked
 def run_main():
+    def print_welcome_links(config):
+        host = config.server.host
+        port = config.server.port
+        print("\nImmich autotagging process started!")
+        print("You can monitor the results and progress at the following links:")
+        print(f"- Conflict tags: http://{host}:{port}/tags?path=autotag_output_conflict")
+        print(f"- Albums:        http://{host}:{port}/albums")
+        print(f"- Unknown tags:  http://{host}:{port}/tags?path=autotag_output_unknown")
+        print("\nFor configuration details, see:")
+        print("https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/README_config.md\n")
 
     import re
 
@@ -34,6 +44,7 @@ def run_main():
     manager = ConfigManager.get_instance()
     if not manager or not manager.config or not manager.config.server:
         raise RuntimeError("ConfigManager or server config not initialized")
+    print_welcome_links(manager.config)
     api_key = manager.config.server.api_key
     client = Client(
         base_url=get_immich_base_url(),
@@ -110,3 +121,4 @@ def run_main():
     from immich_autotag.logging.utils import log
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
+    print_welcome_links(manager.config)
