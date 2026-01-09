@@ -46,9 +46,10 @@ class ConfigManager:
             config_data = load_yaml_config(config_path)
             self.config = UserConfig.model_validate(config_data)
         else:
+            from immich_autotag.utils.user_help import print_config_help
+            print_config_help()
             raise FileNotFoundError(
-                "No se encontró configuración válida en modo desarrollo ni en XDG/home. "
-                "Consulta la documentación para crear tu archivo de configuración."
+                "No configuration found. See the configuration guide above."
             )
         # Initialize skip_n with the counter from the last previous execution (with overlap)
         try:
