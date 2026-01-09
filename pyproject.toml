@@ -27,7 +27,11 @@ dependencies = [
 	"typeguard",
 	"pandas>=1.3.0",
 	"pyyaml",
-	"pydantic"
+	"pydantic",
+	# Dependencias explícitas para immich_client
+	"certifi",
+	"idna",
+	"typing_extensions"
 ]
 # Include both packages in the distribution
 [tool.setuptools.packages.find]
