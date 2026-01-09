@@ -2,7 +2,15 @@
 # Script para mover immich_client a la raíz, construir y subir a TestPyPI, y restaurar la carpeta
 # Uso: ./scripts/package_and_upload.sh
 
+
 set -euo pipefail
+set -x
+# Comprobar que el virtual environment estándar está activo
+if [ -z "${VIRTUAL_ENV:-}" ] || [ "$(basename "$VIRTUAL_ENV")" != ".venv" ]; then
+  echo "[ERROR] Debes activar el entorno virtual estándar (.venv) antes de ejecutar este script."
+  echo "Usa: source .venv/bin/activate"
+  exit 1
+fi
 
 # Obtener el directorio donde está este script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
