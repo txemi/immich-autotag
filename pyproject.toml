@@ -1,7 +1,7 @@
 
 [project]
 name = "immich-autotag"
-version = "0.20.1"
+version = "0.20.2"
 description = "Immich autotagging and album management system"
 authors = [
 	{ name = "txemi", email = "txemitron@gmail.com" }
@@ -31,7 +31,7 @@ dependencies = [
 	# Dependencias explícitas para immich_client
 	"certifi",
 	"idna",
-	"typing_extensions"
+	"typing_extensions",
 	"six",
 	"urllib3",
 	"setuptools",

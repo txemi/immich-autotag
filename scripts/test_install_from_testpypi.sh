@@ -4,8 +4,12 @@
 
 set -euo pipefail
 
-TEMP_DIR="prueba_instalacion_temp"
+
+# Extraer la versión desde pyproject.toml
+PYPROJECT_TOML="$(dirname "$0")/../pyproject.toml"
 PKG_NAME="immich-autotag"
+PKG_VERSION=$(grep '^version' "$PYPROJECT_TOML" | head -n1 | cut -d'=' -f2 | tr -d ' "')
+TEMP_DIR="prueba_instalacion_temp"
 
 # Crear carpeta temporal y entrar en ella
 rm -rf "$TEMP_DIR"
@@ -16,8 +20,8 @@ cd "$TEMP_DIR"
 python3 -m venv venv-test
 source venv-test/bin/activate
 
-# Instalar el paquete desde TestPyPI (sin dependencias para aislar la prueba)
-pip install --index-url https://test.pypi.org/simple/ --no-deps "$PKG_NAME"
+# Instalar el paquete desde TestPyPI, forzando la versión y sin caché
+pip install --index-url https://test.pypi.org/simple/ --no-cache-dir --upgrade --no-deps "$PKG_NAME==$PKG_VERSION"
 
 # Probar la importación del cliente generado
 python -c "import immich_client; print('Importación exitosa de immich_client')"
