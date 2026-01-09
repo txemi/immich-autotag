@@ -4,3 +4,5 @@ __pycache__
 /logs
 /.idea
 /profile.stats
+/dist
+/immich_autotag.egg-info
