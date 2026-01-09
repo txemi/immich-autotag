@@ -67,10 +67,10 @@ class ConfigManager:
     @typechecked
     def load_config_from_real_python(self):
         """
-        Loads the configuration by directly importing user_real_config from user_real_config_pydantic.py.
+        Loads the configuration by directly importing user_real_config from user_real_config.py.
         Does not use importlib or dynamic logic, only explicit import.
         """
-        from .user_real_config_pydantic import user_real_config
+        from .user_real_config import user_real_config
 
         self.config = user_real_config
         # Save a record of the loaded config to logs/output
