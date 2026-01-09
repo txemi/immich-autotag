@@ -5,16 +5,18 @@ Module for auditing and reporting entity modifications (tags, albums, assets, et
 from __future__ import annotations
 
 import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import ParseResult
 
+import attrs
 
 from immich_autotag.utils.run_output_dir import get_run_output_dir
-from pathlib import Path
-import attrs
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.tags.modification_kind import ModificationKind
@@ -81,18 +83,19 @@ class ModificationReport:
     def add_modification(
         self,
         kind: ModificationKind,
-        asset_wrapper: Any,
-        tag: Any = None,
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+        tag: Optional["TagWrapper"] = None,
         album: Optional["AlbumResponseWrapper"] = None,
-        old_value: Any = None,
-        new_value: Any = None,
+        old_value: Optional[str] = None,
+        new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
-        # Import local para evitar circularidad
+        # Local import to avoid circularity
         if album is not None:
-            from immich_autotag.albums.album_response_wrapper import \
-                AlbumResponseWrapper
+            from immich_autotag.albums.album_response_wrapper import (
+                AlbumResponseWrapper,
+            )
 
             assert isinstance(album, AlbumResponseWrapper)
         """
@@ -107,15 +110,17 @@ class ModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
-        # Si el usuario es None, obtenerlo usando el contexto del asset_wrapper (si existe)
+        # If user is None, obtain it using the asset_wrapper context (if it exists)
         user_instance = user
         if user_instance is None:
             user_instance = UserResponseWrapper.from_context(asset_wrapper.context)
 
         # Calcular progreso usando StatisticsManager (sin try/except)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
-        stats = StatisticsManager.get_instance().get_stats()
-        progress_str = stats.format_progress()
+
+        stats_manager = StatisticsManager.get_instance()
+        stats = stats_manager.get_stats()
+        progress_str = stats_manager.get_progress_description()
 
         entry = ModificationEntry(
             datetime=datetime.datetime.now(),
@@ -130,6 +135,12 @@ class ModificationReport:
             progress=progress_str,
         )
         self.modifications.append(entry)
+        # Centralized statistics update for tag actions (now encapsulated in StatisticsManager)
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_tag_action(
+            tag=tag, kind=kind, album=album
+        )
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
@@ -140,8 +151,8 @@ class ModificationReport:
     def add_tag_modification(
         self,
         kind: ModificationKind,
-        asset_wrapper: Any,
-        tag: Any = None,
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+        tag: Optional["TagWrapper"] = None,
         old_value: Optional[str] = None,
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
@@ -164,7 +175,7 @@ class ModificationReport:
     def add_album_modification(
         self,
         kind: ModificationKind,
-        album: AlbumResponseWrapper,
+        album: "AlbumResponseWrapper",
         old_value: Optional[str] = None,
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
@@ -192,8 +203,8 @@ class ModificationReport:
     def add_assignment_modification(
         self,
         kind: ModificationKind,
-        asset_wrapper: Any,
-        album: Optional[AlbumResponseWrapper] = None,
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+        album: Optional["AlbumResponseWrapper"] = None,
         user: Optional[UserResponseWrapper] = None,
     ) -> None:
         assert kind in {
@@ -237,8 +248,7 @@ class ModificationReport:
         """
         Build a link for the modification entry based on kind and wrappers.
         """
-        from immich_autotag.utils.get_immich_album_url import \
-            get_immich_photo_url
+        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         # If it's an asset, use the wrapper method
         if (

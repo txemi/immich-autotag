@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
+from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
+from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
@@ -26,14 +28,10 @@ from immich_client.models.update_asset_dto import UpdateAssetDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
-from immich_autotag.classification.match_classification_result import \
-    MatchClassificationResult
-from immich_autotag.config.user import (ALBUM_PATTERN,
-                                        AUTOTAG_CATEGORY_CONFLICT,
-                                        AUTOTAG_CATEGORY_UNKNOWN,
-                                        CLASSIFIED_TAGS,
-                                        ENABLE_ALBUM_DETECTION_FROM_FOLDERS,
-                                        VERBOSE_LOGGING)
+from immich_autotag.classification.match_classification_result import (
+    MatchClassificationResult,
+)
+from immich_autotag.config.manager import ConfigManager
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
@@ -80,8 +78,7 @@ class AssetResponseWrapper:
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, including link to the photo in Immich
-        from immich_autotag.logging.utils import (is_log_level_enabled,
-                                                  log_debug)
+        from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 
         if is_log_level_enabled(LogLevel.DEBUG):
             photo_url_obj = self.get_immich_photo_url()
@@ -91,11 +88,9 @@ class AssetResponseWrapper:
                 f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
             )
             log_debug(f"[BUG] {log_msg}")
-        from immich_autotag.report.modification_report import \
-            ModificationReport
+        from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
-        from immich_autotag.users.user_response_wrapper import \
-            UserResponseWrapper
+        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
         user_wrapper = UserResponseWrapper.from_context(self.context)
@@ -254,16 +249,16 @@ class AssetResponseWrapper:
         from immich_client.api.tags import untag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-        from immich_autotag.logging.utils import (is_log_level_enabled,
-                                                  log_debug)
+        from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 
         # Find all tag objects on the asset with the given name (case-insensitive)
         tags_to_remove = [
             tag for tag in self.asset.tags if tag.name.lower() == tag_name.lower()
         ]
-        # Estadísticas: cuenta intento de eliminación (solo si hay alguno a eliminar)
+
         if tags_to_remove:
-            StatisticsManager.get_instance().increment_tag_removed(tag_name)
+            # Use the TagWrapper for statistics, not the string
+            tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -284,8 +279,7 @@ class AssetResponseWrapper:
         tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
 
         removed_any = False
-        from immich_autotag.report.modification_report import \
-            ModificationReport
+        from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
@@ -338,8 +332,6 @@ class AssetResponseWrapper:
     def add_tag_by_name(
         self,
         tag_name: str,
-        verbose: bool = VERBOSE_LOGGING,
-        info: bool = VERBOSE_LOGGING,
         fail_if_exists: bool = False,
     ) -> bool:
         """
@@ -349,10 +341,8 @@ class AssetResponseWrapper:
         from immich_client.api.tags import tag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-        from immich_autotag.report.modification_report import \
-            ModificationReport
-        from immich_autotag.users.user_response_wrapper import \
-            UserResponseWrapper
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
 
@@ -370,17 +360,21 @@ class AssetResponseWrapper:
                 raise ValueError(
                     f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
                 )
-            if verbose:
-                print(
-                    f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping."
-                )
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log(
+                f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping.",
+                level=LogLevel.DEBUG,
+            )
             return False
         # Extra checks and logging before API call
         if not tag or tag.id is None:
             error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
+            from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
-            log(error_msg, level="ERROR")
+            log(error_msg, level=LogLevel.ERROR)
             from immich_autotag.tags.modification_kind import ModificationKind
 
             tag_mod_report.add_modification(
@@ -393,10 +387,12 @@ class AssetResponseWrapper:
             return False
         if not self.id:
             error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"
-            print(error_msg)
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
+                from immich_autotag.tags.modification_kind import ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=None,
@@ -407,22 +403,27 @@ class AssetResponseWrapper:
                     extra={"error": error_msg},
                 )
             return False
-        if verbose:
-            print(
-                f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}"
-            )
-        # Estadísticas: cuenta añadido
-        StatisticsManager.get_instance().increment_tag_added(tag_name)
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(
+            f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}",
+            level=LogLevel.DEBUG,
+        )
+
+        # Statistics update is handled by modification_report, not directly here
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
         try:
             response = tag_assets.sync(
                 id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
             )
         except Exception as e:
             error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
-            print(error_msg)
+            log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
+                from immich_autotag.tags.modification_kind import ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_wrapper=self,
@@ -432,21 +433,18 @@ class AssetResponseWrapper:
                     extra={"error": error_msg},
                 )
             return False
-        if verbose:
-            print(f"[DEBUG] Response tag_assets: {response}")
+        log(f"[DEBUG] Response tag_assets: {response}", level=LogLevel.DEBUG)
         # Request the asset again and check if the tag is applied
         updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
-        if verbose:
-            print(f"[DEBUG] Asset after tag_assets: {updated_asset}")
+        log(f"[DEBUG] Asset after tag_assets: {updated_asset}", level=LogLevel.DEBUG)
         tag_names = (
             [tag.name for tag in updated_asset.tags] if updated_asset.tags else []
         )
         if tag_name not in tag_names:
             error_msg = f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
-            print(error_msg)
+            log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import \
-                    ModificationKind
+                from immich_autotag.tags.modification_kind import ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_wrapper=self,
@@ -456,10 +454,10 @@ class AssetResponseWrapper:
                     extra={"error": error_msg},
                 )
             return False
-        if info:
-            print(
-                f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}"
-            )
+        log(
+            f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}",
+            level=LogLevel.DEBUG,
+        )
         from immich_autotag.tags.modification_kind import ModificationKind
 
         tag_mod_report.add_modification(
@@ -498,21 +496,13 @@ class AssetResponseWrapper:
         - Has any of the tags in CLASSIFIED_TAGS.
         - Belongs to an album whose name matches ALBUM_PATTERN.
         """
-        import re
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
+        )
 
-        # Check tags
-        asset_tags = self.get_tag_names()
-        for tag in asset_tags:
-            if tag.lower() in [t.lower() for t in CLASSIFIED_TAGS]:
-                return True
-
-        # Check albums
-        album_names = self.get_album_names()
-        for name in album_names:
-            if re.match(ALBUM_PATTERN, name):
-                return True
-
-        return False
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        # If any rule matches, asset is classified
+        return bool(rule_set.matching_rules(self))
 
     @property
     def original_file_name(self) -> str:
@@ -558,28 +548,22 @@ class AssetResponseWrapper:
         """
         Returns an object with the detail of the tags and albums that matched classification.
         """
-        import re
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
+        )
 
-        tags_matched = []
-        albums_matched = []
-        # Tags
-        asset_tags = self.get_tag_names()
-        for tag in asset_tags:
-            if tag.lower() in [t.lower() for t in CLASSIFIED_TAGS]:
-                tags_matched.append(tag)
-        # Albums
-        album_names = self.get_album_names()
-        for name in album_names:
-            if re.match(ALBUM_PATTERN, name):
-                albums_matched.append(name)
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        match_results = rule_set.matching_rules(self)
+        tags_matched = [m.tag_name for m in match_results if m.tag_name is not None]
+        albums_matched = [
+            m.album_name for m in match_results if m.album_name is not None
+        ]
         return MatchClassificationResult(
             tags_matched=tags_matched, albums_matched=albums_matched
         )
 
     @typechecked
-    def check_unique_classification(
-        self, fail_fast: bool = True, verbose: bool = VERBOSE_LOGGING
-    ) -> bool:
+    def check_unique_classification(self, fail_fast: bool = True) -> bool:
         """
         Checks if the asset is classified by more than one criterion (tag or album).
         Now considers conflict if the total number of matching tags and albums is greater than 1.
@@ -596,8 +580,10 @@ class AssetResponseWrapper:
             if fail_fast:
                 raise Exception(msg)
             else:
-                if verbose:
-                    print(msg)
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+
+                log(msg, level=LogLevel.ERROR)
             return True
         return False
 
@@ -605,19 +591,20 @@ class AssetResponseWrapper:
     def ensure_autotag_category_unknown(
         self,
         classified: bool,
-        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
         Idempotent: does nothing if already in correct state.
         """
+        from immich_autotag.config.manager import (
+            ConfigManager,
+        )
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = AUTOTAG_CATEGORY_UNKNOWN
-        from immich_autotag.report.modification_report import \
-            ModificationReport
+        tag_name = ConfigManager.get_instance().config.auto_tags.category_unknown
+        from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         if not classified:
@@ -650,18 +637,19 @@ class AssetResponseWrapper:
         self,
         conflict: bool,
         user: UserResponseWrapper | None = None,
-        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         """
+        from immich_autotag.config.manager import (
+            ConfigManager,
+        )
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = AUTOTAG_CATEGORY_CONFLICT
-        from immich_autotag.report.modification_report import \
-            ModificationReport
+        tag_name = ConfigManager.get_instance().config.auto_tags.category_conflict
+        from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         if conflict:
@@ -695,7 +683,7 @@ class AssetResponseWrapper:
     @typechecked
     def apply_tag_conversions(
         self,
-        tag_conversions: list,
+        tag_conversions: TagConversions,
     ) -> None:
         """
         For each tag conversion (origin -> destination), if the asset has the origin tag:
@@ -711,8 +699,16 @@ class AssetResponseWrapper:
         changes = []
 
         for conv in tag_conversions:
-            origin = conv["origin"]
-            dest = conv["destination"]
+            assert isinstance(
+                conv, ConversionWrapper
+            ), f"Tag conversion must be a ConversionWrapper, got {type(conv)}"
+            origin = conv.get_single_origin_tag()
+            dest_tags = conv.destination_tags()
+            if len(dest_tags) != 1:
+                raise NotImplementedError(
+                    "Only single destination tag conversions are implemented."
+                )
+            dest = dest_tags[0]
             has_origin = self.has_tag(origin)
             has_dest = self.has_tag(dest)
             if has_origin and not has_dest:
@@ -754,14 +750,16 @@ class AssetResponseWrapper:
     def try_detect_album_from_folders(self) -> str | None:
         """
         Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
-        Only runs if ENABLE_ALBUM_DETECTION_FROM_FOLDERS is True, the asset does not already belong to an album,
+        Only runs if enable_album_detection_from_folders (from config) is True, the asset does not already belong to an album,
         and does not have a classified tag. Returns the detected album name or None. Raises NotImplementedError for ambiguous cases.
         Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
         If the date is already in the containing folder, keep as before.
         """
         import re
 
-        if not ENABLE_ALBUM_DETECTION_FROM_FOLDERS:
+        if (
+            not ConfigManager.get_instance().config.features.album_detection_from_folders.enabled
+        ):
             return None
         # If already classified by tag or album, skip
         if self.is_asset_classified():
@@ -803,25 +801,16 @@ class AssetResponseWrapper:
     @typechecked
     def get_classification_tags(self) -> list[str]:
         """
-        Returns the classification tags for this asset, applying tag conversions if needed.
-        Only tags configured as relevant for classification in the user config are considered.
-        This version does NOT lowercase tags and REMOVES the origins (keys) of TAG_CONVERSIONS from the relevant set.
+        Returns the classification tags for this asset, using the ClassificationRuleSet from config manager.
+        Only tags configured as relevant for classification in the config are considered.
         """
-        from immich_autotag.config.user import CLASSIFIED_TAGS, TAG_CONVERSIONS
-
-        relevant_tags = set(CLASSIFIED_TAGS)
-        # Remove origins from TAG_CONVERSIONS (list of dicts)
-        if TAG_CONVERSIONS:
-            for conv in TAG_CONVERSIONS:
-                origin = conv.get("origin")
-                if origin:
-                    relevant_tags.discard(origin)
-        # Filter asset tags to only those relevant for classification (case-sensitive)
-        return (
-            [tag.name for tag in self.asset.tags if tag.name in relevant_tags]
-            if self.asset.tags
-            else []
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
         )
+
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        match_results = rule_set.matching_rules(self)
+        return match_results.tags()
 
     @typechecked
     def get_link(self) -> ParseResult:
@@ -872,17 +861,19 @@ class AssetResponseWrapper:
         # tag_mod_report parameter removed
         user: str | None = None,
         duplicate_id: str | None = None,
-        verbose: bool = VERBOSE_LOGGING,
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-        from immich_autotag.config.user import \
-            AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
+        from immich_autotag.config.manager import (
+            ConfigManager,
+        )
 
-        tag_name = AUTOTAG_DUPLICATE_ASSET_ALBUM_CONFLICT
+        tag_name = (
+            ConfigManager.get_instance().config.auto_tags.duplicate_asset_album_conflict
+        )
         # Generic tag
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log

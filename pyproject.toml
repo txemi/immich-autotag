@@ -4,3 +4,49 @@ version = "0.20.0"
 description = "Immich autotagging and album management system"
 authors = ["txemi"]
 license = "GPL-3.0-only"
+
+readme = "README.md"
+keywords = ["immich", "autotag", "photo", "album", "tagging", "automation"]
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	"License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+	"Operating System :: OS Independent",
+	"Intended Audience :: End Users/Desktop",
+	"Intended Audience :: Developers",
+	"Topic :: Multimedia :: Graphics :: Graphics Conversion",
+	"Topic :: Utilities"
+]
+dependencies = [
+	"httpx>=0.23.0,<0.29.0",
+	"attrs>=22.2.0",
+	"python-dateutil>=2.8.0",
+	"typeguard",
+	"pandas>=1.3.0",
+	"pyyaml",
+	"pydantic"
+]
+
+[project.scripts]
+immich-autotag = "immich_autotag.entrypoint:run_main"
+
+# ---- Formatting tools configuration ----
+# These sections ensure consistent formatting across all environments and contributors.
+# They follow widely accepted Python community standards and are compatible with most CI tools.
+
+[tool.black]
+# Maximum line length for code. Black's default is 88, which balances readability and line wrapping.
+line-length = 88
+# Target Python version for syntax and formatting rules. Adjust as needed for your project.
+target-version = ["py311"]
+# If false, Black will normalize string quotes and prefixes (recommended for consistency).
+skip-string-normalization = false
+
+[tool.isort]
+# Use the 'black' profile so isort and black agree on import formatting.
+profile = "black"
+# Match Black's line length for imports.
+line_length = 88
+# Skip these directories when sorting imports (virtualenv, generated, or external code).
+skip = [".venv", "immich-client", "scripts"]

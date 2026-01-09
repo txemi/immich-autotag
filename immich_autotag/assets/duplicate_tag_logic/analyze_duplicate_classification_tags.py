@@ -1,26 +1,24 @@
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.config.user import VERBOSE_LOGGING
 
 from .__compare_classification_tags import compare_classification_tags
 from .__get_duplicate_wrappers import get_duplicate_wrappers
 from .__mark_and_log_conflict import mark_and_log_conflict
 from .__try_autofix import try_autofix
-from ._classification_tag_comparison_result import \
-    _ClassificationTagComparisonResult
-from ._classification_tag_comparison_result_obj import \
-    _ClassificationTagComparisonResultObj
+from ._classification_tag_comparison_result import ClassificationTagComparisonResult
 
 
 @typechecked
 def analyze_duplicate_classification_tags(
     asset_wrapper: AssetResponseWrapper,
-    verbose: bool = VERBOSE_LOGGING,
 ) -> None:
     """
-    If the asset has duplicates, checks the classification tags of each duplicate.
-    If the classification tags (from config) do not match, raises an exception.
+    Checks the classification tags of all duplicates of the given asset.
+    - If tags are equal, does nothing.
+    - If tags can be autofixed, attempts autofix.
+    - If there is a conflict, marks and logs the conflict.
+    - Does not raise exceptions; only logs and marks conflicts.
     """
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
@@ -42,23 +40,28 @@ def analyze_duplicate_classification_tags(
             level=LogLevel.FOCUS,
         )
         comp_result = compare_classification_tags(asset_wrapper, duplicate_wrapper)
-        if comp_result.result == _ClassificationTagComparisonResult.EQUAL:
+        if comp_result.result == ClassificationTagComparisonResult.EQUAL:
             continue
         elif comp_result.result in (
-            _ClassificationTagComparisonResult.AUTOFIX_OTHER,
-            _ClassificationTagComparisonResult.AUTOFIX_SELF,
+            ClassificationTagComparisonResult.AUTOFIX_OTHER,
+            ClassificationTagComparisonResult.AUTOFIX_SELF,
         ):
-            try_autofix(
-                asset_wrapper,
-                duplicate_wrapper,
-                comp_result.result,
-                comp_result.tag_info,
-                verbose,
-            )
-            any_autofix = True
+            if comp_result.tag_info is not None:
+                try_autofix(
+                    asset_wrapper,
+                    duplicate_wrapper,
+                    comp_result.result,
+                    comp_result.tag_info,
+                )
+                any_autofix = True
+            else:
+                log(
+                    f"[DUPLICATE TAGS][ERROR] tag_info is None for autofix result on asset {asset_wrapper.asset.id}",
+                    level=LogLevel.ERROR,
+                )
             continue
-        elif comp_result.result == _ClassificationTagComparisonResult.CONFLICT:
-            mark_and_log_conflict(asset_wrapper, verbose)
+        elif comp_result.result == ClassificationTagComparisonResult.CONFLICT:
+            mark_and_log_conflict(asset_wrapper)
             return
     if not any_autofix:
         log(

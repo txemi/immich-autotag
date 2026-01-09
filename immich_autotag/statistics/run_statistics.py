@@ -3,7 +3,7 @@ from typeguard import typechecked
 """
 run_statistics.py
 
-Modelo de datos para estadísticas de ejecución, serializable a YAML.
+Data model for execution statistics, serializable to YAML.
 """
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
@@ -12,24 +12,41 @@ import yaml
 from pydantic import BaseModel, Field
 
 
-# Tipado estricto para los contadores de etiquetas de salida
+# Strict typing for output tag counters
 class OutputTagCounter(BaseModel):
     total: int = 0
     added: int = 0
     removed: int = 0
+    errors: int = 0  # New: count errors for this tag
+
+
+# Strict typing for output album counters
+class OutputAlbumCounter(BaseModel):
+    total: int = 0
+    assigned: int = 0
+    removed: int = 0
+    errors: int = 0
 
 
 class RunStatistics(BaseModel):
+    git_version: Optional[str] = Field(
+        None, description="Git version/tag of the code executed (from git describe)"
+    )
+    album_date_mismatch_count: int = Field(
+        0, description="Count of album/date mismatches"
+    )
+
+    update_asset_date_count: int = Field(0, description="Number of asset date updates")
 
     total_assets: Optional[int] = Field(
-        None, description="Total de elementos reportados por el sistema al inicio"
+        None, description="Total elements reported by the system at startup"
     )
     max_assets: Optional[int] = Field(
         None,
-        description="Máximo de elementos a procesar en esta ejecución (None = todos)",
+        description="Maximum elements to process in this execution (None = all)",
     )
     skip_n: Optional[int] = Field(
-        None, description="Número de elementos a saltar al inicio (offset)"
+        None, description="Number of elements to skip at the beginning (offset)"
     )
 
     last_processed_id: Optional[str] = Field(
@@ -44,7 +61,14 @@ class RunStatistics(BaseModel):
         default_factory=dict, description="Extensible field for future stats"
     )
     output_tag_counters: Dict[str, OutputTagCounter] = Field(
-        default_factory=dict, description="Contadores por etiqueta de salida"
+        default_factory=dict, description="Counters per output tag"
+    )
+    output_album_counters: Dict[str, OutputAlbumCounter] = Field(
+        default_factory=dict, description="Counters per output album"
+    )
+    progress_description: Optional[str] = Field(
+        None,
+        description="Textual description of current progress (percentage, estimated time, etc.)",
     )
 
     @typechecked
@@ -60,15 +84,3 @@ class RunStatistics(BaseModel):
     @typechecked
     def from_yaml(cls, data: str) -> "RunStatistics":
         return cls.model_validate(yaml.safe_load(data))
-    @typechecked
-    def format_progress(self) -> str:
-        """
-        Devuelve el progreso en formato 'actual/total (porcentaje%)'.
-        Si no hay total, devuelve solo el actual.
-        """
-        total = self.total_assets or self.max_assets
-        current = self.count
-        if total:
-            percent = (current / total) * 100
-            return f"{current}/{total} ({percent:.1f}%)"
-        return f"{current}"

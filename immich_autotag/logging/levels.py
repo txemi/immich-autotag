@@ -1,11 +1,13 @@
+import logging
 from enum import Enum, auto
 
 
 class LogLevel(Enum):
-    IMPORTANT = 30  # Important events, warnings, conflicts
-    PROGRESS = 20  # General progress, batch info
-    FOCUS = 15  # For focus mode: all relevant info for a specific asset (menos prioritario que PROGRESS)
-    DEBUG = 10  # Internal details, fine-grained debugging
+    ERROR = logging.ERROR  # 40
+    IMPORTANT = logging.WARNING  # 30
+    PROGRESS = logging.INFO  # 20
+    FOCUS = 15  # 15 (personalizado)
+    DEBUG = logging.DEBUG  # 10
 
     def __str__(self):
         return self.name

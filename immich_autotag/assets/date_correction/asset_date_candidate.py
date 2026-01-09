@@ -49,9 +49,16 @@ class AssetDateCandidate:
         dt = self._date
         if dt.tzinfo is not None:
             return dt
-        from immich_autotag.config.user import DATE_EXTRACTION_TIMEZONE
 
-        tz = user_tz or DATE_EXTRACTION_TIMEZONE
+        if user_tz:
+            tz = user_tz
+        else:
+            from immich_autotag.config.manager import ConfigManager
+
+            manager = ConfigManager.get_instance()
+            if not manager or not manager.config or not manager.config.features:
+                raise RuntimeError("ConfigManager or features config not initialized")
+            tz = manager.config.features.date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 
         return dt.replace(tzinfo=ZoneInfo(tz))

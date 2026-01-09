@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.config.user_config_template import VERBOSE_LOGGING
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
 from .asset_date_candidates import AssetDateCandidates
@@ -56,14 +55,14 @@ def _check_filename_candidate_and_fix(
     asset_wrapper: AssetResponseWrapper,
     date_sources_list: AssetDateSourcesList,
     immich_date: datetime,
-    verbose: bool = VERBOSE_LOGGING,
 ) -> "DateCorrectionStepResult":
     """
     Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.
     If no correction is needed, returns CONTINUE. If a condition is met to exit early, returns EXIT.
     """
-    from immich_autotag.assets.date_correction.date_source_kind import \
-        DateSourceKind
+    from immich_autotag.assets.date_correction.date_source_kind import DateSourceKind
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
 
     # Unificamos: FILENAME, WHATSAPP_FILENAME, IMMICH
     kinds = [
@@ -75,8 +74,7 @@ def _check_filename_candidate_and_fix(
     if not candidates:
         return DateCorrectionStepResult.CONTINUE
     best_candidate = min(candidates, key=lambda c: c.get_aware_date())
-    from immich_autotag.utils.date_compare import \
-        is_datetime_more_than_days_after
+    from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
     # Use 1.1 days as threshold
     candidate_date = best_candidate.get_aware_date()
@@ -90,35 +88,35 @@ def _check_filename_candidate_and_fix(
     )
     # Case 1: large day difference (as before)
     if is_datetime_more_than_days_after(immich_date, candidate_date, days=1.1):
-        if verbose:
-            print("[DATE CORRECTION][COMPLETE DIAGNOSIS]")
-            print(date_sources_list.format_full_info())
-            print("[DATE CORRECTION][SELECTED CANDIDATE]")
-            print(best_candidate.format_info())
-            print(
-                f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
-            )
+        log("[DATE CORRECTION][COMPLETE DIAGNOSIS]", level=LogLevel.INFO)
+        log(date_sources_list.format_full_info(), level=LogLevel.INFO)
+        log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.INFO)
+        log(best_candidate.format_info(), level=LogLevel.INFO)
+        log(
+            f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})",
+            level=LogLevel.FOCUS,
+        )
         asset_wrapper.update_date(candidate_date)
-        if verbose:
-            print(
-                f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
-            )
+        log(
+            f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}",
+            level=LogLevel.FOCUS,
+        )
         return DateCorrectionStepResult.FIXED
     # Case 2: same date, Immich at midnight, candidate has real time and is older
     if candidate_has_time and candidate_date < immich_date:
-        if verbose:
-            print("[DATE CORRECTION][TIME PRECISION]")
-            print(date_sources_list.format_full_info())
-            print("[DATE CORRECTION][SELECTED CANDIDATE]")
-            print(best_candidate.format_info())
-            print(
-                f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})"
-            )
+        log("[DATE CORRECTION][TIME PRECISION]", level=LogLevel.INFO)
+        log(date_sources_list.format_full_info(), level=LogLevel.INFO)
+        log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.INFO)
+        log(best_candidate.format_info(), level=LogLevel.INFO)
+        log(
+            f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})",
+            level=LogLevel.FOCUS,
+        )
         asset_wrapper.update_date(candidate_date)
-        if verbose:
-            print(
-                f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}"
-            )
+        log(
+            f"[DATE CORRECTION] Immich date successfully updated to {candidate_date}",
+            level=LogLevel.FOCUS,
+        )
         return DateCorrectionStepResult.FIXED
     return DateCorrectionStepResult.CONTINUE
 

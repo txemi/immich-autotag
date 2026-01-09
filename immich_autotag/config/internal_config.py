@@ -3,10 +3,34 @@
 
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
-from immich_autotag.config.user import IMMICH_HOST, IMMICH_PORT
 
-IMMICH_WEB_BASE_URL = f"http://{IMMICH_HOST}:{IMMICH_PORT}"
-IMMICH_BASE_URL = f"{IMMICH_WEB_BASE_URL}/api"
+from typeguard import typechecked
+
+
+@typechecked
+def _get_host_and_port() -> tuple[str, int]:
+    # Get host and port from the experimental config singleton
+    from immich_autotag.config.manager import (
+        ConfigManager,
+    )
+
+    manager = ConfigManager.get_instance()
+    if not manager or not manager.config or not manager.config.server:
+        raise RuntimeError("ConfigManager or server config not initialized")
+    return manager.config.server.host, manager.config.server.port
+
+
+@typechecked
+def get_immich_web_base_url() -> str:
+    host, port = _get_host_and_port()
+    return f"http://{host}:{port}"
+
+
+def get_immich_base_url():
+    # In the future, IMMICH_HOST and IMMICH_PORT will be loaded dynamically from a singleton
+    return f"{get_immich_web_base_url()}/api"
+
+
 IMMICH_PHOTO_PATH_TEMPLATE = "/photos/{id}"
 # ==================== LOG CONFIGURATION ====================
 PRINT_ASSET_DETAILS = False  # Set to True to enable detailed per-asset logging

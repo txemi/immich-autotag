@@ -6,6 +6,9 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+
+# Import for type checking and runtime
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.report.modification_report import ModificationReport
 
 
@@ -109,8 +112,7 @@ class AlbumCollectionWrapper:
         """
         from immich_client.api.albums import get_album_info, get_all_albums
 
-        from immich_autotag.report.modification_report import \
-            ModificationReport
+        from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
