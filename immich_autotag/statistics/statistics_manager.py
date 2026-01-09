@@ -1,3 +1,4 @@
+import git  # GitPython
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -148,8 +149,14 @@ class StatisticsManager:
         with self._lock:
             if self._current_stats is not None:
                 return
+            # Obtener la versión de git usando GitPython
+            try:
+                repo = git.Repo(search_parent_directories=True)
+                git_version = repo.git.describe('--tags', '--always', '--dirty')
+            except Exception:
+                git_version = None
             self._current_stats = initial_stats or RunStatistics(
-                last_processed_id=None, count=0
+                last_processed_id=None, count=0, git_version=git_version
             )
             self._current_file = self.stats_dir / "run_statistics.yaml"
             self._save_to_file()
