@@ -2,7 +2,7 @@
 user_config_template.py
 
 Configuration template for the Immich autotag system (without private data).
-You can copy and adapt this file as user_real_config_pydantic.py for your actual configuration.
+You can copy and adapt this file as user_real_config.py for your actual configuration.
 
 This template is designed to be self-explanatory and easy to adapt. Each block includes comments to guide you.
 """
