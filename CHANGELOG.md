@@ -22,10 +22,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - **Experimental:** Ability to **automatically create and assign albums** based on folders from the file system library. *(Not enabled by default; will be improved in the next version.)* ([issue](docs/issues/0004-album-detection/))
 
 
+
 # [0.25] - 2026-01-09
 ### Added
-- Nuevo sistema de configuración más estructurado y flexible, permitiendo definir la configuración tanto en código Python como en un fichero de texto YAML.
-- Facilita la personalización avanzada y la validación de la configuración, mejorando la seguridad y la experiencia de usuario.
+- New, more structured and flexible configuration system, allowing configuration to be defined both in Python code and in a YAML text file. ([issue](docs/issues/0009-config-system-refactor/))
+- Enables advanced customization and configuration validation, improving security and user experience. ([issue](docs/issues/0009-config-system-refactor/))
 
 
 ## [0.30] - YYYY-MM-DD
