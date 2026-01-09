@@ -78,7 +78,7 @@ class ConfigManager:
 
     @typechecked
     def dump_to_yaml(self, path: "str | Path | None" = None):
-        """Vuelca la configuración actual a un fichero YAML en la carpeta de logs/salida por defecto."""
+        """Dumps the current configuration to a YAML file in the default logs/output folder."""
         if self.config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
         from pathlib import Path as _Path

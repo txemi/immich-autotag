@@ -96,17 +96,17 @@ class ClassificationRuleSet:
     @typechecked
     def matching_rules(self, asset_wrapper: "AssetResponseWrapper") -> MatchResultList:
         """
-        Devuelve un MatchResultList: cada uno indica la regla y el elemento (tag o álbum) que ha macheado.
+        Returns a MatchResultList: each one indicates the rule and the element (tag or album) that matched.
         """
         asset_tags = set(asset_wrapper.get_tag_names())
         album_names = set(asset_wrapper.get_album_names())
         matches: list[MatchResult] = []
         for wrapper in self.rules:
-            # Match por tag
+            # Match by tag
             for tag in asset_tags:
                 if wrapper.has_tag(tag):
                     matches.append(MatchResult(rule=wrapper, tag_name=tag))
-            # Match por álbum
+            # Match by album
             for album in album_names:
                 if wrapper.matches_album(album):
                     matches.append(MatchResult(rule=wrapper, album_name=album))

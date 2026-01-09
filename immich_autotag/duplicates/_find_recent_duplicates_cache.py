@@ -8,8 +8,8 @@ from typeguard import typechecked
 @typechecked
 def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional[Path]:
     """
-    Busca el fichero duplicates_cache.pkl más reciente y válido en todas las subcarpetas de logs.
-    Devuelve el Path si existe y está dentro del umbral de frescura, o None.
+    Searches for the most recent and valid duplicates_cache.pkl file in all log subfolders.
+    Returns the Path if it exists and is within the freshness threshold, or None.
     """
     candidate_caches: list[tuple[datetime, Path]] = []
     if logs_dir.exists() and logs_dir.is_dir():

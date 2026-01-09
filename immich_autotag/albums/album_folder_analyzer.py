@@ -28,7 +28,7 @@ class AlbumFolderAnalyzer:
             part for part in path.parts if part not in (path.root, path.anchor, "")
         ]
         # If the last component looks like a file (has an extension), remove it
-        # todo: no entiendo la logica de abajo, si la ruta asumimos que es un fichero no es mejor coger todo menos el ultimo?
+        # todo: I don't understand the logic below, if we assume the path is a file isn't it better to take everything except the last one?
         if folders and re.search(r"\.[a-zA-Z0-9]{2,5}$", folders[-1]):
             folders = folders[:-1]
         self.folders = folders

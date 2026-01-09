@@ -23,7 +23,7 @@ class CheckpointManager:
 
     @stats_manager.validator
     def _validate_stats_manager(self, attribute, value):
-        # Importación local para evitar ciclos
+        # Local import to avoid circular dependencies
         from .statistics_manager import StatisticsManager
 
         if not isinstance(value, StatisticsManager):
