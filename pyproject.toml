@@ -32,6 +32,11 @@ dependencies = [
 	"certifi",
 	"idna",
 	"typing_extensions"
+	"six",
+	"urllib3",
+	"setuptools",
+	"requests",
+	"importlib-metadata; python_version<'3.8'"
 ]
 # Include both packages in the distribution
 [tool.setuptools.packages.find]
