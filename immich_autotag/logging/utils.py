@@ -5,10 +5,10 @@ from typeguard import typechecked
 
 from .levels import LogLevel
 
-## Ya no es necesario el mapeo LOGLEVEL_TO_LOGGING, usamos directamente LogLevel.value
+## No longer necessary to map LOGLEVEL_TO_LOGGING, we use LogLevel.value directly
 
 
-# Registrar el nivel FOCUS SIEMPRE antes de cualquier setup_logging
+# Register the FOCUS level ALWAYS before any setup_logging
 def register_focus_level():
     if not hasattr(logging, "FOCUS"):
         logging.addLevelName(15, "FOCUS")
