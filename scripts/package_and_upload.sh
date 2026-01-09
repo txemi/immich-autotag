@@ -2,9 +2,22 @@
 # Script para mover immich_client a la raíz, construir y subir a TestPyPI, y restaurar la carpeta
 # Uso: ./scripts/package_and_upload.sh
 
-
 set -euo pipefail
 set -x
+
+# --- Incrementar automáticamente el número de patch en pyproject.toml ---
+PYPROJECT_TOML="pyproject.toml"
+if [ -f "$PYPROJECT_TOML" ]; then
+  VERSION_LINE=$(grep '^version' "$PYPROJECT_TOML")
+  VERSION=$(echo "$VERSION_LINE" | cut -d'=' -f2 | tr -d ' "')
+  IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+  NEW_PATCH=$((PATCH + 1))
+  NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+  # Reemplazar la línea de versión
+  sed -i "s/^version = .*/version = \"$NEW_VERSION\"/" "$PYPROJECT_TOML"
+  echo "[INFO] Versión incrementada automáticamente: $VERSION -> $NEW_VERSION"
+fi
+
 # Comprobar y activar el virtual environment estándar si existe y no está activo
 if [ -z "${VIRTUAL_ENV:-}" ] || [ "$(basename "$VIRTUAL_ENV")" != ".venv" ]; then
   if [ -d ".venv" ]; then
