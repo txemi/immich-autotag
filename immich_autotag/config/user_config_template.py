@@ -36,6 +36,9 @@ user_config = UserConfig(
     # CLASSIFICATION AND RULES:
     # Rules to classify assets by tags or album name patterns.
     # Example: only albums starting with a date (YYYY-, YYYY-MM, YYYY-MM-DD) are considered "events".
+    # NOTE: We no longer use real tag hierarchy (slashes '/').
+    # All tags use underscores '_' instead of slashes. The namespace is only virtual/documentary.
+    # This avoids issues with Immich API and tag discovery, as hierarchical tags are not reliably supported.
     classification_rules=[
         ClassificationRule(
             tag_names=[
