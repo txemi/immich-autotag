@@ -12,3 +12,6 @@ pyyaml
 
 # For config models
 pydantic
+
+# For packaging (required to build the project)
+build
