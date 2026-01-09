@@ -20,8 +20,10 @@ cd "$TEMP_DIR"
 python3 -m venv venv-test
 source venv-test/bin/activate
 
-# Instalar el paquete desde TestPyPI, forzando la versión y sin caché
-pip install --index-url https://test.pypi.org/simple/ --no-cache-dir --upgrade --no-deps "$PKG_NAME==$PKG_VERSION"
+# Instalar el paquete desde TestPyPI, pero dependencias desde PyPI oficial
+pip install --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  --no-cache-dir --upgrade "$PKG_NAME==$PKG_VERSION"
 
 # Probar la importación del cliente generado
 python -c "import immich_client; print('Importación exitosa de immich_client')"
