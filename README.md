@@ -39,23 +39,47 @@ In addition to its core focus on helping classify and organize photos, the proje
 
 To get started quickly:
 
-1. **Copy the configuration file to your home directory**
-   - Place it at `~/.config/immich_autotag/config.yaml` (recommended XDG location).
-   - See the [Configuration Guide](./immich_autotag/config/README_config.md) for details and an example config file.
 
-2. **Run the CLI instantly using pipx**
-   - If you have pipx installed (**no need to download the code**):
-     ```bash
-     pipx run immich-autotag 
-     ```
-   - Or use the provided script (**requires downloading the code**):
-     ```bash
-     ./scripts/run_immich_autotag.sh
-     ```
-   - Or run with Docker (**in progress**):
-     ```bash
-     # Coming soon: Docker container support
-     ```
+### 1. Copy the configuration file
+
+- Place your config at `~/.config/immich_autotag/config.yaml` (recommended XDG location).
+- See the [Configuration Guide](./immich_autotag/config/README_config.md) for details and an example config file.
+
+### 2. Run the tool (choose one method)
+
+You can run Immich AutoTag using any of the following methods:
+
+**A. With Docker (recommended for most users)**
+
+  - **Using the public Docker image (no build required):**
+    ```bash
+    bash scripts/docker/run_docker_public.sh
+    ```
+    This script always uses the latest public image from Docker Hub (`txemi/immich-autotag:latest`).
+
+  - **Using a locally built Docker image:**
+    ```bash
+    bash scripts/docker/run_docker_with_config.sh
+    ```
+    By default, this uses the local image (`immich-autotag:latest`).
+    To use the public image explicitly:
+    ```bash
+    bash scripts/docker/run_docker_with_config.sh --image txemi/immich-autotag:latest
+    ```
+
+**B. With pipx (no code download required)**
+
+  - If you have pipx installed:
+    ```bash
+    pipx run immich-autotag
+    ```
+
+**C. Directly from the repo (script, requires code download)**
+
+  - Use the provided script:
+    ```bash
+    ./scripts/run_immich_autotag.sh
+    ```
 
 That's it! Your Immich autotagging tool is ready to use.
 
