@@ -47,25 +47,68 @@ To get started quickly:
 
 ### 2. Run the tool (choose one method)
 
+
 You can run Immich AutoTag using any of the following methods:
+
 
 **A. With Docker (recommended for most users)**
 
-  - **Using the public Docker image (no build required):**
-    ```bash
-    bash scripts/docker/run_docker_public.sh
-    ```
-    This script always uses the latest public image from Docker Hub (`txemi/immich-autotag:latest`).
+  - **One-shot execution (run once):**
+    - Using the public image:
+      ```bash
+      bash scripts/docker/run_docker_public.sh
+      ```
+      This script always uses the latest public image from Docker Hub (`txemi/immich-autotag:latest`).
+    - Using a local image:
+      ```bash
+      bash scripts/docker/run_docker_with_config.sh
+      ```
+      By default, this uses the local image (`immich-autotag:latest`).
+      To use the public image explicitly:
+      ```bash
+      bash scripts/docker/run_docker_with_config.sh --image txemi/immich-autotag:latest
+      ```
 
-  - **Using a locally built Docker image:**
-    ```bash
-    bash scripts/docker/run_docker_with_config.sh
-    ```
-    By default, this uses the local image (`immich-autotag:latest`).
-    To use the public image explicitly:
-    ```bash
-    bash scripts/docker/run_docker_with_config.sh --image txemi/immich-autotag:latest
-    ```
+  - **Periodic execution (cron mode, ideal for Rancher/Portainer):**
+    - Use the image `txemi/immich-autotag:cron` (or build from `Dockerfile.cron`).
+    - **Note:** The cron image must be built and published to Docker Hub before it can be used as `txemi/immich-autotag:cron`.
+    - You can set the schedule with the `CRON_SCHEDULE` environment variable (standard cron format).
+    - Example: run every day at 2:00 AM (default):
+      ```bash
+      docker run -d --name autotag-cron \
+        -e CRON_SCHEDULE="0 2 * * *" \
+        -v ~/.config/immich_autotag:/root/.config/immich_autotag \
+        txemi/immich-autotag:cron
+      ```
+    - Example: run every hour:
+      ```bash
+      docker run -d --name autotag-cron \
+        -e CRON_SCHEDULE="0 * * * *" \
+        -v ~/.config/immich_autotag:/root/.config/immich_autotag \
+        txemi/immich-autotag:cron
+      ```
+    - Logs are saved to `/var/log/cron.log` inside the container (you can map it to a volume if desired).
+    - See `docker/docker-compose.yml` for a multi-container example (one-shot and cron modes).
+
+      - **Periodic execution with Docker Compose (recommended for advanced setups):**
+        - You can use the provided `docker-compose.yml` to manage the cron service and volumes easily.
+        - By default, the cron job runs every hour (`0 * * * *`). You can adjust the schedule in the configuration if needed.
+        - Example `docker-compose.yml` service:
+          ```yaml
+          services:
+            autotag-cron:
+              image: txemi/immich-autotag:cron
+              container_name: autotag-cron
+              restart: unless-stopped
+              volumes:
+                - ${HOME}/.config/immich_autotag:/root/.config/immich_autotag
+                - ./docker_logs:/root/logs
+          ```
+        - To start the service:
+          ```bash
+          docker compose up -d
+          ```
+        - All logs and statistics will be available in the `docker_logs` folder on your host machine.
 
 **B. With pipx (no code download required)**
 

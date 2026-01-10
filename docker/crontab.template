@@ -1,0 +1,1 @@
+17 * * * * root cd /root && flock -n /tmp/immich_autotag.lock /usr/local/bin/python3 -m immich_autotag >> /var/log/cron.log 2>&1

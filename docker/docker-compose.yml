@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  autotag-once:
+    image: txemi/immich-autotag:latest
+    container_name: autotag-once
+    volumes:
+      - ~/.config/immich_autotag:/root/.config/immich_autotag
+    # Uncomment to run once and exit
+    # command: ["python", "-m", "immich_autotag"]
+
+  autotag-cron:
+    image: txemi/immich-autotag:cron
+    container_name: autotag-cron
+    environment:
+      - CRON_SCHEDULE=0 2 * * *  # Every day at 2:00 AM
+    volumes:
+      - ~/.config/immich_autotag:/root/.config/immich_autotag
+    # Optionally map logs
+    # - ./autotag-cron.log:/var/log/cron.log

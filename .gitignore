@@ -8,3 +8,4 @@ __pycache__
 /immich_autotag.egg-info
 /immich_client
 /docker_output
+docker_logs

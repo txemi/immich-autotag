@@ -1,7 +1,7 @@
 
 [project]
 name = "immich-autotag"
-version = "0.30.2"
+version = "0.43.6"
 description = "Immich autotagging and album management system"
 authors = [
 	{ name = "txemi", email = "txemitron@gmail.com" }

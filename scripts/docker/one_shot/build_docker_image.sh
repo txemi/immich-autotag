@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# Calcular la raíz del repositorio (dos niveles arriba de este script)
+ # Calculate repository root (three levels up from one_shot)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # Build the Docker image
 docker build -t immich-autotag:latest "$REPO_ROOT"
