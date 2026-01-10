@@ -4,9 +4,18 @@
 # Uso: bash scripts/run_docker_with_config.sh <ruta_local_config> [opciones_docker]
 
 
+
+
 IMAGE_NAME="immich-autotag:latest"
 # El usuario del contenedor es autotaguser, su home es /home/autotaguser
 CONTAINER_CONFIG_DIR="/home/autotaguser/.config/immich_autotag"
+# Directorio de salida fijo para Docker en el host y en el contenedor
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HOST_OUTPUT_DIR="$SCRIPT_DIR/../docker_output"
+CONTAINER_OUTPUT_DIR="/home/autotaguser/immich_autotag_output"
+
+# Crear el directorio de salida si no existe
+mkdir -p "$HOST_OUTPUT_DIR"
 
 # Si se pasa argumento, usarlo como ruta de config
 if [ -n "$1" ]; then
@@ -45,17 +54,17 @@ else
 fi
 
 
-# Convertir ruta a absoluta
+
+# Convertir ruta de config a absoluta
 CONFIG_ABS_PATH="$(realpath "$CONFIG_LOCAL_PATH")"
 
+
+# Construir opciones de volumen (config y salida fija)
+VOLUMES=""
 if [ -d "$CONFIG_ABS_PATH" ]; then
-  # Montar directorio completo
   echo "Montando directorio de configuración: $CONFIG_ABS_PATH -> $CONTAINER_CONFIG_DIR"
-  docker run --rm \
-    -v "$CONFIG_ABS_PATH":"$CONTAINER_CONFIG_DIR" \
-    "$IMAGE_NAME" "$@"
+  VOLUMES+="-v $CONFIG_ABS_PATH:$CONTAINER_CONFIG_DIR "
 elif [ -f "$CONFIG_ABS_PATH" ]; then
-  # Montar archivo individual (yaml o py)
   EXT="${CONFIG_ABS_PATH##*.}"
   if [ "$EXT" = "yaml" ] || [ "$EXT" = "yml" ]; then
     DEST="$CONTAINER_CONFIG_DIR/config.yaml"
@@ -66,10 +75,14 @@ elif [ -f "$CONFIG_ABS_PATH" ]; then
     exit 2
   fi
   echo "Montando archivo de configuración: $CONFIG_ABS_PATH -> $DEST"
-  docker run --rm \
-    -v "$CONFIG_ABS_PATH":"$DEST" \
-    "$IMAGE_NAME" "$@"
+  VOLUMES+="-v $CONFIG_ABS_PATH:$DEST "
 else
   echo "ERROR: $CONFIG_ABS_PATH no existe"
   exit 3
 fi
+
+# Montar siempre el directorio de salida fijo
+echo "Montando directorio de salida: $HOST_OUTPUT_DIR -> $CONTAINER_OUTPUT_DIR"
+VOLUMES+="-v $HOST_OUTPUT_DIR:$CONTAINER_OUTPUT_DIR "
+
+docker run --rm $VOLUMES "$IMAGE_NAME" "$@"
