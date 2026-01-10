@@ -1,13 +1,28 @@
-
 #!/bin/bash
 # Script portable para arrancar el contenedor Docker de immich-autotag montando config
-# Uso: bash scripts/run_docker_with_config.sh <ruta_local_config> [opciones_docker]
+# Uso: bash scripts/run_docker_with_config.sh [--image imagename] <ruta_local_config> [opciones_docker]
 
+# Nombre de imagen por defecto (compilación local)
+DEFAULT_IMAGE_NAME="immich-autotag:latest"
 
+# Analizar argumento --image o variable de entorno IMAGE_NAME
+IMAGE_NAME="$DEFAULT_IMAGE_NAME"
+if [ -n "${IMAGE_NAME_OVERRIDE:-}" ]; then
+  IMAGE_NAME="$IMAGE_NAME_OVERRIDE"
+fi
+if [ "$1" = "--image" ]; then
+  shift
+  IMAGE_NAME="$1"
+  shift
+fi
+if [ -n "$IMAGE_NAME" ]; then
+  : # IMAGE_NAME ya está configurada
+elif [ -n "$IMAGE_NAME" ]; then
+  : # retroceso
+else
+  IMAGE_NAME="$DEFAULT_IMAGE_NAME"
+fi
 
-
-
-IMAGE_NAME="immich-autotag:latest"
 # El usuario del contenedor es autotaguser, su home es /home/autotaguser
 CONTAINER_CONFIG_DIR="/home/autotaguser/.config/immich_autotag"
 
@@ -15,7 +30,7 @@ CONTAINER_CONFIG_DIR="/home/autotaguser/.config/immich_autotag"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Directorio de salida fijo para Docker en el host y en el contenedor
+# Directorio de salida
 HOST_OUTPUT_DIR="$REPO_ROOT/docker_output"
 CONTAINER_OUTPUT_DIR="/home/autotaguser/logs"
 
@@ -57,8 +72,6 @@ else
     exit 1
   fi
 fi
-
-
 
 # Convertir ruta de config a absoluta
 CONFIG_ABS_PATH="$(realpath "$CONFIG_LOCAL_PATH")"
