@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
- # Calcular la raíz del repositorio (tres niveles arriba de one_shot)
+ # Calculate repository root (three levels up from one_shot)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 

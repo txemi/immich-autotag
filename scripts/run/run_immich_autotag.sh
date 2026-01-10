@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Instala y ejecuta el CLI desde PyPI producción usando pipx
+# Installs and runs the CLI from production PyPI using pipx
 
 if ! command -v pipx &> /dev/null; then
-  echo "[INFO] pipx no está instalado. Instalando..."
+  echo "[INFO] pipx is not installed. Installing..."
   pip install --user pipx
   export PATH="$HOME/.local/bin:$PATH"
 fi
