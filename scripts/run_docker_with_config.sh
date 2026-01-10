@@ -9,10 +9,11 @@
 IMAGE_NAME="immich-autotag:latest"
 # El usuario del contenedor es autotaguser, su home es /home/autotaguser
 CONTAINER_CONFIG_DIR="/home/autotaguser/.config/immich_autotag"
+
 # Directorio de salida fijo para Docker en el host y en el contenedor
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOST_OUTPUT_DIR="$SCRIPT_DIR/../docker_output"
-CONTAINER_OUTPUT_DIR="/home/autotaguser/immich_autotag_output"
+CONTAINER_OUTPUT_DIR="/home/autotaguser/logs"
 
 # Crear el directorio de salida si no existe
 mkdir -p "$HOST_OUTPUT_DIR"
