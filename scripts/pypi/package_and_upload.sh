@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 # Script para mover immich_client a la raíz, construir y subir a TestPyPI, y restaurar la carpeta
-# Uso: ./scripts/package_and_upload.sh
+# Uso: ./scripts/pypi/package_and_upload.sh
 
 set -euo pipefail
 set -x
 
+
+# Obtener el directorio donde está este script y el root del proyecto
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
+cd "$PROJECT_ROOT"
+
 # --- Incrementar automáticamente el número de patch en pyproject.toml ---
-PYPROJECT_TOML="pyproject.toml"
+PYPROJECT_TOML="$PROJECT_ROOT/pyproject.toml"
 if [ -f "$PYPROJECT_TOML" ]; then
   VERSION_LINE=$(grep '^version' "$PYPROJECT_TOML")
   VERSION=$(echo "$VERSION_LINE" | cut -d'=' -f2 | tr -d ' "')
@@ -20,25 +26,19 @@ fi
 
 # Comprobar y activar el virtual environment estándar si existe y no está activo
 if [ -z "${VIRTUAL_ENV:-}" ] || [ "$(basename "$VIRTUAL_ENV")" != ".venv" ]; then
-  if [ -d ".venv" ]; then
+  if [ -d "$PROJECT_ROOT/.venv" ]; then
     echo "[INFO] Activando entorno virtual .venv..."
     # shellcheck disable=SC1091
-    source .venv/bin/activate
+    source "$PROJECT_ROOT/.venv/bin/activate"
   else
-    echo "[ERROR] No se encontró el entorno virtual .venv. Por favor, créalo con 'python3 -m venv .venv' y vuelve a intentarlo."
+    echo "[ERROR] No se encontró el entorno virtual .venv en $PROJECT_ROOT. Por favor, créalo con 'python3 -m venv .venv' y vuelve a intentarlo."
     exit 1
   fi
 fi
 
-# Obtener el directorio donde está este script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Ir al directorio raíz del proyecto (asumiendo que scripts/ está en la raíz o un subdirectorio)
-PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-cd "$PROJECT_ROOT"
-
-IMMICH_CLIENT_ORIG="immich-client/immich_client"
-IMMICH_CLIENT_DEST="immich_client"
-IMMICH_CLIENT_BACKUP="immich-client/immich_client_backup_$(date +%s)"
+IMMICH_CLIENT_ORIG="$PROJECT_ROOT/immich-client/immich_client"
+IMMICH_CLIENT_DEST="$PROJECT_ROOT/immich_client"
+IMMICH_CLIENT_BACKUP="$PROJECT_ROOT/immich-client/immich_client_backup_$(date +%s)"
 
 
 # Solo mover si el destino no existe y el origen sí
