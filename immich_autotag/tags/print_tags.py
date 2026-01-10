@@ -11,8 +11,3 @@ def print_tags(tag_collection: TagCollectionWrapper) -> None:
     for tag in tag_collection:
         print(f"- {tag.name}")
     print(f"Total tags: {len(tag_collection)}\n")
-    MIN_TAGS = 57
-    if len(tag_collection) < MIN_TAGS:
-        raise Exception(
-            f"ERROR: Unexpectedly low number of tags: {len(tag_collection)} < {MIN_TAGS}"
-        )
