@@ -129,6 +129,6 @@ For information about project structure, contributing, and technical details, se
 For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/txemi/immich-autotag/issues) ticketing system.
 
 ## 1.7. License
-This project is licensed under the GNU GPL v3. See the LICENSE file for details.
+This project is licensed under the GNU GPL v3. See the [LICENSE](./LICENSE) file for details.
 
 
