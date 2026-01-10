@@ -6,9 +6,10 @@ set -euo pipefail
 set -x
 
 
-# Obtener el directorio donde está este script y el root del proyecto
+
+# Obtener el directorio raíz del proyecto (dos niveles arriba de este script)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
+PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../..")"
 cd "$PROJECT_ROOT"
 
 # --- Incrementar automáticamente el número de patch en pyproject.toml ---
