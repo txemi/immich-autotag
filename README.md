@@ -10,7 +10,7 @@ In recent years, [Immich](https://immich.app) has become one of the most popular
 
 When starting to use Immich, it is common to import large volumes of photos from older systems, where organization was done in folders or with other apps. This creates a challenge: many photos and videos remain unorganized or misclassified. Although Immich is powerful, manual classification can be slow and tedious. This project aims to make organization faster and easier through automatic rules and tagging.
 
-> **Note:** Some users have found it hard to understand what this tool actually does. For a much simpler, intentionally non-technical explanation, see [Explain Like I'm 5 (ELI5)](./docs/explain-like-im-5.md).
+> **Note:** Some users have found it hard to understand what this tool actually does. For a much simpler, intentionally non-technical explanation, see [Explain Like I'm 5](./docs/explain-like-im-5.md).
 
 ### 1.1.3. What does this project solve?
 
