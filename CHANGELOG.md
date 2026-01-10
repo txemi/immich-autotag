@@ -41,6 +41,13 @@ All versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 - Support for running as a containerized service, enabling scheduled executions to keep tagging and corrections up to date automatically, without requiring manual script launches after manual updates or categorizations. ([issue](docs/issues/0011-container-scheduled-execution/))
 
+## [0.45.7] - 2026-01-11
+### Changed
+- Logging and statistics system refactored for robustness and traceability.
+- Now both the runtime git describe (from the current repo, if available) and the distributed package git describe (from version.py) are recorded in statistics, making it easier to trace the exact code version used in any environment (including Docker or PyPI installs).
+- The statistics file is now written immediately at application startup, ensuring it is always available for monitoring and debugging from the very beginning of each run.
+- All code, comments, and log messages are now in English for consistency and maintainability.
+
 ## [0.50.0] - unreleased
 ### Added
 
