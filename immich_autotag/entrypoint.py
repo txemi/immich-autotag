@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from immich_client import Client
 from typeguard import typechecked
 
@@ -15,6 +16,13 @@ from immich_autotag.duplicates.load_duplicates_collection import (
 from immich_autotag.logging.init import initialize_logging
 from immich_autotag.tags.list_tags import list_tags
 
+# --- DUPLICATE STDOUT/STDERR TO LOG FILE (tee4py) ---
+from immich_autotag.utils.tee_logging import setup_tee_logging
+setup_tee_logging()
+
+# --- Register global exception hook to log time of uncaught exceptions (without changing default behavior) ---
+from immich_autotag.utils.exception_hook import setup_exception_hook
+setup_exception_hook()
 
 @typechecked
 def run_main():
@@ -26,6 +34,9 @@ def run_main():
 
     # Initialize logging before any processing
     initialize_logging()
+
+    from immich_autotag.statistics.statistics_manager import StatisticsManager
+    StatisticsManager.get_instance().save()  # Force initial statistics file write
 
     # Get API_KEY from experimental config manager singleton
     from immich_autotag.config.manager import (

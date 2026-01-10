@@ -153,11 +153,20 @@ class StatisticsManager:
             # Get git version using GitPython
             try:
                 repo = git.Repo(search_parent_directories=True)
-                git_version = repo.git.describe("--tags", "--always", "--dirty")
+                git_describe_runtime = repo.git.describe("--tags", "--always", "--dirty")
             except Exception:
-                git_version = None
+                git_describe_runtime = None
+            # Get git describe string from version.py
+            try:
+                from immich_autotag.version import __git_describe__
+                git_describe_package = __git_describe__
+            except Exception:
+                git_describe_package = None
             self._current_stats = initial_stats or RunStatistics(
-                last_processed_id=None, count=0, git_version=git_version
+                last_processed_id=None,
+                count=0,
+                git_describe_runtime=git_describe_runtime,
+                git_describe_package=git_describe_package,
             )
             self._current_file = self.stats_dir / "run_statistics.yaml"
             self._save_to_file()
