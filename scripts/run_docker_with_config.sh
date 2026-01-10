@@ -5,7 +5,8 @@
 
 
 IMAGE_NAME="immich-autotag:latest"
-CONTAINER_CONFIG_DIR="/home/immich_autotag/.config/immich_autotag"
+# El usuario del contenedor es autotaguser, su home es /home/autotaguser
+CONTAINER_CONFIG_DIR="/home/autotaguser/.config/immich_autotag"
 
 # Si se pasa argumento, usarlo como ruta de config
 if [ -n "$1" ]; then
