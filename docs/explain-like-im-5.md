@@ -15,6 +15,9 @@ Imagine you have hundreds of thousands of photos from many years, different phon
 
 **How does it help you?**
 
+- Every time you run Immich AutoTag, your photo library gets a little more organized.
+- Over time, the number of “unclassified” or “conflict” photos goes down.
+- Eventually, your whole library is tidy, and keeping it organized becomes easy.
 
 **In short:**  
 Immich AutoTag is like a smart helper that finds the mess in your photo collection, helps you clean it up, and keeps everything organized with much less effort.
