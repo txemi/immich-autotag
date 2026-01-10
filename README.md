@@ -98,7 +98,7 @@ After the motivation, let's describe a practical use case for this tool. The scr
 
 **Step 3:** If the script finds a photo that is unclassified or classified in multiple places, it will use a special tag (by default, tags starting with `autotag_`). All of this is configurable in the user config file. This way, you can easily locate these photos from the Immich interface and decide what to do: add/remove them from albums, tag as meme, postpone, ignore, etc.
 
-**Step 4:** After making corrections in Immich, you can rerun the script. It will remove the special tags from photos that have been resolved, so each run leaves fewer unclassified or conflicted photos. The user can keep iterating until the library is perfectly organized.
+**Step 4:** After making corrections in Immich (see the [example quick links above](#121-reviewing-results-example-links) to easily review and access affected assets), you can rerun the script. It will remove the special tags from photos that have been resolved, so each run leaves fewer unclassified or conflicted photos. The user can keep iterating until the library is perfectly organized.
 
 **Tips for Classification:**
 - Use Immich's date view to quickly identify all photos from the same event and add them to an album.
