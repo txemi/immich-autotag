@@ -52,6 +52,10 @@ To get started quickly:
      ```bash
      ./scripts/run_immich_autotag.sh
      ```
+   - Or run with Docker (**in progress**):
+     ```bash
+     # Coming soon: Docker container support
+     ```
 
 That's it! Your Immich autotagging tool is ready to use.
 
