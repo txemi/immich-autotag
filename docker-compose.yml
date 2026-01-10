@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
 
     volumes:
-      # Monta la configuración desde $HOME/.config/immich_autotag (variable de entorno)
+      # Mounts configuration from $HOME/.config/immich_autotag (environment variable)
       - ${HOME}/.config/immich_autotag:/root/.config/immich_autotag
-      # Monta los logs desde la ruta local del proyecto
+      # Mounts logs from the local project path
       - ./docker_logs:/root/logs

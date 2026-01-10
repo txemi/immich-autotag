@@ -1,11 +1,11 @@
 #!/bin/bash
 # release.sh
-# Script maestro para publicar una nueva versión de immich-autotag
-# Uso: bash scripts/devtools/release.sh <nueva_version>
+# Master script to release a new version of immich-autotag
+# Usage: bash scripts/devtools/release.sh <new_version>
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
-  echo "Uso: $0 <nueva_version>"
+  echo "Usage: $0 <new_version>"
   exit 1
 fi
 
@@ -15,31 +15,31 @@ PYPROJECT_TOML="$PROJECT_ROOT/pyproject.toml"
 CHECK_SCRIPT="$PROJECT_ROOT/scripts/devtools/check_versions.sh"
 UPDATE_SCRIPT="$PROJECT_ROOT/scripts/devtools/update_version_info.sh"
 
-# 1. Actualizar pyproject.toml
+# 1. Update pyproject.toml
 sed -i "s/^version = .*/version = \"$NEW_VERSION\"/" "$PYPROJECT_TOML"
-echo "[INFO] pyproject.toml actualizado a versión $NEW_VERSION"
+echo "[INFO] pyproject.toml updated to version $NEW_VERSION"
 
 git add "$PYPROJECT_TOML"
 git commit -m "Bump version to $NEW_VERSION"
 
-# 2. Crear tag git
+# 2. Create git tag
 TAG="v$NEW_VERSION"
 git tag "$TAG"
-echo "[INFO] Tag git creado: $TAG"
+echo "[INFO] Git tag created: $TAG"
 
-# 3. Chequear consistencia
+# 3. Check consistency
 bash "$CHECK_SCRIPT"
-echo "[INFO] Chequeo de versiones OK"
+echo "[INFO] Version check OK"
 
-# 4. Actualizar versión en el código
+# 4. Update version in code
 bash "$UPDATE_SCRIPT"
-echo "[INFO] version.py actualizado"
+echo "[INFO] version.py updated"
 
 git add "$PROJECT_ROOT/immich_autotag/version.py"
 git commit -m "Update version info for $NEW_VERSION"
 
 git push
-# Si quieres subir el tag también:
+# If you want to push the tag too:
 git push origin "$TAG"
 
-echo "Release $NEW_VERSION completado. Todo sincronizado."
+echo "Release $NEW_VERSION completed. Everything synchronized."
