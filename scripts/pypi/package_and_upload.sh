@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Script para mover immich_client a la raíz, construir y subir a TestPyPI, y restaurar la carpeta
-# Uso: ./scripts/pypi/package_and_upload.sh
+ # Script to move immich_client to project root, build and upload to PyPI/TestPyPI, then restore folder
+ # Usage: ./scripts/pypi/package_and_upload.sh
 
 set -euo pipefail
 set -x
@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../..")"
 cd "$PROJECT_ROOT"
 
-# --- Incrementar automáticamente el número de patch en pyproject.toml ---
+ # --- Automatically increment patch number in pyproject.toml ---
 PYPROJECT_TOML="$PROJECT_ROOT/pyproject.toml"
 if [ -f "$PYPROJECT_TOML" ]; then
   VERSION_LINE=$(grep '^version' "$PYPROJECT_TOML")
@@ -22,17 +22,17 @@ if [ -f "$PYPROJECT_TOML" ]; then
   NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
   # Reemplazar la línea de versión
   sed -i "s/^version = .*/version = \"$NEW_VERSION\"/" "$PYPROJECT_TOML"
-  echo "[INFO] Versión incrementada automáticamente: $VERSION -> $NEW_VERSION"
+  echo "[INFO] Version automatically incremented: $VERSION -> $NEW_VERSION"
 fi
 
-# Comprobar y activar el virtual environment estándar si existe y no está activo
+ # Check and activate standard virtual environment if exists and not active
 if [ -z "${VIRTUAL_ENV:-}" ] || [ "$(basename "$VIRTUAL_ENV")" != ".venv" ]; then
   if [ -d "$PROJECT_ROOT/.venv" ]; then
-    echo "[INFO] Activando entorno virtual .venv..."
+    echo "[INFO] Activating .venv virtual environment..."
     # shellcheck disable=SC1091
     source "$PROJECT_ROOT/.venv/bin/activate"
   else
-    echo "[ERROR] No se encontró el entorno virtual .venv en $PROJECT_ROOT. Por favor, créalo con 'python3 -m venv .venv' y vuelve a intentarlo."
+    echo "[ERROR] .venv virtual environment not found in $PROJECT_ROOT. Please create it with 'python3 -m venv .venv' and try again."
     exit 1
   fi
 fi
@@ -42,36 +42,36 @@ IMMICH_CLIENT_DEST="$PROJECT_ROOT/immich_client"
 IMMICH_CLIENT_BACKUP="$PROJECT_ROOT/immich-client/immich_client_backup_$(date +%s)"
 
 
-# Solo mover si el destino no existe y el origen sí
+ # Only move if destination does not exist and origin does
 if [ ! -d "$IMMICH_CLIENT_DEST" ] && [ -d "$IMMICH_CLIENT_ORIG" ]; then
   mv "$IMMICH_CLIENT_ORIG" "$IMMICH_CLIENT_DEST"
 elif [ -d "$IMMICH_CLIENT_DEST" ]; then
-  echo "$IMMICH_CLIENT_DEST ya está en la raíz, no se mueve."
+  echo "$IMMICH_CLIENT_DEST is already at root, not moving."
 else
-  echo "No se encontró $IMMICH_CLIENT_ORIG ni $IMMICH_CLIENT_DEST. Abortando."
+  echo "$IMMICH_CLIENT_ORIG and $IMMICH_CLIENT_DEST not found. Aborting."
   exit 1
 fi
 
 
-# Construir el paquete
-# Limpiar la carpeta dist/ antes de construir
+ # Build the package
+ # Clean dist/ folder before building
 if [ -d dist ]; then
   rm -rf dist/*
 fi
 
-# Instalar build si no está presente en el entorno virtual
+ # Install build if not present in virtual environment
 if ! python3 -m build --version &> /dev/null; then
-  echo "[INFO] Instalando build en el entorno virtual..."
+  echo "[INFO] Installing build in virtual environment..."
   pip install build
 fi
 
 python3 -m build
 
-# Subir a TestPyPI
+ # Upload to PyPI/TestPyPI
 
-# Instalar twine en el entorno virtual si no está presente
+ # Install twine in virtual environment if not present
 if ! command -v twine &> /dev/null; then
-  echo "[INFO] twine no está instalado. Instalando en el entorno virtual..."
+  echo "[INFO] twine is not installed. Installing in virtual environment..."
   pip install twine
 fi
 
@@ -82,15 +82,27 @@ for arg in "$@"; do
   fi
 done
 
-echo "[INFO] Subiendo a repositorio: $REPO"
+echo "[INFO] Uploading to repository: $REPO"
 twine upload --repository "$REPO" dist/*
 
+# Print direct verification URL
+PKG_NAME="immich-client"
+if [ -f "$PYPROJECT_TOML" ]; then
+  VERSION_LINE=$(grep '^version' "$PYPROJECT_TOML")
+  VERSION=$(echo "$VERSION_LINE" | cut -d'=' -f2 | tr -d ' "')
+  if [ "$REPO" = "testpypi" ]; then
+    echo "[INFO] Verify your package at: https://test.pypi.org/project/$PKG_NAME/$VERSION/"
+  else
+    echo "[INFO] Verify your package at: https://pypi.org/project/$PKG_NAME/$VERSION/"
+  fi
+fi
 
-# Solo restaurar si el destino existe y el origen no
+
+ # Only restore if destination exists and origin does not
 if [ -d "$IMMICH_CLIENT_DEST" ] && [ ! -d "$IMMICH_CLIENT_ORIG" ]; then
   mv "$IMMICH_CLIENT_DEST" "$IMMICH_CLIENT_ORIG"
 else
-  echo "No es necesario restaurar $IMMICH_CLIENT_DEST."
+  echo "No need to restore $IMMICH_CLIENT_DEST."
 fi
 
-echo "Operación completada."
+echo "Operation completed."
