@@ -1,0 +1,22 @@
+# Dockerfile (cron variant)
+# Ejecuta Immich AutoTag periódicamente usando cron
+
+FROM python:3.11-slim
+
+# Instala cron, git y dependencias
+RUN apt-get update && apt-get install -y cron git && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . /app
+RUN pip install --no-cache-dir .
+
+
+# Instala el cliente local (para que el import funcione)
+RUN pip install --no-cache-dir ./immich-client
+
+# Copia el entrypoint y plantilla de crontab
+COPY docker/cron-entrypoint.sh /cron-entrypoint.sh
+COPY docker/crontab.template /crontab.template
+RUN chmod +x /cron-entrypoint.sh
+
+ENTRYPOINT ["/cron-entrypoint.sh"]

@@ -1,0 +1,21 @@
+# Exclude sensitive config files from Docker build context
+immich_autotag/config/user_config.py
+immich_autotag/config/back/user.py
+# Exclude any other local config or secrets
+*.secret
+*.key
+*.pem
+*.env
+# Exclude local/test data and logs
+logs/
+*.log
+# Exclude Python cache and build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+dist/
+*.egg-info/
+.venv/
+# Exclude local immich-client if not needed in image
+immich-client/
