@@ -36,6 +36,10 @@ class AutoTagsConfig(BaseModel):
     duplicate_asset_album_conflict: str
     duplicate_asset_classification_conflict: str
     duplicate_asset_classification_conflict_prefix: str
+    album_date_mismatch: str = Field(
+        default="autotag_output_album_date_mismatch",
+        description="Tag for album/asset date mismatch. Used if not specified by user."
+    )
 
 
 # todo: not sure what this is, was it in the original config file?

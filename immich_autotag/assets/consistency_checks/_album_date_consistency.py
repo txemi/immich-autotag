@@ -59,6 +59,13 @@ def check_album_date_consistency(
         diff = relativedelta(asset_date, album_date)
         diff_months = abs(diff.years * 12 + diff.months)
         if diff_months > months_threshold:
+            # Add autotag for album date mismatch
+            from immich_autotag.config.manager import ConfigManager
+            config = ConfigManager.get_instance().config
+            
+            autotag_name = config.auto_tags.album_date_mismatch
+
+            asset_wrapper.add_tag_by_name(autotag_name)
             tag_mod_report.add_modification(
                 kind=ModificationKind.ALBUM_DATE_MISMATCH,
                 asset_wrapper=asset_wrapper,
@@ -70,9 +77,10 @@ def check_album_date_consistency(
                     "album_date": str(album_date.date()),
                     "asset_date": str(asset_date.date()),
                     "diff_months": diff_months,
+                    "autotag": autotag_name,
                 },
             )
             log(
-                f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} in album '{album_name}' has date mismatch: asset {asset_date.date()} vs album {album_date.date()} (diff {diff_months} months)",
+                f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} in album '{album_name}' has date mismatch: asset {asset_date.date()} vs album {album_date.date()} (diff {diff_months} months) -- autotagged as '{autotag_name}'",
                 level=LogLevel.FOCUS,
             )
