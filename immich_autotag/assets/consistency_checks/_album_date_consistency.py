@@ -39,6 +39,10 @@ def check_album_date_consistency(
     albums = asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
         asset_wrapper
     )
+    from immich_autotag.config.manager import ConfigManager
+    config = ConfigManager.get_instance().config
+    autotag_name = config.auto_tags.album_date_mismatch
+    mismatch_found = False
     for album_wrapper in albums:
         album_name = album_wrapper.album.album_name
         # Match YYYY-MM-DD, YYYY-MM, or YYYY at the start
@@ -59,12 +63,7 @@ def check_album_date_consistency(
         diff = relativedelta(asset_date, album_date)
         diff_months = abs(diff.years * 12 + diff.months)
         if diff_months > months_threshold:
-            # Add autotag for album date mismatch
-            from immich_autotag.config.manager import ConfigManager
-            config = ConfigManager.get_instance().config
-            
-            autotag_name = config.auto_tags.album_date_mismatch
-
+            mismatch_found = True
             asset_wrapper.add_tag_by_name(autotag_name)
             tag_mod_report.add_modification(
                 kind=ModificationKind.ALBUM_DATE_MISMATCH,
@@ -84,3 +83,10 @@ def check_album_date_consistency(
                 f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} in album '{album_name}' has date mismatch: asset {asset_date.date()} vs album {album_date.date()} (diff {diff_months} months) -- autotagged as '{autotag_name}'",
                 level=LogLevel.FOCUS,
             )
+    # Remove the autotag if no mismatch is found and the tag is present
+    if not mismatch_found and asset_wrapper.has_tag(autotag_name):
+        asset_wrapper.remove_tag_by_name(autotag_name)
+        log(
+            f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} no longer has a date mismatch. Removed autotag '{autotag_name}'.",
+            level=LogLevel.FOCUS,
+        )
