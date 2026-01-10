@@ -95,7 +95,7 @@ These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_l
 
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
 
-**Step 1:** Review the pattern used to detect which albums are considered "classified" (this can be modified in the configuration file). By default, any album whose name starts with a date is assumed to be an event and its photos are considered organized.
+**Step 1:** Review the pattern used to detect which albums are considered "classified" (this can be modified in the [configuration file](./immich_autotag/config/README_config.md)). By default, any album whose name starts with a date is assumed to be an event and its photos are considered organized.
 
 **Step 2:** There are also special tags for photos that do not belong to any album for a specific reason (e.g., memes automatically uploaded from mobile devices, which you do not want in any album). The script suggests using certain tags for these cases, so the user can label memes or other photos accordingly, and the script will take them into account.
 
