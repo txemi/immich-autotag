@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  autotag-cron:
+    image: txemi/immich-autotag:cron
+    container_name: autotag-cron
+    restart: unless-stopped
+
+    volumes:
+      # Monta la configuración desde $HOME/.config/immich_autotag (variable de entorno)
+      - ${HOME}/.config/immich_autotag:/root/.config/immich_autotag
+      # Monta los logs desde la ruta local del proyecto
+      - ./docker_logs:/root/logs
