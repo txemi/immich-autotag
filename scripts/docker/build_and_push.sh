@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+# Build and push the Docker image to Docker Hub
+# Usage: bash build_and_push.sh
+
+IMAGE_NAME="txemi/immich-autotag:latest"
+
+# Detect repo root (two levels up from this script)
+SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+echo "[INFO] Building Docker image: $IMAGE_NAME"
+docker build -t $IMAGE_NAME "$REPO_ROOT"
+
+echo "[INFO] Pushing image to Docker Hub: $IMAGE_NAME"
+docker push $IMAGE_NAME
+
+echo "[OK] Image built and pushed successfully."
