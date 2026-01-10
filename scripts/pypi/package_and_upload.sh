@@ -7,7 +7,7 @@ set -x
 
 
 
-# Obtener el directorio raíz del proyecto (dos niveles arriba de este script)
+# Get project root directory (two levels up from this script)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../..")"
 cd "$PROJECT_ROOT"
@@ -20,7 +20,7 @@ if [ -f "$PYPROJECT_TOML" ]; then
   IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
   NEW_PATCH=$((PATCH + 1))
   NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-  # Reemplazar la línea de versión
+  # Replace version line
   sed -i "s/^version = .*/version = \"$NEW_VERSION\"/" "$PYPROJECT_TOML"
   echo "[INFO] Version automatically incremented: $VERSION -> $NEW_VERSION"
 fi
