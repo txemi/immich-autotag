@@ -1,4 +1,4 @@
-[Showcase] Immich AutoTag – Major New Release: Instant CLI, Flexible Config, and More!
+[Showcase] Immich AutoTag – New: Instant CLI, Auto-Album Creation, Auto Date Fix, Smart Tagging & More!
 
 Hi everyone! I’m excited to share a major new release of Immich AutoTag, the open-source tool for automatic photo and video classification and tagging in Immich.
 
@@ -31,5 +31,7 @@ Feedback & Support
 - Questions, issues, or feature requests? Open a ticket on [GitHub Issues](https://github.com/txemi/immich-autotag/issues).
 
 Previous Reddit discussion: https://www.reddit.com/r/immich/comments/1pse1qk/comment/nvcmpf0/
+
+For a super simple, non-technical explanation of what Immich AutoTag does, see: [Explain Like I'm 5 (ELI5)](https://github.com/txemi/immich-autotag/blob/main/docs/explain-like-im-5.md)
 
 Thank you for your support and feedback!

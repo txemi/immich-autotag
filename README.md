@@ -58,13 +58,41 @@ That's it! Your Immich autotagging tool is ready to use.
 > **Do you prefer to download the code and run it manually?**
 > See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) in the [Development Guide](./docs/development.md).
 
----
+
+## 1.2.1. Reviewing Results: Example Links
+
+After running the autotagging script, you can quickly review the results and take action using the following types of links. These links are generated for your Immich server and point directly to the relevant albums or tags:
+
+**Example Quick Links:**
+
+```
+- [Albums](http://your-immich-server:2283/albums)
+- [Category unknown](http://your-immich-server:2283/tags?path=autotag_output_unknown)
+- [Category conflict](http://your-immich-server:2283/tags?path=autotag_output_conflict)
+- [Duplicate asset album conflict](http://your-immich-server:2283/tags?path=autotag_output_duplicate_asset_album_conflict)
+- [Duplicate asset classification conflict](http://your-immich-server:2283/tags?path=autotag_output_duplicate_asset_classification_conflict)
+- [Duplicate asset classification conflict prefix](http://your-immich-server:2283/tags?path=autotag_output_duplicate_asset_classification_conflict_)
+- [Album date mismatch](http://your-immich-server:2283/tags?path=autotag_output_album_date_mismatch)
+```
+
+> Replace `your-immich-server:2283` with the address and port of your Immich instance.
+
+**How to use these links:**
+
+- Click the "Albums" link to review all albums and their contents.
+- Click any autotag link (e.g., "Category unknown", "Album date mismatch") to see all assets currently flagged with that tag.
+- Use the Immich web interface to reclassify, retag, or move assets as needed.
+- After making changes, rerun the script to update the tags and see your progress.
+
+These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_links.md`) for each run, so you can always find the direct links for your review workflow.
+
+
 
 ## 1.3. Practical Use Case: How to Take Advantage of This Script
 
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
 
-**Step 1:** Review the pattern used to detect which albums are considered "classified" (this can be modified in the configuration file). By default, any album whose name starts with a date is assumed to be an event and its photos are considered organized.
+**Step 1:** Review the pattern used to detect which albums are considered "classified" (this can be modified in the [configuration file](./immich_autotag/config/README_config.md)). By default, any album whose name starts with a date is assumed to be an event and its photos are considered organized.
 
 **Step 2:** There are also special tags for photos that do not belong to any album for a specific reason (e.g., memes automatically uploaded from mobile devices, which you do not want in any album). The script suggests using certain tags for these cases, so the user can label memes or other photos accordingly, and the script will take them into account.
 

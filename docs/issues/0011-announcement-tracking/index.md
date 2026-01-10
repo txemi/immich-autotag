@@ -27,7 +27,11 @@ Track and manage all announcements and outreach efforts for the project across v
 | Facebook Groups (OSS, Linux)  |                                           | Not started    | Add relevant groups       |
 | Other (suggest!)              |                                           |                |                           |
 | Reddit r/immich (2024)              | https://www.reddit.com/r/immich/comments/1pse1qk/comment/nvcmpf0/ | Announced      | Previous discussion, good feedback |
-| Reddit r/immich (2026)              | (pending/new link) | Planned        | New major release announcement |
+| Reddit r/immich (2026)              | https://www.reddit.com/r/immich/comments/1q8ilj1/showcase_immich_autotag_major_new_release_instant/ | Announced      | Major new release showcase |
+| Reddit r/selfhosted (2026)           | https://www.reddit.com/r/selfhosted/comments/1q8ioe0/showcase_immich_autotag_major_new_release_instant/ | Announced      | Major new release showcase |
+| Reddit r/pythoncoding (2026)         | https://www.reddit.com/r/pythoncoding/comments/1q8irny/showcase_immich_autotag_new_instant_cli_autoalbum/ | Announced      | Major new release showcase |
+| LinkedIn (2026)                      | https://www.linkedin.com/posts/josemiguelmartinezaguayo_immich-autotagdocsexplain-like-im-5md-activity-7415486122899906560-tlq9?utm_source=share&utm_medium=member_desktop&rcm=ACoAAAK8A1IBLT-ZuwmLh4VrvuLuP46gYSY0wnY | Announced      | Major new release showcase |
+| Hacker News (2026)                   | https://news.ycombinator.com/edit?id=46558757 | Announced      | Major new release showcase |
 
 ## Acceptance Criteria
 - All relevant platforms are listed and links are provided.
