@@ -5,9 +5,9 @@ set -euo pipefail
 
 IMAGE_NAME="txemi/immich-autotag:latest"
 
-# Detect repo root (two levels up from this script)
+ # Detect repo root (three levels up from one_shot)
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 echo "[INFO] Building Docker image: $IMAGE_NAME"
 docker build -t $IMAGE_NAME "$REPO_ROOT"

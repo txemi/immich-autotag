@@ -26,9 +26,9 @@ fi
 # El usuario del contenedor es autotaguser, su home es /home/autotaguser
 CONTAINER_CONFIG_DIR="/home/autotaguser/.config/immich_autotag"
 
-# Calcular la raíz del repositorio (dos niveles arriba de este script)
+ # Calcular la raíz del repositorio (tres niveles arriba de one_shot)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # Directorio de salida
 HOST_OUTPUT_DIR="$REPO_ROOT/docker_output"
