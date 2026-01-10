@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 
@@ -35,6 +34,9 @@ def run_main():
 
     # Initialize logging before any processing
     initialize_logging()
+
+    from immich_autotag.statistics.statistics_manager import StatisticsManager
+    StatisticsManager.get_instance().save()  # Force initial statistics file write
 
     # Get API_KEY from experimental config manager singleton
     from immich_autotag.config.manager import (
