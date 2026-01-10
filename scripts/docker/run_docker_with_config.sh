@@ -6,13 +6,17 @@
 
 
 
+
 IMAGE_NAME="immich-autotag:latest"
 # El usuario del contenedor es autotaguser, su home es /home/autotaguser
 CONTAINER_CONFIG_DIR="/home/autotaguser/.config/immich_autotag"
 
-# Directorio de salida fijo para Docker en el host y en el contenedor
+# Calcular la raíz del repositorio (dos niveles arriba de este script)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HOST_OUTPUT_DIR="$SCRIPT_DIR/../docker_output"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Directorio de salida fijo para Docker en el host y en el contenedor
+HOST_OUTPUT_DIR="$REPO_ROOT/docker_output"
 CONTAINER_OUTPUT_DIR="/home/autotaguser/logs"
 
 # Crear el directorio de salida si no existe
@@ -24,11 +28,11 @@ if [ -n "$1" ]; then
   shift
 else
   # Buscar automáticamente en las rutas típicas
-  # 1. Desarrollo: user_config.py/yaml en ./immich_autotag/config/
-  if [ -f "immich_autotag/config/user_config.py" ]; then
-    CONFIG_LOCAL_PATH="immich_autotag/config/user_config.py"
-  elif [ -f "immich_autotag/config/user_config.yaml" ]; then
-    CONFIG_LOCAL_PATH="immich_autotag/config/user_config.yaml"
+  # 1. Desarrollo: user_config.py/yaml en <repo_root>/immich_autotag/config/
+  if [ -f "$REPO_ROOT/immich_autotag/config/user_config.py" ]; then
+    CONFIG_LOCAL_PATH="$REPO_ROOT/immich_autotag/config/user_config.py"
+  elif [ -f "$REPO_ROOT/immich_autotag/config/user_config.yaml" ]; then
+    CONFIG_LOCAL_PATH="$REPO_ROOT/immich_autotag/config/user_config.yaml"
   # 2. Home config: ~/.config/immich_autotag/config.py/yaml
   elif [ -f "$HOME/.config/immich_autotag/config.py" ]; then
     CONFIG_LOCAL_PATH="$HOME/.config/immich_autotag/config.py"
@@ -40,8 +44,8 @@ else
   elif [ -f "$HOME/.immich_autotag/config.yaml" ]; then
     CONFIG_LOCAL_PATH="$HOME/.immich_autotag/config.yaml"
   # 4. Directorio completo (desarrollo)
-  elif [ -d "immich_autotag/config" ]; then
-    CONFIG_LOCAL_PATH="immich_autotag/config"
+  elif [ -d "$REPO_ROOT/immich_autotag/config" ]; then
+    CONFIG_LOCAL_PATH="$REPO_ROOT/immich_autotag/config"
   # 5. Directorio completo (home)
   elif [ -d "$HOME/.config/immich_autotag" ]; then
     CONFIG_LOCAL_PATH="$HOME/.config/immich_autotag"
