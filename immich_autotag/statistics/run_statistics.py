@@ -29,8 +29,11 @@ class OutputAlbumCounter(BaseModel):
 
 
 class RunStatistics(BaseModel):
-    git_version: Optional[str] = Field(
-        None, description="Git version/tag of the code executed (from git describe)"
+    git_describe_runtime: Optional[str] = Field(
+        None, description="Git describe string obtained at runtime (from GitPython, may be empty in containers)"
+    )
+    git_describe_package: Optional[str] = Field(
+        None, description="Git describe string from the distributed package (from version.py, always present)"
     )
     album_date_mismatch_count: int = Field(
         0, description="Count of album/date mismatches"
