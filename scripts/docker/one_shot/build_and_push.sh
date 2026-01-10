@@ -15,4 +15,6 @@ docker build -t $IMAGE_NAME "$REPO_ROOT"
 echo "[INFO] Pushing image to Docker Hub: $IMAGE_NAME"
 docker push $IMAGE_NAME
 
+
 echo "[OK] Image built and pushed successfully."
+echo "[INFO] View your image at: https://hub.docker.com/r/txemi/immich-autotag/tags"
