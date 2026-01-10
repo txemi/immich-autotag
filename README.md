@@ -58,7 +58,6 @@ That's it! Your Immich autotagging tool is ready to use.
 > **Do you prefer to download the code and run it manually?**
 > See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) in the [Development Guide](./docs/development.md).
 
----
 
 ## 1.2.1. Reviewing Results: Example Links
 
@@ -87,9 +86,7 @@ After running the autotagging script, you can quickly review the results and tak
 
 These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_links.md`) for each run, so you can always find the direct links for your review workflow.
 
----
 
----
 
 ## 1.3. Practical Use Case: How to Take Advantage of This Script
 
