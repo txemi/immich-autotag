@@ -18,4 +18,4 @@ dist/
 *.egg-info/
 .venv/
 # Exclude local immich-client if not needed in image
-immich-client/
+#immich-client/
