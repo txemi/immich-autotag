@@ -41,7 +41,7 @@ All environment cleanup steps have been completed:
 - Build and dependency caches (Docker and Python) cleaned
 - Temporary files and local artifacts deleted
 
-The environment is ready to start user simulation tests, ensuring reproducibility and absence of artifacts from previous executions.
+The environment is ready to start user simulation tests, ensuring reproducibility and absence of residues from previous executions.
 *With the environment fully cleaned, we proceed to user simulation tests below.*
 
 ## 1.4. Planned Tests
@@ -81,7 +81,7 @@ The environment is ready to start user simulation tests, ensuring reproducibilit
 
 - Command: `bash scripts/run/run_immich_autotag.sh`
 - Expected: Runs the tool using pipx, installing pipx with apt if needed.
-- Result: ✅ Success. The script correctly installs pipx using apt on Ubuntu/Debian and runs Immich AutoTag without issues. This method is recommended for reproducibility and ease of use.
+- Result: ✅ Success. The script installs pipx correctly using apt on Ubuntu/Debian and runs Immich AutoTag without issues. This method is recommended for reproducibility and ease of use.
 
 
 ### 1.4.3. Additional/Advanced User Scripts

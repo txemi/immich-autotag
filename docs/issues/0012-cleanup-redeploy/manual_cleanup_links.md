@@ -18,7 +18,7 @@ To quickly delete all old images and versions from public registries, access the
 
 **Tip:**
 - Have all pages open in browser tabs before starting.
-- Delete from Docker Hub first, then from PyPI and TestPyPI to minimize the time users can find old versions.
-- Reload the page after each deletion to confirm that the version/tag has disappeared.
+- Delete on Docker Hub first, then on PyPI and TestPyPI to minimize the time users can find old versions.
+- Reload the page after each deletion to confirm the version/tag has disappeared.
 
 *This document is designed to streamline manual cleanup in situations where automation is not possible.*
