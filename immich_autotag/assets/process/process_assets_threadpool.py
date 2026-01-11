@@ -60,6 +60,6 @@ def process_assets_threadpool(
                 future.result()
             except Exception as e:
                 log(
-                    f"[ERROR] Fallo al procesar un asset en el threadpool: {e}",
+                    f"[ERROR] Failed to process an asset in the threadpool: {e}",
                     level=LogLevel.IMPORTANT,
                 )
