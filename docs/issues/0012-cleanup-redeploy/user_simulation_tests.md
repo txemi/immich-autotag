@@ -64,8 +64,11 @@ El entorno está listo para iniciar las pruebas de simulación de usuario, garan
 - Expected: Manages cron service and volumes, logs available in `docker_logs`.
 
 ### 1.4.2. pipx-based Execution
-- Command: `pipx run immich-autotag`
-- Expected: Runs the tool without code download.
+
+
+- Command: `bash scripts/run/run_immich_autotag.sh`
+- Expected: Runs the tool using pipx, installing pipx with apt if needed.
+- Resultado: ✅ Éxito. El script instala pipx correctamente usando apt en Ubuntu/Debian y ejecuta Immich AutoTag sin problemas. Se recomienda este método para reproducibilidad y facilidad de uso.
 
 ### 1.4.3. Direct Script Execution (from repo)
 - Command: `./scripts/run_immich_autotag.sh`
