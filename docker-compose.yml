@@ -5,6 +5,11 @@ services:
     container_name: autotag-cron
     restart: unless-stopped
 
+    # Set the cron schedule (default: once per hour at minute 0)
+    # To change the schedule, edit the value below (e.g., "*/5 * * * *" for every 5 minutes)
+    environment:
+      - CRON_SCHEDULE=39 * * * *
+
     volumes:
       # Mounts configuration from $HOME/.config/immich_autotag (environment variable)
       - ${HOME}/.config/immich_autotag:/root/.config/immich_autotag

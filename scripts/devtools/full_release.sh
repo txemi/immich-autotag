@@ -1,8 +1,10 @@
+
 #!/bin/bash
 # full_release.sh
 # Script to automate version bump, release, and deployment to PyPI, TestPyPI, and Docker Hub (one-shot and cron images)
 # Usage: bash scripts/devtools/full_release.sh <new_version>
 set -euo pipefail
+set -x
 
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <new_version>"
@@ -33,3 +35,16 @@ bash "$PROJECT_ROOT/scripts/docker/cron/build_cron_image.sh"
 bash "$PROJECT_ROOT/scripts/docker/cron/push_cron_image.sh"
 
 echo "[OK] Full release and deployment completed for version $NEW_VERSION."
+
+# Print direct links for quick manual review
+
+PACKAGE_NAME="immich-autotag"
+DOCKERHUB_USER="txemi"
+
+echo "\n[INFO] Quick review links for version $NEW_VERSION:"
+echo "PyPI:        https://pypi.org/project/$PACKAGE_NAME/$NEW_VERSION/"
+echo "TestPyPI:    https://test.pypi.org/project/$PACKAGE_NAME/$NEW_VERSION/"
+echo "Docker Hub (one-shot): https://hub.docker.com/r/$DOCKERHUB_USER/$PACKAGE_NAME/tags?page=1&name=$NEW_VERSION"
+echo "Docker Hub (cron):     https://hub.docker.com/r/$DOCKERHUB_USER/$PACKAGE_NAME/tags?page=1&name=cron-$NEW_VERSION"
+echo "PyPI history:     https://pypi.org/project/$PACKAGE_NAME/#history"
+echo "TestPyPI history: https://test.pypi.org/project/$PACKAGE_NAME/#history"
