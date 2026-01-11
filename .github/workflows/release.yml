@@ -23,16 +23,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Build Python package
-        run: |
-          python -m build
-
-      - name: Publish to PyPI
+      - name: Build and upload Python package (incluye immich_client)
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
-          twine upload dist/*
+          bash scripts/pypi/package_and_upload.sh
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
