@@ -21,10 +21,14 @@ cd "$PROJECT_ROOT"
 # 1. Run the release script (bumps version, commits, tags, updates version.py, pushes)
 bash "$PROJECT_ROOT/scripts/devtools/release.sh" "$NEW_VERSION"
 
-# 2. Upload to TestPyPI
+
+# 2. Ensure virtual environment and dependencies are ready
+bash "$PROJECT_ROOT/setup_venv.sh"
+
+# 3. Upload to TestPyPI
 bash "$PROJECT_ROOT/scripts/pypi/package_and_upload.sh" --test
 
-# 3. Upload to PyPI
+# 4. Upload to PyPI
 bash "$PROJECT_ROOT/scripts/pypi/package_and_upload.sh"
 
 # 4. Build and push one-shot Docker image
