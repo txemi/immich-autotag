@@ -70,11 +70,8 @@ El entorno está listo para iniciar las pruebas de simulación de usuario, garan
 - Expected: Runs the tool using pipx, installing pipx with apt if needed.
 - Resultado: ✅ Éxito. El script instala pipx correctamente usando apt en Ubuntu/Debian y ejecuta Immich AutoTag sin problemas. Se recomienda este método para reproducibilidad y facilidad de uso.
 
-### 1.4.3. Direct Script Execution (from repo)
-- Command: `./scripts/run_immich_autotag.sh`
-- Expected: Runs the tool using local code.
 
-### 1.4.4. Additional/Advanced User Scripts
+### 1.4.3. Additional/Advanced User Scripts
 - Review any other scripts in `scripts/` that may be useful for end users (e.g., continuous tagging loop, statistics, etc.).
 - Document if relevant for user-facing workflows.
 
