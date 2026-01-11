@@ -93,13 +93,15 @@ You can run Immich AutoTag using any of the following methods:
       - **Periodic execution with Docker Compose (recommended for advanced setups):**
         - You can use the provided `docker-compose.yml` to manage the cron service and volumes easily.
         - By default, the cron job runs every hour (`0 * * * *`). You can adjust the schedule in the configuration if needed.
-        - Example `docker-compose.yml` service:
+        - To change the schedule, set the `CRON_SCHEDULE` environment variable in your `docker-compose.yml` under the `environment` section. For example, to run once per hour at minute 17:
           ```yaml
           services:
             autotag-cron:
               image: txemi/immich-autotag:cron
               container_name: autotag-cron
               restart: unless-stopped
+              environment:
+                - CRON_SCHEDULE=17 * * * *
               volumes:
                 - ${HOME}/.config/immich_autotag:/root/.config/immich_autotag
                 - ./docker_logs:/root/logs
@@ -108,6 +110,11 @@ You can run Immich AutoTag using any of the following methods:
           ```bash
           docker compose up -d
           ```
+          Or use the provided script:
+          ```bash
+          bash scripts/docker/cron/up_compose.sh
+          ```
+          (Recommended: all main actions have scripts for reproducibility and reference.)
         - All logs and statistics will be available in the `docker_logs` folder on your host machine.
 
 **B. With pipx (no code download required)**
