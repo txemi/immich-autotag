@@ -9,6 +9,9 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 cd "$REPO_ROOT"
 
+echo "[INFO] Pulling latest autotag-cron image..."
+docker compose pull autotag-cron
+
 docker compose up -d
 
 echo "autotag-cron service started with Docker Compose."
