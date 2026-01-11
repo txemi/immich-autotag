@@ -47,7 +47,7 @@ El entorno está listo para iniciar las pruebas de simulación de usuario, garan
 ### 1.4.1. Docker-based Execution
 
 #### 1.4.1.1. One-shot execution (public image)
-- Command: `bash scripts/docker/run_docker_public.sh`
+- Command: `bash scripts/docker/one_shot/run_docker_public.sh`
 - Expected: Runs the latest public image from Docker Hub (`txemi/immich-autotag:latest`).
 
 #### 1.4.1.2. One-shot execution (local image)
