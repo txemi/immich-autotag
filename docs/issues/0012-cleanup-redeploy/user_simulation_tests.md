@@ -35,13 +35,13 @@ Before running any user simulation tests, we must ensure the environment is clea
 
 All environment cleanup steps have been completed:
 
-- Volúmenes Docker no utilizados eliminados
-- Redes Docker no utilizadas eliminadas
-- Imágenes y contenedores colgantes eliminados
-- Cachés de build y dependencias (Docker y Python) limpiados
-- Archivos temporales y artefactos locales borrados
+- Unused Docker volumes removed
+- Unused Docker networks removed
+- Dangling images and containers removed
+- Build and dependency caches (Docker and Python) cleaned
+- Temporary files and local artifacts deleted
 
-El entorno está listo para iniciar las pruebas de simulación de usuario, garantizando reproducibilidad y ausencia de residuos de ejecuciones previas.
+The environment is ready to start user simulation tests, ensuring reproducibility and absence of residues from previous executions.
 *With the environment fully cleaned, we proceed to user simulation tests below.*
 
 ## 1.4. Planned Tests
@@ -81,7 +81,7 @@ El entorno está listo para iniciar las pruebas de simulación de usuario, garan
 
 - Command: `bash scripts/run/run_immich_autotag.sh`
 - Expected: Runs the tool using pipx, installing pipx with apt if needed.
-- Resultado: ✅ Éxito. El script instala pipx correctamente usando apt en Ubuntu/Debian y ejecuta Immich AutoTag sin problemas. Se recomienda este método para reproducibilidad y facilidad de uso.
+- Result: ✅ Success. The script installs pipx correctly using apt on Ubuntu/Debian and runs Immich AutoTag without issues. This method is recommended for reproducibility and ease of use.
 
 
 ### 1.4.3. Additional/Advanced User Scripts
