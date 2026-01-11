@@ -8,13 +8,22 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Extract version from pyproject.toml
+# --- Argument parsing ---
 PYPROJECT_TOML="$REPO_ROOT/pyproject.toml"
 PKG_NAME="immich-autotag"
+# Default version: from pyproject.toml
 PKG_VERSION=$(grep '^version' "$PYPROJECT_TOML" | head -n1 | cut -d'=' -f2 | tr -d ' "')
-TEMP_DIR="$REPO_ROOT/temp_install_test"
+# Default repo: PyPI
+REPO="pypi"
 
-# Create temporary folder and enter it
+if [ $# -ge 1 ]; then
+  PKG_VERSION="$1"
+fi
+if [ $# -ge 2 ]; then
+  REPO="$2"
+fi
+
+TEMP_DIR="$REPO_ROOT/temp_install_test"
 rm -rf "$TEMP_DIR"
 mkdir "$TEMP_DIR"
 cd "$TEMP_DIR"
@@ -23,10 +32,15 @@ cd "$TEMP_DIR"
 python3 -m venv venv-test
 source venv-test/bin/activate
 
-# Install package from TestPyPI, but dependencies from official PyPI
-pip install --index-url https://test.pypi.org/simple/ \
-  --extra-index-url https://pypi.org/simple/ \
-  --no-cache-dir --upgrade "$PKG_NAME==$PKG_VERSION"
+if [ "$REPO" = "testpypi" ]; then
+  echo "[INFO] Installing from TestPyPI: version $PKG_VERSION"
+  pip install --index-url https://test.pypi.org/simple/ \
+    --extra-index-url https://pypi.org/simple/ \
+    --no-cache-dir --upgrade "$PKG_NAME==$PKG_VERSION"
+else
+  echo "[INFO] Installing from PyPI: version $PKG_VERSION"
+  pip install --no-cache-dir --upgrade "$PKG_NAME==$PKG_VERSION"
+fi
 
 # Test importing the generated client
 python -c "import immich_client; print('Successful import of immich_client')"
