@@ -31,6 +31,12 @@ update_asset_date_count: 0
 - [ ] Update the code to standardize the output and avoid legacy/obsolete fields.
 - [ ] Document findings and update this issue with the root cause and solution.
 
+## Additional Diagnostic Information
+
+- When running the code directly from a local git repository, the expected git version fields (`git_describe_runtime`, `git_describe_package`) are present and correctly populated.
+- When running the published Docker image from the registry, the problematic case occurs: `git_version` is `null` and the expected git description fields are missing.
+- This suggests the issue is related to how git metadata is captured or embedded during the Docker build or runtime process.
+
 ## References
 - Example statistics files: see logs_local/20260111_153050_PID812172/run_statistics.yaml and other recent runs.
 
