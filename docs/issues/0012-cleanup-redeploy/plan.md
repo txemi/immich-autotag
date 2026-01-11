@@ -64,3 +64,33 @@ To avoid leaving public repositories empty and ensure users always have access t
 ---
 
 *Version 0.54.0 is now the sole published version. The cleanup is complete and the project is ready for new deployments.*
+
+## Preliminary step: New release to restore generic tags
+
+**Motivation:**
+During the cleanup, all versions and generic tags (such as `latest`, `cron`, etc.) were removed, which may cause failures in execution and deployment scripts that depend on them.
+
+**Action:**
+- Perform a new release (for example, 0.56.0) using the usual deployment script.
+- Verify that all necessary generic tags are regenerated and point to the new version.
+- Confirm that execution and deployment scripts work correctly with the restored tags.
+
+**Expected result:**
+Generic tags will be up to date and users will be able to execute and deploy without issues.
+
+---
+
+## Next step: Validation on a different machine
+
+**Objective:**
+Ensure that execution and deployment scripts work correctly on a different machine, without hidden local dependencies.
+
+**Procedure:**
+1. Clone the repository on the new machine.
+2. Install the necessary dependencies (Python, Docker, etc.).
+3. Run the deployment and execution scripts (not image creation scripts).
+4. Verify that the application runs correctly and deployments work as expected.
+5. Document any issues or differences found.
+
+**Expected result:**
+The process should be reproducible and work correctly in any clean environment, confirming the robustness of the deployment system.
