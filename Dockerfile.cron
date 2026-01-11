@@ -7,7 +7,10 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y cron git && rm -rf /var/lib/apt/lists/*
 
 # Install immich-autotag from PyPI
-RUN pip install --no-cache-dir immich-autotag
+
+# Instala immich-autotag desde PyPI y muestra la versión instalada
+RUN pip install --no-cache-dir immich-autotag \
+	&& bash /print_version.sh
 
 
 
@@ -17,9 +20,11 @@ WORKDIR /root
 
 
 # Copia el entrypoint y plantilla de crontab
+
 COPY docker/cron-entrypoint.sh /cron-entrypoint.sh
 COPY docker/crontab.template /crontab.template
-RUN chmod +x /cron-entrypoint.sh
+COPY docker/print_version.sh /print_version.sh
+RUN chmod +x /cron-entrypoint.sh /print_version.sh
 
 
 # Añadir ~/.local/bin al PATH
