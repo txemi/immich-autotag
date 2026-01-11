@@ -4,6 +4,8 @@
 
 ## 1.1. Context
 
+**Note:** The current release being prepared and tested is version 0.58.0. All instructions and tests below refer to this version. When pulling images or installing the package, use `0.58.0` as the reference version.
+
 We are simulating the experience of a new user on a fresh machine, following the official documentation to deploy and run Immich AutoTag. The goal is to validate all documented execution methods and detect any issues, outdated references, or missing steps.
 
 ## 1.2. Source of Test Scenarios
