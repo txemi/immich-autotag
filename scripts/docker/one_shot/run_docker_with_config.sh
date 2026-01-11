@@ -1,6 +1,10 @@
 #!/bin/bash
+
 # Portable script to start the Docker container of immich-autotag mounting config
 # Usage: bash scripts/run_docker_with_config.sh [--image imagename] <local_config_path> [docker_options]
+
+set -euo pipefail
+set -x
 
 # Default image name (local build)
 DEFAULT_IMAGE_NAME="immich-autotag:latest"
@@ -34,11 +38,12 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 HOST_OUTPUT_DIR="$REPO_ROOT/docker_output"
 CONTAINER_OUTPUT_DIR="/home/autotaguser/logs"
 
-# Create output directory if it doesn't exist
+# Create output directory if it doesn't exist and asegurar permisos de escritura
 mkdir -p "$HOST_OUTPUT_DIR"
+chmod -R 777 "$HOST_OUTPUT_DIR"
 
 # If an argument is passed, use it as config path
-if [ -n "$1" ]; then
+if [ $# -ge 1 ]; then
   CONFIG_LOCAL_PATH="$1"
   shift
 else
