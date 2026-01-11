@@ -16,9 +16,9 @@ Restore full control and traceability over what is published in all public regis
 - [x] **1. Create a dedicated git branch for the cleanup and redeployment operation.**
    - Name: `chore/cleanup-redeploy-2026-01` (or similar, following project conventions).
 
-- [ ] **2. Script: Clean all local Docker images related to the project.**
-   - Remove all local images named `txemi/immich-autotag*` to ensure a clean build and test environment.
-   - Provide a reusable script for future use.
+- [x] **2. Script: Clean all local Docker images related to the project.**
+   - `scripts/docker/clean_local_docker_images.sh` elimina todas las imágenes locales de immich-autotag (one-shot y cron), mostrando el estado antes y después de la limpieza para máxima transparencia.
+   - Probado y verificado: elimina todas las imágenes y confirma el resultado.
 
 - [ ] **3. Script: Stop Docker Compose services for the project.**
    - Provide a script to stop all running Docker Compose services, matching the style of the existing `up_compose.sh`.
