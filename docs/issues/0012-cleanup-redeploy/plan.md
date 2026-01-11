@@ -20,8 +20,9 @@ Restore full control and traceability over what is published in all public regis
    - `scripts/docker/clean_local_docker_images.sh` elimina todas las imágenes locales de immich-autotag (one-shot y cron), mostrando el estado antes y después de la limpieza para máxima transparencia.
    - Probado y verificado: elimina todas las imágenes y confirma el resultado.
 
-- [ ] **3. Script: Stop Docker Compose services for the project.**
-   - Provide a script to stop all running Docker Compose services, matching the style of the existing `up_compose.sh`.
+- [x] **3. Script: Stop Docker Compose services for the project.**
+   - `scripts/docker/stop_compose.sh` detiene todos los servicios usando el `docker-compose.yml` de la raíz del proyecto, siguiendo la convención estándar y asegurando máxima compatibilidad.
+   - El script detecta la raíz del proyecto y muestra mensajes claros de estado y errores.
 
 - [ ] **4. (Optional) Script: Clean public registries.**
    - If feasible, automate the removal of old images/packages from Docker Hub and PyPI/TestPyPI.
