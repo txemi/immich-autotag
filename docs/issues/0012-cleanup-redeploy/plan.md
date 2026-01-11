@@ -34,12 +34,26 @@ Restore full control and traceability over what is published in all public regis
 - [x] **6. Document all steps and scripts in this issue folder.**
    - Keep a record of the process, scripts, and any manual interventions for future reference.
 
-## Rationale
+## Safe Cleanup Strategy
 
-- Ensures users always get the latest, intended versions.
-- Reduces confusion and support burden.
-- Makes the release and maintenance process more robust and auditable.
+To avoid leaving public repositories empty and ensure users always have access to a valid and controlled version, follow this procedure:
+
+1. **Select a new and high version number (e.g., 0.48.0)**
+   - This clearly marks the "safe point" for cleanup and leaves room for intermediate versions if needed.
+
+2. **Run the full release with version 0.48.0**
+   - Publish to PyPI, TestPyPI, and Docker Hub.
+   - Verify that version 0.48.0 is available and accessible in all registries.
+
+3. **Manually delete all previous versions/tags before 0.48.0**
+   - Use the links in `manual_cleanup_links.md` to delete everything except 0.48.0.
+   - This ensures users can only install/pull the latest and safest version.
+
+4. **(Optional) Run a new release with an even newer version (e.g., 0.50.0)**
+   - This allows the cleanup to be "historical" and development to continue with a clearly later version.
+
+5. **Document in the issue that version 0.48.0 (or the chosen one) is the safe point after cleanup.**
 
 ---
 
-*This issue folder will be updated as the cleanup and redeployment proceeds. All scripts and logs will be included here for traceability.*
+*This procedure minimizes risks and ensures maximum traceability and control during cleanup and redeploy.*
