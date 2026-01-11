@@ -1,4 +1,4 @@
 # This file is automatically updated in the build/distribution process
-__version__ = "0.48.0"
-__git_commit__ = "f899298"
-__git_describe__ = "v0.48.0-0-gf899298-dirty"
+__version__ = "0.50.0"
+__git_commit__ = "3a63de2"
+__git_describe__ = "v0.50.0-0-g3a63de2-dirty"
