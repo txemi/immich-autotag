@@ -4,15 +4,33 @@
 # Usage: bash scripts/docker/clean_local_docker_images.sh
 set -euo pipefail
 
-IMAGES=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^txemi/immich-autotag')
+# List all immich-autotag images before deletion
+ALL_IMAGES=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^txemi/immich-autotag' || true)
 
-if [ -z "$IMAGES" ]; then
-  echo "[INFO] No local immich-autotag images found."
-  exit 0
+if [ -z "$ALL_IMAGES" ]; then
+  echo "[INFO] No local immich-autotag images found before cleanup."
+else
+  echo "[INFO] Local immich-autotag images before cleanup:"
+  echo "$ALL_IMAGES"
 fi
 
-echo "[INFO] Removing the following images:"
-echo "$IMAGES"
-docker rmi -f $IMAGES
+# Select images to delete
+IMAGES_TO_DELETE="$ALL_IMAGES"
 
-echo "[OK] All local immich-autotag images removed."
+if [ -z "$IMAGES_TO_DELETE" ]; then
+  echo "[INFO] Nothing to delete."
+else
+  echo "[INFO] Removing the following images:"
+  echo "$IMAGES_TO_DELETE"
+  docker rmi -f $IMAGES_TO_DELETE || true
+fi
+
+# List all immich-autotag images after deletion
+REMAINING_IMAGES=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^txemi/immich-autotag' || true)
+
+if [ -z "$REMAINING_IMAGES" ]; then
+  echo "[OK] All immich-autotag images removed. No images remain."
+else
+  echo "[WARN] Some immich-autotag images remain after cleanup:"
+  echo "$REMAINING_IMAGES"
+fi
