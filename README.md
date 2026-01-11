@@ -110,6 +110,11 @@ You can run Immich AutoTag using any of the following methods:
           ```bash
           docker compose up -d
           ```
+          Or use the provided script:
+          ```bash
+          bash scripts/docker/cron/up_compose.sh
+          ```
+          (Recommended: all main actions have scripts for reproducibility and reference.)
         - All logs and statistics will be available in the `docker_logs` folder on your host machine.
 
 **B. With pipx (no code download required)**
