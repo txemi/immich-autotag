@@ -50,6 +50,8 @@ El entorno está listo para iniciar las pruebas de simulación de usuario, garan
 - Command: `bash scripts/docker/one_shot/run_docker_public.sh`
 - Expected: Runs the latest public image from Docker Hub (`txemi/immich-autotag:latest`).
 
+ - Result: ✅ Success. The script automatically detects and mounts the configuration and log directory, fixes output directory permissions before launching the container, and runs the process without manual errors. The system works as expected and the test is reproducible for new users.
+
 #### 1.4.1.2. One-shot execution (local image)
 - Command: `bash scripts/docker/run_docker_with_config.sh`
 - Expected: Runs the local image (`immich-autotag:latest`).
