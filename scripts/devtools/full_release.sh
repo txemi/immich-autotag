@@ -33,3 +33,13 @@ bash "$PROJECT_ROOT/scripts/docker/cron/build_cron_image.sh"
 bash "$PROJECT_ROOT/scripts/docker/cron/push_cron_image.sh"
 
 echo "[OK] Full release and deployment completed for version $NEW_VERSION."
+
+# Print direct links for quick manual review
+PACKAGE_NAME="immich-autotag"
+DOCKERHUB_USER="txemiochoa"
+
+echo "\n[INFO] Quick review links for version $NEW_VERSION:"
+echo "PyPI:        https://pypi.org/project/$PACKAGE_NAME/$NEW_VERSION/"
+echo "TestPyPI:    https://test.pypi.org/project/$PACKAGE_NAME/$NEW_VERSION/"
+echo "Docker Hub (one-shot): https://hub.docker.com/r/$DOCKERHUB_USER/$PACKAGE_NAME/tags?page=1&name=$NEW_VERSION"
+echo "Docker Hub (cron):     https://hub.docker.com/r/$DOCKERHUB_USER/${PACKAGE_NAME}-cron/tags?page=1&name=$NEW_VERSION"
