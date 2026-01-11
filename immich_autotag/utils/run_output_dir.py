@@ -8,7 +8,7 @@ _RUN_OUTPUT_DIR = None
 
 
 @typechecked
-def get_run_output_dir(base_dir="logs") -> Path:
+def get_run_output_dir(base_dir="logs_local") -> Path:
     global _RUN_OUTPUT_DIR
     if _RUN_OUTPUT_DIR is None:
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -19,7 +19,7 @@ def get_run_output_dir(base_dir="logs") -> Path:
 
 
 @typechecked
-def get_previous_run_output_dir(base_dir="logs") -> Path | None:
+def get_previous_run_output_dir(base_dir="logs_local") -> Path | None:
     """
     Searches for the most recent previous execution directory in base_dir.
     Returns Path or None if there are no previous executions.

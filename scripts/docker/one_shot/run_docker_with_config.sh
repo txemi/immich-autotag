@@ -35,7 +35,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # Output directory
-HOST_OUTPUT_DIR="$REPO_ROOT/docker_output"
+HOST_OUTPUT_DIR="$REPO_ROOT/logs_docker_one_shot"
 CONTAINER_OUTPUT_DIR="/home/autotaguser/logs"
 
 # Create output directory if it doesn't exist and asegurar permisos de escritura
