@@ -62,8 +62,9 @@ El entorno está listo para iniciar las pruebas de simulación de usuario, garan
 - Variants: Change schedule, map log volume, etc.
 
 #### 1.4.1.4. Periodic execution with Docker Compose
-- Command: `docker compose up -d` (using provided `docker-compose.yml`)
-- Expected: Manages cron service and volumes, logs available in `docker_logs`.
+ - Command: `bash scripts/docker/cron/up_compose.sh`
+ - Expected: Starts the autotag-cron service using Docker Compose from any directory, manages cron service and volumes, logs available in `docker_logs`.
+
 
 ### 1.4.2. pipx-based Execution
 
