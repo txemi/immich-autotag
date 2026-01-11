@@ -12,17 +12,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../..")"
 cd "$PROJECT_ROOT"
 
- # --- Automatically increment patch number in pyproject.toml ---
+ # --- Optionally increment patch number in pyproject.toml ---
 PYPROJECT_TOML="$PROJECT_ROOT/pyproject.toml"
-if [ -f "$PYPROJECT_TOML" ]; then
-  VERSION_LINE=$(grep '^version' "$PYPROJECT_TOML")
-  VERSION=$(echo "$VERSION_LINE" | cut -d'=' -f2 | tr -d ' "')
-  IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-  NEW_PATCH=$((PATCH + 1))
-  NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-  # Replace version line
-  sed -i "s/^version = .*/version = \"$NEW_VERSION\"/" "$PYPROJECT_TOML"
-  echo "[INFO] Version automatically incremented: $VERSION -> $NEW_VERSION"
+AUTO_INCREMENT_PATCH="false"
+if [ "${AUTO_INCREMENT_PATCH}" = "true" ]; then
+  if [ -f "$PYPROJECT_TOML" ]; then
+    VERSION_LINE=$(grep '^version' "$PYPROJECT_TOML")
+    VERSION=$(echo "$VERSION_LINE" | cut -d'=' -f2 | tr -d ' "')
+    IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+    NEW_PATCH=$((PATCH + 1))
+    NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+    # Replace version line
+    sed -i "s/^version = .*/version = \"$NEW_VERSION\"/" "$PYPROJECT_TOML"
+    echo "[INFO] Version automatically incremented: $VERSION -> $NEW_VERSION"
+  fi
+else
+  echo "[INFO] Patch auto-increment is disabled. Version in pyproject.toml will be used as-is."
 fi
 
  # Check and activate standard virtual environment if exists and not active
