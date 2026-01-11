@@ -27,8 +27,19 @@ Before running any user simulation tests, we must ensure the environment is clea
 3. **(Optional) Remove any local build artifacts or caches**
    - If present, clean `dist/`, `.venv/`, or other build folders to avoid accidental use of local code.
 
----
 
+
+### 1.3.2. Clean State Confirmation
+
+All environment cleanup steps have been completed:
+
+- Volúmenes Docker no utilizados eliminados
+- Redes Docker no utilizadas eliminadas
+- Imágenes y contenedores colgantes eliminados
+- Cachés de build y dependencias (Docker y Python) limpiados
+- Archivos temporales y artefactos locales borrados
+
+El entorno está listo para iniciar las pruebas de simulación de usuario, garantizando reproducibilidad y ausencia de residuos de ejecuciones previas.
 *With the environment fully cleaned, we proceed to user simulation tests below.*
 
 ## 1.4. Planned Tests
