@@ -18,13 +18,13 @@ Restore full control and traceability over what is published in all public regis
 
 
 - [x] **2. Script: Clean all local Docker images related to the project.**
-   - `scripts/docker/clean_local_docker_images.sh` elimina todas las imágenes locales de immich-autotag (one-shot y cron), mostrando el estado antes y después de la limpieza para máxima transparencia.
-   - Probado y verificado: elimina todas las imágenes y confirma el resultado.
+   - `scripts/docker/clean_local_docker_images.sh` removes all local immich-autotag images (one-shot and cron), displaying the status before and after cleanup for maximum transparency.
+   - Tested and verified: removes all images and confirms the result.
    - **Status update (2026-01-11):** We have switched to a new machine and are simulating the scenario of an end user following the official documentation. Local Docker images have been cleaned to ensure that all subsequent tests use only recent and public versions. This will help us detect any outdated references or errors in deployment and execution scripts.
 
 - [x] **3. Script: Stop Docker Compose services for the project.**
-   - `scripts/docker/stop_compose.sh` detiene todos los servicios usando el `docker-compose.yml` de la raíz del proyecto, siguiendo la convención estándar y asegurando máxima compatibilidad.
-   - El script detecta la raíz del proyecto y muestra mensajes claros de estado y errores.
+   - `scripts/docker/stop_compose.sh` stops all services using the root project's `docker-compose.yml`, following the standard convention and ensuring maximum compatibility.
+   - The script detects the project root and displays clear status and error messages.
 
  - [x] **4. (Optional) Script: Clean public registries.**
    - All old images and packages have been removed from Docker Hub and PyPI/TestPyPI, leaving only the latest safe version available. Manual cleanup steps have been documented for maintainers.
