@@ -9,3 +9,4 @@ __pycache__
 /immich_client
 /docker_output
 docker_logs
+/logs_docker_cron
