@@ -2,15 +2,22 @@
  # Script to move immich_client to project root, build and upload to PyPI/TestPyPI, then restore folder
  # Usage: ./scripts/pypi/package_and_upload.sh
 
+
 set -euo pipefail
 set -x
 
-
-
-# Get project root directory (two levels up from this script)
+# --- Ensure venv and client are ready ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../..")"
 cd "$PROJECT_ROOT"
+
+# Llama a setup_venv.sh si existe
+if [ -f "$PROJECT_ROOT/setup_venv.sh" ]; then
+  echo "[INFO] Running setup_venv.sh to ensure venv and client are ready..."
+  bash "$PROJECT_ROOT/setup_venv.sh"
+else
+  echo "[WARN] setup_venv.sh not found, proceeding without it."
+fi
 
  # --- Optionally increment patch number in pyproject.toml ---
 PYPROJECT_TOML="$PROJECT_ROOT/pyproject.toml"
