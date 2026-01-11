@@ -13,24 +13,24 @@ Restore full control and traceability over what is published in all public regis
 
 ## Plan
 
-1. **Create a dedicated git branch for the cleanup and redeployment operation.**
+- [x] **1. Create a dedicated git branch for the cleanup and redeployment operation.**
    - Name: `chore/cleanup-redeploy-2026-01` (or similar, following project conventions).
 
-2. **Script: Clean all local Docker images related to the project.**
+- [ ] **2. Script: Clean all local Docker images related to the project.**
    - Remove all local images named `txemi/immich-autotag*` to ensure a clean build and test environment.
    - Provide a reusable script for future use.
 
-3. **Script: Stop Docker Compose services for the project.**
+- [ ] **3. Script: Stop Docker Compose services for the project.**
    - Provide a script to stop all running Docker Compose services, matching the style of the existing `up_compose.sh`.
 
-4. **(Optional) Script: Clean public registries.**
+- [ ] **4. (Optional) Script: Clean public registries.**
    - If feasible, automate the removal of old images/packages from Docker Hub and PyPI/TestPyPI.
    - If not, document the manual steps required for maintainers.
 
-5. **Run the full deployment script.**
+- [ ] **5. Run the full deployment script.**
    - Use the `full_release.sh` or equivalent to redeploy all images and packages, ensuring everything public is up to date and consistent.
 
-6. **Document all steps and scripts in this issue folder.**
+- [x] **6. Document all steps and scripts in this issue folder.**
    - Keep a record of the process, scripts, and any manual interventions for future reference.
 
 ## Rationale
