@@ -37,6 +37,20 @@ update_asset_date_count: 0
 - When running the published Docker image from the registry, the problematic case occurs: `git_version` is `null` and the expected git description fields are missing.
 - This suggests the issue is related to how git metadata is captured or embedded during the Docker build or runtime process.
 
+## Historical Note and Investigation
+
+- In the past, the statistics output used the field `git_version` to record the git version information.
+- The codebase was updated to use the more descriptive fields `git_describe_runtime` and `git_describe_package` instead of `git_version`.
+- Despite this change, some statistics outputs (especially from Docker images) still show the old `git_version: null` field, and do not include the new fields.
+- It is unclear where the legacy `git_version` field is still being generated, as the code should now only use the new fields.
+- This suggests there may be an outdated or cached version of the code, or a packaging/build issue causing the old structure to persist in some environments.
+
+## Next Steps for Investigation
+- [ ] Search the codebase for any remaining references to `git_version`.
+- [ ] Check the Docker build context and ensure the latest code is always used when building images.
+- [ ] Verify that no old wheels, source distributions, or cached files are being included in the Docker image.
+- [ ] Confirm that the entrypoint and all scripts in the Docker image are up to date and match the current repository structure.
+
 ## References
 - Example statistics files: see logs_local/20260111_153050_PID812172/run_statistics.yaml and other recent runs.
 
