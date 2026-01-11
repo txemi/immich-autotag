@@ -54,6 +54,14 @@ To avoid leaving public repositories empty and ensure users always have access t
 
 5. **Document in the issue that version 0.48.0 (or the chosen one) is the safe point after cleanup.**
 
+## Safe Cleanup Status Update (Jan 11, 2026)
+
+- The latest release published is **version 0.54.0**, which has been verified to deploy cleanly to PyPI, TestPyPI, and Docker Hub.
+- All version numbers and tags now match exactly, and the release process prints correct review links for all registries and Docker tags (including cron tags).
+- The auto-increment patch logic has been disabled, so future releases will use explicit version numbers as intended.
+- **Next step:** Manually delete all previous versions/tags from PyPI, TestPyPI, and Docker Hub, leaving only 0.54.0 as the safe, clean baseline for future deployments.
+- This ensures no legacy or "garbage" versions remain, and all users/installations will use the latest, validated release.
+
 ---
 
-*This procedure minimizes risks and ensures maximum traceability and control during cleanup and redeploy.*
+*This update marks version 0.54.0 as the new safe point. Manual cleanup of older versions is recommended before any further releases.*
