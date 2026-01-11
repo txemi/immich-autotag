@@ -1,8 +1,10 @@
+
 #!/bin/bash
 # full_release.sh
 # Script to automate version bump, release, and deployment to PyPI, TestPyPI, and Docker Hub (one-shot and cron images)
 # Usage: bash scripts/devtools/full_release.sh <new_version>
 set -euo pipefail
+set -x
 
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <new_version>"
