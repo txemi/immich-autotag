@@ -59,11 +59,13 @@ You can run Immich AutoTag using any of the following methods:
       bash scripts/docker/run_docker_public.sh
       ```
       This script always uses the latest public image from Docker Hub (`txemi/immich-autotag:latest`).
+      All logs and statistics will be available in the `logs_docker_one_shot` folder on your host machine.
     - Using a local image:
       ```bash
       bash scripts/docker/run_docker_with_config.sh
       ```
       By default, this uses the local image (`immich-autotag:latest`).
+      All logs and statistics will be available in the `logs_docker_one_shot` folder on your host machine.
       To use the public image explicitly:
       ```bash
       bash scripts/docker/run_docker_with_config.sh --image txemi/immich-autotag:latest
@@ -104,7 +106,7 @@ You can run Immich AutoTag using any of the following methods:
                 - CRON_SCHEDULE=17 * * * *
               volumes:
                 - ${HOME}/.config/immich_autotag:/root/.config/immich_autotag
-                - ./docker_logs:/root/logs
+                - ./logs_docker_cron:/root/logs
           ```
         - To start the service:
           ```bash
@@ -115,9 +117,14 @@ You can run Immich AutoTag using any of the following methods:
           bash scripts/docker/cron/up_compose.sh
           ```
           (Recommended: all main actions have scripts for reproducibility and reference.)
-        - All logs and statistics will be available in the `docker_logs` folder on your host machine.
+        - All logs and statistics will be available in the `logs_docker_cron` folder on your host machine.
 
-**B. With pipx (no code download required)**
+
+**B. Local/development runs:**
+
+  - All logs and statistics will be available in the `logs_local` folder on your host machine.
+
+**C. With pipx (no code download required)**
 
   - If you have pipx installed:
     ```bash
