@@ -48,13 +48,19 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - The statistics file is now written immediately at application startup, ensuring it is always available for monitoring and debugging from the very beginning of each run.
 - All code, comments, and log messages are now in English for consistency and maintainability.
 
-## [0.50.0] - unreleased
+## [0.80.0] - unreleased
+### Changed
+- Documentación mejorada en CONTRIBUTING.md y README.md, incluyendo invitación explícita a contribuir en la reactivación de CI/CD (GitHub Actions). Consulta o participa en la discusión en GitHub: https://github.com/txemi/immich-autotag/issues/32
+- Preparando nueva versión para publicar estos cambios y facilitar la colaboración de la comunidad.
+
+## [0.90.0] - unreleased
 ### Added
 
 - The internal categorization flow has been adapted to fully leverage the new configuration system introduced in v0.25, enabling more versatile categorizations based on multiple tags and flexible album patterns. ([issue](docs/issues/0009-config-system-refactor/))
 - Consolidation of experimental features from version 0.20:
   - Resume processing from the last processed asset (checkpoint resume) is now stable and enabled by default. ([issue](docs/issues/0008-statistics-checkpoint/))
   - Creation and assignment of albums based on folders from the file system library is now stable and enabled by default. ([issue](docs/issues/0004-album-detection/))
+
 
 
 ## [1.0] - YYYY-MM-DD
