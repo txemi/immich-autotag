@@ -59,11 +59,19 @@ El entorno está listo para iniciar las pruebas de simulación de usuario, garan
 
 #### 1.4.1.3. Periodic execution (cron mode)
 - Command: `docker run -d --name autotag-cron -e CRON_SCHEDULE="0 2 * * *" -v ~/.config/immich_autotag:/root/.config/immich_autotag txemi/immich-autotag:cron`
+- To change the schedule, set the `CRON_SCHEDULE` environment variable (e.g., `-e CRON_SCHEDULE="*/5 * * * *"` for every 5 minutes).
 - Variants: Change schedule, map log volume, etc.
 
 #### 1.4.1.4. Periodic execution with Docker Compose
  - Command: `bash scripts/docker/cron/up_compose.sh`
  - Expected: Starts the autotag-cron service using Docker Compose from any directory, manages cron service and volumes, logs available in `docker_logs`.
+ - Customizing the schedule: You can change the execution frequency by editing the `CRON_SCHEDULE` environment variable in `docker-compose.yml`.
+    - Example (every 5 minutes):
+       ```yaml
+       environment:
+          - CRON_SCHEDULE=*/5 * * * *
+       ```
+    - By default, it is set to run every day at 2:00 AM (`0 2 * * *`).
 
 
 ### 1.4.2. pipx-based Execution
