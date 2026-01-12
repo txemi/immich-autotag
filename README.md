@@ -211,7 +211,8 @@ With the logic for adding and removing tags now solved in this project, it becom
 
 - Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums).
 - Assist in the detection and management of duplicate folders or files within the photo library.
-- Provide tools for batch operations or advanced organization workflows using tags as the main driver.
+- Assign users to albums automatically based on the application's rule engine (e.g., ownership, sharing, or access control).
+ - Make the rule engine more generic to enable processing workflows for batch operations that are better adapted to users' specific needs.
 - Integrate with other automation or AI-based classification systems to further enhance photo management.
 
 This foundation makes it straightforward to build more advanced features for organizing and maintaining large photo and video collections in Immich.
