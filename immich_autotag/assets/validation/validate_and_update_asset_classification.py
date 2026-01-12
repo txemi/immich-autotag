@@ -25,7 +25,7 @@ def validate_and_update_asset_classification(
     # Check delegated to the wrapper method
     conflict = asset_wrapper.check_unique_classification(fail_fast=False)
     # Autotag logic delegated to the wrapper methods, now passing tag_mod_report
-    asset_wrapper.ensure_autotag_category_unknown(classified)
+    asset_wrapper.ensure_autotag_unknown_category()
     asset_wrapper.ensure_autotag_conflict_category(conflict)
 
     log(

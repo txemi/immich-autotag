@@ -25,11 +25,17 @@ class MatchResultList:
 
     @typechecked
     def tags(self) -> list[str]:
-        return [m.tag_name for m in self.matches if m.tag_name is not None]
+        tags = []
+        for m in self.matches:
+            tags.extend(m.tags_matched)
+        return tags
 
     @typechecked
     def albums(self) -> list[str]:
-        return [m.album_name for m in self.matches if m.album_name is not None]
+        albums = []
+        for m in self.matches:
+            albums.extend(m.albums_matched)
+        return albums
 
     @typechecked
     def rules(self) -> list:

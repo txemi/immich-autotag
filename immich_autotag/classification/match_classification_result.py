@@ -1,4 +1,6 @@
+
 from typing import List
+from immich_autotag.classification.match_result_list import MatchResultList
 
 import attrs
 
@@ -12,7 +14,7 @@ class MatchClassificationResult:
 
     @classmethod
     def from_match_result_list(
-        cls, match_result_list: "MatchResultList"
+        cls, match_result_list: MatchResultList
     ) -> "MatchClassificationResult":
         """
         Aggregate tags_matched and albums_matched from a MatchResultList object.
@@ -20,7 +22,7 @@ class MatchClassificationResult:
         from typeguard import typechecked
 
         @typechecked
-        def _aggregate(match_result_list: "MatchResultList") -> tuple[list[str], list[str]]:
+        def _aggregate(match_result_list: MatchResultList) -> tuple[list[str], list[str]]:
             tags = []
             albums = []
             for m in match_result_list.matches:

@@ -42,6 +42,8 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
 
+
+
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
@@ -555,19 +557,19 @@ class AssetResponseWrapper:
         match_result_list = rule_set.matching_rules(self)
         return MatchClassificationResult.from_match_result_list(match_result_list)
 
+
+
     @typechecked
     def check_unique_classification(self, fail_fast: bool = True) -> bool:
         """
         Checks if the asset is classified by more than one criterion (tag or album).
-        Now considers conflict if the total number of matching tags and albums is greater than 1.
-        If fail_fast is True (default), raises an exception. If False, logs a warning only.
         Returns True if there is a conflict (multiple criteria), False otherwise.
+        If fail_fast is True (default), raises an exception. If False, logs a warning only.
         """
         match_detail = self.get_classification_match_detail()
         n_matches = len(match_detail.tags_matched) + len(match_detail.albums_matched)
         if n_matches > 1:
             import uuid
-
             photo_url = get_immich_photo_url(uuid.UUID(self.id))
             msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by more than one criterion: tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
             if fail_fast:
@@ -575,32 +577,25 @@ class AssetResponseWrapper:
             else:
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
-
                 log(msg, level=LogLevel.ERROR)
             return True
         return False
-                match_results = rule_set.matching_rules(self)
-                tags_matched = []
-                albums_matched = []
-                for m in match_results:
-                    tags_matched.extend(m.tags_matched)
-                    albums_matched.extend(m.albums_matched)
-                return MatchClassificationResult(
-                    tags_matched=tags_matched, albums_matched=albums_matched
-                )
-        If not classified, add the tag only if not present. If classified and tag is present, remove it.
-        Idempotent: does nothing if already in correct state.
+    @typechecked
+    def ensure_autotag_unknown_category(self) -> None:
         """
-        from immich_autotag.config.manager import (
-            ConfigManager,
-        )
+        Adds or removes the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
+        If not classified, adds the tag if not present. If classified and tag is present, removes it.
+        Idempotent: does nothing if already in correct state.
+        Also logs and notifies the modification report.
+        """
+        from immich_autotag.config.manager import ConfigManager
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
-
-        tag_name = ConfigManager.get_instance().config.auto_tags.category_unknown
         from immich_autotag.report.modification_report import ModificationReport
 
+        tag_name = ConfigManager.get_instance().config.auto_tags.category_unknown
         tag_mod_report = ModificationReport.get_instance()
+        classified = self.is_asset_classified()
         if not classified:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
@@ -625,7 +620,6 @@ class AssetResponseWrapper:
                     f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is classified. Tag '{tag_name}' not present.",
                     level=LogLevel.FOCUS,
                 )
-
     @typechecked
     def ensure_autotag_conflict_category(
         self,
