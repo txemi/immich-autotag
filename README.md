@@ -16,7 +16,7 @@ When starting to use Immich, it is common to import large volumes of photos from
 
 This project automatically applies new tags to assets (photos and videos) in Immich, based on existing albums and tags. 
 
-**In the context of this project, a photo is considered 'classified' if it either belongs to a set of albums (configurable) that are deemed to provide classification, or it has one or more tags (also configurable) that the user considers sufficient for classification.**
+**In the context of this project, a photo is considered 'classified' if it either belongs to a set of albums (configurable using patterns) that are deemed to provide classification, or it has one or more tags (also configurable) that the user considers sufficient for classification.**
 
 This classification relies on a rule engine that is continuously evolving to become more abstract and flexible, allowing adaptation to the specific needs of different users.
 
@@ -120,10 +120,6 @@ You can run Immich AutoTag using any of the following methods:
           ```
           (Recommended: all main actions have scripts for reproducibility and reference.)
         - All logs and statistics will be available in the `logs_docker_cron` folder on your host machine.
-
-
-
-
 
 **B. With pipx (no code download required)**
 
