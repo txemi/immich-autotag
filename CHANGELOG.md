@@ -54,13 +54,20 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - The statistics file is now written immediately at application startup, ensuring it is always available for monitoring and debugging from the very beginning of each run.
 - All code, comments, and log messages are now in English for consistency and maintainability.
 
+
+
+
 ## [0.70.7-2-g8b496cb-dirty] - 2026-01-12
 **Description:** Work in progress: automating Python package and container generation using GitHub Actions and various improvements. Not final.
-
 ### Changed
 - Ongoing automation for Python package and container builds (GitHub Actions integration, improvements in packaging and CI/CD workflows).
 - Improved documentation in CONTRIBUTING.md and README.md, including an explicit invitation to contribute to the reactivation of CI/CD (GitHub Actions). See or join the discussion on GitHub: https://github.com/txemi/immich-autotag/issues/32
 - Preparing a new release to publish these changes and facilitate community collaboration.
+
+## Unreleased
+**Description:** Adds automatic creation of daily albums for assets that do not belong to any album, using easily identifiable names for user review.
+### Added
+- Automatic creation of albums named by day (e.g., `Review YYYY-MM-DD`) for assets that are not assigned to any album, making it easy for users to review and organize unclassified photos by date.
 
 ## [Planned: Date Correction Improvements]
 **Description:** Planned improvements to date correction logic for edge cases and scenarios not currently handled correctly.
