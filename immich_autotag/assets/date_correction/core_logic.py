@@ -88,10 +88,10 @@ def _check_filename_candidate_and_fix(
     )
     # Case 1: large day difference (as before)
     if is_datetime_more_than_days_after(immich_date, candidate_date, days=1.1):
-        log("[DATE CORRECTION][COMPLETE DIAGNOSIS]", level=LogLevel.INFO)
-        log(date_sources_list.format_full_info(), level=LogLevel.INFO)
-        log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.INFO)
-        log(best_candidate.format_info(), level=LogLevel.INFO)
+        log("[DATE CORRECTION][COMPLETE DIAGNOSIS]", level=LogLevel.FOCUS)
+        log(date_sources_list.format_full_info(), level=LogLevel.FOCUS)
+        log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.FOCUS)
+        log(best_candidate.format_info(), level=LogLevel.FOCUS)
         log(
             f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})",
             level=LogLevel.FOCUS,
@@ -104,10 +104,10 @@ def _check_filename_candidate_and_fix(
         return DateCorrectionStepResult.FIXED
     # Case 2: same date, Immich at midnight, candidate has real time and is older
     if candidate_has_time and candidate_date < immich_date:
-        log("[DATE CORRECTION][TIME PRECISION]", level=LogLevel.INFO)
-        log(date_sources_list.format_full_info(), level=LogLevel.INFO)
-        log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.INFO)
-        log(best_candidate.format_info(), level=LogLevel.INFO)
+        log("[DATE CORRECTION][TIME PRECISION]", level=LogLevel.FOCUS)
+        log(date_sources_list.format_full_info(), level=LogLevel.FOCUS)
+        log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.FOCUS)
+        log(best_candidate.format_info(), level=LogLevel.FOCUS)
         log(
             f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})",
             level=LogLevel.FOCUS,
