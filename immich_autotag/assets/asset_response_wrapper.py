@@ -548,19 +548,12 @@ class AssetResponseWrapper:
         """
         Returns an object with the detail of the tags and albums that matched classification.
         """
-        from immich_autotag.classification.classification_rule_set import (
-            ClassificationRuleSet,
-        )
+        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
+        from immich_autotag.classification.match_classification_result import MatchClassificationResult
 
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        match_results = rule_set.matching_rules(self)
-        tags_matched = [m.tag_name for m in match_results if m.tag_name is not None]
-        albums_matched = [
-            m.album_name for m in match_results if m.album_name is not None
-        ]
-        return MatchClassificationResult(
-            tags_matched=tags_matched, albums_matched=albums_matched
-        )
+        match_result_list = rule_set.matching_rules(self)
+        return MatchClassificationResult.from_match_result_list(match_result_list)
 
     @typechecked
     def check_unique_classification(self, fail_fast: bool = True) -> bool:
@@ -586,14 +579,15 @@ class AssetResponseWrapper:
                 log(msg, level=LogLevel.ERROR)
             return True
         return False
-
-    @typechecked
-    def ensure_autotag_category_unknown(
-        self,
-        classified: bool,
-    ) -> None:
-        """
-        Add or remove the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
+                match_results = rule_set.matching_rules(self)
+                tags_matched = []
+                albums_matched = []
+                for m in match_results:
+                    tags_matched.extend(m.tags_matched)
+                    albums_matched.extend(m.albums_matched)
+                return MatchClassificationResult(
+                    tags_matched=tags_matched, albums_matched=albums_matched
+                )
         If not classified, add the tag only if not present. If classified and tag is present, remove it.
         Idempotent: does nothing if already in correct state.
         """
