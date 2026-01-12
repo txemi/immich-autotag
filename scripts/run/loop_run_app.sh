@@ -1,10 +1,14 @@
 #!/bin/bash
+
 # DISCLAIMER:
 # This script is intended ONLY for quick, repeated updates of tags during heavy asset update sessions.
 # It is NOT designed to run as a background service or daemon.
 # Use it for rapid, manual update cycles when you need to refresh tags frequently.
 # Between each execution, the script waits for 1 minute to avoid excessive load.
 # Use with caution!
+#
+# NOTE: The setup step (setup_venv.sh) is optional. It will only run if you pass --setup as an argument.
+# This allows you to update the environment only when needed, avoiding unexpected changes. The logic is identical to the single-run script.
 
 # Detect repo root (two levels up from this script)
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
