@@ -10,7 +10,9 @@
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-while "$REPO_ROOT/scripts/run/run_immich_autotag.sh" || true ; do
+bash "$REPO_ROOT/setup_venv.sh"
+
+while bash "$REPO_ROOT/run_app.sh" || true ; do
     echo "Waiting 1 minute before next run..."
     sleep 60
 done

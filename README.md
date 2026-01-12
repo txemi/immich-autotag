@@ -120,23 +120,39 @@ You can run Immich AutoTag using any of the following methods:
         - All logs and statistics will be available in the `logs_docker_cron` folder on your host machine.
 
 
-**B. Local/development runs:**
 
-  - All logs and statistics will be available in the `logs_local` folder on your host machine.
 
-**C. With pipx (no code download required)**
+
+**B. With pipx (no code download required)**
 
   - If you have pipx installed:
     ```bash
     pipx run immich-autotag
     ```
 
-**C. Directly from the repo (script, requires code download)**
+  - You can also use the provided scripts:
+    - Run once:
+      ```bash
+      bash scripts/pypi/run_immich_autotag.sh
+      ```
+    - Run in a loop (for continuous tagging/classification):
+      ```bash
+      bash scripts/pypi/loop_immich_autotag.sh
+      ```
 
-  - Use the provided script:
-    ```bash
-    ./scripts/run_immich_autotag.sh
-    ```
+
+
+**C. Directly from the repo. Local/development runs (script, requires code download)**
+  - All logs and statistics will be available in the `logs_local` folder on your host machine.
+  - Use the provided scripts:
+    - **Run once (single execution):**
+      ```bash
+      bash scripts/run/run_once_app.sh
+      ```
+    - **Run in a loop (continuous tagging/classification):**
+      ```bash
+      bash scripts/run/loop_run_app.sh
+      ```
 
 That's it! Your Immich autotagging tool is ready to use.
 
