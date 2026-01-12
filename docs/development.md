@@ -72,11 +72,6 @@ The template file does not contain sensitive information and can be uploaded to 
 
 
 
----
-
-
----
-
 **Upcoming sections:**
 - Testing and test automation
 - Contribution and style guide
