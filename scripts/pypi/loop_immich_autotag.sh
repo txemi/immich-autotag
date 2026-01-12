@@ -1,10 +1,11 @@
 #!/bin/bash
+
 # loop_immich_autotag.sh
-# Bucle infinito para ejecutar immich-autotag con pipx cada 5 minutos
+# Infinite loop to run immich-autotag with pipx every 5 minutes
 
 while true; do
-  echo "[$(date)] Ejecutando immich-autotag..."
+  echo "[$(date)] Running immich-autotag..."
   pipx run immich-autotag
-  echo "[$(date)] Esperando 5 minutos antes de la siguiente ejecución..."
+  echo "[$(date)] Waiting 5 minutes before the next execution..."
   sleep 300
 done
