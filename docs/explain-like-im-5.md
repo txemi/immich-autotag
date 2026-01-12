@@ -21,3 +21,5 @@ Imagine you have hundreds of thousands of photos from many years, different phon
 
 **In short:**  
 Immich AutoTag is like a smart helper that finds the mess in your photo collection, helps you clean it up, and keeps everything organized with much less effort.
+
+This is powered by a rule engine that is designed to become more abstract and flexible over time, so users can adapt it to their own needs. By default, it comes with a configuration that should work well for most common scenarios.
