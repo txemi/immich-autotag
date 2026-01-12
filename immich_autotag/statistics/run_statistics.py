@@ -6,8 +6,10 @@ run_statistics.py
 
 Data model for execution statistics, serializable to YAML.
 """
+
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
+from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, Field
@@ -86,10 +88,8 @@ class RunStatistics(BaseModel):
 
     @classmethod
     @typechecked
-    def from_yaml(cls, path: 'Path') -> "RunStatistics":
-        from pathlib import Path
-        if not isinstance(path, Path):
-            raise TypeError(f"from_yaml only accepts a Path object as input. Expected file: {RUN_STATISTICS_FILENAME}")
+    def from_yaml(cls, path: Path) -> "RunStatistics":
+        # Path type is enforced by typechecked
         if not path.exists():
             raise FileNotFoundError(f"File not found: {path} (expected {RUN_STATISTICS_FILENAME})")
         with path.open("r", encoding="utf-8") as f:
