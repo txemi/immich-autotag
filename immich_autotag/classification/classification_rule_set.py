@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ClassificationRuleSet:
+
     rules: List[ClassificationRuleWrapper]
 
     @typechecked
@@ -111,3 +112,12 @@ class ClassificationRuleSet:
                 if wrapper.matches_album(album):
                     matches.append(MatchResult(rule=wrapper, album_name=album))
         return MatchResultList(matches=matches)
+    @typechecked
+    def matches_any_album_of_asset(self, asset_wrapper: 'AssetResponseWrapper') -> bool:
+        """
+        Returns True if any album name of the asset matches any album_name_patterns in any rule.
+        """
+        for album_name in asset_wrapper.get_album_names():
+            if self.matches_album(album_name):
+                return True
+        return False

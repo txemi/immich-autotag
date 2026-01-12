@@ -85,5 +85,16 @@ class RunStatistics(BaseModel):
 
     @classmethod
     @typechecked
-    def from_yaml(cls, data: str) -> "RunStatistics":
-        return cls.model_validate(yaml.safe_load(data))
+    def from_yaml(cls, path: 'Path') -> "RunStatistics":
+        from pathlib import Path
+        if not isinstance(path, Path):
+            raise TypeError("from_yaml only accepts a Path object as input.")
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {path}")
+        with path.open("r", encoding="utf-8") as f:
+            data = f.read()
+        loaded = yaml.safe_load(data)
+        if loaded is None:
+            # Empty or invalid file: raise an explicit error
+            raise ValueError("run_statistics.yaml is empty or invalid; cannot create RunStatistics instance.")
+        return cls.model_validate(loaded)

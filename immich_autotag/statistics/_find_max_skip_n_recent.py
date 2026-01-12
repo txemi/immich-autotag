@@ -39,11 +39,15 @@ def get_max_skip_n_from_recent(
     for d in find_recent_statistics_dirs(logs_dir, max_age_hours):
         stats_path = d / "run_statistics.yaml"
         if stats_path.exists():
-            with open(stats_path, "r", encoding="utf-8") as f:
-                stats = RunStatistics.from_yaml(f.read())
-            count = stats.count
-            if count > max_count:
-                max_count = count
+            try:
+                with open(stats_path, "r", encoding="utf-8") as f:
+                    stats = RunStatistics.from_yaml(f.read())
+                count = stats.count
+                if count > max_count:
+                    max_count = count
+            except Exception as e:
+                import warnings
+                warnings.warn(f"Could not load {stats_path}: {e}")
     if max_count > 0:
         return max(0, max_count - overlap)
     return None

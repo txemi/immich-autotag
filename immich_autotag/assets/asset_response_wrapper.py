@@ -765,8 +765,10 @@ class AssetResponseWrapper:
         if self.is_asset_classified():
             return None
         # TODO: REVIEW IF THE LOGIC BELOW IS IN THE PREVIOUS METHOD is_asset_classified
-        # If already in an album matching ALBUM_PATTERN, skip
-        if any(re.match(ALBUM_PATTERN, name) for name in self.get_album_names()):
+        # If already in an album matching configured album patterns, skip
+        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        if rule_set.matches_any_album_of_asset(self):
             return None
         analyzer = AlbumFolderAnalyzer(self.original_path)
         return analyzer.get_album_name()
