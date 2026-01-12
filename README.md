@@ -18,6 +18,8 @@ This project automatically applies new tags to assets (photos and videos) in Imm
 
 **In the context of this project, a photo is considered 'classified' if it either belongs to a set of albums (configurable) that are deemed to provide classification, or it has one or more tags (also configurable) that the user considers sufficient for classification.**
 
+This classification relies on a rule engine that is continuously evolving to become more abstract and flexible, allowing adaptation to the specific needs of different users.
+
 It helps to:
 - Quickly detect which photos or videos are still unorganized.
 - Highlight possible errors, such as assets classified under multiple conflicting criteria.
