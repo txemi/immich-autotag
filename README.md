@@ -200,7 +200,7 @@ After the motivation, let's describe a practical use case for this tool. The scr
 **Step 4:** After making corrections in Immich (see the [example quick links above](#121-reviewing-results-example-links) to easily review and access affected assets), you can rerun the script. It will remove the special tags from photos that have been resolved, so each run leaves fewer unclassified or conflicted photos. The user can keep iterating until the library is perfectly organized.
 
 **Tips for Classification:**
-- Use Immich's date view to quickly identify all photos from the same event and add them to an album with the name pattern you defined for valida classification.
+- Use Immich's date view to quickly identify all photos from the same event and add them to an album with the name pattern you defined for valid classification.
 - To find memes or photos that should be tagged to avoid being candidates for albums, use Immich's "find similar" feature (AI-powered), which helps you quickly locate and tag such photos in bulk.
 
 ## 1.4. Future Directions
