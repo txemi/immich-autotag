@@ -11,6 +11,7 @@ import yaml
 from typeguard import typechecked
 
 from immich_autotag.utils.run_output_dir import get_previous_run_output_dir
+from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 
 
 @typechecked
@@ -22,7 +23,7 @@ def get_previous_skip_n(overlap: int = 100) -> Optional[int]:
     prev_dir = get_previous_run_output_dir()
     if prev_dir is None:
         return None
-    stats_path = prev_dir / "run_statistics.yaml"
+    stats_path = prev_dir / RUN_STATISTICS_FILENAME
     if not stats_path.exists():
         return None
     with open(stats_path, "r", encoding="utf-8") as f:

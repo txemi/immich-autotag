@@ -39,6 +39,8 @@ import attr
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
+from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
+
 from .checkpoint_manager import CheckpointManager
 from .run_statistics import RunStatistics
 from .tag_stats_manager import TagStatsManager
@@ -168,7 +170,7 @@ class StatisticsManager:
                 git_describe_runtime=git_describe_runtime,
                 git_describe_package=git_describe_package,
             )
-            self._current_file = self.stats_dir / "run_statistics.yaml"
+            self._current_file = self.stats_dir / RUN_STATISTICS_FILENAME
             self._save_to_file()
 
     def _save_to_file(self) -> None:
@@ -202,9 +204,9 @@ class StatisticsManager:
 
     @typechecked
     def load_latest(self) -> Optional[RunStatistics]:
-        files = sorted(self.stats_dir.glob("run_statistics_*.yaml"), reverse=True)
-        if files:
-            with open(files[0], "r", encoding="utf-8") as f:
+        stats_path = self.stats_dir / RUN_STATISTICS_FILENAME
+        if stats_path.exists():
+            with open(stats_path, "r", encoding="utf-8") as f:
                 stats = RunStatistics.from_yaml(f.read())
                 return stats
         return None

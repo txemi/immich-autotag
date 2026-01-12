@@ -5,6 +5,8 @@ from typing import List, Optional
 from typeguard import typechecked
 
 from immich_autotag.statistics.run_statistics import RunStatistics
+from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
+from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 
 @typechecked
@@ -14,15 +16,18 @@ def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[
     """
     now = datetime.now()
     recent_dirs: List[tuple[datetime, Path]] = []
-    for subdir in logs_dir.iterdir():
-        if subdir.is_dir() and "PID" in subdir.name:
-            try:
-                dt_str = subdir.name.split("_PID")[0]
-                dt = datetime.strptime(dt_str, "%Y%m%d_%H%M%S")
-                if now - dt < timedelta(hours=max_age_hours):
-                    recent_dirs.append((dt, subdir))
-            except Exception:
-                continue
+    current_run_dir = get_run_output_dir(logs_dir)
+    pid_dirs = [subdir for subdir in logs_dir.iterdir() if subdir.is_dir() and "PID" in subdir.name]
+    for subdir in pid_dirs:
+        if subdir == current_run_dir:
+            continue  # Exclude current run dir robustly
+        try:
+            dt_str = subdir.name.split("_PID")[0]
+            dt = datetime.strptime(dt_str, "%Y%m%d_%H%M%S")
+            if now - dt < timedelta(hours=max_age_hours):
+                recent_dirs.append((dt, subdir))
+        except Exception:
+            continue
     # Sort by date descending
     recent_dirs.sort(reverse=True)
     return [d for _, d in recent_dirs]
@@ -37,7 +42,7 @@ def get_max_skip_n_from_recent(
     """
     max_count = 0
     for d in find_recent_statistics_dirs(logs_dir, max_age_hours):
-        stats_path = d / "run_statistics.yaml"
+        stats_path = d / RUN_STATISTICS_FILENAME
         if stats_path.exists():
             try:
                 with open(stats_path, "r", encoding="utf-8") as f:
