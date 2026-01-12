@@ -4,27 +4,32 @@ from pathlib import Path
 
 from typeguard import typechecked
 
+
+LOGS_LOCAL_DIR = Path("logs_local")
 _RUN_OUTPUT_DIR = None
 
 
 @typechecked
-def get_run_output_dir(base_dir="logs_local") -> Path:
+def get_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path:
+    """
+    Returns the output directory for the current run. Argument must be a Path.
+    """
     global _RUN_OUTPUT_DIR
     if _RUN_OUTPUT_DIR is None:
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
         pid = os.getpid()
-        _RUN_OUTPUT_DIR = Path(base_dir) / f"{now}_PID{pid}"
+        _RUN_OUTPUT_DIR = base_dir / f"{now}_PID{pid}"
         _RUN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     return _RUN_OUTPUT_DIR
 
 
 @typechecked
-def get_previous_run_output_dir(base_dir="logs_local") -> Path | None:
+def get_previous_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path | None:
     """
-    Searches for the most recent previous execution directory in base_dir.
+    Searches for the most recent previous execution directory in base_dir (must be Path).
     Returns Path or None if there are no previous executions.
     """
-    base = Path(base_dir)
+    base = base_dir
     if not base.exists() or not base.is_dir():
         return None
     # Filter only folders with expected format
