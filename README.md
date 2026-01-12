@@ -206,6 +206,8 @@ This foundation makes it straightforward to build more advanced features for org
 
 For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md).
 
+If you would like to contribute, please see the new [Contributing Guide](./docs/CONTRIBUTING.md). Any help is welcome—especially with re-enabling GitHub Actions (CI/CD), which is currently disabled due to the challenge of embedding the Immich client library in the build process. This project is developed in spare time, so all contributions are greatly appreciated!
+
 ## 1.6. Support
 For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/txemi/immich-autotag/issues) ticketing system.
 
