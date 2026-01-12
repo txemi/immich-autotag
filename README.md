@@ -193,7 +193,7 @@ After the motivation, let's describe a practical use case for this tool. The scr
 
 **Step 1:** Review the pattern used to detect which albums are considered "classified" (this can be modified in the [configuration file](./immich_autotag/config/README_config.md)). By default, any album whose name starts with a date is assumed to be an event and its photos are considered organized.
 
-**Step 2:** There are also special tags for photos that do not belong to any album for a specific reason (e.g., memes automatically uploaded from mobile devices, which you do not want in any album). The script suggests using certain tags for these cases, so the user can label memes or other photos accordingly, and the script will take them into account.
+**Step 2:** There are also special tags for photos that do not belong to any album for a specific reason (e.g., memes automatically uploaded from mobile devices, which you do not want in any album). The default config suggests using certain tags for these cases, so the user can label memes or other photos accordingly, and the script will take them into account.
 
 **Step 3:** If the script finds a photo that is unclassified or classified in multiple places, it will use a special tag (by default, tags starting with `autotag_`). All of this is configurable in the user config file. This way, you can easily locate these photos from the Immich interface and decide what to do: add/remove them from albums, tag as meme, postpone, ignore, etc.
 
