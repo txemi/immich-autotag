@@ -73,6 +73,12 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 
+## [Planned]
+**Description:** Automatic creation of user permissions and user groups based on the rule engine.
+### Added
+- Automatic assignment of permissions to users according to rules.
+- Creation and management of user groups for advanced access control.
+
 ## [1.0] - YYYY-MM-DD
 ### Added
 - Robust, uninterrupted processing of large photo sets (tested with 270,000 sample photos). ([issue](docs/issues/0008-statistics-checkpoint/))
