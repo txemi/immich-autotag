@@ -54,9 +54,6 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - The statistics file is now written immediately at application startup, ensuring it is always available for monitoring and debugging from the very beginning of each run.
 - All code, comments, and log messages are now in English for consistency and maintainability.
 
-
-
-
 ## [0.70.7-2-g8b496cb-dirty] - 2026-01-12
 **Description:** Work in progress: automating Python package and container generation using GitHub Actions and various improvements. Not final.
 ### Changed
