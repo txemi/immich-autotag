@@ -12,3 +12,4 @@ docker_logs
 /logs_docker_cron
 /immich-client.back
 /logs_local
+/immich_client.back

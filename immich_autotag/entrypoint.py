@@ -7,7 +7,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.process_assets import process_assets
+from immich_autotag.assets.process.process_assets import process_assets
 from immich_autotag.config.internal_config import get_immich_base_url
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.duplicates.load_duplicates_collection import (
@@ -104,7 +104,7 @@ def run_main():
         )
         from threading import Lock
 
-        from immich_autotag.assets.process_single_asset import process_single_asset
+        from immich_autotag.assets.process.process_single_asset import process_single_asset
 
         lock = Lock()
         from immich_autotag.report.modification_report import ModificationReport
