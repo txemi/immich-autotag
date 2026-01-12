@@ -10,3 +10,5 @@ __pycache__
 /docker_output
 docker_logs
 /logs_docker_cron
+/immich-client.back
+/logs_local
