@@ -1,3 +1,4 @@
+from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from typeguard import typechecked
 
 """
@@ -88,13 +89,13 @@ class RunStatistics(BaseModel):
     def from_yaml(cls, path: 'Path') -> "RunStatistics":
         from pathlib import Path
         if not isinstance(path, Path):
-            raise TypeError("from_yaml only accepts a Path object as input.")
+            raise TypeError(f"from_yaml only accepts a Path object as input. Expected file: {RUN_STATISTICS_FILENAME}")
         if not path.exists():
-            raise FileNotFoundError(f"File not found: {path}")
+            raise FileNotFoundError(f"File not found: {path} (expected {RUN_STATISTICS_FILENAME})")
         with path.open("r", encoding="utf-8") as f:
             data = f.read()
         loaded = yaml.safe_load(data)
         if loaded is None:
             # Empty or invalid file: raise an explicit error
-            raise ValueError("run_statistics.yaml is empty or invalid; cannot create RunStatistics instance.")
+            raise ValueError(f"{RUN_STATISTICS_FILENAME} is empty or invalid; cannot create RunStatistics instance.")
         return cls.model_validate(loaded)
