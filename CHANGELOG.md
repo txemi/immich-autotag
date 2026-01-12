@@ -59,8 +59,8 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Ongoing automation for Python package and container builds (GitHub Actions integration, improvements in packaging and CI/CD workflows).
-- Documentación mejorada en CONTRIBUTING.md y README.md, incluyendo invitación explícita a contribuir en la reactivación de CI/CD (GitHub Actions). Consulta o participa en la discusión en GitHub: https://github.com/txemi/immich-autotag/issues/32
-- Preparando nueva versión para publicar estos cambios y facilitar la colaboración de la comunidad.
+- Improved documentation in CONTRIBUTING.md and README.md, including an explicit invitation to contribute to the reactivation of CI/CD (GitHub Actions). See or join the discussion on GitHub: https://github.com/txemi/immich-autotag/issues/32
+- Preparing a new release to publish these changes and facilitate community collaboration.
 
 ## [Unreleased]
 **Description:** Improvements to the rule engine: more abstract, supports not only regex but also simplified common use cases.
