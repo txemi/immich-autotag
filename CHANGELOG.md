@@ -62,6 +62,16 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - Improved documentation in CONTRIBUTING.md and README.md, including an explicit invitation to contribute to the reactivation of CI/CD (GitHub Actions). See or join the discussion on GitHub: https://github.com/txemi/immich-autotag/issues/32
 - Preparing a new release to publish these changes and facilitate community collaboration.
 
+## [Planned: Date Correction Improvements]
+**Description:** Planned improvements to date correction logic for edge cases and scenarios not currently handled correctly.
+### Added
+- Enhanced date extraction and correction for problematic or previously unhandled cases.
+
+## [Planned: Album Creation Review]
+**Description:** Planned review and overhaul of the automatic album creation system for better accuracy and flexibility.
+### Added
+- Refactored logic for automatic album creation, improving detection and assignment.
+
 ## [Unreleased]
 **Description:** Improvements to the rule engine: more abstract, supports not only regex but also simplified common use cases.
 ### Added
