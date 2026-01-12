@@ -6,6 +6,7 @@ from immich_autotag.config.models import ClassificationRule
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class ClassificationRuleWrapper:
+
     rule: ClassificationRule = attrs.field(
         validator=attrs.validators.instance_of(ClassificationRule)
     )
@@ -43,4 +44,18 @@ class ClassificationRuleWrapper:
             re.match(pattern, album_name) for pattern in self.rule.album_name_patterns
         )
 
+
+    @typechecked
+    def matches_asset(self, asset_wrapper: 'AssetResponseWrapper') -> 'MatchResult | None':
+        """
+        Returns a MatchResult for this rule and the given asset (with lists of matching tags and albums), or None if no match.
+        """
+        from immich_autotag.classification.match_result import MatchResult
+        asset_tags = set(asset_wrapper.get_tag_names())
+        album_names = set(asset_wrapper.get_album_names())
+        tags_matched = [tag for tag in asset_tags if self.has_tag(tag)]
+        albums_matched = [album for album in album_names if self.matches_album(album)]
+        if not tags_matched and not albums_matched:
+            return None
+        return MatchResult(rule=self, tags_matched=tags_matched, albums_matched=albums_matched)
     # You can add more utility methods as needed

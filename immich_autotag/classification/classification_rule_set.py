@@ -99,18 +99,11 @@ class ClassificationRuleSet:
         """
         Returns a MatchResultList: each one indicates the rule and the element (tag or album) that matched.
         """
-        asset_tags = set(asset_wrapper.get_tag_names())
-        album_names = set(asset_wrapper.get_album_names())
         matches: list[MatchResult] = []
         for wrapper in self.rules:
-            # Match by tag
-            for tag in asset_tags:
-                if wrapper.has_tag(tag):
-                    matches.append(MatchResult(rule=wrapper, tag_name=tag))
-            # Match by album
-            for album in album_names:
-                if wrapper.matches_album(album):
-                    matches.append(MatchResult(rule=wrapper, album_name=album))
+            match = wrapper.matches_asset(asset_wrapper)
+            if match is not None:
+                matches.append(match)
         return MatchResultList(matches=matches)
     @typechecked
     def matches_any_album_of_asset(self, asset_wrapper: 'AssetResponseWrapper') -> bool:
