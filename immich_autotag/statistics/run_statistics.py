@@ -6,8 +6,10 @@ run_statistics.py
 
 Data model for execution statistics, serializable to YAML.
 """
+
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
+from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, Field

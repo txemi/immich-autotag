@@ -79,20 +79,25 @@ class AlbumCollectionWrapper:
         )
         user = get_my_user.sync(client=client)
         user_id = user.id
-        try:
-            add_users_to_album.sync(
-                id=album.id,
-                client=client,
-                body=AddUsersDto(
-                    album_users=[
-                        AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)
-                    ]
-                ),
-            )
-        except Exception as e:
-            raise RuntimeError(
-                f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
-            ) from e
+        # Evitar añadir el owner como editor (Immich API da error 400 si se intenta)
+        # Asumimos que album.created_by es el id del owner
+        if user_id == album.created_by:
+            pass  # No añadir el owner como editor
+        else:
+            try:
+                add_users_to_album.sync(
+                    id=album.id,
+                    client=client,
+                    body=AddUsersDto(
+                        album_users=[
+                            AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)
+                        ]
+                    ),
+                )
+            except Exception as e:
+                raise RuntimeError(
+                    f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
+                ) from e
         wrapper = AlbumResponseWrapper(album=album)
         # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
