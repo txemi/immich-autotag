@@ -37,8 +37,6 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         process_assets_threadpool(
             context,
             max_assets,
-            total_to_process,
-            LOG_INTERVAL,
             start_time,
         )
         count = None

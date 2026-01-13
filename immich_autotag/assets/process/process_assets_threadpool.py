@@ -19,14 +19,15 @@ from immich_autotag.report.modification_report import ModificationReport
 def process_assets_threadpool(
     context: ImmichContext,
     max_assets: int | None,
-    total_to_process: int | None,
-    LOG_INTERVAL: int,
     start_time: float,
 ) -> None:
     log(
         "[CHECKPOINT] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.",
         level=LogLevel.PROGRESS,
     )
+    LOG_INTERVAL = 5  # seconds
+    stats = StatisticsManager.get_instance().get_stats()
+    total_to_process = stats.get_total_to_process()
     count = 0
     last_log_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
