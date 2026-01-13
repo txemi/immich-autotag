@@ -86,6 +86,8 @@ class UserConfig(BaseModel):
     duplicate_processing: Optional[DuplicateProcessingConfig] = None
     album_detection_from_folders: AlbumDetectionFromFoldersConfig
 
+    create_album_from_date_if_missing: bool = False
+
 
 
 
