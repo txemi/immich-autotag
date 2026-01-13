@@ -11,7 +11,7 @@ from immich_autotag.report.modification_report import ModificationReport
 
 @typechecked
 def log_final_summary(
-    count: int, tag_mod_report: ModificationReport, start_time: float
+    count: int, start_time: float
 ) -> None:
     total_time = time.time() - start_time
     log(f"Total assets processed: {count}", level=LogLevel.PROGRESS)
@@ -19,6 +19,7 @@ def log_final_summary(
         f"[PERF] Total time: {total_time:.2f} s. Average per asset: {total_time/count if count else 0:.3f} s",
         level=LogLevel.PROGRESS,
     )
+    tag_mod_report = ModificationReport.get_instance()
     if len(tag_mod_report.modifications) > 0:
         tag_mod_report.print_summary()
         tag_mod_report.flush()

@@ -19,7 +19,6 @@ from immich_autotag.report.modification_report import ModificationReport
 def process_assets_threadpool(
     context: ImmichContext,
     max_assets: int | None,
-    tag_mod_report: ModificationReport,
     total_to_process: int | None,
     LOG_INTERVAL: int,
     start_time: float,
@@ -37,7 +36,7 @@ def process_assets_threadpool(
         ):
             t0 = time.time()
             future = executor.submit(
-                process_single_asset, asset_wrapper, tag_mod_report
+                process_single_asset, asset_wrapper
             )
             futures.append(future)
             count += 1

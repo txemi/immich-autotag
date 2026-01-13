@@ -103,7 +103,6 @@ def _validate_and_update_classification(
 @typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
-    tag_mod_report: "ModificationReport",
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
     """
@@ -124,19 +123,15 @@ def process_single_asset(
     _apply_tag_conversions(asset_wrapper)
     _correct_date_if_enabled(asset_wrapper)
     _analyze_duplicate_tags(asset_wrapper)
+    tag_mod_report = ModificationReport.get_instance()
     _analyze_and_assign_album(
         asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
     )
-
     _validate_and_update_classification(asset_wrapper, tag_mod_report)
-
-    # Album date consistency check (after all other processing)
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
     )
-
     check_album_date_consistency(asset_wrapper, tag_mod_report)
-
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     log(
