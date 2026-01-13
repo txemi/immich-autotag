@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+from immich_autotag.context.immich_context import ImmichContext
+
 import git  # GitPython
 
 if TYPE_CHECKING:
@@ -51,6 +53,7 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
+
 
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
@@ -271,3 +274,11 @@ class StatisticsManager:
         self.tags.increment_tag_action(tag, kind, album)
 
     # Tag/album methods delegated to TagStatsManager
+    @typechecked
+    def initialize_for_run(self, context: "ImmichContext", max_assets: int | None) -> None:
+        from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets
+        total_assets = fetch_total_assets(context)
+        skip_n = self.get_effective_skip_n()
+        self.set_max_assets(max_assets if max_assets is not None else -1)
+        self.set_skip_n(skip_n)
+        self._current_stats.total_assets = total_assets

@@ -29,15 +29,13 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     start_time = time.time()
 
     log_execution_parameters()
-    total_assets = fetch_total_assets(context)
-    skip_n = StatisticsManager.get_instance().get_effective_skip_n()
-    StatisticsManager.get_instance().set_max_assets(max_assets if max_assets is not None else -1)
-    StatisticsManager.get_instance().set_skip_n(skip_n)
+    StatisticsManager.get_instance().initialize_for_run(context, max_assets)
+    stats = StatisticsManager.get_instance().get_stats()
     total_to_process = None
-    if total_assets is not None:
-        total_to_process = total_assets
-        if skip_n:
-            total_to_process = max(1, total_assets - skip_n)
+    if stats.total_assets is not None:
+        total_to_process = stats.total_assets
+        if stats.skip_n:
+            total_to_process = max(1, stats.total_assets - stats.skip_n)
 
     if USE_THREADPOOL:
         process_assets_threadpool(
@@ -52,7 +50,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
         count = process_assets_sequential(
             context,
             max_assets,
-            skip_n,
+            stats.skip_n,
         )
     log_final_summary(count if count is not None else 0, start_time)
     # Mark statistics completion
