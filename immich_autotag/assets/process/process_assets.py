@@ -31,9 +31,8 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
 
     if USE_THREADPOOL:
         process_assets_threadpool(context)
-        count = None
     else:
-        count = process_assets_sequential(context)
-    # start_time is now managed by StatisticsManager
-    log_final_summary(count if count is not None else 0, stats.started_at)
+        process_assets_sequential(context)
+    # start_time and count are now managed by StatisticsManager
+    log_final_summary(stats.count, stats.started_at)
     StatisticsManager.get_instance().finish_run()
