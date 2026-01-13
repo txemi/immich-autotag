@@ -25,27 +25,15 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
-    LOG_INTERVAL = 5  # seconds
-    start_time = time.time()
-
     log_execution_parameters()
     StatisticsManager.get_instance().initialize_for_run(context, max_assets)
     stats = StatisticsManager.get_instance().get_stats()
-    total_to_process = stats.get_total_to_process()
 
     if USE_THREADPOOL:
-        process_assets_threadpool(
-            context,
-            max_assets,
-            start_time,
-        )
+        process_assets_threadpool(context)
         count = None
     else:
-        count = process_assets_sequential(
-            context,
-            max_assets,
-            stats.skip_n,
-        )
-    log_final_summary(count if count is not None else 0, start_time)
-    # Mark statistics completion
+        count = process_assets_sequential(context)
+    # start_time is now managed by StatisticsManager
+    log_final_summary(count if count is not None else 0, stats.started_at)
     StatisticsManager.get_instance().finish_run()

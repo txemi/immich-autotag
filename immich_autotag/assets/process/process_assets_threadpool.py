@@ -13,13 +13,12 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
 @typechecked
 def process_assets_threadpool(
     context: ImmichContext,
-    max_assets: int | None,
-    start_time: float,
 ) -> None:
     log(
         "[CHECKPOINT] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.",
@@ -28,6 +27,8 @@ def process_assets_threadpool(
     LOG_INTERVAL = 5  # seconds
     stats = StatisticsManager.get_instance().get_stats()
     total_to_process = stats.get_total_to_process()
+    max_assets = stats.max_assets
+    start_time = stats.started_at.timestamp() if stats.started_at else time.time()
     count = 0
     last_log_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:

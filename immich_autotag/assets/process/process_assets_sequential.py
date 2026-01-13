@@ -17,14 +17,15 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 @typechecked
 def process_assets_sequential(
     context: ImmichContext,
-    max_assets: int | None,
-    skip_n: int,
 ) -> int:
     log(
         "Entering asset processing loop...",
         level=LogLevel.PROGRESS,
     )
     log("[DEBUG] Before iterating assets (start of for loop)", level=LogLevel.DEBUG)
+    stats = StatisticsManager.get_instance().get_stats()
+    max_assets = stats.max_assets
+    skip_n = stats.skip_n or 0
     count = 0
     try:
         for asset_wrapper in context.asset_manager.iter_assets(
