@@ -22,6 +22,13 @@ from typing import Optional
 class ClassificationRule(BaseModel):
     tag_names: Optional[List[str]] = None
     album_name_patterns: Optional[List[str]] = None
+    asset_links: Optional[List[str]] = None
+
+
+class FilterConfig(BaseModel):
+    filter_in: List[ClassificationRule] = Field(default_factory=list)
+    filter_out: List[ClassificationRule] = Field(default_factory=list)
+
 
 
 class Conversion(BaseModel):
@@ -71,8 +78,10 @@ class FeaturesConfig(BaseModel):
 
 class UserConfig(BaseModel):
     server: ServerConfig
-    filter_out_asset_links: List[str]
-    classification_rules: List[ClassificationRule]
+    filters: Optional[FilterConfig] = None
     conversions: List[Conversion]
+    classification_rules: List[ClassificationRule]
     auto_tags: AutoTagsConfig
     features: FeaturesConfig
+
+
