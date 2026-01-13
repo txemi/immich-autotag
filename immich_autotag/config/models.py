@@ -43,25 +43,23 @@ class ClassificationConfig(BaseModel):
     autotag_unknown: Optional[str] = None
     autotag_conflict: Optional[str] = None
 
+class DateCorrectionConfig(BaseModel):
+    enabled: bool
+    extraction_timezone: str
 
 class DuplicateProcessingConfig(BaseModel):
-    autotag_album_conflict: Optional[str] = None
-    autotag_classification_conflict: Optional[str] = None
-    autotag_classification_conflict_prefix: Optional[str] = None
-
-class AutoTagsConfig(BaseModel):
-    enabled: bool
-    duplicate_processing: Optional[DuplicateProcessingConfig] = None
-    album_date_mismatch: str = Field(
+    autotag_album_date_mismatch: str = Field(
         default="autotag_output_album_date_mismatch",
         description="Tag for album/asset date mismatch. Used if not specified by user."
     )
 
+    autotag_album_conflict: Optional[str] = None
+    autotag_classification_conflict: Optional[str] = None
+    autotag_classification_conflict_prefix: Optional[str] = None
+    date_correction: DateCorrectionConfig
 
-# todo: not sure what this is, was it in the original config file?
-class AdvancedFeatureConfig(BaseModel):
-    enabled: bool
-    threshold: float
+
+
 
 
 # Grouping of coupled fields in subclasses
@@ -70,28 +68,24 @@ class AlbumDetectionFromFoldersConfig(BaseModel):
     excluded_paths: List[str]
 
 
-class DateCorrectionConfig(BaseModel):
-    enabled: bool
-    extraction_timezone: str
 
 
-class FeaturesConfig(BaseModel):
-    enable_album_detection: bool
-    enable_tag_suggestion: bool
-    advanced_feature: Optional[AdvancedFeatureConfig]
-    enable_album_name_strip: bool
-    album_detection_from_folders: AlbumDetectionFromFoldersConfig
-    date_correction: DateCorrectionConfig
-    enable_checkpoint_resume: bool
+
+
+
+
 
 
 class UserConfig(BaseModel):
     server: ServerConfig
+    enable_album_name_strip: bool
+    enable_checkpoint_resume: bool
     filters: Optional[FilterConfig] = None
     conversions: List[Conversion]
     classification: ClassificationConfig
     duplicate_processing: Optional[DuplicateProcessingConfig] = None
-    auto_tags: AutoTagsConfig
-    features: FeaturesConfig
+    album_detection_from_folders: AlbumDetectionFromFoldersConfig
+
+
 
 
