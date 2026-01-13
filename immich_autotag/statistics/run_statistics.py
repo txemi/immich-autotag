@@ -32,6 +32,7 @@ class OutputAlbumCounter(BaseModel):
 
 
 class RunStatistics(BaseModel):
+
     git_describe_runtime: Optional[str] = Field(
         None, description="Git describe string obtained at runtime (from GitPython, may be empty in containers)"
     )
@@ -107,3 +108,9 @@ class RunStatistics(BaseModel):
             return None
         skip = self.skip_n or 0
         return max(1, self.total_assets - skip)
+    
+    @typechecked
+    def get_start_time(self) -> float:
+        if self.started_at is None:
+            raise RuntimeError("RunStatistics.started_at is not set")
+        return self.started_at.timestamp()    

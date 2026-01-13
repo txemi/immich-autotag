@@ -34,5 +34,5 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     else:
         process_assets_sequential(context)
     # start_time and count are now managed by StatisticsManager
-    log_final_summary(stats.count, stats.started_at)
+    log_final_summary(stats.count, stats.get_start_time())
     StatisticsManager.get_instance().finish_run()
