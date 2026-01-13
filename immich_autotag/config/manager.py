@@ -136,18 +136,4 @@ class ConfigManager:
 # --- Automatic loading at startup (usage example) ---
 
 
-@typechecked
-def load_config_at_startup():
-    config_path = Path(__file__).parent / "user_config.yaml"
-    # If the file does not exist, raise a clear error
-    if not config_path.exists():
-        raise FileNotFoundError(
-            f"Experimental configuration template not found at: {config_path}"
-        )
-    # Only create the singleton if it does not exist
-    manager = ConfigManager.get_instance()
-    manager.load_config_from_real_python()
-    # Print the loaded configuration to see the result
-    import pprint
 
-    pprint.pprint(manager.config.model_dump() if manager.config else None)
