@@ -8,6 +8,7 @@ Data model for execution statistics, serializable to YAML.
 """
 
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, Optional
 from pathlib import Path
 
@@ -87,9 +88,7 @@ class RunStatistics(BaseModel):
         )
 
     @classmethod
-    @typechecked
-    def from_yaml(cls, path: 'Path') -> "RunStatistics":
-        from pathlib import Path
+    def from_yaml(cls, path: Path) -> 'RunStatistics':
         if not isinstance(path, Path):
             raise TypeError(f"from_yaml only accepts a Path object as input. Expected file: {RUN_STATISTICS_FILENAME}")
         if not path.exists():
