@@ -52,39 +52,11 @@ class CheckpointManager:
                     level=LogLevel.PROGRESS,
                 )
             else:
-                stats = self.stats_manager._current_stats
-                if stats and stats.finished_at:
-                    skip_n = 0
-                    log(
-                        "[CHECKPOINT] Last execution finished correctly. Starting from zero.",
-                        level=LogLevel.PROGRESS,
-                    )
-                elif stats:
-                    skip_n = stats.count
-                    if skip_n > 0:
-                        adjusted_skip_n = max(0, skip_n - self.OVERLAP)
-                        if adjusted_skip_n != skip_n:
-                            log(
-                                f"[CHECKPOINT] Overlapping: skip_n adjusted from {skip_n} to {adjusted_skip_n} (overlap {self.OVERLAP})",
-                                level=LogLevel.PROGRESS,
-                            )
-                            skip_n = adjusted_skip_n
-                        else:
-                            log(
-                                f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint).",
-                                level=LogLevel.PROGRESS,
-                            )
-                    else:
-                        log(
-                            f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint).",
-                            level=LogLevel.PROGRESS,
-                        )
-                else:
-                    skip_n = 0
-                    log(
-                        f"[CHECKPOINT] No previous stats found. Starting from the beginning.",
-                        level=LogLevel.PROGRESS,
-                    )
+                skip_n = 0
+                log(
+                    f"[CHECKPOINT] No previous stats found. Starting from the beginning.",
+                    level=LogLevel.PROGRESS,
+                )
         else:
             skip_n = 0
             log(
