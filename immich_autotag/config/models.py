@@ -90,8 +90,8 @@ class UserConfig(BaseModel):
     filters: Optional[FilterConfig] = None
     conversions: List[Conversion]
     classification: ClassificationConfig
-    auto_tags: AutoTagsConfig
     duplicate_processing: Optional[DuplicateProcessingConfig] = None
+    auto_tags: AutoTagsConfig
     features: FeaturesConfig
 
 
