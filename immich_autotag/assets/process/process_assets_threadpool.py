@@ -30,7 +30,6 @@ def process_assets_threadpool(
     max_assets = stats.max_assets
     start_time = stats.started_at.timestamp() if stats.started_at else time.time()
     count = 0
-    last_log_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = []
         for asset_wrapper in context.asset_manager.iter_assets(
@@ -42,13 +41,10 @@ def process_assets_threadpool(
             )
             futures.append(future)
             count += 1
-            now = time.time()
-            if now - last_log_time >= LOG_INTERVAL:
-                elapsed = now - start_time
-                perf_log(
-                    count, elapsed, None, total_to_process, None, None
-                )
-                last_log_time = now
+            # Update count and checkpoint in StatisticsManager, which handles progress logging
+            StatisticsManager.get_instance().update_checkpoint(
+                asset_wrapper.id, count
+            )
         for future in concurrent.futures.as_completed(futures):
             try:
                 future.result()
