@@ -98,20 +98,12 @@ def _validate_and_update_classification(
     )
 
 
-@typechecked
-def _flush_report_with_lock(lock: Lock, tag_mod_report: ModificationReport):
-    """Flush the modification report, acquiring the lock for thread safety."""
-    log("[DEBUG] Attempting to acquire lock for report flush...", level=LogLevel.FOCUS)
-    with lock:
-        log("[DEBUG] Lock acquired, flushing report...", level=LogLevel.FOCUS)
-        tag_mod_report.flush()
 
 
 @typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
-    lock: Lock,
     suppress_album_already_belongs_log: bool = True,
 ) -> None:
     """
@@ -145,7 +137,7 @@ def process_single_asset(
 
     check_album_date_consistency(asset_wrapper, tag_mod_report)
 
-    _flush_report_with_lock(lock, tag_mod_report)
+    tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     log(
         f"[DEBUG] [process_single_asset] END asset_id={getattr(asset_wrapper, 'id', None)}",

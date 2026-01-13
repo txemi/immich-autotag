@@ -26,7 +26,6 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
     tag_mod_report = ModificationReport.get_instance()
-    lock = Lock()
     LOG_INTERVAL = 5  # seconds
     start_time = time.time()
 
@@ -46,7 +45,6 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             context,
             max_assets,
             tag_mod_report,
-            lock,
             total_to_process,
             LOG_INTERVAL,
             start_time,
@@ -58,7 +56,6 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             max_assets,
             skip_n,
             tag_mod_report,
-            lock,
         )
     log_final_summary(count if count is not None else 0, tag_mod_report, start_time)
     # Mark statistics completion

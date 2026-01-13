@@ -20,7 +20,6 @@ def process_assets_sequential(
     max_assets: int | None,
     skip_n: int,
     tag_mod_report: ModificationReport,
-    lock: Lock,
 ) -> int:
     log(
         "Entering asset processing loop...",
@@ -36,7 +35,7 @@ def process_assets_sequential(
                 f"[BUG] Processing asset: {getattr(asset_wrapper, 'id', asset_wrapper)}"
             )
             t0 = time.time()
-            process_single_asset(asset_wrapper, tag_mod_report, lock)
+            process_single_asset(asset_wrapper, tag_mod_report)
             log(
                 f"Iteration completed for asset: {getattr(asset_wrapper, 'id', asset_wrapper)}",
                 level=LogLevel.DEBUG,
