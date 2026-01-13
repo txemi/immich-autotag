@@ -31,11 +31,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     log_execution_parameters()
     StatisticsManager.get_instance().initialize_for_run(context, max_assets)
     stats = StatisticsManager.get_instance().get_stats()
-    total_to_process = None
-    if stats.total_assets is not None:
-        total_to_process = stats.total_assets
-        if stats.skip_n:
-            total_to_process = max(1, stats.total_assets - stats.skip_n)
+    total_to_process = stats.get_total_to_process()
 
     if USE_THREADPOOL:
         process_assets_threadpool(

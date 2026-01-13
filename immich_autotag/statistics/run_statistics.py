@@ -99,3 +99,11 @@ class RunStatistics(BaseModel):
             # Empty or invalid file: raise an explicit error
             raise ValueError(f"{RUN_STATISTICS_FILENAME} is empty or invalid; cannot create RunStatistics instance.")
         return cls.model_validate(loaded)
+
+
+    @typechecked
+    def get_total_to_process(self) -> int | None:
+        if self.total_assets is None:
+            return None
+        skip = self.skip_n or 0
+        return max(1, self.total_assets - skip)
