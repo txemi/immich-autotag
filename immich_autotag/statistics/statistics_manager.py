@@ -202,14 +202,6 @@ class StatisticsManager:
         with self._lock:
             self._save_to_file()
 
-    @typechecked
-    def load_latest(self) -> Optional[RunStatistics]:
-        stats_path = self.stats_dir / RUN_STATISTICS_FILENAME
-        if stats_path.exists():
-            with open(stats_path, "r", encoding="utf-8") as f:
-                stats = RunStatistics.from_yaml(f.read())
-                return stats
-        return None
 
     @typechecked
     def delete_all(self) -> None:

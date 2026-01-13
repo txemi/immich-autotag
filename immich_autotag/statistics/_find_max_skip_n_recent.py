@@ -16,11 +16,14 @@ def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[
     """
     now = datetime.now()
     recent_dirs: List[tuple[datetime, Path]] = []
-    current_run_dir = get_run_output_dir(logs_dir)
+    current_run_dir = get_run_output_dir(logs_dir).resolve()
     pid_dirs = [subdir for subdir in logs_dir.iterdir() if subdir.is_dir() and "PID" in subdir.name]
     for subdir in pid_dirs:
-        if subdir == current_run_dir:
-            continue  # Exclude current run dir robustly
+        try:
+            if subdir.resolve() == current_run_dir:
+                continue  # Exclude current run dir robustly
+        except Exception:
+            continue
         try:
             dt_str = subdir.name.split("_PID")[0]
             dt = datetime.strptime(dt_str, "%Y%m%d_%H%M%S")
@@ -45,8 +48,7 @@ def get_max_skip_n_from_recent(
         stats_path = d / RUN_STATISTICS_FILENAME
         if stats_path.exists():
             try:
-                with open(stats_path, "r", encoding="utf-8") as f:
-                    stats = RunStatistics.from_yaml(f.read())
+                stats = RunStatistics.from_yaml(stats_path)
                 count = stats.count
                 if count > max_count:
                     max_count = count

@@ -19,7 +19,7 @@ from immich_autotag.assets.process.process_assets_threadpool import (
 from immich_autotag.assets.process.register_execution_parameters import (
     register_execution_parameters,
 )
-from immich_autotag.assets.process.resolve_checkpoint import resolve_checkpoint
+from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.config.internal_config import USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.report.modification_report import ModificationReport
@@ -37,7 +37,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
 
     log_execution_parameters()
     total_assets = fetch_total_assets(context)
-    last_processed_id, skip_n = resolve_checkpoint()
+    last_processed_id, skip_n = StatisticsManager.get_instance().get_effective_skip_n()
     register_execution_parameters(total_assets, max_assets, skip_n)
     total_to_process = None
     if total_assets is not None:
@@ -53,8 +53,6 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             lock,
             estimator,
             total_to_process,
-            skip_n,
-            total_assets,
             LOG_INTERVAL,
             start_time,
         )
@@ -65,14 +63,9 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             context,
             max_assets,
             skip_n,
-            last_processed_id,
             tag_mod_report,
             lock,
             estimator,
-            total_to_process,
-            LOG_INTERVAL,
-            start_time,
-            total_assets,
         )
     log_final_summary(count if count is not None else 0, tag_mod_report, start_time)
     # Mark statistics completion

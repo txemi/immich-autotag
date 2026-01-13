@@ -24,8 +24,6 @@ def process_assets_threadpool(
     lock: Lock,
     estimator: AdaptiveTimeEstimator,
     total_to_process: int | None,
-    skip_n: int,
-    total_assets: int | None,
     LOG_INTERVAL: int,
     start_time: float,
 ) -> None:
@@ -52,7 +50,7 @@ def process_assets_threadpool(
             if now - last_log_time >= LOG_INTERVAL:
                 elapsed = now - start_time
                 perf_log(
-                    count, elapsed, estimator, total_to_process, skip_n, total_assets
+                    count, elapsed, estimator, total_to_process, None, None
                 )
                 last_log_time = now
         for future in concurrent.futures.as_completed(futures):

@@ -20,14 +20,9 @@ def process_assets_sequential(
     context: ImmichContext,
     max_assets: int | None,
     skip_n: int,
-    last_processed_id: str | None,
     tag_mod_report: ModificationReport,
     lock: Lock,
     estimator: AdaptiveTimeEstimator,
-    total_to_process: int | None,
-    LOG_INTERVAL: int,
-    start_time: float,
-    total_assets: int | None,
 ) -> int:
     log(
         "Entering asset processing loop...",
@@ -35,7 +30,6 @@ def process_assets_sequential(
     )
     log("[DEBUG] Before iterating assets (start of for loop)", level=LogLevel.DEBUG)
     count = 0
-    last_log_time = time.time()
     try:
         for asset_wrapper in context.asset_manager.iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
