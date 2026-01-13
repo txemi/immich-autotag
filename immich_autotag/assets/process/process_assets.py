@@ -16,9 +16,6 @@ from immich_autotag.assets.process.process_assets_sequential import (
 from immich_autotag.assets.process.process_assets_threadpool import (
     process_assets_threadpool,
 )
-from immich_autotag.assets.process.register_execution_parameters import (
-    register_execution_parameters,
-)
 from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.config.internal_config import USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
@@ -38,7 +35,8 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
     log_execution_parameters()
     total_assets = fetch_total_assets(context)
     skip_n = StatisticsManager.get_instance().get_effective_skip_n()
-    register_execution_parameters(total_assets, max_assets, skip_n)
+    StatisticsManager.get_instance().set_max_assets(max_assets if max_assets is not None else -1)
+    StatisticsManager.get_instance().set_skip_n(skip_n)
     total_to_process = None
     if total_assets is not None:
         total_to_process = total_assets
