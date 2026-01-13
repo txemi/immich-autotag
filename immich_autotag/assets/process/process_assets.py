@@ -37,7 +37,7 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
 
     log_execution_parameters()
     total_assets = fetch_total_assets(context)
-    last_processed_id, skip_n = StatisticsManager.get_instance().get_effective_skip_n()
+    skip_n = StatisticsManager.get_instance().get_effective_skip_n()
     register_execution_parameters(total_assets, max_assets, skip_n)
     total_to_process = None
     if total_assets is not None:

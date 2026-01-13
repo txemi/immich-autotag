@@ -258,7 +258,7 @@ class StatisticsManager:
             self._save_to_file()
 
     @typechecked
-    def get_effective_skip_n(self) -> tuple[str | None, int]:
+    def get_effective_skip_n(self) -> int:
         return self.checkpoint.get_effective_skip_n()
 
     @typechecked

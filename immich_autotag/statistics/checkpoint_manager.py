@@ -32,7 +32,7 @@ class CheckpointManager:
             )
 
     @typechecked
-    def get_effective_skip_n(self) -> tuple[str | None, int]:
+    def get_effective_skip_n(self) -> int:
         config = ConfigManager.get_instance().config
         enable_checkpoint_resume = (
             config.features.enable_checkpoint_resume
@@ -47,22 +47,20 @@ class CheckpointManager:
             )
             if max_skip_n is not None:
                 skip_n = max_skip_n
-                last_processed_id = None
                 log(
                     f"[CHECKPOINT] Will skip {skip_n} assets (from most advanced run in last 3h).",
                     level=LogLevel.PROGRESS,
                 )
             else:
-                stats = self.stats_manager.load_latest()
-                # If the last execution finished correctly, start from zero
+                stats = self.stats_manager._current_stats
                 if stats and stats.finished_at:
-                    last_processed_id, skip_n = None, 0
+                    skip_n = 0
                     log(
                         "[CHECKPOINT] Last execution finished correctly. Starting from zero.",
                         level=LogLevel.PROGRESS,
                     )
                 elif stats:
-                    last_processed_id, skip_n = stats.last_processed_id, stats.count
+                    skip_n = stats.count
                     if skip_n > 0:
                         adjusted_skip_n = max(0, skip_n - self.OVERLAP)
                         if adjusted_skip_n != skip_n:
@@ -73,25 +71,25 @@ class CheckpointManager:
                             skip_n = adjusted_skip_n
                         else:
                             log(
-                                f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).",
+                                f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint).",
                                 level=LogLevel.PROGRESS,
                             )
                     else:
                         log(
-                            f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint: id={last_processed_id}).",
+                            f"[CHECKPOINT] Will skip {skip_n} assets (from checkpoint).",
                             level=LogLevel.PROGRESS,
                         )
                 else:
-                    last_processed_id, skip_n = None, 0
+                    skip_n = 0
                     log(
                         f"[CHECKPOINT] No previous stats found. Starting from the beginning.",
                         level=LogLevel.PROGRESS,
                     )
         else:
-            last_processed_id, skip_n = None, 0
+            skip_n = 0
             log(
                 "[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning.",
                 level=LogLevel.PROGRESS,
             )
         self.stats_manager.set_skip_n(skip_n)
-        return last_processed_id, skip_n
+        return skip_n
