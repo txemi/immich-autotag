@@ -1,3 +1,5 @@
+
+
 """
 models.py
 
@@ -35,11 +37,13 @@ class Conversion(BaseModel):
     source: ClassificationRule
     destination: ClassificationRule
 
+class ClassificationConfig(BaseModel):
+    rules: List[ClassificationRule] = Field(default_factory=list)
+    autotag_unknown: Optional[str] = None
+    autotag_conflict: Optional[str] = None
 
 class AutoTagsConfig(BaseModel):
     enabled: bool
-    category_unknown: str
-    category_conflict: str
     duplicate_asset_album_conflict: str
     duplicate_asset_classification_conflict: str
     duplicate_asset_classification_conflict_prefix: str
@@ -80,7 +84,7 @@ class UserConfig(BaseModel):
     server: ServerConfig
     filters: Optional[FilterConfig] = None
     conversions: List[Conversion]
-    classification_rules: List[ClassificationRule]
+    classification: ClassificationConfig
     auto_tags: AutoTagsConfig
     features: FeaturesConfig
 
