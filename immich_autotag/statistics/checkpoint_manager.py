@@ -33,12 +33,7 @@ class CheckpointManager:
 
     @typechecked
     def get_effective_skip_n(self) -> int:
-        config = ConfigManager.get_instance().config
-        enable_checkpoint_resume = (
-            config.features.enable_checkpoint_resume
-            if config and config.features
-            else False
-        )
+        enable_checkpoint_resume = ConfigManager.is_checkpoint_resume_enabled()
         stats_dir = self.stats_manager.stats_dir
         if enable_checkpoint_resume:
             logs_dir = stats_dir.parent if stats_dir else Path("logs")

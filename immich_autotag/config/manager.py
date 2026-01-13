@@ -125,6 +125,13 @@ class ConfigManager:
         config_str = pprint.pformat(self.config.model_dump())
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
 
+    @staticmethod
+    def is_checkpoint_resume_enabled() -> bool:
+        config = ConfigManager.get_instance().config
+        try:
+            return bool(config.features.enable_checkpoint_resume)
+        except Exception:
+            return False
 
 # --- Automatic loading at startup (usage example) ---
 
