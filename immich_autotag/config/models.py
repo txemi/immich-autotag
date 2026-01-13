@@ -1,5 +1,6 @@
 
 
+
 """
 models.py
 
@@ -42,11 +43,15 @@ class ClassificationConfig(BaseModel):
     autotag_unknown: Optional[str] = None
     autotag_conflict: Optional[str] = None
 
+
+class DuplicateProcessingConfig(BaseModel):
+    autotag_album_conflict: Optional[str] = None
+    autotag_classification_conflict: Optional[str] = None
+    autotag_classification_conflict_prefix: Optional[str] = None
+
 class AutoTagsConfig(BaseModel):
     enabled: bool
-    duplicate_asset_album_conflict: str
-    duplicate_asset_classification_conflict: str
-    duplicate_asset_classification_conflict_prefix: str
+    duplicate_processing: Optional[DuplicateProcessingConfig] = None
     album_date_mismatch: str = Field(
         default="autotag_output_album_date_mismatch",
         description="Tag for album/asset date mismatch. Used if not specified by user."
@@ -86,6 +91,7 @@ class UserConfig(BaseModel):
     conversions: List[Conversion]
     classification: ClassificationConfig
     auto_tags: AutoTagsConfig
+    duplicate_processing: Optional[DuplicateProcessingConfig] = None
     features: FeaturesConfig
 
 
