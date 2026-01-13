@@ -13,7 +13,6 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 
 
 @typechecked
@@ -22,7 +21,6 @@ def process_assets_threadpool(
     max_assets: int | None,
     tag_mod_report: ModificationReport,
     lock: Lock,
-    estimator: AdaptiveTimeEstimator,
     total_to_process: int | None,
     LOG_INTERVAL: int,
     start_time: float,
@@ -43,14 +41,12 @@ def process_assets_threadpool(
                 process_single_asset, asset_wrapper, tag_mod_report, lock
             )
             futures.append(future)
-            t1 = time.time()
-            estimator.update(t1 - t0)
             count += 1
             now = time.time()
             if now - last_log_time >= LOG_INTERVAL:
                 elapsed = now - start_time
                 perf_log(
-                    count, elapsed, estimator, total_to_process, None, None
+                    count, elapsed, None, total_to_process, None, None
                 )
                 last_log_time = now
         for future in concurrent.futures.as_completed(futures):

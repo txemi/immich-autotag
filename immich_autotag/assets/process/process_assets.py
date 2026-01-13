@@ -21,12 +21,10 @@ from immich_autotag.config.internal_config import USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
-from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 
 
 @typechecked
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
-    estimator = AdaptiveTimeEstimator(alpha=0.05)
     tag_mod_report = ModificationReport.get_instance()
     lock = Lock()
     LOG_INTERVAL = 5  # seconds
@@ -49,12 +47,10 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             max_assets,
             tag_mod_report,
             lock,
-            estimator,
             total_to_process,
             LOG_INTERVAL,
             start_time,
         )
-        # No checkpoint update in threadpool mode, so count is not tracked here
         count = None
     else:
         count = process_assets_sequential(
@@ -63,7 +59,6 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
             skip_n,
             tag_mod_report,
             lock,
-            estimator,
         )
     log_final_summary(count if count is not None else 0, tag_mod_report, start_time)
     # Mark statistics completion

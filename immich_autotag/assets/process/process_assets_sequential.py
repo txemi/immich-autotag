@@ -12,7 +12,6 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
-from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 
 
 @typechecked
@@ -22,7 +21,6 @@ def process_assets_sequential(
     skip_n: int,
     tag_mod_report: ModificationReport,
     lock: Lock,
-    estimator: AdaptiveTimeEstimator,
 ) -> int:
     log(
         "Entering asset processing loop...",
@@ -48,8 +46,6 @@ def process_assets_sequential(
                 asset_wrapper.id,
                 skip_n + count,
             )
-            t1 = time.time()
-            estimator.update(t1 - t0)
     except Exception as e:
         import traceback
 
