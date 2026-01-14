@@ -49,7 +49,8 @@ def _yield_assets_from_page(
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
             continue
-        if max_assets is not None and count + yielded >= max_assets:
+        # Only enforce limit when max_assets is a non-negative integer (None or -1 means unlimited)
+        if max_assets is not None and max_assets >= 0 and count + yielded >= max_assets:
             break
         log_debug(f"[BUG] Before get_asset_info.sync, asset_id={asset.id}")
         asset_full = get_asset_info.sync(id=asset.id, client=context.client)
@@ -98,12 +99,12 @@ def get_all_assets(
     page = 1
     skip_offset = 0
     count = 0
-    skipped = 0
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
     log("Starting get_all_assets generator...", level=LogLevel.PROGRESS)
     first_page = True
+    skip_applied = False
     while True:
         response = _fetch_assets_page(context, page)
         if response.status_code != 200:
@@ -125,16 +126,18 @@ def get_all_assets(
             if skip_n:
                 page = (skip_n // PAGE_SIZE) + 1
                 skip_offset = skip_n % PAGE_SIZE
-                if page > 1:
-                    first_page = False
-                    continue
             first_page = False
-        start_idx = skip_offset if skip_n and page == (skip_n // PAGE_SIZE) + 1 else 0
+        # Aplica el skip solo en la primera página procesada tras el cálculo
+        start_idx = skip_offset if skip_n and not skip_applied else 0
+        log(f"[PROGRESS] skip_n={skip_n}, page={page}, skip_offset={skip_offset}, start_idx={start_idx}, count={count}", level=LogLevel.PROGRESS)
+        log(f"[PROGRESS] Yielding from page {page} with start_idx={start_idx}, count={count}", level=LogLevel.PROGRESS)
         for asset_wrapper in _yield_assets_from_page(
             assets_page, start_idx, context, max_assets, count
         ):
             yield asset_wrapper
             count += 1
+            log(f"[PROGRESS] Asset processed, count={count}", level=LogLevel.PROGRESS)
+        skip_applied = skip_n and not skip_applied
         abs_pos = skip_n + count
         response_assets = response.parsed.assets
         assert isinstance(response_assets, SearchAssetResponseDto)
@@ -147,7 +150,8 @@ def get_all_assets(
             total_assets,
             lambda m: log(m, level=LogLevel.PROGRESS),
         )
-        if max_assets is not None and count >= max_assets:
+        # Only enforce limit when max_assets is a non-negative integer (None or -1 means unlimited)
+        if max_assets is not None and max_assets >= 0 and count >= max_assets:
             log(
                 f"[PROGRESS] max_assets reached after processing page {page} (count={count})",
                 level=LogLevel.PROGRESS,
