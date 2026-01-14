@@ -4,7 +4,7 @@
     {
       "label": "Format and Sort Python",
       "type": "shell",
-      "command": "bash scripts/format_and_sort.sh",
+      "command": "bash scripts/devtools/format_and_sort.sh",
       "group": "build",
       "presentation": {
         "reveal": "always"
