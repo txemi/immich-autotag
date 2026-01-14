@@ -1,4 +1,4 @@
-# Issue #001: Auto Album Creation from Date When No Classification Album Found
+# Requirements: Auto Album Creation Feature
 
 ## Overview
 When an asset cannot be assigned to any classification album (according to configured patterns), automatically create a temporary album based on the asset's date if the feature flag is enabled. This provides a fallback mechanism to organize unclassified assets without manual intervention.
@@ -118,9 +118,3 @@ AUTOTAG_TEMP_ALBUM_CATEGORY = "unclassified"  # or configurable
 - [ ] New functions have `@typechecked` decorator
 - [ ] Code follows project style (imports, naming, structure)
 - [ ] Backward compatible (disabled by default)
-
-## References
-- Config models: `immich_autotag/config/models.py`
-- Current album functions: `immich_autotag/albums/album_collection_wrapper.py`
-- Main analysis function: `immich_autotag/assets/albums/analyze_and_assign_album.py`
-- Album decision logic: `immich_autotag/assets/albums/decide_album_for_asset.py`

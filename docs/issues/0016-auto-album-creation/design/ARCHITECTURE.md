@@ -1,6 +1,6 @@
-# Design: Auto Album Creation Feature
+# Architecture: Auto Album Creation Feature
 
-## Architecture Overview
+## System Flow
 
 ```
 analyze_and_assign_album()
@@ -258,4 +258,3 @@ create_album_from_date_if_missing = True  # Set to True to enable auto album cre
 ## Rollback Plan
 
 Disable flag in config: `create_album_from_date_if_missing = False` (default)
-
