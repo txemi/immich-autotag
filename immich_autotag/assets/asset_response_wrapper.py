@@ -862,7 +862,7 @@ class AssetResponseWrapper:
         )
 
         tag_name = (
-            ConfigManager.get_instance().config.auto_tags.duplicate_asset_album_conflict
+            ConfigManager.get_instance().config.duplicate_processing.autotag_album_conflict
         )
         # Generic tag
         from immich_autotag.logging.levels import LogLevel

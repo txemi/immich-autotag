@@ -71,15 +71,10 @@ class ClassificationRuleSet:
         )
 
         manager = ConfigManager.get_instance()
-        if (
-            not manager
-            or not manager.config
-            or not hasattr(manager.config, "classification_rules")
-        ):
-            raise RuntimeError("ConfigManager or classification_rules not initialized")
+
         wrappers = [
             ClassificationRuleWrapper(rule)
-            for rule in manager.config.classification_rules
+            for rule in manager.config.classification.rules
         ]
         return ClassificationRuleSet(rules=wrappers)
 

@@ -68,11 +68,10 @@ class AlbumFolderAnalyzer:
         from immich_autotag.config.manager import ConfigManager
 
         manager = ConfigManager.get_instance()
-        if not manager or not manager.config or not manager.config.features:
-            raise RuntimeError("ConfigManager or features config not initialized")
+
         for (
             pattern
-        ) in manager.config.features.album_detection_from_folders.excluded_paths:
+        ) in manager.config.album_detection_from_folders.excluded_paths:
             if re.search(pattern, folder_path_str, re.IGNORECASE):
                 return True
         return False
