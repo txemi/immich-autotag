@@ -1,6 +1,5 @@
 import attr
 from typing import Optional, List
-from uuid import UUID
 
 from typeguard import typechecked
 from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
@@ -25,14 +24,21 @@ class FilterConfigWrapper:
         """
         if not self.filter_config or not self.filter_config.filter_in:
             return False
-        ruleset = ClassificationRuleSet(rules=self.filter_config.filter_in)
-        return ruleset.is_focused()
+        return self.get_filter_in_ruleset().is_focused()
+
     @typechecked
     def get_filter_in_ruleset(self) -> ClassificationRuleSet:
         """
-        Devuelve el conjunto de reglas de filtro_in.
-        Si no hay configuración, devuelve un conjunto vacío.
+        Devuelve un ClassificationRuleSet con las reglas de filter_in.
         """
-        if not self.filter_config:
-            raise RuntimeError("FilterConfigWrapper: No filter configuration available.")
-        return ClassificationRuleSet(rules=self.filter_config.filter_in)
+        if not self.filter_config or not self.filter_config.filter_in:
+            from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
+            return ClassificationRuleSet(rules=[])
+        
+        from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
+        wrappers = [
+            ClassificationRuleWrapper(rule)
+            for rule in self.filter_config.filter_in
+        ]
+        return ClassificationRuleSet(rules=wrappers)
+
