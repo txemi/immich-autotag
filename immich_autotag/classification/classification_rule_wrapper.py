@@ -64,6 +64,14 @@ class ClassificationRuleWrapper:
         return MatchResult(rule=self, tags_matched=tags_matched, albums_matched=albums_matched)
 
     @typechecked
+    def is_focused(self) -> bool:
+        """
+        Returns True if this rule targets concrete assets via `asset_links`.
+        Filtering by tags or albums alone does not count as focused.
+        """
+        return len(self.extract_uuids_from_asset_links()) > 0
+
+    @typechecked
     def extract_uuids_from_asset_links(self) -> list['UUID']:
         """
         Extrae UUIDs de los asset_links de esta regla.
