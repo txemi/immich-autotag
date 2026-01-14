@@ -746,7 +746,7 @@ class AssetResponseWrapper:
         import re
 
         if (
-            not ConfigManager.get_instance().config.features.album_detection_from_folders.enabled
+            not ConfigManager.get_instance().config.album_detection_from_folders.enabled
         ):
             return None
         # If already classified by tag or album, skip

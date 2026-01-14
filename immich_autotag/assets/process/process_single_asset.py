@@ -60,7 +60,7 @@ def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper):
     from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().config
-    if config and config.features.date_correction.enabled:
+    if config and config.duplicate_processing.date_correction.enabled:
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
 
