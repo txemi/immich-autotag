@@ -19,29 +19,29 @@ UPDATE_SCRIPT="$PROJECT_ROOT/scripts/devtools/update_version_info.sh"
 sed -i "s/^version = .*/version = \"$NEW_VERSION\"/" "$PYPROJECT_TOML"
 echo "[INFO] pyproject.toml updated to version $NEW_VERSION"
 
-# 2. Update version in code
+# 2. Update version in code (will have old tag info initially)
 bash "$UPDATE_SCRIPT"
 echo "[INFO] version.py updated"
 
-# 3. Check consistency
-bash "$CHECK_SCRIPT"
-echo "[INFO] Version check OK"
-
-# 4. Commit all version changes together
+# 3. Commit all version changes together
 git add "$PYPROJECT_TOML" "$PROJECT_ROOT/immich_autotag/version.py"
 git commit -m "Bump version to $NEW_VERSION"
 
-# 5. Create git tag (AFTER all version updates are committed)
+# 4. Create git tag (AFTER all version updates are committed)
 TAG="v$NEW_VERSION"
 git tag "$TAG"
 echo "[INFO] Git tag created: $TAG"
 
-# 6. Update version.py again to capture the new tag in git describe
+# 5. Update version.py again to capture the new tag in git describe
 bash "$UPDATE_SCRIPT"
 echo "[INFO] version.py updated with new tag information"
 
 git add "$PROJECT_ROOT/immich_autotag/version.py"
 git commit -m "Update version.py with tag $TAG information"
+
+# 6. Check consistency (now tag and version should match)
+bash "$CHECK_SCRIPT"
+echo "[INFO] Version check OK"
 
 # 7. Push everything
 git push
