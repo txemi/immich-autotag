@@ -5,63 +5,66 @@ server:
   port: 2283
   # Immich API key (fill in by user)
   api_key: "<YOUR_API_KEY_HERE>"
-  # timezone: Timezone for date extraction and display (e.g. Europe/Madrid)
-  timezone: "Europe/Madrid"
-filter_out_asset_links: []  # List of asset links or IDs to process. Empty = all assets.
-classification_rules:  # Rules to classify assets by tags or album name patterns.
-- tag_names:
-  - meme
-  - autotag_input_meme
-  album_name_patterns: null
-- tag_names:
-  - adult_meme
-  - autotag_input_adult_meme
-  album_name_patterns: null
-- tag_names:
-  - autotag_input_pending_review
-  album_name_patterns: null
-- tag_names:
-  - autotag_input_ignore
-  album_name_patterns: null
-- tag_names: null
-  album_name_patterns:
-  - ^\d{4}-(\d{2}(-\d{2})?)?
+enable_album_name_strip: true
+enable_checkpoint_resume: true
+filters: null
 conversions:
 - source:
     tag_names:
     - meme
     album_name_patterns: null
+    asset_links: null
   destination:
     tag_names:
     - autotag_input_meme
     album_name_patterns: null
+    asset_links: null
 - source:
     tag_names:
     - adult_meme
     album_name_patterns: null
+    asset_links: null
   destination:
     tag_names:
     - autotag_input_adult_meme
     album_name_patterns: null
-auto_tags:  # Configuration of automatic tags for unclassified assets, conflicts, duplicates, etc.
-  enabled: true
-  category_unknown: autotag_output_unknown
-  category_conflict: autotag_output_conflict
-  duplicate_asset_album_conflict: autotag_output_duplicate_asset_album_conflict
-  duplicate_asset_classification_conflict: autotag_output_duplicate_asset_classification_conflict
-  duplicate_asset_classification_conflict_prefix: autotag_output_duplicate_asset_classification_conflict_
-features:  # Advanced features and flags
-  enable_album_detection: true  # Album detection by standard logic
-  enable_tag_suggestion: false  # Automatic tag suggestion (disabled)
-  advanced_feature:  # Advanced feature config
+    asset_links: null
+classification: # Rules to classify assets by tags or album name patterns.
+  rules:
+  - tag_names:
+    - meme
+    - autotag_input_meme
+    album_name_patterns: null
+    asset_links: null
+  - tag_names:
+    - adult_meme
+    - autotag_input_adult_meme
+    album_name_patterns: null
+    asset_links: null
+  - tag_names:
+    - autotag_input_pending_review
+    album_name_patterns: null
+    asset_links: null
+  - tag_names:
+    - autotag_input_ignore
+    album_name_patterns: null
+    asset_links: null
+  - tag_names: null
+    album_name_patterns:
+    - ^\d{4}-(\d{2}(-\d{2})?)?
+    asset_links: null
+  autotag_unknown: autotag_output_unknown
+  autotag_conflict: autotag_output_conflict
+duplicate_processing:
+  autotag_album_date_mismatch: autotag_output_album_date_mismatch
+  autotag_album_conflict: autotag_output_duplicate_asset_album_conflict
+  autotag_classification_conflict: autotag_output_duplicate_asset_classification_conflict
+  autotag_classification_conflict_prefix: autotag_output_duplicate_asset_classification_conflict_
+  date_correction:
     enabled: true
-    threshold: 0.8
-  enable_album_name_strip: true  # Trim spaces in album names
-  album_detection_from_folders:  # Album creation from folders
-    enabled: false  # Create albums from folders (disabled)
-    excluded_paths:
-    - whatsapp  # Exclude folders by pattern
-  date_correction:  # Date correction by file/folder name
-    enabled: false
-    extraction_timezone: Europe/Madrid  # Timezone for date extraction
-  enable_checkpoint_resume: false  # Resume from last processed asset
+    extraction_timezone: Europe/Madrid
+album_detection_from_folders:
+  enabled: true
+  excluded_paths:
+  - whatsapp
+create_album_from_date_if_missing: true
