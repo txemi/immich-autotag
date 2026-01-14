@@ -17,3 +17,5 @@
 | 0013 | Git Version Null in Stats | Open | 2026-01-12   | v0.70 | [link](0013-git-version-null-in-stats/) |
 | 0014 | Jenkins Pipeline Containerization | Proposed | 2026-01-14   | v0.80 | [link](0014-jenkins-pipeline-containerization/) |
 | 0015 | GitHub Actions PyPI Publishing | Resolved | 2026-01-14   | v0.70 | [link](0015-github-actions-pypi-publishing/) |
+| 0016 | Auto Album Creation from Date | In Progress | 2026-01-14   | v1.0 | [link](0016-auto-album-creation/) |
+| 0017 | Allow Rules to Specify Both Tag and Album | Proposed | 2026-01-14   | v1.0 | [link](0017-rules-tag-album-combination/) |
