@@ -17,23 +17,25 @@ class ClassificationRuleWrapper:
     )
 
     def __attrs_post_init__(self):
+        """
+        Validates the rule configuration.
+        A rule must have at least one criterion (tags, albums, or asset_links).
+        Multiple criteria are combined with OR logic: the rule matches if ANY criterion is satisfied.
+        """
         tag_names = self.rule.tag_names
         album_patterns = self.rule.album_name_patterns
+        asset_links = self.rule.asset_links
+        
         has_tags = bool(tag_names)
         has_albums = bool(album_patterns)
-        if has_tags and has_albums:
-            raise NotImplementedError(
-                f"ClassificationRuleWrapper: Each rule must have either tag_names or a single album_name_pattern, not both. Rule: {self.rule}"
-            )
-        if not has_tags and not has_albums:
+        has_asset_links = bool(asset_links)
+        
+        # At least one criterion must be present
+        if not (has_tags or has_albums or has_asset_links):
             raise ValueError(
-                f"ClassificationRuleWrapper: Each rule must have either tag_names or a single album_name_pattern. Rule: {self.rule}"
+                f"ClassificationRuleWrapper: Each rule must have at least one criterion "
+                f"(tag_names, album_name_patterns, or asset_links). Rule: {self.rule}"
             )
-        if has_albums:
-            if not isinstance(album_patterns, list) or len(album_patterns) != 1:
-                raise NotImplementedError(
-                    f"ClassificationRuleWrapper: album_name_patterns must be a list with exactly one pattern. Rule: {self.rule}"
-                )
 
     @typechecked
     def has_tag(self, tag_name: str) -> bool:
