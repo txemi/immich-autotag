@@ -1,24 +1,30 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-v $HOME/.cache:/root/.cache --user root'
+        }
+    }
     
     environment {
-        VENV_DIR = "${WORKSPACE}/.venv"
-        PYTHON_VERSION = 'python3'
+        PYTHONUNBUFFERED = '1'
     }
     
     stages {
-        stage('Checkout') {
+        stage('Install System Dependencies') {
             steps {
-                checkout scm
-                echo "Branch: ${env.GIT_BRANCH}"
-                echo "Commit: ${env.GIT_COMMIT}"
+                sh '''
+                    apt-get update
+                    apt-get install -y git
+                    rm -rf /var/lib/apt/lists/*
+                '''
             }
         }
         
         stage('Setup Environment') {
             steps {
                 script {
-                    echo "Setting up Python virtual environment..."
+                    echo "Setting up Python environment..."
                     sh '''
                         chmod +x setup_venv.sh
                         bash setup_venv.sh
@@ -33,7 +39,7 @@ pipeline {
                     echo "Running immich-autotag application..."
                     sh '''
                         chmod +x run_app.sh
-                        bash run_app.sh --help || echo "Application executed (help)"
+                        bash run_app.sh --help
                     '''
                 }
             }
@@ -41,28 +47,24 @@ pipeline {
         
         stage('Validate') {
             steps {
-                script {
-                    echo "Validating setup and dependencies..."
-                    sh '''
-                        source ${VENV_DIR}/bin/activate
-                        python --version
-                        pip list | grep -i immich || echo "Checking installed packages..."
-                    '''
-                }
+                sh '''
+                    python --version
+                    pip list | grep -i immich || echo "Checking packages..."
+                '''
             }
         }
     }
     
     post {
         always {
-            echo "Pipeline execution completed"
-            cleanWs(deleteDirs: true, disableDeferredWipeout: true, notFailBuild: true)
+            echo "Pipeline execution completed at ${new Date()}"
         }
         success {
-            echo "✅ Pipeline succeeded"
+            echo "✅ Pipeline succeeded - All stages passed"
         }
         failure {
-            echo "❌ Pipeline failed"
+            echo "❌ Pipeline FAILED - Check logs above"
+            // Puedes añadir notificación aquí si quieres
         }
     }
 }
