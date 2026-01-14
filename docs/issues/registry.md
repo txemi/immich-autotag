@@ -16,3 +16,4 @@
 | 0012 | Cleanup and Redeploy | Open | 2026-01-10   | v0.70 | [link](0012-cleanup-redeploy/) |
 | 0013 | Git Version Null in Stats | Open | 2026-01-12   | v0.70 | [link](0013-git-version-null-in-stats/) |
 | 0014 | Jenkins Pipeline Containerization | Proposed | 2026-01-14   | v0.80 | [link](0014-jenkins-pipeline-containerization/) |
+| 0015 | GitHub Actions PyPI Publishing | Resolved | 2026-01-14   | v0.70 | [link](0015-github-actions-pypi-publishing/) |

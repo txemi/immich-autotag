@@ -96,6 +96,9 @@ if [ -f "$CONFIG_FILE" ]; then
     IMMICH_API_KEY=$(extract_config "api_key")
 fi
 
+# Default fallback version (matches common deployment v2.4.1)
+DEFAULT_IMMICH_VERSION="v2.4.1"
+
 # Get server version and construct OpenAPI spec URL
 if [ -n "$IMMICH_HOST" ] && [ -n "$IMMICH_PORT" ] && [ -n "$IMMICH_API_KEY" ]; then
     echo "Connecting to Immich at http://$IMMICH_HOST:$IMMICH_PORT to detect version..."
@@ -103,8 +106,8 @@ if [ -n "$IMMICH_HOST" ] && [ -n "$IMMICH_PORT" ] && [ -n "$IMMICH_API_KEY" ]; t
     echo "Detected Immich version: $IMMICH_VERSION"
 else
     echo "WARNING: Could not read Immich config. Config values: host='$IMMICH_HOST' port='$IMMICH_PORT' api_key_length=${#IMMICH_API_KEY}"
-    echo "WARNING: Using default OpenAPI spec from 'main' branch."
-    IMMICH_VERSION="main"
+    echo "WARNING: Using default OpenAPI spec version: $DEFAULT_IMMICH_VERSION"
+    IMMICH_VERSION="$DEFAULT_IMMICH_VERSION"
 fi
 
 # Construct the URL with the detected version
