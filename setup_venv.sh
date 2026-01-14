@@ -38,17 +38,30 @@ get_immich_version() {
     local port=$2
     local api_key=$3
     
+    echo "[DEBUG] get_immich_version called with:" >&2
+    echo "  host='$host'" >&2
+    echo "  port='$port'" >&2
+    echo "  api_key_length=${#api_key}" >&2
+    
     if [ -z "$host" ] || [ -z "$port" ] || [ -z "$api_key" ]; then
+        echo "[DEBUG] Missing parameters, returning 'main'" >&2
         echo "main"
         return
     fi
     
+    local url="http://$host:$port/api/server/version"
+    echo "[DEBUG] Calling API: $url" >&2
+    
     # Try to get server version from API endpoint /api/server/version
     # Returns JSON like: {"major": 2, "minor": 4, "patch": 1}
-    local response=$(curl -s -m 5 -H "x-api-key: $api_key" \
-        "http://$host:$port/api/server/version" 2>/dev/null)
+    local response=$(curl -s -m 5 -H "x-api-key: $api_key" "$url" 2>&1)
+    local curl_exit=$?
     
-    if [ -z "$response" ]; then
+    echo "[DEBUG] curl exit code: $curl_exit" >&2
+    echo "[DEBUG] API response: $response" >&2
+    
+    if [ $curl_exit -ne 0 ] || [ -z "$response" ]; then
+        echo "[DEBUG] curl failed or empty response, returning 'main'" >&2
         echo "main"
         return
     fi
@@ -58,11 +71,16 @@ get_immich_version() {
     local minor=$(echo "$response" | grep -o '"minor":[0-9]*' | cut -d':' -f2)
     local patch=$(echo "$response" | grep -o '"patch":[0-9]*' | cut -d':' -f2)
     
+    echo "[DEBUG] Extracted: major='$major' minor='$minor' patch='$patch'" >&2
+    
     if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
+        echo "[DEBUG] Failed to extract version numbers, returning 'main'" >&2
         echo "main"
     else
         # Format as v<major>.<minor>.<patch> (e.g., v2.4.1)
-        echo "v${major}.${minor}.${patch}"
+        local version="v${major}.${minor}.${patch}"
+        echo "[DEBUG] Detected version: $version" >&2
+        echo "$version"
     fi
 }
 
