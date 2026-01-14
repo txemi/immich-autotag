@@ -34,20 +34,24 @@ classification: # Rules to classify assets by tags or album name patterns.
   - tag_names:
     - meme
     - autotag_input_meme
-    album_name_patterns: null
+    album_name_patterns:
+    - ^autotag_input_meme$
     asset_links: null
   - tag_names:
     - adult_meme
     - autotag_input_adult_meme
-    album_name_patterns: null
+    album_name_patterns:
+    - ^autotag_input_adult_meme$
     asset_links: null
   - tag_names:
     - autotag_input_pending_review
-    album_name_patterns: null
+    album_name_patterns:
+    - ^autotag_input_pending_review$
     asset_links: null
   - tag_names:
     - autotag_input_ignore
-    album_name_patterns: null
+    album_name_patterns:
+    - ^autotag_input_ignore$
     asset_links: null
   - tag_names: null
     album_name_patterns:

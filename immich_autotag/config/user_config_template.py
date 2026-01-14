@@ -58,22 +58,34 @@ user_config = UserConfig(
                 tag_names=[
                     "meme",  # (LEGACY) Meme: humorous images, no prefix. Compatibility.
                     "autotag_input_meme",  # Memes/jokes uploaded indiscriminately, not events.
+                ],
+                album_name_patterns=[
+                    r"^autotag_input_meme$"  # Albums with exact name "autotag_input_meme"
                 ]
             ),
             ClassificationRule(
                 tag_names=[
                     "adult_meme",  # (LEGACY) Adult meme: NSFW content, no prefix. Compatibility.
                     "autotag_input_adult_meme",  # NSFW/adult memes, separate from family environment.
+                ],
+                album_name_patterns=[
+                    r"^autotag_input_adult_meme$"  # Albums with exact name "autotag_input_adult_meme"
                 ]
             ),
             ClassificationRule(
                 tag_names=[
                     "autotag_input_pending_review",  # Pending review: decide destination.
+                ],
+                album_name_patterns=[
+                    r"^autotag_input_pending_review$"  # Albums with exact name "autotag_input_pending_review"
                 ]
             ),
             ClassificationRule(
                 tag_names=[
                     "autotag_input_ignore",  # Ignore: photos discarded from main flow.
+                ],
+                album_name_patterns=[
+                    r"^autotag_input_ignore$"  # Albums with exact name "autotag_input_ignore"
                 ]
             ),
             ClassificationRule(
