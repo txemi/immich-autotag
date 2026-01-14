@@ -80,8 +80,8 @@ class AlbumCollectionWrapper:
         user = get_my_user.sync(client=client)
         user_id = user.id
         # Evitar añadir el owner como editor (Immich API da error 400 si se intenta)
-        # Asumimos que album.created_by es el id del owner
-        if user_id == album.created_by:
+        # Asumimos que album.owner_id es el id del owner
+        if user_id == album.owner_id:
             pass  # No añadir el owner como editor
         else:
             try:

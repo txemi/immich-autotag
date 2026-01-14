@@ -1,25 +1,40 @@
 from __future__ import annotations
 
-import re
+from functools import cached_property
+from typing import TYPE_CHECKING
 
 import attrs
 
-from immich_autotag.assets.duplicates._duplicate_albums_info import DuplicateAlbumsInfo
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.assets.duplicates._duplicate_albums_info import DuplicateAssetsInfo
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True)
 class AlbumDecision:
     """
-    Encapsulates the decision logic for album assignment, including all album info from duplicates (as DuplicateAlbumsInfo)
-    and the album detected from folder structure (if any).
+    Encapsulates the decision logic for album assignment with lazy evaluation.
+    Receives the asset_wrapper and computes duplicates_info and album_from_folder only when needed.
     """
 
-    duplicates_info: DuplicateAlbumsInfo
-    album_from_folder: str | None
+    asset_wrapper: "AssetResponseWrapper"
 
     def __attrs_post_init__(self):
         # Place breakpoint here for debugging construction
         pass
+
+    @cached_property
+    def duplicates_info(self) -> "DuplicateAssetsInfo":
+        """Lazy computation of duplicates info."""
+        from immich_autotag.assets.duplicates._get_album_from_duplicates import (
+            get_duplicate_wrappers_info,
+        )
+        return get_duplicate_wrappers_info(self.asset_wrapper)
+
+    @cached_property
+    def album_from_folder(self) -> str | None:
+        """Lazy computation of album from folder structure."""
+        return self.asset_wrapper.try_detect_album_from_folders()
 
     def all_options(self) -> set[str]:
         opts = set(self.duplicates_info.all_album_names())

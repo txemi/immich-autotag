@@ -9,7 +9,7 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
-class DuplicateAlbumsInfo:
+class DuplicateAssetsInfo:
     # Maps asset UUID to AssetResponseWrapper
     _mapping: Dict[UUID, AssetResponseWrapper]
 
