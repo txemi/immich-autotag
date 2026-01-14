@@ -12,4 +12,5 @@ docker_logs
 /logs_docker_cron
 /immich-client.back
 /logs_local
+/jenkins.log
 /immich_client.back
