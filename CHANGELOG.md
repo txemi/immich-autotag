@@ -2,6 +2,7 @@
 
 All versions follow [Semantic Versioning](https://semver.org/).
 
+
 ## [0.10] - 2025-12-23
 **Description:** First version with automatic tags based on criteria, laying the groundwork for a future rule engine and conflict detection.
 ### Added
@@ -60,6 +61,20 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - Ongoing automation for Python package and container builds (GitHub Actions integration, improvements in packaging and CI/CD workflows).
 - Improved documentation in CONTRIBUTING.md and README.md, including an explicit invitation to contribute to the reactivation of CI/CD (GitHub Actions). See or join the discussion on GitHub: https://github.com/txemi/immich-autotag/issues/32
 - Preparing a new release to publish these changes and facilitate community collaboration.
+
+## [0.71.0] - 2026-01-14
+**Description:** GitHub Actions workflow enablement for automated PyPI and Docker Hub publishing.
+### Added
+- **Automated PyPI publishing via GitHub Actions:** The release workflow now automatically publishes the package to PyPI when a version tag is created.
+- **Automated Docker Hub publishing:** Docker images (main and cron variants) are now automatically built and pushed to Docker Hub on release.
+- **Immich client version fallback:** The setup script now uses a hardcoded fallback version (v2.4.1) when no Immich server configuration is available, enabling CI/CD environments to work without access to a real Immich server. ([issue](docs/issues/0015-github-actions-pypi-publishing/))
+
+### Changed
+- Improved release script workflow to ensure proper version tagging and consistency checking.
+
+### Fixed
+- GitHub Actions workflow now works correctly without requiring access to a private Immich server or API credentials. ([GitHub Issue #32](https://github.com/txemi/immich-autotag/issues/32))
+
 
 ## Unreleased
 **Description:** Adds automatic creation of daily albums for assets that do not belong to any album, using easily identifiable names for user review.
