@@ -636,7 +636,7 @@ class AssetResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = ConfigManager.get_instance().config.auto_tags.category_conflict
+        tag_name = ConfigManager.get_instance().config.classification.autotag_conflict
         from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
