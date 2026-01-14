@@ -61,7 +61,7 @@ def run_main():
     # Load duplicates
     duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)
-    context = ImmichContext(
+    context = ImmichContext.create_instance(
         client=client,
         albums_collection=albums_collection,
         tag_collection=tag_collection,
