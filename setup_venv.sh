@@ -46,12 +46,12 @@ fi
 
 # Generate the client only if the folder does not exist at the root
 if [ ! -d "$CLIENT_DIR" ]; then
-    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$REPO_ROOT"
+    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR"
     echo "immich-client generated."
 else
     echo "The folder $CLIENT_DIR already exists. Regenerating..."
     rm -rf "$CLIENT_DIR" || true
-    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$REPO_ROOT" --overwrite
+    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR" --overwrite
     echo "immich-client regenerated."
 fi
 
