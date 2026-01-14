@@ -33,24 +33,17 @@ pipeline {
             }
         }
         
-        stage('Run Application') {
+        stage('Validate Installation') {
             steps {
                 script {
-                    echo "Running immich-autotag application..."
+                    echo "Validating installation..."
                     sh '''
-                        chmod +x run_app.sh
-                        bash run_app.sh --help
+                        source .venv/bin/activate
+                        python -c "from immich_autotag import __version__; print(f'✓ immich_autotag version: {__version__}')"
+                        python -c "from immich_client import __version__; print(f'✓ immich_client version: {__version__}')"
+                        echo "✓ All imports successful"
                     '''
                 }
-            }
-        }
-        
-        stage('Validate') {
-            steps {
-                sh '''
-                    python --version
-                    pip list | grep -i immich || echo "Checking packages..."
-                '''
             }
         }
     }

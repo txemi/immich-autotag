@@ -18,14 +18,16 @@ CONFIG_FILE="$HOME/.config/immich_autotag/config.py"
 # Function to extract config value from Python file
 extract_config() {
     local key=$1
-    python3 -c "
-import re
-with open('$CONFIG_FILE', 'r') as f:
-    content = f.read()
-    match = re.search(r'$key\s*=\s*[\"\'](.*?)[\"\']', content)
-    if match:
-        print(match.group(1))
-" 2>/dev/null || echo ""
+    local value=""
+    
+    if [ ! -f "$CONFIG_FILE" ]; then
+        return
+    fi
+    
+    # Use grep + sed to extract value: find "key="value"" or "key='value'"
+    value=$(grep -E "^\s*$key\s*=" "$CONFIG_FILE" | sed -E 's/.*=\s*["\x27]([^"\x27]*)["\x27].*/\1/' | head -1)
+    
+    echo "$value"
 }
 
 # Function to get Immich server version from API
@@ -35,7 +37,6 @@ get_immich_version() {
     local api_key=$3
     
     if [ -z "$host" ] || [ -z "$port" ] || [ -z "$api_key" ]; then
-        echo "ERROR: Cannot read Immich config. Using default OpenAPI spec."
         echo "main"
         return
     fi
@@ -46,41 +47,44 @@ get_immich_version() {
         "http://$host:$port/api/server/version" 2>/dev/null)
     
     if [ -z "$response" ]; then
-        echo "WARNING: Could not connect to Immich server. Using main branch spec."
         echo "main"
         return
     fi
     
-    # Extract version numbers using grep or awk
+    # Extract version numbers using grep
     local major=$(echo "$response" | grep -o '"major":[0-9]*' | cut -d':' -f2)
     local minor=$(echo "$response" | grep -o '"minor":[0-9]*' | cut -d':' -f2)
     local patch=$(echo "$response" | grep -o '"patch":[0-9]*' | cut -d':' -f2)
     
     if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
-        echo "WARNING: Could not parse Immich version. Using main branch spec."
         echo "main"
     else
         # Format as v<major>.<minor>.<patch> (e.g., v2.4.1)
-        echo "v$major.$minor.$patch"
+        echo "v${major}.${minor}.${patch}"
     fi
 }
 
 # Read Immich configuration
+IMMICH_HOST=""
+IMMICH_PORT=""
+IMMICH_API_KEY=""
+
 if [ -f "$CONFIG_FILE" ]; then
     echo "Reading configuration from $CONFIG_FILE..."
     IMMICH_HOST=$(extract_config "host")
     IMMICH_PORT=$(extract_config "port")
     IMMICH_API_KEY=$(extract_config "api_key")
-else
-    echo "WARNING: Config file not found at $CONFIG_FILE"
-    IMMICH_HOST=""
-    IMMICH_PORT=""
-    IMMICH_API_KEY=""
 fi
 
 # Get server version and construct OpenAPI spec URL
-IMMICH_VERSION=$(get_immich_version "$IMMICH_HOST" "$IMMICH_PORT" "$IMMICH_API_KEY")
-echo "Detected Immich version: $IMMICH_VERSION"
+if [ -n "$IMMICH_HOST" ] && [ -n "$IMMICH_PORT" ] && [ -n "$IMMICH_API_KEY" ]; then
+    echo "Connecting to Immich at $IMMICH_HOST:$IMMICH_PORT to detect version..."
+    IMMICH_VERSION=$(get_immich_version "$IMMICH_HOST" "$IMMICH_PORT" "$IMMICH_API_KEY")
+    echo "Detected Immich version: $IMMICH_VERSION"
+else
+    echo "WARNING: Could not read Immich config from $CONFIG_FILE. Using default OpenAPI spec."
+    IMMICH_VERSION="main"
+fi
 
 # Construct the URL with the detected version
 OPENAPI_URL="https://raw.githubusercontent.com/immich-app/immich/$IMMICH_VERSION/open-api/immich-openapi-specs.json"
