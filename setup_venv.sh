@@ -24,8 +24,8 @@ extract_config() {
         return
     fi
     
-    # Use grep + sed to extract value: find "key="value"" or "key='value'"
-    value=$(grep -E "^\s*$key\s*=" "$CONFIG_FILE" | sed -E 's/.*=\s*["\x27]([^"\x27]*)["\x27].*/\1/' | head -1)
+    # Use grep + sed to extract value: find "key=\"value\"" or "key='value'"
+    value=$(grep -E "^\s*$key\s*=" "$CONFIG_FILE" | sed -E 's/.*=\s*["\x27]([^"\x27]*)["\x27].*/\1/' | head -1 | tr -d '[:space:]')
     
     echo "$value"
 }
@@ -78,11 +78,12 @@ fi
 
 # Get server version and construct OpenAPI spec URL
 if [ -n "$IMMICH_HOST" ] && [ -n "$IMMICH_PORT" ] && [ -n "$IMMICH_API_KEY" ]; then
-    echo "Connecting to Immich at $IMMICH_HOST:$IMMICH_PORT to detect version..."
+    echo "Connecting to Immich at http://$IMMICH_HOST:$IMMICH_PORT to detect version..."
     IMMICH_VERSION=$(get_immich_version "$IMMICH_HOST" "$IMMICH_PORT" "$IMMICH_API_KEY")
     echo "Detected Immich version: $IMMICH_VERSION"
 else
-    echo "WARNING: Could not read Immich config from $CONFIG_FILE. Using default OpenAPI spec."
+    echo "WARNING: Could not read Immich config. Config values: host='$IMMICH_HOST' port='$IMMICH_PORT' api_key_length=${#IMMICH_API_KEY}"
+    echo "WARNING: Using default OpenAPI spec from 'main' branch."
     IMMICH_VERSION="main"
 fi
 
