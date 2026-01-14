@@ -1,12 +1,11 @@
 
 #!/bin/bash
 # Robust script to create virtual environment, install dependencies, and generate/install the local client
+# Automatically detects Immich server version and downloads the matching OpenAPI spec
 # Always operates from the repository root, regardless of the invocation directory
 # Usage: source setup_venv.sh
 
 set -e
-
-
 
 # Determine the repository root (where this script is located)
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,7 +13,78 @@ cd "$REPO_ROOT"
 
 VENV_DIR="$REPO_ROOT/.venv"
 CLIENT_DIR="$REPO_ROOT/immich-client"
-OPENAPI_URL="https://raw.githubusercontent.com/immich-app/immich/main/open-api/immich-openapi-specs.json"
+CONFIG_FILE="$HOME/.config/immich_autotag/config.py"
+
+# Function to extract config value from Python file
+extract_config() {
+    local key=$1
+    python3 -c "
+import re
+with open('$CONFIG_FILE', 'r') as f:
+    content = f.read()
+    match = re.search(r'$key\s*=\s*[\"\'](.*?)[\"\']', content)
+    if match:
+        print(match.group(1))
+" 2>/dev/null || echo ""
+}
+
+# Function to get Immich server version from API
+get_immich_version() {
+    local host=$1
+    local port=$2
+    local api_key=$3
+    
+    if [ -z "$host" ] || [ -z "$port" ] || [ -z "$api_key" ]; then
+        echo "ERROR: Cannot read Immich config. Using default OpenAPI spec."
+        echo "main"
+        return
+    fi
+    
+    # Try to get server version from API endpoint /api/server/version
+    # Returns JSON like: {"major": 2, "minor": 4, "patch": 1}
+    local response=$(curl -s -m 5 -H "x-api-key: $api_key" \
+        "http://$host:$port/api/server/version" 2>/dev/null)
+    
+    if [ -z "$response" ]; then
+        echo "WARNING: Could not connect to Immich server. Using main branch spec."
+        echo "main"
+        return
+    fi
+    
+    # Extract version numbers using grep or awk
+    local major=$(echo "$response" | grep -o '"major":[0-9]*' | cut -d':' -f2)
+    local minor=$(echo "$response" | grep -o '"minor":[0-9]*' | cut -d':' -f2)
+    local patch=$(echo "$response" | grep -o '"patch":[0-9]*' | cut -d':' -f2)
+    
+    if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
+        echo "WARNING: Could not parse Immich version. Using main branch spec."
+        echo "main"
+    else
+        # Format as v<major>.<minor>.<patch> (e.g., v2.4.1)
+        echo "v$major.$minor.$patch"
+    fi
+}
+
+# Read Immich configuration
+if [ -f "$CONFIG_FILE" ]; then
+    echo "Reading configuration from $CONFIG_FILE..."
+    IMMICH_HOST=$(extract_config "host")
+    IMMICH_PORT=$(extract_config "port")
+    IMMICH_API_KEY=$(extract_config "api_key")
+else
+    echo "WARNING: Config file not found at $CONFIG_FILE"
+    IMMICH_HOST=""
+    IMMICH_PORT=""
+    IMMICH_API_KEY=""
+fi
+
+# Get server version and construct OpenAPI spec URL
+IMMICH_VERSION=$(get_immich_version "$IMMICH_HOST" "$IMMICH_PORT" "$IMMICH_API_KEY")
+echo "Detected Immich version: $IMMICH_VERSION"
+
+# Construct the URL with the detected version
+OPENAPI_URL="https://raw.githubusercontent.com/immich-app/immich/$IMMICH_VERSION/open-api/immich-openapi-specs.json"
+echo "Using OpenAPI spec from: $OPENAPI_URL"
 
 
 
