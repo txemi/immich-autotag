@@ -50,8 +50,8 @@ if [ ! -d "$CLIENT_DIR" ]; then
     echo "immich-client generated."
 else
     echo "The folder $CLIENT_DIR already exists. Regenerating..."
-    rm -rf "$CLIENT_DIR"
-    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$REPO_ROOT"
+    rm -rf "$CLIENT_DIR" || true
+    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$REPO_ROOT" --overwrite
     echo "immich-client regenerated."
 fi
 
