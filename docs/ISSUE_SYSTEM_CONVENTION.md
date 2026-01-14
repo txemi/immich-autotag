@@ -7,7 +7,7 @@ The project uses a **local-first, documentation-as-code** issue tracking system 
 - **Documentation-as-Code** - Markdown in Git, peer-reviewed
 
 ## Directory Structure
-Location: `/home/txemi/txemi/immich-autotag-2/immich-autotag/docs/issues/`
+Location: [docs/issues](../issues/)
 
 ### Current Issues (16 total)
 ```
