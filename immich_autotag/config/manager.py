@@ -62,6 +62,8 @@ class ConfigManager:
                 self.config.skip_n = prev_skip_n
         except Exception as e:
             print(f"[WARN] Could not initialize skip_n from previous statistics: {e}")
+        # Dump the loaded configuration to the logs/output folder
+        self.dump_to_yaml()
         self.print_config()
 
     @staticmethod
