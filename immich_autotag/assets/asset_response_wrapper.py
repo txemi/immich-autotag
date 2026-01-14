@@ -593,7 +593,7 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
         from immich_autotag.report.modification_report import ModificationReport
 
-        tag_name = ConfigManager.get_instance().config.auto_tags.category_unknown
+        tag_name = ConfigManager.get_instance().config.classification.autotag_unknown
         tag_mod_report = ModificationReport.get_instance()
         classified = self.is_asset_classified()
         if not classified:
