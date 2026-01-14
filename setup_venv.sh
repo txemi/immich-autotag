@@ -24,8 +24,10 @@ extract_config() {
         return
     fi
     
-    # Use grep + sed to extract value: find "key=\"value\"" or "key='value'"
-    value=$(grep -E "^\s*$key\s*=" "$CONFIG_FILE" | sed -E 's/.*=\s*["\x27]([^"\x27]*)["\x27].*/\1/' | head -1 | tr -d '\n\r\t ')
+    # Use grep + sed to extract value
+    # Handles both quoted strings: key="value" or key='value'
+    # And unquoted values: key=123
+    value=$(grep -E "^\s*$key\s*=" "$CONFIG_FILE" | sed -E 's/.*=\s*["\x27]?([^"\x27,]*)(["\x27,].*)?/\1/' | head -1 | tr -d '\n\r\t ')
     
     echo "$value"
 }
