@@ -105,6 +105,17 @@ class ClassificationRuleSet:
             if match is not None:
                 matches.append(match)
         return MatchResultList(matches=matches)
+
+    @typechecked
+    def is_focused(self) -> bool:
+        """
+        Returns True when any rule in the set targets concrete assets via `asset_links`.
+        Filtering by tags or albums alone does not count as focused.
+        """
+        for wrapper in self.rules:
+            if wrapper.is_focused():
+                return True
+        return False
     @typechecked
     def matches_any_album_of_asset(self, asset_wrapper: 'AssetResponseWrapper') -> bool:
         """
