@@ -111,8 +111,9 @@ class ClassificationRuleSet:
             if wrapper.is_focused():
                 return True
         return False
+
     @typechecked
-    def matches_any_album_of_asset(self, asset_wrapper: 'AssetResponseWrapper') -> bool:
+    def matches_any_album_of_asset(self, asset_wrapper: "AssetResponseWrapper") -> bool:
         """
         Returns True if any album name of the asset matches any album_name_patterns in any rule.
         """
@@ -122,24 +123,27 @@ class ClassificationRuleSet:
         return False
 
     @typechecked
-    def get_filtered_in_assets_by_uuid(self, context: 'ImmichContext') -> List['AssetResponseWrapper']:
+    def get_filtered_in_assets_by_uuid(
+        self, context: "ImmichContext"
+    ) -> List["AssetResponseWrapper"]:
         """
         Extrae todos los UUIDs de asset_links de todas las reglas,
         carga los assets desde la API y devuelve la lista de AssetResponseWrapper.
         """
         from uuid import UUID
-        
+
         all_uuids: List[UUID] = []
         for wrapper in self.rules:
             all_uuids.extend(wrapper.extract_uuids_from_asset_links())
-        
+
         if not all_uuids:
             return []
-        
+
         # Cargar assets desde la API
         from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
         wrappers: List[AssetResponseWrapper] = []
-        
+
         for asset_uuid in all_uuids:
             wrapper = context.asset_manager.get_asset(asset_uuid, context)
             if wrapper is None:
@@ -147,7 +151,7 @@ class ClassificationRuleSet:
                     f"[ERROR] Asset with ID {asset_uuid} could not be loaded from API."
                 )
             wrappers.append(wrapper)
-        
+
         print(
             f"[INFO] Filtered mode: Only processing {len(wrappers)} asset(s) from filter rules."
         )

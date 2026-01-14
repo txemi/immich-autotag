@@ -42,8 +42,6 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
 
-
-
     asset: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
@@ -550,14 +548,16 @@ class AssetResponseWrapper:
         """
         Returns an object with the detail of the tags and albums that matched classification.
         """
-        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
-        from immich_autotag.classification.match_classification_result import MatchClassificationResult
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
+        )
+        from immich_autotag.classification.match_classification_result import (
+            MatchClassificationResult,
+        )
 
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         match_result_list = rule_set.matching_rules(self)
         return MatchClassificationResult.from_match_result_list(match_result_list)
-
-
 
     @typechecked
     def check_unique_classification(self, fail_fast: bool = True) -> bool:
@@ -570,6 +570,7 @@ class AssetResponseWrapper:
         n_matches = len(match_detail.tags_matched) + len(match_detail.albums_matched)
         if n_matches > 1:
             import uuid
+
             photo_url = get_immich_photo_url(uuid.UUID(self.id))
             msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by more than one criterion: tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
             if fail_fast:
@@ -577,9 +578,11 @@ class AssetResponseWrapper:
             else:
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
+
                 log(msg, level=LogLevel.ERROR)
             return True
         return False
+
     @typechecked
     def ensure_autotag_unknown_category(self) -> None:
         """
@@ -620,6 +623,7 @@ class AssetResponseWrapper:
                     f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is classified. Tag '{tag_name}' not present.",
                     level=LogLevel.FOCUS,
                 )
+
     @typechecked
     def ensure_autotag_conflict_category(
         self,
@@ -745,16 +749,17 @@ class AssetResponseWrapper:
         """
         import re
 
-        if (
-            not ConfigManager.get_instance().config.album_detection_from_folders.enabled
-        ):
+        if not ConfigManager.get_instance().config.album_detection_from_folders.enabled:
             return None
         # If already classified by tag or album, skip
         if self.is_asset_classified():
             return None
         # TODO: REVIEW IF THE LOGIC BELOW IS IN THE PREVIOUS METHOD is_asset_classified
         # If already in an album matching configured album patterns, skip
-        from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
+        )
+
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         if rule_set.matches_any_album_of_asset(self):
             return None

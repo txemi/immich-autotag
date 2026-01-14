@@ -98,8 +98,6 @@ def _validate_and_update_classification(
     )
 
 
-
-
 @typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
@@ -131,6 +129,7 @@ def process_single_asset(
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
     )
+
     check_album_date_consistency(asset_wrapper, tag_mod_report)
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())

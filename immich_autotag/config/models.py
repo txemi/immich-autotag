@@ -1,6 +1,3 @@
-
-
-
 """
 models.py
 
@@ -33,24 +30,26 @@ class FilterConfig(BaseModel):
     filter_out: List[ClassificationRule] = Field(default_factory=list)
 
 
-
 class Conversion(BaseModel):
     source: ClassificationRule
     destination: ClassificationRule
+
 
 class ClassificationConfig(BaseModel):
     rules: List[ClassificationRule] = Field(default_factory=list)
     autotag_unknown: Optional[str] = None
     autotag_conflict: Optional[str] = None
 
+
 class DateCorrectionConfig(BaseModel):
     enabled: bool
     extraction_timezone: str
 
+
 class DuplicateProcessingConfig(BaseModel):
     autotag_album_date_mismatch: str = Field(
         default="autotag_output_album_date_mismatch",
-        description="Tag for album/asset date mismatch. Used if not specified by user."
+        description="Tag for album/asset date mismatch. Used if not specified by user.",
     )
 
     autotag_album_conflict: Optional[str] = None
@@ -59,21 +58,10 @@ class DuplicateProcessingConfig(BaseModel):
     date_correction: DateCorrectionConfig
 
 
-
-
-
 # Grouping of coupled fields in subclasses
 class AlbumDetectionFromFoldersConfig(BaseModel):
     enabled: bool
     excluded_paths: List[str]
-
-
-
-
-
-
-
-
 
 
 class UserConfig(BaseModel):
@@ -87,7 +75,3 @@ class UserConfig(BaseModel):
     album_detection_from_folders: AlbumDetectionFromFoldersConfig
 
     create_album_from_date_if_missing: bool = False
-
-
-
-

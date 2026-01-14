@@ -10,8 +10,8 @@ from typing import Optional
 import yaml
 from typeguard import typechecked
 
-from immich_autotag.utils.run_output_dir import get_previous_run_output_dir
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
+from immich_autotag.utils.run_output_dir import get_previous_run_output_dir
 
 
 @typechecked

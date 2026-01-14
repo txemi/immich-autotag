@@ -40,6 +40,7 @@ def check_album_date_consistency(
         asset_wrapper
     )
     from immich_autotag.config.manager import ConfigManager
+
     config = ConfigManager.get_instance().config
     autotag_name = config.duplicate_processing.autotag_album_date_mismatch
     mismatch_found = False

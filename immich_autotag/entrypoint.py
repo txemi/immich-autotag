@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from immich_client import Client
 from typeguard import typechecked
 
@@ -19,24 +18,27 @@ from immich_autotag.tags.list_tags import list_tags
 
 # --- DUPLICATE STDOUT/STDERR TO LOG FILE (tee4py) ---
 from immich_autotag.utils.tee_logging import setup_tee_logging
+
 setup_tee_logging()
 
 # --- Register global exception hook to log time of uncaught exceptions (without changing default behavior) ---
 from immich_autotag.utils.exception_hook import setup_exception_hook
+
 setup_exception_hook()
+
 
 @typechecked
 def run_main():
-    from immich_autotag.utils.user_help import print_welcome_links
-
     import re
 
     from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.utils.user_help import print_welcome_links
 
     # Initialize logging before any processing
     initialize_logging()
 
     from immich_autotag.statistics.statistics_manager import StatisticsManager
+
     StatisticsManager.get_instance().save()  # Force initial statistics file write
 
     # Get API_KEY from experimental config manager singleton
@@ -73,9 +75,12 @@ def run_main():
     if filter_wrapper.is_focused():
         ruleset = filter_wrapper.get_filter_in_ruleset()
         assets_to_process = ruleset.get_filtered_in_assets_by_uuid(context)
-        
+
         from threading import Lock
-        from immich_autotag.assets.process.process_single_asset import process_single_asset
+
+        from immich_autotag.assets.process.process_single_asset import (
+            process_single_asset,
+        )
         from immich_autotag.report.modification_report import ModificationReport
 
         lock = Lock()

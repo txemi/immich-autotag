@@ -36,15 +36,11 @@ def process_assets_threadpool(
             context, max_assets=max_assets
         ):
             t0 = time.time()
-            future = executor.submit(
-                process_single_asset, asset_wrapper
-            )
+            future = executor.submit(process_single_asset, asset_wrapper)
             futures.append(future)
             count += 1
             # Update count and checkpoint in StatisticsManager, which handles progress logging
-            StatisticsManager.get_instance().update_checkpoint(
-                asset_wrapper.id, count
-            )
+            StatisticsManager.get_instance().update_checkpoint(asset_wrapper.id, count)
         for future in concurrent.futures.as_completed(futures):
             try:
                 future.result()

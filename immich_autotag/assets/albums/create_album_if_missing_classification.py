@@ -40,7 +40,9 @@ def create_album_if_missing_classification(
 
     # Safety check: this function should only be called when NO classification rules matched
     # If any rule matches here, it's a logic/configuration error.
-    from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
+    from immich_autotag.classification.classification_rule_set import (
+        ClassificationRuleSet,
+    )
 
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
     match_results = rule_set.matching_rules(asset_wrapper)

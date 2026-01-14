@@ -56,7 +56,7 @@ class AssetDateCandidate:
             from immich_autotag.config.manager import ConfigManager
 
             manager = ConfigManager.get_instance()
-         
+
             tz = manager.config.duplicate_processing.date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 

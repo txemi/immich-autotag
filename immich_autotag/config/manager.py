@@ -12,9 +12,8 @@ import attrs
 import yaml
 from typeguard import typechecked
 
-
-from .models import UserConfig
 from .config_finder import find_user_config, load_python_config, load_yaml_config
+from .models import UserConfig
 
 _instance = None
 _instance_created = False
@@ -47,6 +46,7 @@ class ConfigManager:
             self.config = UserConfig.model_validate(config_data)
         else:
             from immich_autotag.utils.user_help import print_config_help
+
             print_config_help()
             raise FileNotFoundError(
                 "No configuration found. See the configuration guide above."
@@ -56,13 +56,12 @@ class ConfigManager:
             from immich_autotag.statistics.statistics_checkpoint import (
                 get_previous_skip_n,
             )
+
             prev_skip_n = get_previous_skip_n()
             if prev_skip_n is not None and hasattr(self.config, "skip_n"):
                 self.config.skip_n = prev_skip_n
         except Exception as e:
-            print(
-                f"[WARN] Could not initialize skip_n from previous statistics: {e}"
-            )
+            print(f"[WARN] Could not initialize skip_n from previous statistics: {e}")
         self.print_config()
 
     @staticmethod
@@ -87,6 +86,7 @@ class ConfigManager:
         (Legacy) Loads the configuration by directly importing user_config from user_config.py (development mode only).
         """
         from .user_config import user_config
+
         self.config = user_config
         self.dump_to_yaml()
 
@@ -133,7 +133,5 @@ class ConfigManager:
         except Exception:
             return False
 
+
 # --- Automatic loading at startup (usage example) ---
-
-
-

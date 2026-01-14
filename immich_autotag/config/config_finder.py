@@ -1,8 +1,10 @@
+import importlib.util
 import os
 from pathlib import Path
-import importlib.util
-import yaml
 from typing import Optional
+
+import yaml
+
 
 def find_user_config():
     """
@@ -51,6 +53,7 @@ def find_user_config():
                 return ("yaml", env_path)
     return (None, None)
 
+
 def load_python_config(path: Path):
     """Dynamically loads a Python file that defines 'user_config' or 'config'"""
     spec = importlib.util.spec_from_file_location("user_config_module", str(path))
@@ -63,6 +66,7 @@ def load_python_config(path: Path):
         return module.config
     else:
         raise AttributeError(f"'user_config' or 'config' not found in {path}")
+
 
 def load_yaml_config(path: Path):
     with open(path, "r", encoding="utf-8") as f:

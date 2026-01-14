@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
 import attrs
 from typeguard import typechecked
 
@@ -48,20 +49,24 @@ class ClassificationRuleWrapper:
             re.match(pattern, album_name) for pattern in self.rule.album_name_patterns
         )
 
-
     @typechecked
-    def matches_asset(self, asset_wrapper: 'AssetResponseWrapper') -> 'MatchResult | None':
+    def matches_asset(
+        self, asset_wrapper: "AssetResponseWrapper"
+    ) -> "MatchResult | None":
         """
         Returns a MatchResult for this rule and the given asset (with lists of matching tags and albums), or None if no match.
         """
         from immich_autotag.classification.match_result import MatchResult
+
         asset_tags = set(asset_wrapper.get_tag_names())
         album_names = set(asset_wrapper.get_album_names())
         tags_matched = [tag for tag in asset_tags if self.has_tag(tag)]
         albums_matched = [album for album in album_names if self.matches_album(album)]
         if not tags_matched and not albums_matched:
             return None
-        return MatchResult(rule=self, tags_matched=tags_matched, albums_matched=albums_matched)
+        return MatchResult(
+            rule=self, tags_matched=tags_matched, albums_matched=albums_matched
+        )
 
     @typechecked
     def is_focused(self) -> bool:
@@ -72,22 +77,22 @@ class ClassificationRuleWrapper:
         return len(self.extract_uuids_from_asset_links()) > 0
 
     @typechecked
-    def extract_uuids_from_asset_links(self) -> list['UUID']:
+    def extract_uuids_from_asset_links(self) -> list["UUID"]:
         """
         Extrae UUIDs de los asset_links de esta regla.
         Acepta URLs completas o UUIDs directos.
         """
-        from uuid import UUID
         import re
-        
+        from uuid import UUID
+
         if not self.rule.asset_links:
             return []
-        
+
         uuids = []
         uuid_pattern = re.compile(
             r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
         )
-        
+
         for link in self.rule.asset_links:
             match = uuid_pattern.search(link)
             if not match:
@@ -101,6 +106,7 @@ class ClassificationRuleWrapper:
                 raise RuntimeError(
                     f"[ERROR] Invalid asset ID (not a valid UUID): {match.group(1)}"
                 )
-        
+
         return uuids
+
     # You can add more utility methods as needed

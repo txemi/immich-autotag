@@ -82,4 +82,3 @@ class ImmichContext:
             asset_manager=asset_manager,
         )
         return instance
-

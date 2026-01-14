@@ -33,7 +33,10 @@ _instance_created = False  # Class-level flag
 @attrs.define(auto_attribs=True, slots=True)
 class ModificationReport:
     import threading
-    _lock: threading.Lock = attrs.field(default=attrs.Factory(threading.Lock), init=False, repr=False)
+
+    _lock: threading.Lock = attrs.field(
+        default=attrs.Factory(threading.Lock), init=False, repr=False
+    )
 
     import datetime as dt
     import os
@@ -226,6 +229,7 @@ class ModificationReport:
         if not self.modifications or self._since_last_flush == 0:
             return
         import os
+
         with self._lock:
             os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
             with open(self.report_path, "a", encoding="utf-8") as f:

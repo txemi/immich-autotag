@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from immich_autotag.context.immich_context import ImmichContext
-
 import git  # GitPython
+
+from immich_autotag.context.immich_context import ImmichContext
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
@@ -38,10 +38,9 @@ from threading import RLock
 
 import attr
 
+from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 from immich_autotag.utils.run_output_dir import get_run_output_dir
-
-from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 
 from .checkpoint_manager import CheckpointManager
 from .run_statistics import RunStatistics
@@ -53,7 +52,6 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True)
 class StatisticsManager:
-
 
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     stats_dir: Path = attr.ib(factory=get_run_output_dir, init=False, repr=False)
@@ -158,12 +156,15 @@ class StatisticsManager:
             # Get git version using GitPython
             try:
                 repo = git.Repo(search_parent_directories=True)
-                git_describe_runtime = repo.git.describe("--tags", "--always", "--dirty")
+                git_describe_runtime = repo.git.describe(
+                    "--tags", "--always", "--dirty"
+                )
             except Exception:
                 git_describe_runtime = None
             # Get git describe string from version.py
             try:
                 from immich_autotag.version import __git_describe__
+
                 git_describe_package = __git_describe__
             except Exception:
                 git_describe_package = None
@@ -204,7 +205,6 @@ class StatisticsManager:
     def save(self) -> None:
         with self._lock:
             self._save_to_file()
-
 
     @typechecked
     def delete_all(self) -> None:
@@ -275,8 +275,11 @@ class StatisticsManager:
 
     # Tag/album methods delegated to TagStatsManager
     @typechecked
-    def initialize_for_run(self, context: "ImmichContext", max_assets: int | None) -> None:
+    def initialize_for_run(
+        self, context: "ImmichContext", max_assets: int | None
+    ) -> None:
         from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets
+
         total_assets = fetch_total_assets(context)
         skip_n = self.get_effective_skip_n()
         self.set_max_assets(max_assets if max_assets is not None else -1)

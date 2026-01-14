@@ -7,7 +7,9 @@ import attrs
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from immich_autotag.assets.duplicates._duplicate_albums_info import DuplicateAssetsInfo
+    from immich_autotag.assets.duplicates._duplicate_albums_info import (
+        DuplicateAssetsInfo,
+    )
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -29,6 +31,7 @@ class AlbumDecision:
         from immich_autotag.assets.duplicates._get_album_from_duplicates import (
             get_duplicate_wrappers_info,
         )
+
         return get_duplicate_wrappers_info(self.asset_wrapper)
 
     @cached_property

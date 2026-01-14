@@ -4,7 +4,6 @@ from pathlib import Path
 
 from typeguard import typechecked
 
-
 LOGS_LOCAL_DIR = Path("logs_local")
 _RUN_OUTPUT_DIR = None
 

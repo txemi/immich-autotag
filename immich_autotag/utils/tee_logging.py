@@ -1,5 +1,3 @@
-
-
 """
 tee_logging.py
 
@@ -7,6 +5,7 @@ Utility to duplicate stdout and stderr to a file in real time, without memory bu
 """
 
 import sys
+
 from typeguard import typechecked
 
 
@@ -41,6 +40,7 @@ class Tee:
         if not self.file.closed:
             self.file.close()
 
+
 @typechecked
 def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
     """
@@ -49,6 +49,7 @@ def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
     and the base name can be customized.
     """
     from immich_autotag.utils.run_output_dir import get_run_output_dir
+
     log_dir = get_run_output_dir()
     log_path = log_dir / basename
     Tee(str(log_path), "a")

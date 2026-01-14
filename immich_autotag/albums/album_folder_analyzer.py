@@ -69,9 +69,7 @@ class AlbumFolderAnalyzer:
 
         manager = ConfigManager.get_instance()
 
-        for (
-            pattern
-        ) in manager.config.album_detection_from_folders.excluded_paths:
+        for pattern in manager.config.album_detection_from_folders.excluded_paths:
             if re.search(pattern, folder_path_str, re.IGNORECASE):
                 return True
         return False

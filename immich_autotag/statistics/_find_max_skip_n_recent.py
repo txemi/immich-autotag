@@ -4,8 +4,8 @@ from typing import List, Optional
 
 from typeguard import typechecked
 
-from immich_autotag.statistics.run_statistics import RunStatistics
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
+from immich_autotag.statistics.run_statistics import RunStatistics
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 
@@ -17,7 +17,11 @@ def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[
     now = datetime.now()
     recent_dirs: List[tuple[datetime, Path]] = []
     current_run_dir = get_run_output_dir(logs_dir).resolve()
-    pid_dirs = [subdir for subdir in logs_dir.iterdir() if subdir.is_dir() and "PID" in subdir.name]
+    pid_dirs = [
+        subdir
+        for subdir in logs_dir.iterdir()
+        if subdir.is_dir() and "PID" in subdir.name
+    ]
     for subdir in pid_dirs:
         try:
             if subdir.resolve() == current_run_dir:
@@ -54,6 +58,7 @@ def get_max_skip_n_from_recent(
                     max_count = count
             except Exception as e:
                 import warnings
+
                 warnings.warn(f"Could not load {stats_path}: {e}")
     if max_count > 0:
         return max(0, max_count - overlap)

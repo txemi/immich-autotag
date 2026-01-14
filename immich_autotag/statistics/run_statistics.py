@@ -1,5 +1,6 @@
-from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from typeguard import typechecked
+
+from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 
 """
 run_statistics.py
@@ -10,7 +11,6 @@ Data model for execution statistics, serializable to YAML.
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
-from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, Field
@@ -35,10 +35,12 @@ class OutputAlbumCounter(BaseModel):
 class RunStatistics(BaseModel):
 
     git_describe_runtime: Optional[str] = Field(
-        None, description="Git describe string obtained at runtime (from GitPython, may be empty in containers)"
+        None,
+        description="Git describe string obtained at runtime (from GitPython, may be empty in containers)",
     )
     git_describe_package: Optional[str] = Field(
-        None, description="Git describe string from the distributed package (from version.py, always present)"
+        None,
+        description="Git describe string from the distributed package (from version.py, always present)",
     )
     album_date_mismatch_count: int = Field(
         0, description="Count of album/date mismatches"
@@ -89,19 +91,24 @@ class RunStatistics(BaseModel):
         )
 
     @classmethod
-    def from_yaml(cls, path: Path) -> 'RunStatistics':
+    def from_yaml(cls, path: Path) -> "RunStatistics":
         if not isinstance(path, Path):
-            raise TypeError(f"from_yaml only accepts a Path object as input. Expected file: {RUN_STATISTICS_FILENAME}")
+            raise TypeError(
+                f"from_yaml only accepts a Path object as input. Expected file: {RUN_STATISTICS_FILENAME}"
+            )
         if not path.exists():
-            raise FileNotFoundError(f"File not found: {path} (expected {RUN_STATISTICS_FILENAME})")
+            raise FileNotFoundError(
+                f"File not found: {path} (expected {RUN_STATISTICS_FILENAME})"
+            )
         with path.open("r", encoding="utf-8") as f:
             data = f.read()
         loaded = yaml.safe_load(data)
         if loaded is None:
             # Empty or invalid file: raise an explicit error
-            raise ValueError(f"{RUN_STATISTICS_FILENAME} is empty or invalid; cannot create RunStatistics instance.")
+            raise ValueError(
+                f"{RUN_STATISTICS_FILENAME} is empty or invalid; cannot create RunStatistics instance."
+            )
         return cls.model_validate(loaded)
-
 
     @typechecked
     def get_total_to_process(self) -> int | None:
@@ -109,9 +116,9 @@ class RunStatistics(BaseModel):
             return None
         skip = self.skip_n or 0
         return max(1, self.total_assets - skip)
-    
+
     @typechecked
     def get_start_time(self) -> float:
         if self.started_at is None:
             raise RuntimeError("RunStatistics.started_at is not set")
-        return self.started_at.timestamp()    
+        return self.started_at.timestamp()

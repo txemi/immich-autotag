@@ -1,12 +1,11 @@
+from typing import List, Optional
+
 import attr
-from typing import Optional, List
-
 from typeguard import typechecked
+
 from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
+
 from .models import FilterConfig
-
-
-
 
 
 @attr.s(auto_attribs=True, kw_only=True)
@@ -32,13 +31,17 @@ class FilterConfigWrapper:
         Devuelve un ClassificationRuleSet con las reglas de filter_in.
         """
         if not self.filter_config or not self.filter_config.filter_in:
-            from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
+            from immich_autotag.classification.classification_rule_wrapper import (
+                ClassificationRuleWrapper,
+            )
+
             return ClassificationRuleSet(rules=[])
-        
-        from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
+
+        from immich_autotag.classification.classification_rule_wrapper import (
+            ClassificationRuleWrapper,
+        )
+
         wrappers = [
-            ClassificationRuleWrapper(rule)
-            for rule in self.filter_config.filter_in
+            ClassificationRuleWrapper(rule) for rule in self.filter_config.filter_in
         ]
         return ClassificationRuleSet(rules=wrappers)
-

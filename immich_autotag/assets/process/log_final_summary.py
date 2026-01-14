@@ -12,6 +12,7 @@ from immich_autotag.report.modification_report import ModificationReport
 @typechecked
 def log_final_summary() -> None:
     from immich_autotag.statistics.statistics_manager import StatisticsManager
+
     stats = StatisticsManager.get_instance().get_stats()
     count = stats.count
     start_time = stats.get_start_time()
