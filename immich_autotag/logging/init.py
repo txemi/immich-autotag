@@ -2,6 +2,7 @@ import logging
 
 from typeguard import typechecked
 
+from immich_autotag.config.filter_wrapper import FilterConfigWrapper
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, setup_logging
@@ -16,17 +17,16 @@ def initialize_logging() -> None:
     manager = ConfigManager.get_instance()
     if manager.config is None:
         raise RuntimeError("ConfigManager.config is not initialized!")
-    filter_asset_links = manager.config.filter_out_asset_links
-    if filter_asset_links is None:
-        raise RuntimeError("filter_out_asset_links is not set in configuration!")
-    # Always force PROGRESS level to see pagination logs
-    if filter_asset_links and len(filter_asset_links) > 0:
+    filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
+    # Si estamos filtrando miuy pocos assets es psiblemente por diagnostico, subir nivel de log
+    if filter_wrapper.is_focused():
         setup_logging(level=LogLevel.FOCUS)
         log(
             "[LOG] Logging system initialized: FOCUS level (filter mode)",
             level=LogLevel.FOCUS,
         )
     else:
+        # sino sencillamente reportar progreso
         setup_logging(level=LogLevel.PROGRESS)
         # Silence HTTP logs from httpx and noisy dependencies
     logging.getLogger("httpx").setLevel(logging.WARNING)
