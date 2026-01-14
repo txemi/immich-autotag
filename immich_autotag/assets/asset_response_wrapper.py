@@ -562,17 +562,27 @@ class AssetResponseWrapper:
     @typechecked
     def check_unique_classification(self, fail_fast: bool = True) -> bool:
         """
-        Checks if the asset is classified by more than one criterion (tag or album).
-        Returns True if there is a conflict (multiple criteria), False otherwise.
+        Checks if the asset is classified by more than one rule.
+        Returns True if there is a conflict (multiple rules matched), False otherwise.
         If fail_fast is True (default), raises an exception. If False, logs a warning only.
         """
-        match_detail = self.get_classification_match_detail()
-        n_matches = len(match_detail.tags_matched) + len(match_detail.albums_matched)
-        if n_matches > 1:
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
+        )
+
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        match_result_list = rule_set.matching_rules(self)
+        
+        # Count the number of rules that matched (not individual tags/albums)
+        n_rules_matched = len(match_result_list)
+        
+        if n_rules_matched > 1:
             import uuid
 
+            # Get details for error message
+            match_detail = self.get_classification_match_detail()
             photo_url = get_immich_photo_url(uuid.UUID(self.id))
-            msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by more than one criterion: tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
+            msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by {n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
             if fail_fast:
                 raise Exception(msg)
             else:
