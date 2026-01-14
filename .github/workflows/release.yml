@@ -1,3 +1,13 @@
+# GitHub Actions workflow for automated releases to PyPI and Docker Hub
+# 
+# This workflow now works without needing access to a real Immich server.
+# The setup_venv.sh script will use a hardcoded fallback version (v2.4.1)
+# when no Immich configuration is available, which is the case in CI/CD environments.
+#
+# The workflow triggers on:
+# - Push of version tags (v*.*.*)
+# - Manual dispatch from GitHub UI
+
 name: Release to PyPI and Docker Hub
 
 on:
@@ -17,6 +27,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
 
       - name: Install build dependencies
         run: |
