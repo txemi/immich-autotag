@@ -59,11 +59,27 @@ def analyze_and_assign_album(
         )
         return
     elif num_rules_matched > 1:
-        # Multiple rules matched - this should not happen (conflict should have been detected earlier)
-        raise RuntimeError(
-            f"Asset '{asset_name}' ({asset_id}) matched {num_rules_matched} classification rules. "
-            f"This indicates a configuration or logic error.\nSee asset: {immich_url}"
+        # Multiple rules matched - this indicates a classification conflict
+        # This will be handled by the classification conflict tag system later in the workflow
+        log(
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' ({asset_id}) matched {num_rules_matched} classification rules. "
+            f"Classification conflict will be marked with autotag_output_conflict tag.\nSee asset: {immich_url}",
+            level=LogLevel.ERROR,
         )
+        # Register this in the modification report for auditing
+        from immich_autotag.tags.modification_kind import ModificationKind
+        tag_mod_report.add_modification(
+            kind=ModificationKind.CLASSIFICATION_CONFLICT,
+            asset_wrapper=asset_wrapper,
+            extra={
+                "reason": "multiple_rules_matched",
+                "num_rules": num_rules_matched,
+                "asset_name": asset_name,
+                "asset_id": asset_id,
+            }
+        )
+        # Don't raise exception - let the workflow continue to handle the conflict tag
+        return
 
     # If we reach here: num_rules_matched == 0
     # Asset is not classified, try to assign an album through detection logic

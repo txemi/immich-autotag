@@ -18,3 +18,6 @@ class ModificationKind(Enum):
 
     # Asset is in an album whose date (from album name) differs from asset date by more than threshold
     ALBUM_DATE_MISMATCH = auto()  # Asset/album date mismatch detected
+    
+    # Classification conflicts
+    CLASSIFICATION_CONFLICT = auto()  # Asset matched multiple classification rules (conflict detected)
