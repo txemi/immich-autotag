@@ -15,7 +15,19 @@ def _generate_links(config: UserConfig) -> List[str]:
     # Collect all autotag values from the new configuration structure
     tags_to_add = []
     
-    # From classification
+    # From classification rules (input tags)
+    if config.classification and config.classification.rules:
+        seen_tags = set()
+        for rule in config.classification.rules:
+            if rule.tag_names:
+                for tag in rule.tag_names:
+                    if tag.startswith("autotag_input_") and tag not in seen_tags:
+                        seen_tags.add(tag)
+                        # Clean label: remove prefix and format
+                        label = tag.replace("autotag_input_", "").replace("_", " ").title()
+                        tags_to_add.append((f"Input: {label}", tag))
+    
+    # From classification (output tags)
     if config.classification:
         if config.classification.autotag_unknown:
             tags_to_add.append(("Classification: Unknown", config.classification.autotag_unknown))
