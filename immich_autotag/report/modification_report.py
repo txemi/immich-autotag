@@ -38,9 +38,6 @@ class ModificationReport:
         default=attrs.Factory(threading.Lock), init=False, repr=False
     )
 
-    import datetime as dt
-    import os
-
     log_dir: Path = attrs.field(
         default=get_run_output_dir(), validator=attrs.validators.instance_of(Path)
     )
@@ -115,16 +112,17 @@ class ModificationReport:
                 print(f"[WARN] Could not clear the tag modification report: {e}")
             self._cleared_report = True
 
-        # If user is None, obtain it using the asset_wrapper context (if it exists)
+        # If user is None, obtain it from the singleton ImmichContext
         user_instance = user
         if user_instance is None:
-            user_instance = UserResponseWrapper.from_context(asset_wrapper.context)
+            from immich_autotag.context.immich_context import ImmichContext
+            context = ImmichContext.get_instance()
+            user_instance = UserResponseWrapper.from_context(context)
 
         # Calculate progress using StatisticsManager (without try/except)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         stats_manager = StatisticsManager.get_instance()
-        stats = stats_manager.get_stats()
         progress_str = stats_manager.get_progress_description()
 
         entry = ModificationEntry(
@@ -141,11 +139,12 @@ class ModificationReport:
         )
         self.modifications.append(entry)
         # Centralized statistics update for tag actions (now encapsulated in StatisticsManager)
-        from immich_autotag.statistics.statistics_manager import StatisticsManager
+        if tag is not None:
+            from immich_autotag.statistics.statistics_manager import StatisticsManager
 
-        StatisticsManager.get_instance().increment_tag_action(
-            tag=tag, kind=kind, album=album
-        )
+            StatisticsManager.get_instance().increment_tag_action(
+                tag=tag, kind=kind, album=album
+            )
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
