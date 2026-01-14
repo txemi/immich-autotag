@@ -27,7 +27,7 @@ class FilterConfigWrapper:
             return False
         ruleset = ClassificationRuleSet(rules=self.filter_config.filter_in)
         return ruleset.is_focused()
-
+    @typechecked
     def get_filter_in_ruleset(self) -> ClassificationRuleSet:
         """
         Devuelve el conjunto de reglas de filtro_in.
