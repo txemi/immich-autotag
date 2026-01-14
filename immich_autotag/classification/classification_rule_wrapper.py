@@ -62,4 +62,37 @@ class ClassificationRuleWrapper:
         if not tags_matched and not albums_matched:
             return None
         return MatchResult(rule=self, tags_matched=tags_matched, albums_matched=albums_matched)
+
+    @typechecked
+    def extract_uuids_from_asset_links(self) -> list['UUID']:
+        """
+        Extrae UUIDs de los asset_links de esta regla.
+        Acepta URLs completas o UUIDs directos.
+        """
+        from uuid import UUID
+        import re
+        
+        if not self.rule.asset_links:
+            return []
+        
+        uuids = []
+        uuid_pattern = re.compile(
+            r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
+        )
+        
+        for link in self.rule.asset_links:
+            match = uuid_pattern.search(link)
+            if not match:
+                raise RuntimeError(
+                    f"[ERROR] Could not extract asset ID from link: {link}"
+                )
+            try:
+                asset_uuid = UUID(match.group(1))
+                uuids.append(asset_uuid)
+            except Exception:
+                raise RuntimeError(
+                    f"[ERROR] Invalid asset ID (not a valid UUID): {match.group(1)}"
+                )
+        
+        return uuids
     # You can add more utility methods as needed
