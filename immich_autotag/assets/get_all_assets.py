@@ -136,7 +136,7 @@ def get_all_assets(
         ):
             yield asset_wrapper
             count += 1
-            log(f"[PROGRESS] Asset processed, count={count}", level=LogLevel.PROGRESS)
+            log(f"[PROGRESS] Asset processed, count={count}", level=LogLevel.DEBUG)
         skip_applied = skip_n and not skip_applied
         abs_pos = skip_n + count
         response_assets = response.parsed.assets
