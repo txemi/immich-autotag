@@ -46,6 +46,18 @@ pipeline {
                 }
             }
         }
+        
+        stage('Run Application') {
+            steps {
+                script {
+                    echo "Running immich-autotag application..."
+                    sh '''
+                        chmod +x run_app.sh
+                        bash run_app.sh
+                    '''
+                }
+            }
+        }
     }
     
     post {
