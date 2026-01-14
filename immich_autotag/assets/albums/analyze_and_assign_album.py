@@ -17,7 +17,6 @@ def analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
     suppress_album_already_belongs_log: bool = True,
-    fail_on_duplicate_album_conflict: bool = False,
 ) -> None:
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
