@@ -58,7 +58,7 @@ class AssetDateCandidate:
             manager = ConfigManager.get_instance()
             if not manager or not manager.config or not manager.config.features:
                 raise RuntimeError("ConfigManager or features config not initialized")
-            tz = manager.config.features.date_correction.extraction_timezone
+            tz = manager.config.duplicate_processing.date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 
         return dt.replace(tzinfo=ZoneInfo(tz))
