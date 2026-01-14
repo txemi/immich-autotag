@@ -38,7 +38,7 @@ pipeline {
                 script {
                     echo "Validating installation..."
                     sh '''
-                        source .venv/bin/activate
+                        . .venv/bin/activate
                         python -c "from immich_autotag import __version__; print(f'✓ immich_autotag version: {__version__}')"
                         python -c "from immich_client import __version__; print(f'✓ immich_client version: {__version__}')"
                         echo "✓ All imports successful"
