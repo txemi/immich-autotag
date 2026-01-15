@@ -82,6 +82,8 @@ All versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 - Automatic creation of albums named by day (e.g., `Review YYYY-MM-DD`) for assets that are not assigned to any album, making it easy for users to review and organize unclassified photos by date.
 
+
+
 ## [Planned: Compilation Albums Support]
 **Description:** Adds support for "compilation" albums that can mix existing and newly added photos (for example, third-party or curated compilations). Classification behavior is relaxed for compilations so assets may belong to multiple albums or match multiple rules, while still providing validation warnings when an asset matches no rule.
 ### Added
@@ -90,6 +92,14 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - A validation warning is generated when an asset in a compilation does not match any classification rule, helping users identify unclassified items.
 ### Changed
 - Classification engine now supports multi-assignment semantics for assets within compilation albums; scoring and precedence logic adjusted to prefer stronger matches while allowing overlaps.
+
+## [Planned: Profiling & CI Performance Reports]
+**Description:** Add CI-integrated profiling and performance reporting so builds produce profiling artifacts and regressions can be detected automatically. See [issue 0021 — Profiling & Performance Reports](docs/issues/0021-profiling-performance/) for the issue details and implementation notes.
+### Added
+- CI jobs to run representative profiling workloads and archive CPU/memory profiles and flamegraphs.
+- Threshold-based regression detection that flags significant slowdowns in representative workloads.
+### Changed
+- CI pipelines updated to include a small profiling step for representative workloads (configuration and thresholds to be defined in the issue linked above).
 
 ## [Planned: Date Correction Improvements]
 **Description:** Planned improvements to date correction logic for edge cases and scenarios not currently handled correctly.
