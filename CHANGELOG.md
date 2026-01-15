@@ -112,6 +112,19 @@ All versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 - CI pipelines updated to include a small profiling step for representative workloads (configuration and thresholds to be defined in the issue linked above).
 
+## [Planned: Code Quality Improvements (Sonar-like)]
+**Description:** Introduce automated static analysis and code-quality gates using SonarQube or similar tools, and apply initial remediation to address the most critical findings.
+### Added
+- CI job configuration to run static analysis (SonarQube / SonarCloud or equivalent) on pull requests and main branches.
+- A baseline report capturing current code quality metrics (bugs, vulnerabilities, code smells, coverage trends) to track improvement over time.
+- Documentation for developers on how to run local scans and interpret Sonar reports (basic onboarding instructions).
+### Changed
+- CI pipeline modified to fail or warn builds based on configurable quality gates (e.g., new blocker issues, decreasing coverage, or rapidly rising hotspot counts).
+- Project structure and packaging adjusted where necessary to enable more accurate analysis (e.g., excluding generated files, adding source roots for analyzers).
+### Fixed / Remediated (initial)
+- Addressed a prioritized subset of Sonar-style findings: high-priority security warnings and stability-related code smells reduced through targeted fixes and tests.
+
+
 ## [Planned: Date Correction Improvements]
 **Description:** Planned improvements to date correction logic for edge cases and scenarios not currently handled correctly.
 ### Added
