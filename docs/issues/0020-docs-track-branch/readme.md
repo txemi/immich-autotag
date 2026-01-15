@@ -42,6 +42,27 @@ git commit -m "feat: Implement feature"
 git show docs-track:docs/issues/registry.md
 ```
 
+### Syncing documentation while working on a feature
+
+If you're working on a feature and notice `docs-track` is ahead:
+
+```bash
+# 1. Check what's new in docs-track
+git log --oneline docs-track ^HEAD
+
+# 2. If only documentation (no code changes)
+git merge docs-track
+
+# 3. Continue with your implementation
+# Now you have complete documentation context
+```
+
+This lets you:
+- See latest documentation plans
+- Get updated issue numbering
+- Understand context before implementing
+- All without pulling implementation code
+
 ### Merging to main
 
 When stabilizing a feature for main/develop merge:
