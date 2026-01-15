@@ -6,6 +6,8 @@ The project uses a **local-first, documentation-as-code** issue tracking system 
 - **RFC (Request for Comments)** - Rust/React style workflow
 - **Documentation-as-Code** - Markdown in Git, peer-reviewed
 
+**Language policy:** All issue artifacts (readme.md, ai-context.md, technical_design.md, registry entries) must be written in English to keep them searchable and consistent. File names remain kebab-case ASCII.
+
 ## Directory Structure
 Location: [docs/issues](../issues/)
 
