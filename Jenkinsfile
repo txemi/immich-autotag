@@ -30,15 +30,6 @@ pipeline {
                     '''
                     // perform explicit checkout and abort quickly if this job is not building the branch HEAD
                     checkout scm
-                    // Git (inside container) may refuse to operate if the mounted workspace ownership
-                    // differs from the container user. Allow this workspace as safe to avoid
-                    // "detected dubious ownership" errors.
-                    sh '''
-                        set -x
-                        if [ -n "$WORKSPACE" ]; then
-                            git config --global --add safe.directory "$WORKSPACE" || true
-                        fi
-                    '''
                     def branch = env.BRANCH_NAME ?: env.GIT_BRANCH ?: ''
                     if (!branch) {
                         echo "BRANCH_NAME / GIT_BRANCH not set; skipping outdated-check"
