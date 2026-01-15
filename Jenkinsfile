@@ -16,12 +16,6 @@ pipeline {
         PYTHONUNBUFFERED = '1'
     }
     
-    // Ensure we run a clean workspace: run cleanWs() first, then explicit checkout
-    options {
-        // Prevent Declarative pipeline from performing an implicit checkout
-        skipDefaultCheckout(true)
-    }
-    
     stages {
         stage('Start: Clean workspace') {
             steps {
