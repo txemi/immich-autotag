@@ -19,8 +19,16 @@ pipeline {
     stages {
         stage('Checkout & Abort if outdated') {
             steps {
-                // perform explicit checkout and abort quickly if this job is not building the branch HEAD
+                // ensure git is present in container before calling checkout scm
                 script {
+                    sh '''
+                        set -x
+                        export DEBIAN_FRONTEND=noninteractive
+                        apt-get update -yqq || true
+                        apt-get install -yqq git ca-certificates --no-install-recommends || true
+                        rm -rf /var/lib/apt/lists/* || true
+                    '''
+                    // perform explicit checkout and abort quickly if this job is not building the branch HEAD
                     checkout scm
                     def branch = env.BRANCH_NAME ?: env.GIT_BRANCH ?: ''
                     if (!branch) {
