@@ -42,7 +42,7 @@ Useful commands for capturing (examples)
 - Generate pstats from `run_app.sh` if `profile_run.sh` is already used (already implemented in repo): the script should produce `profile.stats` in `logs_local/profiling/<TIMESTAMP>/`.
 - Commands for system snapshot (from the machine where Jenkins/worker runs):
 ```bash
-# basic snapshot
+# Basic snapshot
 top -b -n1 > jobA_t0_top.txt
 vmstat 1 5 > jobA_t0_vmstat.txt
 free -h > jobA_t0_free.txt
