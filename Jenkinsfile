@@ -16,7 +16,22 @@ pipeline {
         PYTHONUNBUFFERED = '1'
     }
     
+    // Ensure we run a clean workspace: run cleanWs() first, then explicit checkout
+    options {
+        // Prevent Declarative pipeline from performing an implicit checkout
+        skipDefaultCheckout(true)
+    }
+    
     stages {
+        stage('Start: Clean workspace') {
+            steps {
+                script {
+                    // Require Workspace Cleanup Plugin to be present — if missing, the pipeline will fail here so operators can install it
+                    cleanWs()
+                    echo 'Workspace cleaned at start of build.'
+                }
+            }
+        }
         stage('Checkout & Abort if outdated') {
             steps {
                 // ensure git is present in container before calling checkout scm
@@ -109,9 +124,23 @@ pipeline {
     
     post {
         always {
-            // Archive run outputs (logs, reports, links) generated per execution
-            archiveArtifacts artifacts: 'logs_local/**/*', fingerprint: true, allowEmptyArchive: true
-            echo "Pipeline execution completed at ${new Date()}"
+            // Archive profiling artifacts first (if present), then key logs, then the rest
+            script {
+                try {
+                    archiveArtifacts artifacts: 'logs_local/profiling/**', fingerprint: true, allowEmptyArchive: true
+                } catch (err) {
+                    echo "No profiling artifacts to archive or archive failed: ${err}"
+                }
+                // Archive essential run statistics and main logs
+                archiveArtifacts artifacts: 'logs_local/**/run_statistics.yaml, logs_local/**/immich_autotag_full_output.log', allowEmptyArchive: true, fingerprint: true
+                // Archive everything else as a fallback
+                archiveArtifacts artifacts: 'logs_local/**/*', allowEmptyArchive: true
+
+                echo "Pipeline execution completed at ${new Date()}"
+                // Final cleanup to free disk space (requires Workspace Cleanup Plugin)
+                cleanWs()
+                echo 'Workspace cleaned at end of build.'
+            }
         }
         success {
             echo "✅ Pipeline succeeded - All stages passed"
