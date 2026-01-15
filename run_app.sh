@@ -8,11 +8,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="$SCRIPT_DIR/.venv"
 PYTHON_SCRIPT="$SCRIPT_DIR/main.py"
 
-# Parse args for --profile / -p; remaining args are passed to the app
-PROFILE=${RUN_PROFILING:-0}
+# Parse args for --profile / -p / --no-profile; remaining args are passed to the app
+# Default: profiling ON unless explicitly disabled by env or flag
+PROFILE=${RUN_PROFILING:-1}
 ARGS=()
 for a in "$@"; do
   case "$a" in
+    --no-profile)
+      PROFILE=0
+      ;;
     --profile|-p)
       PROFILE=1
       ;;
