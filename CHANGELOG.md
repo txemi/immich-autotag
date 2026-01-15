@@ -78,6 +78,7 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 **Description:** Adds automatic creation of daily albums for assets that do not belong to any album, using easily identifiable names for user review.
+**Status:** Frozen — will be released soon.
 ### Added
 - Automatic creation of albums named by day (e.g., `Review YYYY-MM-DD`) for assets that are not assigned to any album, making it easy for users to review and organize unclassified photos by date.
 
