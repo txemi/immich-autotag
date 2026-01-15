@@ -83,6 +83,17 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - Automatic creation of albums named by day (e.g., `Review YYYY-MM-DD`) for assets that are not assigned to any album, making it easy for users to review and organize unclassified photos by date.
 
 
+### Note — Performance regression under investigation
+- **Observed behavior:** Recent runs of the representative test battery have shown a significant runtime regression: test executions that historically completed in ~4 hours have been observed to take 14–15 hours in the most recent runs. The exact numbers vary between runs and datasets; this regression is under active investigation.
+- **Possible causes:** The root cause is not yet confirmed. Potential contributing factors include a sudden increase in the number of albums created during processing or changes in application code that increase work per asset. Profiling artifacts have been enabled and are being collected to help identify hotspots (see linked issue).
+- **Status & action:** The issue is being tracked and analyzed in [issue 0021 — Profiling & Performance Reports](docs/issues/0021-profiling-performance/). CI profiling has been enabled on a dedicated performance branch and profiling artifacts (CPU profiles, pstats, flamegraphs) are being archived for analysis. Further updates and findings will be posted to the linked issue.
+- **Impact & unknowns:** At this time we cannot predict which users or datasets are affected or the precise origin of the slowdown. Ongoing analysis will try to reproduce the regression, narrow down its cause, and propose fixes or mitigations.
+
+### Configuration / Breaking changes
+- **Checked for config format changes:** I reviewed repository configuration docs and recent changes; there is no indication of a configuration-format breaking change introduced specifically in this Unreleased entry relative to `v0.71.0`.
+- **Historical note:** The major configuration-system change (Python + YAML structured config support) was introduced in v0.25 (see [issue 0009 — Config system refactor](docs/issues/0009-config-system-refactor/)). If you know of a specific config-file change or commit that should be considered breaking in this Unreleased version, please point me to it and I will add a formal "Breaking changes" entry.
+
+
 
 ## [Planned: Compilation Albums Support]
 **Description:** Adds support for "compilation" albums that can mix existing and newly added photos (for example, third-party or curated compilations). Classification behavior is relaxed for compilations so assets may belong to multiple albums or match multiple rules, while still providing validation warnings when an asset matches no rule.
