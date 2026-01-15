@@ -63,19 +63,17 @@ This lets you:
 - Understand context before implementing
 - All without pulling implementation code
 
-### Merging to main
+## Key Benefits
 
-When stabilizing a feature for main/develop merge:
-- Check if `docs-track` contains only documentation
-- If yes: include it in your merge/PR
-- If no: create separate PR for docs-track
+When you follow this approach:
 
-## Benefits
+1. **Documentation reaches main faster**: docs-track merges frequently without waiting for implementation
+2. **No separate documentation PRs needed**: Documentation comes naturally as part of feature merges
+3. **Fresh planning always visible**: main branch always shows latest plans, roadmaps, and designs
+4. **Minimal effort**: Just use docs-track as base branch, no extra management needed
+5. **Maximum visibility**: Anyone checking main branch sees current planning and documentation
 
-1. **Avoid issue number conflicts**: Everyone increments from the same point
-2. **Documentation reaches main faster**: No need to wait for implementation
-3. **Better visibility**: Plans and designs visible in main branch
-4. **Low effort**: Just use docs-track as base, no complex workflows
+By incorporating docs-track early in your feature branches, you ensure that documentation and planning flow naturally into main alongside implementation, eliminating friction and keeping planning visible with minimal overhead.
 
 ## Status
 
