@@ -25,7 +25,7 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
     )
     log(msg, level=LogLevel.FOCUS)
     config = ConfigManager.get_instance().config
-    group_tag = f"{config.auto_tags.duplicate_asset_classification_conflict_prefix}{asset_wrapper.duplicate_id_as_uuid}"
+    group_tag = f"{config.duplicate_processing.autotag_classification_conflict_prefix}{asset_wrapper.duplicate_id_as_uuid}"
     for w in duplicate_wrappers:
-        w.add_tag_by_name(config.auto_tags.duplicate_asset_classification_conflict)
+        w.add_tag_by_name(config.duplicate_processing.autotag_classification_conflict)
         w.add_tag_by_name(group_tag)
