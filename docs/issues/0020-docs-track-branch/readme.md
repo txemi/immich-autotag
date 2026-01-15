@@ -22,7 +22,7 @@ Use `docs-track` as a staging area for documentation-only commits that can be me
 
 **What doesn't go in docs-track:**
 - ❌ Implementation code
-- ❌ Documentation that assumes unmerged features exist, just plan analisys or desing
+- ❌ Documentation that assumes unmerged features exist, just plan analysis or design
 
 
 **Key rule:** Documentation must not assume anything is already implemented. If it says "the system does X", X must already be merged in docs-track or independent.
