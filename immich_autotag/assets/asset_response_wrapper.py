@@ -774,7 +774,41 @@ class AssetResponseWrapper:
         if rule_set.matches_any_album_of_asset(self):
             return None
         analyzer = AlbumFolderAnalyzer(self.original_path)
-        return analyzer.get_album_name()
+        album_name = analyzer.get_album_name()
+        
+        # Check if there's a conflict (multiple candidate folders)
+        if album_name is None and analyzer.has_multiple_candidate_folders():
+            from immich_autotag.report.modification_report import ModificationReport
+            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.config.manager import ConfigManager
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+            
+            report = ModificationReport.get_instance()
+            candidate_folders = analyzer.get_candidate_folders()
+            report.add_modification(
+                kind=ModificationKind.ALBUM_DETECTION_CONFLICT,
+                asset_wrapper=self,
+                extra={"candidate_folders": candidate_folders},
+            )
+            
+            # Apply conflict tag if configured
+            config = ConfigManager.get_instance().config
+            if config.duplicate_processing.autotag_album_conflict:
+                try:
+                    self.add_tag_by_name(config.duplicate_processing.autotag_album_conflict)
+                    log(
+                        f"[ALBUM DETECTION] Asset '{self.original_file_name}' ({self.id}) has multiple candidate folders: "
+                        f"{candidate_folders}. Tagged with '{config.duplicate_processing.autotag_album_conflict}'",
+                        level=LogLevel.FOCUS,
+                    )
+                except Exception as e:
+                    log(
+                        f"[ALBUM DETECTION][ERROR] Failed to tag asset with album detection conflict: {e}",
+                        level=LogLevel.ERROR,
+                    )
+        
+        return album_name
 
     @property
     def id_as_uuid(self) -> "UUID":

@@ -21,3 +21,4 @@ class ModificationKind(Enum):
     
     # Classification conflicts
     CLASSIFICATION_CONFLICT = auto()  # Asset matched multiple classification rules (conflict detected)
+    ALBUM_DETECTION_CONFLICT = auto()  # Multiple candidate folders found for album detection

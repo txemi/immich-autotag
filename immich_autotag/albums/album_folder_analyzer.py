@@ -75,6 +75,23 @@ class AlbumFolderAnalyzer:
         return False
 
     @typechecked
+    def has_multiple_candidate_folders(self) -> bool:
+        """
+        Returns True if there are multiple date folders (which create ambiguity for album detection).
+        """
+        return self.num_date_folders() > 1
+
+    @typechecked
+    def get_candidate_folders(self) -> list[str]:
+        """
+        Returns the list of candidate folders if has_multiple_candidate_folders() is True.
+        """
+        if self.has_multiple_candidate_folders():
+            idxs = self.date_folder_indices()
+            return [self.folders[i] for i in idxs]
+        return []
+
+    @typechecked
     def get_album_name(self):
         if self._is_excluded_by_pattern():
             return None
@@ -97,12 +114,9 @@ class AlbumFolderAnalyzer:
                         )
                     raise NotImplementedError
             return None
-        # >1 date folders: ambiguous, not supported
+        # >1 date folders: ambiguous, not supported - return None and let caller handle it
         if self.num_date_folders() > 1:
-            idxs = self.date_folder_indices()
-            raise NotImplementedError(
-                f"Multiple candidate folders for album detection: {[self.folders[i] for i in idxs]}"
-            )
+            return None
         # 1 date folder
         idx = self.date_folder_indices()[0]
         # If the date folder is at the end and is only the date, ignore it
