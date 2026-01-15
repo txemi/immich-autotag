@@ -27,3 +27,23 @@ To maintain consistency and avoid duplicate IDs, always use this command with yo
 
 ---
 *This system ensures that the project's knowledge is sovereign, does not depend on external SaaS tools, and is optimized for analysis by language models.*
+
+## ⚠️ Performance Regression: Test Suite Duration
+
+Descripción breve (español): hasta hace poco la batería de pruebas completa tardaba ~4 horas y hoy tarda ~14 horas — un aumento inaceptable que hay que investigar.
+
+Pistas iniciales:
+- La funcionalidad de **auto-creación de álbumes** podría haber generado una gran cantidad de álbumes nuevos, lo que posiblemente impacte a pasos que iteren sobre álbumes o consulten metadatos repetidamente.
+- Otra posibilidad es que alguna parte del código esté haciendo trabajo redundante (llamadas repetidas, recalculos, operaciones O(N^2) inesperadas, o accesos a IO innecesarios dentro de bucles).
+
+Estrategia propuesta:
+- Automatizar la generación de perfiles desde CI para capturar muestras reproducibles (CPU, tiempos wall, uso de memoria, flamegraphs). Ver [issue 0021 — Profiling & Performance Reports](../docs/issues/0021-profiling-performance/).
+- Empezar con una muestra representativa pequeña para mantener el tiempo de CI razonable y luego escalar localmente para reproducciones más grandes.
+- Analizar perfiles para identificar hotspots y llamadas repetidas; priorizar cambios que reduzcan re-trabajo (caching, evitar IO repetido, limitar escaneo de álbumes).
+
+Acciones inmediatas:
+1. Integrar un pequeño job de profiling en CI que ejecute un conjunto de tareas representativas y archive los artefactos (CPU/memory profiles, flamegraphs).
+2. Proveer scripts en `scripts/profiling/` y un `README` con instrucciones para ejecutar localmente y en CI.
+3. Revisar las rutas críticas que operan sobre álbumes y clasificación para buscar operaciones repetidas o consultas costosas.
+
+Si quieres, puedo crear el `scripts/profiling/run_profile.sh` de ejemplo y añadir un job minimal para GitHub Actions o Jenkins que archive los artefactos.
