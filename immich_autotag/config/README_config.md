@@ -22,6 +22,8 @@ Both templates are provided in this folder. You can copy and adapt either one to
  
  Both templates are provided so you can pick whichever format you prefer. Each template contains inline comments and field explanations; use YAML for straightforward setups and the Python template when you want more detailed guidance or programmatic flexibility.
 
+If any field, option, or behavior is unclear while using the YAML template, consult the Python template — it typically contains more exhaustive explanations and illustrative examples that clarify advanced usage.
+
 ## Example YAML Configuration
 
 ```yaml
