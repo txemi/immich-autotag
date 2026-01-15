@@ -1,4 +1,10 @@
 pipeline {
+    options {
+        // Short debounce to collapse rapid pushes (seconds)
+        quietPeriod(10)
+        // We'll perform checkout explicitly so we can abort outdated builds early
+        skipDefaultCheckout(true)
+    }
     agent {
         docker {
             image 'python:3.11-slim'
@@ -11,6 +17,47 @@ pipeline {
     }
     
     stages {
+        stage('Checkout & Abort if outdated') {
+            steps {
+                // ensure git is present in container before calling checkout scm
+                script {
+                    sh '''
+                        set -x
+                        export DEBIAN_FRONTEND=noninteractive
+                        apt-get update -yqq || true
+                        apt-get install -yqq git ca-certificates --no-install-recommends || true
+                        rm -rf /var/lib/apt/lists/* || true
+                    '''
+                    // perform explicit checkout and abort quickly if this job is not building the branch HEAD
+                    checkout scm
+                    // Git (inside container) may refuse to operate if the mounted workspace ownership
+                    // differs from the container user. Allow this workspace as safe to avoid
+                    // "detected dubious ownership" errors.
+                    sh '''
+                        set -x
+                        if [ -n "$WORKSPACE" ]; then
+                            git config --global --add safe.directory "$WORKSPACE" || true
+                        fi
+                    '''
+                    def branch = env.BRANCH_NAME ?: env.GIT_BRANCH ?: ''
+                    if (!branch) {
+                        echo "BRANCH_NAME / GIT_BRANCH not set; skipping outdated-check"
+                    } else {
+                        sh "git fetch origin ${branch} --quiet || true"
+                        def localHead = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                        def remoteHead = sh(returnStdout: true, script: "git rev-parse origin/${branch} || true").trim()
+                        if (remoteHead && localHead != remoteHead) {
+                            echo "This build targets commit ${localHead} but origin/${branch} is ${remoteHead}. Aborting outdated build."
+                            catchError(buildResult: 'ABORTED', stageResult: 'ABORTED') {
+                                error('Outdated build — aborting early')
+                            }
+                        } else {
+                            echo "Build is up-to-date (HEAD matches origin/${branch}). Continuing."
+                        }
+                    }
+                }
+            }
+        }
         stage('Install System Dependencies') {
             steps {
                 sh '''
