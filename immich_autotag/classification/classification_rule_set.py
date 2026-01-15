@@ -127,8 +127,8 @@ class ClassificationRuleSet:
         self, context: "ImmichContext"
     ) -> List["AssetResponseWrapper"]:
         """
-        Extrae todos los UUIDs de asset_links de todas las reglas,
-        carga los assets desde la API y devuelve la lista de AssetResponseWrapper.
+        Extracts all UUIDs from asset_links of all rules,
+        loads the assets from the API and returns the list of AssetResponseWrapper.
         """
         from uuid import UUID
 
@@ -139,7 +139,7 @@ class ClassificationRuleSet:
         if not all_uuids:
             return []
 
-        # Cargar assets desde la API
+        # Load assets from the API
         from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
         wrappers: List[AssetResponseWrapper] = []
