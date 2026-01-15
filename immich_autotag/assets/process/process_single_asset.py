@@ -129,8 +129,15 @@ def process_single_asset(
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
     )
+    from immich_autotag.config.manager import ConfigManager
+    
+    config = ConfigManager.get_instance().config
+    
+    # Get threshold from new config section with fallback
+    if config.album_date_consistency and config.album_date_consistency.enabled:
+        threshold_days = config.album_date_consistency.threshold_days
+        check_album_date_consistency(asset_wrapper, tag_mod_report, threshold_days)
 
-    check_album_date_consistency(asset_wrapper, tag_mod_report)
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     log(

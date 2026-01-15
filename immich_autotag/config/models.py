@@ -46,12 +46,19 @@ class DateCorrectionConfig(BaseModel):
     extraction_timezone: str
 
 
-class DuplicateProcessingConfig(BaseModel):
-    autotag_album_date_mismatch: str = Field(
-        default="autotag_output_album_date_mismatch",
-        description="Tag for album/asset date mismatch. Used if not specified by user.",
-    )
+class AlbumDateConsistencyConfig(BaseModel):
+    """Configuration for album date consistency checks.
+    
+    This check compares the asset's taken date with its album's date
+    and tags mismatches for user review.
+    """
+    
+    enabled: bool = True
+    autotag_album_date_mismatch: str = "autotag_album_date_mismatch"
+    threshold_days: int = 180
 
+
+class DuplicateProcessingConfig(BaseModel):
     autotag_album_conflict: Optional[str] = None
     autotag_classification_conflict: Optional[str] = None
     autotag_classification_conflict_prefix: Optional[str] = None
@@ -72,6 +79,7 @@ class UserConfig(BaseModel):
     conversions: List[Conversion]
     classification: ClassificationConfig
     duplicate_processing: Optional[DuplicateProcessingConfig] = None
+    album_date_consistency: Optional[AlbumDateConsistencyConfig] = None
     album_detection_from_folders: AlbumDetectionFromFoldersConfig
 
     create_album_from_date_if_missing: bool = False

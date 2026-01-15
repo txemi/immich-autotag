@@ -8,6 +8,7 @@ This template is designed to be self-explanatory and easy to adapt. Each block i
 """
 
 from immich_autotag.config.models import (
+    AlbumDateConsistencyConfig,
     AlbumDetectionFromFoldersConfig,
     ClassificationConfig,
     ClassificationRule,
@@ -101,7 +102,6 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     # DUPLICATE PROCESSING: configuration for handling duplicates
     duplicate_processing=DuplicateProcessingConfig(
-        autotag_album_date_mismatch="autotag_output_album_date_mismatch",  # Duplicates with album date mismatch
         autotag_album_conflict="autotag_output_duplicate_asset_album_conflict",  # Duplicates with album conflict
         autotag_classification_conflict="autotag_output_duplicate_asset_classification_conflict",  # Duplicates with classification conflict
         autotag_classification_conflict_prefix="autotag_output_duplicate_asset_classification_conflict_",  # Prefix for group conflicts
@@ -109,6 +109,13 @@ user_config = UserConfig(
             enabled=True,  # Date correction by file/folder name
             extraction_timezone="UTC",  # Timezone for date extraction
         ),
+    ),
+    # -------------------------------------------------------------------------
+    # ALBUM DATE CONSISTENCY: check if asset dates match album dates
+    album_date_consistency=AlbumDateConsistencyConfig(
+        enabled=True,
+        autotag_album_date_mismatch="autotag_output_album_date_mismatch",
+        threshold_days=180,  # 6 months - gradually reduce as you fix mismatches (180->90->60->30->7)
     ),
     album_detection_from_folders=AlbumDetectionFromFoldersConfig(
         enabled=True,  # Create albums from folders (disabled)
