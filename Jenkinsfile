@@ -62,6 +62,8 @@ pipeline {
     
     post {
         always {
+            // Archive run outputs (logs, reports, links) generated per execution
+            archiveArtifacts artifacts: 'logs_local/**/*', fingerprint: true, allowEmptyArchive: true
             echo "Pipeline execution completed at ${new Date()}"
         }
         success {
