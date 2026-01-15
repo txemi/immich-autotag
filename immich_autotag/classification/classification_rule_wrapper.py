@@ -81,8 +81,8 @@ class ClassificationRuleWrapper:
     @typechecked
     def extract_uuids_from_asset_links(self) -> list["UUID"]:
         """
-        Extrae UUIDs de los asset_links de esta regla.
-        Acepta URLs completas o UUIDs directos.
+        Extracts UUIDs from the asset_links of this rule.
+        Accepts complete URLs or direct UUIDs.
         """
         import re
         from uuid import UUID

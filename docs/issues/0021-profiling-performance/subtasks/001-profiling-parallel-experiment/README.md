@@ -1,104 +1,104 @@
-# Subtarea 001 — Experimento paralelo de profiling
+# Subtask 001 — Parallel profiling experiment
 
-Propósito
-- Documentar y ejecutar un experimento controlado para entender por qué el tiempo de ejecución de la batería de pruebas ha crecido (ej. 4 h → 14–15 h).
-- Tener un espacio ordenado para guardar snapshots (logs, perfiles pstats, outputs de `run_app.sh`) capturados en momentos clave y facilitar su análisis comparativo.
+Purpose
+- Document and execute a controlled experiment to understand why the test suite execution time has grown (e.g. 4 h → 14–15 h).
+- Have an organized space to save snapshots (logs, pstats profiles, outputs from `run_app.sh`) captured at key moments and facilitate their comparative analysis.
 
-Resumen del experimento propuesto
-1. Ejecutar un primer trabajo (Job A) con profiling habilitado.
-2. Esperar ~1 hora desde el inicio para recoger un snapshot (logs, estimate/processed counters, profile.stats, métricas del sistema).
-3. Lanzar un segundo trabajo (Job B) **en paralelo** a Job A.
-4. Esperar otra hora y recoger un segundo snapshot (para Job A y para Job B), comparar estimaciones y perfiles.
-5. Repetir si es necesario o ampliar ventanas si los números son ruidosos.
+Summary of proposed experiment
+1. Run a first job (Job A) with profiling enabled.
+2. Wait ~1 hour from the start to collect a snapshot (logs, estimate/processed counters, profile.stats, system metrics).
+3. Launch a second job (Job B) **in parallel** with Job A.
+4. Wait another hour and collect a second snapshot (for Job A and for Job B), compare estimates and profiles.
+5. Repeat if necessary or extend windows if the numbers are noisy.
 
-Motivación y razonamiento
-- Las estimaciones mostradas por la aplicación ("% processed / Avg / Elapsed / Est. remaining") pueden estabilizarse después de un tiempo inicial; tomar una sola medida al inicio puede ser engañoso.
-- Al comparar una ejecución sola vs. dos ejecuciones en paralelo podemos detectar:
-  - Si el empeoramiento se debe a interferencia/recursos (CPU, I/O, contención de DB/API).
-  - Si hay degradación por acumulación de artefactos (p. ej. creación masiva de álbumes) que solo se hace visible pasado cierto % de procesado.
+Motivation and reasoning
+- The estimates shown by the application ("% processed / Avg / Elapsed / Est. remaining") may stabilize after an initial time; taking a single measurement at the start can be misleading.
+- By comparing a single execution vs. two parallel executions we can detect:
+  - If the degradation is due to interference/resources (CPU, I/O, DB/API contention).
+  - If there is degradation due to accumulation of artifacts (e.g. massive album creation) that only becomes visible after a certain % of processing.
 
-Estructura de la carpeta (plantilla)
+Folder structure (template)
 - `docs/issues/0021-profiling-performance/subtasks/001-profiling-parallel-experiment/`
-  - `README.md` (este fichero)
-  - `snapshots/` (subcarpeta donde se almacenan ficheros locales que compartas o referencias)
-    - `jobA_t0_log.txt` — log completo de la ejecución de Job A al primer snapshot (texto)
-    - `jobA_t0_profile.stats` — pstats (cProfile) generado hasta t0
-    - `jobA_t0_sys.txt` — salida de comandos sistema en t0 (`top -b -n1`, `vmstat 1 5`, `iostat -x 1 5` si está disponible)
-    - `jobA_t1_log.txt`, `jobA_t1_profile.stats`, `jobA_t1_sys.txt` — segundo snapshot
-    - `jobB_t0_log.txt`, `jobB_t0_profile.stats`, `jobB_t0_sys.txt` — (si corresponde)
-    - `notes.md` — observaciones manuales (hora de inicio, branch, commit, nodo Jenkins, carga de la máquina)
-  - `analysis/` (se añadirá al producirse el análisis)
-    - `report.md` — informe con resumen ejecutivo, comparativa y recomendaciones
+  - `README.md` (this file)
+  - `snapshots/` (subfolder where local files that you share or reference are stored)
+    - `jobA_t0_log.txt` — complete log of Job A execution at the first snapshot (text)
+    - `jobA_t0_profile.stats` — pstats (cProfile) generated up to t0
+    - `jobA_t0_sys.txt` — output of system commands at t0 (`top -b -n1`, `vmstat 1 5`, `iostat -x 1 5` if available)
+    - `jobA_t1_log.txt`, `jobA_t1_profile.stats`, `jobA_t1_sys.txt` — second snapshot
+    - `jobB_t0_log.txt`, `jobB_t0_profile.stats`, `jobB_t0_sys.txt` — (if applicable)
+    - `notes.md` — manual observations (start time, branch, commit, Jenkins node, machine load)
+  - `analysis/` (will be added when analysis is produced)
+    - `report.md` — report with executive summary, comparison and recommendations
 
-Formato mínimo de snapshot
-- Logs: fichero de texto completo; si son demasiado grandes, recorta pero conserva las secciones:
-  - Cabecera con commit SHA, branch y hora
-  - Líneas de progreso ("[PERF] 76255/270798 ...")
-  - Tracebacks completos si aparecen
-- Perfil: `profile.stats` (archivo pstats desde cProfile). Si usas py-spy o flamegraph, guarda `pyspy.svg`/`flamegraph.svg` también.
-- Sistema: texto con `top -b -n1`, `vmstat 1 5`, `free -h`, `df -h`, y `iostat -x 1 5` si está disponible.
+Minimum snapshot format
+- Logs: complete text file; if they are too large, trim but keep the sections:
+  - Header with commit SHA, branch and time
+  - Progress lines ("[PERF] 76255/270798 ...")
+  - Complete tracebacks if they appear
+- Profile: `profile.stats` (pstats file from cProfile). If you use py-spy or flamegraph, save `pyspy.svg`/`flamegraph.svg` as well.
+- System: text with `top -b -n1`, `vmstat 1 5`, `free -h`, `df -h`, and `iostat -x 1 5` if available.
 
-Comandos útiles para capturar (ejemplos)
-- Generar pstats desde `run_app.sh` si ya se usa `profile_run.sh` (ya implementado en repo): el script debe producir `profile.stats` en `logs_local/profiling/<TIMESTAMP>/`.
-- Comandos para snapshot de sistema (desde la máquina donde corre Jenkins/worker):
+Useful commands for capturing (examples)
+- Generate pstats from `run_app.sh` if `profile_run.sh` is already used (already implemented in repo): the script should produce `profile.stats` in `logs_local/profiling/<TIMESTAMP>/`.
+- Commands for system snapshot (from the machine where Jenkins/worker runs):
 ```bash
-# snapshot básico
+# Basic snapshot
 top -b -n1 > jobA_t0_top.txt
 vmstat 1 5 > jobA_t0_vmstat.txt
 free -h > jobA_t0_free.txt
 uptime >> jobA_t0_uptime.txt
 ```
-- Extraer líneas de progreso/estimación del log (ejemplo):
+- Extract progress/estimate lines from log (example):
 ```bash
 grep '^\[PERF\]' logs_local/.../immich_autotag_full_output.log > jobA_t0_perf_lines.txt
 ```
 
-Plantilla de metadata (añadir en `notes.md`)
+Metadata template (add in `notes.md`)
 - `job`: JobA / JobB
 - `start_time_utc`:
 - `snapshot_time_utc`:
 - `branch` / `commit`:
 - `jenkins_node`:
 - `profile_file`:
-- `estimate_at_snapshot` (línea exacta del log):
+- `estimate_at_snapshot` (exact line from the log):
 - `processed_count_at_snapshot`:
 - `total_assets`:
-- `concurrent_jobs_on_node` (si lo sabes):
+- `concurrent_jobs_on_node` (if you know it):
 
-Privacidad / sensibilidad
-- Si los logs contienen PII o URLs privadas, no subas los ficheros completos. En su lugar:
-  - Redacta `user ids`, `email addresses`, `asset URLs` — reemplázalos por tokens `USER_123`.
-  - Conserva las líneas de progreso, estimaciones y tracebacks intactas.
-- Alternativa: subir los ficheros a un canal privado (S3/drive privado) y compartir conmigo los paths/IDs. Aquí dejaré referencias a los nombres de fichero que debes copiar allí.
+Privacy / sensitivity
+- If logs contain PII or private URLs, do not upload complete files. Instead:
+  - Redact `user ids`, `email addresses`, `asset URLs` — replace them with tokens `USER_123`.
+  - Keep progress lines, estimates and tracebacks intact.
+- Alternative: upload files to a private channel (S3/private drive) and share the paths/IDs with me. Here I will leave references to the file names that you should copy there.
 
-Criterios de éxito del experimento
-- Obtendremos perfiles comparables (pstats) y métricas sistema en dos momentos (t0, t1) para Job A y, si procede, Job B.
-- El análisis deberá responder a preguntas como:
-  - ¿La degradación de la estimación se confirma entre t0 y t1? (cuánto cambia la ETA relativa y absoluta)
-  - ¿Aparecen hotspots en el perfil que expliquen la mayor CPU por asset?
-  - ¿Se observa contención en I/O, swap o CPU por concurrencia?
+Experiment success criteria
+- We will obtain comparable profiles (pstats) and system metrics at two moments (t0, t1) for Job A and, if applicable, Job B.
+- The analysis should answer questions like:
+  - Is the estimate degradation confirmed between t0 and t1? (how much the relative and absolute ETA changes)
+  - Do hotspots appear in the profile that explain the higher CPU per asset?
+  - Is contention observed in I/O, swap or CPU due to concurrency?
 
-Proceso operativo propuesto (pasos concretos)
-1. Yo documento este plan (hecho) y preparo la carpeta plantilla.
-2. Tú ejecutas Job A normalmente y, tras ~1 hora, me pasas (o subes) los ficheros indicados en `snapshots/jobA_t0_*` y la `notes.md` con metadata.
-3. Arrancas Job B en paralelo.
-4. Tras ~1 hora más, recoges `jobA_t1_*` y `jobB_t1_*` (o los que correspondan) y me los pasas.
-5. Yo analizo los pstats y logs, produzco `analysis/report.md` con hallazgos y recomendaciones.
+Proposed operational process (concrete steps)
+1. I document this plan (done) and prepare the template folder.
+2. You run Job A normally and, after ~1 hour, you pass me (or upload) the files indicated in `snapshots/jobA_t0_*` and the `notes.md` with metadata.
+3. Start Job B in parallel.
+4. After ~1 more hour, collect `jobA_t1_*` and `jobB_t1_*` (or those that apply) and pass them to me.
+5. I analyze the pstats and logs, produce `analysis/report.md` with findings and recommendations.
 
-Sugerencias técnicas rápidas
-- Si el tamaño de `profile.stats` es grande, comprímelo (`gzip`) antes de compartir.
-- Si no puedes generar pstats, captura al menos los logs de progreso y `top`/`vmstat` en los momentos indicados.
+Quick technical suggestions
+- If the size of `profile.stats` is large, compress it (`gzip`) before sharing.
+- If you cannot generate pstats, at least capture the progress logs and `top`/`vmstat` at the indicated moments.
 
-Checklist rápida para cuando prepares snapshot (copiar en `notes.md`)
-- [ ] Hora UTC del snapshot
-- [ ] Commit / branch que se está ejecutando
-- [ ] Ficheros generados: listados (log, pstats, top, vmstat)
-- [ ] Redacciones realizadas (si hubo PII)
-- [ ] Nodo Jenkins / identificador de la máquina
+Quick checklist for when you prepare snapshot (copy in `notes.md`)
+- [ ] UTC time of snapshot
+- [ ] Commit / branch being executed
+- [ ] Files generated: listed (log, pstats, top, vmstat)
+- [ ] Redactions made (if there was PII)
+- [ ] Jenkins node / machine identifier
 
-Contacto y siguientes pasos
-- Cuando tengas el primer snapshot (t0) súbelo o indícame dónde está y lo analizaré. Si prefieres que espere a t1 para recibir ambos, dime y espero.
+Contact and next steps
+- When you have the first snapshot (t0) upload it or tell me where it is and I will analyze it. If you prefer that I wait for t1 to receive both, tell me and I'll wait.
 
 ---
 
-Si estás de acuerdo con este plan, confirmamelo y crearé la estructura en el repo (esta carpeta ya se ha creado localmente); a continuación dime cómo vas a compartir los archivos (directo en el repo, S3 privado, o por otro medio) y el horario aproximado (hora UTC) para la primera captura y yo estaré listo para analizar.
+If you agree with this plan, confirm it and I will create the structure in the repo (this folder has already been created locally); then tell me how you are going to share the files (directly in the repo, private S3, or other means) and the approximate schedule (UTC time) for the first capture and I will be ready to analyze.
