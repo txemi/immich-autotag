@@ -33,6 +33,14 @@ There are existing local profiling scripts, but no standardized CI integration. 
 - Archive artifacts using CI artifact store (GitHub Actions artifacts or Jenkins archived artifacts). Optionally upload to a storage bucket for long-term retention.
 - Add a small `scripts/profiling/run_profile.sh` wrapper to make CI integration simpler.
 
+## Implementation status (current)
+
+- Branch with changes: `perf/profiling-0021` (pushed to origin). The branch contains:
+	- `run_app.sh` modified to enable profiling by default on that branch (use `--no-profile` or `RUN_PROFILING=0` to disable).
+	- `scripts/devtools/profiling/profile_run.sh` consolidated to produce `profile.stats`, archive it under `logs_local/profiling/<TIMESTAMP>/`, copy the latest to `logs_local/profiling/latest/` and write `metadata.txt` with timestamp/git info. It also prints a top-30 pstats summary to stdout.
+
+This means Jenkins (which already archives `logs_local/**/*`) will retain profiling artifacts automatically per build without modifying the `Jenkinsfile`.
+
 ## Risks
 
 - Running full-scale profiling in CI may increase pipeline time; keep sample workloads small and representative.
@@ -42,6 +50,16 @@ There are existing local profiling scripts, but no standardized CI integration. 
 1. Add a small `scripts/profiling` example and a short CI job definition for GitHub Actions (or Jenkins) that runs it and archives artifacts.
 2. Decide thresholds for regressions (e.g., 10% increase in median runtime of a representative workload).
 3. Implement artifact retention policy and integrate with alerts if regressions are detected.
+
+## How we will use this in practice
+
+- Jenkins will pick up the `perf/profiling-0021` branch and run the pipeline as usual. Each build on that branch will generate a timestamped profile in `logs_local/profiling/` and a `latest` copy for easy access.
+- To analyze: download `profile.stats` from the build artifacts and run `python -m pstats profile.stats` or `snakeviz profile.stats` locally. If you want flamegraphs, we can add `py-spy` in a subsequent change.
+
+## Proposed immediate actions
+
+- Let Jenkins run the branch once and capture the artifacts. After the first successful build, download the top profile and I will analyze hotspots.
+- Optionally we can add an automatic upload to S3 or similar for long-term retention (requires credentials/secrets in the pipeline).
 
 ---
 

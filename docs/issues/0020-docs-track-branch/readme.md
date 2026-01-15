@@ -27,6 +27,40 @@ Use `docs-track` as a staging area for documentation-only commits that can be me
 
 **Key rule:** Documentation must not assume anything is already implemented. If it says "the system does X", X must already be merged in docs-track or independent.
 
+## Quick Policies (one-line rules)
+
+- `docs-track` is docs-only: never include code or build artifacts.
+- Keep entries generic and planning-focused; avoid claiming features are implemented unless merged.
+- Prefer concise, actionable docs: issues, designs, changelog notes, roadmaps.
+- If documentation must be published before implementation, put it here; implementation goes to a feature branch.
+- Keep commits small and descriptive: `docs: add issue 0021 - profiling plan`.
+
+## Daily Checklist (for contributors)
+
+- 1) Create docs branches from `docs-track` for new plans or designs.
+- 2) Add only documentation files or edits; run a quick `git diff` to verify no code changes.
+- 3) Merge into `docs-track` when ready using `--ff-only` or cherry-pick.
+- 4) If you need to implement code later, create a feature branch from `main` or `develop` and reference the docs issue.
+
+## Merge & Sync Guidelines
+
+- `docs-track` should be kept reasonably up-to-date by regularly merging its changes into feature branches when those branches need current documentation context.
+- Merging `docs-track` into `main`/`develop` is safe because it contains no code. Use fast-forward merges or small PRs for visibility.
+- If `docs-track` diverges for a long time, reconcile by merging the up-to-date stable branch (e.g., `main`) into `docs-track` to avoid surprises.
+
+## When code is required
+
+- If documentation depends on code (examples, scripts), keep the docs on `docs-track` but place code in a separate feature branch. Link the feature branch in the docs.
+- Do not commit code to `docs-track`. If someone accidentally adds code, revert it and move the change to a feature branch.
+
+## Short example (recommended workflow)
+
+1. `git checkout docs-track && git checkout -b docs/0021-profiling`
+2. Add `docs/issues/0021` contents and `CHANGELOG` note; commit with `docs:` prefix.
+3. Merge into `docs-track` once reviewed: `git checkout docs-track && git merge --ff-only docs/0021-profiling`.
+4. Later, implement in `feat/0021-profiling` and reference `docs/issues/0021` in commits.
+
+
 ## Usage
 
 ### Creating new documentation
