@@ -34,3 +34,19 @@ PY
 echo "To visualize it graphically, install snakeviz and run locally:"
 echo "  snakeviz $ART_DIR/$OUTPUT_FILE"
 
+# Also maintain a `latest` copy for easy access and tooling that expects a stable path.
+LATEST_DIR="logs_local/profiling/latest"
+mkdir -p "$LATEST_DIR"
+cp "$ART_DIR/$OUTPUT_FILE" "$LATEST_DIR/$OUTPUT_FILE"
+
+# Write metadata for this profile run (timestamp, git SHA if available, branch env)
+METAFILE="$LATEST_DIR/metadata.txt"
+TS_HUMAN=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+GIT_BRANCH="${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)}"
+echo "timestamp: $TS_HUMAN" > "$METAFILE"
+echo "profile_path: $ART_DIR/$OUTPUT_FILE" >> "$METAFILE"
+echo "git_sha: $GIT_SHA" >> "$METAFILE"
+echo "git_branch: $GIT_BRANCH" >> "$METAFILE"
+echo "[profile_run] Latest copy and metadata written to $LATEST_DIR"
+
