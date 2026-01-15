@@ -759,6 +759,12 @@ class AssetResponseWrapper:
         """
         import re
 
+        from immich_autotag.config.manager import ConfigManager
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
         if not ConfigManager.get_instance().config.album_detection_from_folders.enabled:
             return None
         # If already classified by tag or album, skip
@@ -778,12 +784,6 @@ class AssetResponseWrapper:
         
         # Check if there's a conflict (multiple candidate folders)
         if album_name is None and analyzer.has_multiple_candidate_folders():
-            from immich_autotag.report.modification_report import ModificationReport
-            from immich_autotag.tags.modification_kind import ModificationKind
-            from immich_autotag.config.manager import ConfigManager
-            from immich_autotag.logging.levels import LogLevel
-            from immich_autotag.logging.utils import log
-            
             report = ModificationReport.get_instance()
             candidate_folders = analyzer.get_candidate_folders()
             report.add_modification(
