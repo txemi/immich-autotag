@@ -12,6 +12,21 @@ When features take time to implement, their documentation gets delayed in reachi
 
 Use `docs-track` as a staging area for documentation-only commits that can be merged to main/develop frequently.
 
+## Policy
+
+**What goes in docs-track (planning and proposals, no implementation assumed):**
+- ✅ New issues and planning
+- ✅ Roadmap and future vision
+- ✅ Design documents (proposals)
+- ✅ CHANGELOG entries
+
+**What doesn't go in docs-track:**
+- ❌ Implementation code
+- ❌ Documentation that assumes unmerged features exist
+- ❌ Documentation tightly coupled to a feature
+
+**Key rule:** Documentation must not assume anything is already implemented. If it says "the system does X", X must already be merged in docs-track or independent.
+
 ## Usage
 
 ### Creating new documentation
@@ -56,6 +71,8 @@ git merge docs-track
 # 3. Continue with your implementation
 # Now you have complete documentation context
 ```
+
+**Important:** Only merge if you're sure it's documentation-only. If coupled to another feature, keep your branches separate.
 
 This lets you:
 - See latest documentation plans
