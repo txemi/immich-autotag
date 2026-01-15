@@ -20,3 +20,4 @@
 | 0016 | Auto Album Creation from Date | In Progress | 2026-01-14   | v1.0 | [link](0016-auto-album-creation/) |
 | 0017 | Allow Rules to Specify Both Tag and Album | Proposed | 2026-01-14   | v1.0 | [link](0017-rules-tag-album-combination/) |
 | 0018 | User Groups and Album Policies | Proposed | 2026-01-15   | v1.0 | [link](0018-user-group-policies/) |
+| 0019 | Album Date Consistency Configuration Refactor | Proposed | 2026-01-15   | v1.0 | [link](0019-album-date-consistency-config/) |
