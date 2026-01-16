@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "${userHome}/.config/immich_autotag"
+		}
+	],
+	"settings": {}
+}
