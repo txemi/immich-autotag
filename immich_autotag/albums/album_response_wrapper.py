@@ -195,14 +195,36 @@ class AlbumResponseWrapper:
                 asset_wrapper=asset_wrapper,
                 album=self,
             )
-        # If requested, invalidate cache after operation
-        self.reload_from_api(client)
-        self.invalidate_cache()
-        # Check that the asset is really in the album after reloading
-        if not self.has_asset(asset_wrapper.asset):
-            print(
-                f"[WARN] After reloading the album from the API, asset {asset_wrapper.id} does NOT appear in album {self.album.id}. This may be an eventual consistency or API issue."
-            )
+        # If requested, invalidate cache after operation and validate with retry logic
+        self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
+
+    def _verify_asset_in_album_with_retry(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        client: Client,
+        max_retries: int = 3,
+    ) -> None:
+        """
+        Verifies that an asset appears in the album after adding it, with retry logic for eventual consistency.
+        Uses exponential backoff to handle API delays.
+        """
+        import time
+
+        for attempt in range(max_retries):
+            self.reload_from_api(client)
+            if self.has_asset(asset_wrapper.asset):
+                return  # Success - asset is in album
+            
+            if attempt < max_retries - 1:
+                # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
+                wait_time = 0.1 * (2 ** attempt)
+                time.sleep(wait_time)
+            else:
+                # Final attempt failed - log warning but don't raise
+                print(
+                    f"[WARN] After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.album.id}. "
+                    f"This may be an eventual consistency or API issue."
+                )
 
     def invalidate_cache(self):
         """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
