@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Generator, Optional
 
-from immich_client.api.assets import get_asset_info
 from immich_client.api.search import search_assets
 from immich_client.models import MetadataSearchDto
 from immich_client.models.asset_response_dto import AssetResponseDto
@@ -40,7 +39,6 @@ def _yield_assets_from_page(
     max_assets: int | None,
     count: int,
 ) -> Generator["AssetResponseWrapper", None, None]:
-    from immich_client.api.assets import get_asset_info
 
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.logging.utils import log_debug
@@ -52,19 +50,19 @@ def _yield_assets_from_page(
         # Only enforce limit when max_assets is a non-negative integer (None or -1 means unlimited)
         if max_assets is not None and max_assets >= 0 and count + yielded >= max_assets:
             break
-        log_debug(f"[BUG] Before get_asset_info.sync, asset_id={asset.id}")
-        asset_full = get_asset_info.sync(id=asset.id, client=context.client)
-        log_debug(f"[BUG] After get_asset_info.sync, asset_id={asset.id}")
-        if asset_full is not None:
-            log_debug(f"[BUG] Full asset loaded: {asset.id}")
-            yield AssetResponseWrapper(asset=asset_full, context=context)
+        # OPTIMIZATION: Use asset_partial from search_assets instead of immediately fetching full asset.
+        # Full asset (with tags) will be lazy-loaded on first access to tags property.
+        # This defers get_asset_info API calls until tags are actually needed.
+        if asset is not None:
+            log_debug(f"[BUG] Creating AssetResponseWrapper with asset_partial, asset_id={asset.id}")
+            yield AssetResponseWrapper(asset_partial=asset, context=context)
             yielded += 1
         else:
             log_debug(
-                f"[BUG] [ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
+                f"[BUG] [ERROR] Could not load asset from search. search_assets returned None."
             )
             raise RuntimeError(
-                f"[ERROR] Could not load asset with id={asset.id}. get_asset_info returned None."
+                f"[ERROR] Could not load asset from search. search_assets returned None."
             )
 
 

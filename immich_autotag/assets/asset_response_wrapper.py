@@ -41,12 +41,13 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
 
-    asset: AssetResponseDto = attrs.field(
+    asset_partial: AssetResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
     context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(object)
     )
+    _asset_full: AssetResponseDto | None = attrs.field(default=None, init=False)
 
     def __attrs_post_init__(self) -> None:
         # Avoid direct reference to ImmichContext to prevent NameError/circular import
@@ -54,6 +55,52 @@ class AssetResponseWrapper:
         # TODO: this refactors poorly, do an import, do not check the class name
         if self.context.__class__.__name__ != "ImmichContext":
             raise TypeError(f"context must be ImmichContext, not {type(self.context)}")
+
+    @property
+    def asset(self) -> AssetResponseDto:
+        """Returns the most complete version of the asset available.
+        
+        Returns:
+            - asset_full if loaded (contains full data including tags)
+            - asset_partial otherwise (may have tags=UNSET)
+        """
+        return self._asset_full if self._asset_full is not None else self.asset_partial
+
+    def _ensure_full_asset_loaded(self) -> None:
+        """Lazy-load the full asset data if not already loaded.
+        
+        Fetches the complete asset including tags via get_asset_info API call.
+        Result is cached in _asset_full for subsequent accesses.
+        """
+        if self._asset_full is not None:
+            return  # Already loaded
+
+        from immich_client.api.assets import get_asset_info
+
+        self._asset_full = get_asset_info.sync(id=self.asset_partial.id, client=self.context.client)
+        if self._asset_full is None:
+            raise RuntimeError(
+                f"[ERROR] Could not lazy-load asset with id={self.asset_partial.id}. get_asset_info returned None."
+            )
+
+    @property
+    def tags(self):
+        """Lazy-load tags if not present in the current asset.
+        
+        Returns the tags list from the asset. If tags are not yet loaded (UNSET from search_assets),
+        this property triggers lazy-loading of the full asset via get_asset_info.
+        
+        Returns:
+            list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
+        """
+        from immich_client.types import Unset
+
+        current_tags = self.asset.tags
+        # If tags are UNSET, we need to lazy-load the full asset
+        if isinstance(current_tags, Unset):
+            self._ensure_full_asset_loaded()
+            return self.asset.tags
+        return current_tags
 
     @typechecked
     def update_date(
