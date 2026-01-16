@@ -33,24 +33,22 @@ setup_exception_hook()
 
 @typechecked
 def run_main():
+    from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.utils.user_help import print_welcome_links
 
-    # Initialize logging before any processing
+    # Get config FIRST, then initialize logging
+    manager = ConfigManager.get_instance()
+    if not manager or not manager.config or not manager.config.server:
+        raise RuntimeError("ConfigManager or server config not initialized")
+
+    # Initialize logging (needs ConfigManager to be ready)
     initialize_logging()
 
     from immich_autotag.statistics.statistics_manager import StatisticsManager
 
     StatisticsManager.get_instance().save()  # Force initial statistics file write
 
-    # Get API_KEY from experimental config manager singleton
-    from immich_autotag.config.manager import (
-        ConfigManager,
-    )
-
-    manager = ConfigManager.get_instance()
-    if not manager or not manager.config or not manager.config.server:
-        raise RuntimeError("ConfigManager or server config not initialized")
     print_welcome_links(manager.config)
     api_key = manager.config.server.api_key
     client = Client(
