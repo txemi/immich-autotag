@@ -36,13 +36,15 @@ source "$VENV_DIR/bin/activate"
 if [ "${PROFILE}" = "1" ]; then
   echo "[run_app] Running in profiling mode (cProfile)."
   # Require the profiling helper to be present and executable. Fail fast if not.
-  PROFILE_HELPER="$(pwd)/scripts/devtools/profiling/profile_run.sh"
+  PROFILE_HELPER="$SCRIPT_DIR/scripts/devtools/profiling/profile_run.sh"
   if [ -x "$PROFILE_HELPER" ]; then
+    cd "$SCRIPT_DIR"
     bash "$PROFILE_HELPER" "${ARGS[@]}"
   else
     echo "[run_app] ERROR: required profiling helper not found or not executable: $PROFILE_HELPER" >&2
     exit 2
   fi
 else
+  cd "$SCRIPT_DIR"
   python "$PYTHON_SCRIPT" "${ARGS[@]}"
 fi
