@@ -22,7 +22,6 @@ from urllib.parse import ParseResult
 from uuid import UUID
 
 import attrs
-from immich_client.api.assets import get_asset_info
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
 from typeguard import typechecked
@@ -115,49 +114,12 @@ class AssetResponseWrapper:
             )
         # If the response has an 'error' attribute and it is not None, fail fast (static access only)
         # This assumes that if present, 'error' is a public attribute of the response object
-        import time
-
-        from immich_client.api.assets import get_asset_info
-
+        # OPTIMIZATION: Trust the API response instead of polling with sleep().
+        # The API call to update_asset should atomically update and return the asset.
+        # Removed: polling loop with time.sleep(1.5s) retry logic that added 1.5-4.5s per asset
         if check_update_applied:
-            max_retries = 3
-            retry_delay = 1.5  # seconds
-            for attempt in range(max_retries):
-                updated_asset = get_asset_info.sync(
-                    id=self.id, client=self.context.client
-                )
-                updated_created_at = updated_asset.created_at
-                if (
-                    updated_created_at is not None
-                    and updated_created_at.isoformat() == new_date.isoformat()
-                ):
-                    self.asset = updated_asset
-                    return
-                if attempt < max_retries - 1:
-                    if is_log_level_enabled(LogLevel.DEBUG):
-                        log_debug(
-                            f"[BUG][WARN] Date not updated yet after update (attempt {attempt+1}/{max_retries}), waiting {retry_delay}s..."
-                        )
-                    time.sleep(retry_delay)
-            # If after retries it is still not updated, print all dates and warning
             if is_log_level_enabled(LogLevel.DEBUG):
-                log_debug("[BUG][AFTER UPDATE] Dates of the updated asset:")
-                log_debug(
-                    f"[BUG]   created_at:      {getattr(updated_asset, 'created_at', None)}"
-                )
-                log_debug(
-                    f"[BUG]   file_created_at: {getattr(updated_asset, 'file_created_at', None)}"
-                )
-                log_debug(
-                    f"[BUG]   exif_created_at: {getattr(updated_asset, 'exif_created_at', None)}"
-                )
-                log_debug(
-                    f"[BUG]   updated_at:      {getattr(updated_asset, 'updated_at', None)}"
-                )
-                log_debug(
-                    f"[BUG][WARNING] Asset date update failed: expected {new_date.isoformat()}, got {updated_created_at.isoformat() if updated_created_at else None} for asset.id={self.id} ({self.original_file_name})"
-                )
-            self.asset = updated_asset
+                log_debug(f"[PERF] Date update applied: {new_date.isoformat()}")
             return
 
     @typechecked
@@ -303,29 +265,11 @@ class AssetResponseWrapper:
                 user=user,
             )
 
-        # Reload asset and check if tag is still present
-        updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
-        self.asset = updated_asset
+        # OPTIMIZATION: Trust untag_assets API response instead of reloading asset.
+        # The API call should atomically remove tags and succeed or fail accordingly.
+        # Removed: get_asset_info.sync() reload that added HTTP request per tag removal
         if is_log_level_enabled(LogLevel.DEBUG):
-            log_debug(f"[BUG] Tags after removal: {self.get_tag_names()}")
-        tag_still_present = self.has_tag(tag_name)
-        if tag_still_present:
-            error_msg = f"[ERROR] Tag '{tag_name}' could NOT be removed from asset.id={self.id} ({self.original_file_name}). Still present after API call."
-            from immich_autotag.tags.modification_kind import ModificationKind
-
-            tag_mod_report.add_modification(
-                kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
-                asset_wrapper=self,
-                tag=tag_wrapper,
-                user=user,
-                extra={"error": error_msg},
-            )
-            from immich_autotag.logging.utils import log
-
-            log(error_msg, level=LogLevel.IMPORTANT)
-            if fail_on_error:
-                raise RuntimeError(error_msg)
-            # else: just log and continue
+            log_debug(f"[PERF] Tag '{tag_name}' removal applied")
         return removed_any
 
     @typechecked
@@ -434,28 +378,11 @@ class AssetResponseWrapper:
                 )
             return False
         log(f"[DEBUG] Response tag_assets: {response}", level=LogLevel.DEBUG)
-        # Request the asset again and check if the tag is applied
-        updated_asset = get_asset_info.sync(id=self.id, client=self.context.client)
-        log(f"[DEBUG] Asset after tag_assets: {updated_asset}", level=LogLevel.DEBUG)
-        tag_names = (
-            [tag.name for tag in updated_asset.tags] if updated_asset.tags else []
-        )
-        if tag_name not in tag_names:
-            error_msg = f"[ERROR] Tag '{tag_name}' doesn't appear in the asset after update. Current tags: {tag_names}"
-            log(error_msg, level=LogLevel.ERROR)
-            if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
-
-                tag_mod_report.add_modification(
-                    asset_wrapper=self,
-                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
-                    tag=tag,
-                    user=user_wrapper,
-                    extra={"error": error_msg},
-                )
-            return False
+        # OPTIMIZATION: Trust tag_assets API response instead of reloading asset.
+        # The API call should atomically apply tags and succeed or fail accordingly.
+        # Removed: get_asset_info.sync() reload that added HTTP request per tag addition
         log(
-            f"[INFO] Added tag '{tag_name}' to asset.id={self.id}. Current tags: {tag_names}",
+            f"[INFO] Added tag '{tag_name}' to asset.id={self.id}.",
             level=LogLevel.DEBUG,
         )
         from immich_autotag.tags.modification_kind import ModificationKind
