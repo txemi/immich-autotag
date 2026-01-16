@@ -780,8 +780,9 @@ class AssetResponseWrapper:
     ) -> "AssetResponseWrapper":
         """
         Creates an AssetResponseWrapper from a DTO and a context.
+        Uses asset_partial to enable lazy-loading of tags on first access.
         """
-        return cls(asset=dto, context=context)
+        return cls(asset_partial=dto, context=context)
 
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
