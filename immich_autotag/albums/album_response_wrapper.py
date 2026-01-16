@@ -67,7 +67,7 @@ class AlbumResponseWrapper:
     # from immich_client.client import Client (already imported at top)
     from immich_autotag.report.modification_report import ModificationReport
 
-    @typechecked
+    @conditional_typechecked
     def trim_name_if_needed(
         self,
         client: Client,
@@ -105,7 +105,7 @@ class AlbumResponseWrapper:
                 pass
             print(f"Renamed album '{self.album.album_name}' to '{cleaned_name}'")
 
-    @typechecked
+    @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
         """
         Returns the Immich web URL for this album as ParseResult.
@@ -220,10 +220,8 @@ class AlbumResponseWrapper:
         object.__setattr__(self, "album", album_dto)
         self.invalidate_cache()
 
-    from typeguard import typechecked
-
     @staticmethod
-    @typechecked
+    @conditional_typechecked
     def from_id(
         client: "Client",
         album_id: str,
