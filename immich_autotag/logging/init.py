@@ -15,8 +15,8 @@ def initialize_logging() -> None:
     """
 
     manager = ConfigManager.get_instance()
-    if manager.config is None:
-        raise RuntimeError("ConfigManager.config is not initialized!")
+    # Note: ConfigManager constructor raises exceptions if config fails to load
+    # So if we reach here, config is guaranteed to exist
     filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
     # Si estamos filtrando miuy pocos assets es psiblemente por diagnostico, subir nivel de log
     if filter_wrapper.is_focused():

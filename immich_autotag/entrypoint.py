@@ -33,16 +33,35 @@ setup_exception_hook()
 
 @typechecked
 def run_main():
+    import sys
+
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.utils.user_help import print_welcome_links
 
-    # Get config FIRST, then initialize logging
-    manager = ConfigManager.get_instance()
-    if not manager or not manager.config or not manager.config.server:
-        raise RuntimeError("ConfigManager or server config not initialized")
+    # Get config FIRST (constructor initializes it)
+    print("[ENTRYPOINT] Initializing ConfigManager...")
+    try:
+        manager = ConfigManager.get_instance()
+    except Exception as e:
+        print(f"[ENTRYPOINT] ❌ FATAL: Failed to initialize ConfigManager: {e}")
+        import traceback
 
-    # Initialize logging (needs ConfigManager to be ready)
+        traceback.print_exc()
+        sys.exit(1)
+
+    # Verify config is actually loaded before doing anything else
+    if manager.config is None:
+        print(
+            "[ENTRYPOINT] ❌ FATAL: ConfigManager.config is None after initialization. "
+            "This suggests the config file failed to load properly. "
+            "Check ~/.config/immich_autotag/config.py or config.yaml"
+        )
+        sys.exit(1)
+
+    print("[ENTRYPOINT] ✅ ConfigManager initialized successfully")
+
+    # Now initialize logging (needs ConfigManager.config to be ready)
     initialize_logging()
 
     from immich_autotag.statistics.statistics_manager import StatisticsManager
