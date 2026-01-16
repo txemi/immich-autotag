@@ -7,11 +7,11 @@ from immich_client.client import Client
 from immich_client.models.asset_response_dto import AssetResponseDto
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.utils.decorators import conditional_typechecked
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.utils.decorators import conditional_typechecked
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
@@ -24,16 +24,16 @@ class AlbumCollectionWrapper:
     @cached_property
     def _asset_to_albums_map(self) -> dict[str, list[AlbumResponseWrapper]]:
         """Pre-computed map: asset_id -> list of AlbumResponseWrapper objects (O(1) lookup).
-        
+
         Stores direct references to AlbumResponseWrapper objects instead of names.
         This prevents ambiguity when multiple albums have the same name (allowed in Immich).
-        
+
         Computed once during initialization and cached. This eliminates the O(n²)
         complexity of iterating all albums for each asset lookup.
-        
+
         Time complexity: O(A * M) where A=albums count, M=assets per album
         Lookup complexity: O(1) for each has_asset check
-        
+
         This optimization reduces albums_for_asset() from ~35,273 sec to ~2-3 sec.
         """
         asset_map: dict[str, list[AlbumResponseWrapper]] = {}
@@ -51,8 +51,9 @@ class AlbumCollectionWrapper:
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseDto) -> list[str]:
-        """Returns the names of the albums the asset belongs to. 
-        Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access."""
+        """Returns the names of the albums the asset belongs to.
+        Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access.
+        """
         return [w.album.album_name for w in self.albums_for_asset(asset)]
 
     @conditional_typechecked
@@ -140,7 +141,7 @@ class AlbumCollectionWrapper:
         Fetches all albums from the API with full data (including assets),
         wraps them, and trims names if needed.
         """
-        from immich_client.api.albums import get_all_albums, get_album_info
+        from immich_client.api.albums import get_album_info, get_all_albums
 
         from immich_autotag.report.modification_report import ModificationReport
 

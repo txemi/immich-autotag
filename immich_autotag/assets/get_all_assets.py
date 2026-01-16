@@ -54,7 +54,9 @@ def _yield_assets_from_page(
         # Full asset (with tags) will be lazy-loaded on first access to tags property.
         # This defers get_asset_info API calls until tags are actually needed.
         if asset is not None:
-            log_debug(f"[BUG] Creating AssetResponseWrapper with asset_partial, asset_id={asset.id}")
+            log_debug(
+                f"[BUG] Creating AssetResponseWrapper with asset_partial, asset_id={asset.id}"
+            )
             yield AssetResponseWrapper(asset_partial=asset, context=context)
             yielded += 1
         else:

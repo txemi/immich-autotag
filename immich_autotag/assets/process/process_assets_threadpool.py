@@ -48,18 +48,20 @@ def process_assets_threadpool(
             except Exception as e:
                 # Categorize the error
                 is_recoverable, category = categorize_error(e)
-                
+
                 if is_recoverable:
                     # Log warning but continue
                     import traceback
+
                     tb = traceback.format_exc()
                     log(
                         f"[WARN] {category} - Asset processing failed (skipping): {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
-                    
+
                     # Register the error in modification report
                     from immich_autotag.tags.modification_kind import ModificationKind
+
                     tag_mod_report = ModificationReport.get_instance()
                     if tag_mod_report:
                         tag_mod_report.add_error_modification(
@@ -71,6 +73,7 @@ def process_assets_threadpool(
                 else:
                     # Fatal error - abort the threadpool
                     import traceback
+
                     tb = traceback.format_exc()
                     log(
                         f"[ERROR] {category} - Aborting threadpool: {e}\nTraceback:\n{tb}",
@@ -78,4 +81,3 @@ def process_assets_threadpool(
                     )
                     executor.shutdown(wait=False)
                     raise
-

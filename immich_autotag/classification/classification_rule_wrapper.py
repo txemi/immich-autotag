@@ -25,11 +25,11 @@ class ClassificationRuleWrapper:
         tag_names = self.rule.tag_names
         album_patterns = self.rule.album_name_patterns
         asset_links = self.rule.asset_links
-        
+
         has_tags = bool(tag_names)
         has_albums = bool(album_patterns)
         has_asset_links = bool(asset_links)
-        
+
         # At least one criterion must be present
         if not (has_tags or has_albums or has_asset_links):
             raise ValueError(

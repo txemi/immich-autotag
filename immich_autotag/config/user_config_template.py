@@ -62,7 +62,7 @@ user_config = UserConfig(
                 ],
                 album_name_patterns=[
                     r"^autotag_input_meme$"  # Albums with exact name "autotag_input_meme"
-                ]
+                ],
             ),
             ClassificationRule(
                 tag_names=[
@@ -71,7 +71,7 @@ user_config = UserConfig(
                 ],
                 album_name_patterns=[
                     r"^autotag_input_adult_meme$"  # Albums with exact name "autotag_input_adult_meme"
-                ]
+                ],
             ),
             ClassificationRule(
                 tag_names=[
@@ -79,7 +79,7 @@ user_config = UserConfig(
                 ],
                 album_name_patterns=[
                     r"^autotag_input_pending_review$"  # Albums with exact name "autotag_input_pending_review"
-                ]
+                ],
             ),
             ClassificationRule(
                 tag_names=[
@@ -87,7 +87,7 @@ user_config = UserConfig(
                 ],
                 album_name_patterns=[
                     r"^autotag_input_ignore$"  # Albums with exact name "autotag_input_ignore"
-                ]
+                ],
             ),
             ClassificationRule(
                 album_name_patterns=[

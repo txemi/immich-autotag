@@ -36,24 +36,26 @@ def process_assets_sequential(
                 f"[BUG] Processing asset: {getattr(asset_wrapper, 'id', asset_wrapper)}"
             )
             t0 = time.time()
-            
+
             try:
                 process_single_asset(asset_wrapper)
             except Exception as e:
                 # Categorize the error as recoverable or fatal
                 is_recoverable, category = categorize_error(e)
-                
+
                 if is_recoverable:
                     # Log warning and continue to next asset
                     import traceback
+
                     tb = traceback.format_exc()
                     log(
                         f"[WARN] {category} - Skipping asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
-                    
+
                     # Register the error in modification report
                     from immich_autotag.tags.modification_kind import ModificationKind
+
                     tag_mod_report = ModificationReport.get_instance()
                     if tag_mod_report:
                         tag_mod_report.add_error_modification(
@@ -63,7 +65,7 @@ def process_assets_sequential(
                             error_category=category,
                             extra={"traceback": tb},
                         )
-                    
+
                     # Update checkpoint and continue
                     count += 1
                     StatisticsManager.get_instance().update_checkpoint(
@@ -74,13 +76,14 @@ def process_assets_sequential(
                 else:
                     # Fatal error - re-raise immediately
                     import traceback
+
                     tb = traceback.format_exc()
                     log(
                         f"[ERROR] {category} - Aborting at asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
                     raise
-            
+
             log(
                 f"Iteration completed for asset: {getattr(asset_wrapper, 'id', asset_wrapper)}",
                 level=LogLevel.DEBUG,

@@ -11,10 +11,10 @@ def _generate_links(config: UserConfig) -> List[str]:
     host: str = config.server.host
     port: int = config.server.port
     links: List[str] = [f"- [Albums](http://{host}:{port}/albums)"]
-    
+
     # Collect all autotag values from the new configuration structure
     tags_to_add = []
-    
+
     # From classification rules (input tags)
     if config.classification and config.classification.rules:
         seen_tags = set()
@@ -24,30 +24,51 @@ def _generate_links(config: UserConfig) -> List[str]:
                     if tag.startswith("autotag_input_") and tag not in seen_tags:
                         seen_tags.add(tag)
                         # Clean label: remove prefix and format
-                        label = tag.replace("autotag_input_", "").replace("_", " ").title()
+                        label = (
+                            tag.replace("autotag_input_", "").replace("_", " ").title()
+                        )
                         tags_to_add.append((f"Input: {label}", tag))
-    
+
     # From classification (output tags)
     if config.classification:
         if config.classification.autotag_unknown:
-            tags_to_add.append(("Classification: Unknown", config.classification.autotag_unknown))
+            tags_to_add.append(
+                ("Classification: Unknown", config.classification.autotag_unknown)
+            )
         if config.classification.autotag_conflict:
-            tags_to_add.append(("Classification: Conflict", config.classification.autotag_conflict))
-    
+            tags_to_add.append(
+                ("Classification: Conflict", config.classification.autotag_conflict)
+            )
+
     # From duplicate_processing
     if config.duplicate_processing:
         if config.duplicate_processing.autotag_album_date_mismatch:
-            tags_to_add.append(("Duplicates: Album date mismatch", config.duplicate_processing.autotag_album_date_mismatch))
+            tags_to_add.append(
+                (
+                    "Duplicates: Album date mismatch",
+                    config.duplicate_processing.autotag_album_date_mismatch,
+                )
+            )
         if config.duplicate_processing.autotag_album_conflict:
-            tags_to_add.append(("Duplicates: Album conflict", config.duplicate_processing.autotag_album_conflict))
+            tags_to_add.append(
+                (
+                    "Duplicates: Album conflict",
+                    config.duplicate_processing.autotag_album_conflict,
+                )
+            )
         if config.duplicate_processing.autotag_classification_conflict:
-            tags_to_add.append(("Duplicates: Classification conflict", config.duplicate_processing.autotag_classification_conflict))
-    
+            tags_to_add.append(
+                (
+                    "Duplicates: Classification conflict",
+                    config.duplicate_processing.autotag_classification_conflict,
+                )
+            )
+
     # Generate links for each tag
     for label, tag_value in tags_to_add:
         url = f"http://{host}:{port}/tags?path={tag_value}"
         links.append(f"- [{label}]({url})")
-    
+
     links.append(
         "\nFor configuration details, see: [README_config.md](https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/README_config.md)"
     )

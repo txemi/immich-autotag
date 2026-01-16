@@ -20,8 +20,8 @@ class TagCollectionWrapper:
         if tag is not None:
             return tag
         from immich_client.api.tags import create_tag
-        from immich_client.models.tag_create_dto import TagCreateDto
         from immich_client.errors import UnexpectedStatus
+        from immich_client.models.tag_create_dto import TagCreateDto
 
         tag_create = TagCreateDto(name=name)
         try:
@@ -47,9 +47,12 @@ class TagCollectionWrapper:
         This indicates a cache desynchronization that should be investigated.
         """
         import logging
+
         logger = logging.getLogger(__name__)
-        logger.warning(f"[TAG_CACHE] Detected out-of-sync tag cache, refreshing from API")
-        
+        logger.warning(
+            f"[TAG_CACHE] Detected out-of-sync tag cache, refreshing from API"
+        )
+
         refreshed = self.from_api(client)
         self.tags = refreshed.tags
 

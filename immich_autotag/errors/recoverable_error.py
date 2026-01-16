@@ -19,8 +19,8 @@ from __future__ import annotations
 
 class RecoverableError(Exception):
     """Base class for errors that can be safely skipped during asset processing.
-    
-    When caught in the asset processing loop, the asset is marked as failed but 
+
+    When caught in the asset processing loop, the asset is marked as failed but
     processing continues to the next asset.
     """
 
@@ -54,10 +54,10 @@ class TemporaryNetworkError(RecoverableError):
 def categorize_error(exc: Exception) -> tuple[bool, str]:
     """
     Categorizes an exception as recoverable or fatal.
-    
+
     Returns:
         (is_recoverable: bool, category_name: str)
-    
+
     Recoverable errors return (True, category_name) - will skip this asset but continue.
     Fatal errors return (False, category_name) - will raise immediately.
     """

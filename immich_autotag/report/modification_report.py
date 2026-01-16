@@ -116,6 +116,7 @@ class ModificationReport:
         user_instance = user
         if user_instance is None:
             from immich_autotag.context.immich_context import ImmichContext
+
             context = ImmichContext.get_instance()
             user_instance = UserResponseWrapper.from_context(context)
 
@@ -235,7 +236,7 @@ class ModificationReport:
         extra: Optional[dict] = None,
     ) -> None:
         """Records a recoverable error event for tracking failed assets.
-        
+
         Args:
             kind: Error type (e.g., ERROR_ALBUM_NOT_FOUND, ERROR_ASSET_DELETED, etc.)
             asset_wrapper: The asset that failed processing
@@ -257,7 +258,7 @@ class ModificationReport:
             extra["error_message"] = error_message
         if error_category:
             extra["error_category"] = error_category
-        
+
         self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,

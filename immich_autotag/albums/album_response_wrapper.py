@@ -235,10 +235,10 @@ class AlbumResponseWrapper:
             self.reload_from_api(client)
             if self.has_asset(asset_wrapper.asset):
                 return  # Success - asset is in album
-            
+
             if attempt < max_retries - 1:
                 # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
-                wait_time = 0.1 * (2 ** attempt)
+                wait_time = 0.1 * (2**attempt)
                 time.sleep(wait_time)
             else:
                 # Final attempt failed - log warning but don't raise

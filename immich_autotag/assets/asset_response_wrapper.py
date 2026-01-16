@@ -59,7 +59,7 @@ class AssetResponseWrapper:
     @property
     def asset(self) -> AssetResponseDto:
         """Returns the most complete version of the asset available.
-        
+
         Returns:
             - asset_full if loaded (contains full data including tags)
             - asset_partial otherwise (may have tags=UNSET)
@@ -68,7 +68,7 @@ class AssetResponseWrapper:
 
     def _ensure_full_asset_loaded(self) -> None:
         """Lazy-load the full asset data if not already loaded.
-        
+
         Fetches the complete asset including tags via get_asset_info API call.
         Result is cached in _asset_full for subsequent accesses.
         """
@@ -77,7 +77,9 @@ class AssetResponseWrapper:
 
         from immich_client.api.assets import get_asset_info
 
-        self._asset_full = get_asset_info.sync(id=self.asset_partial.id, client=self.context.client)
+        self._asset_full = get_asset_info.sync(
+            id=self.asset_partial.id, client=self.context.client
+        )
         if self._asset_full is None:
             raise RuntimeError(
                 f"[ERROR] Could not lazy-load asset with id={self.asset_partial.id}. get_asset_info returned None."
@@ -86,10 +88,10 @@ class AssetResponseWrapper:
     @property
     def tags(self):
         """Lazy-load tags if not present in the current asset.
-        
+
         Returns the tags list from the asset. If tags are not yet loaded (UNSET from search_assets),
         this property triggers lazy-loading of the full asset via get_asset_info.
-        
+
         Returns:
             list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
         """
@@ -546,10 +548,10 @@ class AssetResponseWrapper:
 
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         match_result_list = rule_set.matching_rules(self)
-        
+
         # Count the number of rules that matched (not individual tags/albums)
         n_rules_matched = len(match_result_list)
-        
+
         if n_rules_matched > 1:
             import uuid
 
@@ -732,10 +734,10 @@ class AssetResponseWrapper:
         If the date is already in the containing folder, keep as before.
         """
         from immich_autotag.config.manager import ConfigManager
-        from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.tags.modification_kind import ModificationKind
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.tags.modification_kind import ModificationKind
 
         if not ConfigManager.get_instance().config.album_detection_from_folders.enabled:
             return None
@@ -753,17 +755,17 @@ class AssetResponseWrapper:
             return None
         analyzer = AlbumFolderAnalyzer(self.original_path)
         album_name = analyzer.get_album_name()
-        
+
         # Check if there's a conflict (multiple candidate folders) and ensure tag symmetry
         has_conflict = analyzer.has_multiple_candidate_folders()
         candidate_folders = analyzer.get_candidate_folders() if has_conflict else []
-        
+
         # Always ensure the tag is in the correct state (add if conflict, remove if not)
         self.ensure_autotag_album_detection_conflict(
             conflict=has_conflict,
             candidate_folders=candidate_folders,
         )
-        
+
         return album_name
 
     @property
@@ -921,13 +923,12 @@ class AssetResponseWrapper:
         from immich_autotag.config.manager import ConfigManager
 
         tag_name = (
-            ConfigManager.get_instance()
-            .config.duplicate_processing.autotag_album_detection_conflict
+            ConfigManager.get_instance().config.duplicate_processing.autotag_album_detection_conflict
         )
-        
+
         if not tag_name:
             return  # Tag not configured, skip
-        
+
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
@@ -943,12 +944,16 @@ class AssetResponseWrapper:
                 # Register in modification report
                 from immich_autotag.report.modification_report import ModificationReport
                 from immich_autotag.tags.modification_kind import ModificationKind
-                
+
                 report = ModificationReport.get_instance()
                 report.add_modification(
                     kind=ModificationKind.ALBUM_DETECTION_CONFLICT,
                     asset_wrapper=self,
-                    extra={"candidate_folders": candidate_folders} if candidate_folders else {},
+                    extra=(
+                        {"candidate_folders": candidate_folders}
+                        if candidate_folders
+                        else {}
+                    ),
                 )
         else:
             if self.has_tag(tag_name):

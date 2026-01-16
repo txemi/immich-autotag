@@ -67,6 +67,7 @@ class AlbumDetectionFromFoldersConfig(BaseModel):
 
 class PerformanceConfig(BaseModel):
     """Performance and debugging settings."""
+
     enable_type_checking: bool = Field(
         default=False,
         description="Enable @typechecked runtime type validation. Disable in production for ~50% performance improvement.",
