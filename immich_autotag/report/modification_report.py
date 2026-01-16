@@ -210,16 +210,19 @@ class ModificationReport:
         asset_wrapper: Optional["AssetResponseWrapper"] = None,
         album: Optional["AlbumResponseWrapper"] = None,
         user: Optional[UserResponseWrapper] = None,
+        extra: Optional[dict] = None,
     ) -> None:
         assert kind in {
             ModificationKind.ASSIGN_ASSET_TO_ALBUM,
             ModificationKind.REMOVE_ASSET_FROM_ALBUM,
+            ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
         }
         self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
             album=album,
             user=user,
+            extra=extra,
         )
 
     @typechecked
