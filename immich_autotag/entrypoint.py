@@ -13,7 +13,11 @@ from immich_autotag.duplicates.load_duplicates_collection import (
     load_duplicates_collection,
 )
 from immich_autotag.logging.init import initialize_logging
-from immich_autotag.permissions import process_album_permissions
+from immich_autotag.permissions import (
+    process_album_permissions,
+    sync_album_permissions,
+)
+from immich_autotag.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.tags.list_tags import list_tags
 
 # --- DUPLICATE STDOUT/STDERR TO LOG FILE (tee4py) ---
@@ -86,8 +90,75 @@ def run_main():
     # --- ALBUM PERMISSIONS: Phase 1 (Dry-run detection and logging)
     process_album_permissions(manager.config, context)
 
+    # --- ALBUM PERMISSIONS: Phase 2 (Actual synchronization)
+    _sync_all_album_permissions(manager.config, context)
+
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
     print_welcome_links(manager.config)
+
+
+def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  # type: ignore
+    """
+    Phase 2: Synchronize all album permissions.
+
+    Iterates over albums and syncs permissions for those with matching rules.
+    """
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+
+    if not user_config or not user_config.album_permissions:
+        return
+
+    if not user_config.album_permissions.enabled:
+        return
+
+    log(
+        "[ALBUM_PERMISSIONS] Starting Phase 2 (actual synchronization)...",
+        level=LogLevel.FOCUS,
+    )
+
+    albums_collection = context.albums_collection
+    album_perms_config = user_config.album_permissions
+
+    # Build user groups dictionary for quick lookup
+    user_groups_dict = {}
+    if album_perms_config.user_groups:
+        for group in album_perms_config.user_groups:
+            user_groups_dict[group.name] = group
+
+    synced_count = 0
+    error_count = 0
+
+    # Process each album
+    for album_wrapper in albums_collection.albums:
+        album = album_wrapper.album
+        try:
+            resolved_policy = resolve_album_policy(
+                album_name=album.album_name,
+                album_id=album.id,
+                user_groups=user_groups_dict,
+                selection_rules=album_perms_config.selection_rules or [],
+            )
+
+            if resolved_policy.has_match:
+                sync_album_permissions(
+                    album_wrapper=album_wrapper,
+                    resolved_policy=resolved_policy,
+                    context=context,
+                )
+                synced_count += 1
+
+        except Exception as e:
+            log(
+                f"[ALBUM_PERMISSIONS] ERROR processing album {album.album_name}: {e}",
+                level=LogLevel.ERROR,
+            )
+            error_count += 1
+
+    log(
+        f"[ALBUM_PERMISSIONS] Phase 2 Summary: {synced_count} synced, {error_count} errors",
+        level=LogLevel.FOCUS,
+    )
