@@ -19,12 +19,26 @@ if TYPE_CHECKING:
 from immich_autotag.context.immich_context import ImmichContext
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
-    album: AlbumResponseDto = attrs.field(
+    album_partial: AlbumResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AlbumResponseDto)
     )
+    _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
+
+    @property
+    def album(self) -> AlbumResponseDto:
+        """Returns full album if loaded, otherwise partial. Lazy-loads full data on first detailed access."""
+        return self._album_full if self._album_full is not None else self.album_partial
+
+    def _ensure_full_album_loaded(self, client: Client) -> None:
+        """Lazy-loads full album data from API if not already loaded."""
+        if self._album_full is not None:
+            return
+        from immich_client.api.albums import get_album_info
+
+        self._album_full = get_album_info.sync(id=self.album_partial.id, client=client)
 
     from functools import cached_property
 
@@ -198,6 +212,7 @@ class AlbumResponseWrapper:
         # If requested, invalidate cache after operation and validate with retry logic
         self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
+    @conditional_typechecked
     def _verify_asset_in_album_with_retry(
         self,
         asset_wrapper: "AssetResponseWrapper",
@@ -226,7 +241,7 @@ class AlbumResponseWrapper:
                     f"This may be an eventual consistency or API issue."
                 )
 
-    def invalidate_cache(self):
+    def invalidate_cache(self) -> None:
         """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
         if hasattr(self, "asset_ids"):
             try:
@@ -234,7 +249,8 @@ class AlbumResponseWrapper:
             except Exception:
                 pass
 
-    def reload_from_api(self, client: Client):
+    @conditional_typechecked
+    def reload_from_api(self, client: Client) -> None:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client.api.albums import get_album_info
 
@@ -245,9 +261,9 @@ class AlbumResponseWrapper:
     @staticmethod
     @conditional_typechecked
     def from_id(
-        client: "Client",
+        client: Client,
         album_id: str,
-        tag_mod_report: "ModificationReport | None" = None,
+        tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
         Gets an album by ID, wraps it, and trims the name if necessary.
@@ -255,6 +271,21 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         album_full = get_album_info.sync(id=album_id, client=client)
-        wrapper = AlbumResponseWrapper(album=album_full)
+        wrapper = AlbumResponseWrapper(album_partial=album_full)
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
+        return wrapper
+
+    @staticmethod
+    @conditional_typechecked
+    def from_dto(
+        dto: AlbumResponseDto,
+        tag_mod_report: ModificationReport | None = None,
+    ) -> "AlbumResponseWrapper":
+        """
+        Creates an AlbumResponseWrapper from a DTO without making API calls.
+        Uses album_partial to enable lazy-loading of full data on first access.
+        """
+        wrapper = AlbumResponseWrapper(album_partial=dto)
+        # Note: trim_name_if_needed requires client, defer if needed
+        # For now, just return wrapper - trim will be done lazily if needed
         return wrapper

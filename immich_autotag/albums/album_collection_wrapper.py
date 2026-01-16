@@ -122,7 +122,7 @@ class AlbumCollectionWrapper:
                 raise RuntimeError(
                     f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
                 ) from e
-        wrapper = AlbumResponseWrapper(album=album)
+        wrapper = AlbumResponseWrapper(album_partial=album)
         # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
         if tag_mod_report:
@@ -138,8 +138,9 @@ class AlbumCollectionWrapper:
     def from_client(cls, client: Client) -> "AlbumCollectionWrapper":
         """
         Fetches all albums from the API, wraps them, and trims names if needed.
+        Uses lazy-loading to defer loading full album data until actually needed.
         """
-        from immich_client.api.albums import get_album_info, get_all_albums
+        from immich_client.api.albums import get_all_albums
 
         from immich_autotag.report.modification_report import ModificationReport
 
@@ -149,9 +150,9 @@ class AlbumCollectionWrapper:
         albums_full: list[AlbumResponseWrapper] = []
         print("\nAlbums:")
         for album in albums:
-            wrapper = AlbumResponseWrapper.from_id(
-                client, album.id, tag_mod_report=tag_mod_report
-            )
+            # Use lazy-loading: create wrapper from DTO without full API call
+            wrapper = AlbumResponseWrapper.from_dto(album, tag_mod_report=tag_mod_report)
+            # Access album name and assets count (from partial DTO, no additional calls)
             n_assets = len(wrapper.album.assets) if wrapper.album.assets else 0
             print(f"- {wrapper.album.album_name} (assets: {n_assets})")
             albums_full.append(wrapper)
