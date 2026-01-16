@@ -480,7 +480,7 @@ class AssetResponseWrapper:
         """
         Returns the names of the albums this asset belongs to.
         """
-        return self.context.albums_collection.albums_for_asset(self.asset)
+        return self.context.albums_collection.album_names_for_asset(self.asset)
 
     @typechecked
     def get_tag_names(self) -> list[str]:
@@ -853,7 +853,7 @@ class AssetResponseWrapper:
         """
         Returns the names of the albums this asset belongs to.
         """
-        return self.context.albums_collection.albums_for_asset(self.asset)
+        return self.context.albums_collection.album_names_for_asset(self.asset)
 
     @typechecked
     def get_duplicate_wrappers(self) -> list["AssetResponseWrapper"]:

@@ -22,8 +22,11 @@ class AlbumCollectionWrapper:
     )
 
     @cached_property
-    def _asset_to_albums_map(self) -> dict[str, list[str]]:
-        """Pre-computed map: asset_id -> list of album names (O(1) lookup).
+    def _asset_to_albums_map(self) -> dict[str, list[AlbumResponseWrapper]]:
+        """Pre-computed map: asset_id -> list of AlbumResponseWrapper objects (O(1) lookup).
+        
+        Stores direct references to AlbumResponseWrapper objects instead of names.
+        This prevents ambiguity when multiple albums have the same name (allowed in Immich).
         
         Computed once during initialization and cached. This eliminates the O(n²)
         complexity of iterating all albums for each asset lookup.
@@ -33,24 +36,30 @@ class AlbumCollectionWrapper:
         
         This optimization reduces albums_for_asset() from ~35,273 sec to ~2-3 sec.
         """
-        asset_map: dict[str, list[str]] = {}
+        asset_map: dict[str, list[AlbumResponseWrapper]] = {}
         for album_wrapper in self.albums:
             for asset_id in album_wrapper.asset_ids:
                 if asset_id not in asset_map:
                     asset_map[asset_id] = []
-                asset_map[asset_id].append(album_wrapper.album.album_name)
+                asset_map[asset_id].append(album_wrapper)
         return asset_map
 
     @conditional_typechecked
-    def albums_for_asset(self, asset: AssetResponseDto) -> list[str]:
-        """Returns the names of the albums the asset belongs to (O(1) lookup via cached map)."""
+    def albums_for_asset(self, asset: AssetResponseDto) -> list[AlbumResponseWrapper]:
+        """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via cached map)."""
         return self._asset_to_albums_map.get(asset.id, [])
+
+    @conditional_typechecked
+    def album_names_for_asset(self, asset: AssetResponseDto) -> list[str]:
+        """Returns the names of the albums the asset belongs to. 
+        Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access."""
+        return [w.album.album_name for w in self.albums_for_asset(asset)]
 
     @conditional_typechecked
     def albums_for_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper"
-    ) -> list[str]:
-        """Returns the names of the albums the asset (wrapped) belongs to."""
+    ) -> list[AlbumResponseWrapper]:
+        """Returns the AlbumResponseWrapper objects for all albums the asset (wrapped) belongs to."""
         return self.albums_for_asset(asset_wrapper.asset)
 
     @conditional_typechecked
@@ -58,14 +67,9 @@ class AlbumCollectionWrapper:
         self, asset_wrapper: "AssetResponseWrapper"
     ) -> list[AlbumResponseWrapper]:
         """Returns the AlbumResponseWrapper objects for all albums the asset (wrapped) belongs to.
-        Uses the cached map for O(1) lookup of album names, then retrieves wrappers.
-        This is more robust than using album names, as names may not be unique."""
-        album_names = self._asset_to_albums_map.get(asset_wrapper.asset.id, [])
-        result = []
-        for album_wrapper in self.albums:
-            if album_wrapper.album.album_name in album_names:
-                result.append(album_wrapper)
-        return result
+        This is now redundant with albums_for_asset_wrapper() but kept for compatibility.
+        This method is more explicit about returning wrapper objects."""
+        return self.albums_for_asset_wrapper(asset_wrapper)
 
     @conditional_typechecked
     def create_or_get_album_with_user(
