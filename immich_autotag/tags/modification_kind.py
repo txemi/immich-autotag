@@ -45,4 +45,5 @@ class ModificationKind(Enum):
 
     # Album permission execution (Phase 2: actual sharing)
     ALBUM_PERMISSION_SHARED = auto()  # Album successfully shared with users
+    ALBUM_PERMISSION_REMOVED = auto()  # User removed from album (sync/unshare)
     ALBUM_PERMISSION_SHARE_FAILED = auto()  # Album sharing failed

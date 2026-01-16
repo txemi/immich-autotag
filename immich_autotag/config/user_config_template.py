@@ -122,8 +122,13 @@ user_config = UserConfig(
     create_album_from_date_if_missing=True,
     # -------------------------------------------------------------------------
     # ALBUM PERMISSIONS: Automatic album sharing to user groups based on keywords
+    #
+    # **IMPORTANT**: This configuration is the source of truth for album permissions.
+    # Synchronization is COMPLETE: only members listed here will have access to matching albums.
+    # Users removed from this config will automatically lose album access in Phase 2.
+    #
     # Phase 1 (dry-run): Detect and log which albums would be shared (no API calls)
-    # Phase 2 (production): Actually share albums with group members
+    # Phase 2 (production): Actually share albums with group members AND remove old ones
     #
     # Example: Albums named "2024-Familia-Vacation" contain "familia" → matched to familia group
     #

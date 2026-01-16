@@ -6,8 +6,15 @@ Resolves which user groups should have access to an album based on:
 2. Configured selection rules
 3. User group definitions
 
-Phase 1: Detection & logging only (no API calls)
-Phase 2: Actual sharing via Immich API
+SYNCHRONIZATION POLICY (IMPORTANT):
+- Configuration is the source of truth for album permissions
+- Phase 1: Detection & logging only (no API calls)
+- Phase 2: Complete synchronization - only configured members will have access
+  * Members in config but not in album → ADDED
+  * Members in album but not in config → REMOVED
+  * This prevents accidental orphaned permissions when configuration changes
+
+Admin users (system operators) should not appear in member lists to avoid accidental removal.
 """
 
 import re
@@ -95,6 +102,13 @@ def resolve_album_policy(
     """
     Resolve album permission policy based on config rules and user groups.
 
+    This function determines which members (from configured groups) should have access
+    to a given album based on keyword matching. The result is used for:
+
+    - Phase 1: Reporting what permissions would be applied (dry-run)
+    - Phase 2: Synchronizing actual permissions - ONLY members in resolved_policy.members
+      will have access. Members not in this list will be removed to maintain sync.
+
     Args:
         album_name: Album name to match against rules
         album_id: Album ID
@@ -102,10 +116,15 @@ def resolve_album_policy(
         selection_rules: List of AlbumSelectionRule to match
 
     Returns:
-        ResolvedAlbumPolicy with results (may have no_match)
+        ResolvedAlbumPolicy with resolved members (source of truth for Phase 2 sync)
 
-    Phase 1: Returns ResolvedAlbumPolicy without making API calls
-    Phase 2: Would use this result to make actual sharing API calls
+    Example:
+        Config has: grupo="familia" with ["abuelo@ex.com", "madre@ex.com"]
+        Album is: "2024-Familia-Vacation"
+        Result: ResolvedAlbumPolicy with members=["abuelo@ex.com", "madre@ex.com"]
+
+        If later config removes "abuelo@ex.com", Phase 2 will automatically remove
+        that user's access on next run (complete synchronization).
     """
     matched_rules_names: List[str] = []
     all_groups: List[str] = []

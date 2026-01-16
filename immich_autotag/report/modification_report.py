@@ -279,7 +279,7 @@ class ModificationReport:
         """Records album permission events (detection, sharing, failures).
 
         Args:
-            kind: Event type (e.g., ALBUM_PERMISSION_RULE_MATCHED, ALBUM_PERMISSION_SHARED)
+            kind: Event type (e.g., ALBUM_PERMISSION_RULE_MATCHED, ALBUM_PERMISSION_SHARED, ALBUM_PERMISSION_REMOVED)
             album: The album being processed
             matched_rules: List of rule names that matched
             groups: List of group names to share with
@@ -292,6 +292,7 @@ class ModificationReport:
             ModificationKind.ALBUM_PERMISSION_GROUPS_RESOLVED,
             ModificationKind.ALBUM_PERMISSION_NO_MATCH,
             ModificationKind.ALBUM_PERMISSION_SHARED,
+            ModificationKind.ALBUM_PERMISSION_REMOVED,
             ModificationKind.ALBUM_PERMISSION_SHARE_FAILED,
         }
         if extra is None:
