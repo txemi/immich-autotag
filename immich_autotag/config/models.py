@@ -55,6 +55,7 @@ class DuplicateProcessingConfig(BaseModel):
     autotag_album_conflict: Optional[str] = None
     autotag_classification_conflict: Optional[str] = None
     autotag_classification_conflict_prefix: Optional[str] = None
+    autotag_album_detection_conflict: Optional[str] = None
     date_correction: DateCorrectionConfig
 
 
