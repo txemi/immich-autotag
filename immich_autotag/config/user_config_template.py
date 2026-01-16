@@ -105,6 +105,7 @@ user_config = UserConfig(
         autotag_album_conflict="autotag_output_duplicate_asset_album_conflict",  # Duplicates with album conflict
         autotag_classification_conflict="autotag_output_duplicate_asset_classification_conflict",  # Duplicates with classification conflict
         autotag_classification_conflict_prefix="autotag_output_duplicate_asset_classification_conflict_",  # Prefix for group conflicts
+        autotag_album_detection_conflict="autotag_output_album_detection_conflict",  # Multiple candidate folders for album detection
         date_correction=DateCorrectionConfig(
             enabled=True,  # Date correction by file/folder name
             extraction_timezone="UTC",  # Timezone for date extraction

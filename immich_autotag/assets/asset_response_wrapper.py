@@ -757,7 +757,11 @@ class AssetResponseWrapper:
         Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
         If the date is already in the containing folder, keep as before.
         """
-        import re
+        from immich_autotag.config.manager import ConfigManager
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
 
         if not ConfigManager.get_instance().config.album_detection_from_folders.enabled:
             return None
@@ -774,7 +778,19 @@ class AssetResponseWrapper:
         if rule_set.matches_any_album_of_asset(self):
             return None
         analyzer = AlbumFolderAnalyzer(self.original_path)
-        return analyzer.get_album_name()
+        album_name = analyzer.get_album_name()
+        
+        # Check if there's a conflict (multiple candidate folders) and ensure tag symmetry
+        has_conflict = analyzer.has_multiple_candidate_folders()
+        candidate_folders = analyzer.get_candidate_folders() if has_conflict else []
+        
+        # Always ensure the tag is in the correct state (add if conflict, remove if not)
+        self.ensure_autotag_album_detection_conflict(
+            conflict=has_conflict,
+            candidate_folders=candidate_folders,
+        )
+        
+        return album_name
 
     @property
     def id_as_uuid(self) -> "UUID":
@@ -914,6 +930,59 @@ class AssetResponseWrapper:
                         level=LogLevel.FOCUS,
                     )
                     self.remove_tag_by_name(tag_for_set, user=user)
+
+    @typechecked
+    def ensure_autotag_album_detection_conflict(
+        self,
+        conflict: bool,
+        candidate_folders: list[str] | None = None,
+        user: str | None = None,
+    ) -> None:
+        """
+        Adds or removes the AUTOTAG_ALBUM_DETECTION_CONFLICT tag according to album detection conflict state.
+        If there is conflict (multiple candidate folders), adds the tag if not present.
+        If no conflict and tag is present, removes it.
+        """
+        from immich_autotag.config.manager import ConfigManager
+
+        tag_name = (
+            ConfigManager.get_instance()
+            .config.duplicate_processing.autotag_album_detection_conflict
+        )
+        
+        if not tag_name:
+            return  # Tag not configured, skip
+        
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        if conflict:
+            if not self.has_tag(tag_name):
+                self.add_tag_by_name(tag_name)
+                folders_str = str(candidate_folders) if candidate_folders else "unknown"
+                log(
+                    f"[ALBUM DETECTION] Asset '{self.original_file_name}' ({self.id}) has multiple candidate folders: "
+                    f"{folders_str}. Tagged with '{tag_name}'.",
+                    level=LogLevel.FOCUS,
+                )
+                # Register in modification report
+                from immich_autotag.report.modification_report import ModificationReport
+                from immich_autotag.tags.modification_kind import ModificationKind
+                
+                report = ModificationReport.get_instance()
+                report.add_modification(
+                    kind=ModificationKind.ALBUM_DETECTION_CONFLICT,
+                    asset_wrapper=self,
+                    extra={"candidate_folders": candidate_folders} if candidate_folders else {},
+                )
+        else:
+            if self.has_tag(tag_name):
+                log(
+                    f"[ALBUM DETECTION] Removing tag '{tag_name}' from asset '{self.original_file_name}' ({self.id}) "
+                    f"because album detection conflict is resolved.",
+                    level=LogLevel.FOCUS,
+                )
+                self.remove_tag_by_name(tag_name, user=user)
 
     @typechecked
     def format_info(self) -> str:
