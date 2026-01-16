@@ -197,7 +197,9 @@ class StatisticsManager:
                 self.start_run()
             self._current_stats.last_processed_id = last_processed_id
             self._current_stats.count = count
-            self._save_to_file()
+            # Only save to disk every 100 assets (not every asset) for performance
+            if count % 100 == 0:
+                self._save_to_file()
         self.maybe_print_progress(count)
         return self._current_stats
 
