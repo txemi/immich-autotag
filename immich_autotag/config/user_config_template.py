@@ -14,6 +14,7 @@ from immich_autotag.config.models import (
     Conversion,
     DateCorrectionConfig,
     DuplicateProcessingConfig,
+    PerformanceConfig,
     ServerConfig,
     UserConfig,
 )
@@ -116,6 +117,12 @@ user_config = UserConfig(
         excluded_paths=[r"whatsapp"],  # Exclude folders by pattern
     ),
     create_album_from_date_if_missing=True,
+    # -------------------------------------------------------------------------
+    # PERFORMANCE: Tuning for production vs development
+    performance=PerformanceConfig(
+        enable_type_checking=True,  # Disable @typechecked in production (~50% perf improvement)
+        # Set to True only for development/debugging to catch type errors early
+    ),
     # Si necesitas advanced_feature, añádelo aquí como atributo propio
     # advanced_feature=AdvancedFeatureConfig(enabled=True, threshold=0.8),
 )

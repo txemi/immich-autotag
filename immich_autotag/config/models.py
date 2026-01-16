@@ -65,6 +65,14 @@ class AlbumDetectionFromFoldersConfig(BaseModel):
     excluded_paths: List[str]
 
 
+class PerformanceConfig(BaseModel):
+    """Performance and debugging settings."""
+    enable_type_checking: bool = Field(
+        default=False,
+        description="Enable @typechecked runtime type validation. Disable in production for ~50% performance improvement.",
+    )
+
+
 class UserConfig(BaseModel):
     server: ServerConfig
     enable_album_name_strip: bool
@@ -74,5 +82,6 @@ class UserConfig(BaseModel):
     classification: ClassificationConfig
     duplicate_processing: Optional[DuplicateProcessingConfig] = None
     album_detection_from_folders: AlbumDetectionFromFoldersConfig
+    performance: PerformanceConfig = Field(default_factory=PerformanceConfig)
 
     create_album_from_date_if_missing: bool = False

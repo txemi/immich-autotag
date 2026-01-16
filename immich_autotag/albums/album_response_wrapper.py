@@ -10,7 +10,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
 
-from typeguard import typechecked
+from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
@@ -33,12 +33,12 @@ class AlbumResponseWrapper:
         """Set of album asset IDs, cached for O(1) access in has_asset."""
         return set(a.id for a in self.album.assets) if self.album.assets else set()
 
-    @typechecked
+    @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
         """Returns True if the asset belongs to this album (optimized with set)."""
         return asset.id in self.asset_ids
 
-    @typechecked
+    @conditional_typechecked
     def has_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
@@ -50,7 +50,7 @@ class AlbumResponseWrapper:
         else:
             return self.has_asset(asset_wrapper.asset)
 
-    @typechecked
+    @conditional_typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         """
         Returns the album's assets wrapped in AssetResponseWrapper, using the asset_manager from the context.
@@ -118,7 +118,7 @@ class AlbumResponseWrapper:
         url = f"{get_immich_web_base_url()}/albums/{self.album.id}"
         return urlparse(url)
 
-    @typechecked
+    @conditional_typechecked
     def add_asset(
         self,
         asset_wrapper: "AssetResponseWrapper",
