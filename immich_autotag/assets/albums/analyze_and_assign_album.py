@@ -41,7 +41,7 @@ def analyze_and_assign_album(
     from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
     match_results = rule_set.matching_rules(asset_wrapper)
-    num_rules_matched = len(set(match_results.rules()))  # Count unique rules
+    num_rules_matched = len(match_results.rules())  # Count rules (already unique from matching_rules)
     
     asset_name = asset_wrapper.original_file_name
     asset_id = asset_wrapper.id
