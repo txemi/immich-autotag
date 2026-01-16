@@ -30,20 +30,20 @@ To maintain consistency and avoid duplicate IDs, always use this command with yo
 
 ## ⚠️ Performance Regression: Test Suite Duration
 
-Descripción breve (español): hasta hace poco la batería de pruebas completa tardaba ~4 horas y hoy tarda ~14 horas — un aumento inaceptable que hay que investigar.
+Brief description: until recently the complete test suite took ~4 hours and today it takes ~14 hours — an unacceptable increase that needs to be investigated.
 
-Pistas iniciales:
-- La funcionalidad de **auto-creación de álbumes** podría haber generado una gran cantidad de álbumes nuevos, lo que posiblemente impacte a pasos que iteren sobre álbumes o consulten metadatos repetidamente.
-- Otra posibilidad es que alguna parte del código esté haciendo trabajo redundante (llamadas repetidas, recalculos, operaciones O(N^2) inesperadas, o accesos a IO innecesarios dentro de bucles).
+Initial clues:
+- The **auto-album creation** feature might have generated a large number of new albums, which possibly impacts steps that iterate over albums or repeatedly query metadata.
+- Another possibility is that some part of the code is doing redundant work (repeated calls, recalculations, unexpected O(N^2) operations, or unnecessary I/O accesses within loops).
 
-Estrategia propuesta:
-- Automatizar la generación de perfiles desde CI para capturar muestras reproducibles (CPU, tiempos wall, uso de memoria, flamegraphs). Ver [issue 0021 — Profiling & Performance Reports](../docs/issues/0021-profiling-performance/).
-- Empezar con una muestra representativa pequeña para mantener el tiempo de CI razonable y luego escalar localmente para reproducciones más grandes.
-- Analizar perfiles para identificar hotspots y llamadas repetidas; priorizar cambios que reduzcan re-trabajo (caching, evitar IO repetido, limitar escaneo de álbumes).
+Proposed strategy:
+- Automate profiling generation from CI to capture reproducible samples (CPU, wall times, memory usage, flamegraphs). See [issue 0021 — Profiling & Performance Reports](../docs/issues/0021-profiling-performance/).
+- Start with a small representative sample to keep CI time reasonable and then scale locally for larger reproductions.
+- Analyze profiles to identify hotspots and repeated calls; prioritize changes that reduce rework (caching, avoid repeated I/O, limit album scanning).
 
-Acciones inmediatas:
-1. Integrar un pequeño job de profiling en CI que ejecute un conjunto de tareas representativas y archive los artefactos (CPU/memory profiles, flamegraphs).
-2. Proveer scripts en `scripts/profiling/` y un `README` con instrucciones para ejecutar localmente y en CI.
-3. Revisar las rutas críticas que operan sobre álbumes y clasificación para buscar operaciones repetidas o consultas costosas.
+Immediate actions:
+1. Integrate a small profiling job in CI that runs a representative set of tasks and archives the artifacts (CPU/memory profiles, flamegraphs).
+2. Provide scripts in `scripts/profiling/` and a `README` with instructions to run locally and in CI.
+3. Review critical paths that operate on albums and classification to search for repeated operations or costly queries.
 
-Si quieres, puedo crear el `scripts/profiling/run_profile.sh` de ejemplo y añadir un job minimal para GitHub Actions o Jenkins que archive los artefactos.
+If you want, I can create the example `scripts/profiling/run_profile.sh` and add a minimal job for GitHub Actions or Jenkins that archives the artifacts.

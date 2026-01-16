@@ -19,7 +19,7 @@ class FilterConfigWrapper:
     @typechecked
     def is_focused(self) -> bool:
         """
-        Devuelve True si hay filtro_in activo y es un filtro por asset_links concretos (no por tags ni álbumes).
+        Returns True if there is an active filter_in and it is a filter by specific asset_links (not by tags or albums).
         """
         if not self.filter_config or not self.filter_config.filter_in:
             return False
@@ -28,7 +28,7 @@ class FilterConfigWrapper:
     @typechecked
     def get_filter_in_ruleset(self) -> ClassificationRuleSet:
         """
-        Devuelve un ClassificationRuleSet con las reglas de filter_in.
+        Returns a ClassificationRuleSet with the filter_in rules.
         """
         if not self.filter_config or not self.filter_config.filter_in:
             from immich_autotag.classification.classification_rule_wrapper import (
