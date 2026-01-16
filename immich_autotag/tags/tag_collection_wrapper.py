@@ -21,12 +21,37 @@ class TagCollectionWrapper:
             return tag
         from immich_client.api.tags import create_tag
         from immich_client.models.tag_create_dto import TagCreateDto
+        from immich_client.errors import UnexpectedStatus
 
         tag_create = TagCreateDto(name=name)
-        new_tag_dto = create_tag.sync(client=client, body=tag_create)
-        new_tag = TagWrapper(new_tag_dto)
-        self.tags.append(new_tag)
-        return new_tag
+        try:
+            new_tag_dto = create_tag.sync(client=client, body=tag_create)
+            new_tag = TagWrapper(new_tag_dto)
+            self.tags.append(new_tag)
+            return new_tag
+        except UnexpectedStatus as e:
+            if e.status_code == 400 and "already exists" in str(e):
+                # Cache is out of sync - tag exists on server but not in our cache
+                # Refresh from API to get the actual tag
+                self._sync_from_api(client)
+                tag = self.find_by_name(name)
+                if tag is not None:
+                    return tag
+            # If it's a different error, re-raise
+            raise
+
+    @typechecked
+    def _sync_from_api(self, client: Client) -> None:
+        """
+        Refresh tag cache from the API to handle external changes or race conditions.
+        This indicates a cache desynchronization that should be investigated.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[TAG_CACHE] Detected out-of-sync tag cache, refreshing from API")
+        
+        refreshed = self.from_api(client)
+        self.tags = refreshed.tags
 
     @staticmethod
     @typechecked
