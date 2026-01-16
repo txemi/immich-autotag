@@ -32,6 +32,11 @@ class AlbumResponseWrapper:
         """Returns full album if loaded, otherwise partial. Lazy-loads full data on first detailed access."""
         return self._album_full if self._album_full is not None else self.album_partial
 
+    @album.setter
+    def album(self, value: AlbumResponseDto) -> None:
+        """Sets the full album data."""
+        self._album_full = value
+
     def _ensure_full_album_loaded(self, client: Client) -> None:
         """Lazy-loads full album data from API if not already loaded."""
         if self._album_full is not None:
@@ -254,8 +259,8 @@ class AlbumResponseWrapper:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client.api.albums import get_album_info
 
-        album_dto = get_album_info.sync(id=self.album.id, client=client)
-        object.__setattr__(self, "album", album_dto)
+        album_dto = get_album_info.sync(id=self.album_partial.id, client=client)
+        self.album = album_dto  # Use property setter
         self.invalidate_cache()
 
     @staticmethod
@@ -286,6 +291,4 @@ class AlbumResponseWrapper:
         Uses album_partial to enable lazy-loading of full data on first access.
         """
         wrapper = AlbumResponseWrapper(album_partial=dto)
-        # Note: trim_name_if_needed requires client, defer if needed
-        # For now, just return wrapper - trim will be done lazily if needed
         return wrapper
