@@ -70,6 +70,12 @@ def run_main():
         duplicates_collection=duplicates_collection,
         asset_manager=asset_manager,
     )
+
+    # --- ALBUM PERMISSIONS: Phase 1 & 2 (BEFORE processing assets)
+    # Permissions are fast, assets processing is slow (hours/days)
+    process_album_permissions(manager.config, context)
+    _sync_all_album_permissions(manager.config, context)
+
     # Asset filtering logic
     filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
     if filter_wrapper.is_focused():
@@ -86,12 +92,6 @@ def run_main():
         # You can change the max_assets value here or pass it as an external argument
         max_assets = None
         process_assets(context, max_assets=max_assets)
-
-    # --- ALBUM PERMISSIONS: Phase 1 (Dry-run detection and logging)
-    process_album_permissions(manager.config, context)
-
-    # --- ALBUM PERMISSIONS: Phase 2 (Actual synchronization)
-    _sync_all_album_permissions(manager.config, context)
 
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
