@@ -226,6 +226,45 @@ class ModificationReport:
         )
 
     @typechecked
+    def add_error_modification(
+        self,
+        kind: ModificationKind,
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+        error_message: Optional[str] = None,
+        error_category: Optional[str] = None,
+        extra: Optional[dict] = None,
+    ) -> None:
+        """Records a recoverable error event for tracking failed assets.
+        
+        Args:
+            kind: Error type (e.g., ERROR_ALBUM_NOT_FOUND, ERROR_ASSET_DELETED, etc.)
+            asset_wrapper: The asset that failed processing
+            error_message: The error message from the exception
+            error_category: Category like "Recoverable (API 400 - Resource not found)"
+            extra: Additional context (e.g., album_id, retry_count)
+        """
+        assert kind in {
+            ModificationKind.ERROR_ASSET_SKIPPED_RECOVERABLE,
+            ModificationKind.ERROR_ALBUM_NOT_FOUND,
+            ModificationKind.ERROR_PERMISSION_DENIED,
+            ModificationKind.ERROR_ASSET_DELETED,
+            ModificationKind.ERROR_NETWORK_TEMPORARY,
+        }
+        # Merge error details into extra dict
+        if extra is None:
+            extra = {}
+        if error_message:
+            extra["error_message"] = error_message
+        if error_category:
+            extra["error_category"] = error_category
+        
+        self.add_modification(
+            kind=kind,
+            asset_wrapper=asset_wrapper,
+            extra=extra,
+        )
+
+    @typechecked
     def flush(self) -> None:
         """Flushes the report to file (append), thread-safe."""
         if not self.modifications or self._since_last_flush == 0:

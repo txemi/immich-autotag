@@ -10,6 +10,7 @@ from immich_autotag.assets.process.perf_log import perf_log
 from immich_autotag.assets.process.process_single_asset import process_single_asset
 from immich_autotag.config.internal_config import MAX_WORKERS
 from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.errors.recoverable_error import categorize_error
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
@@ -45,7 +46,36 @@ def process_assets_threadpool(
             try:
                 future.result()
             except Exception as e:
-                log(
-                    f"[ERROR] Failed to process an asset in the threadpool: {e}",
-                    level=LogLevel.IMPORTANT,
-                )
+                # Categorize the error
+                is_recoverable, category = categorize_error(e)
+                
+                if is_recoverable:
+                    # Log warning but continue
+                    import traceback
+                    tb = traceback.format_exc()
+                    log(
+                        f"[WARN] {category} - Asset processing failed (skipping): {e}\nTraceback:\n{tb}",
+                        level=LogLevel.IMPORTANT,
+                    )
+                    
+                    # Register the error in modification report
+                    from immich_autotag.tags.modification_kind import ModificationKind
+                    tag_mod_report = ModificationReport.get_instance()
+                    if tag_mod_report:
+                        tag_mod_report.add_error_modification(
+                            kind=ModificationKind.ERROR_ASSET_SKIPPED_RECOVERABLE,
+                            error_message=str(e),
+                            error_category=category,
+                            extra={"traceback": tb},
+                        )
+                else:
+                    # Fatal error - abort the threadpool
+                    import traceback
+                    tb = traceback.format_exc()
+                    log(
+                        f"[ERROR] {category} - Aborting threadpool: {e}\nTraceback:\n{tb}",
+                        level=LogLevel.IMPORTANT,
+                    )
+                    executor.shutdown(wait=False)
+                    raise
+

@@ -22,3 +22,10 @@ class ModificationKind(Enum):
     # Classification conflicts
     CLASSIFICATION_CONFLICT = auto()  # Asset matched multiple classification rules (conflict detected)
     ALBUM_DETECTION_CONFLICT = auto()  # Multiple candidate folders found for album detection
+    
+    # Error tracking (recoverable errors during processing)
+    ERROR_ASSET_SKIPPED_RECOVERABLE = auto()  # Asset skipped due to recoverable error (album deleted, etc.)
+    ERROR_ALBUM_NOT_FOUND = auto()  # Album not found or deleted during processing
+    ERROR_PERMISSION_DENIED = auto()  # Permission denied accessing resource
+    ERROR_ASSET_DELETED = auto()  # Asset deleted during processing
+    ERROR_NETWORK_TEMPORARY = auto()  # Temporary network error
