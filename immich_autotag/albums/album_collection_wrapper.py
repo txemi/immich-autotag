@@ -137,10 +137,10 @@ class AlbumCollectionWrapper:
     @classmethod
     def from_client(cls, client: Client) -> "AlbumCollectionWrapper":
         """
-        Fetches all albums from the API, wraps them, and trims names if needed.
-        Uses lazy-loading to defer loading full album data until actually needed.
+        Fetches all albums from the API with full data (including assets),
+        wraps them, and trims names if needed.
         """
-        from immich_client.api.albums import get_all_albums
+        from immich_client.api.albums import get_all_albums, get_album_info
 
         from immich_autotag.report.modification_report import ModificationReport
 
@@ -150,9 +150,10 @@ class AlbumCollectionWrapper:
         albums_full: list[AlbumResponseWrapper] = []
         print("\nAlbums:")
         for album in albums:
-            # Use lazy-loading: create wrapper from DTO without full API call
-            wrapper = AlbumResponseWrapper.from_dto(album, tag_mod_report=tag_mod_report)
-            # Access album name and assets count (from partial DTO, no additional calls)
+            # Load full album data upfront to populate assets
+            album_full = get_album_info.sync(id=album.id, client=client)
+            # Create wrapper with full album data
+            wrapper = AlbumResponseWrapper(album_partial=album_full)
             n_assets = len(wrapper.album.assets) if wrapper.album.assets else 0
             print(f"- {wrapper.album.album_name} (assets: {n_assets})")
             albums_full.append(wrapper)

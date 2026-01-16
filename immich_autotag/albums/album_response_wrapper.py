@@ -49,7 +49,8 @@ class AlbumResponseWrapper:
 
     @cached_property
     def asset_ids(self) -> set[str]:
-        """Set of album asset IDs, cached for O(1) access in has_asset."""
+        """Set of album asset IDs, cached for O(1) access in has_asset.
+        Assets are already populated by from_client() or reload_from_api()."""
         return set(a.id for a in self.album.assets) if self.album.assets else set()
 
     @conditional_typechecked
