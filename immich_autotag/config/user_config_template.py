@@ -9,6 +9,8 @@ This template is designed to be self-explanatory and easy to adapt. Each block i
 
 from immich_autotag.config.models import (
     AlbumDetectionFromFoldersConfig,
+    AlbumPermissionsConfig,
+    AlbumSelectionRule,
     ClassificationConfig,
     ClassificationRule,
     Conversion,
@@ -17,6 +19,7 @@ from immich_autotag.config.models import (
     PerformanceConfig,
     ServerConfig,
     UserConfig,
+    UserGroup,
 )
 
 user_config = UserConfig(
@@ -117,6 +120,53 @@ user_config = UserConfig(
         excluded_paths=[r"whatsapp"],  # Exclude folders by pattern
     ),
     create_album_from_date_if_missing=True,
+    # -------------------------------------------------------------------------
+    # ALBUM PERMISSIONS: Automatic album sharing to user groups based on keywords
+    # Phase 1 (dry-run): Detect and log which albums would be shared (no API calls)
+    # Phase 2 (production): Actually share albums with group members
+    #
+    # Example: Albums named "2024-Familia-Vacation" contain "familia" → matched to familia group
+    #
+    # To enable, uncomment and customize:
+    album_permissions=AlbumPermissionsConfig(
+        enabled=True,  # Set to True to enable album permission detection
+        user_groups=[
+            UserGroup(
+                name="familia",
+                description="Family members",
+                members=[
+                    "abuelo@example.com",
+                    "abuela@example.com",
+                    "madre@example.com",
+                ],
+            ),
+            UserGroup(
+                name="amigos",
+                description="Close friends",
+                members=[
+                    "juan@example.com",
+                    "maria@example.com",
+                ],
+            ),
+        ],
+        selection_rules=[
+            AlbumSelectionRule(
+                name="Share Familia albums",
+                keyword="familia",
+                groups=["familia"],
+                access="view",
+            ),
+            AlbumSelectionRule(
+                name="Share Amigos albums",
+                keyword="amigos",
+                groups=["amigos"],
+                access="view",
+            ),
+        ],
+        log_unmatched=False,  # Set to True to log albums that don't match any rule
+    ),
+    # To disable, set to None or remove this line:
+    # album_permissions=None,
     # -------------------------------------------------------------------------
     # PERFORMANCE: Tuning for production vs development
     performance=PerformanceConfig(

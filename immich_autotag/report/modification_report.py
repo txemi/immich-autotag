@@ -266,6 +266,52 @@ class ModificationReport:
         )
 
     @typechecked
+    def add_album_permission_modification(
+        self,
+        kind: ModificationKind,
+        album: Optional["AlbumResponseWrapper"] = None,
+        matched_rules: Optional[list[str]] = None,
+        groups: Optional[list[str]] = None,
+        members: Optional[list[str]] = None,
+        access_level: Optional[str] = None,
+        extra: Optional[dict] = None,
+    ) -> None:
+        """Records album permission events (detection, sharing, failures).
+
+        Args:
+            kind: Event type (e.g., ALBUM_PERMISSION_RULE_MATCHED, ALBUM_PERMISSION_SHARED)
+            album: The album being processed
+            matched_rules: List of rule names that matched
+            groups: List of group names to share with
+            members: List of member emails/IDs
+            access_level: Permission level (view/edit/admin)
+            extra: Additional context
+        """
+        assert kind in {
+            ModificationKind.ALBUM_PERMISSION_RULE_MATCHED,
+            ModificationKind.ALBUM_PERMISSION_GROUPS_RESOLVED,
+            ModificationKind.ALBUM_PERMISSION_NO_MATCH,
+            ModificationKind.ALBUM_PERMISSION_SHARED,
+            ModificationKind.ALBUM_PERMISSION_SHARE_FAILED,
+        }
+        if extra is None:
+            extra = {}
+        if matched_rules:
+            extra["matched_rules"] = matched_rules
+        if groups:
+            extra["groups"] = groups
+        if members:
+            extra["members"] = members
+        if access_level:
+            extra["access_level"] = access_level
+
+        self.add_modification(
+            kind=kind,
+            album=album,
+            extra=extra,
+        )
+
+    @typechecked
     def flush(self) -> None:
         """Flushes the report to file (append), thread-safe."""
         if not self.modifications or self._since_last_flush == 0:

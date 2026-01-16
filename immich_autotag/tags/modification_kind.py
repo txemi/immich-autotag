@@ -35,3 +35,14 @@ class ModificationKind(Enum):
     ERROR_PERMISSION_DENIED = auto()  # Permission denied accessing resource
     ERROR_ASSET_DELETED = auto()  # Asset deleted during processing
     ERROR_NETWORK_TEMPORARY = auto()  # Temporary network error
+
+    # Album permission assignment (Phase 1: detection/logging)
+    ALBUM_PERMISSION_RULE_MATCHED = (
+        auto()
+    )  # Album matched permission rule (keyword match detected)
+    ALBUM_PERMISSION_GROUPS_RESOLVED = auto()  # Groups and members resolved for album
+    ALBUM_PERMISSION_NO_MATCH = auto()  # Album did not match any permission rule
+
+    # Album permission execution (Phase 2: actual sharing)
+    ALBUM_PERMISSION_SHARED = auto()  # Album successfully shared with users
+    ALBUM_PERMISSION_SHARE_FAILED = auto()  # Album sharing failed
