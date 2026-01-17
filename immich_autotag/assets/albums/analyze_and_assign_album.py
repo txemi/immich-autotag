@@ -54,16 +54,18 @@ def analyze_and_assign_album(
     immich_url = asset_wrapper.get_immich_photo_url().geturl()
 
     if status == ClassificationStatus.CLASSIFIED:
-        # Asset already classified by exactly one rule
+        # Puede estar clasificado solo por álbum temporal, no limpiar aquí
         log(
-            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' already classified by one rule.",
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' clasificado (puede ser por álbum temporal).",
             level=LogLevel.DEBUG,
         )
-        # Clean up: remove asset from temporary autotag albums to avoid duplicate memberships
+        return
+
+    elif status == ClassificationStatus.CONFLICT:
+        # Si hay conflicto, eliminar de todos los álbumes temporales/autotag
         from immich_autotag.assets.albums.remove_from_autotag_albums import (
             remove_asset_from_autotag_temporary_albums,
         )
-
         all_albums = (
             asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
                 asset_wrapper
@@ -74,15 +76,10 @@ def analyze_and_assign_album(
             temporary_albums=all_albums,
             tag_mod_report=tag_mod_report,
         )
-        return
-
-    elif status == ClassificationStatus.CONFLICT:
-        # Multiple rules matched - this indicates a classification conflict
-        # This will be handled by the classification conflict tag system later in the workflow
         num_rules_matched = len(list(match_results.rules()))
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_name}' ({asset_id}) matched {num_rules_matched} classification rules. "
-            f"Classification conflict will be marked with autotag_output_conflict tag.\nSee asset: {immich_url}",
+            f"Classification conflict: eliminado de álbum temporal si estaba.\nSee asset: {immich_url}",
             level=LogLevel.ERROR,
         )
         # Register this in the modification report for auditing
@@ -98,7 +95,6 @@ def analyze_and_assign_album(
                 "asset_id": asset_id,
             },
         )
-        # Don't raise exception - let the workflow continue to handle the conflict tag
         return
 
     elif status == ClassificationStatus.UNCLASSIFIED:
