@@ -100,7 +100,7 @@ user_config = UserConfig(
         ],
         autotag_unknown="autotag_output_unknown",  # Assets not assigned to any event
         autotag_conflict="autotag_output_conflict",  # Assets in more than one event (conflict)
-        # create_album_from_date_if_missing: usa el valor por defecto (False) o pon True si lo deseas
+        # create_album_from_date_if_missing: use the default value (False) or set True if desired
     ),
     # -------------------------------------------------------------------------
     # DUPLICATE PROCESSING: configuration for handling duplicates
@@ -137,34 +137,34 @@ user_config = UserConfig(
         enabled=True,  # Set to True to enable album permission detection
         user_groups=[
             UserGroup(
-                name="familia",
+                name="family",
                 description="Family members",
                 members=[
-                    "abuelo@example.com",
-                    "abuela@example.com",
-                    "madre@example.com",
+                    "grandpa@example.com",
+                    "grandma@example.com",
+                    "mother@example.com",
                 ],
             ),
             UserGroup(
-                name="amigos",
+                name="friends",
                 description="Close friends",
                 members=[
-                    "juan@example.com",
-                    "maria@example.com",
+                    "john@example.com",
+                    "jane@example.com",
                 ],
             ),
         ],
         selection_rules=[
             AlbumSelectionRule(
-                name="Share Familia albums",
-                keyword="familia",
-                groups=["familia"],
+                name="Share Family albums",
+                keyword="family",
+                groups=["family"],
                 access="view",
             ),
             AlbumSelectionRule(
-                name="Share Amigos albums",
-                keyword="amigos",
-                groups=["amigos"],
+                name="Share Friends albums",
+                keyword="friends",
+                groups=["friends"],
                 access="view",
             ),
         ],
@@ -178,7 +178,7 @@ user_config = UserConfig(
         enable_type_checking=True,  # Disable @typechecked in production (~50% perf improvement)
         # Set to True only for development/debugging to catch type errors early
     ),
-    # Si necesitas advanced_feature, añádelo aquí como atributo propio
+    # If you need advanced_feature, add it here as your own attribute
     # advanced_feature=AdvancedFeatureConfig(enabled=True, threshold=0.8),
 )
 
