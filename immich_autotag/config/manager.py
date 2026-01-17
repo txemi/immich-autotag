@@ -25,6 +25,7 @@ class ConfigManager:
     config: Optional[UserConfig] = None
 
     def __attrs_post_init__(self):
+        import traceback
         global _instance, _instance_created
         if _instance_created:
             raise RuntimeError(
@@ -33,10 +34,14 @@ class ConfigManager:
         _instance_created = True
         _instance = self
         # --- New configuration search and loading logic ---
-        self._load()
+        try:
+            self._load()
+        except Exception as e:
+            print("[ConfigManager] Error during config load:")
+            traceback.print_exc()
+            raise
         # Initialize skip_n with the counter from the last previous execution (with overlap)
         self._initialize_skip_n_from_checkpoint()
-
 
         # Dump the loaded configuration to the logs/output folder
         self.dump_to_yaml()
@@ -44,9 +49,12 @@ class ConfigManager:
 
     @typechecked
     def _load(self):
-        from .user_config import user_config  # type: ignore
-        self.config = user_config
-        return
+        try:
+            self.load_config_from_real_python()
+            if self.config :
+                return
+        except Exception:
+            pass  # Ignore and try dynamic loading
 
         try:
             self._try_load_dynamic()
@@ -128,7 +136,6 @@ class ConfigManager:
         from .user_config import user_config
 
         self.config = user_config
-        self.dump_to_yaml()
 
     @typechecked
     def dump_to_yaml(self, path: "str | Path | None" = None):

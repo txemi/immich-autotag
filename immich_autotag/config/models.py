@@ -148,10 +148,13 @@ class UserConfig(BaseModel):
 
     server: ServerConfig
     enable_album_name_strip: bool
-    skip: Optional[SkipConfig] = Field(
-        default=None,
-        description="Configuración para saltar elementos y reanudar ejecuciones previas."
-    )    
+    skip: SkipConfig = Field(
+        ...,
+        description="Configuration for skipping items and resuming previous executions."
+    )
+    model_config = {
+        "extra": "forbid"
+    }
 
     filters: Optional[FilterConfig] = None
     conversions: List[Conversion]

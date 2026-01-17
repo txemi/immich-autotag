@@ -41,13 +41,8 @@ def run_main():
 
     # Get config FIRST (constructor initializes it)
     print("[ENTRYPOINT] Initializing ConfigManager...")
-    try:
-        manager = ConfigManager.get_instance()
-    except Exception as e:
-        print(f"[ENTRYPOINT] ❌ FATAL: Failed to initialize ConfigManager: {e}")
-        import traceback
-        traceback.print_exc()
-        raise RuntimeError("Failed to initialize ConfigManager") from e
+    manager = ConfigManager.get_instance()
+
 
     # Verify config is actually loaded before doing anything else
     if manager.config is None:
