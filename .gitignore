@@ -14,3 +14,5 @@ docker_logs
 /logs_local
 /jenkins.log
 /immich_client.back
+/profile(1).stats
+/profile_optimized.stats
