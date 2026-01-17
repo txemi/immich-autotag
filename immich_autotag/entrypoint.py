@@ -46,9 +46,8 @@ def run_main():
     except Exception as e:
         print(f"[ENTRYPOINT] ❌ FATAL: Failed to initialize ConfigManager: {e}")
         import traceback
-
         traceback.print_exc()
-        sys.exit(1)
+        raise RuntimeError("Failed to initialize ConfigManager") from e
 
     # Verify config is actually loaded before doing anything else
     if manager.config is None:
@@ -57,7 +56,7 @@ def run_main():
             "This suggests the config file failed to load properly. "
             "Check ~/.config/immich_autotag/config.py or config.yaml"
         )
-        sys.exit(1)
+        raise RuntimeError("ConfigManager.config is None after initialization")
 
     print("[ENTRYPOINT] ✅ ConfigManager initialized successfully")
 
