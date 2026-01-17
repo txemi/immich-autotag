@@ -63,7 +63,7 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - Preparing a new release to publish these changes and facilitate community collaboration.
 
 ## [0.71.0] - 2026-01-14
-**Status:** ✅ Published (PyPI & Docker Hub)
+**Status:** ✅ Published (PyPI & Docker Hub) | ✅ Tested on Jenkins (240K+ assets)
 **Description:** GitHub Actions workflow enablement for automated PyPI and Docker Hub publishing.
 ### Added
 - **Automated PyPI publishing via GitHub Actions:** The release workflow now automatically publishes the package to PyPI when a version tag is created.
@@ -303,6 +303,37 @@ This release consolidates significant work across 5 major feature areas:
 - Resolution of performance regression (v0.74.0 focus)
 - Further optimization of lazy-loading
 - Potential PyPI/Docker publishing after performance stabilization
+
+
+## [Next Priority: Full Test Battery & Publishing]
+**Status:** 🔄 In Progress
+**Type:** Pre-release validation
+**Description:** Complete test battery run on 240K+ assets for v0.72.0-rc1 through v0.73.0 before publishing to PyPI and Docker Hub.
+
+### Objective
+Run full integration tests on current codebase (feat/album-permission-groups + merged features) to validate:
+- Album permission groups Phase 1+2 with large dataset
+- Lazy-loading performance with 240K+ assets  
+- Auto-album creation and classification stability
+- No regressions from v0.71.0
+
+### Blocker
+- ⚠️ **Performance regression (issue 0021):** Must investigate and resolve 4h→14-15h slowdown before publication
+  - Current hypothesis: album creation frequency, per-asset code changes
+  - Root cause identification required before release
+
+### Next steps after validation
+1. ✅ Confirm all tests pass on 240K+ asset dataset
+2. 🔖 Create v0.72.0 and v0.73.0 final tags (replacing RC tags)
+3. 📦 Publish to PyPI and Docker Hub
+4. 📢 Announce release with major feature highlights:
+   - Album permission groups (enterprise feature)
+   - Type system stabilization
+   - Performance improvements (pending resolution of regression)
+
+### Tracking
+- Link: [issue 0021 — Profiling & Performance Reports](docs/issues/0021-profiling-performance/)
+- Current blockers: Performance regression analysis
 
 
 
