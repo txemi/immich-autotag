@@ -15,6 +15,7 @@ from immich_client.api.albums import get_album_info as immich_get_album_info
 from immich_client.api.albums import (
     remove_user_from_album as immich_remove_user_from_album,
 )
+from immich_client.api.users import search_users as immich_search_users
 from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_role import AlbumUserRole
@@ -28,6 +29,57 @@ from immich_autotag.tags.modification_kind import ModificationKind
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+
+
+def _resolve_emails_to_user_ids(
+    emails: list[str], context: ImmichContext
+) -> tuple[dict[str, str], list[str]]:
+    """
+    Resolve email addresses to Immich user IDs.
+
+    Returns:
+        (email_to_id_map, unresolved_emails)
+        - email_to_id_map: {email → user_id (UUID)}
+        - unresolved_emails: List of emails that couldn't be found
+
+    Fetches all users from Immich and maps their emails to IDs.
+    """
+    if not emails:
+        return {}, []
+
+    log_debug(f"[ALBUM_PERMISSIONS] Resolving {len(emails)} emails to user IDs")
+
+    client = context.client
+    try:
+        all_users = immich_search_users.sync(client=client)
+    except Exception as e:
+        log(
+            f"[ALBUM_PERMISSIONS] ERROR fetching user list: {e}",
+            level=LogLevel.ERROR,
+        )
+        raise
+
+    # Build email → user_id map
+    email_to_id = {}
+    for user in all_users:
+        if user.email:
+            email_to_id[user.email] = str(user.id)
+
+    # Check which emails were resolved
+    email_set = set(emails)
+    resolved = {email: email_to_id[email] for email in email_set if email in email_to_id}
+    unresolved = [email for email in email_set if email not in email_to_id]
+
+    if unresolved:
+        log(
+            f"[ALBUM_PERMISSIONS] Warning: Could not resolve {len(unresolved)} emails to user IDs: {unresolved}",
+            level=LogLevel.IMPORTANT,
+        )
+
+    log_debug(
+        f"[ALBUM_PERMISSIONS] Resolved {len(resolved)}/{len(email_set)} emails to user IDs"
+    )
+    return resolved, unresolved
 
 
 def sync_album_permissions(
@@ -44,7 +96,7 @@ def sync_album_permissions(
 
     Args:
         album_wrapper: Album wrapper with album data
-        resolved_policy: Resolved policy with target members
+        resolved_policy: Resolved policy with target members (emails)
         context: ImmichContext with API client
     """
     album = album_wrapper.album
@@ -57,12 +109,15 @@ def sync_album_permissions(
         log_debug(f"[ALBUM_PERMISSIONS] Skipping {album_name}: no matching rules")
         return
 
+    # Resolve configured member emails to user IDs
+    email_to_id_map, unresolved_emails = _resolve_emails_to_user_ids(
+        resolved_policy.members, context
+    )
+    target_user_ids = set(email_to_id_map.values())
+
     # Get current members from API
     current_members = _get_current_members(album_id, context)
     current_user_ids = {str(member.user_id) for member in current_members}
-
-    # Extract target user IDs from resolved policy
-    target_user_ids = set(resolved_policy.members)
 
     # Calculate diff
     users_to_add = target_user_ids - current_user_ids
