@@ -17,7 +17,8 @@ if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
-from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -119,12 +120,10 @@ class AlbumResponseWrapper:
                 old_value=self.album.album_name,
                 new_value=cleaned_name,
             )
-            # Actually update the name in the DTO (if mutable)
-            try:
-                object.__setattr__(self.album, "album_name", cleaned_name)
-            except Exception:
-                pass
-            print(f"Renamed album '{self.album.album_name}' to '{cleaned_name}'")
+            log(
+                f"Album '{self.album.album_name}' renamed to '{cleaned_name}'",
+                level=LogLevel.INFO,
+            )
 
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
@@ -144,10 +143,11 @@ class AlbumResponseWrapper:
         self,
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
-        tag_mod_report: "ModificationReport" = None,
+        tag_mod_report: "ModificationReport",
     ) -> None:
         """
         Adds the asset to the album using the API and validates the result. Raises exception if it fails.
+        tag_mod_report is mandatory and always required to track all modifications.
         """
         from immich_client.api.albums import add_assets_to_album
         from immich_client.models.bulk_ids_dto import BulkIdsDto
@@ -182,25 +182,30 @@ class AlbumResponseWrapper:
                     error_msg = getattr(item, "error", None)
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
-                    # If the error is 'duplicate', only warning and log
+                    # If the error is 'duplicate', reactive refresh: reload album data from API
+                    # This detects that our cached album data is stale, and subsequent assets in this
+                    # batch will benefit from the fresh data without additional API calls
                     if error_msg and "duplicate" in str(error_msg).lower():
-                        warning_msg = f"[WARN] Asset {asset_wrapper.id} is already in album {self.album.id}: duplicate\nAsset link: {asset_url}\nAlbum link: {album_url}"
-                        print(warning_msg)
-                        from immich_autotag.tags.modification_kind import (
-                            ModificationKind,
+                        log(
+                            f"Asset {asset_wrapper.id} already in album {self.album.id} (detected stale cache). "
+                            f"Reloading album data for subsequent operations.",
+                            level=LogLevel.INFO,
                         )
-
-                        if tag_mod_report:
-                            tag_mod_report.add_assignment_modification(
-                                kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
-                                asset_wrapper=asset_wrapper,
-                                album=self,
-                                extra={
-                                    "error": error_msg,
-                                    "asset_url": asset_url,
-                                    "album_url": album_url,
-                                },
-                            )
+                        # Reactive refresh: reload album from API to get fresh data
+                        # This ensures subsequent assets see current state without preventive reloads
+                        self.reload_from_api(client)
+                        
+                        tag_mod_report.add_assignment_modification(
+                            kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
+                            asset_wrapper=asset_wrapper,
+                            album=self,
+                            extra={
+                                "error": error_msg,
+                                "asset_url": asset_url,
+                                "album_url": album_url,
+                                "reason": "Stale cached album data detected and reloaded",
+                            },
+                        )
                         return
                     else:
                         raise RuntimeError(
@@ -210,12 +215,11 @@ class AlbumResponseWrapper:
             raise RuntimeError(
                 f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {self.album.id}."
             )
-        if tag_mod_report:
-            tag_mod_report.add_assignment_modification(
-                kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
-                asset_wrapper=asset_wrapper,
-                album=self,
-            )
+        tag_mod_report.add_assignment_modification(
+            kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
+            asset_wrapper=asset_wrapper,
+            album=self,
+        )
         # If requested, invalidate cache after operation and validate with retry logic
         self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
@@ -242,10 +246,10 @@ class AlbumResponseWrapper:
                 wait_time = 0.1 * (2**attempt)
                 time.sleep(wait_time)
             else:
-                # Final attempt failed - log warning but don't raise
-                print(
-                    f"[WARN] After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.album.id}. "
-                    f"This may be an eventual consistency or API issue."
+                log(
+                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.album.id}. "
+                    f"This may be an eventual consistency or API issue.",
+                    level=LogLevel.WARNING,
                 )
 
     def invalidate_cache(self) -> None:
