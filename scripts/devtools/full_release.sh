@@ -1,8 +1,30 @@
-
 #!/bin/bash
 # full_release.sh
-# Script to automate version bump, release, and deployment to PyPI, TestPyPI, and Docker Hub (one-shot and cron images)
-# Usage: bash scripts/devtools/full_release.sh <new_version>
+#
+# PURPOSE: Complete release pipeline - version + PyPI + Docker (all-in-one)
+#
+# WHAT IT DOES:
+#   1. Calls release.sh (version bump + git tagging)
+#   2. Builds and publishes to TestPyPI (for validation)
+#   3. Builds and publishes to PyPI (production Python package)
+#   4. Builds and pushes Docker images to Docker Hub (main + cron variants)
+#
+# WHAT IT REQUIRES:
+#   - PyPI credentials configured (via token or .pypirc)
+#   - Docker Hub credentials configured (via ~/.docker/config.json)
+#   - Git push access to origin
+#
+# USE WHEN:
+#   - You are ready for a public release
+#   - Version is stable and tested
+#   - You want everything published at once
+#   - Never use this on experimental/development versions
+#
+# USAGE: bash scripts/devtools/full_release.sh <new_version>
+# EXAMPLE: bash scripts/devtools/full_release.sh 0.72.0
+#
+# WARNING: This script performs PUBLIC pushes. Use with caution!
+#
 set -euo pipefail
 set -x
 

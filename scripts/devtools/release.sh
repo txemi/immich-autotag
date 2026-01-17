@@ -1,7 +1,28 @@
 #!/bin/bash
 # release.sh
-# Master script to release a new version of immich-autotag
-# Usage: bash scripts/devtools/release.sh <new_version>
+#
+# PURPOSE: Version bump + Git tagging ONLY (no PyPI/Docker publishing)
+#
+# WHAT IT DOES:
+#   1. Updates version in pyproject.toml
+#   2. Updates version.py with new version and git describe
+#   3. Creates git tag (v{version})
+#   4. Commits version changes
+#   5. Pushes tag and commits to origin
+#
+# WHAT IT DOES NOT DO:
+#   - Does not publish to PyPI
+#   - Does not build/push Docker images
+#   - Does not run tests
+#
+# USE WHEN:
+#   - You want to prepare a release for review/testing
+#   - You want to tag intermediate checkpoints in the changelog
+#   - You will manually decide later whether to publish or just keep the tag
+#
+# USAGE: bash scripts/devtools/release.sh <new_version>
+# EXAMPLE: bash scripts/devtools/release.sh 0.72.0
+#
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
