@@ -6,6 +6,7 @@ from typing import List
 from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
