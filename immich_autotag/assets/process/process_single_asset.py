@@ -11,9 +11,6 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     analyze_duplicate_classification_tags,
 )
-from immich_autotag.assets.validation.validate_and_update_asset_classification import (
-    validate_and_update_asset_classification,
-)
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
@@ -88,17 +85,6 @@ def _analyze_and_assign_album(
 
 
 @typechecked
-def _validate_and_update_classification(
-    asset_wrapper: AssetResponseWrapper, tag_mod_report: ModificationReport
-):
-    """Validate and update the asset's classification tags."""
-    log("[DEBUG] Validating and updating asset classification...", level=LogLevel.FOCUS)
-    validate_and_update_asset_classification(
-        asset_wrapper, tag_mod_report=tag_mod_report
-    )
-
-
-@typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
     suppress_album_already_belongs_log: bool = True,
@@ -125,14 +111,14 @@ def process_single_asset(
     _analyze_and_assign_album(
         asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
     )
-    _validate_and_update_classification(asset_wrapper, tag_mod_report)
+    asset_wrapper.validate_and_update_classification()
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
     )
     from immich_autotag.config.manager import ConfigManager
-    
+
     config = ConfigManager.get_instance().config
-    
+
     # Get threshold from new config section with fallback
     if config.album_date_consistency and config.album_date_consistency.enabled:
         threshold_days = config.album_date_consistency.threshold_days

@@ -27,6 +27,7 @@ from immich_client.models.update_asset_dto import UpdateAssetDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_folder_analyzer import AlbumFolderAnalyzer
+from immich_autotag.classification.classification_status import ClassificationStatus
 from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
 )
@@ -466,19 +467,31 @@ class AssetResponseWrapper:
         return [tag.name for tag in self.asset.tags] if self.asset.tags else []
 
     @typechecked
-    def is_asset_classified(self) -> bool:
+    def get_classification_status(self) -> "ClassificationStatus":
         """
-        Returns True if the asset meets any classification condition:
-        - Has any of the tags in CLASSIFIED_TAGS.
-        - Belongs to an album whose name matches ALBUM_PATTERN.
+        Returns the comprehensive classification status of the asset.
+
+        Determines whether the asset is:
+        - CLASSIFIED: Matched exactly one classification rule
+        - CONFLICT: Matched multiple classification rules
+        - UNCLASSIFIED: Matched no classification rules
+
+        This is the primary method for classification evaluation. Use this instead
+        of checking individual boolean properties.
+
+        Returns:
+            ClassificationStatus enum indicating the asset's classification state.
         """
         from immich_autotag.classification.classification_rule_set import (
             ClassificationRuleSet,
         )
+        from immich_autotag.classification.classification_status import (
+            ClassificationStatus,
+        )
 
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        # If any rule matches, asset is classified
-        return bool(rule_set.matching_rules(self))
+        match_results = rule_set.matching_rules(self)
+        return match_results.classification_status()
 
     @property
     def original_file_name(self) -> str:
@@ -549,15 +562,20 @@ class AssetResponseWrapper:
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         match_result_list = rule_set.matching_rules(self)
 
-        # Count the number of rules that matched (not individual tags/albums)
-        n_rules_matched = len(match_result_list)
+        # Determine classification status
+        from immich_autotag.classification.classification_status import (
+            ClassificationStatus,
+        )
 
-        if n_rules_matched > 1:
+        status = match_result_list.classification_status()
+
+        if status.is_conflict():
             import uuid
 
             # Get details for error message
             match_detail = self.get_classification_match_detail()
             photo_url = get_immich_photo_url(uuid.UUID(self.id))
+            n_rules_matched = len(match_result_list.rules())
             msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by {n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
             if fail_fast:
                 raise Exception(msg)
@@ -570,93 +588,133 @@ class AssetResponseWrapper:
         return False
 
     @typechecked
-    def ensure_autotag_unknown_category(self) -> None:
+    def _ensure_autotag_unknown_category(self) -> None:
         """
         Adds or removes the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
-        If not classified, adds the tag if not present. If classified and tag is present, removes it.
+
+        Tag management logic:
+        - UNCLASSIFIED: Adds tag if not present (asset needs classification)
+        - CLASSIFIED: Removes tag if present (asset has been classified)
+        - CONFLICT: Removes tag if present (asset has classifications, even if conflicting)
+
         Idempotent: does nothing if already in correct state.
         Also logs and notifies the modification report.
         """
         from immich_autotag.config.manager import ConfigManager
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
-        from immich_autotag.report.modification_report import ModificationReport
 
         tag_name = ConfigManager.get_instance().config.classification.autotag_unknown
-        tag_mod_report = ModificationReport.get_instance()
-        classified = self.is_asset_classified()
-        if not classified:
-            if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name)
-                log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is not classified. Tagged as '{tag_name}'.",
-                    level=LogLevel.FOCUS,
-                )
-            else:
-                log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is not classified. Tag '{tag_name}' already present.",
-                    level=LogLevel.FOCUS,
-                )
-        else:
-            if self.has_tag(tag_name):
-                log(
-                    f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} ({self.original_file_name}) because it is now classified.",
-                    level=LogLevel.FOCUS,
-                )
-                self.remove_tag_by_name(tag_name)
-            else:
-                log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is classified. Tag '{tag_name}' not present.",
-                    level=LogLevel.FOCUS,
-                )
+        status = self.get_classification_status()
+        self._ensure_tag_for_classification_status(
+            tag_name=tag_name,
+            should_have_tag_fn=status.is_unclassified,
+            tag_present_reason="is not classified",
+            tag_absent_reason="it is now classified",
+        )
 
     @typechecked
-    def ensure_autotag_conflict_category(
+    def _ensure_tag_for_classification_status(
         self,
-        conflict: bool,
+        tag_name: str,
+        should_have_tag_fn,
+        tag_present_reason: str,
+        tag_absent_reason: str,
         user: UserResponseWrapper | None = None,
     ) -> None:
         """
-        Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to conflict state.
-        If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
+        Generic method to manage classification-related tags.
+
+        Args:
+            tag_name: Name of the tag to manage.
+            should_have_tag_fn: Callable that returns True if tag should be present.
+            tag_present_reason: Log message reason when adding tag.
+            tag_absent_reason: Log message reason when removing tag.
+            user: Optional user for tracking tag removal.
         """
-        from immich_autotag.config.manager import (
-            ConfigManager,
-        )
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        tag_name = ConfigManager.get_instance().config.classification.autotag_conflict
-        from immich_autotag.report.modification_report import ModificationReport
-
-        tag_mod_report = ModificationReport.get_instance()
-        if conflict:
+        if should_have_tag_fn():
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tagged as '{tag_name}'.",
+                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) {tag_present_reason}. Tagged as '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
             else:
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is in classification conflict. Tag '{tag_name}' already present.",
+                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) {tag_present_reason}. Tag '{tag_name}' already present.",
                     level=LogLevel.FOCUS,
                 )
         else:
             if self.has_tag(tag_name):
                 log(
-                    f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} ({self.original_file_name}) because it's no longer in conflict.",
+                    f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} ({self.original_file_name}) because {tag_absent_reason}.",
                     level=LogLevel.FOCUS,
                 )
-                # If user is None, get the wrapper from the context
                 if user is None:
                     user = UserResponseWrapper.from_context(self.context)
                 self.remove_tag_by_name(tag_name, user=user)
             else:
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) is not in conflict. Tag '{tag_name}' not present.",
+                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) {tag_absent_reason}. Tag '{tag_name}' not present.",
                     level=LogLevel.FOCUS,
                 )
+
+    @typechecked
+    def _ensure_autotag_conflict_category(
+        self,
+        status: "ClassificationStatus",
+        user: UserResponseWrapper | None = None,
+    ) -> None:
+        """
+        Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to classification status.
+
+        If status is CONFLICT, adds the tag if not present.
+        If status is CLASSIFIED or UNCLASSIFIED (no conflict) and tag is present, removes it.
+
+        Args:
+            status: The ClassificationStatus determining if conflict tag should be present.
+            user: Optional user for tracking tag removal. If None, derived from context.
+        """
+        from immich_autotag.config.manager import ConfigManager
+
+        tag_name = ConfigManager.get_instance().config.classification.autotag_conflict
+        self._ensure_tag_for_classification_status(
+            tag_name=tag_name,
+            should_have_tag_fn=status.is_conflict,
+            tag_present_reason="is in classification conflict",
+            tag_absent_reason=f"classification status is {status.value}",
+            user=user,
+        )
+
+    @typechecked
+    def validate_and_update_classification(self) -> tuple[bool, bool]:
+        """
+        Validates and updates asset classification state with proper tag management.
+
+        Determines classification status (CLASSIFIED, CONFLICT, or UNCLASSIFIED) and:
+        - Adds/removes 'unknown' tag if unclassified
+        - Adds/removes 'conflict' tag if classification conflict exists
+
+        This method is idempotent: calling it multiple times produces the same result.
+
+        Returns:
+            Tuple of (has_tags, has_albums) booleans.
+        """
+        tag_names = self.get_tag_names()
+        album_names = self.get_album_names()
+
+        # Get comprehensive classification status and update tags accordingly
+        status = self.get_classification_status()
+        self._ensure_autotag_unknown_category()
+        self._ensure_autotag_conflict_category(status=status)
+
+        # Log the classification result
+        log(
+            f"[CLASSIFICATION] Asset {self.id} | Name: {self.original_file_name} | Favorite: {self.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Status: {status.value} | Date: {self.created_at} | original_path: {self.original_path}",
+            level=LogLevel.FOCUS,
+        )
+        return bool(tag_names), bool(album_names)
 
     @typechecked
     def apply_tag_conversions(
@@ -729,10 +787,13 @@ class AssetResponseWrapper:
         """
         Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
         Only runs if enable_album_detection_from_folders (from config) is True, the asset does not already belong to an album,
-        and does not have a classified tag. Returns the detected album name or None. Raises NotImplementedError for ambiguous cases.
+        and is not classified or conflicted. Returns the detected album name or None. Raises NotImplementedError for ambiguous cases.
         Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
         If the date is already in the containing folder, keep as before.
         """
+        from immich_autotag.classification.classification_status import (
+            ClassificationStatus,
+        )
         from immich_autotag.config.manager import ConfigManager
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
@@ -741,10 +802,19 @@ class AssetResponseWrapper:
 
         if not ConfigManager.get_instance().config.album_detection_from_folders.enabled:
             return None
-        # If already classified by tag or album, skip
-        if self.is_asset_classified():
-            return None
-        # TODO: REVIEW IF THE LOGIC BELOW IS IN THE PREVIOUS METHOD is_asset_classified
+
+        # If already classified or conflicted by tag or album, skip
+        status = self.get_classification_status()
+        match status:
+            case ClassificationStatus.UNCLASSIFIED:
+                # Proceed with album detection
+                pass
+            case ClassificationStatus.CLASSIFIED | ClassificationStatus.CONFLICT:
+                # Asset already has classifications, don't try folder detection
+                return None
+            case _:
+                raise NotImplementedError(f"Unhandled classification status: {status}")
+
         # If already in an album matching configured album patterns, skip
         from immich_autotag.classification.classification_rule_set import (
             ClassificationRuleSet,
