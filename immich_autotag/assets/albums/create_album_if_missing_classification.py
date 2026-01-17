@@ -45,10 +45,10 @@ def create_album_if_missing_classification(
 
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
     match_results = rule_set.matching_rules(asset_wrapper)
-    
+
     # Check that asset is truly unclassified
     from immich_autotag.classification.classification_status import ClassificationStatus
-    
+
     status = match_results.classification_status()
     if status != ClassificationStatus.UNCLASSIFIED:
         raise RuntimeError(

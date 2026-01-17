@@ -20,8 +20,8 @@ from immich_autotag.logging.immich_logger import LogLevel, log
 from immich_autotag.report.modification_report import ModificationReport
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @typechecked

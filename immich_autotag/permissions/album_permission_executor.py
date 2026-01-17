@@ -67,7 +67,9 @@ def _resolve_emails_to_user_ids(
 
     # Check which emails were resolved
     email_set = set(emails)
-    resolved = {email: email_to_id[email] for email in email_set if email in email_to_id}
+    resolved = {
+        email: email_to_id[email] for email in email_set if email in email_to_id
+    }
     unresolved = [email for email in email_set if email not in email_to_id]
 
     if unresolved:

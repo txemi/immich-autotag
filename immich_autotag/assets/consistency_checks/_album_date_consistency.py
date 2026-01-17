@@ -42,13 +42,13 @@ def check_album_date_consistency(
     from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().config
-    
+
     # Get autotag name from new config section
     if config.album_date_consistency:
         autotag_name = config.album_date_consistency.autotag_album_date_mismatch
     else:
         autotag_name = "autotag_album_date_mismatch"  # Default fallback
-    
+
     mismatch_found = False
     for album_wrapper in albums:
         album_name = album_wrapper.album.album_name
@@ -67,7 +67,7 @@ def check_album_date_consistency(
                 level=LogLevel.FOCUS,
             )
             continue
-        
+
         # Calculate absolute difference in days
         diff_days = abs((asset_date - album_date).days)
         if diff_days > threshold_days:

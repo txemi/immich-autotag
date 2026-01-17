@@ -48,11 +48,11 @@ class DateCorrectionConfig(BaseModel):
 
 class AlbumDateConsistencyConfig(BaseModel):
     """Configuration for album date consistency checks.
-    
+
     This check compares the asset's taken date with its album's date
     and tags mismatches for user review.
     """
-    
+
     enabled: bool = True
     autotag_album_date_mismatch: str = "autotag_album_date_mismatch"
     threshold_days: int = 180

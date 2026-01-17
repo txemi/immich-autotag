@@ -194,7 +194,7 @@ class AlbumResponseWrapper:
                         # Reactive refresh: reload album from API to get fresh data
                         # This ensures subsequent assets see current state without preventive reloads
                         self.reload_from_api(client)
-                        
+
                         tag_mod_report.add_assignment_modification(
                             kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
                             asset_wrapper=asset_wrapper,
@@ -232,7 +232,7 @@ class AlbumResponseWrapper:
     ) -> None:
         """
         Removes the asset from the album using the API and validates the result.
-        
+
         Safe to call even if asset is not in album (idempotent operation).
         Raises exception only if the removal fails unexpectedly.
         """

@@ -43,10 +43,10 @@ def analyze_and_assign_album(
 
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
     match_results = rule_set.matching_rules(asset_wrapper)
-    
+
     # Determine classification status
     from immich_autotag.classification.classification_status import ClassificationStatus
-    
+
     status = match_results.classification_status()
 
     asset_name = asset_wrapper.original_file_name
@@ -64,8 +64,10 @@ def analyze_and_assign_album(
             remove_asset_from_autotag_temporary_albums,
         )
 
-        all_albums = asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
-            asset_wrapper
+        all_albums = (
+            asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
+                asset_wrapper
+            )
         )
         remove_asset_from_autotag_temporary_albums(
             asset_wrapper=asset_wrapper,
@@ -73,7 +75,7 @@ def analyze_and_assign_album(
             tag_mod_report=tag_mod_report,
         )
         return
-    
+
     elif status == ClassificationStatus.CONFLICT:
         # Multiple rules matched - this indicates a classification conflict
         # This will be handled by the classification conflict tag system later in the workflow
@@ -98,7 +100,7 @@ def analyze_and_assign_album(
         )
         # Don't raise exception - let the workflow continue to handle the conflict tag
         return
-    
+
     elif status == ClassificationStatus.UNCLASSIFIED:
         # Asset is not classified, try to assign an album through detection logic
 
@@ -133,7 +135,7 @@ def analyze_and_assign_album(
                 f"[ALBUM ASSIGNMENT] Asset '{asset_name}' is not classified and no album could be assigned.",
                 level=LogLevel.DEBUG,
             )
-    
+
     else:
         # Exhaustive pattern match - should never reach here
         raise NotImplementedError(

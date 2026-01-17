@@ -7,9 +7,9 @@ and cleanup operations.
 
 Temporary album naming convention:
     {date}-autotag-temp-unclassified
-    
+
     Example: 2024-01-15-autotag-temp-unclassified
-    
+
 This pattern allows easy identification and cleanup of temporary assignments.
 """
 
@@ -24,13 +24,13 @@ AUTOTAG_TEMP_ALBUM_CATEGORY = "unclassified"
 def is_temporary_album(album_name: str) -> bool:
     """
     Checks if an album name follows the temporary album pattern.
-    
+
     Args:
         album_name: The album name to check.
-        
+
     Returns:
         True if the album is a temporary album, False otherwise.
-        
+
     Example:
         >>> is_temporary_album("2024-01-15-autotag-temp-unclassified")
         True
@@ -44,13 +44,13 @@ def is_temporary_album(album_name: str) -> bool:
 def get_temporary_album_name(album_date: str) -> str:
     """
     Generates a temporary album name from a date string.
-    
+
     Args:
         album_date: Date string (typically YYYY-MM-DD format).
-        
+
     Returns:
         The full temporary album name following the standard pattern.
-        
+
     Example:
         >>> get_temporary_album_name("2024-01-15")
         '2024-01-15-autotag-temp-unclassified'

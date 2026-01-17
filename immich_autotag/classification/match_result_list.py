@@ -1,9 +1,14 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
 import attr
 from typeguard import typechecked
 
 from immich_autotag.classification.match_result import MatchResult
+
+if TYPE_CHECKING:
+    from immich_autotag.classification.classification_status import (
+        ClassificationStatus,
+    )
 
 
 @attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
@@ -67,4 +72,3 @@ class MatchResultList:
         )
 
         return ClassificationStatus.from_match_results(self)
-
