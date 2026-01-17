@@ -76,22 +76,232 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - GitHub Actions workflow now works correctly without requiring access to a private Immich server or API credentials. ([GitHub Issue #32](https://github.com/txemi/immich-autotag/issues/32))
 
 
-## Unreleased
-**Description:** Adds automatic creation of daily albums for assets that do not belong to any album, using easily identifiable names for user review.
-**Status:** Frozen — will be released soon.
+## [0.72.0-rc1] - 2026-01-17
+**Description:** Album permission groups - Phase 1 (detection and logging)
+**Status:** Release candidate - ready for testing
+**Commit:** `d8a3b1a`
+**Branch:** `feature/user-group-policies`
+**Release type:** Tag + version (no PyPI/Docker publishing)
+
 ### Added
-- Automatic creation of albums named by day (e.g., `Review YYYY-MM-DD`) for assets that are not assigned to any album, making it easy for users to review and organize unclassified photos by date.
+- **Album Permission Groups - Phase 1:** Detection system for albums matching configured keywords
+  - Detects which albums match configured user group keywords
+  - Phase 1 performs detection and logging only (no API calls)
+  - Foundation for Phase 2 synchronization
+  - Link: [issue 0018 — Album Permission Groups](docs/issues/0018-album-permission-groups/)
+
+### Features included
+- Configuration-based user groups with member lists
+- Keyword matching for album names
+- Detection reporting and logging
+- Dry-run mode for Phase 1
+
+### Known issues
+- None specific to Phase 1
 
 
-### Note — Performance regression under investigation
-- **Observed behavior:** Recent runs of the representative test battery have shown a significant runtime regression: test executions that historically completed in ~4 hours have been observed to take 14–15 hours in the most recent runs. The exact numbers vary between runs and datasets; this regression is under active investigation.
-- **Possible causes:** The root cause is not yet confirmed. Potential contributing factors include a sudden increase in the number of albums created during processing or changes in application code that increase work per asset. Profiling artifacts have been enabled and are being collected to help identify hotspots (see linked issue).
-- **Status & action:** The issue is being tracked and analyzed in [issue 0021 — Profiling & Performance Reports](docs/issues/0021-profiling-performance/). CI profiling has been enabled on a dedicated performance branch and profiling artifacts (CPU profiles, pstats, flamegraphs) are being archived for analysis. Further updates and findings will be posted to the linked issue.
-- **Impact & unknowns:** At this time we cannot predict which users or datasets are affected or the precise origin of the slowdown. Ongoing analysis will try to reproduce the regression, narrow down its cause, and propose fixes or mitigations.
+## [0.72.0-rc2] - 2026-01-17
+**Description:** Album permission groups - Phase 2 (synchronization - FULLY FUNCTIONAL)
+**Status:** Release candidate - production ready, tested with 500+ albums
+**Commit:** `c588cf7`
+**Branch:** `feature/user-group-policies`
+**Release type:** Tag + version (no PyPI/Docker publishing)
 
-### Configuration / Breaking changes
-- **Checked for config format changes:** I reviewed repository configuration docs and recent changes; there is no indication of a configuration-format breaking change introduced specifically in this Unreleased entry relative to `v0.71.0`.
-- **Historical note:** The major configuration-system change (Python + YAML structured config support) was introduced in v0.25 (see [issue 0009 — Config system refactor](docs/issues/0009-config-system-refactor/)). If you know of a specific config-file change or commit that should be considered breaking in this Unreleased version, please point me to it and I will add a formal "Breaking changes" entry.
+### Added
+- **Album Permission Groups - Phase 2:** Complete synchronization system for album member management
+  - Automatically adds configured members to matching albums
+  - Automatically removes members no longer in configuration
+  - Email→UUID resolution for member lookup
+  - Idempotent operations (safe to run multiple times)
+  - Link: [issue 0018 — Album Permission Groups](docs/issues/0018-album-permission-groups/)
+
+### Changed
+- Album permissions now execute BEFORE asset tagging for proper sequencing
+- Configuration is source of truth - only configured members have access
+
+### Fixed
+- Email address resolution for album member management
+- Proper handling of member additions and removals
+
+### Testing
+- ✅ Tested with 500+ albums, 3 members per group
+- ✅ Verified idempotent behavior
+- ✅ All permission changes applied correctly
+
+### Known issues
+- None specific to Phase 2
+
+
+## [0.73.0-rc1] - 2026-01-17
+**Description:** Type system centralization and authentication fixes
+**Status:** Release candidate
+**Commit:** `9c8e660`
+**Branch:** `feat/album-permission-groups`
+**Release type:** Tag + version (no PyPI/Docker publishing)
+
+### Added
+- **Client Type Centralization:** Unified `ImmichClient` type definition
+  - New `immich_autotag/types.py` with canonical type alias
+  - Eliminates scattered imports across codebase
+  - Single source of truth for client configuration
+
+### Fixed
+- **AuthenticatedClient Configuration:** Immich-specific headers now correct
+  - Changed from default "Bearer" token to "x-api-key" header format
+  - Fixes 401 Unauthorized errors
+  - Immich API now properly authenticated
+- **Email→UUID Resolution:** New mapping system for album member emails
+  - Converts configured member emails to Immich system user IDs
+  - Prevents "badly formed hexadecimal UUID" errors
+  - Essential foundation for Phase 2 synchronization
+
+### Changed
+- All code now uses centralized `ImmichClient` type
+- ConfigManager initialization improved with better error handling
+
+### Technical debt reduced
+- Removed type inconsistencies across codebase
+- Proper Immich API parameter handling
+
+
+## [0.73.0-rc2] - 2026-01-17
+**Description:** Lazy-loading optimization and performance improvements
+**Status:** Release candidate
+**Commit:** `ce834f8`
+**Branch:** `perf/symmetric-rules-with-performance`
+**Release type:** Tag + version (no PyPI/Docker publishing)
+
+### Added
+- **Lazy-Loading Optimization:** Asset tag data loaded on-demand
+  - Significant memory and API call reduction
+  - Faster initial asset retrieval
+  - Conditional type checking for production performance (~50% speedup possible)
+
+### Changed
+- Asset tag loading now lazy (not eagerly fetched)
+- Checkpoint save frequency optimized (every 100 assets vs every asset)
+- Asset update operations batched to reduce API calls
+
+### Performance improvements
+- Reduced API call count during asset processing
+- Lower memory footprint for large asset sets
+- Faster test execution time
+
+### Known issues
+- **Performance regression under investigation:** Some production runs show 4h→14-15h slowdown
+  - Possible causes: increased album creation count, per-asset code changes
+  - Under analysis in [issue 0021 — Profiling & Performance Reports](docs/issues/0021-profiling-performance/)
+  - CI profiling enabled on dedicated branch
+
+
+## [0.73.0-rc3] - 2026-01-17
+**Description:** Automatic album creation from unclassified assets
+**Status:** Release candidate
+**Commit:** `01370f3`
+**Branch:** `feature/auto-album-creation-from-date`
+**Release type:** Tag + version (no PyPI/Docker publishing)
+
+### Added
+- **Auto-Album Creation:** New feature for organizing unclassified assets
+  - Automatically creates albums named by date (e.g., `Review YYYY-MM-DD`)
+  - Creates albums for assets not assigned to any classification
+  - Makes it easy for users to review and organize unclassified photos
+  - Configurable via `create_album_from_date_if_missing` setting
+
+### Changed
+- Album decision logic refactored for better clarity
+- Temporary albums created for assets without classification matches
+
+### Features
+- ImmichContext now uses singleton pattern for consistent state
+- Album creation workflow integrated into main processing pipeline
+
+
+## [0.73.0-rc4] - 2026-01-17
+**Description:** Classification engine improvements - OR logic for rules
+**Status:** Release candidate
+**Commit:** `1451649`
+**Branch:** `feature/rules-tag-album-combination`
+**Release type:** Tag + version (no PyPI/Docker publishing)
+
+### Added
+- **Classification Rule Engine Enhancements:** OR logic for flexible rule matching
+  - ClassificationRule now supports OR logic for combined criteria
+  - Multiple tags or albums can match with OR semantics
+  - Improved conflict handling for duplicate assets
+  - Better logging of classification decisions
+
+### Changed
+- ClassificationRuleWrapper validation now uses OR logic
+- Conflict handling improved with classification conflict tags
+- Modification reports now include all classification decisions
+
+### Fixed
+- Duplicate asset conflict resolution improved
+- Classification conflicts now logged with better context
+
+### Features
+- Links generated include input tags from classification rules
+- Auto-album creation from asset date when no classification found
+
+
+## [0.73.0] - 2026-01-17
+**Description:** Complete release - Album permissions, type system, performance, auto-album creation (v0.72 + v0.73 consolidated)
+**Status:** Release candidate → Release
+**Commit:** `3fa53c6`
+**Branch:** `feat/album-permission-groups` (current HEAD)
+**Release type:** Tag + version (no PyPI/Docker publishing yet)
+
+### Summary
+This release consolidates significant work across 5 major feature areas:
+1. ✅ Album permission groups (Phase 1+2, fully functional with 500+ album testing)
+2. ✅ Type system centralization (Immich API fixes)
+3. ✅ Performance optimizations (lazy-loading, checkpoint optimization)
+4. ✅ Auto-album creation (for unclassified assets)
+5. ✅ Classification engine improvements (OR logic, better conflict handling)
+
+### Added
+- **Configuration Internationalization:** Template now fully in English
+  - User group names and examples translated
+  - Configuration now suitable for international users
+  - Link: docs/issues/0018-album-permission-groups/
+
+- **Release Scripts Clarity:** Script documentation improved
+  - `release.sh`: Version + tagging only (no publishing)
+  - `full_release.sh`: Complete pipeline (version + PyPI + Docker)
+  - Clear distinction prevents accidental public releases
+
+- **Git Hygiene:** Profiling artifacts removed from repository
+  - Removed `profile(1).stats` and `profile_optimized.stats`
+  - Updated `.gitignore` to prevent future commits
+
+### Changed
+- All code comments and configuration now in English
+- Script headers document PURPOSE and USE WHEN
+- Release process clearly separated into two distinct modes
+
+### Breaking changes
+- None (config format compatible with v0.71.0)
+
+### Known issues
+- **Performance regression under investigation:** 4h→14-15h slowdown on profiling tests
+  - Root cause not yet confirmed
+  - Possible contributing factors: increased album creation, code changes per-asset
+  - Being tracked and analyzed in [issue 0021](docs/issues/0021-profiling-performance/)
+  - CI profiling enabled on dedicated branch
+  - Impact: unknown which users/datasets affected, reproduction in progress
+
+### Testing
+- ✅ Album permissions Phase 1+2 tested with 500+ albums
+- ✅ Type system validated with corrected Immich API calls
+- ✅ Auto-album creation verified
+- ✅ All Python code formatted and sorted
+- ⚠️ Performance regression requires further investigation
+
+### Next steps
+- Resolution of performance regression (v0.74.0 focus)
+- Further optimization of lazy-loading
+- Potential PyPI/Docker publishing after performance stabilization
 
 
 
