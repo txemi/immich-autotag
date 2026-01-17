@@ -66,6 +66,7 @@ def analyze_and_assign_album(
         from immich_autotag.assets.albums.remove_from_autotag_albums import (
             remove_asset_from_autotag_temporary_albums,
         )
+
         all_albums = (
             asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
                 asset_wrapper
