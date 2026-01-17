@@ -28,6 +28,11 @@ fi
 
 source "$VENV_PATH"
 
+
+# Chequeo de sintaxis e indentación en todos los .py del paquete
+echo "Comprobando errores de sintaxis e indentación..."
+find "$TARGET_DIR" -name "*.py" -exec "$REPO_ROOT/.venv/bin/python" -m py_compile {} +
+
 # Install black and isort if not available
 if ! "$REPO_ROOT/.venv/bin/python" -c "import black" 2>/dev/null; then
 	echo "Installing black in the virtual environment..."
