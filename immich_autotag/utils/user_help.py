@@ -42,13 +42,6 @@ def _generate_links(config: UserConfig) -> List[str]:
 
     # From duplicate_processing
     if config.duplicate_processing:
-        if config.duplicate_processing.autotag_album_date_mismatch:
-            tags_to_add.append(
-                (
-                    "Duplicates: Album date mismatch",
-                    config.duplicate_processing.autotag_album_date_mismatch,
-                )
-            )
         if config.duplicate_processing.autotag_album_conflict:
             tags_to_add.append(
                 (
@@ -61,6 +54,23 @@ def _generate_links(config: UserConfig) -> List[str]:
                 (
                     "Duplicates: Classification conflict",
                     config.duplicate_processing.autotag_classification_conflict,
+                )
+            )
+        if config.duplicate_processing.autotag_album_detection_conflict:
+            tags_to_add.append(
+                (
+                    "Duplicates: Album detection conflict",
+                    config.duplicate_processing.autotag_album_detection_conflict,
+                )
+            )
+
+    # From album_date_consistency
+    if config.album_date_consistency and config.album_date_consistency.enabled:
+        if config.album_date_consistency.autotag_album_date_mismatch:
+            tags_to_add.append(
+                (
+                    "Consistency: Album date mismatch",
+                    config.album_date_consistency.autotag_album_date_mismatch,
                 )
             )
 
