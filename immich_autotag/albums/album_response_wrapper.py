@@ -122,7 +122,7 @@ class AlbumResponseWrapper:
             )
             log(
                 f"Album '{self.album.album_name}' renamed to '{cleaned_name}'",
-                level=LogLevel.INFO,
+                level=LogLevel.FOCUS,
             )
 
     @conditional_typechecked
@@ -189,7 +189,7 @@ class AlbumResponseWrapper:
                         log(
                             f"Asset {asset_wrapper.id} already in album {self.album.id} (detected stale cache). "
                             f"Reloading album data for subsequent operations.",
-                            level=LogLevel.INFO,
+                            level=LogLevel.FOCUS,
                         )
                         # Reactive refresh: reload album from API to get fresh data
                         # This ensures subsequent assets see current state without preventive reloads
