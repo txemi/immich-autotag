@@ -63,6 +63,7 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - Preparing a new release to publish these changes and facilitate community collaboration.
 
 ## [0.71.0] - 2026-01-14
+**Status:** ✅ Published (PyPI & Docker Hub)
 **Description:** GitHub Actions workflow enablement for automated PyPI and Docker Hub publishing.
 ### Added
 - **Automated PyPI publishing via GitHub Actions:** The release workflow now automatically publishes the package to PyPI when a version tag is created.
@@ -77,11 +78,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.72.0-rc1] - 2026-01-17
+**Status:** 🔖 Tagged (NOT published to PyPI/Docker)
 **Description:** Album permission groups - Phase 1 (detection and logging)
-**Status:** Release candidate - ready for testing
+**Release candidate - ready for testing**
 **Commit:** `d8a3b1a`
 **Branch:** `feature/user-group-policies`
-**Release type:** Tag + version (no PyPI/Docker publishing)
 
 ### Added
 - **Album Permission Groups - Phase 1:** Detection system for albums matching configured keywords
@@ -101,11 +102,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.72.0-rc2] - 2026-01-17
+**Status:** 🔖 Tagged (NOT published to PyPI/Docker)
 **Description:** Album permission groups - Phase 2 (synchronization - FULLY FUNCTIONAL)
-**Status:** Release candidate - production ready, tested with 500+ albums
+**Release candidate - production ready, tested with 500+ albums**
 **Commit:** `c588cf7`
 **Branch:** `feature/user-group-policies`
-**Release type:** Tag + version (no PyPI/Docker publishing)
 
 ### Added
 - **Album Permission Groups - Phase 2:** Complete synchronization system for album member management
@@ -133,11 +134,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.73.0-rc1] - 2026-01-17
+**Status:** 🔖 Tagged (NOT published to PyPI/Docker)
 **Description:** Type system centralization and authentication fixes
-**Status:** Release candidate
+**Release candidate**
 **Commit:** `9c8e660`
 **Branch:** `feat/album-permission-groups`
-**Release type:** Tag + version (no PyPI/Docker publishing)
 
 ### Added
 - **Client Type Centralization:** Unified `ImmichClient` type definition
@@ -165,11 +166,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.73.0-rc2] - 2026-01-17
+**Status:** 🔖 Tagged (NOT published to PyPI/Docker)
 **Description:** Lazy-loading optimization and performance improvements
-**Status:** Release candidate
+**Release candidate**
 **Commit:** `ce834f8`
 **Branch:** `perf/symmetric-rules-with-performance`
-**Release type:** Tag + version (no PyPI/Docker publishing)
 
 ### Added
 - **Lazy-Loading Optimization:** Asset tag data loaded on-demand
@@ -195,11 +196,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.73.0-rc3] - 2026-01-17
+**Status:** 🔖 Tagged (NOT published to PyPI/Docker)
 **Description:** Automatic album creation from unclassified assets
-**Status:** Release candidate
+**Release candidate**
 **Commit:** `01370f3`
 **Branch:** `feature/auto-album-creation-from-date`
-**Release type:** Tag + version (no PyPI/Docker publishing)
 
 ### Added
 - **Auto-Album Creation:** New feature for organizing unclassified assets
@@ -218,11 +219,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.73.0-rc4] - 2026-01-17
+**Status:** 🔖 Tagged (NOT published to PyPI/Docker)
 **Description:** Classification engine improvements - OR logic for rules
-**Status:** Release candidate
+**Release candidate**
 **Commit:** `1451649`
 **Branch:** `feature/rules-tag-album-combination`
-**Release type:** Tag + version (no PyPI/Docker publishing)
 
 ### Added
 - **Classification Rule Engine Enhancements:** OR logic for flexible rule matching
@@ -246,11 +247,11 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.73.0] - 2026-01-17
+**Status:** 🔖 Tagged (NOT published to PyPI/Docker yet)
 **Description:** Complete release - Album permissions, type system, performance, auto-album creation (v0.72 + v0.73 consolidated)
-**Status:** Release candidate → Release
+**Release candidate → Release**
 **Commit:** `3fa53c6`
 **Branch:** `feat/album-permission-groups` (current HEAD)
-**Release type:** Tag + version (no PyPI/Docker publishing yet)
 
 ### Summary
 This release consolidates significant work across 5 major feature areas:
