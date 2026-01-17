@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from immich_client import Client
 from typeguard import typechecked
 
 from immich_autotag.duplicates._find_recent_duplicates_cache import (
@@ -11,11 +10,12 @@ from immich_autotag.duplicates.duplicate_collection_wrapper import (
     DuplicateCollectionWrapper,
 )
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
+from immich_autotag.types import ImmichClient
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 
 @typechecked
-def load_duplicates_collection(client: Client) -> DuplicateCollectionWrapper:
+def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapper:
     """
     Loads the duplicate collection from the Immich server and prints timing information.
     """

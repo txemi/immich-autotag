@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import attrs
-from immich_client import Client
 from typeguard import typechecked
+
+from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
@@ -21,7 +22,9 @@ _instance_created = False
 
 @attrs.define(auto_attribs=True, slots=True)
 class ImmichContext:
-    client: Client = attrs.field(validator=attrs.validators.instance_of(Client))
+    client: ImmichClient = attrs.field(
+        validator=attrs.validators.instance_of((ImmichClient,))
+    )
     albums_collection: "AlbumCollectionWrapper" = attrs.field(
         validator=attrs.validators.instance_of(object)
     )
@@ -57,7 +60,7 @@ class ImmichContext:
     @staticmethod
     @typechecked
     def create_instance(
-        client: Client,
+        client: ImmichClient,
         albums_collection: "AlbumCollectionWrapper",
         tag_collection: "TagCollectionWrapper",
         duplicates_collection: "DuplicateCollectionWrapper",

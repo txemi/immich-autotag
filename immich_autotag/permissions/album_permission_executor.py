@@ -15,7 +15,6 @@ from immich_client.api.albums import get_album_info as immich_get_album_info
 from immich_client.api.albums import (
     remove_user_from_album as immich_remove_user_from_album,
 )
-from immich_client.client import AuthenticatedClient
 from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_role import AlbumUserRole
@@ -58,73 +57,55 @@ def sync_album_permissions(
         log_debug(f"[ALBUM_PERMISSIONS] Skipping {album_name}: no matching rules")
         return
 
-    try:
-        # Get current members from API
-        current_members = _get_current_members(album_id, context)
-        current_user_ids = {str(member.user_id) for member in current_members}
+    # Get current members from API
+    current_members = _get_current_members(album_id, context)
+    current_user_ids = {str(member.user_id) for member in current_members}
 
-        # Extract target user IDs from resolved policy
-        target_user_ids = set(resolved_policy.members)
+    # Extract target user IDs from resolved policy
+    target_user_ids = set(resolved_policy.members)
 
-        # Calculate diff
-        users_to_add = target_user_ids - current_user_ids
-        users_to_remove = current_user_ids - target_user_ids
+    # Calculate diff
+    users_to_add = target_user_ids - current_user_ids
+    users_to_remove = current_user_ids - target_user_ids
 
-        # Phase 2A: PONER (add members)
-        if users_to_add:
-            _add_members_to_album(
-                album_id,
-                album_name,
-                list(users_to_add),
-                resolved_policy.access_level,
-                context,
-            )
-            report.add_album_permission_modification(
-                kind=ModificationKind.ALBUM_PERMISSION_SHARED,
-                album=album_wrapper,
-                matched_rules=resolved_policy.matched_rules,
-                groups=resolved_policy.groups,
-                members=list(users_to_add),
-                access_level=resolved_policy.access_level,
-            )
-
-        # Phase 2B: QUITAR (remove members)
-        if users_to_remove:
-            _remove_members_from_album(
-                album_id, album_name, list(users_to_remove), context
-            )
-            report.add_album_permission_modification(
-                kind=ModificationKind.ALBUM_PERMISSION_REMOVED,
-                album=album_wrapper,
-                matched_rules=resolved_policy.matched_rules,
-                groups=resolved_policy.groups,
-                members=list(users_to_remove),
-                access_level="none",
-            )
-
-        if users_to_add or users_to_remove:
-            log(
-                f"[ALBUM_PERMISSIONS] Synced {album_name}: "
-                f"+{len(users_to_add)} PONER, -{len(users_to_remove)} QUITAR",
-                level=LogLevel.FOCUS,
-            )
-        else:
-            log_debug(f"[ALBUM_PERMISSIONS] {album_name}: No changes needed")
-
-    except Exception as e:
-        log(
-            f"[ALBUM_PERMISSIONS] ERROR syncing {album_name}: {e}",
-            level=LogLevel.ERROR,
+    # Phase 2A: PONER (add members)
+    if users_to_add:
+        _add_members_to_album(
+            album_id,
+            album_name,
+            list(users_to_add),
+            resolved_policy.access_level,
+            context,
         )
         report.add_album_permission_modification(
-            kind=ModificationKind.ALBUM_PERMISSION_SHARE_FAILED,
+            kind=ModificationKind.ALBUM_PERMISSION_SHARED,
             album=album_wrapper,
             matched_rules=resolved_policy.matched_rules,
             groups=resolved_policy.groups,
-            members=[],
-            access_level="error",
-            extra={"error": str(e)},
+            members=list(users_to_add),
+            access_level=resolved_policy.access_level,
         )
+
+    # Phase 2B: QUITAR (remove members)
+    if users_to_remove:
+        _remove_members_from_album(album_id, album_name, list(users_to_remove), context)
+        report.add_album_permission_modification(
+            kind=ModificationKind.ALBUM_PERMISSION_REMOVED,
+            album=album_wrapper,
+            matched_rules=resolved_policy.matched_rules,
+            groups=resolved_policy.groups,
+            members=list(users_to_remove),
+            access_level="none",
+        )
+
+    if users_to_add or users_to_remove:
+        log(
+            f"[ALBUM_PERMISSIONS] Synced {album_name}: "
+            f"+{len(users_to_add)} PONER, -{len(users_to_remove)} QUITAR",
+            level=LogLevel.FOCUS,
+        )
+    else:
+        log_debug(f"[ALBUM_PERMISSIONS] {album_name}: No changes needed")
 
 
 def _get_current_members(album_id: str, context: ImmichContext) -> list[Any]:
@@ -135,33 +116,21 @@ def _get_current_members(album_id: str, context: ImmichContext) -> list[Any]:
     """
     log_debug(f"[ALBUM_PERMISSIONS] Fetching current members for album {album_id}")
 
-    try:
-        # Cast client to AuthenticatedClient for API call
-        client = context.client
-        if not isinstance(client, AuthenticatedClient):
-            raise RuntimeError("Client must be AuthenticatedClient")
+    client = context.client
+    response = immich_get_album_info.sync(
+        id=UUID(album_id),
+        client=client,
+    )
 
-        response = immich_get_album_info.sync(
-            id=UUID(album_id),
-            client=client,
-        )
+    if response is None:
+        log_debug(f"[ALBUM_PERMISSIONS] Album {album_id} not found")
+        return []
 
-        if response is None:
-            log_debug(f"[ALBUM_PERMISSIONS] Album {album_id} not found")
-            return []
-
-        current_members = response.album_users or []
-        log_debug(
-            f"[ALBUM_PERMISSIONS] Album {album_id} has {len(current_members)} members"
-        )
-        return current_members
-
-    except Exception as e:
-        log(
-            f"[ALBUM_PERMISSIONS] ERROR fetching album members for {album_id}: {e}",
-            level=LogLevel.ERROR,
-        )
-        raise
+    current_members = response.album_users or []
+    log_debug(
+        f"[ALBUM_PERMISSIONS] Album {album_id} has {len(current_members)} members"
+    )
+    return current_members
 
 
 def _add_members_to_album(
@@ -190,52 +159,38 @@ def _add_members_to_album(
         level=LogLevel.PROGRESS,
     )
 
-    try:
-        # Convert access_level string to AlbumUserRole
-        role = (
-            AlbumUserRole.EDITOR if access_level == "editor" else AlbumUserRole.VIEWER
+    # Convert access_level string to AlbumUserRole
+    role = AlbumUserRole.EDITOR if access_level == "editor" else AlbumUserRole.VIEWER
+
+    # Build AddUsersDto
+    album_users_dto = [
+        AlbumUserAddDto(
+            user_id=UUID(user_id),
+            role=role,
         )
+        for user_id in user_ids
+    ]
+    add_users_dto = AddUsersDto(album_users=album_users_dto)
 
-        # Build AddUsersDto
-        album_users_dto = [
-            AlbumUserAddDto(
-                user_id=UUID(user_id),
-                role=role,
-            )
-            for user_id in user_ids
-        ]
-        add_users_dto = AddUsersDto(album_users=album_users_dto)
+    # Call API
+    client = context.client
+    response = immich_add_users_to_album.sync(
+        id=UUID(album_id),
+        body=add_users_dto,
+        client=client,
+    )
 
-        # Cast client to AuthenticatedClient for API call
-        client = context.client
-        if not isinstance(client, AuthenticatedClient):
-            raise RuntimeError("Client must be AuthenticatedClient")
-
-        # Call API
-        response = immich_add_users_to_album.sync(
-            id=UUID(album_id),
-            body=add_users_dto,
-            client=client,
+    if response is not None:
+        log_debug(
+            f"[ALBUM_PERMISSIONS] Successfully added {len(user_ids)} "
+            f"members to {album_name}"
         )
-
-        if response is not None:
-            log_debug(
-                f"[ALBUM_PERMISSIONS] Successfully added {len(user_ids)} "
-                f"members to {album_name}"
-            )
-        else:
-            log(
-                f"[ALBUM_PERMISSIONS] WARNING: add_users_to_album returned "
-                f"None for {album_name}",
-                level=LogLevel.IMPORTANT,
-            )
-
-    except Exception as e:
+    else:
         log(
-            f"[ALBUM_PERMISSIONS] ERROR adding members to {album_name}: {e}",
-            level=LogLevel.ERROR,
+            f"[ALBUM_PERMISSIONS] WARNING: add_users_to_album returned "
+            f"None for {album_name}",
+            level=LogLevel.IMPORTANT,
         )
-        raise
 
 
 def _remove_members_from_album(
@@ -261,33 +216,11 @@ def _remove_members_from_album(
         level=LogLevel.PROGRESS,
     )
 
-    # Cast client to AuthenticatedClient for API call
     client = context.client
-    if not isinstance(client, AuthenticatedClient):
-        raise RuntimeError("Client must be AuthenticatedClient")
-
-    failed_removals = []
-
     for user_id in user_ids:
-        try:
-            response = immich_remove_user_from_album.sync_detailed(
-                id=UUID(album_id),
-                user_id=user_id,
-                client=client,
-            )
-            log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
-
-        except Exception as e:
-            log(
-                f"[ALBUM_PERMISSIONS] ERROR removing user {user_id} from "
-                f"{album_name}: {e}",
-                level=LogLevel.IMPORTANT,
-            )
-            failed_removals.append((user_id, str(e)))
-
-    if failed_removals:
-        log(
-            f"[ALBUM_PERMISSIONS] {len(failed_removals)} removals failed for "
-            f"{album_name}",
-            level=LogLevel.IMPORTANT,
+        response = immich_remove_user_from_album.sync_detailed(
+            id=UUID(album_id),
+            user_id=user_id,
+            client=client,
         )
+        log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")

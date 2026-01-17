@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from immich_client import Client
 from typeguard import typechecked
 
 from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
@@ -19,6 +18,7 @@ from immich_autotag.permissions import (
 )
 from immich_autotag.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.tags.list_tags import list_tags
+from immich_autotag.types import ImmichClient
 
 # --- DUPLICATE STDOUT/STDERR TO LOG FILE (tee4py) ---
 from immich_autotag.utils.tee_logging import setup_tee_logging
@@ -70,9 +70,11 @@ def run_main():
 
     print_welcome_links(manager.config)
     api_key = manager.config.server.api_key
-    client = Client(
+    client = ImmichClient(
         base_url=get_immich_base_url(),
-        headers={"x-api-key": api_key},
+        token=api_key,
+        prefix="",  # Immich uses x-api-key, not Bearer token
+        auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
     tag_collection = list_tags(client)
@@ -152,28 +154,21 @@ def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  #
     # Process each album
     for album_wrapper in albums_collection.albums:
         album = album_wrapper.album
-        try:
-            resolved_policy = resolve_album_policy(
-                album_name=album.album_name,
-                album_id=album.id,
-                user_groups=user_groups_dict,
-                selection_rules=album_perms_config.selection_rules or [],
-            )
 
-            if resolved_policy.has_match:
-                sync_album_permissions(
-                    album_wrapper=album_wrapper,
-                    resolved_policy=resolved_policy,
-                    context=context,
-                )
-                synced_count += 1
+        resolved_policy = resolve_album_policy(
+            album_name=album.album_name,
+            album_id=album.id,
+            user_groups=user_groups_dict,
+            selection_rules=album_perms_config.selection_rules or [],
+        )
 
-        except Exception as e:
-            log(
-                f"[ALBUM_PERMISSIONS] ERROR processing album {album.album_name}: {e}",
-                level=LogLevel.ERROR,
+        if resolved_policy.has_match:
+            sync_album_permissions(
+                album_wrapper=album_wrapper,
+                resolved_policy=resolved_policy,
+                context=context,
             )
-            error_count += 1
+            synced_count += 1
 
     log(
         f"[ALBUM_PERMISSIONS] Phase 2 Summary: {synced_count} synced, {error_count} errors",

@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import cached_property
 
 import attrs
-from immich_client.client import Client
 from immich_client.models.asset_response_dto import AssetResponseDto
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
@@ -11,6 +10,7 @@ from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
 
 
@@ -76,7 +76,7 @@ class AlbumCollectionWrapper:
     def create_or_get_album_with_user(
         self,
         album_name: str,
-        client: Client,
+        client: ImmichClient,
         tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
@@ -136,33 +136,40 @@ class AlbumCollectionWrapper:
         return wrapper
 
     @classmethod
-    def from_client(cls, client: Client) -> "AlbumCollectionWrapper":
+    def from_client(cls, client: ImmichClient) -> "AlbumCollectionWrapper":
         """
-        Fetches all albums from the API with full data (including assets),
-        wraps them, and trims names if needed.
+        Fetches all album metadata from the API (without assets initially).
+
+        Asset data is NOT loaded upfront to avoid N+1 API calls (which can timeout).
+        Instead, assets are fetched lazily only when actually needed via AlbumResponseWrapper.
+
+        This optimization reduces load time from hours (timeout) to seconds.
+        Albums without assets will show (assets: unknown) until accessed.
         """
-        from immich_client.api.albums import get_album_info, get_all_albums
+        from immich_client.api.albums import get_all_albums
 
         from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
+
+        # Fetch only basic album metadata (without assets)
         albums = get_all_albums.sync(client=client)
-        albums_full: list[AlbumResponseWrapper] = []
+        albums_wrapped: list[AlbumResponseWrapper] = []
+
         print("\nAlbums:")
         for album in albums:
-            # Load full album data upfront to populate assets
-            album_full = get_album_info.sync(id=album.id, client=client)
-            # Create wrapper with full album data
-            wrapper = AlbumResponseWrapper(album_partial=album_full)
-            n_assets = len(wrapper.album.assets) if wrapper.album.assets else 0
-            print(f"- {wrapper.album.album_name} (assets: {n_assets})")
-            albums_full.append(wrapper)
+            # Create wrapper with partial album data (no assets fetched yet)
+            # Assets will be fetched lazily when needed
+            wrapper = AlbumResponseWrapper(album_partial=album)
+            print(f"- {wrapper.album.album_name} (assets: lazy-loaded)")
+            albums_wrapped.append(wrapper)
+
         tag_mod_report.flush()
-        print(f"Total albums: {len(albums_full)}\n")
+        print(f"Total albums: {len(albums_wrapped)}\n")
         MIN_ALBUMS = 326
-        if len(albums_full) < MIN_ALBUMS:
+        if len(albums_wrapped) < MIN_ALBUMS:
             raise Exception(
-                f"ERROR: Unexpectedly low number of albums: {len(albums_full)} < {MIN_ALBUMS}"
+                f"ERROR: Unexpectedly low number of albums: {len(albums_wrapped)} < {MIN_ALBUMS}"
             )
-        return cls(albums=albums_full)
+        return cls(albums=albums_wrapped)

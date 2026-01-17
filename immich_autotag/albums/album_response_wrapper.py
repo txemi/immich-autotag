@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 
 import attrs
-from immich_client.client import Client
 from immich_client.models.album_response_dto import AlbumResponseDto
+
+from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
@@ -37,7 +38,7 @@ class AlbumResponseWrapper:
         """Sets the full album data."""
         self._album_full = value
 
-    def _ensure_full_album_loaded(self, client: Client) -> None:
+    def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
         """Lazy-loads full album data from API if not already loaded."""
         if self._album_full is not None:
             return
@@ -90,7 +91,7 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def trim_name_if_needed(
         self,
-        client: Client,
+        client: ImmichClient,
         tag_mod_report: "ModificationReport",
     ) -> None:
         """
@@ -142,7 +143,7 @@ class AlbumResponseWrapper:
     def add_asset(
         self,
         asset_wrapper: "AssetResponseWrapper",
-        client: Client,
+        client: ImmichClient,
         tag_mod_report: "ModificationReport" = None,
     ) -> None:
         """
@@ -267,7 +268,7 @@ class AlbumResponseWrapper:
     @staticmethod
     @conditional_typechecked
     def from_id(
-        client: Client,
+        client: ImmichClient,
         album_id: str,
         tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":

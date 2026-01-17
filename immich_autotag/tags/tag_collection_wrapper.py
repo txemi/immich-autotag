@@ -1,9 +1,9 @@
 import attrs
-from immich_client import Client
 from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
 
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
+from immich_autotag.types import ImmichClient
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -41,7 +41,7 @@ class TagCollectionWrapper:
             raise
 
     @typechecked
-    def _sync_from_api(self, client: Client) -> None:
+    def _sync_from_api(self, client: ImmichClient) -> None:
         """
         Refresh tag cache from the API to handle external changes or race conditions.
         This indicates a cache desynchronization that should be investigated.
@@ -58,7 +58,7 @@ class TagCollectionWrapper:
 
     @staticmethod
     @typechecked
-    def from_api(client: Client) -> "TagCollectionWrapper":
+    def from_api(client: ImmichClient) -> "TagCollectionWrapper":
         """
         Builds a TagCollectionWrapper instance by fetching tags from the Immich API.
         """
