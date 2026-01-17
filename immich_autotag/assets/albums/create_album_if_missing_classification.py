@@ -5,14 +5,13 @@ from typing import Optional
 
 from typeguard import typechecked
 
+from immich_autotag.assets.albums.temporary_albums import (
+    get_temporary_album_name,
+)
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
-
-# Constants
-AUTOTAG_TEMP_ALBUM_PREFIX = "autotag-temp"
-AUTOTAG_TEMP_ALBUM_CATEGORY = "unclassified"
 
 
 @typechecked
@@ -46,7 +45,12 @@ def create_album_if_missing_classification(
 
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
     match_results = rule_set.matching_rules(asset_wrapper)
-    if len(set(match_results.rules())) > 0:
+    
+    # Check that asset is truly unclassified
+    from immich_autotag.classification.classification_status import ClassificationStatus
+    
+    status = match_results.classification_status()
+    if status != ClassificationStatus.UNCLASSIFIED:
         raise RuntimeError(
             "create_album_if_missing_classification called for an already-classified asset; this should not happen."
         )
@@ -61,10 +65,8 @@ def create_album_if_missing_classification(
         )
         return None
 
-    # Generate album name
-    album_name = (
-        f"{album_date}-{AUTOTAG_TEMP_ALBUM_PREFIX}-{AUTOTAG_TEMP_ALBUM_CATEGORY}"
-    )
+    # Generate album name using centralized pattern
+    album_name = get_temporary_album_name(album_date)
 
     # Assign asset to album using existing logic (creates if needed)
     from immich_autotag.assets.albums._process_album_detection import (

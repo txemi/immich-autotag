@@ -224,6 +224,90 @@ class AlbumResponseWrapper:
         self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
     @conditional_typechecked
+    def remove_asset(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        client: ImmichClient,
+        tag_mod_report: "ModificationReport" = None,
+    ) -> None:
+        """
+        Removes the asset from the album using the API and validates the result.
+        
+        Safe to call even if asset is not in album (idempotent operation).
+        Raises exception only if the removal fails unexpectedly.
+        """
+        from immich_client.api.albums import remove_assets_from_album
+        from immich_client.models.bulk_ids_dto import BulkIdsDto
+
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+        from immich_autotag.tags.modification_kind import ModificationKind
+
+        # Check if asset is in album first
+        if asset_wrapper.id not in [a.id for a in self.album.assets or []]:
+            log(
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.album.id}, skipping removal.",
+                level=LogLevel.DEBUG,
+            )
+            return
+
+        # Remove asset from album
+        result = remove_assets_from_album.sync(
+            id=self.album.id,
+            client=client,
+            body=BulkIdsDto(ids=[asset_wrapper.id]),
+        )
+
+        # Validate the result
+        if not isinstance(result, list):
+            raise RuntimeError(
+                f"remove_assets_from_album did not return a list, got {type(result)}"
+            )
+
+        found = False
+        for item in result:
+            try:
+                _id = item.id
+                _success = item.success
+            except AttributeError:
+                raise RuntimeError(
+                    f"Item in remove_assets_from_album response missing required attributes: {item}"
+                )
+            if _id == str(asset_wrapper.id):
+                found = True
+                if not _success:
+                    error_msg = getattr(item, "error", None)
+                    asset_url = asset_wrapper.get_immich_photo_url().geturl()
+                    album_url = self.get_immich_album_url().geturl()
+                    raise RuntimeError(
+                        f"Asset {asset_wrapper.id} was not successfully removed from album {self.album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                    )
+
+        if not found:
+            raise RuntimeError(
+                f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.album.id}."
+            )
+
+        # Log successful removal
+        log(
+            f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self.album.id} ('{self.album.album_name}').",
+            level=LogLevel.FOCUS,
+        )
+
+        # Track modification if report provided
+        if tag_mod_report:
+            tag_mod_report.add_assignment_modification(
+                kind=ModificationKind.REMOVE_ASSET_FROM_ALBUM,
+                asset_wrapper=asset_wrapper,
+                album=self,
+            )
+
+        # Invalidate cache and verify removal with retry logic
+        self._verify_asset_removed_from_album_with_retry(
+            asset_wrapper, client, max_retries=3
+        )
+
+    @conditional_typechecked
     def _verify_asset_in_album_with_retry(
         self,
         asset_wrapper: "AssetResponseWrapper",
@@ -248,6 +332,35 @@ class AlbumResponseWrapper:
             else:
                 log(
                     f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.album.id}. "
+                    f"This may be an eventual consistency or API issue.",
+                    level=LogLevel.WARNING,
+                )
+
+    @conditional_typechecked
+    def _verify_asset_removed_from_album_with_retry(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        client: Client,
+        max_retries: int = 3,
+    ) -> None:
+        """
+        Verifies that an asset has been removed from the album after removing it, with retry logic for eventual consistency.
+        Uses exponential backoff to handle API delays.
+        """
+        import time
+
+        for attempt in range(max_retries):
+            self.reload_from_api(client)
+            if not self.has_asset(asset_wrapper.asset):
+                return  # Success - asset is no longer in album
+
+            if attempt < max_retries - 1:
+                # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
+                wait_time = 0.1 * (2**attempt)
+                time.sleep(wait_time)
+            else:
+                log(
+                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album {self.album.id}. "
                     f"This may be an eventual consistency or API issue.",
                     level=LogLevel.WARNING,
                 )

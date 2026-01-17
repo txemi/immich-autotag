@@ -40,3 +40,31 @@ class MatchResultList:
     @typechecked
     def rules(self) -> list:
         return [m.rule for m in self.matches]
+
+    @typechecked
+    def classification_status(self) -> "ClassificationStatus":
+        """
+        Determines the classification status based on number of matched rules.
+
+        Returns the status as a ClassificationStatus enum, making it easy to
+        pattern-match on the result for clear control flow.
+
+        Returns:
+            ClassificationStatus indicating if asset is CLASSIFIED, CONFLICT, or UNCLASSIFIED.
+
+        Example:
+            >>> status = match_results.classification_status()
+            >>> match status:
+            ...     case ClassificationStatus.CLASSIFIED:
+            ...         # Handle classified asset
+            ...     case ClassificationStatus.CONFLICT:
+            ...         # Handle conflict
+            ...     case ClassificationStatus.UNCLASSIFIED:
+            ...         # Handle unclassified
+        """
+        from immich_autotag.classification.classification_status import (
+            ClassificationStatus,
+        )
+
+        return ClassificationStatus.from_match_results(self)
+

@@ -43,24 +43,41 @@ def analyze_and_assign_album(
 
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
     match_results = rule_set.matching_rules(asset_wrapper)
-    num_rules_matched = len(
-        match_results.rules()
-    )  # Count rules (already unique from matching_rules)
+    
+    # Determine classification status
+    from immich_autotag.classification.classification_status import ClassificationStatus
+    
+    status = match_results.classification_status()
 
     asset_name = asset_wrapper.original_file_name
     asset_id = asset_wrapper.id
     immich_url = asset_wrapper.get_immich_photo_url().geturl()
 
-    if num_rules_matched == 1:
-        # Asset already classified by exactly one rule, nothing to do
+    if status == ClassificationStatus.CLASSIFIED:
+        # Asset already classified by exactly one rule
         log(
-            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' already classified by one rule. No action needed.",
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' already classified by one rule.",
             level=LogLevel.DEBUG,
         )
+        # Clean up: remove asset from temporary autotag albums to avoid duplicate memberships
+        from immich_autotag.assets.albums.remove_from_autotag_albums import (
+            remove_asset_from_autotag_temporary_albums,
+        )
+
+        all_albums = asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
+            asset_wrapper
+        )
+        remove_asset_from_autotag_temporary_albums(
+            asset_wrapper=asset_wrapper,
+            temporary_albums=all_albums,
+            tag_mod_report=tag_mod_report,
+        )
         return
-    elif num_rules_matched > 1:
+    
+    elif status == ClassificationStatus.CONFLICT:
         # Multiple rules matched - this indicates a classification conflict
         # This will be handled by the classification conflict tag system later in the workflow
+        num_rules_matched = len(list(match_results.rules()))
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_name}' ({asset_id}) matched {num_rules_matched} classification rules. "
             f"Classification conflict will be marked with autotag_output_conflict tag.\nSee asset: {immich_url}",
@@ -81,38 +98,44 @@ def analyze_and_assign_album(
         )
         # Don't raise exception - let the workflow continue to handle the conflict tag
         return
+    
+    elif status == ClassificationStatus.UNCLASSIFIED:
+        # Asset is not classified, try to assign an album through detection logic
 
-    # If we reach here: num_rules_matched == 0
-    # Asset is not classified, try to assign an album through detection logic
+        # First, try to detect an existing album (from folders or duplicates)
+        if album_decision.is_unique():
+            detected_album = album_decision.get_unique()
+            if detected_album:
+                album_origin = album_decision.get_album_origin(detected_album)
+                log(
+                    f"[ALBUM ASSIGNMENT] Asset '{asset_name}' will be assigned to album '{detected_album}' (origin: {album_origin}).",
+                    level=LogLevel.FOCUS,
+                )
+                _process_album_detection(
+                    asset_wrapper,
+                    tag_mod_report,
+                    detected_album,
+                    album_origin,
+                    suppress_album_already_belongs_log=suppress_album_already_belongs_log,
+                )
+                return
 
-    # First, try to detect an existing album (from folders or duplicates)
-    if album_decision.is_unique():
-        detected_album = album_decision.get_unique()
-        if detected_album:
-            album_origin = album_decision.get_album_origin(detected_album)
+        # If no unique album detected, try to create a temporary album
+        from immich_autotag.assets.albums.create_album_if_missing_classification import (
+            create_album_if_missing_classification,
+        )
+
+        created_album = create_album_if_missing_classification(
+            asset_wrapper, tag_mod_report
+        )
+        if not created_album:
             log(
-                f"[ALBUM ASSIGNMENT] Asset '{asset_name}' will be assigned to album '{detected_album}' (origin: {album_origin}).",
-                level=LogLevel.FOCUS,
+                f"[ALBUM ASSIGNMENT] Asset '{asset_name}' is not classified and no album could be assigned.",
+                level=LogLevel.DEBUG,
             )
-            _process_album_detection(
-                asset_wrapper,
-                tag_mod_report,
-                detected_album,
-                album_origin,
-                suppress_album_already_belongs_log=suppress_album_already_belongs_log,
-            )
-            return
-
-    # If no unique album detected, try to create a temporary album
-    from immich_autotag.assets.albums.create_album_if_missing_classification import (
-        create_album_if_missing_classification,
-    )
-
-    created_album = create_album_if_missing_classification(
-        asset_wrapper, tag_mod_report
-    )
-    if not created_album:
-        log(
-            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' is not classified and no album could be assigned.",
-            level=LogLevel.DEBUG,
+    
+    else:
+        # Exhaustive pattern match - should never reach here
+        raise NotImplementedError(
+            f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
         )
