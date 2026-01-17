@@ -18,12 +18,12 @@ from immich_autotag.tags.modification_kind import ModificationKind
 
 @typechecked
 def check_album_date_consistency(
-    asset_wrapper, tag_mod_report, months_threshold: int = 6
+    asset_wrapper, tag_mod_report, threshold_days: int = 180
 ):
     """
     For each album whose name starts with a date (YYYY-MM-DD, YYYY-MM, or YYYY),
     compare the album date to the asset's best date. If the difference is greater than
-    months_threshold, add an entry to the modification report.
+    threshold_days, add an entry to the modification report.
     """
     # Get the best date for the asset (oldest of created_at, file_created_at, exif_created_at)
     try:
@@ -42,7 +42,13 @@ def check_album_date_consistency(
     from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().config
-    autotag_name = config.duplicate_processing.autotag_album_date_mismatch
+    
+    # Get autotag name from new config section
+    if config.album_date_consistency:
+        autotag_name = config.album_date_consistency.autotag_album_date_mismatch
+    else:
+        autotag_name = "autotag_album_date_mismatch"  # Default fallback
+    
     mismatch_found = False
     for album_wrapper in albums:
         album_name = album_wrapper.album.album_name
@@ -61,9 +67,10 @@ def check_album_date_consistency(
                 level=LogLevel.FOCUS,
             )
             continue
-        diff = relativedelta(asset_date, album_date)
-        diff_months = abs(diff.years * 12 + diff.months)
-        if diff_months > months_threshold:
+        
+        # Calculate absolute difference in days
+        diff_days = abs((asset_date - album_date).days)
+        if diff_days > threshold_days:
             mismatch_found = True
             asset_wrapper.add_tag_by_name(autotag_name)
             tag_mod_report.add_modification(
@@ -76,12 +83,12 @@ def check_album_date_consistency(
                     "album_name": album_name,
                     "album_date": str(album_date.date()),
                     "asset_date": str(asset_date.date()),
-                    "diff_months": diff_months,
+                    "diff_days": diff_days,
                     "autotag": autotag_name,
                 },
             )
             log(
-                f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} in album '{album_name}' has date mismatch: asset {asset_date.date()} vs album {album_date.date()} (diff {diff_months} months) -- autotagged as '{autotag_name}'",
+                f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} in album '{album_name}' has date mismatch: asset {asset_date.date()} vs album {album_date.date()} (diff {diff_days} days) -- autotagged as '{autotag_name}'",
                 level=LogLevel.FOCUS,
             )
     # Remove the autotag if no mismatch is found and the tag is present

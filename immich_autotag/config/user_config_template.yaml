@@ -60,13 +60,23 @@ classification: # Rules to classify assets by tags or album name patterns.
   autotag_unknown: autotag_output_unknown
   autotag_conflict: autotag_output_conflict
 duplicate_processing:
-  autotag_album_date_mismatch: autotag_output_album_date_mismatch
   autotag_album_conflict: autotag_output_duplicate_asset_album_conflict
   autotag_classification_conflict: autotag_output_duplicate_asset_classification_conflict
   autotag_classification_conflict_prefix: autotag_output_duplicate_asset_classification_conflict_
   date_correction:
     enabled: true
     extraction_timezone: Europe/Madrid
+# Album Date Consistency: checks if asset dates match their album dates
+album_date_consistency:
+  enabled: true
+  autotag_album_date_mismatch: autotag_output_album_date_mismatch
+  threshold_days: 180  # Maximum allowed difference in days (6 months)
+  # Recommended workflow for iterative refinement:
+  # - Start: 180 days (6 months) - catch major errors
+  # - After cleanup: 90 days (3 months)
+  # - After cleanup: 60 days (2 months)  
+  # - After cleanup: 30 days (1 month)
+  # - Final: 7 days (1 week) for strict consistency
 album_detection_from_folders:
   enabled: true
   excluded_paths:
