@@ -137,11 +137,22 @@ class PerformanceConfig(BaseModel):
         description="Enable @typechecked runtime type validation. Disable in production for ~50% performance improvement.",
     )
 
+# --- Skip/Resume configuration ---
+class SkipConfig(BaseModel):
+    skip_n: int = Field(default=0, description="Número de elementos a saltar al procesar.")
+    resume_previous: bool = Field(default=True, description="Si se debe continuar desde la ejecución anterior.")
+    # antiguo     enable_checkpoint_resume: bool
+
 
 class UserConfig(BaseModel):
+
     server: ServerConfig
     enable_album_name_strip: bool
-    enable_checkpoint_resume: bool
+    skip: Optional[SkipConfig] = Field(
+        default=None,
+        description="Configuración para saltar elementos y reanudar ejecuciones previas."
+    )    
+
     filters: Optional[FilterConfig] = None
     conversions: List[Conversion]
     classification: ClassificationConfig

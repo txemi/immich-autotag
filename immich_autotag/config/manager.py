@@ -33,63 +33,76 @@ class ConfigManager:
         _instance_created = True
         _instance = self
         # --- New configuration search and loading logic ---
+        self._load()
+        # Initialize skip_n with the counter from the last previous execution (with overlap)
+        self._initialize_skip_n_from_checkpoint()
+
+
+        # Dump the loaded configuration to the logs/output folder
+        self.dump_to_yaml()
+        self.print_config()
+
+    @typechecked
+    def _load(self):
+        from .user_config import user_config  # type: ignore
+        self.config = user_config
+        return
+
         try:
-            config_location = find_user_config()
-            print(f"[CONFIG] Found config path: {config_location.path}")
-
-            if config_location.path is None:
-                from immich_autotag.utils.user_help import print_config_help
-
-                print_config_help()
-                raise FileNotFoundError(
-                    "No configuration found. See the configuration guide above."
-                )
-
-            config_type = config_location.get_type()
-            if config_type == config_type.__class__.PYTHON:
-                print(f"[CONFIG] Loading Python config from {config_location.path}")
-                config_obj = load_python_config(config_location.path)
-                if isinstance(config_obj, UserConfig):
-                    self.config = config_obj
-                else:
-                    print(f"[CONFIG] Validating config object as UserConfig...")
-                    self.config = UserConfig.model_validate(config_obj)
-            elif config_type == config_type.__class__.YAML:
-                print(f"[CONFIG] Loading YAML config from {config_location.path}")
-                config_data = load_yaml_config(config_location.path)
-                self.config = UserConfig.model_validate(config_data)
-            else:
-                from immich_autotag.utils.user_help import print_config_help
-
-                print_config_help()
-                raise FileNotFoundError(
-                    "No configuration found. See the configuration guide above."
-                )
-
+            self._try_load_dynamic()
             print(f"[CONFIG] ✅ Config loaded successfully: {type(self.config)}")
-
         except Exception as e:
             print(f"[CONFIG] ❌ ERROR loading config: {e}")
             print(f"[CONFIG] Exception type: {type(e).__name__}")
             import traceback
-
             traceback.print_exc()
             raise
 
-        # Initialize skip_n with the counter from the last previous execution (with overlap)
-        try:
-            from immich_autotag.statistics.statistics_checkpoint import (
-                get_previous_skip_n,
+    @typechecked
+    def _try_load_dynamic(self):
+        config_location = find_user_config()
+        print(f"[CONFIG] Found config path: {config_location.path}")
+
+        if config_location.path is None:
+            from immich_autotag.utils.user_help import print_config_help
+
+            print_config_help()
+            raise FileNotFoundError(
+                "No configuration found. See the configuration guide above."
             )
 
-            prev_skip_n = get_previous_skip_n()
-            if prev_skip_n is not None and hasattr(self.config, "skip_n"):
-                self.config.skip_n = prev_skip_n
-        except Exception as e:
-            print(f"[WARN] Could not initialize skip_n from previous statistics: {e}")
-        # Dump the loaded configuration to the logs/output folder
-        self.dump_to_yaml()
-        self.print_config()
+        config_type = config_location.get_type()
+        if config_type == config_type.__class__.PYTHON:
+            print(f"[CONFIG] Loading Python config from {config_location.path}")
+            config_obj = load_python_config(config_location.path)
+            if isinstance(config_obj, UserConfig):
+                self.config = config_obj
+            else:
+                print(f"[CONFIG] Validating config object as UserConfig...")
+                self.config = UserConfig.model_validate(config_obj)
+        elif config_type == config_type.__class__.YAML:
+            print(f"[CONFIG] Loading YAML config from {config_location.path}")
+            config_data = load_yaml_config(config_location.path)
+            self.config = UserConfig.model_validate(config_data)
+        else:
+            from immich_autotag.utils.user_help import print_config_help
+
+            print_config_help()
+            raise FileNotFoundError(
+                "No configuration found. See the configuration guide above."
+            )
+    @typechecked
+    def _initialize_skip_n_from_checkpoint(self):
+        """
+        Try to initialize skip_n from previous statistics checkpoint.
+        """
+        from immich_autotag.statistics.statistics_checkpoint import (
+                get_previous_skip_n,
+            )
+        prev_skip_n = get_previous_skip_n()
+        if prev_skip_n is not None :
+            self.config.skip.skip_n = prev_skip_n
+
 
     @staticmethod
     @typechecked
