@@ -34,21 +34,29 @@ class ConfigManager:
         _instance = self
         # --- New configuration search and loading logic ---
         try:
-            config_type, config_path = find_user_config()
-            print(f"[CONFIG] Found config type: {config_type}, path: {config_path}")
+            config_location = find_user_config()
+            print(f"[CONFIG] Found config path: {config_location.path}")
 
-            if config_type == "python":
-                print(f"[CONFIG] Loading Python config from {config_path}")
-                config_obj = load_python_config(config_path)
+            if config_location.path is None:
+                from immich_autotag.utils.user_help import print_config_help
+
+                print_config_help()
+                raise FileNotFoundError(
+                    "No configuration found. See the configuration guide above."
+                )
+
+            config_type = config_location.get_type()
+            if config_type == config_type.__class__.PYTHON:
+                print(f"[CONFIG] Loading Python config from {config_location.path}")
+                config_obj = load_python_config(config_location.path)
                 if isinstance(config_obj, UserConfig):
                     self.config = config_obj
                 else:
-                    # Intentar validar si es un dict
                     print(f"[CONFIG] Validating config object as UserConfig...")
                     self.config = UserConfig.model_validate(config_obj)
-            elif config_type == "yaml":
-                print(f"[CONFIG] Loading YAML config from {config_path}")
-                config_data = load_yaml_config(config_path)
+            elif config_type == config_type.__class__.YAML:
+                print(f"[CONFIG] Loading YAML config from {config_location.path}")
+                config_data = load_yaml_config(config_location.path)
                 self.config = UserConfig.model_validate(config_data)
             else:
                 from immich_autotag.utils.user_help import print_config_help
