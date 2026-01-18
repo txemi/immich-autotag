@@ -1,4 +1,6 @@
+
 import attrs
+from typeguard import typechecked
 
 from immich_autotag.config.models import Destination
 
