@@ -111,9 +111,12 @@ class AlbumCollectionWrapper:
         Devuelve True si se eliminó correctamente, False si no estaba en la colección.
         Lanza excepción si la API falla.
         """
-        from immich_client.api.albums import delete_album
+        from immich_client.api.albums.delete_album import sync_detailed as delete_album_sync
+        from uuid import UUID
+        # Convertir id de str a UUID antes de llamar a la API
+        album_id = UUID(album_wrapper.album.id)
         # Llamada a la API para borrar el álbum en el servidor
-        delete_album.sync(id=album_wrapper.album.id, client=client)
+        delete_album_sync(id=album_id, client=client)
         # Eliminar de la lista interna (como es frozen, hay que reconstruir la lista)
         albums_new = [a for a in self.albums if a != album_wrapper]
         object.__setattr__(self, "albums", albums_new)
@@ -145,26 +148,31 @@ class AlbumCollectionWrapper:
         from immich_client.api.albums import add_users_to_album, create_album
         from immich_client.api.users import get_my_user
         from immich_client.models.add_users_dto import AddUsersDto
-        from immich_client.models.album_response_dto import AlbumResponseDto
         from immich_client.models.album_user_add_dto import AlbumUserAddDto
         from immich_client.models.album_user_role import AlbumUserRole
         from immich_client.models.create_album_dto import CreateAlbumDto
+        from uuid import UUID
 
         # (import removed, already imported at module level)
 
         album = create_album.sync(
             client=client, body=CreateAlbumDto(album_name=album_name)
         )
+        if album is None:
+            raise RuntimeError("Failed to create album: API returned None")
         user = get_my_user.sync(client=client)
-        user_id = user.id
+        if user is None:
+            raise RuntimeError("Failed to get current user: API returned None")
+        user_id = UUID(user.id)
         # Avoid adding the owner as editor (Immich API returns error 400 if attempted)
         # We assume that album.owner_id is the owner's id
-        if user_id == album.owner_id:
+        owner_id = UUID(album.owner_id)
+        if user_id == owner_id:
             pass  # Do not add the owner as editor
         else:
             try:
                 add_users_to_album.sync(
-                    id=album.id,
+                    id=UUID(album.id),
                     client=client,
                     body=AddUsersDto(
                         album_users=[
@@ -208,6 +216,8 @@ class AlbumCollectionWrapper:
 
         # Fetch only basic album metadata (without assets)
         albums = get_all_albums.sync(client=client)
+        if albums is None:
+            raise RuntimeError("Failed to fetch albums: API returned None")
         albums_wrapped: list[AlbumResponseWrapper] = []
 
         print("\nAlbums:")
