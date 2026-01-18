@@ -105,6 +105,10 @@ class Conversion(BaseModel):
         default=ConversionMode.MOVE,
         description="Conversion mode: 'move' replaces source values, 'copy' adds destination values.",
     )
+    description: Optional[str] = Field(
+        default=None,
+        description="Optional description for the conversion rule."
+    )
 
 
 class ClassificationConfig(BaseModel):
