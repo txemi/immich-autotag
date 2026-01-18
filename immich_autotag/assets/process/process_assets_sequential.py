@@ -7,14 +7,13 @@ from typeguard import typechecked
 
 from immich_autotag.assets.process.perf_log import perf_log
 from immich_autotag.assets.process.process_single_asset import process_single_asset
+from immich_autotag.config.manager import ConfigManager
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.errors.recoverable_error import categorize_error
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
-
 from immich_autotag.statistics.statistics_manager import StatisticsManager
-from immich_autotag.config.manager import ConfigManager
 
 
 @typechecked
@@ -27,9 +26,9 @@ def process_assets_sequential(
     )
     log("[DEBUG] Before iterating assets (start of for loop)", level=LogLevel.DEBUG)
     stats = StatisticsManager.get_instance().get_stats()
-    cm=ConfigManager.get_instance()
+    cm = ConfigManager.get_instance()
     assert isinstance(cm, ConfigManager)
-    skip_n=cm.config.skip.skip_n
+    skip_n = cm.config.skip.skip_n
     max_assets = stats.max_assets
     count = 0
     try:
