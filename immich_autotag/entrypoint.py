@@ -43,7 +43,6 @@ def run_main():
     print("[ENTRYPOINT] Initializing ConfigManager...")
     manager = ConfigManager.get_instance()
 
-
     # Verify config is actually loaded before doing anything else
     if manager.config is None:
         print(
