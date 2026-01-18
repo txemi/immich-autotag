@@ -14,12 +14,28 @@ from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
 
 
+
+# Singleton instance storage
+_album_collection_singleton: AlbumCollectionWrapper | None = None
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
-
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
+
+    def __attrs_post_init__(self):
+        global _album_collection_singleton
+        if _album_collection_singleton is not None:
+            raise RuntimeError("AlbumCollectionWrapper is a singleton: only one instance is allowed.")
+        _album_collection_singleton = self
+
+    @classmethod
+    def get_instance(cls) -> "AlbumCollectionWrapper":
+        global _album_collection_singleton
+        if _album_collection_singleton is None:
+            raise RuntimeError("AlbumCollectionWrapper singleton has not been initialized yet.")
+        return _album_collection_singleton
 
     @cached_property
     def _asset_to_albums_map(self) -> dict[str, list[AlbumResponseWrapper]]:
