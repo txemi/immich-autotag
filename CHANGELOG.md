@@ -306,28 +306,28 @@ This release consolidates significant work across 5 major feature areas:
 
 
 ## [0.74.0-rc1] - 2026-01-18
-**Status:** 🔄 Release candidate (stabilization branch)
-**Description:** Major refactor, robustness and improvements in error handling, logging, and statistics. Preparation for stable release and documentation update.
+- **Status:** 🔄 Release candidate (stabilization branch)
+- **Description:** Major refactor, robustness and improvements in error handling, logging, and statistics. Preparation for stable release and documentation update.
 
 ### Changed
-- Deep refactor of album and asset management: better encapsulation, singleton patterns, and improved collection/cache management.
-- Centralized and more robust error handling: error handling mode is now configurable and consistent throughout the album asset removal flow.
-- Logging system improvements: clearer messages, better traceability, and new log levels for warnings and important events.
+- Deep refactor of [album and asset management](docs/issues/0004-album-detection/): better encapsulation, singleton patterns, and improved collection/cache management.
+- Centralized and more robust [error handling](docs/issues/0004-album-detection/): error handling mode is now configurable and consistent throughout the album asset removal flow.
+- [Logging system improvements](docs/issues/0020-docs-track-branch/): clearer messages, better traceability, and new log levels for warnings and important events.
 - Refactor and cleanup of imports, type hints, and annotations across the codebase for maintainability and robustness.
-- Improved configuration management and validation: stricter Pydantic models, additional validations, and clearer error handling in ConfigManager.
-- Statistics and event logic improvements: now supports incremental event logging and per-key statistics.
+- Improved [configuration management and validation](docs/issues/0009-config-system-refactor/): stricter Pydantic models, additional validations, and clearer error handling in ConfigManager.
+- [Statistics and event logic improvements](docs/issues/0008-statistics-checkpoint/): now supports incremental event logging and per-key statistics.
 - Cleanup and standardization of constant names and album/tag patterns in user configuration.
-- Improved handling of temporary albums and removal logic, with warnings instead of fatal errors where appropriate.
+- Improved handling of [temporary albums](docs/issues/0016-auto-album-creation/) and removal logic, with warnings instead of fatal errors where appropriate.
 - .gitignore and formatting scripts updated for better repository hygiene.
 
 ### Fixed
-- Fixed errors in UUID conversion and asset handling in albums.
+- Fixed errors in UUID conversion and [asset handling in albums](docs/issues/0004-album-detection/).
 - Fixed imports and type references in multiple modules.
-- Fixed validation and matching logic in classification rules and conversions.
+- Fixed validation and matching logic in [classification rules and conversions](docs/issues/0017-rules-tag-album-combination/).
 - Fixed errors in dynamic configuration loading and exception handling.
 
 ### Added
-- New methods and utilities for statistics, event management, and modification reports.
+- New methods and utilities for [statistics, event management, and modification reports](docs/issues/0008-statistics-checkpoint/).
 - Support for optional description field in Conversion model.
 - Improved welcome link generation and detection of configured tags.
 - Improved internal documentation and code comments throughout the codebase.
