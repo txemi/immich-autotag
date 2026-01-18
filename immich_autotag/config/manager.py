@@ -1,4 +1,3 @@
-# To load the checkpoint, import from immich_autotag.duplicates.checkpoint_loader
 """
 manager.py
 
@@ -31,15 +30,24 @@ class ConfigManager:
             raise RuntimeError(
                 "ConfigManager instance already exists. Use get_instance()."
             )
-        _instance_created = True
-        _instance = self
-        # --- New configuration search and loading logic ---
         try:
-            self._load()
+            # --- New configuration search and loading logic ---
+            self._construction()
+            # Initialize skip_n with the counter from the last previous execution (with overlap)
+
+            _instance_created = True
+            _instance = self
         except Exception as e:
             print("[ConfigManager] Error during config load:")
             traceback.print_exc()
+            _instance = None
+            _instance_created = False
             raise
+    def _construction(self):
+        # --- New configuration search and loading logic ---
+
+        self._load()
+
         # Initialize skip_n with the counter from the last previous execution (with overlap)
         self._initialize_skip_n_from_checkpoint()
 
@@ -54,7 +62,7 @@ class ConfigManager:
             if self.config :
                 return
         except Exception:
-            pass  # Ignore and try dynamic loading
+            raise  # Ignore and try dynamic loading
 
         try:
             self._try_load_dynamic()
@@ -118,6 +126,7 @@ class ConfigManager:
         global _instance
         if _instance is None:
             ConfigManager()
+            #_instance._construction()
         return _instance
 
     @typechecked

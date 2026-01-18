@@ -20,6 +20,7 @@ from immich_autotag.config.models import (
     FilterConfig,
     PerformanceConfig,
     ServerConfig,
+    SkipConfig,
     UserConfig,
     UserGroup,
 )
