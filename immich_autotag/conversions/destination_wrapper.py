@@ -1,5 +1,7 @@
 import attrs
+
 from immich_autotag.config.models import Destination
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class DestinationWrapper:
@@ -11,6 +13,7 @@ class DestinationWrapper:
 
     def get_album_names(self) -> list[str]:
         return self.destination.album_names or []
+
     @typechecked
     def apply_action(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
         """
@@ -30,7 +33,9 @@ class DestinationWrapper:
         for album in self.get_album_names():
             if album not in asset_wrapper.get_album_names():
                 try:
-                    asset_wrapper.context.albums_collection.add_asset_to_album(asset_wrapper, album)
+                    asset_wrapper.context.albums_collection.add_asset_to_album(
+                        asset_wrapper, album
+                    )
                     changes.append(f"Added asset to album '{album}'")
                 except Exception as e:
                     changes.append(f"Failed to add asset to album '{album}': {e}")
@@ -38,4 +43,6 @@ class DestinationWrapper:
 
     def __attrs_post_init__(self):
         if not (self.get_tag_names() or self.get_album_names()):
-            raise ValueError("DestinationWrapper: destination debe tener al menos un tag o un álbum de destino.")
+            raise ValueError(
+                "DestinationWrapper: destination debe tener al menos un tag o un álbum de destino."
+            )

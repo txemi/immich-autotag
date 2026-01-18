@@ -53,12 +53,12 @@ def analyze_and_assign_album(
     asset_id = asset_wrapper.id
     immich_url = asset_wrapper.get_immich_photo_url().geturl()
 
-
     if status == ClassificationStatus.CLASSIFIED:
         # Always clean up: remove from temporary albums and update classification tags
         from immich_autotag.assets.albums.remove_from_autotag_albums import (
             remove_asset_from_autotag_temporary_albums,
         )
+
         all_albums = (
             asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
                 asset_wrapper

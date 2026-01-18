@@ -1,16 +1,19 @@
+from typing import TYPE_CHECKING
 
 import attrs
 from typeguard import typechecked
-from typing import TYPE_CHECKING
 
-from immich_autotag.config.models import Conversion, Destination, ConversionMode
-from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
+from immich_autotag.classification.classification_rule_wrapper import (
+    ClassificationRuleWrapper,
+)
+from immich_autotag.config.models import Conversion, ConversionMode, Destination
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 # Import normal para ejecución (evita NameError en tiempo de ejecución)
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class ConversionWrapper:
@@ -34,12 +37,10 @@ class ConversionWrapper:
     def destination_album_patterns(self) -> list[str]:
         return self.conversion.destination.album_name_patterns or []
 
-
     @typechecked
     def get_source_wrapper(self) -> ClassificationRuleWrapper:
         """Devuelve un ClassificationRuleWrapper para el source de la conversión."""
         return ClassificationRuleWrapper(self.conversion.source)
-
 
     @typechecked
     def get_destination_wrapper(self):
@@ -73,6 +74,9 @@ class ConversionWrapper:
             changes.extend(result_action.apply_action(asset_wrapper))
             # Según el modo de conversión, elimina los tags/álbumes de origen
             if self.conversion.mode == ConversionMode.MOVE:
-                changes.extend(self.get_source_wrapper().remove_matches(asset_wrapper, match_result))
+                changes.extend(
+                    self.get_source_wrapper().remove_matches(
+                        asset_wrapper, match_result
+                    )
+                )
         return changes
-

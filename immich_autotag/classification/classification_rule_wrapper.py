@@ -79,7 +79,7 @@ class ClassificationRuleWrapper:
             rule=self,
             tags_matched=tags_matched,
             albums_matched=albums_matched,
-            asset_links_matched=asset_links_matched
+            asset_links_matched=asset_links_matched,
         )
 
     @typechecked
@@ -124,7 +124,9 @@ class ClassificationRuleWrapper:
         return uuids
 
     @typechecked
-    def remove_matches(self, asset_wrapper: "AssetResponseWrapper", match_result: "MatchResult") -> list[str]:
+    def remove_matches(
+        self, asset_wrapper: "AssetResponseWrapper", match_result: "MatchResult"
+    ) -> list[str]:
         """
         Elimina del asset todos los tags y álbumes que hayan macheado con esta regla (según el MatchResult).
         Devuelve una lista de cambios realizados.
