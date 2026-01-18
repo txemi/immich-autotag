@@ -15,7 +15,9 @@ from typing import Any, Dict, Optional
 import yaml
 from pydantic import BaseModel, Field
 
+
 from immich_autotag.tags.modification_kind import ModificationKind
+from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 
 # Strict typing for output tag counters
