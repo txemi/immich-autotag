@@ -195,7 +195,6 @@ These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_l
 ## 1.3. Practical Use Case: How to Take Advantage of This Script
 
 
-
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
 
 
@@ -216,28 +215,23 @@ You can define also special tags or albums for photos that do not belong to any 
   - Launch Immich AutoTag using any of the methods described above (Docker, pipx, or directly from the repo).
   - For automated, periodic execution, you can use the Docker cron image or set up your own scheduling solution.
 
+**Step 3: Use the generated links to organize your assets** 
+
+[example quick links above](#121-reviewing-results-example-links) 
+
+  - If you enabled automatic album creation, start by visiting the Albums view (see the link at the top of this document). Group by year, sort by number of assets, and filter by autotag. This will show you the largest automatically created albums first.
+    - For each album, you can choose to rename and keep it, delete it if not needed, or modify its contents to better fit your organization.
+    - Once you are satisfied with your albums, move to the next review step.
+  - Next, use the provided links to review assets that are unclassified or in conflict. These links let you quickly find and address assets that need attention.
+  - Finally, use the other links to review assets tagged for issues such as date mismatches or other warnings. Anything autotag has flagged and you don't agree with can be deleted; autotag will recreate the necessary tags on the next run based on your configuration.
+  - Note: Immich AutoTag is designed to automatically remove warning tags when issues are resolved, so you don't need to clean them up manually.
 
 
-
-**Step 3:** If the script finds a photo that is unclassified or classified in multiple places, it will use a special tag (by default, tags starting with `autotag_`). All of this is configurable in the user config file. This way, you can easily locate these photos from the Immich interface and decide what to do: add/remove them from albums, tag as meme, postpone, ignore, etc.
-
-**Step 4:** After making corrections in Immich (see the [example quick links above](#121-reviewing-results-example-links) to easily review and access affected assets), you can rerun the script. It will remove the special tags from photos that have been resolved, so each run leaves fewer unclassified or conflicted photos. The user can keep iterating until the library is perfectly organized.
+ The user can keep iterating until the library is perfectly organized.
 
 **Tips for Classification:**
 - Use Immich's date view to quickly identify all photos from the same event and add them to an album with the name pattern you defined for valid classification.
 - To find memes or photos that should be tagged to avoid being candidates for albums, use Immich's "find similar" feature (AI-powered), which helps you quickly locate and tag such photos in bulk.
-
-## 1.4. Future Directions
-
-With the logic for adding and removing tags now solved in this project, it becomes very easy to add new features. In the future, this tagging system and codebase could be extended to:
-
-- Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums).
-- Assist in the detection and management of duplicate folders or files within the photo library.
-- Assign users to albums automatically based on the application's rule engine (e.g., ownership, sharing, or access control).
- - Make the rule engine more generic to enable processing workflows for batch operations that are better adapted to users' specific needs.
-- Integrate with other automation or AI-based classification systems to further enhance photo management.
-
-This foundation makes it straightforward to build more advanced features for organizing and maintaining large photo and video collections in Immich.
 
 > For a complete and detailed list of features, improvements, and changes, see the [Changelog](./CHANGELOG.md).
 
