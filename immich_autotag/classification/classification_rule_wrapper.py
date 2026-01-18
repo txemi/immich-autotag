@@ -56,7 +56,7 @@ class ClassificationRuleWrapper:
         self, asset_wrapper: "AssetResponseWrapper"
     ) -> "MatchResult | None":
         """
-        Returns a MatchResult for this rule and the given asset (with lists of matching tags and albums), or None if no match.
+        Returns a MatchResult for this rule and the given asset (with lists of matching tags, albums, and asset_links), or None if no match.
         """
         from immich_autotag.classification.match_result import MatchResult
 
@@ -64,10 +64,22 @@ class ClassificationRuleWrapper:
         album_names = set(asset_wrapper.get_album_names())
         tags_matched = [tag for tag in asset_tags if self.has_tag(tag)]
         albums_matched = [album for album in album_names if self.matches_album(album)]
-        if not tags_matched and not albums_matched:
+
+        # Check asset_links (UUIDs)
+        asset_link_uuids = self.extract_uuids_from_asset_links()
+        asset_uuid = asset_wrapper.id_as_uuid
+        asset_links_matched = []
+        if asset_link_uuids and asset_uuid is not None:
+            if asset_uuid in asset_link_uuids:
+                asset_links_matched = [str(asset_uuid)]
+
+        if not tags_matched and not albums_matched and not asset_links_matched:
             return None
         return MatchResult(
-            rule=self, tags_matched=tags_matched, albums_matched=albums_matched
+            rule=self,
+            tags_matched=tags_matched,
+            albums_matched=albums_matched,
+            asset_links_matched=asset_links_matched
         )
 
     @typechecked
@@ -110,5 +122,24 @@ class ClassificationRuleWrapper:
                 )
 
         return uuids
+
+    @typechecked
+    def remove_matches(self, asset_wrapper: "AssetResponseWrapper", match_result: "MatchResult") -> list[str]:
+        """
+        Elimina del asset todos los tags y álbumes que hayan macheado con esta regla (según el MatchResult).
+        Devuelve una lista de cambios realizados.
+        """
+        changes = []
+        # Eliminar tags macheados
+        for tag in match_result.tags_matched:
+            if asset_wrapper.has_tag(tag):
+                asset_wrapper.remove_tag_by_name(tag)
+                changes.append(f"Removed matched tag '{tag}'")
+        # Eliminar álbumes macheados (si hay lógica para ello)
+        # for album in match_result.albums_matched:
+        #     if album in asset_wrapper.get_album_names():
+        #         ... # lógica para eliminar asset del álbum
+        #         changes.append(f"Removed asset from matched album '{album}'")
+        return changes
 
     # You can add more utility methods as needed
