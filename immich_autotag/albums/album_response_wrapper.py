@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 
 import attrs
+
+from typeguard import typechecked
 from immich_client.models.album_response_dto import AlbumResponseDto
 
 from immich_autotag.types import ImmichClient
@@ -33,27 +35,52 @@ class AlbumResponseWrapper:
     def album(self) -> AlbumResponseDto:
         """Returns full album if loaded, otherwise partial. Lazy-loads full data on first detailed access."""
         return self._album_full if self._album_full is not None else self.album_partial
+    @typechecked
 
-    @album.setter
-    def album(self, value: AlbumResponseDto) -> None:
-        """Sets the full album data."""
+    def _set_album_full(self, value: AlbumResponseDto) -> None:
+        """Sets the full album data explicitly (debe tener assets cargados)."""
         self._album_full = value
 
+    def invalidate_cache(self) -> None:
+        """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
+        if hasattr(self, "asset_ids"):
+            try:
+                del self.asset_ids
+            except Exception:
+                pass
+
+    @conditional_typechecked
+    def reload_from_api(self, client: ImmichClient) -> None:
+        """Reloads the album DTO from the API and clears the cache."""
+        from immich_client.api.albums import get_album_info
+
+        album_dto = get_album_info.sync(id=self.album_partial.id, client=client)
+        self._set_album_full(album_dto)
+        self.invalidate_cache()
+
+
+    @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
         """Lazy-loads full album data from API if not already loaded."""
         if self._album_full is not None:
             return
-        from immich_client.api.albums import get_album_info
+        self.reload_from_api(client)
 
-        self._album_full = get_album_info.sync(id=self.album_partial.id, client=client)
-
+    @conditional_typechecked
+    def _get_album_full_or_load(self) -> AlbumResponseDto:
+        """Returns full album, loading from API if necessary. Obtiene el ImmichClient singleton internamente."""
+        from immich_autotag.config.internal_config import get_default_client
+        client = get_default_client()
+        self._ensure_full_album_loaded(client)
+        assert self._album_full is not None
+        return self._album_full
     from functools import cached_property
 
     @cached_property
     def asset_ids(self) -> set[str]:
         """Set of album asset IDs, cached for O(1) access in has_asset.
         Assets are already populated by from_client() or reload_from_api()."""
-        return set(a.id for a in self.album.assets) if self.album.assets else set()
+        return set(a.id for a in self._get_album_full_or_load().assets) if self.album.assets else set()
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
@@ -81,7 +108,7 @@ class AlbumResponseWrapper:
             return []
         return [
             context.asset_manager.get_wrapper_for_asset(a, context)
-            for a in self.album.assets
+            for a in self._get_album_full_or_load().assets
         ]
 
     from typing import Optional
@@ -365,22 +392,6 @@ class AlbumResponseWrapper:
                     level=LogLevel.WARNING,
                 )
 
-    def invalidate_cache(self) -> None:
-        """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
-        if hasattr(self, "asset_ids"):
-            try:
-                del self.asset_ids
-            except Exception:
-                pass
-
-    @conditional_typechecked
-    def reload_from_api(self, client: ImmichClient) -> None:
-        """Reloads the album DTO from the API and clears the cache."""
-        from immich_client.api.albums import get_album_info
-
-        album_dto = get_album_info.sync(id=self.album_partial.id, client=client)
-        self.album = album_dto  # Use property setter
-        self.invalidate_cache()
 
     @staticmethod
     @conditional_typechecked
@@ -396,6 +407,7 @@ class AlbumResponseWrapper:
 
         album_full = get_album_info.sync(id=album_id, client=client)
         wrapper = AlbumResponseWrapper(album_partial=album_full)
+        wrapper._album_full=album_full
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
         return wrapper
 

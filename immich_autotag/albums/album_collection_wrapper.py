@@ -41,19 +41,21 @@ class AlbumCollectionWrapper:
     def _asset_to_albums_map(self) -> dict[str, list[AlbumResponseWrapper]]:
         """Pre-computed map: asset_id -> list of AlbumResponseWrapper objects (O(1) lookup).
 
-        Stores direct references to AlbumResponseWrapper objects instead of names.
-        This prevents ambiguity when multiple albums have the same name (allowed in Immich).
-
-        Computed once during initialization and cached. This eliminates the O(n²)
-        complexity of iterating all albums for each asset lookup.
-
-        Time complexity: O(A * M) where A=albums count, M=assets per album
-        Lookup complexity: O(1) for each has_asset check
-
-        This optimization reduces albums_for_asset() from ~35,273 sec to ~2-3 sec.
+        Antes de construir el mapa, fuerza la carga de asset_ids en todos los álbumes (lazy loading).
         """
         asset_map: dict[str, list[AlbumResponseWrapper]] = {}
+        assert len(self.albums) > 0, "AlbumCollectionWrapper must have at least one album to build asset map."
         for album_wrapper in self.albums:
+            # Forzar la recarga de assets si asset_ids está vacío
+            if not album_wrapper.asset_ids:
+                # Recarga desde la API y actualiza el cache
+                # Necesita un ImmichClient, aquí asumimos que el wrapper tiene acceso o se debe pasar
+                # Si no tienes el cliente, puedes modificar para pasarlo como argumento
+                from immich_autotag.config.internal_config import get_default_client
+                client = get_default_client()
+                album_wrapper.reload_from_api(client)
+                if not album_wrapper.asset_ids:
+                    print(f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload.")
             for asset_id in album_wrapper.asset_ids:
                 if asset_id not in asset_map:
                     asset_map[asset_id] = []

@@ -22,6 +22,7 @@ _instance_created = False
 
 @attrs.define(auto_attribs=True, slots=True)
 class ImmichContext:
+
     client: ImmichClient = attrs.field(
         validator=attrs.validators.instance_of((ImmichClient,))
     )
@@ -85,3 +86,8 @@ class ImmichContext:
             asset_manager=asset_manager,
         )
         return instance
+    @staticmethod
+    def get_default_client():
+        """Devuelve el ImmichClient del contexto singleton global."""
+        ctx = ImmichContext.get_instance()
+        return ctx.client
