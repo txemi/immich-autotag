@@ -75,16 +75,16 @@ def remove_asset_from_autotag_temporary_albums(
                 client=asset_wrapper.client,
                 tag_mod_report=tag_mod_report,
             )
-            removed_album_names.append(album_wrapper.album.name)
+            removed_album_names.append(album_wrapper.album.album_name)
 
             log(
-                f"Asset {asset_wrapper.id} removed from temporary album {album_wrapper.album.name}",
+                f"Asset {asset_wrapper.id} removed from temporary album {album_wrapper.album.album_name}",
                 level=LogLevel.DEBUG,
             )
 
         except Exception as e:
             log(
-                f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.album.name}: {e}",
+                f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.album.album_name}: {e}",
                 level=LogLevel.WARNING,
             )
             # Continue processing other albums even if one fails
