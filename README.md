@@ -1,6 +1,11 @@
 # 1. Immich AutoTag
 
+## Project Description (2 lines)
+
+Immich AutoTag is a basic process and rule engine to automate actions on images and videos (assets) in Immich. It can create and assign albums, generate and assign tags, and repair dates based on a user-defined configuration file.
+
 ## 1.1. Motivation
+
 
 ### 1.1.1. Why Immich?
 
@@ -12,28 +17,28 @@ When starting to use Immich, it is common to import large volumes of photos from
 
 > **Note:** Some users have found it hard to understand what this tool actually does. For a much simpler, intentionally non-technical explanation, see [Explain Like I'm 5](./docs/explain-like-im-5.md).
 
-### 1.1.3. What does this project solve?
 
-This project automatically applies new tags to assets (photos and videos) in Immich, based on existing albums and tags. 
 
-**In the context of this project, a photo is considered 'classified' if it either belongs to a set of albums (configurable using patterns) that are deemed to provide classification, or it has one or more tags (also configurable) that the user considers sufficient for classification.**
+## Key Features
+
+- **Automatic album creation and assignment:** Create and assign albums based on detected duplicates in Immich, or from folders in your file system (if enabled). Both methods can be used to save time when organizing large libraries.
+- **Rule-based classification engine:** Define flexible rules using tags and album name patterns to automatically categorize assets. Immich AutoTag will label each asset as classified, in conflict, or pending classification using output tags.
+- **Permission management:** Configure user groups and rules in the config file to automatically assign album permissions to large sets of albums, based on keywords in album names.
+- **Automatic date correction:** If enabled, the tool can automatically fix asset dates using duplicate analysis or by extracting dates from filenames (e.g., Android or WhatsApp photo naming patterns).
+- **Global filtering:** Use inclusion or exclusion filters to process only specific assets, albums, or tags, instead of the entire library.
+- **Date mismatch tagging:** Automatically tag assets whose date does not match the date in their album name (for date-patterned albums), making it easy to review and correct inconsistencies.
+- **Modification and statistics logs:** The system generates detailed modification reports and statistics files, including counters for unclassified assets and detected conflicts, to help you track progress and quality.
+- **Continuous tagging loop script:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, making it easier to keep up with rapid changes. 
+
 
 This classification relies on a rule engine that is continuously evolving to become more abstract and flexible, allowing adaptation to the specific needs of different users.
 
 It helps to:
+- Quickly create and assing albums
 - Quickly detect which photos or videos are still unorganized.
 - Highlight possible errors, such as assets classified under multiple conflicting criteria.
 - Speed up the review and mass organization of your photo library.
 
-#### 1.1.3.1. Other Features 
-
-In addition to its core focus on helping classify and organize photos, the project also provides several advanced features to streamline large-scale photo management:
-
-- **Automatic date repair:** The system can automatically detect and fix incorrect or missing dates for assets based on file names and duplicate analysis.
-- **Automatic classification based on duplicates:** Photos are automatically classified by analyzing duplicate assets, reducing manual work.
-- **Continuous tagging loop script:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, making it easier to keep up with rapid changes.
-- **Asset exclusion by web link:** You can exclude specific sets of assets from processing by specifying their web link, giving you more control over what gets classified.
-- **Modification and statistics logs:** The system generates detailed modification reports and statistics files, including counters for unclassified assets and detected conflicts, to help you track progress and quality.
 
 > For more details and upcoming features, see the [Roadmap](./ROADMAP.md) and [Changelog](./CHANGELOG.md).
 
@@ -191,9 +196,22 @@ These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_l
 
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
 
-**Step 1:** Review the pattern used to detect which albums are considered "classified" (this can be modified in the [configuration file](./immich_autotag/config/README_config.md)). By default, any album whose name starts with a date is assumed to be an event and its photos are considered organized.
+TODO:
 
-**Step 2:** There are also special tags for photos that do not belong to any album for a specific reason (e.g., memes automatically uploaded from mobile devices, which you do not want in any album). The default config suggests using certain tags for these cases, so the user can label memes or other photos accordingly, and the script will take them into account.
+**Step 1: Review and adjust your [configuration file](./immich_autotag/config/README_config.md))**
+
+  - Decide if you want Immich AutoTag to create albums automatically:
+    - From dates (e.g., daily albums for unclassified assets)
+    - From folders in your file system (useful if you previously organized by folders)
+  - Choose your classification criteria:
+    - Define the rules (tags and/or album name patterns) that determine which assets are considered classified, unclassified, or in conflict. Immich AutoTag will use these to label assets accordingly.
+  - Review other useful configuration options:
+    - Set up permission groups, enable or disable automatic date correction, and configure global filters as needed.
+
+You can define also special tags or albums for photos that do not belong to any album for a specific reason (e.g., memes automatically uploaded from mobile devices, which you do not want in any album). The default config suggests using certain tags for these cases, so the user can label memes or other photos accordingly, and the script will take them into account.
+
+
+
 
 **Step 3:** If the script finds a photo that is unclassified or classified in multiple places, it will use a special tag (by default, tags starting with `autotag_`). All of this is configurable in the user config file. This way, you can easily locate these photos from the Immich interface and decide what to do: add/remove them from albums, tag as meme, postpone, ignore, etc.
 
