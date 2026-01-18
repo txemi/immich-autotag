@@ -8,6 +8,8 @@ from immich_autotag.classification.classification_rule_wrapper import (
 )
 from immich_autotag.config.models import Conversion, ConversionMode, Destination
 
+from immich_autotag.conversions.destination_wrapper import DestinationWrapper
+
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
@@ -32,7 +34,7 @@ class ConversionWrapper:
 
     @typechecked
     def destination_album_patterns(self) -> list[str]:
-        return self.conversion.destination.album_name_patterns or []
+        return self.conversion.destination.album_names or []
 
     @typechecked
     def get_source_wrapper(self) -> ClassificationRuleWrapper:
@@ -40,7 +42,7 @@ class ConversionWrapper:
         return ClassificationRuleWrapper(self.conversion.source)
 
     @typechecked
-    def get_destination_wrapper(self):
+    def get_destination_wrapper(self) -> DestinationWrapper:
         """Devuelve un DestinationWrapper para el destino de la conversión."""
         return DestinationWrapper(self.conversion.destination)
 
