@@ -53,11 +53,27 @@ def analyze_and_assign_album(
     asset_id = asset_wrapper.id
     immich_url = asset_wrapper.get_immich_photo_url().geturl()
 
+
     if status == ClassificationStatus.CLASSIFIED:
-        # Puede estar clasificado solo por álbum temporal, no limpiar aquí
+        # Always clean up: remove from temporary albums and update classification tags
+        from immich_autotag.assets.albums.remove_from_autotag_albums import (
+            remove_asset_from_autotag_temporary_albums,
+        )
+        all_albums = (
+            asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
+                asset_wrapper
+            )
+        )
+        remove_asset_from_autotag_temporary_albums(
+            asset_wrapper=asset_wrapper,
+            temporary_albums=all_albums,
+            tag_mod_report=tag_mod_report,
+        )
+        # Remove 'unknown' tag if present and update classification tags
+        asset_wrapper.validate_and_update_classification()
         log(
-            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' clasificado (puede ser por álbum temporal).",
-            level=LogLevel.DEBUG,
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' clasificado. Limpieza de álbum temporal y etiquetas realizada.",
+            level=LogLevel.FOCUS,
         )
         return
 
