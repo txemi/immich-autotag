@@ -89,8 +89,8 @@ class ClassificationConfig(BaseModel):
     """
     model_config = {"extra": "forbid"}
     rules: List[ClassificationRule] = Field(default_factory=list, description="List of classification rules.")
-    autotag_unknown: Optional[str] = Field(default=None, description="Tag to assign to assets not matching any category.")
-    autotag_conflict: Optional[str] = Field(default=None, description="Tag to assign to assets matching multiple categories.")
+    autotag_unknown: Optional[str] = Field(default="autotag_output_unknown", description="Tag to assign to assets not matching any category.")
+    autotag_conflict: Optional[str] = Field(default="autotag_output_conflict", description="Tag to assign to assets matching multiple categories.")
 
 
 class DateCorrectionConfig(BaseModel):
@@ -113,7 +113,7 @@ class AlbumDateConsistencyConfig(BaseModel):
     """
     model_config = {"extra": "forbid"}
     enabled: bool = Field(default=True, description="Enable album date consistency checks.")
-    autotag_album_date_mismatch: str = Field(default="autotag_album_date_mismatch", description="Tag to assign to assets with album date mismatches.")
+    autotag_album_date_mismatch: str = Field(default="autotag_output_album_date_mismatch", description="Tag to assign to assets with album date mismatches.")
     threshold_days: int = Field(default=180, description="Threshold in days for considering a date mismatch.")
 
 
@@ -124,10 +124,10 @@ class DuplicateProcessingConfig(BaseModel):
     This allows detection and tagging of differences in date, classification, or albums, since all duplicates should ideally match in these aspects.
     """
     model_config = {"extra": "forbid"}
-    autotag_album_conflict: Optional[str] = Field(default=None, description="Tag for assets with album conflicts among duplicates.")
-    autotag_classification_conflict: Optional[str] = Field(default=None, description="Tag for assets with classification conflicts among duplicates.")
-    autotag_classification_conflict_prefix: Optional[str] = Field(default=None, description="Prefix for tags indicating classification conflicts.")
-    autotag_album_detection_conflict: Optional[str] = Field(default=None, description="Tag for assets with album detection conflicts among duplicates.")
+    autotag_album_conflict: Optional[str] = Field(default="autotag_output_duplicate_asset_album_conflict", description="Tag for assets with album conflicts among duplicates.")
+    autotag_classification_conflict: Optional[str] = Field(default="autotag_output_duplicate_asset_classification_conflict", description="Tag for assets with classification conflicts among duplicates.")
+    autotag_classification_conflict_prefix: Optional[str] = Field(default="autotag_output_duplicate_asset_classification_conflict_", description="Prefix for tags indicating classification conflicts.")
+    autotag_album_detection_conflict: Optional[str] = Field(default="autotag_output_album_detection_conflict", description="Tag for assets with album detection conflicts among duplicates.")
     date_correction: DateCorrectionConfig = Field(..., description="Date correction configuration for duplicates.")
 
 
