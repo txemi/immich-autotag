@@ -25,10 +25,29 @@ from immich_autotag.logging.utils import log
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
+
+
     album_partial: AlbumResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AlbumResponseDto)
     )
     _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
+
+    @staticmethod
+    @typechecked
+    def get_default_client() -> ImmichClient:
+        """Devuelve el cliente ImmichClient singleton por defecto."""
+        from immich_autotag.context.immich_context import ImmichContext
+        return ImmichContext.get_default_client()
+    @property
+    def is_full(self) -> bool:
+        """Indica si el álbum tiene los assets completamente cargados (full)."""
+        return self._album_full is not None  and self._album_full.assets is not None
+
+    @typechecked
+    def ensure_full(self) -> None:
+        """Garantiza que el álbum está en modo full (assets cargados)."""
+        if not self.is_full:
+            self.reload_from_api(self.get_default_client())
 
     @property
     def album(self) -> AlbumResponseDto:
@@ -79,6 +98,7 @@ class AlbumResponseWrapper:
     def asset_ids(self) -> set[str]:
         """Set of album asset IDs, cached for O(1) access in has_asset.
         Assets are already populated by from_client() or reload_from_api()."""
+        self.ensure_full()
         return (
             set(a.id for a in self._get_album_full_or_load().assets)
             if self.album.assets

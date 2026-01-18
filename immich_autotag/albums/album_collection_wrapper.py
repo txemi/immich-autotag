@@ -58,24 +58,27 @@ class AlbumCollectionWrapper:
         from immich_autotag.context.immich_context import ImmichContext
         client = ImmichContext.get_default_client()
         for album_wrapper in self.albums:
-            # Forzar la recarga de assets si asset_ids está vacío
+            # Garantiza que el álbum está en modo full (assets cargados)
+            #album_wrapper.ensure_full()
             if not album_wrapper.asset_ids:
-                # Recarga desde la API y actualiza el cache usando el cliente del contexto singleton
-
-
-                album_wrapper.reload_from_api(client)
-                if not album_wrapper.asset_ids:
-                    print(
-                        f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
+                print(
+                    f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
+                )
+                #album_wrapper.reload_from_api(client)
+                if album_wrapper.asset_ids:
+                    album_url = album_wrapper.get_immich_album_url().geturl() if hasattr(album_wrapper, "get_immich_album_url") else "(no url)"
+                    raise RuntimeError(
+                        f"[DEBUG] Anomalous behavior: Album '{getattr(album_wrapper.album, 'album_name', '?')}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
+                        "This suggests a possible synchronization or lazy loading bug. Please review the album loading logic."
                     )
-                    if is_temporary_album(album_wrapper.album.album_name):
-                        print(f"[WARN] Temporary album '{album_wrapper.album.album_name}' marked for removal after map build.")
-                        albums_to_remove.append(album_wrapper)
-                    pass
-                else:
-                    print(
-                        f"[INFO] Album '{getattr(album_wrapper.album, 'album_name', '?')}' reloaded with {len(album_wrapper.asset_ids)} assets."
-                    )
+                if is_temporary_album(album_wrapper.album.album_name):
+                    print(f"[WARN] Temporary album '{album_wrapper.album.album_name}' marked for removal after map build.")
+                    albums_to_remove.append(album_wrapper)
+                pass
+            else:
+                print(
+                    f"[INFO] Album '{getattr(album_wrapper.album, 'album_name', '?')}' reloaded with {len(album_wrapper.asset_ids)} assets."
+                )
 
             for asset_id in album_wrapper.asset_ids:
                 if asset_id not in asset_map:
