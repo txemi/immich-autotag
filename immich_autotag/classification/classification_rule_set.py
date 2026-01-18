@@ -1,6 +1,8 @@
 # Imports the MatchResult class from the new file
 from typing import TYPE_CHECKING, Dict, List
 
+from immich_autotag.context.immich_context import ImmichContext
+
 import attrs
 from typeguard import typechecked
 
