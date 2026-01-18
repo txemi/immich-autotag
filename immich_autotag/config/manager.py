@@ -162,8 +162,12 @@ class ConfigManager:
             path = out_dir / "user_config_dump.yaml"
         if not isinstance(path, (str, _Path)):
             raise TypeError(f"path must be str, Path or None, got {type(path)}")
+        import enum
+        def enum_representer(dumper, data):
+            return dumper.represent_data(str(data.value) if hasattr(data, 'value') else str(data))
+        yaml.add_representer(enum.Enum, enum_representer)
         with open(str(path), "w", encoding="utf-8") as f:
-            yaml.safe_dump(
+            yaml.dump(
                 self.config.model_dump(), f, allow_unicode=True, sort_keys=False
             )
 
