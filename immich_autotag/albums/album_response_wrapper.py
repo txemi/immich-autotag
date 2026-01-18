@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 
 import attrs
-from immich_client.client import Client
+from immich_autotag.types import ImmichClient
 from immich_client.models.album_response_dto import AlbumResponseDto
 
 from immich_autotag.types import ImmichClient
@@ -312,7 +312,7 @@ class AlbumResponseWrapper:
     def _verify_asset_in_album_with_retry(
         self,
         asset_wrapper: "AssetResponseWrapper",
-        client: Client,
+        client: ImmichClient,
         max_retries: int = 3,
     ) -> None:
         """
@@ -341,7 +341,7 @@ class AlbumResponseWrapper:
     def _verify_asset_removed_from_album_with_retry(
         self,
         asset_wrapper: "AssetResponseWrapper",
-        client: Client,
+        client: ImmichClient,
         max_retries: int = 3,
     ) -> None:
         """
@@ -375,7 +375,7 @@ class AlbumResponseWrapper:
                 pass
 
     @conditional_typechecked
-    def reload_from_api(self, client: Client) -> None:
+    def reload_from_api(self, client: ImmichClient) -> None:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client.api.albums import get_album_info
 
