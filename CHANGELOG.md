@@ -371,6 +371,10 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 - Current blockers: Performance regression analysis
 
 
+## [Planned: Unmatched Albums Report]
+**Description:** Adds a report listing all albums that do not match any user-defined rule, helping users identify albums that may need new rules or manual review.
+### Added
+- Generation of a report with all albums that are not matched by any user rule, making it easier to spot albums that require attention or new classification rules.
 
 ## [Planned: Compilation Albums Support]
 **Description:** Adds support for "compilation" albums that can mix existing and newly added photos (for example, third-party or curated compilations). Classification behavior is relaxed for compilations so assets may belong to multiple albums or match multiple rules, while still providing validation warnings when an asset matches no rule.
