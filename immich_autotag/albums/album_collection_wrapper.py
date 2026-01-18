@@ -53,12 +53,9 @@ class AlbumCollectionWrapper:
         for album_wrapper in self.albums:
             # Forzar la recarga de assets si asset_ids está vacío
             if not album_wrapper.asset_ids:
-                # Recarga desde la API y actualiza el cache
-                # Necesita un ImmichClient, aquí asumimos que el wrapper tiene acceso o se debe pasar
-                # Si no tienes el cliente, puedes modificar para pasarlo como argumento
-                from immich_autotag.config.internal_config import get_default_client
-
-                client = get_default_client()
+                # Recarga desde la API y actualiza el cache usando el cliente del contexto singleton
+                from immich_autotag.context.immich_context import ImmichContext
+                client = ImmichContext.get_default_client()
                 album_wrapper.reload_from_api(client)
                 if not album_wrapper.asset_ids:
                     print(
