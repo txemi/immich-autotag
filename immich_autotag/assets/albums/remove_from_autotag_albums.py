@@ -40,24 +40,8 @@ def remove_asset_from_autotag_temporary_albums(
     Cleanup is automatic and always executed. It helps prevent duplicate album memberships
     when assets get classified and no longer need temporary albums.
 
-    Args:
-        asset_wrapper: The asset to remove from temporary albums.
-        temporary_albums: List of album wrappers to check for removal.
-        tag_mod_report: ModificationReport to track the removal operations (required).
-
-    Returns:
-        A list of album names from which the asset was successfully removed.
-
-    Example:
-        >>> removed_albums = remove_asset_from_autotag_temporary_albums(
-        ...     asset_wrapper=my_asset,
-        ...     temporary_albums=all_albums,
-        ...     tag_mod_report=report
-        ... )
-        >>> print(f"Removed from: {removed_albums}")
-        Removed from: ['2024-01-15-autotag-temp-unclassified', '2024-01-16-autotag-temp-unclassified']
     """
-    removed_album_names = []
+    removed_album_names: list[str] = []
 
     for album_wrapper in temporary_albums:
         # Check if album name matches temporary album pattern
@@ -69,10 +53,16 @@ def remove_asset_from_autotag_temporary_albums(
             continue
 
         try:
+            client = asset_wrapper.context.client
+        except Exception:
+            from immich_autotag.context.immich_context import ImmichContext
+            client = ImmichContext.get_default_client()
+
+        try:
             # Remove asset from album
             album_wrapper.remove_asset(
                 asset_wrapper=asset_wrapper,
-                client=asset_wrapper.client,
+                client=client,
                 tag_mod_report=tag_mod_report,
             )
             removed_album_names.append(album_wrapper.album.album_name)
@@ -85,7 +75,7 @@ def remove_asset_from_autotag_temporary_albums(
         except Exception as e:
             log(
                 f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.album.album_name}: {e}",
-                level=LogLevel.WARNING,
+                level=LogLevel.IMPORTANT,
             )
             # Continue processing other albums even if one fails
             continue
