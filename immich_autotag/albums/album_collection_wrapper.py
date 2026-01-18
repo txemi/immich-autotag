@@ -161,6 +161,14 @@ class AlbumCollectionWrapper:
         delete_album_sync(id=album_id, client=client)
         self.albums = [a for a in self.albums if a != album_wrapper]
         self._invalidate_asset_to_albums_map_cache()
+        # Log DELETE_ALBUM event
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.tags.modification_kind import ModificationKind
+        tag_mod_report = ModificationReport.get_instance()
+        tag_mod_report.add_album_modification(
+            kind=ModificationKind.DELETE_ALBUM,
+            album=album_wrapper,
+        )
         return True
 
     def _invalidate_asset_to_albums_map_cache(self):
