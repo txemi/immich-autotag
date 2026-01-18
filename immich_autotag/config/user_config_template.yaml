@@ -6,8 +6,13 @@ server:
   # Immich API key (fill in by user)
   api_key: "<YOUR_API_KEY_HERE>"
 enable_album_name_strip: true
-enable_checkpoint_resume: true
-filters: null
+skip:
+  skip_n: 0
+  resume_previous: true
+  max_items: null
+filters:
+  filter_in: []
+  filter_out: []
 conversions:
 - source:
     tag_names:
@@ -15,21 +20,59 @@ conversions:
     album_name_patterns: null
     asset_links: null
   destination:
+    album_names: null
     tag_names:
     - autotag_input_meme
-    album_name_patterns: null
-    asset_links: null
+  mode: !!python/object/apply:immich_autotag.config.models.ConversionMode
+  - move
+  description: null
 - source:
     tag_names:
     - adult_meme
     album_name_patterns: null
     asset_links: null
   destination:
+    album_names: null
     tag_names:
     - autotag_input_adult_meme
-    album_name_patterns: null
+  mode: !!python/object/apply:immich_autotag.config.models.ConversionMode
+  - move
+  description: null
+- source:
+    tag_names:
+    - autotag_input_meme
+    album_name_patterns:
+    - autotag_input_meme
     asset_links: null
-classification: # Rules to classify assets by tags or album name patterns.
+  destination:
+    album_names:
+    - autotag_input_meme
+    tag_names:
+    - autotag_input_meme
+  mode: !!python/object/apply:immich_autotag.config.models.ConversionMode
+  - copy
+  description: 'Testing both tags and albums: This conversion is for experiments,
+    to quickly populate the index with both tags and albums. In some cases, tags are
+    faster and better; in others, albums work better. This lets us compare both approaches
+    in the database.'
+- source:
+    tag_names:
+    - autotag_input_adult_meme
+    album_name_patterns:
+    - autotag_input_adult_meme
+    asset_links: null
+  destination:
+    album_names:
+    - autotag_input_adult_meme
+    tag_names:
+    - autotag_input_adult_meme
+  mode: !!python/object/apply:immich_autotag.config.models.ConversionMode
+  - copy
+  description: 'Testing both tags and albums: This conversion is for experiments,
+    to quickly populate the index with both tags and albums. In some cases, tags are
+    faster and better; in others, albums work better. This lets us compare both approaches
+    in the database.'
+classification:
   rules:
   - tag_names:
     - meme
@@ -63,22 +106,44 @@ duplicate_processing:
   autotag_album_conflict: autotag_output_duplicate_asset_album_conflict
   autotag_classification_conflict: autotag_output_duplicate_asset_classification_conflict
   autotag_classification_conflict_prefix: autotag_output_duplicate_asset_classification_conflict_
+  autotag_album_detection_conflict: autotag_output_album_detection_conflict
   date_correction:
     enabled: true
     extraction_timezone: Europe/Madrid
-# Album Date Consistency: checks if asset dates match their album dates
 album_date_consistency:
   enabled: true
   autotag_album_date_mismatch: autotag_output_album_date_mismatch
-  threshold_days: 180  # Maximum allowed difference in days (6 months)
-  # Recommended workflow for iterative refinement:
-  # - Start: 180 days (6 months) - catch major errors
-  # - After cleanup: 90 days (3 months)
-  # - After cleanup: 60 days (2 months)  
-  # - After cleanup: 30 days (1 month)
-  # - Final: 7 days (1 week) for strict consistency
+  threshold_days: 180
 album_detection_from_folders:
   enabled: true
   excluded_paths:
   - whatsapp
+performance:
+  enable_type_checking: true
+album_permissions:
+  enabled: true
+  user_groups:
+  - name: family
+    description: Family members
+    members:
+    - grandpa@example.com
+    - grandma@example.com
+    - mother@example.com
+  - name: friends
+    description: Close friends
+    members:
+    - john@example.com
+    - jane@example.com
+  selection_rules:
+  - name: Share Family albums
+    keyword: family
+    groups:
+    - family
+    access: view
+  - name: Share Friends albums
+    keyword: friends
+    groups:
+    - friends
+    access: view
+  log_unmatched: false
 create_album_from_date_if_missing: true
