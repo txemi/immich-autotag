@@ -1,7 +1,7 @@
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.config.models import Conversion, Destination
+from immich_autotag.config.models import Conversion, Destination, ConversionMode
 
 
 from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
@@ -55,27 +55,18 @@ class ConversionWrapper:
     def apply_to_asset(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
         """
         Aplica la conversión sobre el asset_wrapper.
-        La lógica se mueve aquí desde AssetResponseWrapper.
+        Utiliza el wrapper de origen para comprobar el match y el de destino para aplicar la acción.
+        Elimina los tags/álbumes de origen solo si el modo de conversión es MOVE.
         """
-        match_result=self.get_source_wrapper().matches_asset(asset_wrapper)
-        has_origin= match_result is not None and match_result.is_match()
-        result_action=self.get_destination_wrapper()
-        dest_tags = self.destination_tags()
-        if len(dest_tags) != 1:
-            raise NotImplementedError("Only single destination tag conversions are implemented.")
-        dest_tag = dest_tags[0]
-
-        has_dest = asset_wrapper.has_tag(dest_tag)
+        match_result = self.get_source_wrapper().matches_asset(asset_wrapper)
+        source_matched = match_result is not None and match_result.is_match()
         changes = []
-        if has_origin and not has_dest:
-            try:
-                asset_wrapper.add_tag_by_name(dest_tag)
-                changes.append(f"Added tag '{dest_tag}' and removed '{origin_tag}'")
-            except Exception as e:
-                changes.append(f"Failed to add '{dest_tag}', removed '{origin_tag}'")
-            asset_wrapper.remove_tag_by_name(origin_tag)
-        elif has_origin and has_dest:
-            asset_wrapper.remove_tag_by_name(origin_tag)
-            changes.append(f"Removed redundant tag '{origin_tag}' (already had '{dest_tag}')")
+        if source_matched:
+            # Aplica la acción de destino (añadir etiquetas, álbumes, etc.)
+            result_action = self.get_destination_wrapper()
+            changes.extend(result_action.apply_action(asset_wrapper))
+            # Según el modo de conversión, elimina los tags/álbumes de origen
+            if self.conversion.mode == ConversionMode.MOVE:
+                changes.extend(self.get_source_wrapper().remove_matches(asset_wrapper, match_result))
         return changes
 
