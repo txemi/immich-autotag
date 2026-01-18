@@ -76,14 +76,15 @@ class StatisticsManager:
         self.checkpoint = CheckpointManager(stats_manager=self)
 
     @typechecked
-    def increment_event(self, event_kind: "ModificationKind") -> None:
+    def increment_event(self, event_kind: "ModificationKind", extra_key: "TagWrapper | None" = None) -> None:
         """
         Increment the counter for the given event kind (ModificationKind).
+        If extra_key (TagWrapper) is provided, it is concatenated to the event_kind name for per-key statistics.
         """
         with self._lock:
             if self._current_stats is None:
                 self.start_run()
-            self._current_stats.increment_event(event_kind)
+            self._current_stats.increment_event(event_kind, extra_key=extra_key)
 
     @typechecked
     def get_progress_description(self) -> str:

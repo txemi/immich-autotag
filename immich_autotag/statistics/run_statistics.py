@@ -90,11 +90,16 @@ class RunStatistics(BaseModel):
     )
 
     @typechecked
-    def increment_event(self, event_kind: ModificationKind) -> None:
+    def increment_event(self, event_kind: ModificationKind, extra_key: "TagWrapper | None" = None) -> None:
         """
         Increment the counter for the given event kind (ModificationKind).
+        If extra_key (TagWrapper) is provided, it is concatenated to the event_kind name for per-key statistics.
         """
-        key = event_kind.name if hasattr(event_kind, "name") else str(event_kind)
+        key = event_kind.name
+        if extra_key is not None:
+            # Usar el nombre de la etiqueta
+            extra_val = extra_key.get_name()
+            key = f"{key}_{extra_val}"
         if key not in self.event_counters:
             self.event_counters[key] = 0
         self.event_counters[key] += 1

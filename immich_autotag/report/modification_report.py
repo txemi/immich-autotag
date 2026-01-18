@@ -99,7 +99,7 @@ class ModificationReport:
         # Contabilizar el evento en el gestor de estadísticas
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
-        StatisticsManager.get_instance().increment_event(kind)
+        StatisticsManager.get_instance().increment_event(kind, extra_key=tag)
         # Local import to avoid circularity
         if album is not None:
             from immich_autotag.albums.album_response_wrapper import (
@@ -176,7 +176,7 @@ class ModificationReport:
         }
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
-        StatisticsManager.get_instance().increment_event(kind)
+        StatisticsManager.get_instance().increment_event(kind, extra_key=tag)
         self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
