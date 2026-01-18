@@ -47,16 +47,6 @@ class ConversionWrapper:
         """Devuelve un DestinationWrapper para el destino de la conversión."""
         return DestinationWrapper(self.conversion.destination)
 
-    # You can add more utility methods as needed
-    @typechecked
-    def get_single_origin_tag(self) -> str:
-        tags = self.source_tags()
-        album_patterns = self.source_album_patterns()
-        if len(tags) == 1 and not album_patterns:
-            return tags[0]
-        raise NotImplementedError(
-            "Only single-tag origin conversions without album origin are implemented."
-        )
 
     @typechecked
     def apply_to_asset(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
