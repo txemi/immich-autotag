@@ -67,9 +67,8 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def _get_album_full_or_load(self) -> AlbumResponseDto:
         """Returns full album, loading from API if necessary. Obtiene el ImmichClient singleton internamente."""
-        from immich_autotag.config.internal_config import get_default_client
-
-        client = get_default_client()
+        from immich_autotag.context.immich_context import ImmichContext
+        client = ImmichContext.get_default_client()
         self._ensure_full_album_loaded(client)
         assert self._album_full is not None
         return self._album_full
