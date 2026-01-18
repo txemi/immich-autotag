@@ -195,7 +195,8 @@ These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_l
 ## 1.6. Practical Use Case: How to Take Advantage of This Script
 
 
-After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
+After the motivation, let's describe a practical use case for this tool. 
+
 
 
 **Step 1: Review and adjust your [configuration file](./immich_autotag/config/README_config.md))**
@@ -219,7 +220,7 @@ You can define also special tags or albums for photos that do not belong to any 
 
 [example quick links above](#121-reviewing-results-example-links) 
 
-  - If you enabled automatic album creation, start by visiting the Albums view (see the link at the top of this document). Group by year, sort by number of assets, and filter by autotag. This will show you the largest automatically created albums first.
+  - If you enabled automatic album creation, start by visiting the Albums view (see the link at the top of this document). Do not group by year, sort by number of assets, and filter by autotag. This will show you the largest automatically created albums first.
     - For each album, you can choose to rename and keep it, delete it if not needed, or modify its contents to better fit your organization.
     - Once you are satisfied with your albums, move to the next review step.
   - Next, use the provided links to review assets that are unclassified or in conflict. These links let you quickly find and address assets that need attention.
@@ -230,7 +231,6 @@ You can define also special tags or albums for photos that do not belong to any 
  The user can keep iterating until the library is perfectly organized.
 
 **Tips for Classification:**
-- Use Immich's date view to quickly identify all photos from the same event and add them to an album with the name pattern you defined for valid classification.
 - To find memes or photos that should be tagged to avoid being candidates for albums, use Immich's "find similar" feature (AI-powered), which helps you quickly locate and tag such photos in bulk.
 
 > For a complete and detailed list of features, improvements, and changes, see the [Changelog](./CHANGELOG.md).
