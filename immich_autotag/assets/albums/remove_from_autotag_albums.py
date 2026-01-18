@@ -16,11 +16,11 @@ from typing import TYPE_CHECKING
 from typeguard import typechecked
 
 from immich_autotag.assets.albums.temporary_albums import is_temporary_album
+from immich_autotag.config._internal_types import ErrorHandlingMode
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.config._internal_types import ErrorHandlingMode
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper

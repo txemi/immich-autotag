@@ -1,4 +1,3 @@
-
 import attrs
 from typeguard import typechecked
 

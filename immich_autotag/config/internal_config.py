@@ -5,6 +5,7 @@
 # These variables are automatically derived and should not be edited by the user.
 
 from typeguard import typechecked
+
 from ._internal_types import ErrorHandlingMode
 
 
@@ -42,5 +43,3 @@ MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best perf
 
 # Ejemplo de uso interno:
 DEFAULT_ERROR_MODE = ErrorHandlingMode.DEVELOPMENT
-
-

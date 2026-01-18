@@ -106,8 +106,7 @@ class Conversion(BaseModel):
         description="Conversion mode: 'move' replaces source values, 'copy' adds destination values.",
     )
     description: Optional[str] = Field(
-        default=None,
-        description="Optional description for the conversion rule."
+        default=None, description="Optional description for the conversion rule."
     )
 
 
