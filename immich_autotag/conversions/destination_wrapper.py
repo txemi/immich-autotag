@@ -1,7 +1,11 @@
 import attrs
 from typeguard import typechecked
 
+
 from immich_autotag.config.models import Destination
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
@@ -16,7 +20,7 @@ class DestinationWrapper:
         return self.destination.album_names or []
 
     @typechecked
-    def apply_action(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
+    def apply_action(self, asset_wrapper: 'AssetResponseWrapper') -> list[str]:
         """
         Aplica la acción de destino sobre el asset_wrapper.
         Añade todas las etiquetas destino y añade el asset a todos los álbumes destino si no están ya.
