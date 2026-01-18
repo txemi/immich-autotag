@@ -19,7 +19,8 @@ from immich_autotag.utils.decorators import conditional_typechecked
 _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+
+@attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
 
     albums: list[AlbumResponseWrapper] = attrs.field(
@@ -117,16 +118,19 @@ class AlbumCollectionWrapper:
         album_id = UUID(album_wrapper.album.id)
         # Llamada a la API para borrar el álbum en el servidor
         delete_album_sync(id=album_id, client=client)
-        # Eliminar de la lista interna (como es frozen, hay que reconstruir la lista)
-        albums_new = [a for a in self.albums if a != album_wrapper]
-        object.__setattr__(self, "albums", albums_new)
+        # Eliminar de la lista interna
+        self.albums = [a for a in self.albums if a != album_wrapper]
         # Invalida el cache del mapa
+        self._invalidate_asset_to_albums_map_cache()
+        return True
+
+    def _invalidate_asset_to_albums_map_cache(self):
+        """Elimina el cache del mapa asset_id -> albums si existe."""
         if hasattr(self, "_asset_to_albums_map"):
             try:
                 del self._asset_to_albums_map
             except Exception:
                 pass
-        return True
 
     @conditional_typechecked
     def create_or_get_album_with_user(
