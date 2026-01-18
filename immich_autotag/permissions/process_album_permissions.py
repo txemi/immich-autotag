@@ -11,13 +11,14 @@ from typing import TYPE_CHECKING
 
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.permissions.album_policy_resolver import resolve_album_policy
+from typeguard import typechecked
 
 if TYPE_CHECKING:
     from immich_autotag.config.models import UserConfig
 
-
+@typechecked
 def process_album_permissions(
-    user_config: "UserConfig | None", context: ImmichContext
+    user_config: "UserConfig", context: ImmichContext
 ) -> None:
     """
     Phase 1: Process album permissions (dry-run detection and logging).
