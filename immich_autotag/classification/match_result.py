@@ -1,4 +1,5 @@
 import attr
+from typeguard import typechecked
 
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
@@ -25,3 +26,16 @@ class MatchResult:
             raise ValueError(
                 "MatchResult must have at least one matching tag or album."
             )
+    @typechecked
+    def has_match(self) -> bool:
+        """
+        Devuelve True si hay al menos un tag o álbum coincidente en el resultado.
+        """
+        return bool(self.tags_matched or self.albums_matched)
+
+    @typechecked
+    def is_match(self) -> bool:
+        """
+        Devuelve True si hay al menos un tag o álbum coincidente en el resultado.
+        """
+        return bool(self.tags_matched or self.albums_matched)
