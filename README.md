@@ -29,6 +29,7 @@ When starting to use Immich, it is common to import large volumes of photos from
 - **Date mismatch tagging:** Automatically tag assets whose date does not match the date in their album name (for date-patterned albums), making it easy to review and correct inconsistencies.
 - **Modification and statistics logs:** The system generates detailed modification reports and statistics files, including counters for unclassified assets and detected conflicts, to help you track progress and quality.
 - **Continuous tagging loop script:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, making it easier to keep up with rapid changes. 
+ - **Batch tag/album conversions:** Apply new tags or albums to assets in bulk (by name pattern, tag, or asset), keeping or removing originals—ideal for reorganizing or refactoring your library as your needs evolve.
 
 
 This classification relies on a rule engine that is continuously evolving to become more abstract and flexible, allowing adaptation to the specific needs of different users.
