@@ -62,6 +62,7 @@ class StatisticsManager:
     )
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
+    # Los contadores de eventos ahora se almacenan en self._current_stats.event_counters
     def __attrs_post_init__(self) -> None:
         # The folder is already created by get_run_output_dir
         global _instance
@@ -73,6 +74,16 @@ class StatisticsManager:
         self.checkpoint = CheckpointManager(stats_manager=self)
         self.tags = TagStatsManager(stats_manager=self)
         self.checkpoint = CheckpointManager(stats_manager=self)
+
+    @typechecked
+    def increment_event(self, event_kind: "ModificationKind") -> None:
+        """
+        Increment the counter for the given event kind (ModificationKind).
+        """
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            self._current_stats.increment_event(event_kind)
 
     @typechecked
     def get_progress_description(self) -> str:

@@ -81,6 +81,22 @@ class RunStatistics(BaseModel):
         description="Textual description of current progress (percentage, estimated time, etc.)",
     )
 
+    # Event counters by type (key: str, value: int)
+    event_counters: Dict[str, int] = Field(
+        default_factory=dict,
+        description="Event counters by ModificationKind (string key)",
+    )
+
+    @typechecked
+    def increment_event(self, event_kind: "ModificationKind") -> None:
+        """
+        Increment the counter for the given event kind (ModificationKind).
+        """
+        key = event_kind.name if hasattr(event_kind, "name") else str(event_kind)
+        if key not in self.event_counters:
+            self.event_counters[key] = 0
+        self.event_counters[key] += 1
+
     @typechecked
     def to_yaml(self) -> str:
         return yaml.safe_dump(

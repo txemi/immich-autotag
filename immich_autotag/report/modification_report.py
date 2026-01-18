@@ -1,5 +1,8 @@
 """
 Module for auditing and reporting entity modifications (tags, albums, assets, etc.)
+
+TODO: El nombre de esta clase ('ModificationReport') no refleja bien su función actual. Ahora registra no solo modificaciones, sino también advertencias y eventos generales.
+    Debería renombrarse a algo más genérico en el futuro, ya que también reporta warnings y circunstancias relevantes de forma estructurada.
 """
 
 from __future__ import annotations
@@ -93,6 +96,10 @@ class ModificationReport:
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
+        # Contabilizar el evento en el gestor de estadísticas
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_event(kind)
         # Local import to avoid circularity
         if album is not None:
             from immich_autotag.albums.album_response_wrapper import (
@@ -167,6 +174,9 @@ class ModificationReport:
             ModificationKind.REMOVE_TAG_FROM_ASSET,
             ModificationKind.REMOVE_TAG_GLOBALLY,
         }
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_event(kind)
         self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
@@ -194,6 +204,9 @@ class ModificationReport:
             ModificationKind.DELETE_ALBUM,
             ModificationKind.RENAME_ALBUM,
         }
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_event(kind)
         self.add_modification(
             kind=kind,
             asset_wrapper=None,
@@ -218,6 +231,9 @@ class ModificationReport:
             ModificationKind.REMOVE_ASSET_FROM_ALBUM,
             ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
         }
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_event(kind)
         self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
@@ -259,6 +275,9 @@ class ModificationReport:
         if error_category:
             extra["error_category"] = error_category
 
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_event(kind)
         self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
@@ -306,6 +325,9 @@ class ModificationReport:
         if access_level:
             extra["access_level"] = access_level
 
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_event(kind)
         self.add_modification(
             kind=kind,
             album=album,
@@ -340,6 +362,10 @@ class ModificationReport:
         asset_wrapper: Any = None,
         album_wrapper: Any = None,
     ) -> Optional["ParseResult"]:
+        # Contabilizar el evento en el gestor de estadísticas
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
+
+        StatisticsManager.get_instance().increment_event(kind)
         """
         Build a link for the modification entry based on kind and wrappers.
         """
