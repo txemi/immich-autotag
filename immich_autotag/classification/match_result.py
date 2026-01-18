@@ -20,22 +20,26 @@ class MatchResult:
         factory=list,
         validator=attr.validators.instance_of(list),
     )
+    asset_links_matched: list[str] = attr.ib(
+        factory=list,
+        validator=attr.validators.instance_of(list),
+    )
 
     def __attrs_post_init__(self):
-        if not self.tags_matched and not self.albums_matched:
+        if not (self.tags_matched or self.albums_matched or self.asset_links_matched):
             raise ValueError(
-                "MatchResult must have at least one matching tag or album."
+                "MatchResult must have at least one matching tag, album, or asset link."
             )
     @typechecked
     def has_match(self) -> bool:
         """
-        Devuelve True si hay al menos un tag o álbum coincidente en el resultado.
+        Devuelve True si hay al menos un tag, álbum o asset link coincidente en el resultado.
         """
-        return bool(self.tags_matched or self.albums_matched)
+        return bool(self.tags_matched or self.albums_matched or self.asset_links_matched)
 
     @typechecked
     def is_match(self) -> bool:
         """
-        Devuelve True si hay al menos un tag o álbum coincidente en el resultado.
+        Devuelve True si hay al menos un tag, álbum o asset link coincidente en el resultado.
         """
-        return bool(self.tags_matched or self.albums_matched)
+        return bool(self.tags_matched or self.albums_matched or self.asset_links_matched)
