@@ -65,11 +65,14 @@ class AlbumCollectionWrapper:
                     print(
                         f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
                     )
-                else:
                     # Si es un álbum temporal, solo loguear advertencia (no eliminar aquí para evitar recursión)
                     if is_temporary_album(album_wrapper.album.album_name):
                         print(f"[WARN] Temporary album '{album_wrapper.album.album_name}' detected. Should be removed by caller.")
                     pass
+                else: 
+                    print(
+                        f"[INFO] Album '{getattr(album_wrapper.album, 'album_name', '?')}' reloaded with {len(album_wrapper.asset_ids)} assets."
+                    )
 
             for asset_id in album_wrapper.asset_ids:
                 if asset_id not in asset_map:
