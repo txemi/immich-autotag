@@ -50,3 +50,32 @@ class ConversionWrapper:
         raise NotImplementedError(
             "Only single-tag origin conversions without album origin are implemented."
         )
+
+    @typechecked
+    def apply_to_asset(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
+        """
+        Aplica la conversión sobre el asset_wrapper.
+        La lógica se mueve aquí desde AssetResponseWrapper.
+        """
+        match_result=self.get_source_wrapper().matches_asset(asset_wrapper)
+        has_origin= match_result is not None and match_result.is_match()
+        result_action=self.get_destination_wrapper()
+        dest_tags = self.destination_tags()
+        if len(dest_tags) != 1:
+            raise NotImplementedError("Only single destination tag conversions are implemented.")
+        dest_tag = dest_tags[0]
+
+        has_dest = asset_wrapper.has_tag(dest_tag)
+        changes = []
+        if has_origin and not has_dest:
+            try:
+                asset_wrapper.add_tag_by_name(dest_tag)
+                changes.append(f"Added tag '{dest_tag}' and removed '{origin_tag}'")
+            except Exception as e:
+                changes.append(f"Failed to add '{dest_tag}', removed '{origin_tag}'")
+            asset_wrapper.remove_tag_by_name(origin_tag)
+        elif has_origin and has_dest:
+            asset_wrapper.remove_tag_by_name(origin_tag)
+            changes.append(f"Removed redundant tag '{origin_tag}' (already had '{dest_tag}')")
+        return changes
+
