@@ -86,6 +86,7 @@ class ImmichContext:
             asset_manager=asset_manager,
         )
         return instance
+
     @staticmethod
     def get_default_client():
         """Devuelve el ImmichClient del contexto singleton global."""

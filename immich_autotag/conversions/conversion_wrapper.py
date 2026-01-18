@@ -44,7 +44,6 @@ class ConversionWrapper:
         """Devuelve un DestinationWrapper para el destino de la conversión."""
         return DestinationWrapper(self.conversion.destination)
 
-
     @typechecked
     def apply_to_asset(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
         """

@@ -13,10 +13,9 @@ from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
 
-
-
 # Singleton instance storage
 _album_collection_singleton: AlbumCollectionWrapper | None = None
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
@@ -27,14 +26,18 @@ class AlbumCollectionWrapper:
     def __attrs_post_init__(self):
         global _album_collection_singleton
         if _album_collection_singleton is not None:
-            raise RuntimeError("AlbumCollectionWrapper is a singleton: only one instance is allowed.")
+            raise RuntimeError(
+                "AlbumCollectionWrapper is a singleton: only one instance is allowed."
+            )
         _album_collection_singleton = self
 
     @classmethod
     def get_instance(cls) -> "AlbumCollectionWrapper":
         global _album_collection_singleton
         if _album_collection_singleton is None:
-            raise RuntimeError("AlbumCollectionWrapper singleton has not been initialized yet.")
+            raise RuntimeError(
+                "AlbumCollectionWrapper singleton has not been initialized yet."
+            )
         return _album_collection_singleton
 
     @cached_property
@@ -44,7 +47,9 @@ class AlbumCollectionWrapper:
         Antes de construir el mapa, fuerza la carga de asset_ids en todos los álbumes (lazy loading).
         """
         asset_map: dict[str, list[AlbumResponseWrapper]] = {}
-        assert len(self.albums) > 0, "AlbumCollectionWrapper must have at least one album to build asset map."
+        assert (
+            len(self.albums) > 0
+        ), "AlbumCollectionWrapper must have at least one album to build asset map."
         for album_wrapper in self.albums:
             # Forzar la recarga de assets si asset_ids está vacío
             if not album_wrapper.asset_ids:
@@ -52,10 +57,13 @@ class AlbumCollectionWrapper:
                 # Necesita un ImmichClient, aquí asumimos que el wrapper tiene acceso o se debe pasar
                 # Si no tienes el cliente, puedes modificar para pasarlo como argumento
                 from immich_autotag.config.internal_config import get_default_client
+
                 client = get_default_client()
                 album_wrapper.reload_from_api(client)
                 if not album_wrapper.asset_ids:
-                    print(f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload.")
+                    print(
+                        f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
+                    )
             for asset_id in album_wrapper.asset_ids:
                 if asset_id not in asset_map:
                     asset_map[asset_id] = []

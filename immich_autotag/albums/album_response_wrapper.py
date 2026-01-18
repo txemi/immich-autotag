@@ -4,9 +4,8 @@ from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 
 import attrs
-
-from typeguard import typechecked
 from immich_client.models.album_response_dto import AlbumResponseDto
+from typeguard import typechecked
 
 from immich_autotag.types import ImmichClient
 
@@ -35,8 +34,8 @@ class AlbumResponseWrapper:
     def album(self) -> AlbumResponseDto:
         """Returns full album if loaded, otherwise partial. Lazy-loads full data on first detailed access."""
         return self._album_full if self._album_full is not None else self.album_partial
-    @typechecked
 
+    @typechecked
     def _set_album_full(self, value: AlbumResponseDto) -> None:
         """Sets the full album data explicitly (debe tener assets cargados)."""
         self._album_full = value
@@ -58,7 +57,6 @@ class AlbumResponseWrapper:
         self._set_album_full(album_dto)
         self.invalidate_cache()
 
-
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
         """Lazy-loads full album data from API if not already loaded."""
@@ -70,17 +68,23 @@ class AlbumResponseWrapper:
     def _get_album_full_or_load(self) -> AlbumResponseDto:
         """Returns full album, loading from API if necessary. Obtiene el ImmichClient singleton internamente."""
         from immich_autotag.config.internal_config import get_default_client
+
         client = get_default_client()
         self._ensure_full_album_loaded(client)
         assert self._album_full is not None
         return self._album_full
+
     from functools import cached_property
 
     @cached_property
     def asset_ids(self) -> set[str]:
         """Set of album asset IDs, cached for O(1) access in has_asset.
         Assets are already populated by from_client() or reload_from_api()."""
-        return set(a.id for a in self._get_album_full_or_load().assets) if self.album.assets else set()
+        return (
+            set(a.id for a in self._get_album_full_or_load().assets)
+            if self.album.assets
+            else set()
+        )
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
@@ -392,7 +396,6 @@ class AlbumResponseWrapper:
                     level=LogLevel.WARNING,
                 )
 
-
     @staticmethod
     @conditional_typechecked
     def from_id(
@@ -407,7 +410,7 @@ class AlbumResponseWrapper:
 
         album_full = get_album_info.sync(id=album_id, client=client)
         wrapper = AlbumResponseWrapper(album_partial=album_full)
-        wrapper._album_full=album_full
+        wrapper._album_full = album_full
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
         return wrapper
 
