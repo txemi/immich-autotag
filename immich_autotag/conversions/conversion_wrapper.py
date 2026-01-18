@@ -1,10 +1,16 @@
+
 import attrs
 from typeguard import typechecked
+from typing import TYPE_CHECKING
 
 from immich_autotag.config.models import Conversion, Destination, ConversionMode
-
-
 from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
+
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
+# Import normal para ejecución (evita NameError en tiempo de ejecución)
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class ConversionWrapper:
