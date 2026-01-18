@@ -287,7 +287,7 @@ class AlbumResponseWrapper:
         Safe to call even if asset is not in album (idempotent operation).
         Raises exception only if the removal fails unexpectedly.
         """
-        from immich_client.api.albums import remove_assets_from_album
+        from immich_client.api.albums import remove_asset_from_album
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         from immich_autotag.logging.levels import LogLevel
@@ -303,7 +303,7 @@ class AlbumResponseWrapper:
             return
 
         # Remove asset from album
-        result = remove_assets_from_album.sync(
+        result = remove_asset_from_album.sync(
             id=self.album.id,
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
