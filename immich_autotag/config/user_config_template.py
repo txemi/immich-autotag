@@ -16,6 +16,7 @@ from immich_autotag.config.models import (
     ClassificationRule,
     Conversion,
     DateCorrectionConfig,
+    Destination,
     DuplicateProcessingConfig,
     FilterConfig,
     PerformanceConfig,
@@ -50,11 +51,11 @@ user_config = UserConfig(
     conversions=[
         Conversion(
             source=ClassificationRule(tag_names=["meme"]),
-            destination=ClassificationRule(tag_names=["autotag_input_meme"]),
+            destination=Destination(tag_names=["autotag_input_meme"]),
         ),
         Conversion(
             source=ClassificationRule(tag_names=["adult_meme"]),
-            destination=ClassificationRule(tag_names=["autotag_input_adult_meme"]),
+            destination=Destination(tag_names=["autotag_input_adult_meme"]),
         ),
     ],
     # -------------------------------------------------------------------------
