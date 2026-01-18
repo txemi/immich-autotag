@@ -26,6 +26,36 @@ from immich_autotag.config.models import (
     UserGroup,
 )
 
+# Private module-level constants for repeated tag/album/group names
+_AUTOTAG_INPUT_PREFIX = "autotag_input_"
+_AUTOTAG_OUTPUT_PREFIX = "autotag_output_"
+_FAMILY = "family"
+_FRIENDS = "friends"
+_ADULT_MEME_SUFFIX = "adult_meme"
+_MEME_SUFFIX = "meme"
+_PENDING_REVIEW_SUFFIX = "pending_review"
+_IGNORE_SUFFIX = "ignore"
+_UNKNOWN_SUFFIX = "unknown"
+_CONFLICT_SUFFIX = "conflict"
+_DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX = "duplicate_asset_album_conflict"
+_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX = "duplicate_asset_classification_conflict"
+_ALBUM_DETECTION_CONFLICT_SUFFIX = "album_detection_conflict"
+_ALBUM_DATE_MISMATCH_SUFFIX = "album_date_mismatch"
+
+_AUTOTAG_INPUT_ADULT_MEME = _AUTOTAG_INPUT_PREFIX + _ADULT_MEME_SUFFIX
+_AUTOTAG_INPUT_MEME = _AUTOTAG_INPUT_PREFIX + _MEME_SUFFIX
+_AUTOTAG_INPUT_PENDING_REVIEW = _AUTOTAG_INPUT_PREFIX + _PENDING_REVIEW_SUFFIX
+_AUTOTAG_INPUT_IGNORE = _AUTOTAG_INPUT_PREFIX + _IGNORE_SUFFIX
+_ADULT_MEME = _ADULT_MEME_SUFFIX
+
+_AUTOTAG_OUTPUT_UNKNOWN = _AUTOTAG_OUTPUT_PREFIX + _UNKNOWN_SUFFIX
+_AUTOTAG_OUTPUT_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _CONFLICT_SUFFIX
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = _AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT + "_"
+_AUTOTAG_OUTPUT_ALBUM_DETECTION_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DETECTION_CONFLICT_SUFFIX
+_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH = _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DATE_MISMATCH_SUFFIX
+
 user_config = UserConfig(
     # -------------------------------------------------------------------------
     # API and connection: Immich access credentials
@@ -45,12 +75,12 @@ user_config = UserConfig(
     # TAG CONVERSIONS: mapping of old tags to new ones (compatibility/refactor)
     conversions=[
         Conversion(
-            source=ClassificationRule(tag_names=["meme"]),
-            destination=Destination(tag_names=["autotag_input_meme"]),
+            source=ClassificationRule(tag_names=[_MEME_SUFFIX]),
+            destination=Destination(tag_names=[_AUTOTAG_INPUT_MEME]),
         ),
         Conversion(
-            source=ClassificationRule(tag_names=["adult_meme"]),
-            destination=Destination(tag_names=["autotag_input_adult_meme"]),
+            source=ClassificationRule(tag_names=[_ADULT_MEME]),
+            destination=Destination(tag_names=[_AUTOTAG_INPUT_ADULT_MEME]),
         ),
     ],
     # -------------------------------------------------------------------------
@@ -64,36 +94,36 @@ user_config = UserConfig(
         rules=[
             ClassificationRule(
                 tag_names=[
-                    "meme",  # (LEGACY) Meme: humorous images, no prefix. Compatibility.
-                    "autotag_input_meme",  # Memes/jokes uploaded indiscriminately, not events.
+                    _MEME_SUFFIX,  # (LEGACY) Meme: humorous images, no prefix. Compatibility.
+                    _AUTOTAG_INPUT_MEME,  # Memes/jokes uploaded indiscriminately, not events.
                 ],
                 album_name_patterns=[
-                    r"^autotag_input_meme$"  # Albums with exact name "autotag_input_meme"
+                    rf"^{_AUTOTAG_INPUT_MEME}$"  # Albums with exact name
                 ],
             ),
             ClassificationRule(
                 tag_names=[
-                    "adult_meme",  # (LEGACY) Adult meme: NSFW content, no prefix. Compatibility.
-                    "autotag_input_adult_meme",  # NSFW/adult memes, separate from family environment.
+                    _ADULT_MEME,  # (LEGACY) Adult meme: NSFW content, no prefix. Compatibility.
+                    _AUTOTAG_INPUT_ADULT_MEME,  # NSFW/adult memes, separate from family environment.
                 ],
                 album_name_patterns=[
-                    r"^autotag_input_adult_meme$"  # Albums with exact name "autotag_input_adult_meme"
+                    rf"^{_AUTOTAG_INPUT_ADULT_MEME}$"  # Albums with exact name
                 ],
             ),
             ClassificationRule(
                 tag_names=[
-                    "autotag_input_pending_review",  # Pending review: decide destination.
+                    _AUTOTAG_INPUT_PENDING_REVIEW,  # Pending review: decide destination.
                 ],
                 album_name_patterns=[
-                    r"^autotag_input_pending_review$"  # Albums with exact name "autotag_input_pending_review"
+                    rf"^{_AUTOTAG_INPUT_PENDING_REVIEW}$"  # Albums with exact name
                 ],
             ),
             ClassificationRule(
                 tag_names=[
-                    "autotag_input_ignore",  # Ignore: photos discarded from main flow.
+                    _AUTOTAG_INPUT_IGNORE,  # Ignore: photos discarded from main flow.
                 ],
                 album_name_patterns=[
-                    r"^autotag_input_ignore$"  # Albums with exact name "autotag_input_ignore"
+                    rf"^{_AUTOTAG_INPUT_IGNORE}$"  # Albums with exact name
                 ],
             ),
             ClassificationRule(
@@ -102,17 +132,17 @@ user_config = UserConfig(
                 ]  # Only albums with a date name are considered "events"
             ),
         ],
-        autotag_unknown="autotag_output_unknown",  # Assets not assigned to any event
-        autotag_conflict="autotag_output_conflict",  # Assets in more than one event (conflict)
+        autotag_unknown=_AUTOTAG_OUTPUT_UNKNOWN,  # Assets not assigned to any event
+        autotag_conflict=_AUTOTAG_OUTPUT_CONFLICT,  # Assets in more than one event (conflict)
         # create_album_from_date_if_missing: use the default value (False) or set True if desired
     ),
     # -------------------------------------------------------------------------
     # DUPLICATE PROCESSING: configuration for handling duplicates
     duplicate_processing=DuplicateProcessingConfig(
-        autotag_album_conflict="autotag_output_duplicate_asset_album_conflict",  # Duplicates with album conflict
-        autotag_classification_conflict="autotag_output_duplicate_asset_classification_conflict",  # Duplicates with classification conflict
-        autotag_classification_conflict_prefix="autotag_output_duplicate_asset_classification_conflict_",  # Prefix for group conflicts
-        autotag_album_detection_conflict="autotag_output_album_detection_conflict",  # Multiple candidate folders for album detection
+        autotag_album_conflict=_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT,  # Duplicates with album conflict
+        autotag_classification_conflict=_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,  # Duplicates with classification conflict
+        autotag_classification_conflict_prefix=_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX,  # Prefix for group conflicts
+        autotag_album_detection_conflict=_AUTOTAG_OUTPUT_ALBUM_DETECTION_CONFLICT,  # Multiple candidate folders for album detection
         date_correction=DateCorrectionConfig(
             enabled=True,  # Date correction by file/folder name
             extraction_timezone="UTC",  # Timezone for date extraction
@@ -122,7 +152,7 @@ user_config = UserConfig(
     # ALBUM DATE CONSISTENCY: check if asset dates match album dates
     album_date_consistency=AlbumDateConsistencyConfig(
         enabled=True,
-        autotag_album_date_mismatch="autotag_output_album_date_mismatch",
+        autotag_album_date_mismatch=_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH,
         threshold_days=180,  # 6 months - gradually reduce as you fix mismatches (180->90->60->30->7)
     ),
     album_detection_from_folders=AlbumDetectionFromFoldersConfig(
@@ -147,7 +177,7 @@ user_config = UserConfig(
         enabled=True,  # Set to True to enable album permission detection
         user_groups=[
             UserGroup(
-                name="family",
+                name=_FAMILY,
                 description="Family members",
                 members=[
                     "grandpa@example.com",
@@ -156,7 +186,7 @@ user_config = UserConfig(
                 ],
             ),
             UserGroup(
-                name="friends",
+                name=_FRIENDS,
                 description="Close friends",
                 members=[
                     "john@example.com",
@@ -167,14 +197,14 @@ user_config = UserConfig(
         selection_rules=[
             AlbumSelectionRule(
                 name="Share Family albums",
-                keyword="family",
-                groups=["family"],
+                keyword=_FAMILY,
+                groups=[_FAMILY],
                 access="view",
             ),
             AlbumSelectionRule(
                 name="Share Friends albums",
-                keyword="friends",
-                groups=["friends"],
+                keyword=_FRIENDS,
+                groups=[_FRIENDS],
                 access="view",
             ),
         ],
