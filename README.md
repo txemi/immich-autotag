@@ -199,7 +199,7 @@ After the motivation, let's describe a practical use case for this tool.
 
 
 
-**Step 1: Review and adjust your [configuration file](./immich_autotag/config/README_config.md))**
+**Step 1: Review and adjust your [configuration file](./immich_autotag/config/README_config.md)**
 
   - Decide if you want Immich AutoTag to create albums automatically:
     - From dates (e.g., daily albums for unclassified assets)
