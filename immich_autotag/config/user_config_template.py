@@ -36,16 +36,11 @@ user_config = UserConfig(
         host="immich.example.com", port=2283, api_key="YOUR_API_KEY_HERE"
     ),
     enable_album_name_strip=True,  # Trim spaces in album names
-    skip=SkipConfig(
-        skip_n=0,
-        resume_previous=True
-    ),  # Resume from last processed asset
+    skip=SkipConfig(skip_n=0, resume_previous=True),  # Resume from last processed asset
     # -------------------------------------------------------------------------
     # ASSET FILTER: list of asset links or IDs to process.
     # If empty, all assets are processed. If not empty, only those indicated and detailed logging.
-    filters=FilterConfig(filter_in=[
-        ClassificationRule(asset_links=[])
-    ]),
+    filters=FilterConfig(filter_in=[ClassificationRule(asset_links=[])]),
     # -------------------------------------------------------------------------
     # TAG CONVERSIONS: mapping of old tags to new ones (compatibility/refactor)
     conversions=[

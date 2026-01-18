@@ -25,6 +25,7 @@ class ConfigManager:
 
     def __attrs_post_init__(self):
         import traceback
+
         global _instance, _instance_created
         if _instance_created:
             raise RuntimeError(
@@ -43,6 +44,7 @@ class ConfigManager:
             _instance = None
             _instance_created = False
             raise
+
     def _construction(self):
         # --- New configuration search and loading logic ---
 
@@ -59,7 +61,7 @@ class ConfigManager:
     def _load(self):
         try:
             self.load_config_from_real_python()
-            if self.config :
+            if self.config:
                 return
         except Exception:
             raise  # Ignore and try dynamic loading
@@ -71,6 +73,7 @@ class ConfigManager:
             print(f"[CONFIG] ❌ ERROR loading config: {e}")
             print(f"[CONFIG] Exception type: {type(e).__name__}")
             import traceback
+
             traceback.print_exc()
             raise
 
@@ -107,18 +110,19 @@ class ConfigManager:
             raise FileNotFoundError(
                 "No configuration found. See the configuration guide above."
             )
+
     @typechecked
     def _initialize_skip_n_from_checkpoint(self):
         """
         Try to initialize skip_n from previous statistics checkpoint.
         """
         from immich_autotag.statistics.statistics_checkpoint import (
-                get_previous_skip_n,
-            )
-        prev_skip_n = get_previous_skip_n()
-        if prev_skip_n is not None :
-            self.config.skip.skip_n = prev_skip_n
+            get_previous_skip_n,
+        )
 
+        prev_skip_n = get_previous_skip_n()
+        if prev_skip_n is not None:
+            self.config.skip.skip_n = prev_skip_n
 
     @staticmethod
     @typechecked
@@ -126,7 +130,7 @@ class ConfigManager:
         global _instance
         if _instance is None:
             ConfigManager()
-            #_instance._construction()
+            # _instance._construction()
         return _instance
 
     @typechecked
@@ -163,13 +167,15 @@ class ConfigManager:
         if not isinstance(path, (str, _Path)):
             raise TypeError(f"path must be str, Path or None, got {type(path)}")
         import enum
+
         def enum_representer(dumper, data):
-            return dumper.represent_data(str(data.value) if hasattr(data, 'value') else str(data))
+            return dumper.represent_data(
+                str(data.value) if hasattr(data, "value") else str(data)
+            )
+
         yaml.add_representer(enum.Enum, enum_representer)
         with open(str(path), "w", encoding="utf-8") as f:
-            yaml.dump(
-                self.config.model_dump(), f, allow_unicode=True, sort_keys=False
-            )
+            yaml.dump(self.config.model_dump(), f, allow_unicode=True, sort_keys=False)
 
     @typechecked
     def print_config(self):

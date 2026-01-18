@@ -1,8 +1,6 @@
 # Imports the MatchResult class from the new file
 from typing import TYPE_CHECKING, Dict, List
 
-from immich_autotag.context.immich_context import ImmichContext
-
 import attrs
 from typeguard import typechecked
 
@@ -11,6 +9,7 @@ from immich_autotag.classification.classification_rule_wrapper import (
 )
 from immich_autotag.classification.match_result import MatchResult
 from immich_autotag.classification.match_result_list import MatchResultList
+from immich_autotag.context.immich_context import ImmichContext
 
 # Example usage:
 # rule_set = get_rule_set_from_config_manager()

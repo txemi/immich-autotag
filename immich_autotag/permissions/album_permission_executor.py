@@ -16,12 +16,11 @@ from immich_client.api.albums import (
     remove_user_from_album as immich_remove_user_from_album,
 )
 from immich_client.api.users import search_users as immich_search_users
-
 from immich_client.models.add_users_dto import AddUsersDto
-from immich_client.models.album_user_add_dto import AlbumUserAddDto
-from immich_client.models.album_user_role import AlbumUserRole
-from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_response_dto import AlbumResponseDto
+from immich_client.models.album_user_add_dto import AlbumUserAddDto
+from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
 from immich_autotag.context.immich_context import ImmichContext
@@ -118,9 +117,7 @@ def sync_album_permissions(
         return
 
     # Resolve configured member emails to user IDs
-    email_to_id_map, _ = _resolve_emails_to_user_ids(
-        resolved_policy.members, context
-    )
+    email_to_id_map, _ = _resolve_emails_to_user_ids(resolved_policy.members, context)
     target_user_ids = set(email_to_id_map.values())
 
     # Get current members from API
@@ -172,7 +169,9 @@ def sync_album_permissions(
 
 
 @typechecked
-def _get_current_members(album_id: str, context: ImmichContext) -> List[AlbumUserResponseDto]:
+def _get_current_members(
+    album_id: str, context: ImmichContext
+) -> List[AlbumUserResponseDto]:
     """
     Fetch current album members from API.
 
@@ -195,9 +194,13 @@ def _get_current_members(album_id: str, context: ImmichContext) -> List[AlbumUse
         f"[ALBUM_PERMISSIONS] Album {album_id} has {len(current_members)} members"
     )
     if current_members:
-        log_debug(f"[ALBUM_PERMISSIONS] First member attributes: {dir(current_members[0])}")
-        if hasattr(current_members[0], '__dict__'):
-            log_debug(f"[ALBUM_PERMISSIONS] First member __dict__: {current_members[0].__dict__}")
+        log_debug(
+            f"[ALBUM_PERMISSIONS] First member attributes: {dir(current_members[0])}"
+        )
+        if hasattr(current_members[0], "__dict__"):
+            log_debug(
+                f"[ALBUM_PERMISSIONS] First member __dict__: {current_members[0].__dict__}"
+            )
     return current_members
 
 
