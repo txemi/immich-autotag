@@ -150,7 +150,6 @@ class ConfigManager:
         from pathlib import Path as _Path
 
         import yaml
-
         from immich_autotag.utils.run_output_dir import get_run_output_dir
 
         if path is None:
@@ -166,8 +165,17 @@ class ConfigManager:
             )
 
         yaml.add_representer(enum.Enum, enum_representer)
+        # Volcado estándar
         with open(str(path), "w", encoding="utf-8") as f:
             yaml.dump(self.config.model_dump(), f, allow_unicode=True, sort_keys=False)
+
+        # Volcado alternativo con comentarios
+        try:
+            from immich_autotag.config.yaml_with_comments import generate_yaml_with_comments
+            commented_path = str(path).replace(".yaml", "_with_comments.yaml")
+            generate_yaml_with_comments(type(self.config), commented_path)
+        except Exception as e:
+            print(f"[WARN] Could not generate commented YAML: {e}")
 
     @typechecked
     def print_config(self):
