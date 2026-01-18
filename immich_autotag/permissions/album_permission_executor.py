@@ -7,7 +7,7 @@ Implements complete synchronization: config is source of truth (add + remove).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from uuid import UUID
 
 from immich_client.api.albums import add_users_to_album as immich_add_users_to_album
@@ -16,9 +16,13 @@ from immich_client.api.albums import (
     remove_user_from_album as immich_remove_user_from_album,
 )
 from immich_client.api.users import search_users as immich_search_users
+
 from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_role import AlbumUserRole
+from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+from immich_client.models.album_response_dto import AlbumResponseDto
+from typeguard import typechecked
 
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
@@ -31,9 +35,10 @@ if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
 
+@typechecked
 def _resolve_emails_to_user_ids(
-    emails: list[str], context: ImmichContext
-) -> tuple[dict[str, str], list[str]]:
+    emails: List[str], context: ImmichContext
+) -> Tuple[Dict[str, str], List[str]]:
     """
     Resolve email addresses to Immich user IDs.
 
@@ -84,6 +89,7 @@ def _resolve_emails_to_user_ids(
     return resolved, unresolved
 
 
+@typechecked
 def sync_album_permissions(
     album_wrapper: "AlbumResponseWrapper",
     resolved_policy: ResolvedAlbumPolicy,
@@ -112,14 +118,14 @@ def sync_album_permissions(
         return
 
     # Resolve configured member emails to user IDs
-    email_to_id_map, unresolved_emails = _resolve_emails_to_user_ids(
+    email_to_id_map, _ = _resolve_emails_to_user_ids(
         resolved_policy.members, context
     )
     target_user_ids = set(email_to_id_map.values())
 
     # Get current members from API
     current_members = _get_current_members(album_id, context)
-    current_user_ids = {str(member.user_id) for member in current_members}
+    current_user_ids = {str(member.user.id) for member in current_members}
 
     # Calculate diff
     users_to_add = target_user_ids - current_user_ids
@@ -165,7 +171,8 @@ def sync_album_permissions(
         log_debug(f"[ALBUM_PERMISSIONS] {album_name}: No changes needed")
 
 
-def _get_current_members(album_id: str, context: ImmichContext) -> list[Any]:
+@typechecked
+def _get_current_members(album_id: str, context: ImmichContext) -> List[AlbumUserResponseDto]:
     """
     Fetch current album members from API.
 
@@ -187,13 +194,18 @@ def _get_current_members(album_id: str, context: ImmichContext) -> list[Any]:
     log_debug(
         f"[ALBUM_PERMISSIONS] Album {album_id} has {len(current_members)} members"
     )
+    if current_members:
+        log_debug(f"[ALBUM_PERMISSIONS] First member attributes: {dir(current_members[0])}")
+        if hasattr(current_members[0], '__dict__'):
+            log_debug(f"[ALBUM_PERMISSIONS] First member __dict__: {current_members[0].__dict__}")
     return current_members
 
 
+@typechecked
 def _add_members_to_album(
     album_id: str,
     album_name: str,
-    user_ids: list[str],
+    user_ids: List[str],
     access_level: str,
     context: ImmichContext,
 ) -> None:
@@ -250,10 +262,11 @@ def _add_members_to_album(
         )
 
 
+@typechecked
 def _remove_members_from_album(
     album_id: str,
     album_name: str,
-    user_ids: list[str],
+    user_ids: List[str],
     context: ImmichContext,
 ) -> None:
     """
