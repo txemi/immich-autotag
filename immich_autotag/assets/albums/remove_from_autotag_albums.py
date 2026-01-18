@@ -61,7 +61,7 @@ def remove_asset_from_autotag_temporary_albums(
 
     for album_wrapper in temporary_albums:
         # Check if album name matches temporary album pattern
-        if not is_temporary_album(album_wrapper.album.name):
+        if not is_temporary_album(album_wrapper.album.album_name):
             continue
 
         # Skip if asset not in album (idempotent check)
