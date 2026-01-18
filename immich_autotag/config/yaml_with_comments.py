@@ -1,11 +1,15 @@
 """
 YAML config generator with comments from Pydantic model descriptions.
 """
+
 from pathlib import Path
 from typing import Any
+
+import yaml
 from pydantic import BaseModel
 from typeguard import typechecked
-import yaml
+
+
 @typechecked
 def generate_yaml_with_comments(model: type[BaseModel], filename: str | Path):
     lines = []
@@ -22,7 +26,7 @@ def generate_yaml_with_comments(model: type[BaseModel], filename: str | Path):
         if isinstance(value, str):
             value = f'"{value}"'
         elif value is None:
-            value = ''
+            value = ""
         lines.append(f"{name}: {value}")
         lines.append("")  # Línea en blanco entre campos
     with open(filename, "w", encoding="utf-8") as f:

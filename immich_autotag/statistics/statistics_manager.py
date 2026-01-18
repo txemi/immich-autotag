@@ -76,7 +76,9 @@ class StatisticsManager:
         self.checkpoint = CheckpointManager(stats_manager=self)
 
     @typechecked
-    def increment_event(self, event_kind: "ModificationKind", extra_key: "TagWrapper | None" = None) -> None:
+    def increment_event(
+        self, event_kind: "ModificationKind", extra_key: "TagWrapper | None" = None
+    ) -> None:
         """
         Increment the counter for the given event kind (ModificationKind).
         If extra_key (TagWrapper) is provided, it is concatenated to the event_kind name for per-key statistics.

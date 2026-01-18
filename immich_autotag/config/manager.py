@@ -150,6 +150,7 @@ class ConfigManager:
         from pathlib import Path as _Path
 
         import yaml
+
         from immich_autotag.utils.run_output_dir import get_run_output_dir
 
         if path is None:
@@ -171,7 +172,10 @@ class ConfigManager:
 
         # Volcado alternativo con comentarios
         try:
-            from immich_autotag.config.yaml_with_comments import generate_yaml_with_comments
+            from immich_autotag.config.yaml_with_comments import (
+                generate_yaml_with_comments,
+            )
+
             commented_path = str(path).replace(".yaml", "_with_comments.yaml")
             generate_yaml_with_comments(type(self.config), commented_path)
         except Exception as e:

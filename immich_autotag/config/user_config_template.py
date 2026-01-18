@@ -29,7 +29,7 @@ from immich_autotag.config.models import (
 
 # Private module-level constants for repeated tag/album/group names
 
- # AUTOTAG CLASSIFICATION RULES INPUT STRINGS
+# AUTOTAG CLASSIFICATION RULES INPUT STRINGS
 _AUTOTAG_INPUT_PREFIX = "autotag_input_"
 _AUTOTAG_OUTPUT_PREFIX = "autotag_output_"
 
@@ -91,7 +91,7 @@ user_config = UserConfig(
     enable_album_name_strip=True,  # Trim spaces in album names
     skip=SkipConfig(skip_n=0, resume_previous=True),  # Resume from last processed asset
     # -------------------------------------------------------------------------
-    # ASSET FILTER: Global filter assets by tag, album name pattern or ID. Inclussion or exclusion.    
+    # ASSET FILTER: Global filter assets by tag, album name pattern or ID. Inclussion or exclusion.
     filters=FilterConfig(filter_in=[ClassificationRule(asset_links=[])]),
     # -------------------------------------------------------------------------
     # TAG CONVERSIONS: mapping of old tags or albums to new ones (compatibility/refactor)
@@ -107,17 +107,28 @@ user_config = UserConfig(
         # Example conversion with COPY mode for testing
         Conversion(
             description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
-            source=ClassificationRule(tag_names=[_AUTOTAG_INPUT_MEME], album_name_patterns=[_AUTOTAG_INPUT_MEME]),
-            destination=Destination(tag_names=[_AUTOTAG_INPUT_MEME], album_names=[_AUTOTAG_INPUT_MEME]),
+            source=ClassificationRule(
+                tag_names=[_AUTOTAG_INPUT_MEME],
+                album_name_patterns=[_AUTOTAG_INPUT_MEME],
+            ),
+            destination=Destination(
+                tag_names=[_AUTOTAG_INPUT_MEME], album_names=[_AUTOTAG_INPUT_MEME]
+            ),
             mode=ConversionMode.COPY,
         ),
         # Example conversion with COPY mode for testing
         Conversion(
             description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
-            source=ClassificationRule(tag_names=[_AUTOTAG_INPUT_ADULT_MEME], album_name_patterns=[_AUTOTAG_INPUT_ADULT_MEME]),
-            destination=Destination(tag_names=[_AUTOTAG_INPUT_ADULT_MEME], album_names=[_AUTOTAG_INPUT_ADULT_MEME]),
+            source=ClassificationRule(
+                tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
+                album_name_patterns=[_AUTOTAG_INPUT_ADULT_MEME],
+            ),
+            destination=Destination(
+                tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
+                album_names=[_AUTOTAG_INPUT_ADULT_MEME],
+            ),
             mode=ConversionMode.COPY,
-        ),        
+        ),
     ],
     # -------------------------------------------------------------------------
     # CLASSIFICATION AND RULES:
@@ -247,7 +258,6 @@ user_config = UserConfig(
         ],
         log_unmatched=False,  # Set to True to log albums that don't match any rule
     ),
-
     # -------------------------------------------------------------------------
     # PERFORMANCE: Tuning for production vs development
     performance=PerformanceConfig(
