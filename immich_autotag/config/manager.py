@@ -64,7 +64,7 @@ class ConfigManager:
             if self.config:
                 return
         except Exception:
-            raise  # Ignore and try dynamic loading
+            pass  # Ignore and try dynamic loading
 
         try:
             self._try_load_dynamic()
