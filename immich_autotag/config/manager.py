@@ -66,16 +66,10 @@ class ConfigManager:
         except Exception:
             pass  # Ignore and try dynamic loading
 
-        try:
-            self._try_load_dynamic()
-            print(f"[CONFIG] ✅ Config loaded successfully: {type(self.config)}")
-        except Exception as e:
-            print(f"[CONFIG] ❌ ERROR loading config: {e}")
-            print(f"[CONFIG] Exception type: {type(e).__name__}")
-            import traceback
 
-            traceback.print_exc()
-            raise
+        self._try_load_dynamic()
+        print(f"[CONFIG] ✅ Config loaded successfully: {type(self.config)}")
+
 
     @typechecked
     def _try_load_dynamic(self):
