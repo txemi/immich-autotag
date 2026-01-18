@@ -316,6 +316,9 @@ class AlbumResponseWrapper:
             )
 
         found = False
+        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+        from immich_autotag.config._internal_types import ErrorHandlingMode
+
         for item in result:
             try:
                 _id = item.id
@@ -330,11 +333,31 @@ class AlbumResponseWrapper:
                     error_msg = getattr(item, "error", None)
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
+                    # Handle known recoverable errors as warnings or errors depending on mode
+                    if error_msg and (str(error_msg).lower() in ("not_found", "no_permission")):
+                        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+                            raise RuntimeError(
+                                f"Asset {asset_wrapper.id} was not successfully removed from album {self.album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                            )
+                        else:
+                            log(
+                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                level=LogLevel.WARNING,
+                            )
+                            return
+                    # Otherwise, treat as fatal
                     raise RuntimeError(
                         f"Asset {asset_wrapper.id} was not successfully removed from album {self.album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                     )
 
         if not found:
+            log(
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.album.id}. Treating as already removed.",
+                level=LogLevel.WARNING,
+            )
+            if DEFAULT_ERROR_MODE != ErrorHandlingMode.DEVELOPMENT
+                return
+        
             raise RuntimeError(
                 f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.album.id}."
             )
