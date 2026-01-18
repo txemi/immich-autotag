@@ -4,11 +4,13 @@ from functools import cached_property
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
+from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.albums.temporary_albums import is_temporary_album
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
@@ -19,6 +21,7 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumCollectionWrapper:
+
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
@@ -61,6 +64,12 @@ class AlbumCollectionWrapper:
                     print(
                         f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
                     )
+                else:
+                    # Si es un álbum temporal, eliminarlo automáticamente
+                    if is_temporary_album(album_wrapper.album.album_name):
+                        self.remove_album(album_wrapper, client)
+                    pass
+
             for asset_id in album_wrapper.asset_ids:
                 if asset_id not in asset_map:
                     asset_map[asset_id] = []
@@ -94,6 +103,27 @@ class AlbumCollectionWrapper:
         This is now redundant with albums_for_asset_wrapper() but kept for compatibility.
         This method is more explicit about returning wrapper objects."""
         return self.albums_for_asset_wrapper(asset_wrapper)
+
+    @typechecked
+    def remove_album(self, album_wrapper: AlbumResponseWrapper, client: ImmichClient) -> bool:
+        """
+        Elimina un álbum tanto en el servidor como de la colección interna.
+        Devuelve True si se eliminó correctamente, False si no estaba en la colección.
+        Lanza excepción si la API falla.
+        """
+        from immich_client.api.albums import delete_album
+        # Llamada a la API para borrar el álbum en el servidor
+        delete_album.sync(id=album_wrapper.album.id, client=client)
+        # Eliminar de la lista interna (como es frozen, hay que reconstruir la lista)
+        albums_new = [a for a in self.albums if a != album_wrapper]
+        object.__setattr__(self, "albums", albums_new)
+        # Invalida el cache del mapa
+        if hasattr(self, "_asset_to_albums_map"):
+            try:
+                del self._asset_to_albums_map
+            except Exception:
+                pass
+        return True
 
     @conditional_typechecked
     def create_or_get_album_with_user(
