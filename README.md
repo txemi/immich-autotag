@@ -194,9 +194,10 @@ These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_l
 
 ## 1.3. Practical Use Case: How to Take Advantage of This Script
 
+
+
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
 
-TODO:
 
 **Step 1: Review and adjust your [configuration file](./immich_autotag/config/README_config.md))**
 
@@ -209,6 +210,11 @@ TODO:
     - Set up permission groups, enable or disable automatic date correction, and configure global filters as needed.
 
 You can define also special tags or albums for photos that do not belong to any album for a specific reason (e.g., memes automatically uploaded from mobile devices, which you do not want in any album). The default config suggests using certain tags for these cases, so the user can label memes or other photos accordingly, and the script will take them into account.
+
+**Step 2: Run the script**
+
+  - Launch Immich AutoTag using any of the methods described above (Docker, pipx, or directly from the repo).
+  - For automated, periodic execution, you can use the Docker cron image or set up your own scheduling solution.
 
 
 
