@@ -7,17 +7,16 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.assets.albums.temporary_albums import is_temporary_album
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.albums.temporary_albums import is_temporary_album
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
 
 # Singleton instance storage
 _album_collection_singleton: AlbumCollectionWrapper | None = None
-
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -56,23 +55,30 @@ class AlbumCollectionWrapper:
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
         albums_to_remove: list[AlbumResponseWrapper] = []
         from immich_autotag.context.immich_context import ImmichContext
+
         client = ImmichContext.get_default_client()
         for album_wrapper in self.albums:
             # Garantiza que el álbum está en modo full (assets cargados)
-            #album_wrapper.ensure_full()
+            # album_wrapper.ensure_full()
             if not album_wrapper.asset_ids:
                 print(
                     f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
                 )
-                #album_wrapper.reload_from_api(client)
+                # album_wrapper.reload_from_api(client)
                 if album_wrapper.asset_ids:
-                    album_url = album_wrapper.get_immich_album_url().geturl() if hasattr(album_wrapper, "get_immich_album_url") else "(no url)"
+                    album_url = (
+                        album_wrapper.get_immich_album_url().geturl()
+                        if hasattr(album_wrapper, "get_immich_album_url")
+                        else "(no url)"
+                    )
                     raise RuntimeError(
                         f"[DEBUG] Anomalous behavior: Album '{getattr(album_wrapper.album, 'album_name', '?')}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
                         "This suggests a possible synchronization or lazy loading bug. Please review the album loading logic."
                     )
                 if is_temporary_album(album_wrapper.album.album_name):
-                    print(f"[WARN] Temporary album '{album_wrapper.album.album_name}' marked for removal after map build.")
+                    print(
+                        f"[WARN] Temporary album '{album_wrapper.album.album_name}' marked for removal after map build."
+                    )
                     albums_to_remove.append(album_wrapper)
                 pass
             else:
@@ -88,6 +94,7 @@ class AlbumCollectionWrapper:
         # Remove temporary albums after map build to avoid recursion
         if albums_to_remove:
             from immich_autotag.tags.modification_kind import ModificationKind
+
             tag_mod_report = ModificationReport.get_instance()
             for album_wrapper in albums_to_remove:
                 try:
@@ -96,13 +103,15 @@ class AlbumCollectionWrapper:
                         tag_mod_report.add_album_modification(
                             kind=ModificationKind.FOCUS,
                             album=album_wrapper,
-                            note=f"Temporary album '{getattr(album_wrapper.album, 'album_name', '?')}' removed automatically after map build."
+                            note=f"Temporary album '{getattr(album_wrapper.album, 'album_name', '?')}' removed automatically after map build.",
                         )
                     self.remove_album(album_wrapper, client)
                 except Exception as e:
                     album = album_wrapper.album  # type: ignore
-                    album_name = getattr(album, 'album_name', '?')
-                    print(f"[ERROR] Failed to remove temporary album '{album_name}': {e}")
+                    album_name = getattr(album, "album_name", "?")
+                    print(
+                        f"[ERROR] Failed to remove temporary album '{album_name}': {e}"
+                    )
         return asset_map
 
     @conditional_typechecked
@@ -134,14 +143,20 @@ class AlbumCollectionWrapper:
         return self.albums_for_asset_wrapper(asset_wrapper)
 
     @typechecked
-    def remove_album(self, album_wrapper: AlbumResponseWrapper, client: ImmichClient) -> bool:
+    def remove_album(
+        self, album_wrapper: AlbumResponseWrapper, client: ImmichClient
+    ) -> bool:
         """
         Elimina un álbum tanto en el servidor como de la colección interna.
         Devuelve True si se eliminó correctamente, False si no estaba en la colección.
         Lanza excepción si la API falla.
         """
-        from immich_client.api.albums.delete_album import sync_detailed as delete_album_sync
         from uuid import UUID
+
+        from immich_client.api.albums.delete_album import (
+            sync_detailed as delete_album_sync,
+        )
+
         album_id = UUID(album_wrapper.album.id)
         delete_album_sync(id=album_id, client=client)
         self.albums = [a for a in self.albums if a != album_wrapper]
@@ -173,13 +188,14 @@ class AlbumCollectionWrapper:
                 return album_wrapper
 
         # If it does not exist, create and assign user
+        from uuid import UUID
+
         from immich_client.api.albums import add_users_to_album, create_album
         from immich_client.api.users import get_my_user
         from immich_client.models.add_users_dto import AddUsersDto
         from immich_client.models.album_user_add_dto import AlbumUserAddDto
         from immich_client.models.album_user_role import AlbumUserRole
         from immich_client.models.create_album_dto import CreateAlbumDto
-        from uuid import UUID
 
         # (import removed, already imported at module level)
 
