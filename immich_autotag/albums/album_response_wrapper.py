@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 
 import attrs
+from immich_client.client import Client
 from immich_client.models.album_response_dto import AlbumResponseDto
 
 from immich_autotag.types import ImmichClient
