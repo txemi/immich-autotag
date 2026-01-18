@@ -355,7 +355,7 @@ class AlbumResponseWrapper:
                 f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.album.id}. Treating as already removed.",
                 level=LogLevel.WARNING,
             )
-            if DEFAULT_ERROR_MODE != ErrorHandlingMode.DEVELOPMENT
+            if DEFAULT_ERROR_MODE != ErrorHandlingMode.DEVELOPMENT:
                 return
         
             raise RuntimeError(
