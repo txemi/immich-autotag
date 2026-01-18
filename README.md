@@ -1,17 +1,17 @@
 # 1. Immich AutoTag
 
-## Project Description (2 lines)
+## 1.1. Project Description (2 lines)
 
 Immich AutoTag is a basic process and rule engine to automate actions on images and videos (assets) in Immich. It can create and assign albums, generate and assign tags, and repair dates based on a user-defined configuration file.
 
-## 1.1. Motivation
+## 1.2. Motivation
 
 
-### 1.1.1. Why Immich?
+### 1.2.1. Why Immich?
 
 In recent years, [Immich](https://immich.app) has become one of the most popular solutions for private photo and video management, surpassing alternatives like Google Photos or NAS applications. External services such as Google Photos may lose features, delete data (e.g., face information), impose quotas, or reduce photo quality. NAS apps often perform poorly when run on typical home hardware, which is usually less powerful than professional setups. Immich stands out for being open-source (free software), fast, private, and having an active community, making it the preferred choice for many users.
 
-### 1.1.2. Why this project?
+### 1.2.2. Why this project?
 
 When starting to use Immich, it is common to import large volumes of photos from older systems, where organization was done in folders or with other apps. This creates a challenge: many photos and videos remain unorganized or misclassified. Although Immich is powerful, manual classification can be slow and tedious. This project aims to make organization faster and easier through automatic rules and tagging.
 
@@ -19,7 +19,7 @@ When starting to use Immich, it is common to import large volumes of photos from
 
 
 
-## Key Features
+## 1.3. Key Features
 
 - **Automatic album creation and assignment:** Create and assign albums based on detected duplicates in Immich, or from folders in your file system (if enabled). Both methods can be used to save time when organizing large libraries.
 - **Rule-based classification engine:** Define flexible rules using tags and album name patterns to automatically categorize assets. Immich AutoTag will label each asset as classified, in conflict, or pending classification using output tags.
@@ -42,17 +42,17 @@ It helps to:
 
 > For more details and upcoming features, see the [Roadmap](./ROADMAP.md) and [Changelog](./CHANGELOG.md).
 
-## 1.2. Quick Start
+## 1.4. Quick Start
 
 To get started quickly:
 
 
-### 1. Copy the configuration file
+### 1.4.1. Copy the configuration file
 
 - Place your config at `~/.config/immich_autotag/config.yaml` (recommended XDG location).
 - See the [Configuration Guide](./immich_autotag/config/README_config.md) for details and an example config file.
 
-### 2. Run the tool (choose one method)
+### 1.4.2. Run the tool (choose one method)
 
 
 You can run Immich AutoTag using any of the following methods:
@@ -163,7 +163,7 @@ That's it! Your Immich autotagging tool is ready to use.
 > See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) in the [Development Guide](./docs/development.md).
 
 
-## 1.2.1. Reviewing Results: Example Links
+## 1.5. Reviewing Results: Example Links
 
 After running the autotagging script, you can quickly review the results and take action using the following types of links. These links are generated for your Immich server and point directly to the relevant albums or tags:
 
@@ -192,7 +192,7 @@ These links are also written to a Markdown file (`logs/<run_id>/immich_autotag_l
 
 
 
-## 1.3. Practical Use Case: How to Take Advantage of This Script
+## 1.6. Practical Use Case: How to Take Advantage of This Script
 
 
 After the motivation, let's describe a practical use case for this tool. The script scans all your photos, trying to detect whether they have been classified, remain unclassified, or have multiple classifications (which could indicate an error).
@@ -235,16 +235,16 @@ You can define also special tags or albums for photos that do not belong to any 
 
 > For a complete and detailed list of features, improvements, and changes, see the [Changelog](./CHANGELOG.md).
 
-## 1.5. Development
+## 1.7. Development
 
 For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md).
 
 If you would like to contribute, please see the new [Contributing Guide](./docs/CONTRIBUTING.md). Any help is welcome—especially with re-enabling GitHub Actions (CI/CD), which is currently disabled due to the challenge of embedding the Immich client library in the build process. This project is developed in spare time, so all contributions are greatly appreciated!
 
-## 1.6. Support
+## 1.8. Support
 For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/txemi/immich-autotag/issues) ticketing system.
 
-## 1.7. License
+## 1.9. License
 This project is licensed under the GNU GPL v3. See the [LICENSE](./LICENSE) file for details.
 
 
