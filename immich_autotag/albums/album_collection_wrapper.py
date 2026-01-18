@@ -164,6 +164,7 @@ class AlbumCollectionWrapper:
         # Log DELETE_ALBUM event
         from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
+
         tag_mod_report = ModificationReport.get_instance()
         tag_mod_report.add_album_modification(
             kind=ModificationKind.DELETE_ALBUM,

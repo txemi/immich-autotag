@@ -12,9 +12,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-
 import yaml
 from pydantic import BaseModel, Field
+
 from immich_autotag.tags.modification_kind import ModificationKind
 
 
@@ -90,7 +90,7 @@ class RunStatistics(BaseModel):
     )
 
     @typechecked
-    def increment_event(self, event_kind: "ModificationKind") -> None:
+    def increment_event(self, event_kind: ModificationKind) -> None:
         """
         Increment the counter for the given event kind (ModificationKind).
         """
