@@ -115,6 +115,8 @@ class ConfigManager:
         prev_skip_n = get_previous_skip_n()
         if prev_skip_n is not None:
             self.config.skip.skip_n = prev_skip_n
+        self.dump_to_yaml()
+        pass
 
     @staticmethod
     @typechecked
