@@ -54,22 +54,25 @@ class AlbumCollectionWrapper:
         assert (
             len(self.albums) > 0
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
+        albums_to_remove: list[AlbumResponseWrapper] = []
+        from immich_autotag.context.immich_context import ImmichContext
+        client = ImmichContext.get_default_client()
         for album_wrapper in self.albums:
             # Forzar la recarga de assets si asset_ids está vacío
             if not album_wrapper.asset_ids:
                 # Recarga desde la API y actualiza el cache usando el cliente del contexto singleton
-                from immich_autotag.context.immich_context import ImmichContext
-                client = ImmichContext.get_default_client()
+
+
                 album_wrapper.reload_from_api(client)
                 if not album_wrapper.asset_ids:
                     print(
                         f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
                     )
-                    # Si es un álbum temporal, solo loguear advertencia (no eliminar aquí para evitar recursión)
                     if is_temporary_album(album_wrapper.album.album_name):
-                        print(f"[WARN] Temporary album '{album_wrapper.album.album_name}' detected. Should be removed by caller.")
+                        print(f"[WARN] Temporary album '{album_wrapper.album.album_name}' marked for removal after map build.")
+                        albums_to_remove.append(album_wrapper)
                     pass
-                else: 
+                else:
                     print(
                         f"[INFO] Album '{getattr(album_wrapper.album, 'album_name', '?')}' reloaded with {len(album_wrapper.asset_ids)} assets."
                     )
@@ -78,6 +81,25 @@ class AlbumCollectionWrapper:
                 if asset_id not in asset_map:
                     asset_map[asset_id] = []
                 asset_map[asset_id].append(album_wrapper)
+
+        # Remove temporary albums after map build to avoid recursion
+        if albums_to_remove:
+            from immich_autotag.tags.modification_kind import ModificationKind
+            tag_mod_report = ModificationReport.get_instance()
+            for album_wrapper in albums_to_remove:
+                try:
+                    # Log focus-level removal in the modification report
+                    if tag_mod_report:
+                        tag_mod_report.add_album_modification(
+                            kind=ModificationKind.FOCUS,
+                            album=album_wrapper,
+                            note=f"Temporary album '{getattr(album_wrapper.album, 'album_name', '?')}' removed automatically after map build."
+                        )
+                    self.remove_album(album_wrapper, client)
+                except Exception as e:
+                    album = album_wrapper.album  # type: ignore
+                    album_name = getattr(album, 'album_name', '?')
+                    print(f"[ERROR] Failed to remove temporary album '{album_name}': {e}")
         return asset_map
 
     @conditional_typechecked
