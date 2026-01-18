@@ -723,50 +723,16 @@ class AssetResponseWrapper:
         tag_conversions: TagConversions,
     ) -> None:
         """
-        For each tag conversion (origin -> destination), if the asset has the origin tag:
-        - If it does not have the destination tag, add it and reload the asset, then remove the origin tag.
-        - If it has both, just remove the origin tag.
-        In focus mode, logs if a tag was added, removed, or nothing was done.
+        Aplica cada conversión llamando a su método apply_to_asset.
         """
-        from immich_client.api.assets import get_asset_info
-
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         changes = []
-
         for conv in tag_conversions:
-            assert isinstance(
-                conv, ConversionWrapper
-            ), f"Tag conversion must be a ConversionWrapper, got {type(conv)}"
-            origin = conv.get_single_origin_tag()
-            dest_tags = conv.destination_tags()
-            if len(dest_tags) != 1:
-                raise NotImplementedError(
-                    "Only single destination tag conversions are implemented."
-                )
-            dest = dest_tags[0]
-            has_origin = self.has_tag(origin)
-            has_dest = self.has_tag(dest)
-            if has_origin and not has_dest:
-                try:
-                    self.add_tag_by_name(dest)
-                    # Reload asset to ensure state is up-to-date before removing origin
-                    updated = get_asset_info.sync(
-                        id=self.id, client=self.context.client
-                    )
-                    object.__setattr__(self, "asset", updated)
-                    changes.append(f"Added tag '{dest}' and removed '{origin}'")
-                except Exception as e:
-                    msg = f"[WARN] Could not add tag '{dest}' to asset {self.id}: {e}"
-                    print(msg)
-                    changes.append(f"Failed to add '{dest}', removed '{origin}'")
-                self.remove_tag_by_name(origin)
-            elif has_origin and has_dest:
-                self.remove_tag_by_name(origin)
-                changes.append(
-                    f"Removed redundant tag '{origin}' (already had '{dest}')"
-                )
+            result = conv.apply_to_asset(self)
+            if result:
+                changes.extend(result)
         if changes:
             for c in changes:
                 log(
