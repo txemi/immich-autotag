@@ -66,9 +66,9 @@ class AlbumCollectionWrapper:
                         f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
                     )
                 else:
-                    # Si es un álbum temporal, eliminarlo automáticamente
+                    # Si es un álbum temporal, solo loguear advertencia (no eliminar aquí para evitar recursión)
                     if is_temporary_album(album_wrapper.album.album_name):
-                        self.remove_album(album_wrapper, client)
+                        print(f"[WARN] Temporary album '{album_wrapper.album.album_name}' detected. Should be removed by caller.")
                     pass
 
             for asset_id in album_wrapper.asset_ids:
@@ -114,13 +114,9 @@ class AlbumCollectionWrapper:
         """
         from immich_client.api.albums.delete_album import sync_detailed as delete_album_sync
         from uuid import UUID
-        # Convertir id de str a UUID antes de llamar a la API
         album_id = UUID(album_wrapper.album.id)
-        # Llamada a la API para borrar el álbum en el servidor
         delete_album_sync(id=album_id, client=client)
-        # Eliminar de la lista interna
         self.albums = [a for a in self.albums if a != album_wrapper]
-        # Invalida el cache del mapa
         self._invalidate_asset_to_albums_map_cache()
         return True
 
