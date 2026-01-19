@@ -42,4 +42,4 @@ USE_THREADPOOL = False  # Set to True to force thread pool usage, False for dire
 MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
 # Ejemplo de uso interno:
-DEFAULT_ERROR_MODE = ErrorHandlingMode.USER
+DEFAULT_ERROR_MODE = ErrorHandlingMode.DEVELOPMENT
