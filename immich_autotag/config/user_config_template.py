@@ -264,8 +264,6 @@ user_config = UserConfig(
         enable_type_checking=True,  # Disable @typechecked in production (~50% perf improvement)
         # Set to True only for development/debugging to catch type errors early
     ),
-    # If you need advanced_feature, add it here as your own attribute
-    # advanced_feature=AdvancedFeatureConfig(enabled=True, threshold=0.8),
 )
 
 if __name__ == "__main__":
