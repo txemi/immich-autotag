@@ -256,7 +256,7 @@ user_config = UserConfig(
                 access="view",
             ),
         ],
-        log_unmatched=False,  # Set to True to log albums that don't match any rule
+        log_unmatched=True,  # Set to True to log albums that don't match any rule
     ),
     # -------------------------------------------------------------------------
     # PERFORMANCE: Tuning for production vs development
