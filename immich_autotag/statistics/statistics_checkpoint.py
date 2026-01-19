@@ -7,6 +7,9 @@ Utility to obtain the counter of the previous execution (skip_n) from run_statis
 from pathlib import Path
 from typing import Optional
 
+
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+from immich_autotag.config._internal_types import ErrorHandlingMode
 from typeguard import typechecked
 
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
@@ -66,6 +69,11 @@ def get_previous_skip_n(
     Si use_recent_max es True, busca el máximo de las últimas `hours` horas.
     Devuelve None si no hay datos.
     """
+    # Si estamos en modo DEVELOPMENT, forzar uso de máximo reciente y ampliar umbral a 48h
+    if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+        use_recent_max = True
+        hours = 48
+
     if use_recent_max:
         result = _find_recent_max_count(overlap, hours)
         if result is not None:
