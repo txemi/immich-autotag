@@ -15,8 +15,8 @@ from immich_autotag.errors.recoverable_error import categorize_error
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.statistics.statistics_checkpoint import get_previous_skip_n
+from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
 @typechecked
@@ -31,7 +31,6 @@ def process_assets_sequential(
     stats = StatisticsManager.get_instance().get_stats()
     cm = ConfigManager.get_instance()
     assert isinstance(cm, ConfigManager)
-
 
     # Determinar skip_n: si resume_previous está activo, consultar estadísticas; si no, usar config
     if cm.config.skip.resume_previous:

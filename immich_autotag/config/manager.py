@@ -98,8 +98,6 @@ class ConfigManager:
                 "No configuration found. See the configuration guide above."
             )
 
-
-
     @staticmethod
     @typechecked
     def get_instance() -> "ConfigManager":
