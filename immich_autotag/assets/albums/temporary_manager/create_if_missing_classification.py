@@ -82,11 +82,7 @@ def create_album_if_missing_classification(
                 level=LogLevel.IMPORTANT,
             )
             cleanup_unhealthy_album(album_wrapper, client, tag_mod_report)
-            # Recreate the album after deletion
-            album_wrapper = albums_collection.create_or_get_album_with_user(
-                album_name, client, tag_mod_report=tag_mod_report
-            )
-            album = album_wrapper.album
+
 
     # Assign asset to album using existing logic (creates if needed)
     from immich_autotag.assets.albums._process_album_detection import (
