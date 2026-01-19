@@ -207,16 +207,7 @@ class AlbumCollectionWrapper:
         )
         return True
 
-    def _invalidate_asset_to_albums_map_cache(self):
-        """Elimina el cache del mapa asset_id -> albums si existe."""
-        # NOTE: Do NOT use hasattr here. In classes decorated with @attr.s, hasattr may trigger __getattr__,
-        # which can cause infinite recursion if the attribute does not exist. That's why we check directly
-        # in self.__dict__ to avoid this problem. If you change this, you may reintroduce a RecursionError.
-        if "_asset_to_albums_map" in self.__dict__:
-            try:
-                del self._asset_to_albums_map
-            except Exception:
-                pass
+
 
     @conditional_typechecked
     def create_or_get_album_with_user(
