@@ -47,12 +47,7 @@ class ConfigManager:
 
     def _construction(self):
         # --- New configuration search and loading logic ---
-
         self._load()
-
-        # Initialize skip_n with the counter from the last previous execution (with overlap)
-        self._initialize_skip_n_from_checkpoint()
-
         # Dump the loaded configuration to the logs/output folder
         self.dump_to_yaml()
         self.print_config()
@@ -102,21 +97,6 @@ class ConfigManager:
             raise FileNotFoundError(
                 "No configuration found. See the configuration guide above."
             )
-
-    @typechecked
-    def _initialize_skip_n_from_checkpoint(self):
-        """
-        Try to initialize skip_n from previous statistics checkpoint.
-        """
-        from immich_autotag.statistics.statistics_checkpoint import (
-            get_previous_skip_n,
-        )
-
-        prev_skip_n = get_previous_skip_n()
-        if prev_skip_n is not None:
-            self.config.skip.skip_n = prev_skip_n
-        self.dump_to_yaml()
-        pass
 
     @staticmethod
     @typechecked

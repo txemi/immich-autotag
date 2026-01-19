@@ -11,27 +11,69 @@ from typeguard import typechecked
 
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
-from immich_autotag.utils.run_output_dir import get_previous_run_output_dir
+from immich_autotag.utils.run_output_dir import (
+    LOGS_LOCAL_DIR,
+    find_recent_run_dirs,
+    get_previous_run_output_dir,
+)
 
 
 @typechecked
-def get_previous_skip_n(overlap: int = 100) -> Optional[int]:
+def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
-    Looks for the previous run's run_statistics.yaml and returns the count minus the overlap.
-    Returns None if not found.
-    Now loads the statistics using the RunStatistics class for better validation.
+    Busca el máximo count de los runs en las últimas `hours` horas.
+    Devuelve el skip_n calculado o None si no hay datos.
     """
-    prev_dir = get_previous_run_output_dir()
-    if prev_dir is None:
-        return None
-    stats_path = prev_dir / RUN_STATISTICS_FILENAME
+    max_count = 0
+    found = False
+    for d in find_recent_run_dirs(LOGS_LOCAL_DIR, max_age_hours=hours):
+        stats_path = d / RUN_STATISTICS_FILENAME
+        if stats_path.exists():
+            try:
+                stats = RunStatistics.from_yaml(stats_path)
+                if stats.count > max_count:
+                    max_count = stats.count
+                    found = True
+            except Exception:
+                continue
+    if found:
+        return max(0, max_count - overlap)
+    return None
+
+
+@typechecked
+def _get_count_from_stats_path(stats_path: Path, overlap: int) -> Optional[int]:
+    """
+    Lee el count de un fichero run_statistics.yaml y calcula skip_n.
+    Devuelve None si no existe o hay error.
+    """
     if not stats_path.exists():
         return None
     try:
         stats = RunStatistics.from_yaml(stats_path)
-    except Exception as e:
-        # Optionally log or print the error
+    except Exception:
         return None
     count = stats.count
-    skip_n = max(0, count - overlap)
-    return skip_n
+    return max(0, count - overlap)
+
+
+@typechecked
+def get_previous_skip_n(
+    overlap: int = 100, use_recent_max: bool = False, hours: int = 3
+) -> Optional[int]:
+    """
+    Busca el contador de la ejecución anterior (skip_n) a partir de run_statistics.yaml.
+    Si use_recent_max es True, busca el máximo de las últimas `hours` horas.
+    Devuelve None si no hay datos.
+    """
+    if use_recent_max:
+        result = _find_recent_max_count(overlap, hours)
+        if result is not None:
+            return result
+        # Si no hay datos, sigue con el modo por defecto
+
+    prev_dir = get_previous_run_output_dir()
+    if prev_dir is None:
+        return None
+    stats_path = prev_dir / RUN_STATISTICS_FILENAME
+    return _get_count_from_stats_path(stats_path, overlap)
