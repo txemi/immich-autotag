@@ -1,4 +1,3 @@
-
 import os
 from datetime import datetime
 from pathlib import Path
@@ -10,16 +9,21 @@ _RUN_OUTPUT_DIR = None
 
 
 @typechecked
-def find_recent_run_dirs(logs_dir: Path, max_age_hours: int = 3, exclude_current: bool = True) -> list[Path]:
+def find_recent_run_dirs(
+    logs_dir: Path, max_age_hours: int = 3, exclude_current: bool = True
+) -> list[Path]:
     """
     Devuelve una lista de carpetas de ejecuciones recientes (subdirs con 'PID' en el nombre y fecha válida),
     ordenadas de más reciente a más antigua, filtrando por antigüedad (max_age_hours).
     Si exclude_current es True, excluye la carpeta de la ejecución actual.
     """
     from datetime import datetime, timedelta
+
     now = datetime.now()
     recent_dirs: list[tuple[datetime, Path]] = []
-    current_run_dir = get_run_output_dir(logs_dir).resolve() if exclude_current else None
+    current_run_dir = (
+        get_run_output_dir(logs_dir).resolve() if exclude_current else None
+    )
     for subdir in logs_dir.iterdir():
         if subdir.is_dir() and "PID" in subdir.name:
             try:
@@ -36,6 +40,8 @@ def find_recent_run_dirs(logs_dir: Path, max_age_hours: int = 3, exclude_current
                 continue
     recent_dirs.sort(reverse=True)
     return [d for _, d in recent_dirs]
+
+
 @typechecked
 def get_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path:
     """

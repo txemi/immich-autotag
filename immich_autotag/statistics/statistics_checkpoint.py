@@ -11,11 +11,13 @@ from typeguard import typechecked
 
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
-from immich_autotag.utils.run_output_dir import get_previous_run_output_dir
+from immich_autotag.utils.run_output_dir import (
+    LOGS_LOCAL_DIR,
+    find_recent_run_dirs,
+    get_previous_run_output_dir,
+)
 
 
-
-from immich_autotag.utils.run_output_dir import find_recent_run_dirs, LOGS_LOCAL_DIR
 @typechecked
 def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
@@ -38,6 +40,7 @@ def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
         return max(0, max_count - overlap)
     return None
 
+
 @typechecked
 def _get_count_from_stats_path(stats_path: Path, overlap: int) -> Optional[int]:
     """
@@ -53,8 +56,11 @@ def _get_count_from_stats_path(stats_path: Path, overlap: int) -> Optional[int]:
     count = stats.count
     return max(0, count - overlap)
 
+
 @typechecked
-def get_previous_skip_n(overlap: int = 100, use_recent_max: bool = False, hours: int = 3) -> Optional[int]:
+def get_previous_skip_n(
+    overlap: int = 100, use_recent_max: bool = False, hours: int = 3
+) -> Optional[int]:
     """
     Busca el contador de la ejecución anterior (skip_n) a partir de run_statistics.yaml.
     Si use_recent_max es True, busca el máximo de las últimas `hours` horas.

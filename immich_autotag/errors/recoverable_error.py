@@ -52,6 +52,7 @@ class TemporaryNetworkError(RecoverableError):
 
     pass
 
+
 @typechecked
 def categorize_error(exc: Exception) -> tuple[bool, str]:
     """

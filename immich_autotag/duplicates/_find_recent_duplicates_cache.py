@@ -4,8 +4,8 @@ from typing import Optional
 
 from typeguard import typechecked
 
-
 from immich_autotag.utils.run_output_dir import find_recent_run_dirs
+
 
 @typechecked
 def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional[Path]:
@@ -13,9 +13,10 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
     Busca el archivo de caché de duplicados más reciente y válido en las subcarpetas de logs.
     Devuelve la ruta si existe y está dentro del umbral de antigüedad, o None.
     """
+    from datetime import datetime
+
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
-    from datetime import datetime
 
     checked_dirs = []
     candidate_caches: list[tuple[datetime, Path]] = []

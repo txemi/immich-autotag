@@ -7,16 +7,15 @@ from typeguard import typechecked
 
 from immich_autotag.assets.process.perf_log import perf_log
 from immich_autotag.assets.process.process_single_asset import process_single_asset
+from immich_autotag.config._internal_types import ErrorHandlingMode
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.errors.recoverable_error import categorize_error
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
-
 from immich_autotag.statistics.statistics_manager import StatisticsManager
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-from immich_autotag.config._internal_types import ErrorHandlingMode
 
 
 @typechecked
@@ -53,12 +52,14 @@ def process_assets_sequential(
                 # Si es recuperable, o no es recuperable pero estamos en modo BATCH, tratamos igual
                 if is_recoverable or error_mode == ErrorHandlingMode.USER:
                     import traceback
+
                     tb = traceback.format_exc()
                     log(
                         f"[WARN] {category} - Skipping asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
                     from immich_autotag.tags.modification_kind import ModificationKind
+
                     tag_mod_report = ModificationReport.get_instance()
                     if tag_mod_report:
                         tag_mod_report.add_error_modification(
@@ -77,6 +78,7 @@ def process_assets_sequential(
                 else:
                     # Fatal error - re-raise inmediatamente
                     import traceback
+
                     tb = traceback.format_exc()
                     log(
                         f"[ERROR] {category} - Aborting at asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
