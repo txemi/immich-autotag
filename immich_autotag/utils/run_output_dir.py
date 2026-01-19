@@ -4,23 +4,29 @@ from pathlib import Path
 
 from typeguard import typechecked
 
+
 LOGS_LOCAL_DIR = Path("logs_local")
 _RUN_OUTPUT_DIR = None
+
+# --- Constantes internas para carpetas de ejecución ---
+_RUN_DIR_PID_MARK = "PID"
+_RUN_DIR_PID_SEP = "_PID"
+_RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
 
 
 # --- Funciones privadas reutilizables para carpetas de ejecuciones ---
 @typechecked
 def _is_run_dir(subdir: Path) -> bool:
-    """Devuelve True si la subcarpeta es de ejecución (contiene 'PID' en el nombre)."""
-    return subdir.is_dir() and "PID" in subdir.name
+    """Devuelve True si la subcarpeta es de ejecución (contiene _RUN_DIR_PID_MARK en el nombre)."""
+    return subdir.is_dir() and _RUN_DIR_PID_MARK in subdir.name
 
 
 @typechecked
 def _extract_datetime_from_run_dir(subdir: Path) -> datetime | None:
-    """Extrae la fecha de la carpeta de ejecución (YYYYMMDD_HHMMSS antes de _PID)."""
+    """Extrae la fecha de la carpeta de ejecución (YYYYMMDD_HHMMSS antes de _RUN_DIR_PID_SEP)."""
     try:
-        dt_str = subdir.name.split("_PID")[0]
-        return datetime.strptime(dt_str, "%Y%m%d_%H%M%S")
+        dt_str = subdir.name.split(_RUN_DIR_PID_SEP)[0]
+        return datetime.strptime(dt_str, _RUN_DIR_DATE_FORMAT)
     except Exception:
         return None
 
@@ -67,9 +73,9 @@ def get_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path:
     """
     global _RUN_OUTPUT_DIR
     if _RUN_OUTPUT_DIR is None:
-        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        now = datetime.now().strftime(_RUN_DIR_DATE_FORMAT)
         pid = os.getpid()
-        _RUN_OUTPUT_DIR = base_dir / f"{now}_PID{pid}"
+        _RUN_OUTPUT_DIR = base_dir / f"{now}{_RUN_DIR_PID_SEP}{pid}"
         _RUN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     return _RUN_OUTPUT_DIR
 
