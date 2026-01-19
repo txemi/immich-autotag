@@ -7,6 +7,7 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album_list import AlbumList
 from immich_autotag.assets.albums.temporary_albums import is_temporary_album
 
 # Import for type checking and runtime
@@ -27,7 +28,7 @@ class AlbumCollectionWrapper:
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
-    _asset_to_albums_map: dict[str, list[AlbumResponseWrapper]] = attrs.field(
+    _asset_to_albums_map: dict[str, AlbumList] = attrs.field(
         init=False,
         factory=dict,
         validator=attrs.validators.instance_of(dict)
@@ -51,15 +52,18 @@ class AlbumCollectionWrapper:
     def _add_album_to_map(self, album_wrapper: AlbumResponseWrapper):
         for asset_id in album_wrapper.asset_ids:
             if asset_id not in self._asset_to_albums_map:
-                self._asset_to_albums_map[asset_id] = []
+                self._asset_to_albums_map[asset_id] = AlbumList()
             self._asset_to_albums_map[asset_id].append(album_wrapper)
 
     @typechecked
     def _remove_album_from_map(self, album_wrapper: AlbumResponseWrapper):
         for asset_id in album_wrapper.asset_ids:
             if asset_id in self._asset_to_albums_map:
-                self._asset_to_albums_map[asset_id] = [a for a in self._asset_to_albums_map[asset_id] if a != album_wrapper]
-                if not self._asset_to_albums_map[asset_id]:
+                album_list = self._asset_to_albums_map[asset_id]
+                album_list = AlbumList(a for a in album_list if a != album_wrapper)
+                if album_list:
+                    self._asset_to_albums_map[asset_id] = album_list
+                else:
                     del self._asset_to_albums_map[asset_id]
 
     @classmethod
@@ -103,12 +107,12 @@ class AlbumCollectionWrapper:
         return removed
 
     @typechecked
-    def _asset_to_albums_map(self) -> dict[str, list[AlbumResponseWrapper]]:
-        """Pre-computed map: asset_id -> list of AlbumResponseWrapper objects (O(1) lookup).
+    def _asset_to_albums_map(self) -> dict[str, AlbumList]:
+        """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
 
         Antes de construir el mapa, fuerza la carga de asset_ids en todos los álbumes (lazy loading).
         """
-        asset_map: dict[str, list[AlbumResponseWrapper]] = {}
+        asset_map: dict[str, AlbumList] = {}
         assert (
             len(self.albums) > 0
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
@@ -143,7 +147,7 @@ class AlbumCollectionWrapper:
 
             for asset_id in album_wrapper.asset_ids:
                 if asset_id not in asset_map:
-                    asset_map[asset_id] = []
+                    asset_map[asset_id] = AlbumList()
                 asset_map[asset_id].append(album_wrapper)
 
         # Remove temporary albums after map build to avoid recursion
@@ -176,7 +180,7 @@ class AlbumCollectionWrapper:
     @conditional_typechecked
     def albums_for_asset(self, asset: AssetResponseDto) -> list[AlbumResponseWrapper]:
         """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map)."""
-        return self._asset_to_albums_map.get(asset.id, [])
+        return list(self._asset_to_albums_map.get(asset.id, AlbumList()))
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseDto) -> list[str]:
