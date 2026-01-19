@@ -44,7 +44,7 @@ class AlbumCollectionWrapper:
     def _rebuild_asset_to_albums_map(self):
         """Rebuilds the asset-to-albums map from scratch."""
 
-        self._asset_to_albums_map = self._asset_to_albums_map()
+        self._asset_to_albums_map = self._asset_to_albums_map_build()
 
     @typechecked
     def _add_album_to_map(self, album_wrapper: AlbumResponseWrapper):
@@ -103,7 +103,7 @@ class AlbumCollectionWrapper:
         return removed
 
     @typechecked
-    def _asset_to_albums_map(self) -> AssetToAlbumsMap:
+    def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
         """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
 
         Antes de construir el mapa, fuerza la carga de asset_ids en todos los álbumes (lazy loading).
@@ -338,4 +338,4 @@ class AlbumCollectionWrapper:
             raise Exception(
                 f"ERROR: Unexpectedly low number of albums: {len(albums_wrapped)} < {MIN_ALBUMS}"
             )
-        return cls(albums=albums_wrapped)
+        return cls(albums=AlbumList(albums_wrapped))

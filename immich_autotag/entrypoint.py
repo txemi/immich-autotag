@@ -66,22 +66,28 @@ def run_main():
     client = ImmichClient(
         base_url=get_immich_base_url(),
         token=api_key,
-        prefix="",  # Immich uses x-api-key, not Bearer token
+        prefix="",  # Immich usa x-api-key, no Bearer token
         auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
-    tag_collection = list_tags(client)
-    albums_collection = AlbumCollectionWrapper.from_client(client)
-    # Load duplicates
-    duplicates_collection = load_duplicates_collection(client)
-    asset_manager = AssetManager(client=client)
+    # Inicializa el contexto SOLO con el cliente (los demás como None o vacíos)
     context = ImmichContext.create_instance(
         client=client,
-        albums_collection=albums_collection,
-        tag_collection=tag_collection,
-        duplicates_collection=duplicates_collection,
-        asset_manager=asset_manager,
+        albums_collection=None,
+        tag_collection=None,
+        duplicates_collection=None,
+        asset_manager=None,
     )
+    # Ahora sí, crea los objetos dependientes
+    tag_collection = list_tags(client)
+    albums_collection = AlbumCollectionWrapper.from_client(client)
+    duplicates_collection = load_duplicates_collection(client)
+    asset_manager = AssetManager(client=client)
+    # Asigna los objetos al contexto
+    context.albums_collection = albums_collection
+    context.tag_collection = tag_collection
+    context.duplicates_collection = duplicates_collection
+    context.asset_manager = asset_manager
 
     # --- ALBUM PERMISSIONS: Phase 1 & 2 (BEFORE processing assets)
     # Permissions are fast, assets processing is slow (hours/days)
