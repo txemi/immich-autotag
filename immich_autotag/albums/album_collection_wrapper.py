@@ -20,10 +20,17 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
+
 class AlbumCollectionWrapper:
+
 
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
+    )
+    _asset_to_albums_map: dict[str, list[AlbumResponseWrapper]] = attrs.field(
+        init=False,
+        factory=dict,
+        validator=attrs.validators.instance_of(dict)
     )
 
     def __attrs_post_init__(self):
@@ -33,6 +40,27 @@ class AlbumCollectionWrapper:
                 "AlbumCollectionWrapper is a singleton: only one instance is allowed."
             )
         _album_collection_singleton = self
+        self._rebuild_asset_to_albums_map()
+    @typechecked
+    def _rebuild_asset_to_albums_map(self):
+        """Rebuilds the asset-to-albums map from scratch."""
+
+        self._asset_to_albums_map = self._asset_to_albums_map()
+
+    @typechecked
+    def _add_album_to_map(self, album_wrapper: AlbumResponseWrapper):
+        for asset_id in album_wrapper.asset_ids:
+            if asset_id not in self._asset_to_albums_map:
+                self._asset_to_albums_map[asset_id] = []
+            self._asset_to_albums_map[asset_id].append(album_wrapper)
+
+    @typechecked
+    def _remove_album_from_map(self, album_wrapper: AlbumResponseWrapper):
+        for asset_id in album_wrapper.asset_ids:
+            if asset_id in self._asset_to_albums_map:
+                self._asset_to_albums_map[asset_id] = [a for a in self._asset_to_albums_map[asset_id] if a != album_wrapper]
+                if not self._asset_to_albums_map[asset_id]:
+                    del self._asset_to_albums_map[asset_id]
 
     @classmethod
     def get_instance(cls) -> "AlbumCollectionWrapper":
@@ -48,11 +76,11 @@ class AlbumCollectionWrapper:
         self, album_wrapper: AlbumResponseWrapper
     ) -> bool:
         """
-        Elimina un álbum de la colección interna y actualiza la caché. Devuelve True si se eliminó, False si no estaba.
+        Elimina un álbum de la colección interna y actualiza el mapa incrementalmente. Devuelve True si se eliminó, False si no estaba.
         """
         if album_wrapper in self.albums:
             self.albums = [a for a in self.albums if a != album_wrapper]
-            self._invalidate_asset_to_albums_map_cache()
+            self._remove_album_from_map(album_wrapper)
             return True
         return False
 
@@ -74,7 +102,7 @@ class AlbumCollectionWrapper:
             )
         return removed
 
-    @cached_property
+    @typechecked
     def _asset_to_albums_map(self) -> dict[str, list[AlbumResponseWrapper]]:
         """Pre-computed map: asset_id -> list of AlbumResponseWrapper objects (O(1) lookup).
 
@@ -93,17 +121,13 @@ class AlbumCollectionWrapper:
             # album_wrapper.ensure_full()
             if not album_wrapper.asset_ids:
                 print(
-                    f"[WARN] Album '{getattr(album_wrapper.album, 'album_name', '?')}' has no assets after forced reload."
+                    f"[WARN] Album '{album_wrapper.album.album_name}' has no assets after forced reload."
                 )
                 # album_wrapper.reload_from_api(client)
                 if album_wrapper.asset_ids:
-                    album_url = (
-                        album_wrapper.get_immich_album_url().geturl()
-                        if hasattr(album_wrapper, "get_immich_album_url")
-                        else "(no url)"
-                    )
+                    album_url = album_wrapper.get_immich_album_url().geturl()
                     raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album '{getattr(album_wrapper.album, 'album_name', '?')}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
+                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.album.album_name}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
                         "This suggests a possible synchronization or lazy loading bug. Please review the album loading logic."
                     )
                 if is_temporary_album(album_wrapper.album.album_name):
@@ -112,10 +136,9 @@ class AlbumCollectionWrapper:
                     )
                     albums_to_remove.append(album_wrapper)
                 pass
-
             else:
                 print(
-                    f"[INFO] Album '{getattr(album_wrapper.album, 'album_name', '?')}' reloaded with {len(album_wrapper.asset_ids)} assets."
+                    f"[INFO] Album '{album_wrapper.album.album_name}' reloaded with {len(album_wrapper.asset_ids)} assets."
                 )
 
             for asset_id in album_wrapper.asset_ids:
@@ -143,7 +166,7 @@ class AlbumCollectionWrapper:
                     self.remove_album(album_wrapper, client)
                 except Exception as e:
                     album = album_wrapper.album  # type: ignore
-                    album_name = getattr(album, "album_name", "?")
+                    album_name = album.album_name
                     print(
                         f"[ERROR] Failed to remove temporary album '{album_name}': {e}"
                     )
@@ -152,7 +175,7 @@ class AlbumCollectionWrapper:
 
     @conditional_typechecked
     def albums_for_asset(self, asset: AssetResponseDto) -> list[AlbumResponseWrapper]:
-        """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via cached map)."""
+        """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map)."""
         return self._asset_to_albums_map.get(asset.id, [])
 
     @conditional_typechecked
@@ -178,6 +201,7 @@ class AlbumCollectionWrapper:
         This method is more explicit about returning wrapper objects."""
         return self.albums_for_asset_wrapper(asset_wrapper)
 
+
     @typechecked
     def remove_album(
         self, album_wrapper: AlbumResponseWrapper, client: ImmichClient
@@ -188,18 +212,15 @@ class AlbumCollectionWrapper:
         Lanza excepción si la API falla.
         """
         from uuid import UUID
-
         from immich_client.api.albums.delete_album import (
             sync_detailed as delete_album_sync,
         )
-
         album_id = UUID(album_wrapper.album.id)
         delete_album_sync(id=album_id, client=client)
         self._remove_album_from_local_collection(album_wrapper)
         # Log DELETE_ALBUM event
         from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
-
         tag_mod_report = ModificationReport.get_instance()
         tag_mod_report.add_album_modification(
             kind=ModificationKind.DELETE_ALBUM,
