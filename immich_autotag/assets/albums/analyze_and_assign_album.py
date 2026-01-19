@@ -136,7 +136,7 @@ def analyze_and_assign_album(
                 return
 
         # If no unique album detected, try to create a temporary album
-        from immich_autotag.assets.albums.create_album_if_missing_classification import (
+        from immich_autotag.assets.albums.temporary_manager.create_if_missing_classification import (
             create_album_if_missing_classification,
         )
 
