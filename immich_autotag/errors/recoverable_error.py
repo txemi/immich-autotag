@@ -16,6 +16,8 @@ Fatal errors: Should fail immediately
 
 from __future__ import annotations
 
+from typeguard import typechecked
+
 
 class RecoverableError(Exception):
     """Base class for errors that can be safely skipped during asset processing.
@@ -50,7 +52,7 @@ class TemporaryNetworkError(RecoverableError):
 
     pass
 
-
+@typechecked
 def categorize_error(exc: Exception) -> tuple[bool, str]:
     """
     Categorizes an exception as recoverable or fatal.

@@ -13,7 +13,10 @@ from immich_autotag.errors.recoverable_error import categorize_error
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
+
 from immich_autotag.statistics.statistics_manager import StatisticsManager
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+from immich_autotag.config._internal_types import ErrorHandlingMode
 
 
 @typechecked
@@ -31,6 +34,7 @@ def process_assets_sequential(
     skip_n = cm.config.skip.skip_n
     max_assets = stats.max_assets
     count = 0
+    error_mode = DEFAULT_ERROR_MODE
     try:
         for asset_wrapper in context.asset_manager.iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
@@ -46,19 +50,15 @@ def process_assets_sequential(
                 # Categorize the error as recoverable or fatal
                 is_recoverable, category = categorize_error(e)
 
-                if is_recoverable:
-                    # Log warning and continue to next asset
+                # Si es recuperable, o no es recuperable pero estamos en modo BATCH, tratamos igual
+                if is_recoverable or error_mode == ErrorHandlingMode.USER:
                     import traceback
-
                     tb = traceback.format_exc()
                     log(
                         f"[WARN] {category} - Skipping asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
-
-                    # Register the error in modification report
                     from immich_autotag.tags.modification_kind import ModificationKind
-
                     tag_mod_report = ModificationReport.get_instance()
                     if tag_mod_report:
                         tag_mod_report.add_error_modification(
@@ -68,8 +68,6 @@ def process_assets_sequential(
                             error_category=category,
                             extra={"traceback": tb},
                         )
-
-                    # Update checkpoint and continue
                     count += 1
                     StatisticsManager.get_instance().update_checkpoint(
                         asset_wrapper.id,
@@ -77,9 +75,8 @@ def process_assets_sequential(
                     )
                     continue
                 else:
-                    # Fatal error - re-raise immediately
+                    # Fatal error - re-raise inmediatamente
                     import traceback
-
                     tb = traceback.format_exc()
                     log(
                         f"[ERROR] {category} - Aborting at asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
