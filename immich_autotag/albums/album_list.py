@@ -35,7 +35,7 @@ class AlbumList:
 
     def __repr__(self):
         return f"AlbumList({self._albums!r})"
-    @typecheck
+    # Decorador eliminado, no existe 'typecheck'
     def remove_album(self, album: AlbumResponseWrapper):
         """Remove all occurrences of album from the list."""
         self._albums = [a for a in self._albums if a != album]
