@@ -5,25 +5,26 @@ from typing import Optional
 from typeguard import typechecked
 
 
+from immich_autotag.utils.run_output_dir import find_recent_run_dirs
+
 @typechecked
 def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional[Path]:
     """
-    Searches for the most recent and valid duplicates_cache.pkl file in all log subfolders.
-    Returns the Path if it exists and is within the freshness threshold, or None.
+    Busca el archivo de caché de duplicados más reciente y válido en las subcarpetas de logs.
+    Devuelve la ruta si existe y está dentro del umbral de antigüedad, o None.
     """
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
+    from datetime import datetime
 
-    candidate_caches: list[tuple[datetime, Path]] = []
     checked_dirs = []
-    if logs_dir.exists() and logs_dir.is_dir():
-        for subdir in logs_dir.iterdir():
-            if subdir.is_dir() and "PID" in subdir.name:
-                checked_dirs.append(str(subdir))
-                cache_file = subdir / "duplicates_cache.pkl"
-                if cache_file.exists():
-                    mtime = datetime.fromtimestamp(cache_file.stat().st_mtime)
-                    candidate_caches.append((mtime, cache_file))
+    candidate_caches: list[tuple[datetime, Path]] = []
+    for subdir in find_recent_run_dirs(logs_dir, max_age_hours=max_age_hours):
+        checked_dirs.append(str(subdir))
+        cache_file = subdir / "duplicates_cache.pkl"
+        if cache_file.exists():
+            mtime = datetime.fromtimestamp(cache_file.stat().st_mtime)
+            candidate_caches.append((mtime, cache_file))
     log(
         f"[DUPLICATES CACHE] Checked directories for cache: {checked_dirs}",
         level=LogLevel.PROGRESS,

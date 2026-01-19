@@ -15,37 +15,25 @@ from immich_autotag.utils.run_output_dir import get_previous_run_output_dir
 
 
 
+from immich_autotag.utils.run_output_dir import find_recent_run_dirs, LOGS_LOCAL_DIR
 @typechecked
 def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
     Busca el máximo count de los runs en las últimas `hours` horas.
     Devuelve el skip_n calculado o None si no hay datos.
     """
-    from datetime import datetime, timedelta
-    from immich_autotag.utils.run_output_dir import LOGS_LOCAL_DIR
-
-    now = datetime.now()
-    cutoff = now - timedelta(hours=hours)
     max_count = 0
     found = False
-    for d in LOGS_LOCAL_DIR.iterdir():
-        if d.is_dir() and "PID" in d.name:
+    for d in find_recent_run_dirs(LOGS_LOCAL_DIR, max_age_hours=hours):
+        stats_path = d / RUN_STATISTICS_FILENAME
+        if stats_path.exists():
             try:
-                dt_str = d.name.split("_PID")[0]
-                dt = datetime.strptime(dt_str, "%Y%m%d_%H%M%S")
+                stats = RunStatistics.from_yaml(stats_path)
+                if stats.count > max_count:
+                    max_count = stats.count
+                    found = True
             except Exception:
                 continue
-            if dt < cutoff:
-                continue
-            stats_path = d / RUN_STATISTICS_FILENAME
-            if stats_path.exists():
-                try:
-                    stats = RunStatistics.from_yaml(stats_path)
-                    if stats.count > max_count:
-                        max_count = stats.count
-                        found = True
-                except Exception:
-                    continue
     if found:
         return max(0, max_count - overlap)
     return None
