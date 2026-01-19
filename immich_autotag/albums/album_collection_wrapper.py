@@ -6,8 +6,8 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.album_list import AlbumList
+from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.assets.albums.temporary_albums import is_temporary_album
 
@@ -22,17 +22,13 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
-
 class AlbumCollectionWrapper:
 
-
-    albums: AlbumList = attrs.field(
-        validator=attrs.validators.instance_of(AlbumList)
-    )
+    albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
         factory=AssetToAlbumsMap,
-        validator=attrs.validators.instance_of(AssetToAlbumsMap)
+        validator=attrs.validators.instance_of(AssetToAlbumsMap),
     )
 
     def __attrs_post_init__(self):
@@ -43,6 +39,7 @@ class AlbumCollectionWrapper:
             )
         _album_collection_singleton = self
         self._rebuild_asset_to_albums_map()
+
     @typechecked
     def _rebuild_asset_to_albums_map(self):
         """Rebuilds the asset-to-albums map from scratch."""
@@ -62,7 +59,7 @@ class AlbumCollectionWrapper:
             if asset_id in self._asset_to_albums_map:
                 album_list = self._asset_to_albums_map[asset_id]
                 album_list.remove_album(album_wrapper)
-                if not album_list:                    
+                if not album_list:
                     del self._asset_to_albums_map[asset_id]
 
     @classmethod
@@ -204,7 +201,6 @@ class AlbumCollectionWrapper:
         This method is more explicit about returning wrapper objects."""
         return self.albums_for_asset_wrapper(asset_wrapper)
 
-
     @typechecked
     def remove_album(
         self, album_wrapper: AlbumResponseWrapper, client: ImmichClient
@@ -215,23 +211,24 @@ class AlbumCollectionWrapper:
         Lanza excepción si la API falla.
         """
         from uuid import UUID
+
         from immich_client.api.albums.delete_album import (
             sync_detailed as delete_album_sync,
         )
+
         album_id = UUID(album_wrapper.album.id)
         delete_album_sync(id=album_id, client=client)
         self._remove_album_from_local_collection(album_wrapper)
         # Log DELETE_ALBUM event
         from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
+
         tag_mod_report = ModificationReport.get_instance()
         tag_mod_report.add_album_modification(
             kind=ModificationKind.DELETE_ALBUM,
             album=album_wrapper,
         )
         return True
-
-
 
     @conditional_typechecked
     def create_or_get_album_with_user(

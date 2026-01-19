@@ -1,5 +1,7 @@
 from typing import Iterator, MutableMapping, Optional
+
 from .album_list import AlbumList
+
 
 class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
     def __init__(self):
