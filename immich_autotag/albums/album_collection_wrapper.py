@@ -26,8 +26,8 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 class AlbumCollectionWrapper:
 
 
-    albums: list[AlbumResponseWrapper] = attrs.field(
-        validator=attrs.validators.instance_of(list)
+    albums: AlbumList = attrs.field(
+        validator=attrs.validators.instance_of(AlbumList)
     )
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
