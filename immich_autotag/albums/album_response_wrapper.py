@@ -337,6 +337,29 @@ class AlbumResponseWrapper:
                     if error_msg and (
                         str(error_msg).lower() in ("not_found", "no_permission")
                     ):
+                        if str(error_msg).lower() == "not_found":
+                            # Album is gone, notify AlbumCollectionWrapper singleton to remove it from collection
+                            try:
+                                from immich_autotag.albums.album_collection_wrapper import (
+                                    AlbumCollectionWrapper,
+                                )
+
+                                collection = AlbumCollectionWrapper.get_instance()
+                                removed = collection.remove_album_local(self)
+                                log(
+                                    f"[ALBUM REMOVAL] Album {self.album.id} ('{self.album.album_name}') removed from collection due to not_found error during asset removal.",
+                                    level=LogLevel.FOCUS,
+                                )
+                            except Exception as e:
+                                log(
+                                    f"[ALBUM REMOVAL] Failed to remove album {self.album.id} from collection after not_found: {e}",
+                                    level=LogLevel.WARNING,
+                                )
+                            log(
+                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                level=LogLevel.WARNING,
+                            )
+                            return
                         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                             raise RuntimeError(
                                 f"Asset {asset_wrapper.id} was not successfully removed from album {self.album.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"

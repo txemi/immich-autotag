@@ -43,6 +43,37 @@ class AlbumCollectionWrapper:
             )
         return _album_collection_singleton
 
+    @typechecked
+    def _remove_album_from_local_collection(
+        self, album_wrapper: AlbumResponseWrapper
+    ) -> bool:
+        """
+        Elimina un álbum de la colección interna y actualiza la caché. Devuelve True si se eliminó, False si no estaba.
+        """
+        if album_wrapper in self.albums:
+            self.albums = [a for a in self.albums if a != album_wrapper]
+            self._invalidate_asset_to_albums_map_cache()
+            return True
+        return False
+
+    @typechecked
+    def remove_album_local(self, album_wrapper: AlbumResponseWrapper) -> bool:
+        """
+        Removes an album from the internal collection only (no API call).
+        Returns True if removed, False if not present.
+        Also invalidates the asset-to-albums map cache.
+        """
+        removed = self._remove_album_from_local_collection(album_wrapper)
+        if removed:
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log(
+                f"[ALBUM REMOVAL] Album {album_wrapper.album.id} ('{album_wrapper.album.album_name}') removed from collection (local, not_found cleanup).",
+                level=LogLevel.FOCUS,
+            )
+        return removed
+
     @cached_property
     def _asset_to_albums_map(self) -> dict[str, list[AlbumResponseWrapper]]:
         """Pre-computed map: asset_id -> list of AlbumResponseWrapper objects (O(1) lookup).
@@ -81,6 +112,7 @@ class AlbumCollectionWrapper:
                     )
                     albums_to_remove.append(album_wrapper)
                 pass
+
             else:
                 print(
                     f"[INFO] Album '{getattr(album_wrapper.album, 'album_name', '?')}' reloaded with {len(album_wrapper.asset_ids)} assets."
@@ -98,12 +130,15 @@ class AlbumCollectionWrapper:
             tag_mod_report = ModificationReport.get_instance()
             for album_wrapper in albums_to_remove:
                 try:
-                    # Log focus-level removal in the modification report
+                    # Log not-found removal in the modification report
                     if tag_mod_report:
                         tag_mod_report.add_album_modification(
-                            kind=ModificationKind.FOCUS,
+                            kind=ModificationKind.DELETE_ALBUM,
                             album=album_wrapper,
-                            note=f"Temporary album '{getattr(album_wrapper.album, 'album_name', '?')}' removed automatically after map build.",
+                            old_value=album_wrapper.album.album_name,
+                            extra={
+                                "reason": "Removed automatically after map build because it was empty and temporary"
+                            },
                         )
                     self.remove_album(album_wrapper, client)
                 except Exception as e:
@@ -112,6 +147,7 @@ class AlbumCollectionWrapper:
                     print(
                         f"[ERROR] Failed to remove temporary album '{album_name}': {e}"
                     )
+                    raise
         return asset_map
 
     @conditional_typechecked
@@ -159,8 +195,7 @@ class AlbumCollectionWrapper:
 
         album_id = UUID(album_wrapper.album.id)
         delete_album_sync(id=album_id, client=client)
-        self.albums = [a for a in self.albums if a != album_wrapper]
-        self._invalidate_asset_to_albums_map_cache()
+        self._remove_album_from_local_collection(album_wrapper)
         # Log DELETE_ALBUM event
         from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
