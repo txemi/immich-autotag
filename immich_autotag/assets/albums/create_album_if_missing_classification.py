@@ -5,9 +5,7 @@ from typing import Optional
 
 from typeguard import typechecked
 
-from immich_autotag.assets.albums.temporary_albums import (
-    get_temporary_album_name,
-)
+from immich_autotag.assets.albums.temporary_manager.naming import get_temporary_album_name
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log

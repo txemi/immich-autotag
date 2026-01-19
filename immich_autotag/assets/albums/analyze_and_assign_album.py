@@ -55,7 +55,7 @@ def analyze_and_assign_album(
 
     if status == ClassificationStatus.CLASSIFIED:
         # Always clean up: remove from temporary albums and update classification tags
-        from immich_autotag.assets.albums.remove_from_autotag_albums import (
+        from immich_autotag.assets.albums.temporary_manager.cleanup import (
             remove_asset_from_autotag_temporary_albums,
         )
 
@@ -79,7 +79,7 @@ def analyze_and_assign_album(
 
     elif status == ClassificationStatus.CONFLICT:
         # Si hay conflicto, eliminar de todos los álbumes temporales/autotag
-        from immich_autotag.assets.albums.remove_from_autotag_albums import (
+        from immich_autotag.assets.albums.temporary_manager.cleanup import (
             remove_asset_from_autotag_temporary_albums,
         )
 
