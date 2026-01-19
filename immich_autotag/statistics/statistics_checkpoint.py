@@ -7,11 +7,10 @@ Utility to obtain the counter of the previous execution (skip_n) from run_statis
 from pathlib import Path
 from typing import Optional
 
-
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-from immich_autotag.config._internal_types import ErrorHandlingMode
 from typeguard import typechecked
 
+from immich_autotag.config._internal_types import ErrorHandlingMode
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
 from immich_autotag.utils.run_output_dir import (
