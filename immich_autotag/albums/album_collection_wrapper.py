@@ -8,6 +8,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.album_list import AlbumList
+from immich_autotag.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.assets.albums.temporary_albums import is_temporary_album
 
 # Import for type checking and runtime
@@ -28,10 +29,10 @@ class AlbumCollectionWrapper:
     albums: list[AlbumResponseWrapper] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
-    _asset_to_albums_map: dict[str, AlbumList] = attrs.field(
+    _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
-        factory=dict,
-        validator=attrs.validators.instance_of(dict)
+        factory=AssetToAlbumsMap,
+        validator=attrs.validators.instance_of(AssetToAlbumsMap)
     )
 
     def __attrs_post_init__(self):
@@ -60,10 +61,8 @@ class AlbumCollectionWrapper:
         for asset_id in album_wrapper.asset_ids:
             if asset_id in self._asset_to_albums_map:
                 album_list = self._asset_to_albums_map[asset_id]
-                album_list = AlbumList(a for a in album_list if a != album_wrapper)
-                if album_list:
-                    self._asset_to_albums_map[asset_id] = album_list
-                else:
+                album_list.remove_album(album_wrapper)
+                if not album_list:                    
                     del self._asset_to_albums_map[asset_id]
 
     @classmethod
@@ -107,12 +106,12 @@ class AlbumCollectionWrapper:
         return removed
 
     @typechecked
-    def _asset_to_albums_map(self) -> dict[str, AlbumList]:
+    def _asset_to_albums_map(self) -> AssetToAlbumsMap:
         """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
 
         Antes de construir el mapa, fuerza la carga de asset_ids en todos los álbumes (lazy loading).
         """
-        asset_map: dict[str, AlbumList] = {}
+        asset_map = AssetToAlbumsMap()
         assert (
             len(self.albums) > 0
         ), "AlbumCollectionWrapper must have at least one album to build asset map."

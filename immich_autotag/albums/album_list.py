@@ -1,3 +1,4 @@
+
 from typing import Iterator, Iterable
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
@@ -34,3 +35,7 @@ class AlbumList:
 
     def __repr__(self):
         return f"AlbumList({self._albums!r})"
+    @typecheck
+    def remove_album(self, album: AlbumResponseWrapper):
+        """Remove all occurrences of album from the list."""
+        self._albums = [a for a in self._albums if a != album]
