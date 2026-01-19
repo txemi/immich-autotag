@@ -29,6 +29,8 @@ class AlbumResponseWrapper:
         validator=attrs.validators.instance_of(AlbumResponseDto)
     )
     _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
+    # Explicit cache for asset ids. Use get_asset_ids() to access.
+    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
 
     @staticmethod
     @typechecked
@@ -61,20 +63,42 @@ class AlbumResponseWrapper:
 
     def invalidate_cache(self) -> None:
         """Invalidates all cached properties for this album wrapper (currently only asset_ids)."""
-        if hasattr(self, "asset_ids"):
-            try:
-                del self.asset_ids
-            except Exception:
-                pass
+        # Clear explicit cache used by get_asset_ids()
+        try:
+            self._asset_ids_cache = None
+        except Exception:
+            pass
 
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> None:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client.api.albums import get_album_info
+        from immich_client import errors as immich_errors
 
-        album_dto = get_album_info.sync(id=self.album_partial.id, client=client)
-        self._set_album_full(album_dto)
-        self.invalidate_cache()
+        try:
+            album_dto = get_album_info.sync(id=self.album_partial.id, client=client)
+            self._set_album_full(album_dto)
+            self.invalidate_cache()
+        except immich_errors.UnexpectedStatus as exc:
+            # Fail fast: log detailed context and re-raise so CI / caller can inspect and fix root cause.
+            try:
+                album_name = getattr(self.album_partial, "album_name", None)
+                partial_repr = repr(self.album_partial)
+            except Exception:
+                album_name = None
+                partial_repr = "<unrepresentable album_partial>"
+
+            # Log as much useful information as possible for debugging.
+            log(
+                (
+                    f"[FATAL] get_album_info failed for album id={self.album_partial.id!r} "
+                    f"name={album_name!r}. Exception: {exc!r}. "
+                    f"album_partial={partial_repr}"
+                ),
+                level=LogLevel.ERROR,
+            )
+            # Re-raise the original exception to surface the failure immediately.
+            raise
 
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
@@ -93,23 +117,26 @@ class AlbumResponseWrapper:
         assert self._album_full is not None
         return self._album_full
 
-    from functools import cached_property
+    def get_asset_ids(self) -> set[str]:
+        """Return set of asset ids for this album.
 
-    @cached_property
-    def asset_ids(self) -> set[str]:
-        """Set of album asset IDs, cached for O(1) access in has_asset.
-        Assets are already populated by from_client() or reload_from_api()."""
+        Uses an explicit per-instance cache (`_asset_ids_cache`) which is invalidated
+        by `invalidate_cache()` when the album is reloaded or modified.
+        """
+        # Return cached value if present
+        if self._asset_ids_cache is not None:
+            return self._asset_ids_cache
+
+        # Ensure album full data is loaded (may raise)
         self.ensure_full()
-        return (
-            set(a.id for a in self._get_album_full_or_load().assets)
-            if self.album.assets
-            else set()
-        )
+        assets = self._get_album_full_or_load().assets or []
+        self._asset_ids_cache = set(a.id for a in assets)
+        return self._asset_ids_cache
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
         """Returns True if the asset belongs to this album (optimized with set)."""
-        return asset.id in self.asset_ids
+        return asset.id in self.get_asset_ids()
 
     @conditional_typechecked
     def has_asset_wrapper(
@@ -119,7 +146,7 @@ class AlbumResponseWrapper:
         If use_cache=True, uses the cached set (fast). If False, uses linear search (slow, for testing only).
         """
         if use_cache:
-            return asset_wrapper.asset.id in self.asset_ids
+            return asset_wrapper.asset.id in self.get_asset_ids()
         else:
             return self.has_asset(asset_wrapper.asset)
 

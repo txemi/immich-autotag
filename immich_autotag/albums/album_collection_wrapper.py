@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from functools import cached_property
+ 
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
@@ -48,14 +48,14 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def _add_album_to_map(self, album_wrapper: AlbumResponseWrapper):
-        for asset_id in album_wrapper.asset_ids:
+        for asset_id in album_wrapper.get_asset_ids():
             if asset_id not in self._asset_to_albums_map:
                 self._asset_to_albums_map[asset_id] = AlbumList()
             self._asset_to_albums_map[asset_id].append(album_wrapper)
 
     @typechecked
     def _remove_album_from_map(self, album_wrapper: AlbumResponseWrapper):
-        for asset_id in album_wrapper.asset_ids:
+        for asset_id in album_wrapper.get_asset_ids():
             if asset_id in self._asset_to_albums_map:
                 album_list = self._asset_to_albums_map[asset_id]
                 album_list.remove_album(album_wrapper)
@@ -119,12 +119,12 @@ class AlbumCollectionWrapper:
         for album_wrapper in self.albums:
             # Garantiza que el álbum está en modo full (assets cargados)
             # album_wrapper.ensure_full()
-            if not album_wrapper.asset_ids:
+            if not album_wrapper.get_asset_ids():
                 print(
                     f"[WARN] Album '{album_wrapper.album.album_name}' has no assets after forced reload."
                 )
                 # album_wrapper.reload_from_api(client)
-                if album_wrapper.asset_ids:
+                if album_wrapper.get_asset_ids():
                     album_url = album_wrapper.get_immich_album_url().geturl()
                     raise RuntimeError(
                         f"[DEBUG] Anomalous behavior: Album '{album_wrapper.album.album_name}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
@@ -138,10 +138,10 @@ class AlbumCollectionWrapper:
                 pass
             else:
                 print(
-                    f"[INFO] Album '{album_wrapper.album.album_name}' reloaded with {len(album_wrapper.asset_ids)} assets."
+                    f"[INFO] Album '{album_wrapper.album.album_name}' reloaded with {len(album_wrapper.get_asset_ids())} assets."
                 )
 
-            for asset_id in album_wrapper.asset_ids:
+            for asset_id in album_wrapper.get_asset_ids():
                 if asset_id not in asset_map:
                     asset_map[asset_id] = AlbumList()
                 asset_map[asset_id].append(album_wrapper)
