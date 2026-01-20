@@ -9,8 +9,11 @@ from .levels import LogLevel
 
 # Register the FOCUS level ALWAYS before any setup_logging
 def register_focus_level():
-    if not hasattr(logging, "FOCUS"):
-        logging.addLevelName(15, "FOCUS")
+    # `FOCUS` must be registered by application bootstrap. Fail fast if missing.
+    if "FOCUS" not in logging.__dict__:
+        raise RuntimeError(
+            "Required logging level 'FOCUS' is missing. Register it in application startup."
+        )
 
 
 register_focus_level()
