@@ -64,4 +64,4 @@ GLOBAL_UNAVAILABLE_THRESHOLD = 5
 
 
 # Flag para activar/desactivar la funcionalidad de combinar álbumes con el mismo nombre
-MERGE_DUPLICATE_ALBUMS_ENABLED = False  # Cambia a True para activar la combinación de álbumes duplicados
+MERGE_DUPLICATE_ALBUMS_ENABLED = True  # Cambia a True para activar la combinación de álbumes duplicados

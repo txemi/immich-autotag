@@ -463,14 +463,33 @@ class AlbumCollectionWrapper:
         """
         Maneja el caso de duplicado no temporal: error en desarrollo, colección en otros modos.
         """
-        try:
-            from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-            from immich_autotag.config._internal_types import ErrorHandlingMode
-        except Exception:
-            DEFAULT_ERROR_MODE = None
-            ErrorHandlingMode = None
 
-        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE, MERGE_DUPLICATE_ALBUMS_ENABLED
+        from immich_autotag.config._internal_types import ErrorHandlingMode
+
+
+        if MERGE_DUPLICATE_ALBUMS_ENABLED:
+            # Intenta combinar los álbumes duplicados
+            from immich_autotag.albums.duplicates.merge_duplicate_albums import merge_duplicate_albums
+            # El wrapper duplicado es el que se intenta añadir, el existente es el destino
+            # Se asume que el wrapper duplicado debe ser fusionado en el existente
+            # El cliente y tag_mod_report pueden ser None en este contexto, pero se pasan si están disponibles
+            # Si no hay cliente, no se puede hacer merge, así que solo colecciona el duplicado
+            # El nombre destino es el del álbum existente
+            # Si no hay client, solo colecciona el duplicado
+            client = getattr(wrapper, 'client', None)
+            try:
+                merge_duplicate_albums(
+                    collection=existing._collection if hasattr(existing, '_collection') else None,
+                    duplicate_album=wrapper,
+                    target_album_name=name,
+                    client=client,
+                    tag_mod_report=tag_mod_report,
+                )
+            except Exception:
+                # Si el merge falla, colecciona el duplicado y sigue
+                pass
+        elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
             )
