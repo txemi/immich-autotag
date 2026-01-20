@@ -9,7 +9,7 @@ import attrs
 
 import attrs
 
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class DuplicateAlbumReport:
