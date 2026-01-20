@@ -126,7 +126,7 @@ def analyze_and_assign_album(
                     f"[ALBUM ASSIGNMENT] Asset '{asset_name}' will be assigned to album '{detected_album}' (origin: {album_origin}).",
                     level=LogLevel.FOCUS,
                 )
-                _process_album_detection(
+                process_album_detection(
                     asset_wrapper,
                     tag_mod_report,
                     detected_album,
