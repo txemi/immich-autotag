@@ -71,7 +71,7 @@ class DuplicatesCacheFile:
         return self.age_hours_from() < max_age_hours
 
     @typechecked
-    def age_hours_from(self, now: datetime = None) -> float:
+    def age_hours_from(self, now: datetime | None = None) -> float:
         """Return the age in hours from now (or a given datetime) to the file's mtime."""
         if now is None:
             now = datetime.now()
