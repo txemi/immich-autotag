@@ -3,6 +3,7 @@ from __future__ import annotations
 from typeguard import typechecked
 
 from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process.process_assets import process_assets
 from immich_autotag.config.filter_wrapper import FilterConfigWrapper
@@ -16,7 +17,6 @@ from immich_autotag.permissions import (
     process_album_permissions,
     sync_album_permissions,
 )
-from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
 
