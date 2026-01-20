@@ -6,7 +6,7 @@ from typeguard import typechecked
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
 )
-from immich_autotag.config.models import Conversion, ConversionMode, Destination
+from immich_autotag.config.models import Conversion, ConversionMode
 from immich_autotag.conversions.destination_wrapper import DestinationWrapper
 
 if TYPE_CHECKING:
