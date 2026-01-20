@@ -34,6 +34,8 @@ from immich_autotag.config.manager import ConfigManager
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from immich_autotag.context.immich_context import ImmichContext
 
 
@@ -293,7 +295,7 @@ class AssetResponseWrapper:
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
             response = untag_assets.sync(
-                id=tag.id,
+                id=UUID(tag.id),
                 client=self.context.client,
                 body=BulkIdsDto(ids=[self.id_as_uuid]),
             )
@@ -409,7 +411,7 @@ class AssetResponseWrapper:
 
         try:
             response = tag_assets.sync(
-                id=tag.id,
+                id=UUID(tag.id),
                 client=self.context.client,
                 body=BulkIdsDto(ids=[self.id_as_uuid]),
             )
@@ -499,7 +501,7 @@ class AssetResponseWrapper:
         return self.asset.is_favorite
 
     @property
-    def created_at(self) -> str:
+    def created_at(self) -> datetime | str | None:
         return self.asset.created_at
 
     @property
@@ -521,13 +523,19 @@ class AssetResponseWrapper:
         """
         from uuid import UUID
 
+        from immich_client.types import Unset
+
         val = self.asset.duplicate_id
-        if val is None:
+        if val is None or isinstance(val, Unset):
             return None
         try:
+            # Accept both str and other representations that can be cast to str
             return UUID(val)
         except Exception:
-            return None
+            try:
+                return UUID(str(val))
+            except Exception:
+                return None
 
     @typechecked
     def get_classification_match_detail(self) -> MatchClassificationResult:

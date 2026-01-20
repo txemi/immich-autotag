@@ -125,6 +125,16 @@ echo "Formatting and import sorting completed."
 # Optional static checks: flake8 (style/errors) and mypy (type checking)
 echo "[CHECK] Running optional static analyzers: flake8, mypy (if available)"
 
+# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
+# Projects following our coding guidelines avoid these calls because they
+# undermine static typing and hide missing attributes. This check is strict
+# and has no bypass in the script (please fix occurrences in source).
+if grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR"; then
+	echo "[ERROR] Forbidden use of getattr(...) or hasattr(...) detected. Our style policy bans dynamic attribute access."
+	echo "Fix occurrences in source (do not rely on getattr/hasattr)."
+	exit 2
+fi
+
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
 "$PY_BIN" -m flake8 --max-line-length=88 --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
