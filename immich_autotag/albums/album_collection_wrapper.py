@@ -1,7 +1,5 @@
 from __future__ import annotations
 
- 
-
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
