@@ -43,7 +43,7 @@ def process_assets_sequential(
         for asset_wrapper in context.asset_manager.iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
         ):
-            asset_id = get_asset_id(asset_wrapper)
+            asset_id = asset_wrapper.id
             log_debug(f"[BUG] Processing asset: {asset_id}")
             t0 = time.time()
 
@@ -87,7 +87,7 @@ def process_assets_sequential(
                     import traceback
 
                     tb = traceback.format_exc()
-                    asset_id = get_asset_id(asset_wrapper)
+                    asset_id = asset_wrapper.id
                     log(
                         f"[ERROR] {category} - Aborting at asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
