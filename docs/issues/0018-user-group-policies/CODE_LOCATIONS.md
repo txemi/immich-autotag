@@ -67,10 +67,10 @@ To keep consistency with the project structure, it should go in:
 **How would it be implemented?**
 
 ```python
-# Nueva función en album_collection_wrapper.py o permissions/
+# New function in album_collection_wrapper.py or permissions/
 
 def remove_user_from_album(client, album_id: str, user_id: str):
-    """Quita un usuario de un álbum."""
+    """Removes a user from an album."""
     from immich_client.api.albums import remove_user_from_album as api_remove
     
     api_remove.sync(
@@ -87,14 +87,14 @@ def remove_user_from_album(client, album_id: str, user_id: str):
 ```
 ┌─────────────────────────────────────────────────┐
 │  immich_autotag/entrypoint.py                   │
-│  _process_album_permissions()                   │  ← Solo DETECTA
+│  _process_album_permissions()                   │  ← Detection only
 │                                                 │
-│  - Lee config                                   │
-│  - Resuelve políticas (resolver)                │
-│  - Log resultados                               │
-│  - Registra en modification_report              │
+│  - Reads config                                 │
+│  - Resolves policies (resolver)                 │
+│  - Logs results                                 │
+│  - Registers in modification_report             │
 │                                                 │
-│  ❌ NO HACE LLAMADAS API REALES                 │
+│  ❌ DOES NOT MAKE REAL API CALLS                │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -107,20 +107,20 @@ def remove_user_from_album(client, album_id: str, user_id: str):
 │  immich_autotag/entrypoint.py                            │
 │  _execute_album_permissions() ← NUEVA FUNCIÓN PHASE 2    │
 │                                                          │
-│  Para cada album:                                        │
-│    ├─ Obtener política resuelta (resolver)              │
-│    │                                                    │
-│    ├─ Obtener miembros ACTUALES (API)                  │
-│    │  └─ album.get_user_shares()  ← FALTA IMPLEMENTAR  │
-│    │                                                    │
-│    ├─ COMPARAR:                                         │
-│    │  ├─ Miembros a AÑADIR = config - actuales        │
-│    │  └─ Miembros a QUITAR = actuales - config        │
-│    │                                                    │
-│    ├─ PONER: add_users_to_album.sync() ✓ YA EXISTE    │
+│  For each album:                                      │
+│    ├─ Get resolved policy (resolver)                  │
+│    │                                                  │
+│    ├─ Get CURRENT members (API)                       │
+│    │  └─ album.get_user_shares()  ← NOT IMPLEMENTED   │
+│    │                                                  │
+│    ├─ COMPARE:                                        │
+│    │  ├─ Members to ADD = config - current            │
+│    │  └─ Members to REMOVE = current - config         │
+│    │                                                  │
+│    ├─ ADD: add_users_to_album.sync() ✓ EXISTS         │
 │    │  └─ Report: ALBUM_PERMISSION_SHARED              │
-│    │                                                    │
-│    └─ QUITAR: remove_user_from_album.sync() ❌ TODO    │
+│    │                                                  │
+│    └─ REMOVE: remove_user_from_album.sync() ❌ TODO   │
 │       └─ Report: ALBUM_PERMISSION_REMOVED             │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -135,7 +135,7 @@ def remove_user_from_album(client, album_id: str, user_id: str):
 immich-client/
 ├── immich_client/
 │   └── api/
-│       └── albums.py          ← Aquí están las funciones
+│       └── albums.py          ← Here are the functions
 ```
 
 **Funciones disponibles en `albums.py`:**

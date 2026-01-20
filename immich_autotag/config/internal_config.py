@@ -48,7 +48,7 @@ USE_THREADPOOL = False  # Set to True to force thread pool usage, False for dire
 # Sequential mode is usually faster for this workload, but you can experiment with USE_THREADPOOL for benchmarking.
 MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
-# Ejemplo de uso interno:
+# Example of internal use:
 DEFAULT_ERROR_MODE = ErrorHandlingMode.DEVELOPMENT
 
 # Album error handling thresholds (tunable)
@@ -62,7 +62,7 @@ ALBUM_ERROR_WINDOW_SECONDS = 24 * 3600
 GLOBAL_UNAVAILABLE_THRESHOLD = 5
 
 
-# Flag para activar/desactivar la funcionalidad de combinar álbumes con el mismo nombre
+# Flag to enable/disable the functionality to merge albums with the same name
 MERGE_DUPLICATE_ALBUMS_ENABLED = (
-    True  # Cambia a True para activar la combinación de álbumes duplicados
+    True  # Change to True to enable merging of duplicate albums
 )

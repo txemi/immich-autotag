@@ -23,8 +23,8 @@ from immich_autotag.utils.run_output_dir import (
 @typechecked
 def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
-    Busca el máximo count de los runs en las últimas `hours` horas.
-    Devuelve el skip_n calculado o None si no hay datos.
+    Finds the maximum count of runs in the last `hours` hours.
+    Returns the calculated skip_n or None if no data is found.
     """
     max_count = 0
     found = False
@@ -46,8 +46,8 @@ def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
 @typechecked
 def _get_count_from_stats_path(stats_path: Path, overlap: int) -> Optional[int]:
     """
-    Lee el count de un fichero run_statistics.yaml y calcula skip_n.
-    Devuelve None si no existe o hay error.
+    Reads the count from a run_statistics.yaml file and calculates skip_n.
+    Returns None if it does not exist or there is an error.
     """
     if not stats_path.exists():
         return None

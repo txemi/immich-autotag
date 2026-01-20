@@ -11,7 +11,7 @@ from .levels import LogLevel
 
 
 def register_focus_level():
-    # Registra el nivel personalizado 'FOCUS' si no existe
+    # Register the custom 'FOCUS' level if it does not exist
     if not any(name == "FOCUS" for name in logging._nameToLevel):
         logging.addLevelName(15, "FOCUS")
 
