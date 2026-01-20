@@ -121,7 +121,7 @@ def process_single_asset(
     _analyze_and_assign_album(
         asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
     )
-    asset_wrapper.validate_and_update_classification()
+    _ = asset_wrapper.validate_and_update_classification()
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
     )

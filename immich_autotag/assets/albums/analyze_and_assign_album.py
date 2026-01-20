@@ -70,7 +70,7 @@ def analyze_and_assign_album(
             tag_mod_report=tag_mod_report,
         )
         # Remove 'unknown' tag if present and update classification tags
-        asset_wrapper.validate_and_update_classification()
+        _ = asset_wrapper.validate_and_update_classification()
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_name}' clasificado. Limpieza de álbum temporal y etiquetas realizada.",
             level=LogLevel.FOCUS,

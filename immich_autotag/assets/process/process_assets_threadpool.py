@@ -45,7 +45,9 @@ def process_assets_threadpool(
                 future.result()
             except Exception as e:
                 # Categorize the error
-                is_recoverable, category = categorize_error(e)
+                categorized = categorize_error(e)
+                is_recoverable = categorized.is_recoverable
+                category = categorized.category_name
 
                 if is_recoverable:
                     # Log warning but continue
