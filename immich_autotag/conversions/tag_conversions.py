@@ -14,13 +14,6 @@ class TagConversions:
     def from_config_manager() -> "TagConversions":
         config_manager = ConfigManager.get_instance()
         config = config_manager.config
-        try:
-            _ = config.conversions
-        except AttributeError:
-            return None
-        if not config:
-            return None
-            raise RuntimeError("No conversions found in configuration.")
         wrappers = [ConversionWrapper(conv) for conv in config.conversions]
         return TagConversions(wrappers)
 
