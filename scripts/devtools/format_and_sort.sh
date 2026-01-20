@@ -11,8 +11,20 @@ PACKAGE_NAME="immich_autotag"
 # Move to repo root
 cd "$REPO_ROOT"
 
-# Directory to format (default: main package folder)
-TARGET_DIR="${1:-$PACKAGE_NAME}"
+# Parse args: support optional --check (or -c) and optional target dir
+CHECK_MODE=0
+if [ "$1" = "--check" ] || [ "$1" = "-c" ]; then
+	CHECK_MODE=1
+	TARGET_DIR="${2:-$PACKAGE_NAME}"
+else
+	TARGET_DIR="${1:-$PACKAGE_NAME}"
+fi
+
+if [ "$CHECK_MODE" -eq 1 ]; then
+	echo "[MODE] Running in CHECK mode (no files will be modified)."
+else
+	echo "[MODE] Running in APPLY mode (formatters may modify files)."
+fi
 
 # Robust exclusions to avoid formatting .venv and other external directories
 BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts"
@@ -52,10 +64,18 @@ fi
 
 # Organize imports with isort using the virtual environment Python
 # Run isort before black, using the 'black' profile for compatibility
-"$REPO_ROOT/.venv/bin/python" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
+if [ "$CHECK_MODE" -eq 1 ]; then
+	"$REPO_ROOT/.venv/bin/python" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
+else
+	"$REPO_ROOT/.venv/bin/python" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
+fi
 
 # Format code with Black using the virtual environment Python
-"$REPO_ROOT/.venv/bin/python" -m black $BLACK_EXCLUDES "$TARGET_DIR"
+if [ "$CHECK_MODE" -eq 1 ]; then
+	"$REPO_ROOT/.venv/bin/python" -m black --check $BLACK_EXCLUDES "$TARGET_DIR"
+else
+	"$REPO_ROOT/.venv/bin/python" -m black $BLACK_EXCLUDES "$TARGET_DIR"
+fi
 
 echo "Formatting and import sorting completed."
 
