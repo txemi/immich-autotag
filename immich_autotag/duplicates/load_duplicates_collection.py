@@ -14,6 +14,7 @@ from immich_autotag.types import ImmichClient
 
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 from immich_autotag.duplicates.duplicates_cache_constants import DUPLICATES_CACHE_FILENAME
+from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
 
 
 @typechecked
@@ -54,7 +55,8 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
         )
         # Save the cache in the current execution directory.
         # Avoid writing extremely large caches in CI or when the collection is huge.
-        cache_path = get_run_output_dir() / DUPLICATES_CACHE_FILENAME
+        cache_file = DuplicatesCacheFile(get_run_output_dir())
+        cache_path = cache_file.path
         import pickle
 
         try:

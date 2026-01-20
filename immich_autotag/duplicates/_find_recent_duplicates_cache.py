@@ -6,7 +6,9 @@ from typeguard import typechecked
 
 
 from immich_autotag.utils.run_output_dir import find_recent_run_dirs
+
 from immich_autotag.duplicates.duplicates_cache_constants import DUPLICATES_CACHE_FILENAME
+from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
 
 
 @typechecked
@@ -18,6 +20,7 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
+
     checked_dirs = []
     candidate_caches: list[tuple[datetime, Path]] = []
     for subdir in find_recent_run_dirs(logs_dir, max_age_hours=max_age_hours):
@@ -26,14 +29,14 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
             dir_mtime = datetime.fromtimestamp(subdir.stat().st_mtime)
             dir_age = (datetime.now() - dir_mtime).total_seconds() / 3600.0
 
-            cache_file = subdir / DUPLICATES_CACHE_FILENAME
-            if cache_file.exists():
-                mtime = datetime.fromtimestamp(cache_file.stat().st_mtime)
-                file_age = (datetime.now() - mtime).total_seconds() / 3600.0
+            cache = DuplicatesCacheFile(subdir)
+            if cache.exists():
+                mtime = cache.mtime()
+                file_age = cache.age_hours()
                 checked_dirs.append(
                     f"{subdir.name} (dir_age={dir_age:.2f}h, cache_age={file_age:.2f}h, found=YES)"
                 )
-                candidate_caches.append((mtime, cache_file))
+                candidate_caches.append((mtime, cache.path))
             else:
                 checked_dirs.append(f"{subdir.name} (dir_age={dir_age:.2f}h, found=NO)")
         except Exception:
