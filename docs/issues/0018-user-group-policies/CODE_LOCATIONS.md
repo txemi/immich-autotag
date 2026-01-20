@@ -1,31 +1,36 @@
-# Ubicación de Poner/Quitar Permisos en el Código
 
-## Resumen Visual
+# Location of Granting/Revoking Permissions in the Code
+
+## Visual Summary
 
 ```
+
 ┌────────────────────────────────────────────────────────────────────┐
-│                    CÓMO FUNCIONAN LOS PERMISOS                     │
+│                    HOW PERMISSIONS WORK                            │
 └────────────────────────────────────────────────────────────────────┘
 
-ACTUALMENTE (YA EXISTE):
-  ✓ PONER permisos
-  ✗ QUITAR permisos (NO IMPLEMENTADO AÚN)
+CURRENTLY (ALREADY EXISTS):
+    ✓ GRANT permissions
+    ✗ REVOKE permissions (NOT IMPLEMENTED YET)
 
 ```
 
 ---
 
-## 1. PONER PERMISOS - YA EXISTE ✓
 
-### Ubicación: `immich_autotag/albums/album_collection_wrapper.py`
+## 1. GRANT PERMISSIONS - ALREADY EXISTS ✓
 
-**Línea 92-113**: Función `find_or_create_album()`
+
+### Location: `immich_autotag/albums/album_collection_wrapper.py`
+
+
+**Line 92-113**: Function `find_or_create_album()`
 
 ```python
-# Línea 92: Importa la función de la API
+# Line 92: Imports the API function
 from immich_client.api.albums import add_users_to_album, create_album
 
-# Línea 113: Llama a la función para AÑADIR usuarios
+# Line 113: Calls the function to ADD users
 add_users_to_album.sync(
     id=album.id,
     client=client,
@@ -37,25 +42,29 @@ add_users_to_album.sync(
 )
 ```
 
-**¿Cuándo se ejecuta?**
-- Cuando se crea un álbum nuevo
-- Se añade al propietario como EDITOR
 
-**¿Qué importa aquí?**
-- `add_users_to_album`: Función de la API de Immich que **AÑADE** usuarios a un álbum
-- `AddUsersDto`: DTO con lista de usuarios y roles
+**When is it executed?**
+- When a new album is created
+- The owner is added as EDITOR
+
+
+**What matters here?**
+- `add_users_to_album`: Immich API function that **ADDS** users to an album
+- `AddUsersDto`: DTO with a list of users and roles
 
 ---
 
-## 2. QUITAR PERMISOS - NO EXISTE AÚN ❌
 
-**¿Dónde debería ir?**
+## 2. REVOKE PERMISSIONS - NOT IMPLEMENTED YET ❌
 
-Para mantener coherencia con la estructura del proyecto, debería ir en:
-1. `immich_autotag/albums/album_collection_wrapper.py` (método nuevo)
-   - O mejor en nuevo paquete `immich_autotag/permissions/`
 
-**¿Cómo se implementaría?**
+**Where should it go?**
+
+To keep consistency with the project structure, it should go in:
+1. `immich_autotag/albums/album_collection_wrapper.py` (new method)
+    - Or better, in a new package `immich_autotag/permissions/`
+
+**How would it be implemented?**
 
 ```python
 # Nueva función en album_collection_wrapper.py o permissions/
