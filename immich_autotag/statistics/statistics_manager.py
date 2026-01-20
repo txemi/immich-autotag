@@ -61,7 +61,7 @@ class StatisticsManager:
     )
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
 
-    # Los contadores de eventos ahora se almacenan en self._current_stats.event_counters
+    # Event counters are now stored in self._current_stats.event_counters
     def __attrs_post_init__(self) -> None:
         # The folder is already created by get_run_output_dir
         global _instance

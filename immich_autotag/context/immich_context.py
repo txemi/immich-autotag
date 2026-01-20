@@ -91,6 +91,6 @@ class ImmichContext:
 
     @staticmethod
     def get_default_client():
-        """Devuelve el ImmichClient del contexto singleton global."""
+        """Returns the ImmichClient from the global singleton context."""
         ctx = ImmichContext.get_instance()
         return ctx.client

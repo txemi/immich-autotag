@@ -8,10 +8,12 @@ from enum import Enum
 from typing import List, Optional
 
 
+
+# Enum for conversion mode
 # Enum for conversion mode
 class ConversionMode(str, Enum):
-    MOVE = "move"  # MOVE: When conversion is applied, destination values replace source values. That is, source tags and albums are removed and destination ones are assigned. (Classic "convert" or "move" behavior)
-    COPY = "copy"  # COPY: When conversion is applied, destination values are added, but source values are maintained. That is, destination tags and albums are added without removing source ones. ("copy" type behavior)
+    MOVE = "move"  # MOVE: When the conversion is applied, the destination values replace the source values. That is, the source tags and albums are removed and the destination ones are assigned. (Classic "convert" or "move" behavior)
+    COPY = "copy"  # COPY: When the conversion is applied, the destination values are added, but the source values are kept. That is, the destination tags and albums are added without removing the source ones. ("Copy"-type behavior)
 
 
 from pydantic import BaseModel, Field
