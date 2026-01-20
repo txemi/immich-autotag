@@ -151,7 +151,9 @@ class AssetResponseWrapper:
             user=user_wrapper,
             extra={"pre_update": True},
         )
-        response = update_asset.sync(id=self.id, client=self.context.client, body=dto)
+        response = update_asset.sync(
+            id=self.id_as_uuid, client=self.context.client, body=dto
+        )
         # Fail-fast: check response type and status directly, no dynamic attribute access
         # If the API returns a response object with status_code, check it; otherwise, assume success if no exception was raised
         # If the response is an AssetResponseDto, we expect no error field and no status_code
@@ -291,7 +293,9 @@ class AssetResponseWrapper:
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
             response = untag_assets.sync(
-                id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
+                id=tag.id,
+                client=self.context.client,
+                body=BulkIdsDto(ids=[self.id_as_uuid]),
             )
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -405,7 +409,9 @@ class AssetResponseWrapper:
 
         try:
             response = tag_assets.sync(
-                id=tag.id, client=self.context.client, body=BulkIdsDto(ids=[self.id])
+                id=tag.id,
+                client=self.context.client,
+                body=BulkIdsDto(ids=[self.id_as_uuid]),
             )
         except Exception as e:
             error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
