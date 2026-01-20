@@ -1,0 +1,5 @@
+[flake8]
+# Explicitly synchronized with Black and isort for maximum automation and legibility.
+# If you change this, update pyproject.toml as well.
+max-line-length = 88
+exclude = .venv,immich-client,scripts

@@ -34,9 +34,23 @@ else
 	echo "[MODE] Running in APPLY mode (formatters may modify files)."
 fi
 
+
+
+
+# ---- Línea de longitud sincronizada ----
+# El ancho de línea se extrae de pyproject.toml para que todas las herramientas usen la misma fuente de verdad.
+extract_line_length() {
+	grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
+}
+MAX_LINE_LENGTH=$(extract_line_length "$REPO_ROOT/pyproject.toml")
+if [ -z "$MAX_LINE_LENGTH" ]; then
+	echo "[WARN] No se pudo extraer line-length de pyproject.toml, usando 88 por defecto."
+	MAX_LINE_LENGTH=88
+fi
+
 # Robust exclusions to avoid formatting .venv and other external directories
-BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts"
-ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts"
+BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --line-length $MAX_LINE_LENGTH"
+ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --line-length $MAX_LINE_LENGTH"
 
 # Activate project virtual environment robustly
 VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
@@ -142,9 +156,12 @@ echo "[CHECK] Disallow tuple returns and tuple-typed class members (project poli
     exit 3;
 }
 
+
+
+# Flake8: usar el mismo ancho de línea sincronizado
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
-"$PY_BIN" -m flake8 --max-line-length=88 --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
+"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
 
 ensure_tool mypy mypy
 MYPY_FAILED=0
