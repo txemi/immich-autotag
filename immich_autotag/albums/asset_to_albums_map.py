@@ -1,4 +1,4 @@
-from typing import Iterator, MutableMapping, Optional
+from typing import Iterator, MutableMapping
 
 from .album_list import AlbumList
 
@@ -22,9 +22,7 @@ class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
     def __len__(self) -> int:
         return len(self._map)
 
-    def get(self, key: str, default: Optional[AlbumList] = None) -> Optional[AlbumList]:
-        # Use the concrete key type `str` to match MutableMapping[str, AlbumList]
-        return self._map.get(key, default)
+    # Rely on MutableMapping.get implementation; avoid overriding overloaded signature.
 
     def clear(self):
         self._map.clear()

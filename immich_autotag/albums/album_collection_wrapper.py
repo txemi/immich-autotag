@@ -7,6 +7,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album_list import AlbumList
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.asset_to_albums_map import AssetToAlbumsMap
+
 try:
     # Prefer absolute import, but fall back to a package-relative import for
     # environments where absolute package resolution may fail (CI, certain test runners).
