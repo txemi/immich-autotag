@@ -8,7 +8,9 @@ from typeguard import typechecked
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
     from immich_autotag.assets.asset_manager import AssetManager
     from immich_autotag.duplicates.duplicate_collection_wrapper import (
         DuplicateCollectionWrapper,
