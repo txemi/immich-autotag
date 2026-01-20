@@ -39,7 +39,10 @@ class ConfigManager:
             _instance_created = True
             _instance = self
         except Exception:
-            print("[ConfigManager] Error during config load:")
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log("[ConfigManager] Error during config load:", level=LogLevel.ERROR)
             traceback.print_exc()
             _instance = None
             _instance_created = False
@@ -62,12 +65,18 @@ class ConfigManager:
             pass  # Ignore and try dynamic loading
 
         self._try_load_dynamic()
-        print(f"[CONFIG] ✅ Config loaded successfully: {type(self.config)}")
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(f"Config loaded successfully: {type(self.config)}", level=LogLevel.INFO)
 
     @typechecked
     def _try_load_dynamic(self):
         config_location = find_user_config()
-        print(f"[CONFIG] Found config path: {config_location.path}")
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(f"Found config path: {config_location.path}", level=LogLevel.INFO)
 
         if config_location.path is None:
             from immich_autotag.utils.user_help import print_config_help
@@ -79,7 +88,10 @@ class ConfigManager:
 
         config_type = config_location.get_type()
         if config_type == config_type.__class__.PYTHON:
-            print(f"[CONFIG] Loading Python config from {config_location.path}")
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log(f"Loading Python config from {config_location.path}", level=LogLevel.INFO)
             config_obj = load_python_config(config_location.path)
             if isinstance(config_obj, UserConfig):
                 self.config = config_obj
@@ -87,7 +99,10 @@ class ConfigManager:
                 print("[CONFIG] Validating config object as UserConfig...")
                 self.config = UserConfig.model_validate(config_obj)
         elif config_type == config_type.__class__.YAML:
-            print(f"[CONFIG] Loading YAML config from {config_location.path}")
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log(f"Loading YAML config from {config_location.path}", level=LogLevel.INFO)
             config_data = load_yaml_config(config_location.path)
             self.config = UserConfig.model_validate(config_data)
         else:
@@ -161,7 +176,10 @@ class ConfigManager:
             commented_path = str(path).replace(".yaml", "_with_comments.yaml")
             generate_yaml_with_comments(type(self.config), commented_path)
         except Exception as e:
-            print(f"[WARN] Could not generate commented YAML: {e}")
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log(f"Could not generate commented YAML: {e}", level=LogLevel.WARNING)
 
     @typechecked
     def print_config(self):

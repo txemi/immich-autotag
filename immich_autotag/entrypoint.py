@@ -39,19 +39,21 @@ def run_main():
     from immich_autotag.utils.user_help import print_welcome_links
 
     # Get config FIRST (constructor initializes it)
-    print("[ENTRYPOINT] Initializing ConfigManager...")
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+
+    log("Initializing ConfigManager...", level=LogLevel.INFO)
     manager = ConfigManager.get_instance()
 
     # Verify config is actually loaded before doing anything else
     if manager.config is None:
-        print(
-            "[ENTRYPOINT] ❌ FATAL: ConfigManager.config is None after initialization. "
-            "This suggests the config file failed to load properly. "
-            "Check ~/.config/immich_autotag/config.py or config.yaml"
+        log(
+            "FATAL: ConfigManager.config is None after initialization. This suggests the config file failed to load properly. Check ~/.config/immich_autotag/config.py or config.yaml",
+            level=LogLevel.ERROR,
         )
         raise RuntimeError("ConfigManager.config is None after initialization")
 
-    print("[ENTRYPOINT] ✅ ConfigManager initialized successfully")
+    log("ConfigManager initialized successfully", level=LogLevel.INFO)
 
     # Now initialize logging (needs ConfigManager.config to be ready)
     initialize_logging()
