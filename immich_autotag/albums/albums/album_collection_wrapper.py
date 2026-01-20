@@ -51,7 +51,7 @@ class AlbumCollectionWrapper:
     @typechecked
     def set_albums(self, value: AlbumList) -> None:
         """
-        Reemplaza la lista interna de álbumes por la proporcionada.
+        Replaces the internal list of albums with the provided one.
         """
         self._albums = value
 
@@ -71,7 +71,7 @@ class AlbumCollectionWrapper:
                 "AlbumCollectionWrapper is a singleton: only one instance is allowed."
             )
         _album_collection_singleton = self
-        # El mapa de assets se construye bajo demanda, no en la inicialización
+        # Asset map is built on demand, not during initialization
 
     @staticmethod
     @typechecked
@@ -131,7 +131,7 @@ class AlbumCollectionWrapper:
         self, album_wrapper: AlbumResponseWrapper
     ) -> bool:
         """
-        Elimina un álbum de la colección interna y actualiza el mapa incrementalmente. Devuelve True si se eliminó, False si no estaba.
+        Removes an album from the internal collection and updates the map incrementally. Returns True if removed, False if not present.
         """
         if album_wrapper in self.albums:
             self.albums = [a for a in self.albums if a != album_wrapper]
@@ -199,13 +199,13 @@ class AlbumCollectionWrapper:
         context: str = "ensure_unique",
     ) -> AlbumResponseWrapper:
         """
-        Centraliza la lógica de manejo de álbumes duplicados:
-        - Aplica merge si el flag está activo y retorna el álbum resultante
-        - Falla rápido en modo desarrollo
-        - Colecciona el duplicado en otros modos
-        Realiza un chequeo de integridad: ambos álbumes deben tener el mismo nombre.
+        Centralizes duplicate album handling logic:
+        - Applies merge if the flag is active and returns the resulting album
+        - Fails fast in development mode
+        - Collects the duplicate in other modes
+        Performs an integrity check: both albums must have the same name.
         """
-        # Chequeo de integridad: ambos álbumes deben tener el mismo nombre
+        # Integrity check: both albums must have the same name
         name_existing = existing_album.get_album_name()
         name_incoming = incoming_album.get_album_name()
         if name_existing != name_incoming:
@@ -378,7 +378,7 @@ class AlbumCollectionWrapper:
 
         client = ImmichContext.get_default_client()
         for album_wrapper in self.albums:
-            # Garantiza que el álbum está en modo full (assets cargados)
+            # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
             if not album_wrapper.get_asset_ids():
                 from immich_autotag.logging.levels import LogLevel
@@ -417,7 +417,7 @@ class AlbumCollectionWrapper:
                 asset_map[asset_id].append(album_wrapper)
         albums_to_remove = self._detect_empty_temporary_albums()
 
-        # Elimina los álbumes temporales vacíos detectados tras el build del mapa
+        # Removes empty temporary albums detected after building the map
         self._remove_empty_temporary_albums(albums_to_remove, client)
 
         return asset_map
@@ -427,12 +427,12 @@ class AlbumCollectionWrapper:
         self, albums_to_remove: list[AlbumResponseWrapper], client: ImmichClient
     ):
         """
-        Elimina los álbumes temporales vacíos detectados tras el build del mapa.
-        Lanza excepción si alguno no es temporal (integridad).
+        Removes empty temporary albums detected after building the map.
+        Raises an exception if any of them is not temporary (integrity).
         """
         if not albums_to_remove:
             return
-        # Integridad: todos deben ser temporales
+        # Integrity check: all must be temporary
         for album_wrapper in albums_to_remove:
             if not is_temporary_album(album_wrapper.get_album_name()):
                 raise RuntimeError(
@@ -463,7 +463,7 @@ class AlbumCollectionWrapper:
     @typechecked
     def _detect_empty_temporary_albums(self) -> list[AlbumResponseWrapper]:
         """
-        Devuelve una lista de álbumes temporales vacíos a eliminar tras el build del mapa.
+        Returns a list of empty temporary albums to be removed after building the map.
         """
         albums_to_remove: list[AlbumResponseWrapper] = []
         for album_wrapper in self.albums:
@@ -483,8 +483,8 @@ class AlbumCollectionWrapper:
         reason: str = "Album deleted",
     ) -> bool:
         """
-        Borra un álbum en el servidor y registra la acción, sea temporal o no.
-        Devuelve True si se borra correctamente o si ya no existe.
+        Deletes an album on the server and records the action, whether temporary or not.
+        Returns True if deleted successfully or if it no longer exists.
         """
         from uuid import UUID
 
@@ -575,7 +575,7 @@ class AlbumCollectionWrapper:
         name: str,
     ) -> None:
         """
-        Maneja el caso de duplicado no temporal: error en desarrollo, colección en otros modos.
+        Handles the case of a non-temporary duplicate: error in development, collection in other modes.
         """
 
         from immich_autotag.config._internal_types import ErrorHandlingMode
@@ -585,7 +585,7 @@ class AlbumCollectionWrapper:
         )
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            # Centraliza el manejo en el método unificado
+            # Centralizes handling in the unified method
             self._handle_duplicate_album_conflict(existing, context="duplicate_on_load")
         elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
@@ -635,7 +635,7 @@ class AlbumCollectionWrapper:
         for existing in albums_list:
             try:
                 if existing.get_album_name() == name:
-                    # Duplicado temporal
+                    # Temporary duplicate
                     if is_temporary_album(name) and client is not None:
                         if AlbumCollectionWrapper.delete_album(
                             wrapper=wrapper,
@@ -644,7 +644,7 @@ class AlbumCollectionWrapper:
                             reason="Removed duplicate temporary album during add",
                         ):
                             return
-                    # Duplicado no temporal
+                    # Non-temporary duplicate
                     self._handle_non_temporary_duplicate(
                         existing=existing,
                         wrapper=wrapper,
@@ -730,17 +730,17 @@ class AlbumCollectionWrapper:
     @typechecked
     def albums_with_name(self, album_name: str):
         """
-        Devuelve un generador de AlbumResponseWrapper para todos los álbumes con el nombre dado.
+        Returns a generator of AlbumResponseWrapper for all albums with the given name.
         """
         for album_wrapper in self.albums:
             if album_wrapper.get_album_name() == album_name:
                 yield album_wrapper
 
-    # remove_album eliminado: usar delete_album y _remove_album_from_local_collection
+    # remove_album deleted: use delete_album and _remove_album_from_local_collection
     @typechecked
     def albums_with_name(self, album_name: str):
         """
-        Devuelve un generador de AlbumResponseWrapper para todos los álbumes con el nombre dado.
+        Returns a generator of AlbumResponseWrapper for all albums with the given name.
         """
         for album_wrapper in self.get_albums():
             if album_wrapper.get_album_name() == album_name:
@@ -751,10 +751,10 @@ class AlbumCollectionWrapper:
         self, albums: list[AlbumResponseWrapper], context: str
     ) -> AlbumResponseWrapper:
         """
-        Combina una lista de álbumes duplicados en uno solo, aplicando un algoritmo de reducción:
-        fusiona todos los álbumes de dos en dos usando la política de duplicados, quedándose siempre con el álbum superviviente,
-        hasta que solo queda uno. El argumento 'context' es obligatorio y debe indicar el origen o motivo de la combinación (para logs, excepciones, etc).
-        Devuelve el álbum final resultante.
+        Combines a list of duplicate albums into one, applying a reduction algorithm:
+        merges all albums two by two using the duplicate policy, always keeping the surviving album,
+        until only one remains. The 'context' argument is mandatory and must indicate the origin or reason for the combination (for logs, exceptions, etc).
+        Returns the resulting final album.
         """
         if not albums:
             raise ValueError(
@@ -780,10 +780,10 @@ class AlbumCollectionWrapper:
         tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
-        Busca un álbum por nombre. Si existe uno, lo retorna. Si hay más de uno, maneja duplicados según la política (merge, eliminar temporales, error, etc).
-        Si no existe (o tras limpiar duplicados ya no existe), lo crea y asigna el usuario actual como EDITOR.
+        Searches for an album by name. If one exists, returns it. If there is more than one, handles duplicates according to the policy (merge, delete temporary, error, etc).
+        If it doesn't exist (or after cleaning duplicates it no longer exists), creates it and assigns the current user as EDITOR.
         """
-        # Buscar todos los álbumes con ese nombre
+        # Search for all albums with that name
         albums_found = list(self.albums_with_name(album_name))
         if len(albums_found) == 1:
             return albums_found[0]
@@ -792,7 +792,7 @@ class AlbumCollectionWrapper:
                 albums_found, context="duplicate_on_create"
             )
 
-        # Si no existe, crearlo y asignar usuario
+        # If it doesn't exist, create it and assign user
         from uuid import UUID
 
         from immich_client.api.albums import add_users_to_album, create_album
