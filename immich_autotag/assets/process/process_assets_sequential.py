@@ -60,7 +60,7 @@ def process_assets_sequential(
                     import traceback
 
                     tb = traceback.format_exc()
-                    asset_id = get_asset_id(asset_wrapper)
+                    asset_id = asset_wrapper.uuid
                     log(
                         f"[WARN] {category} - Skipping asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
@@ -94,21 +94,11 @@ def process_assets_sequential(
                     )
                     raise
 
-            asset_id = get_asset_id(asset_wrapper)
+            asset_id = asset_wrapper.uuid
             log(
                 f"Iteration completed for asset: {asset_id}",
                 level=LogLevel.DEBUG,
             )
-            def get_asset_id(asset_wrapper):
-                """
-                Returns the asset's ID (prefer 'id', fallback to 'uuid'), never suppresses errors.
-                Raises AttributeError if neither is present.
-                """
-                if hasattr(asset_wrapper, "id"):
-                    return asset_wrapper.id
-                if hasattr(asset_wrapper, "uuid"):
-                    return asset_wrapper.uuid
-                raise AttributeError(f"Asset wrapper has neither 'id' nor 'uuid': {asset_wrapper!r}")
             count += 1
             StatisticsManager.get_instance().update_checkpoint(
                 asset_wrapper.id,
