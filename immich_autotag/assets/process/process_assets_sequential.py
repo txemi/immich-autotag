@@ -30,12 +30,15 @@ def process_assets_sequential(
     cm = ConfigManager.get_instance()
     assert isinstance(cm, ConfigManager)
 
-    # Determinar skip_n: si resume_previous está activo, consultar estadísticas; si no, usar config
-    if cm.config.skip.resume_previous:
-        skip_n_stats = get_previous_skip_n()
-        skip_n = skip_n_stats if skip_n_stats is not None else cm.config.skip.skip_n
+    # Determine skip_n: check for config and skip attribute
+    if cm.config is not None and cm.config.skip is not None:
+        if cm.config.skip.resume_previous:
+            skip_n_stats = get_previous_skip_n()
+            skip_n = skip_n_stats if skip_n_stats is not None else cm.config.skip.skip_n
+        else:
+            skip_n = cm.config.skip.skip_n
     else:
-        skip_n = cm.config.skip.skip_n
+        skip_n = 0
     max_assets = stats.max_assets
     count = 0
     error_mode = DEFAULT_ERROR_MODE
