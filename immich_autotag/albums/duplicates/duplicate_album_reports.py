@@ -8,7 +8,7 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class DuplicateAlbumReport:
     """
-    Representa un informe de duplicado de álbum con referencias explícitas a los dos álbumes implicados.
+    Represents an album duplicate report with explicit references to the two albums involved.
     """
 
     album_name: str = attrs.field(validator=attrs.validators.instance_of(str))
@@ -27,7 +27,7 @@ class DuplicateAlbumReport:
 @attrs.define(auto_attribs=True, slots=True)
 class DuplicateAlbumReports:
     """
-    Encapsula la lista de informes de duplicados de álbumes para un manejo más claro y seguro.
+    Encapsulates the list of album duplicate reports for clearer and safer handling.
     """
 
     items: List[DuplicateAlbumReport] = attrs.field(

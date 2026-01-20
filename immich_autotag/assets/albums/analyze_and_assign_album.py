@@ -71,13 +71,13 @@ def analyze_and_assign_album(
         # Remove 'unknown' tag if present and update classification tags
         _ = asset_wrapper.validate_and_update_classification()
         log(
-            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' clasificado. Limpieza de álbum temporal y etiquetas realizada.",
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' classified. Temporary album cleanup and tags updated.",
             level=LogLevel.FOCUS,
         )
         return
 
     elif status == ClassificationStatus.CONFLICT:
-        # Si hay conflicto, eliminar de todos los álbumes temporales/autotag
+        # If there is a conflict, remove from all temporary/autotag albums
         from immich_autotag.assets.albums.remove_from_autotag_albums import (
             remove_asset_from_autotag_temporary_albums,
         )
@@ -95,7 +95,7 @@ def analyze_and_assign_album(
         num_rules_matched = len(list(match_results.rules()))
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_name}' ({asset_id}) matched {num_rules_matched} classification rules. "
-            f"Classification conflict: eliminado de álbum temporal si estaba.\nSee asset: {immich_url}",
+            f"Classification conflict: removed from temporary album if it was there.\nSee asset: {immich_url}",
             level=LogLevel.ERROR,
         )
         # Register this in the modification report for auditing

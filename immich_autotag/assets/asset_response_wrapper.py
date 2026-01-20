@@ -775,7 +775,7 @@ class AssetResponseWrapper:
         tag_conversions: TagConversions,
     ) -> None:
         """
-        Aplica cada conversión llamando a su método apply_to_asset.
+        Applies each conversion by calling its apply_to_asset method.
         """
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log

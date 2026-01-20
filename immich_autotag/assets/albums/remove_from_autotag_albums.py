@@ -76,7 +76,7 @@ def remove_asset_from_autotag_temporary_albums(
             )
 
         except Exception as e:
-            # <-- AQUÍ se imprime el mensaje '[WARNING] Failed to remove asset ...' si ocurre un error al eliminar el asset del álbum temporal.
+            # <-- HERE the message '[WARNING] Failed to remove asset ...' is printed if an error occurs while removing the asset from the temporary album.
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise
             log(

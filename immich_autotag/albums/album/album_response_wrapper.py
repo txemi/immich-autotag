@@ -303,15 +303,16 @@ class AlbumResponseWrapper:
                     current_count = None
                 log(
                     (
-                        f"[WARN] get_album_info returned 400 for album id={self.get_album_id()!r} "
-                        f"name={album_name!r}. "
+                        f"[WARN] get_album_info returned 400 for album id="
+                        f"{self.get_album_id()!r} name={album_name!r}. "
                         f"Recorded recoverable error (count={current_count}). "
                         f"album_partial={partial_repr}"
                     ),
                     level=LogLevel.WARNING,
                 )
 
-                # If the recent error count exceeds configured threshold, mark unavailable
+                # If the recent error count exceeds configured threshold,
+                # mark unavailable
                 try:
                     from immich_autotag.config.internal_config import (
                         ALBUM_ERROR_THRESHOLD,
@@ -359,7 +360,8 @@ class AlbumResponseWrapper:
                             pass
                         return
                 except Exception:
-                    # If config lookup fails or check fails, be conservative and do not mark unavailable
+                    # If config lookup fails or check fails,
+                    # be conservative and do not mark unavailable
                     pass
                 # Otherwise, do not mark unavailable yet; continue without raising
 
@@ -503,7 +505,8 @@ class AlbumResponseWrapper:
             except AttributeError:
                 raise RuntimeError(
                     (
-                        f"Item in add_assets_to_album response missing required attributes: {item}"
+                        f"Item in add_assets_to_album response missing required attributes: "
+                        f"{item}"
                     )
                 )
             if _id == str(asset_wrapper.id):
@@ -521,8 +524,9 @@ class AlbumResponseWrapper:
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
                             (
-                                f"Asset {asset_wrapper.id} already in album {self.get_album_id()} "
-                                f"(API duplicate error). Raising AssetAlreadyInAlbumError."
+                                f"Asset {asset_wrapper.id} already in album "
+                                f"{self.get_album_id()} (API duplicate error). "
+                                f"Raising AssetAlreadyInAlbumError."
                             ),
                             level=LogLevel.FOCUS,
                         )
@@ -540,8 +544,8 @@ class AlbumResponseWrapper:
                         )
                         raise AssetAlreadyInAlbumError(
                             (
-                                f"Asset {asset_wrapper.id} is already in album {self.get_album_id()} "
-                                f"(API duplicate error)"
+                                f"Asset {asset_wrapper.id} is already in album "
+                                f"{self.get_album_id()} (API duplicate error)"
                             )
                         )
                     else:
@@ -549,7 +553,8 @@ class AlbumResponseWrapper:
                             (
                                 f"Asset {asset_wrapper.id} was not successfully added to album "
                                 f"{self.get_album_id()}: {error_msg}\n"
-                                f"Asset link: {asset_url}\nAlbum link: {album_url}"
+                                f"Asset link: {asset_url}\n"
+                                f"Album link: {album_url}"
                             )
                         )
         if not found:

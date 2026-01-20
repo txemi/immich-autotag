@@ -11,7 +11,7 @@ from typeguard import typechecked
 @typechecked
 def generate_yaml_with_comments(model: type[BaseModel], filename: str | Path):
     lines = []
-    # Docstring de la clase como comentario inicial
+    # Class docstring as initial comment
     if model.__doc__:
         for line in model.__doc__.strip().splitlines():
             lines.append(f"# {line}")
@@ -20,12 +20,12 @@ def generate_yaml_with_comments(model: type[BaseModel], filename: str | Path):
         if desc:
             lines.append(f"# {desc}")
         value = field.default if field.default is not None else ""
-        # Formateo básico para strings y None
+        # Basic formatting for strings and None
         if isinstance(value, str):
             value = f'"{value}"'
         elif value is None:
             value = ""
         lines.append(f"{name}: {value}")
-        lines.append("")  # Línea en blanco entre campos
+        lines.append("")  # Empty line between fields
     with open(filename, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
