@@ -21,16 +21,11 @@ def _generate_links(config: UserConfig) -> List[str]:
         for rule in config.classification.rules:
             if rule.tag_names:
                 for tag in rule.tag_names:
-                    if (
-                        tag.startswith("autotag_input_")
-                        and tag not in seen_tags
-                    ):
+                    if tag.startswith("autotag_input_") and tag not in seen_tags:
                         seen_tags.add(tag)
                         # Clean label: remove prefix and format
                         label = (
-                            tag.replace("autotag_input_", "")
-                            .replace("_", " ")
-                            .title()
+                            tag.replace("autotag_input_", "").replace("_", " ").title()
                         )
                         tags_to_add.append((f"Input: {label}", tag))
 
@@ -64,16 +59,14 @@ def _generate_links(config: UserConfig) -> List[str]:
             tags_to_add.append(
                 (
                     "Duplicates: Classification conflict",
-                    config.duplicate_processing.
-                    autotag_classification_conflict,
+                    config.duplicate_processing.autotag_classification_conflict,
                 )
             )
         if config.duplicate_processing.autotag_album_detection_conflict:
             tags_to_add.append(
                 (
                     "Duplicates: Album detection conflict",
-                    config.duplicate_processing.
-                    autotag_album_detection_conflict,
+                    config.duplicate_processing.autotag_album_detection_conflict,
                 )
             )
 
