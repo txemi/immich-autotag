@@ -694,7 +694,6 @@ class AlbumCollectionWrapper:
 
         # Append to collection and update maps
         self.add_album_wrapper(wrapper)
-
         return wrapper
 
     @conditional_typechecked
