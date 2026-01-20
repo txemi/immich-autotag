@@ -64,10 +64,8 @@ class ModificationEntry:
         Converts the rich entry to a serializable version (only simple types).
         Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         """
-        album_id = self.album.get_partial().id if self.album is not None else None
-        album_name = (
-            self.album.get_partial().album_name if self.album is not None else None
-        )
+        album_id = self.album.get_album_id() if self.album is not None else None
+        album_name = self.album.get_album_name() if self.album is not None else None
         asset_link = None
         if self.asset_wrapper is not None:
             try:

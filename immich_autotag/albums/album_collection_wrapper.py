@@ -95,7 +95,7 @@ class AlbumCollectionWrapper:
             from immich_autotag.logging.utils import log
 
             log(
-                f"[ALBUM REMOVAL] Album {album_wrapper.get_partial().id} ('{album_wrapper.get_partial().album_name}') removed from collection (local, not_found cleanup).",
+                f"[ALBUM REMOVAL] Album {album_wrapper.get_album_id()} ('{album_wrapper.get_album_name()}') removed from collection (local, not_found cleanup).",
                 level=LogLevel.FOCUS,
             )
         return removed
@@ -119,23 +119,23 @@ class AlbumCollectionWrapper:
             # album_wrapper.ensure_full()
             if not album_wrapper.get_asset_ids():
                 print(
-                    f"[WARN] Album '{album_wrapper.get_partial().album_name}' has no assets after forced reload."
+                    f"[WARN] Album '{album_wrapper.get_album_name()}' has no assets after forced reload."
                 )
                 # album_wrapper.reload_from_api(client)
                 if album_wrapper.get_asset_ids():
                     album_url = album_wrapper.get_immich_album_url().geturl()
                     raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_partial().album_name}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
+                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
                         "This suggests a possible synchronization or lazy loading bug. Please review the album loading logic."
                     )
-                if is_temporary_album(album_wrapper.get_partial().album_name):
+                if is_temporary_album(album_wrapper.get_album_name()):
                     print(
-                        f"[WARN] Temporary album '{album_wrapper.get_partial().album_name}' marked for removal after map build."
+                        f"[WARN] Temporary album '{album_wrapper.get_album_name()}' marked for removal after map build."
                     )
                     albums_to_remove.append(album_wrapper)
             else:
                 print(
-                    f"[INFO] Album '{album_wrapper.get_partial().album_name}' reloaded with {len(album_wrapper.get_asset_ids())} assets."
+                    f"[INFO] Album '{album_wrapper.get_album_name()}' reloaded with {len(album_wrapper.get_asset_ids())} assets."
                 )
 
             for asset_id in album_wrapper.get_asset_ids():
@@ -155,15 +155,14 @@ class AlbumCollectionWrapper:
                         tag_mod_report.add_album_modification(
                             kind=ModificationKind.DELETE_ALBUM,
                             album=album_wrapper,
-                            old_value=album_wrapper.get_partial().album_name,
+                            old_value=album_wrapper.get_album_name(),
                             extra={
                                 "reason": "Removed automatically after map build because it was empty and temporary"
                             },
                         )
                     self.remove_album(album_wrapper, client)
                 except Exception as e:
-                    album = album_wrapper.get_partial()  # type: ignore
-                    album_name = album.album_name
+                    album_name = album_wrapper.get_album_name()
                     print(
                         f"[ERROR] Failed to remove temporary album '{album_name}': {e}"
                     )
@@ -180,7 +179,7 @@ class AlbumCollectionWrapper:
         """Returns the names of the albums the asset belongs to.
         Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access.
         """
-        return [w.get_partial().album_name for w in self.albums_for_asset(asset)]
+        return [w.get_album_name() for w in self.albums_for_asset(asset)]
 
     @conditional_typechecked
     def albums_for_asset_wrapper(
@@ -213,7 +212,7 @@ class AlbumCollectionWrapper:
             sync_detailed as delete_album_sync,
         )
 
-        album_id = UUID(album_wrapper.get_partial().id)
+        album_id = UUID(album_wrapper.get_album_id())
         delete_album_sync(id=album_id, client=client)
         self._remove_album_from_local_collection(album_wrapper)
         # Log DELETE_ALBUM event
@@ -240,7 +239,7 @@ class AlbumCollectionWrapper:
         """
         # Search for existing album
         for album_wrapper in self.albums:
-            if album_wrapper.get_partial().album_name == album_name:
+            if album_wrapper.get_album_name() == album_name:
                 return album_wrapper
 
         # If it does not exist, create and assign user
@@ -325,7 +324,7 @@ class AlbumCollectionWrapper:
             # Create wrapper with partial album data (no assets fetched yet)
             # Assets will be fetched lazily when needed
             wrapper = AlbumResponseWrapper(album_partial=album)
-            print(f"- {wrapper.get_partial().album_name} (assets: lazy-loaded)")
+            print(f"- {wrapper.get_album_name()} (assets: lazy-loaded)")
             albums_wrapped.append(wrapper)
 
         tag_mod_report.flush()

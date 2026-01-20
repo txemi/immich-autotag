@@ -51,7 +51,7 @@ def check_album_date_consistency(
 
     mismatch_found = False
     for album_wrapper in albums:
-        album_name = album_wrapper.get_partial().album_name
+        album_name = album_wrapper.get_album_name()
         # Match YYYY-MM-DD, YYYY-MM, or YYYY at the start
         m = re.match(r"^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?", album_name)
         if not m:
