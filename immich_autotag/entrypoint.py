@@ -152,7 +152,7 @@ def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  #
 
     # Process each album
     for album_wrapper in albums_collection.albums:
-        album = album_wrapper.album
+        album = album_wrapper.get_partial()
 
         resolved_policy = resolve_album_policy(
             album_name=album.album_name,

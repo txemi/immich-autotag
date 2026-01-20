@@ -59,7 +59,7 @@ def process_album_permissions(
     matched_count = 0
     unmatched_count = 0
     for album_wrapper in albums_collection.albums:
-        album = album_wrapper.album
+        album = album_wrapper.get_partial()
         resolved_policy = resolve_album_policy(
             album_name=album.album_name,
             album_id=album.id,

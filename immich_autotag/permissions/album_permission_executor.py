@@ -106,7 +106,7 @@ def sync_album_permissions(
         resolved_policy: Resolved policy with target members (emails)
         context: ImmichContext with API client
     """
-    album = album_wrapper.album
+    album = album_wrapper.get_partial()
     album_id = album.id
     album_name = album.album_name
 

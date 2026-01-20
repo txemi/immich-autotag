@@ -125,7 +125,7 @@ class TagStatsManager:
             )
 
             assert isinstance(album, AlbumResponseWrapper)
-            album_name = album.album.album_name
+            album_name = album.get_partial().album_name
             stats = self.stats_manager.get_stats()
             if album_name not in stats.output_album_counters:
                 from .run_statistics import OutputAlbumCounter
