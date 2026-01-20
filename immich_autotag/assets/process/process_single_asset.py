@@ -23,14 +23,9 @@ def _get_asset_url(asset_wrapper: AssetResponseWrapper) -> str:
         return asset_wrapper.get_immich_photo_url().geturl()
     except Exception as e:
         try:
-            original_file_name = asset_wrapper.original_file_name
+            asset_name = asset_wrapper.original_file_name
         except AttributeError:
-            original_file_name = None
-        try:
-            filename = asset_wrapper.filename
-        except AttributeError:
-            filename = None
-        asset_name = original_file_name or filename or "[no name]"
+            asset_name = "[no name]"
         from pprint import pformat
 
         details = pformat(vars(asset_wrapper))
@@ -59,7 +54,12 @@ def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper):
     from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().config
-    if config and config.duplicate_processing.date_correction.enabled:
+    if (
+        config
+        and getattr(config, "duplicate_processing", None) is not None
+        and getattr(config.duplicate_processing, "date_correction", None) is not None
+        and config.duplicate_processing.date_correction.enabled
+    ):
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
 
