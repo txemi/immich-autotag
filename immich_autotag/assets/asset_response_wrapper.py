@@ -56,8 +56,7 @@ class AssetResponseWrapper:
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
     context: "ImmichContext" = attrs.field(
-        validator=attrs.validators.instance_of(object)
-    )
+        validator=attrs.validators.instance_of(ImmichContext))
     _asset_full: AssetResponseDto | None = attrs.field(default=None, init=False)
 
     def __attrs_post_init__(self) -> None:
