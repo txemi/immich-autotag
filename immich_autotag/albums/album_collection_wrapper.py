@@ -8,12 +8,7 @@ from immich_autotag.albums.album_list import AlbumList
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.asset_to_albums_map import AssetToAlbumsMap
 
-try:
-    # Prefer absolute import, but fall back to a package-relative import for
-    # environments where absolute package resolution may fail (CI, certain test runners).
-    from immich_autotag.assets.albums.temporary_albums import is_temporary_album
-except Exception:
-    from ..assets.albums.temporary_albums import is_temporary_album
+from immich_autotag.assets.albums.temporary_albums import is_temporary_album
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -167,46 +162,62 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def write_unavailable_summary(self) -> None:
-        """Write a small JSON summary of unavailable albums for operator inspection."""
+        """Write a small JSON summary of unavailable albums for operator inspection.
+
+        Behavior:
+        - The function returns `None` (it's a side-effecting writer).
+        - The helper `_unavailable_sort_key` returns a string used for sorting.
+        - If an unavailable album lacks an ID or retrieving the name/id raises,
+          this is considered a programming/data error and the function will
+          raise so the problem is surfaced (fail-fast).
+        - Only filesystem/write errors when persisting the summary are
+          swallowed in PRODUCTION mode; in DEVELOPMENT they will propagate.
+        """
+        import json
+        from immich_autotag.utils.run_output_dir import get_run_output_dir
+        # Import error-mode config so we can decide whether to swallow IO errors
+        # Fail-fast: configuration symbols must exist; let ImportError propagate.
+        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+        from immich_autotag.config._internal_types import ErrorHandlingMode
+
+        summary_items = []
+
+        def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
+            # Intent: return a stable string key for sorting. If the album has
+            # no id (None) we treat that as an error and raise so it is fixed.
+            album_id = w.get_album_id()
+            if album_id is None:
+                raise RuntimeError(
+                    f"Album missing id while writing unavailable summary: {w!r}"
+                )
+            return str(album_id)
+
+        # Build summary; allow failures to surface (fail-fast on bad album data)
+        for wrapper in sorted(self._unavailable_albums, key=_unavailable_sort_key):
+            # These calls should not silently fail; surface issues to operator/dev.
+            album_id = wrapper.get_album_id()
+            if album_id is None:
+                raise RuntimeError(f"Album missing id while building summary: {wrapper!r}")
+            name = wrapper.get_album_name()
+            summary_items.append({"id": album_id, "name": name})
+
+        out_dir = get_run_output_dir()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_file = out_dir / "albums_unavailable_summary.json"
+
         try:
-            import json
-            from immich_autotag.utils.run_output_dir import get_run_output_dir
-
-            summary_items = []
-            def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
-                try:
-                    aid = w.get_album_id()
-                    if aid is not None:
-                        return str(aid)
-                    # Fallback to album name when id unavailable
-                    name = w.get_album_name()
-                    return name or ""
-                except Exception:
-                    # Best-effort: try name, otherwise empty string
-                    try:
-                        return w.get_album_name() or ""
-                    except Exception:
-                        return ""
-
-            for wrapper in sorted(self._unavailable_albums, key=_unavailable_sort_key):
-                try:
-                    album_id = wrapper.get_album_id()
-                except Exception:
-                    album_id = None
-                try:
-                    name = wrapper.get_album_name()
-                except Exception:
-                    name = None
-                summary_items.append({"id": album_id, "name": name})
-
-            out_dir = get_run_output_dir()
-            out_dir.mkdir(parents=True, exist_ok=True)
-            out_file = out_dir / "albums_unavailable_summary.json"
             with out_file.open("w", encoding="utf-8") as fh:
                 json.dump({"count": len(summary_items), "albums": summary_items}, fh, indent=2)
         except Exception:
-            # Best-effort summary; don't raise
-            pass
+            # In DEVELOPMENT we want to see IO problems; in PRODUCTION we
+            # swallow write errors to avoid crashing the run.
+            if DEFAULT_ERROR_MODE is not None and ErrorHandlingMode is not None:
+                if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+                    raise
+                # else: swallow in production
+            else:
+                # If we couldn't determine error mode, be conservative and raise
+                raise
 
     @typechecked
     def _evaluate_global_policy(self) -> None:
