@@ -20,7 +20,6 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
     Loads the duplicate collection from the Immich server and prints timing information.
     """
     import time
-    from pathlib import Path
 
     cache_fresh_hours = 3
     from immich_autotag.utils.run_output_dir import LOGS_LOCAL_DIR
