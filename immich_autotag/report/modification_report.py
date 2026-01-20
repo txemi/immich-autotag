@@ -119,7 +119,10 @@ class ModificationReport:
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
 
-                log(f"Could not clear the tag modification report: {e}", level=LogLevel.WARNING)
+                log(
+                    f"Could not clear the tag modification report: {e}",
+                    level=LogLevel.WARNING,
+                )
             self._cleared_report = True
 
         # If user is None, obtain it from the singleton ImmichContext

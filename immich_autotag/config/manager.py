@@ -91,7 +91,10 @@ class ConfigManager:
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
-            log(f"Loading Python config from {config_location.path}", level=LogLevel.INFO)
+            log(
+                f"Loading Python config from {config_location.path}",
+                level=LogLevel.INFO,
+            )
             config_obj = load_python_config(config_location.path)
             if isinstance(config_obj, UserConfig):
                 self.config = config_obj

@@ -36,11 +36,10 @@ def run_main():
 
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.utils.user_help import print_welcome_links
 
     # Get config FIRST (constructor initializes it)
-    from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
+    from immich_autotag.utils.user_help import print_welcome_links
 
     log("Initializing ConfigManager...", level=LogLevel.INFO)
     manager = ConfigManager.get_instance()

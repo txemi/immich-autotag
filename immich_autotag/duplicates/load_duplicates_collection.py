@@ -86,7 +86,9 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
                 import json
 
                 sample_limit = 100
-                sample_group_ids = list(duplicates_collection.groups_by_duplicate_id.keys())[:sample_limit]
+                sample_group_ids = list(
+                    duplicates_collection.groups_by_duplicate_id.keys()
+                )[:sample_limit]
                 summary = {
                     "groups": total_groups,
                     "assets": total_assets,
