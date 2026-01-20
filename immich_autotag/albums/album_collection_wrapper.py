@@ -874,11 +874,10 @@ class AlbumCollectionWrapper:
         tag_mod_report.flush()
         # If any duplicates were collected during initial load and we're not
         # running in DEVELOPMENT, write a small summary file for operator review.
-        try:
-            if duplicates_collected:
-                AlbumCollectionWrapper.write_duplicates_summary(duplicates_collected)
-        except Exception:
-            pass
+
+        if duplicates_collected:
+            AlbumCollectionWrapper.write_duplicates_summary(duplicates_collected)
+
 
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
         MIN_ALBUMS = 326
