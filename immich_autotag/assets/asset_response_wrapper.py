@@ -56,7 +56,8 @@ class AssetResponseWrapper:
         validator=attrs.validators.instance_of(AssetResponseDto)
     )
     context: "ImmichContext" = attrs.field(
-        validator=attrs.validators.instance_of(ImmichContext))
+        validator=attrs.validators.instance_of(ImmichContext)
+    )
     _asset_full: AssetResponseDto | None = attrs.field(default=None, init=False)
 
     def __attrs_post_init__(self) -> None:
@@ -94,7 +95,8 @@ class AssetResponseWrapper:
         )
         if self._asset_full is None:
             raise RuntimeError(
-                f"[ERROR] Could not lazy-load asset with id={self.asset_partial.id}. get_asset_info returned None."
+                f"[ERROR] Could not lazy-load asset with id={self.asset_partial.id}. "
+                "get_asset_info returned None."
             )
 
     @property
@@ -132,7 +134,10 @@ class AssetResponseWrapper:
         # Ensure the date is timezone-aware in UTC
         if new_date.tzinfo is None:
             raise ValueError(
-                "[ERROR] new_date must be timezone-aware. Received naive datetime. Asset will not be updated."
+                (
+                    "[ERROR] new_date must be timezone-aware. "
+                    "Received naive datetime. Asset will not be updated."
+                )
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
         # Log and print before updating the asset, including link to the photo in Immich
@@ -142,8 +147,10 @@ class AssetResponseWrapper:
             photo_url_obj = self.get_immich_photo_url()
             photo_url = photo_url_obj.geturl()
             log_msg = (
-                f"[INFO] Updating asset date: asset.id={self.id}, asset_name={self.original_file_name}, "
-                f"old_date={old_date}, new_date={new_date}\n[INFO] Immich photo link: {photo_url}"
+                f"[INFO] Updating asset date: asset.id={self.id}, "
+                f"asset_name={self.original_file_name}, "
+                f"old_date={old_date}, new_date={new_date}\n"
+                f"[INFO] Immich photo link: {photo_url}"
             )
             log_debug(f"[BUG] {log_msg}")
         from immich_autotag.report.modification_report import ModificationReport
@@ -171,7 +178,9 @@ class AssetResponseWrapper:
         # If the API changes and returns a dict or error object, this will fail fast
         if not isinstance(response, AssetResponseDto):
             raise DateIntegrityError(
-                f"[ERROR] update_asset.sync did not return AssetResponseDto, got {type(response)}: {response} for asset.id={self.id} ({self.original_file_name})"
+                f"[ERROR] update_asset.sync did not return AssetResponseDto, "
+                f"got {type(response)}: {response} for asset.id={self.id} "
+                f"({self.original_file_name})"
             )
         # If the response has an 'error' attribute and it is not None, fail fast (static access only)
         # This assumes that if present, 'error' is a public attribute of the response object
@@ -231,7 +240,10 @@ class AssetResponseWrapper:
         for d in date_candidates:
             if d < best_date:
                 raise DateIntegrityError(
-                    f"Integrity broken: found a date ({d}) earlier than the best selected date ({best_date}) for asset {self.asset.id}"
+                    (
+                        f"Integrity broken: found a date ({d}) earlier than the best selected date "
+                        f"({best_date}) for asset {self.asset.id}"
+                    )
                 )
         return best_date
 
@@ -278,9 +290,11 @@ class AssetResponseWrapper:
         fail_on_error: bool = False,
     ) -> bool:
         """
-        Removes all tags from the asset with the given name (case-insensitive), even if they have different IDs (e.g., global and nested tags).
+        Removes all tags from the asset with the given name (case-insensitive),
+        even if they have different IDs (e.g., global and nested tags).
         Returns True if at least one was removed, False if none were found.
-        After removal, reloads the asset and checks if the tag is still present. Raises if any remain.
+        After removal, reloads the asset and checks if the tag is still present.
+        Raises if any remain.
         Uses TagWrapper from the tag collection for all reporting.
         """
         from immich_client.api.tags import untag_assets
@@ -305,7 +319,8 @@ class AssetResponseWrapper:
 
         if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(
-                f"[BUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
+                f"[BUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, "
+                f"tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
             )
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
 
@@ -329,7 +344,8 @@ class AssetResponseWrapper:
                     f"[BUG] Full untag_assets response for tag_id={tag.id}: {response}"
                 )
                 log_debug(
-                    f"[BUG][INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. Response: {response}"
+                    f"[BUG][INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. "
+                    f"Response: {response}"
                 )
             removed_any = True
             from immich_autotag.tags.modification_kind import ModificationKind
@@ -389,7 +405,10 @@ class AssetResponseWrapper:
             return False
         # Extra checks and logging before API call
         if not tag or tag.id is None:
-            error_msg = f"[ERROR] Tag object for '{tag_name}' is missing or has no id. Tag: {tag}"
+            error_msg = (
+                f"[ERROR] Tag object for '{tag_name}' is missing or has no id. "
+                f"Tag: {tag}"
+            )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
@@ -603,7 +622,11 @@ class AssetResponseWrapper:
             match_detail = self.get_classification_match_detail()
             photo_url = get_immich_photo_url(uuid.UUID(self.id))
             n_rules_matched = len(match_result_list.rules())
-            msg = f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by {n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched}, albums={match_detail.albums_matched}\nLink: {photo_url}"
+            msg = (
+                f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by "
+                f"{n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched}, "
+                f"albums={match_detail.albums_matched}\nLink: {photo_url}"
+            )
             if fail_fast:
                 raise Exception(msg)
             else:
@@ -663,18 +686,21 @@ class AssetResponseWrapper:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) {tag_present_reason}. Tagged as '{tag_name}'.",
+                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) "
+                    f"{tag_present_reason}. Tagged as '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
             else:
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) {tag_present_reason}. Tag '{tag_name}' already present.",
+                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) "
+                    f"{tag_present_reason}. Tag '{tag_name}' already present.",
                     level=LogLevel.FOCUS,
                 )
         else:
             if self.has_tag(tag_name):
                 log(
-                    f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} ({self.original_file_name}) because {tag_absent_reason}.",
+                    f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} "
+                    f"({self.original_file_name}) because {tag_absent_reason}.",
                     level=LogLevel.FOCUS,
                 )
                 if user is None:
@@ -736,7 +762,10 @@ class AssetResponseWrapper:
 
         # Log the classification result
         log(
-            f"[CLASSIFICATION] Asset {self.id} | Name: {self.original_file_name} | Favorite: {self.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Status: {status.value} | Date: {self.created_at} | original_path: {self.original_path}",
+            f"[CLASSIFICATION] Asset {self.id} | Name: {self.original_file_name} | "
+            f"Favorite: {self.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | "
+            f"Albums: {', '.join(album_names) if album_names else '-'} | Status: {status.value} | "
+            f"Date: {self.created_at} | original_path: {self.original_path}",
             level=LogLevel.FOCUS,
         )
         return ClassificationUpdateResult(bool(tag_names), bool(album_names))
@@ -778,7 +807,8 @@ class AssetResponseWrapper:
         """
         Attempts to detect a reasonable album name from the asset's folder path, according to the feature spec.
         Only runs if enable_album_detection_from_folders (from config) is True, the asset does not already belong to an album,
-        and is not classified or conflicted. Returns the detected album name or None. Raises NotImplementedError for ambiguous cases.
+        and is not classified or conflicted. Returns the detected album name or None.
+        Raises NotImplementedError for ambiguous cases.
         Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
         If the date is already in the containing folder, keep as before.
         """
@@ -931,13 +961,15 @@ class AssetResponseWrapper:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
                 log(
-                    f"asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. Tagged as '{tag_name}'.",
+                    f"asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. "
+                    f"Tagged as '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
         else:
             if self.has_tag(tag_name):
                 log(
-                    f"Removing tag '{tag_name}' from asset.id={self.id} because duplicate album conflict is resolved.",
+                    f"Removing tag '{tag_name}' from asset.id={self.id} "
+                    f"because duplicate album conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
                 self.remove_tag_by_name(tag_name, user=user)
