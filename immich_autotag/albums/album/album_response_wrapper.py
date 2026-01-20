@@ -368,9 +368,11 @@ class AlbumResponseWrapper:
             # Other unexpected statuses are treated as fatal and re-raised.
             log(
                 (
-                    f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
-                    f"name={album_name!r}. Exception: {exc!r}. "
-                    f"album_partial={partial_repr}"
+                    (
+                        f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
+                        f"name={album_name!r}. Exception: {exc!r}. "
+                        f"album_partial={partial_repr}"
+                    )
                 ),
                 level=LogLevel.ERROR,
             )
@@ -518,9 +520,11 @@ class AlbumResponseWrapper:
                         error_msg = None
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
-                    # If the error is 'duplicate', reactive refresh: reload album data from API.
-                    # This detects that our cached album data is stale, and subsequent assets in this
-                    # batch will benefit from the fresh data without additional API calls.
+                    # If the error is 'duplicate', reactive refresh:
+                    # reload album data from API.
+                    # This detects that our cached album data is stale,
+                    # and subsequent assets in this batch will benefit
+                    # from the fresh data without additional API calls.
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
                             (
@@ -649,15 +653,17 @@ class AlbumResponseWrapper:
                                 collection = AlbumCollectionWrapper.get_instance()
                                 removed = collection.remove_album_local(self)
                                 log(
-                                    f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') "
-                                    f"removed from collection due to not_found error during asset removal.",
+                                    (
+                                        f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') "
+                                        f"removed from collection due to not_found error during asset removal."
+                                    ),
                                     level=LogLevel.FOCUS,
                                 )
                             except Exception as e:
                                 log(
                                     (
-                                        f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} from collection "
-                                        f"after not_found: {e}"
+                                        f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} "
+                                        f"from collection after not_found: {e}"
                                     ),
                                     level=LogLevel.WARNING,
                                 )
@@ -665,7 +671,8 @@ class AlbumResponseWrapper:
                                 (
                                     f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album "
                                     f"{self.get_album_id()}: {error_msg}\n"
-                                    f"Asset link: {asset_url}\nAlbum link: {album_url}"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
                                 ),
                                 level=LogLevel.WARNING,
                             )
@@ -675,7 +682,8 @@ class AlbumResponseWrapper:
                                 (
                                     f"Asset {asset_wrapper.id} was not successfully removed from album "
                                     f"{self.get_album_id()}: {error_msg}\n"
-                                    f"Asset link: {asset_url}\nAlbum link: {album_url}"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
                                 )
                             )
                         else:
@@ -683,7 +691,8 @@ class AlbumResponseWrapper:
                                 (
                                     f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album "
                                     f"{self.get_album_id()}: {error_msg}\n"
-                                    f"Asset link: {asset_url}\nAlbum link: {album_url}"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
                                 ),
                                 level=LogLevel.WARNING,
                             )
@@ -693,7 +702,8 @@ class AlbumResponseWrapper:
                         (
                             f"Asset {asset_wrapper.id} was not successfully removed from album "
                             f"{self.get_album_id()}: {error_msg}\n"
-                            f"Asset link: {asset_url}\nAlbum link: {album_url}"
+                            f"Asset link: {asset_url}\n"
+                            f"Album link: {album_url}"
                         )
                     )
 
@@ -763,7 +773,8 @@ class AlbumResponseWrapper:
                 log(
                     (
                         f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album "
-                        f"{self.get_album_id()}. This may be an eventual consistency or API issue."
+                        f"{self.get_album_id()}. "
+                        f"This may be an eventual consistency or API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
@@ -794,7 +805,8 @@ class AlbumResponseWrapper:
                 log(
                     (
                         f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album "
-                        f"{self.get_album_id()}. This may be an eventual consistency or API issue."
+                        f"{self.get_album_id()}. "
+                        f"This may be an eventual consistency or API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
