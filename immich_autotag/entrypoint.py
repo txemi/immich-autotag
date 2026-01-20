@@ -66,11 +66,11 @@ def run_main():
     client = ImmichClient(
         base_url=get_immich_base_url(),
         token=api_key,
-        prefix="",  # Immich usa x-api-key, no Bearer token
+        prefix="",  # Immich uses x-api-key, not Bearer token
         auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
-    # Inicializa el contexto SOLO con el cliente (los demás como None o vacíos)
+    # Initialize the context ONLY with the client (others as None or empty)
     context = ImmichContext.create_instance(
         client=client,
         albums_collection=None,
@@ -78,12 +78,12 @@ def run_main():
         duplicates_collection=None,
         asset_manager=None,
     )
-    # Ahora sí, crea los objetos dependientes
+    # Now, create the dependent objects
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client(client)
     duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)
-    # Asigna los objetos al contexto
+    # Assign the objects to the context
     context.albums_collection = albums_collection
     context.tag_collection = tag_collection
     context.duplicates_collection = duplicates_collection

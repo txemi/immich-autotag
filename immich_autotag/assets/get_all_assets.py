@@ -120,7 +120,7 @@ def get_all_assets(
                 page = (skip_n // PAGE_SIZE) + 1
                 skip_offset = skip_n % PAGE_SIZE
             first_page = False
-        # Aplica el skip solo en la primera página procesada tras el cálculo
+        # Apply skip only on the first page processed after calculation
         start_idx = skip_offset if skip_n and not skip_applied else 0
         log(
             f"[PROGRESS] skip_n={skip_n}, page={page}, skip_offset={skip_offset}, start_idx={start_idx}, count={count}",

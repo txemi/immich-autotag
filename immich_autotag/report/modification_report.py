@@ -1,8 +1,8 @@
 """
 Module for auditing and reporting entity modifications (tags, albums, assets, etc.)
 
-TODO: El nombre de esta clase ('ModificationReport') no refleja bien su función actual. Ahora registra no solo modificaciones, sino también advertencias y eventos generales.
-    Debería renombrarse a algo más genérico en el futuro, ya que también reporta warnings y circunstancias relevantes de forma estructurada.
+TODO: The name of this class ('ModificationReport') does not accurately reflect its current function. It now records not only modifications but also warnings and general events.
+    It should be renamed to something more generic in the future as it also reports warnings and relevant circumstances in a structured way.
 """
 
 from __future__ import annotations
@@ -96,7 +96,7 @@ class ModificationReport:
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
-        # Contabilizar el evento en el gestor de estadísticas
+        # Account for the event in the statistics manager
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind, extra_key=tag)
@@ -371,7 +371,7 @@ class ModificationReport:
         asset_wrapper: Any = None,
         album_wrapper: Any = None,
     ) -> Optional["ParseResult"]:
-        # Contabilizar el evento en el gestor de estadísticas
+        # Account for the event in the statistics manager
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind)

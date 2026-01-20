@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
+from immich_autotag.albums.albums.album_error_entry import AlbumErrorEntry
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
@@ -47,7 +48,7 @@ class AlbumResponseWrapper:
     # When unavailable we avoid API reload attempts and treat asset list as empty.
     _unavailable: bool = attrs.field(default=False, init=False)
     # Recent error history for this album: list of AlbumErrorEntry objects
-    _error_history: list["AlbumErrorEntry"] = attrs.field(
+    _error_history: list[AlbumErrorEntry] = attrs.field(
         default=attrs.Factory(list), init=False, repr=False
     )
 
@@ -307,7 +308,7 @@ class AlbumResponseWrapper:
                         f"Recorded recoverable error (count={current_count}). "
                         f"album_partial={partial_repr}"
                     ),
-                    level=LogLevel.WARN,
+                    level=LogLevel.WARNING,
                 )
 
                 # If the recent error count exceeds configured threshold, mark unavailable
