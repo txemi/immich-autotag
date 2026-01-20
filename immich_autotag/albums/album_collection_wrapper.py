@@ -283,7 +283,7 @@ class AlbumCollectionWrapper:
                 raise RuntimeError(
                     f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
                 ) from e
-        wrapper = AlbumResponseWrapper(album_partial=album)
+        wrapper = AlbumResponseWrapper(_album_partial=album)
         # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
         if tag_mod_report:
@@ -323,7 +323,7 @@ class AlbumCollectionWrapper:
         for album in albums:
             # Create wrapper with partial album data (no assets fetched yet)
             # Assets will be fetched lazily when needed
-            wrapper = AlbumResponseWrapper(album_partial=album)
+            wrapper = AlbumResponseWrapper(_album_partial=album)
             print(f"- {wrapper.get_album_name()} (assets: lazy-loaded)")
             albums_wrapped.append(wrapper)
 
