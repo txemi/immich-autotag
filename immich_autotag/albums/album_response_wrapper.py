@@ -244,7 +244,7 @@ class AlbumResponseWrapper:
                     # batch will benefit from the fresh data without additional API calls
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
-                            f"Asset {asset_wrapper.id} already in album {self.album_partial.id} (detected stale cache). "
+                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (detected stale cache). "
                             f"Reloading album data for subsequent operations.",
                             level=LogLevel.FOCUS,
                         )
@@ -266,11 +266,11 @@ class AlbumResponseWrapper:
                         return
                     else:
                         raise RuntimeError(
-                            f"Asset {asset_wrapper.id} was not successfully added to album {self.album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                            f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                         )
         if not found:
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {self._album_partial.id}."
+                f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {self.get_album_id()}."
             )
         tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
@@ -362,23 +362,23 @@ class AlbumResponseWrapper:
                                     level=LogLevel.WARNING,
                                 )
                             log(
-                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self._album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
                                 level=LogLevel.WARNING,
                             )
                             return
                         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                             raise RuntimeError(
-                                f"Asset {asset_wrapper.id} was not successfully removed from album {self._album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                                f"Asset {asset_wrapper.id} was not successfully removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                             )
                         else:
                             log(
-                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
                                 level=LogLevel.WARNING,
                             )
                             return
                     # Otherwise, treat as fatal
                     raise RuntimeError(
-                        f"Asset {asset_wrapper.id} was not successfully removed from album {self.album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                        f"Asset {asset_wrapper.id} was not successfully removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                     )
 
         if not found:
