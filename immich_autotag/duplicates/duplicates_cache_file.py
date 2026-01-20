@@ -1,10 +1,13 @@
-
+from datetime import datetime
+from pathlib import Path
 
 import attr
 from typeguard import typechecked
-from pathlib import Path
-from datetime import datetime
-from immich_autotag.duplicates.duplicates_cache_constants import DUPLICATES_CACHE_FILENAME
+
+from immich_autotag.duplicates.duplicates_cache_constants import (
+    DUPLICATES_CACHE_FILENAME,
+)
+
 
 @attr.s(auto_attribs=True, slots=True, kw_only=True)
 class DuplicatesCacheFile:
@@ -40,6 +43,7 @@ class DuplicatesCacheFile:
     @typechecked
     def __repr__(self):
         return f"<DuplicatesCacheFile path={self.path}>"
+
     @property
     @typechecked
     def dir_mtime(self) -> datetime:
@@ -60,13 +64,15 @@ class DuplicatesCacheFile:
                 return f"{self.directory.name} (dir_age={self.dir_age_hours:.2f}h, found=NO)"
         except Exception:
             return f"{self.directory} (error checking stats)"
+
     @typechecked
     def is_fresh(self, max_age_hours: float) -> bool:
         """Return True if the cache file is newer than the given threshold in hours."""
         return self.age_hours_from() < max_age_hours
+
     @typechecked
     def age_hours_from(self, now: datetime = None) -> float:
         """Return the age in hours from now (or a given datetime) to the file's mtime."""
         if now is None:
             now = datetime.now()
-        return (now - self.mtime()).total_seconds() / 3600.0        
+        return (now - self.mtime()).total_seconds() / 3600.0

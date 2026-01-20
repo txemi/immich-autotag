@@ -9,12 +9,10 @@ from immich_autotag.duplicates._load_cache import load_cache
 from immich_autotag.duplicates.duplicate_collection_wrapper import (
     DuplicateCollectionWrapper,
 )
+from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
 from immich_autotag.types import ImmichClient
-
 from immich_autotag.utils.run_output_dir import get_run_output_dir
-from immich_autotag.duplicates.duplicates_cache_constants import DUPLICATES_CACHE_FILENAME
-from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
 
 
 @typechecked

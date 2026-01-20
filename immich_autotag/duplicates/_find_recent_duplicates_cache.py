@@ -1,14 +1,13 @@
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
 from typeguard import typechecked
 
-
-from immich_autotag.utils.run_output_dir import find_recent_run_dirs
-
-from immich_autotag.duplicates.duplicates_cache_constants import DUPLICATES_CACHE_FILENAME
+from immich_autotag.duplicates.duplicates_cache_constants import (
+    DUPLICATES_CACHE_FILENAME,
+)
 from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
+from immich_autotag.utils.run_output_dir import find_recent_run_dirs
 
 
 @typechecked
@@ -19,7 +18,6 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
     """
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
-
 
     checked_dirs: list[DuplicatesCacheFile] = []
     candidate_caches: list[DuplicatesCacheFile] = []
