@@ -25,7 +25,7 @@ from typeguard import typechecked
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.permissions.album_policy_resolver import ResolvedAlbumPolicy
+from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.modification_kind import ModificationKind
 

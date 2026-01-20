@@ -16,7 +16,7 @@ from immich_autotag.permissions import (
     process_album_permissions,
     sync_album_permissions,
 )
-from immich_autotag.permissions.album_policy_resolver import resolve_album_policy
+from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
 

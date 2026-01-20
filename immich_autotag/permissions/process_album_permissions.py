@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from typeguard import typechecked
 
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.permissions.album_policy_resolver import resolve_album_policy
+from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 
 if TYPE_CHECKING:
     from immich_autotag.config.models import UserConfig
