@@ -35,9 +35,7 @@ def _yield_assets_from_page(
     count: int,
 ) -> Generator["AssetResponseWrapper", None, None]:
 
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from immich_autotag.logging.utils import log_debug
-
+    # Use top-level imports where possible to avoid redefinition warnings.
     yielded = 0
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
