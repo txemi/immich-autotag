@@ -544,9 +544,9 @@ class AlbumCollectionWrapper:
         *,
         albums_list: list[AlbumResponseWrapper],
         wrapper: AlbumResponseWrapper,
-        client: ImmichClient | None = None,
-        tag_mod_report: ModificationReport | None = None,
-        duplicates_collected: list[dict] | None = None,
+        client: ImmichClient ,
+        tag_mod_report: ModificationReport ,
+        duplicates_collected: 'DuplicateAlbumReports' ,
     ) -> None:
         """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
 
