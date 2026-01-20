@@ -118,8 +118,12 @@ class AlbumCollectionWrapper:
             # Garantiza que el álbum está en modo full (assets cargados)
             # album_wrapper.ensure_full()
             if not album_wrapper.get_asset_ids():
-                print(
-                    f"[WARN] Album '{album_wrapper.get_album_name()}' has no assets after forced reload."
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+
+                log(
+                    f"Album '{album_wrapper.get_album_name()}' has no assets after forced reload.",
+                    level=LogLevel.WARNING,
                 )
                 # album_wrapper.reload_from_api(client)
                 if album_wrapper.get_asset_ids():
@@ -129,13 +133,21 @@ class AlbumCollectionWrapper:
                         "This suggests a possible synchronization or lazy loading bug. Please review the album loading logic."
                     )
                 if is_temporary_album(album_wrapper.get_album_name()):
-                    print(
-                        f"[WARN] Temporary album '{album_wrapper.get_album_name()}' marked for removal after map build."
+                    from immich_autotag.logging.levels import LogLevel
+                    from immich_autotag.logging.utils import log
+
+                    log(
+                        f"Temporary album '{album_wrapper.get_album_name()}' marked for removal after map build.",
+                        level=LogLevel.WARNING,
                     )
                     albums_to_remove.append(album_wrapper)
             else:
-                print(
-                    f"[INFO] Album '{album_wrapper.get_album_name()}' reloaded with {len(album_wrapper.get_asset_ids())} assets."
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+
+                log(
+                    f"Album '{album_wrapper.get_album_name()}' reloaded with {len(album_wrapper.get_asset_ids())} assets.",
+                    level=LogLevel.INFO,
                 )
 
             for asset_id in album_wrapper.get_asset_ids():
@@ -163,8 +175,12 @@ class AlbumCollectionWrapper:
                     self.remove_album(album_wrapper, client)
                 except Exception as e:
                     album_name = album_wrapper.get_album_name()
-                    print(
-                        f"[ERROR] Failed to remove temporary album '{album_name}': {e}"
+                    from immich_autotag.logging.levels import LogLevel
+                    from immich_autotag.logging.utils import log
+
+                    log(
+                        f"Failed to remove temporary album '{album_name}': {e}",
+                        level=LogLevel.ERROR,
                     )
                     raise
         return asset_map
@@ -319,16 +335,19 @@ class AlbumCollectionWrapper:
             raise RuntimeError("Failed to fetch albums: API returned None")
         albums_wrapped: list[AlbumResponseWrapper] = []
 
-        print("\nAlbums:")
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log("Albums:", level=LogLevel.INFO)
         for album in albums:
             # Create wrapper with partial album data (no assets fetched yet)
             # Assets will be fetched lazily when needed
             wrapper = AlbumResponseWrapper(album_partial=album)
-            print(f"- {wrapper.get_album_name()} (assets: lazy-loaded)")
+            log(f"- {wrapper.get_album_name()} (assets: lazy-loaded)", level=LogLevel.DEBUG)
             albums_wrapped.append(wrapper)
 
         tag_mod_report.flush()
-        print(f"Total albums: {len(albums_wrapped)}\n")
+        log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
         MIN_ALBUMS = 326
         if len(albums_wrapped) < MIN_ALBUMS:
             raise Exception(
