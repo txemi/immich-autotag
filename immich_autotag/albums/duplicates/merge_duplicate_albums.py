@@ -3,7 +3,9 @@ from typing import TYPE_CHECKING
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.duplicates.mover import move_assets_between_albums

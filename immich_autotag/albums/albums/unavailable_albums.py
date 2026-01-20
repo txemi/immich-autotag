@@ -1,12 +1,17 @@
 import attrs
+
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class UnavailableAlbums:
     """
     Encapsulates tracking of unavailable albums and their count.
     """
-    _albums: set[AlbumResponseWrapper] = attrs.field(factory=set, init=False, repr=False)
+
+    _albums: set[AlbumResponseWrapper] = attrs.field(
+        factory=set, init=False, repr=False
+    )
 
     def add(self, album: AlbumResponseWrapper) -> bool:
         if album in self._albums:

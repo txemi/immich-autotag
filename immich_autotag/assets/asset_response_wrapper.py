@@ -25,7 +25,9 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
 from typeguard import typechecked
 
-from immich_autotag.albums.folder_analysis.album_folder_analyzer import AlbumFolderAnalyzer
+from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
+    AlbumFolderAnalyzer,
+)
 from immich_autotag.classification.classification_status import ClassificationStatus
 from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,

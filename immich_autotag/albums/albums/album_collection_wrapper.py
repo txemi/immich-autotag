@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import attrs
-from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
+from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
 from immich_autotag.albums.duplicates.duplicate_album_reports import (
     DuplicateAlbumReports,
@@ -24,14 +24,12 @@ from immich_autotag.utils.decorators import conditional_typechecked
 
 # Singleton instance storage
 
-from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
 
 _album_collection_singleton: AlbumCollectionWrapper | None = None
 
+
 @attrs.define(auto_attribs=True, slots=True)
-
 class AlbumCollectionWrapper:
-
 
     _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
@@ -47,7 +45,7 @@ class AlbumCollectionWrapper:
     _collected_duplicates: DuplicateAlbumReports = attrs.field(
         default=attrs.Factory(DuplicateAlbumReports), init=False, repr=False
     )
-    
+
     @typechecked
     def set_albums(self, value: AlbumList) -> None:
         """
@@ -185,7 +183,10 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def _handle_duplicate_album_conflict(
-        self,incoming_album: AlbumResponseWrapper, existing_album: AlbumResponseWrapper, context: str = "ensure_unique"
+        self,
+        incoming_album: AlbumResponseWrapper,
+        existing_album: AlbumResponseWrapper,
+        context: str = "ensure_unique",
     ) -> None:
         """
         Centraliza la lógica de manejo de álbumes duplicados:
@@ -205,7 +206,8 @@ class AlbumCollectionWrapper:
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
             client = AlbumCollectionWrapper.get_client()
             tag_mod_report = AlbumCollectionWrapper.get_modification_report()
-            merge_duplicate_albums(target_album=existing_album,
+            merge_duplicate_albums(
+                target_album=existing_album,
                 collection=self,
                 duplicate_album=incoming_album,
                 client=client,
@@ -677,7 +679,9 @@ class AlbumCollectionWrapper:
         return wrapper
 
     @conditional_typechecked
-    def albums_for_asset(self, asset: AssetResponseWrapper) -> list[AlbumResponseWrapper]:
+    def albums_for_asset(
+        self, asset: AssetResponseWrapper
+    ) -> list[AlbumResponseWrapper]:
         """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map)."""
         return list(self._asset_to_albums_map.get(asset.id, AlbumList()))
 
@@ -859,5 +863,5 @@ class AlbumCollectionWrapper:
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
 
         # Asignamos la lista final a la colección y la devolvemos
-        collection.set_albums( AlbumList(albums_wrapped))
+        collection.set_albums(AlbumList(albums_wrapped))
         return collection
