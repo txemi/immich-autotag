@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -23,7 +24,12 @@ if TYPE_CHECKING:
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
-
+class AssetAlreadyInAlbumError(Exception):
+    """
+    Raised when trying to add an asset to an album and it is already present.
+    This is not a fatal error for most workflows.
+    """
+    pass
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
@@ -196,7 +202,7 @@ class AlbumResponseWrapper:
             return sum(1 for e in self._error_history if e.timestamp >= cutoff)
         except Exception:
             return 0
-
+    @typechecked
     def should_mark_unavailable(
         self, threshold: int | None = None, window_seconds: int | None = None
     ) -> bool:
@@ -456,14 +462,17 @@ class AlbumResponseWrapper:
         client: ImmichClient,
         tag_mod_report: "ModificationReport",
     ) -> None:
+        """
+        Adds an asset to the album. If the asset is already present, raises AssetAlreadyInAlbumError.
+        """
         from immich_client.api.albums import add_assets_to_album
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         from immich_autotag.tags.modification_kind import ModificationKind
 
-        # Avoid adding if already present
-        if asset_wrapper.id in self.get_asset_ids():
-            return
+        # Avoid adding if already present (explicit, clear)
+        if self.has_asset_wrapper(asset_wrapper):
+            raise AssetAlreadyInAlbumError(f"Asset {asset_wrapper.id} is already in album {self.get_album_id()}")
         result = add_assets_to_album.sync(
             id=self.get_album_uuid_no_cache(),
             client=client,
@@ -497,13 +506,10 @@ class AlbumResponseWrapper:
                     # batch will benefit from the fresh data without additional API calls
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
-                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (detected stale cache). Reloading album data for subsequent operations.",
+                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (API duplicate error). Raising AssetAlreadyInAlbumError.",
                             level=LogLevel.FOCUS,
                         )
-                        # Reactive refresh: reload album from API to get fresh data
-                        # This ensures subsequent assets see current state without preventive reloads
                         self.reload_from_api(client)
-
                         tag_mod_report.add_assignment_modification(
                             kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
                             asset_wrapper=asset_wrapper,
@@ -515,7 +521,7 @@ class AlbumResponseWrapper:
                                 "reason": "Stale cached album data detected and reloaded",
                             },
                         )
-                        return
+                        raise AssetAlreadyInAlbumError(f"Asset {asset_wrapper.id} is already in album {self.get_album_id()} (API duplicate error)")
                     else:
                         raise RuntimeError(
                             f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
@@ -552,8 +558,8 @@ class AlbumResponseWrapper:
         from immich_autotag.logging.utils import log
         from immich_autotag.tags.modification_kind import ModificationKind
 
-        # Check if asset is in album first
-        if asset_wrapper.id not in self.get_asset_ids():
+        # Check if asset is in album first (use has_asset_wrapper for clarity)
+        if not self.has_asset_wrapper(asset_wrapper):
             log(
                 f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.get_album_id()}, skipping removal.",
                 level=LogLevel.DEBUG,
@@ -682,7 +688,7 @@ class AlbumResponseWrapper:
 
         for attempt in range(max_retries):
             self.reload_from_api(client)
-            if self.has_asset(asset_wrapper.asset):
+            if self.has_asset_wrapper(asset_wrapper):
                 return  # Success - asset is in album
 
             if attempt < max_retries - 1:
@@ -710,7 +716,7 @@ class AlbumResponseWrapper:
 
         for attempt in range(max_retries):
             self.reload_from_api(client)
-            if not self.has_asset(asset_wrapper.asset):
+            if not self.has_asset_wrapper(asset_wrapper):
                 return  # Success - asset is no longer in album
 
             if attempt < max_retries - 1:
