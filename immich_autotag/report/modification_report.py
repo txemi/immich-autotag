@@ -392,11 +392,9 @@ class ModificationReport:
             }
             and asset_wrapper is not None
         ):
-            if hasattr(asset_wrapper, "get_immich_photo_url"):
-                return asset_wrapper.get_immich_photo_url()
-            asset_id = getattr(asset_wrapper, "id_as_uuid", None)
-            if asset_id is not None:
-                return get_immich_photo_url(asset_id)
+            # The URL must be obtainable for an asset. Do not swallow errors here —
+            # let exceptions surface so the failure can be noticed and fixed.
+            return asset_wrapper.get_immich_photo_url()
         elif (
             kind
             in {
@@ -406,8 +404,8 @@ class ModificationReport:
             }
             and album_wrapper is not None
         ):
-            if hasattr(album_wrapper, "get_immich_album_url"):
-                return album_wrapper.get_immich_album_url()
+            # The album URL must be obtainable; do not swallow exceptions here.
+            return album_wrapper.get_immich_album_url()
         return None
 
     @typechecked
