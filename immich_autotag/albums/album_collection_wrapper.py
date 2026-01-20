@@ -501,6 +501,8 @@ class AlbumCollectionWrapper:
         return
     @typechecked
     def _try_append_wrapper_to_list(
+        self,
+        *,
         albums_list: list[AlbumResponseWrapper],
         wrapper: AlbumResponseWrapper,
         client: ImmichClient | None = None,
@@ -526,7 +528,11 @@ class AlbumCollectionWrapper:
                             return
                     # Duplicado no temporal
                     self._handle_non_temporary_duplicate(
-                        existing, wrapper, tag_mod_report, duplicates_collected, name
+                        existing=existing,
+                        wrapper=wrapper,
+                        tag_mod_report=tag_mod_report,
+                        duplicates_collected=duplicates_collected,
+                        name=name
                     )
                     return
             except Exception:
@@ -867,7 +873,7 @@ class AlbumCollectionWrapper:
                     wrapper=wrapper,
                     client=client,
                     tag_mod_report=tag_mod_report,
-                    duplicates_collected=duplicates_collected,
+                    duplicates_collected=duplicates_collected
                 )
             except RuntimeError:
                 raise
