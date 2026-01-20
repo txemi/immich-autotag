@@ -112,9 +112,14 @@ class AlbumResponseWrapper:
 
     @typechecked
     def ensure_full(self) -> None:
-        if getattr(self, "_unavailable", False):
-            # Album is known to be unavailable; nothing to load.
-            return
+        # If the album has been explicitly marked unavailable, fail fast so
+        # callers become aware and can handle the condition. Do not silently
+        # continue as that hides real problems.
+        if self._unavailable:
+            raise RuntimeError(
+                "Album is marked unavailable; cannot ensure full DTO for this album"
+            )
+
         if not self.is_full:
             self.reload_from_api(self.get_default_client())
 
@@ -218,19 +223,24 @@ class AlbumResponseWrapper:
                     album_name = None
                 # Create a short, safe summary instead of using repr() which
                 # can emit very large DTO dumps (causing huge CI logs).
-                try:
                     try:
-                        assets_attr = getattr(dto_for_repr, "assets", None)
-                        asset_count = (
-                            len(assets_attr) if assets_attr is not None else None
+                        try:
+                            assets_attr = dto_for_repr.assets
+                            asset_count = len(assets_attr) if assets_attr is not None else None
+                        except Exception:
+                            asset_count = None
+
+                        try:
+                            dto_id = dto_for_repr.id
+                        except Exception:
+                            dto_id = None
+
+                        partial_repr = (
+                            f"AlbumDTO(id={dto_id!r}, "
+                            f"name={album_name!r}, assets={asset_count})"
                         )
                     except Exception:
-                        asset_count = None
-
-                    partial_repr = (
-                        f"AlbumDTO(id={getattr(dto_for_repr, 'id', None)!r}, "
-                        f"name={album_name!r}, assets={asset_count})"
-                    )
+                        partial_repr = "<unrepresentable album_partial>"
                 except Exception:
                     partial_repr = "<unrepresentable album_partial>"
             except Exception:
@@ -239,7 +249,10 @@ class AlbumResponseWrapper:
 
             # Determine HTTP status code when available. immich_client's
             # UnexpectedStatus may expose the code; fallback to parsing.
-            status_code = getattr(exc, "status_code", None)
+            try:
+                status_code = exc.status_code
+            except Exception:
+                status_code = None
             if status_code is None:
                 try:
                     msg = str(exc)

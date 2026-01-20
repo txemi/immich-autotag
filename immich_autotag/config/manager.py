@@ -5,7 +5,7 @@ Singleton Manager for the new experimental configuration.
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 import attrs
 import yaml
@@ -160,10 +160,13 @@ class ConfigManager:
             raise TypeError(f"path must be str, Path or None, got {type(path)}")
         import enum
 
-        def enum_representer(dumper, data):
-            return dumper.represent_data(
-                str(data.value) if hasattr(data, "value") else str(data)
-            )
+        @typechecked
+        def enum_representer(dumper: Any, data: "enum.Enum") -> Any:
+            try:
+                rep = str(data.value)
+            except Exception:
+                rep = str(data)
+            return dumper.represent_data(rep)
 
         yaml.add_representer(enum.Enum, enum_representer)
         # Volcado estándar
