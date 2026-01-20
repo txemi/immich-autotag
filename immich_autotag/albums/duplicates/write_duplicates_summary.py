@@ -1,7 +1,9 @@
 import json
 from typing import List
-from immich_autotag.utils.run_output_dir import get_run_output_dir
 
+from typeguard import typechecked
+from immich_autotag.utils.run_output_dir import get_run_output_dir
+@typechecked
 def write_duplicates_summary(_collected_duplicates: List[dict]) -> None:
     """Write collected duplicates to `run_output_dir/albums_duplicates_summary.json` (best-effort)."""
     try:
