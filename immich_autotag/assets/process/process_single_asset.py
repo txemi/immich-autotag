@@ -55,9 +55,9 @@ def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper):
 
     config = ConfigManager.get_instance().config
     if (
-        config
-        and getattr(config, "duplicate_processing", None) is not None
-        and getattr(config.duplicate_processing, "date_correction", None) is not None
+        config is not None
+        and config.duplicate_processing is not None
+        and config.duplicate_processing.date_correction is not None
         and config.duplicate_processing.date_correction.enabled
     ):
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
