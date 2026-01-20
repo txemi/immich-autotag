@@ -8,7 +8,6 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
-from dateutil.relativedelta import relativedelta
 from typeguard import typechecked
 
 from immich_autotag.logging.levels import LogLevel

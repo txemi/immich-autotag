@@ -49,7 +49,7 @@ class CheckpointManager:
             else:
                 skip_n = 0
                 log(
-                    f"[CHECKPOINT] No previous stats found. Starting from the beginning.",
+                    "[CHECKPOINT] No previous stats found. Starting from the beginning.",
                     level=LogLevel.PROGRESS,
                 )
         else:

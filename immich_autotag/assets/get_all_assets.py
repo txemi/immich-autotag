@@ -16,6 +16,9 @@ if TYPE_CHECKING:
 
 @typechecked
 def _fetch_assets_page(context: "ImmichContext", page: int) -> object:
+
+    from immich_autotag.logging.utils import log_debug
+
     body = MetadataSearchDto(page=page)
     log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
     response = search_assets.sync_detailed(client=context.client, body=body)

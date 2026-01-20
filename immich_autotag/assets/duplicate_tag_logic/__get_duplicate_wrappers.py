@@ -1,11 +1,10 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
-from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 

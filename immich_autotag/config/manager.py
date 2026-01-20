@@ -38,7 +38,7 @@ class ConfigManager:
 
             _instance_created = True
             _instance = self
-        except Exception as e:
+        except Exception:
             print("[ConfigManager] Error during config load:")
             traceback.print_exc()
             _instance = None
@@ -84,7 +84,7 @@ class ConfigManager:
             if isinstance(config_obj, UserConfig):
                 self.config = config_obj
             else:
-                print(f"[CONFIG] Validating config object as UserConfig...")
+                print("[CONFIG] Validating config object as UserConfig...")
                 self.config = UserConfig.model_validate(config_obj)
         elif config_type == config_type.__class__.YAML:
             print(f"[CONFIG] Loading YAML config from {config_location.path}")

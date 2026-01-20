@@ -34,7 +34,6 @@ class ServerConfig(BaseModel):
 
 
 # Unified classification rule: can be by tag_names or album_name_patterns
-from typing import Optional
 
 
 class ClassificationRule(BaseModel):

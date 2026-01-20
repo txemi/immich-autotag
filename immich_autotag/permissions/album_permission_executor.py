@@ -7,7 +7,7 @@ Implements complete synchronization: config is source of truth (add + remove).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 from uuid import UUID
 
 from immich_client.api.albums import add_users_to_album as immich_add_users_to_album
@@ -17,7 +17,6 @@ from immich_client.api.albums import (
 )
 from immich_client.api.users import search_users as immich_search_users
 from immich_client.models.add_users_dto import AddUsersDto
-from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole

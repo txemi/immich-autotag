@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import attr
 from typeguard import typechecked

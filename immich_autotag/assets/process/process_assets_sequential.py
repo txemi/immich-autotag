@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import time
-from threading import Lock
 
 from typeguard import typechecked
 
-from immich_autotag.assets.process.perf_log import perf_log
 from immich_autotag.assets.process.process_single_asset import process_single_asset
 from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE

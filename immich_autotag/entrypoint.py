@@ -33,7 +33,6 @@ setup_exception_hook()
 
 @typechecked
 def run_main():
-    import sys
 
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
@@ -111,7 +110,6 @@ def run_main():
         max_assets = None
         process_assets(context, max_assets=max_assets)
 
-    from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
