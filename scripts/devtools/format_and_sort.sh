@@ -50,10 +50,40 @@ if ! "$REPO_ROOT/.venv/bin/python" -c "import isort" 2>/dev/null; then
 	"$REPO_ROOT/.venv/bin/python" -m pip install isort
 fi
 
+# Organize imports with isort using the virtual environment Python
+# Run isort before black, using the 'black' profile for compatibility
+"$REPO_ROOT/.venv/bin/python" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
+
 # Format code with Black using the virtual environment Python
 "$REPO_ROOT/.venv/bin/python" -m black $BLACK_EXCLUDES "$TARGET_DIR"
 
-# Organize imports with isort using the virtual environment Python
-"$REPO_ROOT/.venv/bin/python" -m isort $ISORT_SKIPS "$TARGET_DIR"
-
 echo "Formatting and import sorting completed."
+
+# Optional static checks: flake8 (style/errors) and mypy (type checking)
+echo "[CHECK] Running optional static analyzers: flake8, mypy (if available)"
+
+# Install flake8 if not present
+if ! "$REPO_ROOT/.venv/bin/python" -c "import flake8" 2>/dev/null; then
+	echo "Installing flake8 in the virtual environment..."
+	"$REPO_ROOT/.venv/bin/python" -m pip install flake8
+fi
+
+# Run flake8 with same exclusions
+"$REPO_ROOT/.venv/bin/python" -m flake8 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || {
+	echo "[ERROR] flake8 reported issues. Fix them or run flake8 to see details.";
+	exit 1;
+}
+
+# Install mypy if not present
+if ! "$REPO_ROOT/.venv/bin/python" -c "import mypy" 2>/dev/null; then
+	echo "Installing mypy in the virtual environment..."
+	"$REPO_ROOT/.venv/bin/python" -m pip install mypy
+fi
+
+# Run mypy (ignore missing imports by default to avoid noise from external libs)
+"$REPO_ROOT/.venv/bin/python" -m mypy --ignore-missing-imports "$TARGET_DIR" || {
+	echo "[ERROR] mypy reported type issues. Consider fixing or adjusting mypy config.";
+	exit 1;
+}
+
+echo "Static checks (flake8, mypy) completed successfully."
