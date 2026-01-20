@@ -21,37 +21,23 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
     from immich_autotag.logging.utils import log
 
 
-    checked_dirs = []
-    candidate_caches: list[tuple[datetime, Path]] = []
+    checked_dirs: list[DuplicatesCacheFile] = []
+    candidate_caches: list[DuplicatesCacheFile] = []
     for subdir in find_recent_run_dirs(logs_dir, max_age_hours=max_age_hours):
-        try:
-            # Check directory age to help diagnosis
-            dir_mtime = datetime.fromtimestamp(subdir.stat().st_mtime)
-            dir_age = (datetime.now() - dir_mtime).total_seconds() / 3600.0
-
-            cache = DuplicatesCacheFile(subdir)
-            if cache.exists():
-                mtime = cache.mtime()
-                file_age = cache.age_hours()
-                checked_dirs.append(
-                    f"{subdir.name} (dir_age={dir_age:.2f}h, cache_age={file_age:.2f}h, found=YES)"
-                )
-                candidate_caches.append((mtime, cache.path))
-            else:
-                checked_dirs.append(f"{subdir.name} (dir_age={dir_age:.2f}h, found=NO)")
-        except Exception:
-            checked_dirs.append(f"{subdir} (error checking stats)")
+        cache = DuplicatesCacheFile(subdir)
+        checked_dirs.append(cache)
+        if cache.exists():
+            candidate_caches.append(cache)
 
     log(
         "[DUPLICATES CACHE] Checked directories status:\n"
-        + "\n".join([f" - {d}" for d in checked_dirs]),
+        + "\n".join([f" - {c.status_string()}" for c in checked_dirs]),
         level=LogLevel.PROGRESS,
     )
     if candidate_caches:
-        # Build a simple, safe string representation for logging
         candidate_info = [
-            f"{{'path': '{str(p)}', 'mtime': '{m.strftime('%Y-%m-%d %H:%M:%S')}'}}"
-            for m, p in candidate_caches
+            f"{{'path': '{str(c.path)}', 'mtime': '{c.mtime().strftime('%Y-%m-%d %H:%M:%S')}'}}"
+            for c in candidate_caches
         ]
         log(
             "[DUPLICATES CACHE] Found candidate caches: " + str(candidate_info),
@@ -62,19 +48,20 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
             f"[DUPLICATES CACHE] No candidate {DUPLICATES_CACHE_FILENAME} files found in checked directories.",
             level=LogLevel.PROGRESS,
         )
-    candidate_caches.sort(reverse=True)
+    candidate_caches.sort(key=lambda c: c.mtime(), reverse=True)
     now = datetime.now()
-    for mtime, cache_file in candidate_caches:
+    for cache in candidate_caches:
+        mtime = cache.mtime()
         age_hours = (now - mtime).total_seconds() / 3600.0
         if now - mtime < timedelta(hours=max_age_hours):
             log(
-                f"[DUPLICATES CACHE] Using cache {cache_file} (age: {age_hours:.2f}h, threshold: {max_age_hours}h)",
+                f"[DUPLICATES CACHE] Using cache {cache.path} (age: {age_hours:.2f}h, threshold: {max_age_hours}h)",
                 level=LogLevel.PROGRESS,
             )
-            return cache_file
+            return cache.path
         else:
             log(
-                f"[DUPLICATES CACHE] Skipped cache {cache_file} (too old: {age_hours:.2f}h, threshold: {max_age_hours}h)",
+                f"[DUPLICATES CACHE] Skipped cache {cache.path} (too old: {age_hours:.2f}h, threshold: {max_age_hours}h)",
                 level=LogLevel.PROGRESS,
             )
     log(
