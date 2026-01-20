@@ -514,24 +514,34 @@ class AlbumCollectionWrapper:
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
-            if hasattr(exc, "response") and hasattr(exc.response, "status_code"):
-                code = getattr(exc.response, "status_code", None)
+            code_checked = False
+            try:
+                code = (
+                    exc.response.status_code
+                )  # Explicit access, will raise if not present
                 if code == 404:
                     err_reason = "Album not found (already deleted)"
+                    code_checked = True
                 elif code == 400:
                     err_reason = "Album not empty or bad request"
+                    code_checked = True
                 elif code == 403:
                     err_reason = "Permission denied"
+                    code_checked = True
                 else:
                     err_reason = f"HTTP {code}"
-            elif "not found" in msg.lower():
-                err_reason = "Album not found (already deleted)"
-            elif "not empty" in msg.lower():
-                err_reason = "Album not empty"
-            elif "permission" in msg.lower() or "forbidden" in msg.lower():
-                err_reason = "Permission denied"
-            else:
-                err_reason = "Unknown error"
+                    code_checked = True
+            except AttributeError:
+                pass
+            if not code_checked:
+                if "not found" in msg.lower():
+                    err_reason = "Album not found (already deleted)"
+                elif "not empty" in msg.lower():
+                    err_reason = "Album not empty"
+                elif "permission" in msg.lower() or "forbidden" in msg.lower():
+                    err_reason = "Permission denied"
+                else:
+                    err_reason = "Unknown error"
             log(
                 f"Failed to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). Reason: {err_reason}. Exception: {msg}",
                 level=LogLevel.WARNING,
