@@ -466,7 +466,7 @@ class AlbumCollectionWrapper:
         Returns a list of empty temporary albums to be removed after building the map.
         """
         albums_to_remove: list[AlbumResponseWrapper] = []
-        for album_wrapper in self.get_albums()  :
+        for album_wrapper in self.get_albums():
             if not album_wrapper.get_asset_ids() and is_temporary_album(
                 album_wrapper.get_album_name()
             ):
@@ -672,7 +672,7 @@ class AlbumCollectionWrapper:
         """
         name = wrapper.get_album_name()
         # Check for existing album with same name
-        for existing in list(self.get_albums()  ):
+        for existing in list(self.get_albums()):
             try:
                 if existing.get_album_name() == name:
                     # Duplicate found

@@ -8,7 +8,6 @@ from enum import Enum
 from typing import List, Optional
 
 
-
 # Enum for conversion mode
 # Enum for conversion mode
 class ConversionMode(str, Enum):

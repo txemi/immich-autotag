@@ -1,9 +1,10 @@
 from typing import Iterable, Iterator
 
+from typeguard import typechecked
+
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 
-from typeguard import typechecked
 class AlbumList:
     def __init__(self, albums: Iterable[AlbumResponseWrapper] = ()):  # default empty
         self._albums = list(albums)
