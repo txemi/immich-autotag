@@ -43,3 +43,13 @@ MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best perf
 
 # Ejemplo de uso interno:
 DEFAULT_ERROR_MODE = ErrorHandlingMode.DEVELOPMENT
+
+# Album error handling thresholds (tunable)
+# Number of errors in the window required to mark an album unavailable
+ALBUM_ERROR_THRESHOLD = 3
+# Window (seconds) in which errors are counted for the threshold (default: 24 hours)
+ALBUM_ERROR_WINDOW_SECONDS = 24 * 3600
+# Global threshold: if this many albums are marked unavailable during a run,
+# take global action (in DEVELOPMENT this causes fail-fast; in PRODUCTION we
+# log a summary). Default is an absolute count.
+GLOBAL_UNAVAILABLE_THRESHOLD = 5

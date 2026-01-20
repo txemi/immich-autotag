@@ -34,6 +34,13 @@ class AlbumResponseWrapper:
     _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
     # Explicit cache for asset ids. Use get_asset_ids() to access.
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
+    # If True, the album is known to be unavailable (deleted or no access).
+    # When unavailable we avoid API reload attempts and treat asset list as empty.
+    _unavailable: bool = attrs.field(default=False, init=False)
+    # Recent error history for this album: list of AlbumErrorEntry objects
+    _error_history: list["AlbumErrorEntry"] = attrs.field(
+        default=attrs.Factory(list), init=False, repr=False
+    )
 
     def __attrs_post_init__(self) -> None:
         """
@@ -44,6 +51,26 @@ class AlbumResponseWrapper:
             raise ValueError(
                 "AlbumResponseWrapper must be constructed with either a partial or full DTO"
             )
+
+    def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
+        """Equality based on album id when possible."""
+        if not isinstance(other, AlbumResponseWrapper):
+            return False
+        try:
+            return self.get_album_id() == other.get_album_id()
+        except Exception:
+            return False
+
+    def __hash__(self) -> int:  # pragma: no cover - trivial
+        """Hash by album id when available; fallback to object id.
+
+        This allows storing wrappers in sets while reasoning by identity via
+        the album id (which is stable and unique per album).
+        """
+        try:
+            return hash(self.get_album_id())
+        except Exception:
+            return object.__hash__(self)
 
     @staticmethod
     @typechecked
@@ -85,16 +112,22 @@ class AlbumResponseWrapper:
 
     @typechecked
     def ensure_full(self) -> None:
+        if getattr(self, "_unavailable", False):
+            # Album is known to be unavailable; nothing to load.
+            return
         if not self.is_full:
             self.reload_from_api(self.get_default_client())
 
+    @typechecked
     def _get_partial(self) -> AlbumResponseDto:
         assert self._album_partial is not None
         return self._album_partial
 
+    @typechecked
     def _get_full(self) -> AlbumResponseDto:
         return self._get_album_full_or_load()
 
+    @typechecked
     def _active_dto(self) -> AlbumResponseDto:
         """Return the DTO currently held by the wrapper (partial or full).
 
@@ -110,11 +143,59 @@ class AlbumResponseWrapper:
     def _set_album_full(self, value: AlbumResponseDto) -> None:
         self._album_full = value
 
+    @typechecked
     def invalidate_cache(self) -> None:
         try:
             self._asset_ids_cache = None
         except Exception:
             pass
+
+    @typechecked
+    def record_error(self, error_code: str, message: str) -> None:
+        """Record an error event for this album and prune old entries.
+
+        The window for pruning is taken from config `ALBUM_ERROR_WINDOW_SECONDS`.
+        """
+        try:
+            import time
+
+            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
+            from immich_autotag.albums.album_error_entry import AlbumErrorEntry
+
+            now = time.time()
+            self._error_history.append(AlbumErrorEntry(timestamp=now, code=error_code, message=str(message)))
+            cutoff = now - int(ALBUM_ERROR_WINDOW_SECONDS)
+            # Keep only recent entries
+            self._error_history = [e for e in self._error_history if e.timestamp >= cutoff]
+        except Exception:
+            # Never let recording errors raise and break higher-level flows
+            pass
+
+    @typechecked
+    def error_count(self, window_seconds: int | None = None) -> int:
+        try:
+            import time
+
+            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
+
+            window = int(window_seconds) if window_seconds is not None else int(
+                ALBUM_ERROR_WINDOW_SECONDS
+            )
+            cutoff = time.time() - window
+            return sum(1 for e in self._error_history if e.timestamp >= cutoff)
+        except Exception:
+            return 0
+
+    def should_mark_unavailable(
+        self, threshold: int | None = None, window_seconds: int | None = None
+    ) -> bool:
+        try:
+            from immich_autotag.config.internal_config import ALBUM_ERROR_THRESHOLD
+
+            th = int(threshold) if threshold is not None else int(ALBUM_ERROR_THRESHOLD)
+            return self.error_count(window_seconds) >= th
+        except Exception:
+            return False
 
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> None:
@@ -156,6 +237,90 @@ class AlbumResponseWrapper:
                 album_name = None
                 partial_repr = "<unrepresentable album_partial>"
 
+            # Determine HTTP status code when available. immich_client's
+            # UnexpectedStatus may expose the code; fallback to parsing.
+            status_code = getattr(exc, "status_code", None)
+            if status_code is None:
+                try:
+                    msg = str(exc)
+                    if "status code: 400" in msg or "Unexpected status code: 400" in msg:
+                        status_code = 400
+                except Exception:
+                    status_code = None
+
+            # Handle 400 (Not found / no access) as a non-fatal condition:
+            # mark album unavailable and continue. This prevents failing the
+            # whole run when some albums are no longer accessible.
+            if status_code == 400:
+                # Record the recoverable error and decide whether to mark unavailable
+                try:
+                    self.record_error("HTTP_400", str(exc))
+                except Exception:
+                    pass
+
+                # Log a concise warning including the current recent error count
+                try:
+                    current_count = self.error_count()
+                except Exception:
+                    current_count = None
+                log(
+                    (
+                        f"[WARN] get_album_info returned 400 for album id={self.get_album_id()!r} "
+                        f"name={album_name!r}. Recorded recoverable error (count={current_count}). "
+                        f"album_partial={partial_repr}"
+                    ),
+                    level=LogLevel.WARN,
+                )
+
+                # If the recent error count exceeds configured threshold, mark unavailable
+                try:
+                    from immich_autotag.config.internal_config import (
+                        ALBUM_ERROR_THRESHOLD,
+                        ALBUM_ERROR_WINDOW_SECONDS,
+                    )
+
+                    if self.should_mark_unavailable(ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS):
+                        try:
+                            self._unavailable = True
+                        except Exception:
+                            pass
+                        # Clear any cached assets
+                        self.invalidate_cache()
+                        # Report the event to the modification report
+                        try:
+                            from immich_autotag.report.modification_report import (
+                                ModificationReport,
+                            )
+                            from immich_autotag.tags.modification_kind import ModificationKind
+
+                            tag_mod_report = ModificationReport.get_instance()
+                            tag_mod_report.add_error_modification(
+                                kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
+                                album= self,
+                                error_message=partial_repr,
+                                error_category="HTTP_400",
+                                extra={"recent_errors": len(self._error_history)},
+                            )
+                        except Exception:
+                            pass
+                        # Notify the global collection about this album state change
+                        try:
+                            from immich_autotag.albums.album_collection_wrapper import (
+                                AlbumCollectionWrapper,
+                            )
+
+                            AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(
+                                self
+                            )
+                        except Exception:
+                            pass
+                        return
+                except Exception:
+                    # If config lookup fails or check fails, be conservative and do not mark unavailable
+                    pass
+                # Otherwise, do not mark unavailable yet; continue without raising
+
+            # Other unexpected statuses are treated as fatal and re-raised.
             log(
                 (
                     f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "

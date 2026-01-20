@@ -33,6 +33,12 @@ class AlbumCollectionWrapper:
         factory=AssetToAlbumsMap,
         validator=attrs.validators.instance_of(AssetToAlbumsMap),
     )
+    # Count of albums marked unavailable during this run
+    _unavailable_count: int = attrs.field(default=0, init=False, repr=False)
+    # Track unavailable album wrappers to avoid double-counting
+    _unavailable_albums: set[AlbumResponseWrapper] = attrs.field(
+        default=attrs.Factory(set), init=False, repr=False
+    )
 
     def __attrs_post_init__(self):
         global _album_collection_singleton
@@ -104,6 +110,137 @@ class AlbumCollectionWrapper:
                 level=LogLevel.FOCUS,
             )
         return removed
+
+    @typechecked
+    def notify_album_marked_unavailable(self, album_wrapper: AlbumResponseWrapper) -> None:
+        """Notify collection that an album was marked unavailable.
+
+        This updates internal counters and triggers a global policy evaluation.
+        """
+        try:
+            album_id = album_wrapper.get_album_id()
+        except Exception:
+            album_id = None
+        if album_id is None:
+            return
+        # Use wrapper identity (by album id) for membership; avoid double-counting
+        if album_wrapper in self._unavailable_albums:
+            return
+        self._unavailable_albums.add(album_wrapper)
+        try:
+            self._unavailable_count += 1
+        except Exception:
+            self._unavailable_count = len(self._unavailable_albums)
+
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(
+            f"Album {album_id} marked unavailable (total_unavailable={self._unavailable_count}).",
+            level=LogLevel.FOCUS,
+        )
+
+        # Evaluate global policy after this change
+        try:
+            self._evaluate_global_policy()
+        except Exception:
+            # Bubble up in development mode, otherwise swallow to continue processing
+            raise
+
+    @typechecked
+    def _ensure_unique_album_name(self, album_name: str) -> None:
+        """Ensure no other album in the collection has the same name.
+
+        Raises RuntimeError if a duplicate name is found. This enforces stricter
+        correctness to avoid ambiguity in operations that rely on album names.
+        """
+        for w in self.albums:
+            try:
+                if w.get_album_name() == album_name:
+                    raise RuntimeError(
+                        f"Duplicate album name detected when adding album: {album_name!r}"
+                    )
+            except Exception:
+                # If a wrapper misbehaves retrieving name, fail fast
+                raise
+
+    @typechecked
+    def write_unavailable_summary(self) -> None:
+        """Write a small JSON summary of unavailable albums for operator inspection."""
+        try:
+            import json
+            from immich_autotag.utils.run_output_dir import get_run_output_dir
+
+            summary_items = []
+            for wrapper in sorted(self._unavailable_albums, key=lambda w: w.get_album_id() if hasattr(w, 'get_album_id') else ''):
+                try:
+                    album_id = wrapper.get_album_id()
+                except Exception:
+                    album_id = None
+                try:
+                    name = wrapper.get_album_name()
+                except Exception:
+                    name = None
+                summary_items.append({"id": album_id, "name": name})
+
+            out_dir = get_run_output_dir()
+            out_dir.mkdir(parents=True, exist_ok=True)
+            out_file = out_dir / "albums_unavailable_summary.json"
+            with out_file.open("w", encoding="utf-8") as fh:
+                json.dump({"count": len(summary_items), "albums": summary_items}, fh, indent=2)
+        except Exception:
+            # Best-effort summary; don't raise
+            pass
+
+    @typechecked
+    def _evaluate_global_policy(self) -> None:
+        """Evaluate global unavailable-albums policy and act according to config.
+
+        In DEVELOPMENT mode this may raise to fail-fast. In PRODUCTION it logs and
+        records a summary event.
+        """
+        try:
+            from immich_autotag.config.internal_config import (
+                GLOBAL_UNAVAILABLE_THRESHOLD,
+                DEFAULT_ERROR_MODE,
+            )
+            from immich_autotag.config._internal_types import ErrorHandlingMode
+            from immich_autotag.report.modification_report import ModificationReport
+            from immich_autotag.tags.modification_kind import ModificationKind
+        except Exception:
+            return
+
+        try:
+            threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
+        except Exception:
+            return
+
+        if self._unavailable_count >= threshold:
+            # In development: fail fast to surface systemic problems
+            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+                raise RuntimeError(
+                    f"Too many albums marked unavailable during run: {self._unavailable_count} >= {threshold}. Failing fast (DEVELOPMENT mode)."
+                )
+
+            # In production: record a summary event and continue
+            try:
+                tag_mod_report = ModificationReport.get_instance()
+                tag_mod_report.add_error_modification(
+                    kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
+                    error_message=f"global unavailable threshold exceeded: {self._unavailable_count} >= {threshold}",
+                    error_category="GLOBAL_THRESHOLD",
+                    extra={
+                        "unavailable_count": self._unavailable_count,
+                        "threshold": threshold,
+                    },
+                )
+                # Write a small summary file for operator inspection
+                try:
+                    self.write_unavailable_summary()
+                except Exception:
+                    pass
+            except Exception:
+                pass
 
     @typechecked
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
@@ -258,10 +395,12 @@ class AlbumCollectionWrapper:
         Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.
         Updates the internal collection if created.
         """
-        # Search for existing album
+        # Search for existing album; fail fast if a duplicate name exists
         for album_wrapper in self.albums:
             if album_wrapper.get_album_name() == album_name:
-                return album_wrapper
+                raise RuntimeError(
+                    f"Attempt to create album with duplicate name: {album_name!r}"
+                )
 
         # If it does not exist, create and assign user
         from uuid import UUID
@@ -305,6 +444,12 @@ class AlbumCollectionWrapper:
                     f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
                 ) from e
         wrapper = AlbumResponseWrapper(album_partial=album)
+        # Ensure uniqueness by name before adding
+        try:
+            self._ensure_unique_album_name(wrapper.get_album_name())
+        except Exception:
+            # If uniqueness fails, raise - fail-fast as requested
+            raise
         # Update internal collection (since it's frozen, must rebuild)
         self.albums.append(wrapper)
         if tag_mod_report:
@@ -344,10 +489,16 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.utils import log
 
         log("Albums:", level=LogLevel.INFO)
+        seen_names: set[str] = set()
         for album in albums:
             # Create wrapper with partial album data (no assets fetched yet)
             # Assets will be fetched lazily when needed
             wrapper = AlbumResponseWrapper(album_partial=album)
+            # Enforce unique album names on initial load to avoid ambiguity
+            name = wrapper.get_album_name()
+            if name in seen_names:
+                raise RuntimeError(f"Duplicate album name detected during initial load: {name!r}")
+            seen_names.add(name)
             log(
                 f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
                 level=LogLevel.DEBUG,
