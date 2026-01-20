@@ -1,4 +1,3 @@
-def collect_duplicate(_collected_duplicates: list, existing: Optional[AlbumResponseWrapper], incoming: Optional[AlbumResponseWrapper], reason: str = "duplicate_name") -> None:
 from typing import Optional, List
 from typeguard import typechecked
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper

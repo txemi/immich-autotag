@@ -1,0 +1,39 @@
+from typeguard import typechecked
+from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.duplicates.mover import move_assets_between_albums
+from immich_autotag.types import ImmichClient
+from immich_autotag.report.modification_report import ModificationReport
+@typechecked
+def merge_duplicate_albums(
+    collection: "AlbumCollectionWrapper",
+    duplicate_album: AlbumResponseWrapper,
+    target_album_name: str,
+    client: ImmichClient | None = None,
+    tag_mod_report: ModificationReport | None = None,
+) -> None:
+    """
+    Merge all assets from the duplicate album into the target album (by name),
+    then delete the duplicate album from the collection and server.
+    """
+    if client is None:
+        raise RuntimeError("merge_duplicate_albums requires a valid ImmichClient instance.")
+    # Find the target album by name
+    target_album = None
+    for album in collection.albums:
+        if album.get_album_name() == target_album_name:
+            target_album = album
+            break
+    if target_album is None:
+        raise RuntimeError(f"Target album '{target_album_name}' not found in collection.")
+    # Move assets from duplicate to target
+    move_assets_between_albums(target_album, duplicate_album, client, tag_mod_report)
+    # Remove duplicate album from server and collection
+    collection.remove_album(duplicate_album, client)
+    if tag_mod_report:
+        from immich_autotag.tags.modification_kind import ModificationKind
+        tag_mod_report.add_album_modification(
+            kind=ModificationKind.DELETE_ALBUM,
+            album=duplicate_album,
+            old_value=duplicate_album.get_album_name(),
+            extra={"reason": "Merged and deleted duplicate album"},
+        )
