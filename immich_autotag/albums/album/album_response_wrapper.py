@@ -59,7 +59,8 @@ class AlbumResponseWrapper:
         if self._album_partial is None and self._album_full is None:
             raise ValueError(
                 (
-                    "AlbumResponseWrapper must be constructed with either a partial or full DTO"
+                    "AlbumResponseWrapper must be constructed with either a partial or "
+                    "full DTO"
                 )
             )
 
@@ -516,7 +517,8 @@ class AlbumResponseWrapper:
                     # batch will benefit from the fresh data without additional API calls.
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
-                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (API duplicate error). Raising AssetAlreadyInAlbumError.",
+                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} "
+                            f"(API duplicate error). Raising AssetAlreadyInAlbumError.",
                             level=LogLevel.FOCUS,
                         )
                         self.reload_from_api(client)
@@ -631,7 +633,7 @@ class AlbumResponseWrapper:
                                 removed = collection.remove_album_local(self)
                                 log(
                                     f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') "
-                                    "removed from collection due to not_found error during asset removal.",
+                                    f"removed from collection due to not_found error during asset removal.",
                                     level=LogLevel.FOCUS,
                                 )
                             except Exception as e:

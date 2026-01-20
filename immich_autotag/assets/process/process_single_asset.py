@@ -80,9 +80,7 @@ def _analyze_and_assign_album(
 ):
     """Analyze and assign the asset to an album if needed."""
     log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
-    analyze_and_assign_album(
-        asset_wrapper, tag_mod_report
-    )
+    analyze_and_assign_album(asset_wrapper, tag_mod_report)
 
 
 @typechecked
@@ -116,9 +114,7 @@ def process_single_asset(
     _correct_date_if_enabled(asset_wrapper)
     _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
-    _analyze_and_assign_album(
-        asset_wrapper, tag_mod_report
-    )
+    _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     _ = asset_wrapper.validate_and_update_classification()
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
