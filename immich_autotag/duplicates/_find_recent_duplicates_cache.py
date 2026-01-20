@@ -49,11 +49,9 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
             level=LogLevel.PROGRESS,
         )
     candidate_caches.sort(key=lambda c: c.mtime(), reverse=True)
-    now = datetime.now()
     for cache in candidate_caches:
-        mtime = cache.mtime()
-        age_hours = (now - mtime).total_seconds() / 3600.0
-        if now - mtime < timedelta(hours=max_age_hours):
+        age_hours = cache.age_hours_from()
+        if cache.is_fresh(max_age_hours):
             log(
                 f"[DUPLICATES CACHE] Using cache {cache.path} (age: {age_hours:.2f}h, threshold: {max_age_hours}h)",
                 level=LogLevel.PROGRESS,

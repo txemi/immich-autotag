@@ -1,4 +1,5 @@
 
+
 import attr
 from typeguard import typechecked
 from pathlib import Path
@@ -59,3 +60,13 @@ class DuplicatesCacheFile:
                 return f"{self.directory.name} (dir_age={self.dir_age_hours:.2f}h, found=NO)"
         except Exception:
             return f"{self.directory} (error checking stats)"
+    @typechecked
+    def is_fresh(self, max_age_hours: float) -> bool:
+        """Return True if the cache file is newer than the given threshold in hours."""
+        return self.age_hours_from() < max_age_hours
+    @typechecked
+    def age_hours_from(self, now: datetime = None) -> float:
+        """Return the age in hours from now (or a given datetime) to the file's mtime."""
+        if now is None:
+            now = datetime.now()
+        return (now - self.mtime()).total_seconds() / 3600.0        
