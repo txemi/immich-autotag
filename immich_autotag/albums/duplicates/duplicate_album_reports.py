@@ -1,11 +1,14 @@
-from typing import List, Dict, Iterator, Any
+from typing import Any, Dict, Iterator, List
+
 import attrs
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class DuplicateAlbumReports:
     """
     Encapsula la lista de diccionarios de duplicados de álbumes para un manejo más claro y seguro.
     """
+
     items: List[Dict[str, Any]] = attrs.field(factory=list)
 
     def append(self, item: Dict[str, Any]) -> None:

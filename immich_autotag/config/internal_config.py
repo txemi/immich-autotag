@@ -1,14 +1,13 @@
-
 # internal_config.py
 # Centralizes internal variables and global project configuration.
 
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
 
+import attrs
 from typeguard import typechecked
 
 from ._internal_types import ErrorHandlingMode
-import attrs
 
 
 @attrs.define(auto_attribs=True, slots=True, on_setattr=attrs.setters.validate)
@@ -64,4 +63,6 @@ GLOBAL_UNAVAILABLE_THRESHOLD = 5
 
 
 # Flag para activar/desactivar la funcionalidad de combinar álbumes con el mismo nombre
-MERGE_DUPLICATE_ALBUMS_ENABLED = True  # Cambia a True para activar la combinación de álbumes duplicados
+MERGE_DUPLICATE_ALBUMS_ENABLED = (
+    True  # Cambia a True para activar la combinación de álbumes duplicados
+)

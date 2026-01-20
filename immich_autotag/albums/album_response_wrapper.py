@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -24,12 +23,16 @@ if TYPE_CHECKING:
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
+
 class AssetAlreadyInAlbumError(Exception):
     """
     Raised when trying to add an asset to an album and it is already present.
     This is not a fatal error for most workflows.
     """
+
     pass
+
+
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
@@ -202,6 +205,7 @@ class AlbumResponseWrapper:
             return sum(1 for e in self._error_history if e.timestamp >= cutoff)
         except Exception:
             return 0
+
     @typechecked
     def should_mark_unavailable(
         self, threshold: int | None = None, window_seconds: int | None = None
@@ -472,7 +476,9 @@ class AlbumResponseWrapper:
 
         # Avoid adding if already present (explicit, clear)
         if self.has_asset_wrapper(asset_wrapper):
-            raise AssetAlreadyInAlbumError(f"Asset {asset_wrapper.id} is already in album {self.get_album_id()}")
+            raise AssetAlreadyInAlbumError(
+                f"Asset {asset_wrapper.id} is already in album {self.get_album_id()}"
+            )
         result = add_assets_to_album.sync(
             id=self.get_album_uuid_no_cache(),
             client=client,
@@ -521,7 +527,9 @@ class AlbumResponseWrapper:
                                 "reason": "Stale cached album data detected and reloaded",
                             },
                         )
-                        raise AssetAlreadyInAlbumError(f"Asset {asset_wrapper.id} is already in album {self.get_album_id()} (API duplicate error)")
+                        raise AssetAlreadyInAlbumError(
+                            f"Asset {asset_wrapper.id} is already in album {self.get_album_id()} (API duplicate error)"
+                        )
                     else:
                         raise RuntimeError(
                             f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
