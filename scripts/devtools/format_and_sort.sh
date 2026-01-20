@@ -42,6 +42,13 @@ fi
 extract_line_length() {
 	grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
 }
+# NOTA IMPORTANTE SOBRE max-line-length Y FLAKE8:
+# ------------------------------------------------
+# El valor de ancho de línea (line-length) se extrae de pyproject.toml y se usa para Black, isort, ruff y flake8.
+# Sin embargo, flake8 no lee pyproject.toml por sí mismo: si ejecutas flake8 manualmente, usará el valor de .flake8.
+# Si usas este script, el valor se pasa a flake8 por argumento y todo queda sincronizado.
+# Solo hay riesgo de desincronización si editas pyproject.toml y .flake8 por separado y ejecutas flake8 a mano.
+
 MAX_LINE_LENGTH=$(extract_line_length "$REPO_ROOT/pyproject.toml")
 if [ -z "$MAX_LINE_LENGTH" ]; then
 	echo "[WARN] No se pudo extraer line-length de pyproject.toml, usando 88 por defecto."
