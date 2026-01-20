@@ -80,7 +80,8 @@ def _generate_links(config: UserConfig) -> List[str]:
         links.append(f"- [{label}]({url})")
 
     links.append(
-        "\nFor configuration details, see: [README_config.md](https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/README_config.md)"
+        "\nFor configuration details, see: [README_config.md](https://github.com/txemi/"
+        "immich-autotag/blob/main/immich_autotag/config/README_config.md)"
     )
     return links
 
@@ -92,7 +93,8 @@ def _print_links_to_console(config: UserConfig, links: List[str]) -> None:
     for line in links:
         if line.startswith("- [Albums]"):
             print(
-                f"- Albums:        http://{config.server.host}:{config.server.port}/albums"
+                f"- Albums:        http://{config.server.host}:"
+                f"{config.server.port}/albums"
             )
         elif line.startswith("- ["):
             # Extract label and url for pretty print
@@ -104,7 +106,8 @@ def _print_links_to_console(config: UserConfig, links: List[str]) -> None:
                 print(f"- {label}: {url}")
     print("\nFor configuration details, see:")
     print(
-        "https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/README_config.md\n"
+        "https://github.com/txemi/immich-autotag/blob/main/"
+        "immich_autotag/config/README_config.md\n"
     )
 
 
