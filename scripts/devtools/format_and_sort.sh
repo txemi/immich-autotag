@@ -135,6 +135,13 @@ if grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --e
 	exit 2
 fi
 
+# Policy enforcement: disallow returning tuple literals or annotated Tuple types
+echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
+"$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
+    echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses.";
+    exit 3;
+}
+
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
 "$PY_BIN" -m flake8 --max-line-length=88 --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
