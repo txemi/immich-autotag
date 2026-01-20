@@ -1,10 +1,11 @@
-from typing import Optional, List
+from typing import Optional
 from typeguard import typechecked
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReports
 
 @typechecked
 def collect_duplicate(
-    _collected_duplicates: List[dict],
+    _collected_duplicates: DuplicateAlbumReports,
     existing: Optional[AlbumResponseWrapper],
     incoming: Optional[AlbumResponseWrapper],
     reason: str = "duplicate_name",
