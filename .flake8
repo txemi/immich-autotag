@@ -1,7 +1,7 @@
-# ATENCIÓN: El valor de max-line-length debe estar sincronizado con pyproject.toml.
-# Flake8 no lee pyproject.toml, así que si se ejecuta flake8 manualmente usará este valor.
-# Si usas el script de formateo, el valor se extrae automáticamente de pyproject.toml y se pasa por argumento.
-# Solo hay riesgo de desincronización si ejecutas flake8 manualmente.
+# WARNING: The max-line-length value must be kept in sync with pyproject.toml.
+# Flake8 does not read pyproject.toml, so if you run flake8 manually it will use this value.
+# If you use the formatting script, the value is extracted from pyproject.toml and passed as an argument.
+# There is only a risk of desynchronization if you run flake8 manually.
 [flake8]
 # Explicitly synchronized with Black and isort for maximum automation and legibility.
 # If you change this, update pyproject.toml as well.
