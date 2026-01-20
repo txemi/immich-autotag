@@ -328,6 +328,172 @@ class AlbumCollectionWrapper:
                     raise
         return asset_map
 
+    @staticmethod
+    def _try_append_wrapper_to_list(
+        albums_list: list[AlbumResponseWrapper],
+        wrapper: AlbumResponseWrapper,
+        client: ImmichClient | None = None,
+        tag_mod_report: ModificationReport | None = None,
+    ) -> None:
+        """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
+
+        If a duplicate name exists and it's a temporary album, attempt to delete the duplicate on
+        the server (if `client` is provided) and skip adding. If it's a non-temporary duplicate,
+        raise RuntimeError. This centralizes duplicate detection used during initial load and
+        during runtime album creation.
+        """
+        name = wrapper.get_album_name()
+        # Check existing names
+        for existing in albums_list:
+            try:
+                if existing.get_album_name() == name:
+                    # Duplicate detected
+                    try:
+                        if is_temporary_album(name) and client is not None:
+                            from uuid import UUID
+                            from immich_client.api.albums.delete_album import (
+                                sync_detailed as delete_album_sync,
+                            )
+
+                            try:
+                                # Attempt to delete the duplicate temporary album on the server.
+                                delete_album_sync(id=UUID(wrapper.get_album_id()), client=client)
+                                # Log deletion and record modification if available
+                                from immich_autotag.logging.levels import LogLevel
+                                from immich_autotag.logging.utils import log
+
+                                log(
+                                    f"Temporary duplicate album '{name}' (id={wrapper.get_album_id()}) deleted during add.",
+                                    level=LogLevel.FOCUS,
+                                )
+                                if tag_mod_report is not None:
+                                    try:
+                                        from immich_autotag.tags.modification_kind import ModificationKind
+
+                                        tag_mod_report.add_album_modification(
+                                            kind=ModificationKind.DELETE_ALBUM,
+                                            album=AlbumResponseWrapper.from_partial_dto(
+                                                wrapper._active_dto()
+                                            ),
+                                            old_value=name,
+                                            extra={
+                                                "reason": "Removed duplicate temporary album during add"
+                                            },
+                                        )
+                                    except Exception:
+                                        pass
+                                # Skip adding this wrapper
+                                return
+                            except Exception:
+                                # Deletion failed: log and skip to avoid aborting startup
+                                from immich_autotag.logging.levels import LogLevel
+                                from immich_autotag.logging.utils import log
+
+                                log(
+                                    f"Failed to delete temporary duplicate album '{name}' (id={wrapper.get_album_id()}) during add. Skipping.",
+                                    level=LogLevel.WARNING,
+                                )
+                                return
+                        # Not temporary or no client: cannot resolve automatically
+                        raise RuntimeError(
+                            f"Duplicate album name detected when adding album: {name!r}"
+                        )
+                    except RuntimeError:
+                        raise
+                    except Exception:
+                        # Any other error: treat as fatal duplicate
+                        raise RuntimeError(
+                            f"Duplicate album name detected when adding album: {name!r}"
+                        )
+            except Exception:
+                # If existing wrapper misbehaves, fail fast
+                raise
+        # No duplicate: append
+        albums_list.append(wrapper)
+
+    @typechecked
+    def add_album_wrapper(
+        self,
+        wrapper: AlbumResponseWrapper,
+        client: ImmichClient | None = None,
+        tag_mod_report: ModificationReport | None = None,
+    ) -> AlbumResponseWrapper:
+        """Add a wrapper to this collection with centralized duplicate handling.
+
+        If a duplicate exists and is temporary, attempt to delete it on the server
+        and remove it locally before adding the provided wrapper. If duplicate is
+        non-temporary, raise RuntimeError.
+        """
+        name = wrapper.get_album_name()
+        # Check for existing album with same name
+        for existing in list(self.albums):
+            try:
+                if existing.get_album_name() == name:
+                    # Duplicate found
+                    try:
+                        if is_temporary_album(name) and client is not None:
+                            from uuid import UUID
+                            from immich_client.api.albums.delete_album import (
+                                sync_detailed as delete_album_sync,
+                            )
+
+                            try:
+                                delete_album_sync(id=UUID(existing.get_album_id()), client=client)
+                                # Remove from local collection
+                                self._remove_album_from_local_collection(existing)
+                                from immich_autotag.logging.levels import LogLevel
+                                from immich_autotag.logging.utils import log
+
+                                log(
+                                    f"Temporary duplicate album '{name}' (id={existing.get_album_id()}) deleted during add and removed from local collection.",
+                                    level=LogLevel.FOCUS,
+                                )
+                                if tag_mod_report is not None:
+                                    try:
+                                        from immich_autotag.tags.modification_kind import ModificationKind
+
+                                        tag_mod_report.add_album_modification(
+                                            kind=ModificationKind.DELETE_ALBUM,
+                                            album=existing,
+                                            old_value=name,
+                                            extra={"reason": "Removed duplicate temporary album during add"},
+                                        )
+                                    except Exception:
+                                        pass
+                                break
+                            except Exception:
+                                # Deletion failed: log and skip deletion, but do not abort
+                                from immich_autotag.logging.levels import LogLevel
+                                from immich_autotag.logging.utils import log
+
+                                log(
+                                    f"Failed to delete temporary duplicate album '{name}' (id={existing.get_album_id()}) during add. Skipping deletion.",
+                                    level=LogLevel.WARNING,
+                                )
+                                # Attempt to continue by removing locally to avoid failing startup
+                                try:
+                                    self._remove_album_from_local_collection(existing)
+                                except Exception:
+                                    pass
+                                break
+                        # Not temporary or no client: cannot resolve automatically
+                        raise RuntimeError(f"Duplicate album name detected when adding album: {name!r}")
+                    except RuntimeError:
+                        raise
+                    except Exception:
+                        raise RuntimeError(f"Duplicate album name detected when adding album: {name!r}")
+            except Exception:
+                # If existing wrapper misbehaves, fail fast
+                raise
+
+        # Append to collection and update maps
+        self.albums.append(wrapper)
+        try:
+            self._add_album_to_map(wrapper)
+        except Exception:
+            pass
+        return wrapper
+
     @conditional_typechecked
     def albums_for_asset(self, asset: AssetResponseDto) -> list[AlbumResponseWrapper]:
         """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map)."""
@@ -396,12 +562,68 @@ class AlbumCollectionWrapper:
         Searches for an album by name. If it does not exist, creates it and assigns the current user as EDITOR.
         Updates the internal collection if created.
         """
-        # Search for existing album; fail fast if a duplicate name exists
-        for album_wrapper in self.albums:
-            if album_wrapper.get_album_name() == album_name:
-                raise RuntimeError(
-                    f"Attempt to create album with duplicate name: {album_name!r}"
-                )
+        # Search for existing album; if a duplicate name exists and it's a
+        # temporary album, attempt to delete it on the server and remove it
+        # locally so we can proceed to create a fresh album. Otherwise fail-fast.
+        for album_wrapper in list(self.albums):
+            try:
+                if album_wrapper.get_album_name() == album_name:
+                    try:
+                        if is_temporary_album(album_name):
+                            from uuid import UUID
+                            from immich_client.api.albums.delete_album import (
+                                sync_detailed as delete_album_sync,
+                            )
+                            try:
+                                delete_album_sync(id=UUID(album_wrapper.get_album_id()), client=client)
+                                # Remove locally
+                                self._remove_album_from_local_collection(album_wrapper)
+                                from immich_autotag.logging.levels import LogLevel
+                                from immich_autotag.logging.utils import log
+                                log(
+                                    f"Temporary duplicate album '{album_name}' (id={album_wrapper.get_album_id()}) deleted during create_or_get_album_with_user.",
+                                    level=LogLevel.FOCUS,
+                                )
+                                if tag_mod_report is not None:
+                                    try:
+                                        from immich_autotag.tags.modification_kind import ModificationKind
+                                        tag_mod_report.add_album_modification(
+                                            kind=ModificationKind.DELETE_ALBUM,
+                                            album=album_wrapper,
+                                            old_value=album_name,
+                                            extra={"reason": "Removed duplicate temporary album during create"},
+                                        )
+                                    except Exception:
+                                        pass
+                                # continue to creation
+                                break
+                            except Exception:
+                                # If deletion fails, log a warning and skip removal to avoid aborting
+                                from immich_autotag.logging.levels import LogLevel
+                                from immich_autotag.logging.utils import log
+                                log(
+                                    f"Failed to delete temporary duplicate album '{album_name}' (id={album_wrapper.get_album_id()}) during create: continuing without deletion.",
+                                    level=LogLevel.WARNING,
+                                )
+                                # Try to proceed by removing local reference if possible
+                                try:
+                                    self._remove_album_from_local_collection(album_wrapper)
+                                except Exception:
+                                    pass
+                                break
+                        # Not temporary: fail fast
+                        raise RuntimeError(
+                            f"Attempt to create album with duplicate name: {album_name!r}"
+                        )
+                    except RuntimeError:
+                        raise
+                    except Exception:
+                        raise RuntimeError(
+                            f"Attempt to create album with duplicate name: {album_name!r}"
+                        )
+            except Exception:
+                # If a wrapper misbehaves, fail fast
+                raise
 
         # If it does not exist, create and assign user
         from uuid import UUID
@@ -444,15 +666,13 @@ class AlbumCollectionWrapper:
                 raise RuntimeError(
                     f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
                 ) from e
-        wrapper = AlbumResponseWrapper(album_partial=album)
-        # Ensure uniqueness by name before adding
+        wrapper = AlbumResponseWrapper.from_partial_dto(album)
+        # Add with centralized duplicate handling
         try:
-            self._ensure_unique_album_name(wrapper.get_album_name())
+            wrapper = self.add_album_wrapper(wrapper, client=client, tag_mod_report=tag_mod_report)
         except Exception:
             # If uniqueness fails, raise - fail-fast as requested
             raise
-        # Update internal collection (since it's frozen, must rebuild)
-        self.albums.append(wrapper)
         if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
 
@@ -494,17 +714,18 @@ class AlbumCollectionWrapper:
         for album in albums:
             # Create wrapper with partial album data (no assets fetched yet)
             # Assets will be fetched lazily when needed
-            wrapper = AlbumResponseWrapper(album_partial=album)
-            # Enforce unique album names on initial load to avoid ambiguity
-            name = wrapper.get_album_name()
-            if name in seen_names:
-                raise RuntimeError(f"Duplicate album name detected during initial load: {name!r}")
-            seen_names.add(name)
+            wrapper = AlbumResponseWrapper.from_partial_dto(album)
+            # Use centralized helper to attempt append with duplicate handling
+            try:
+                AlbumCollectionWrapper._try_append_wrapper_to_list(
+                    albums_wrapped, wrapper, client=client, tag_mod_report=tag_mod_report
+                )
+            except RuntimeError:
+                raise
             log(
                 f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
                 level=LogLevel.DEBUG,
             )
-            albums_wrapped.append(wrapper)
 
         tag_mod_report.flush()
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
