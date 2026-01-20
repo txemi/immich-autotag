@@ -693,7 +693,8 @@ class AlbumCollectionWrapper:
                 raise
 
         # Append to collection and update maps
-        self.add_album_wrapper(wrapper)
+        self._albums.append(wrapper)
+        # Optionally update asset-to-albums map or other structures here if needed
         return wrapper
 
     @conditional_typechecked
