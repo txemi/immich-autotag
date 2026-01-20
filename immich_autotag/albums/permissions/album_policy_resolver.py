@@ -51,12 +51,12 @@ class ResolvedAlbumPolicy:
         - Provides a string representation for logging and debugging.
     """
 
-    album_name: str
-    album_id: str
-    matched_rules: list[str]
-    groups: list[str]
-    members: list[str]
-    access_level: str
+    album_name: str = attrs.field(validator=attrs.validators.instance_of(str))
+    album_id: str = attrs.field(validator=attrs.validators.instance_of(str))
+    matched_rules: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    groups: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    members: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    access_level: str = attrs.field(validator=attrs.validators.instance_of(str))
     has_match: bool = attrs.field(init=False)
 
     def __attrs_post_init__(self):
