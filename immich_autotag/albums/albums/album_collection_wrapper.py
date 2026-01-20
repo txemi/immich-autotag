@@ -422,28 +422,26 @@ class AlbumCollectionWrapper:
     ):
         """
         Elimina los álbumes temporales vacíos detectados tras el build del mapa.
+        Lanza excepción si alguno no es temporal (integridad).
         """
         if not albums_to_remove:
             return
+        # Integridad: todos deben ser temporales
+        for album_wrapper in albums_to_remove:
+            if not is_temporary_album(album_wrapper.get_album_name()):
+                raise RuntimeError(
+                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is not temporary but was passed to _remove_empty_temporary_albums."
+                )
         from immich_autotag.tags.modification_kind import ModificationKind
 
         tag_mod_report = ModificationReport.get_instance()
         for album_wrapper in albums_to_remove:
             try:
-                if tag_mod_report:
-                    tag_mod_report.add_album_modification(
-                        kind=ModificationKind.DELETE_ALBUM,
-                        album=album_wrapper,
-                        old_value=album_wrapper.get_album_name(),
-                        extra={
-                            "reason": "Removed automatically after map build because it was empty and temporary"
-                        },
-                    )
                 self.delete_album(
                     wrapper=album_wrapper,
                     client=client,
-                    tag_mod_report=None,
-                    reason="Removed temporary album during asset map rebuild",
+                    tag_mod_report=tag_mod_report,
+                    reason="Removed automatically after map build because it was empty and temporary",
                 )
                 self._remove_album_from_local_collection(album_wrapper)
             except Exception as e:
