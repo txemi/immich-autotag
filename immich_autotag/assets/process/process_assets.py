@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from typeguard import typechecked
 
 from immich_autotag.assets.process.log_execution_parameters import (
