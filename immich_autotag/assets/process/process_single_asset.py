@@ -22,11 +22,15 @@ def _get_asset_url(asset_wrapper: AssetResponseWrapper) -> str:
         log("[DEBUG] Getting asset URL...", level=LogLevel.FOCUS)
         return asset_wrapper.get_immich_photo_url().geturl()
     except Exception as e:
-        asset_name = (
-            getattr(asset_wrapper, "original_file_name", None)
-            or getattr(asset_wrapper, "filename", None)
-            or "[no name]"
-        )
+        try:
+            original_file_name = asset_wrapper.original_file_name
+        except AttributeError:
+            original_file_name = None
+        try:
+            filename = asset_wrapper.filename
+        except AttributeError:
+            filename = None
+        asset_name = original_file_name or filename or "[no name]"
         from pprint import pformat
 
         details = pformat(vars(asset_wrapper))
@@ -92,9 +96,17 @@ def process_single_asset(
     assigns album, validates classification, flushes the report, and updates tag counters.
     Thread-safe for report flushing.
     """
-    log_debug(f"[BUG] START process_single_asset {getattr(asset_wrapper, 'id', None)}")
+    try:
+        asset_id = asset_wrapper.id
+    except AttributeError:
+        asset_id = None
+    log_debug(f"[BUG] START process_single_asset {asset_id}")
+    try:
+        asset_id = asset_wrapper.id
+    except AttributeError:
+        asset_id = None
     log(
-        f"[DEBUG] [process_single_asset] START asset_id={getattr(asset_wrapper, 'id', None)}",
+        f"[DEBUG] [process_single_asset] START asset_id={asset_id}",
         level=LogLevel.FOCUS,
     )
 
@@ -124,7 +136,11 @@ def process_single_asset(
 
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
+    try:
+        asset_id = asset_wrapper.id
+    except AttributeError:
+        asset_id = None
     log(
-        f"[DEBUG] [process_single_asset] END asset_id={getattr(asset_wrapper, 'id', None)}",
+        f"[DEBUG] [process_single_asset] END asset_id={asset_id}",
         level=LogLevel.FOCUS,
     )
