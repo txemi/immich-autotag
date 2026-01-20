@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import time
-from threading import Lock
-
 from typeguard import typechecked
 
 from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets

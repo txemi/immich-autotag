@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Generator, Optional
 
 from immich_client.api.search import search_assets
 from immich_client.models import MetadataSearchDto
-from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.search_asset_response_dto import SearchAssetResponseDto
 from typeguard import typechecked
 
@@ -17,11 +16,6 @@ if TYPE_CHECKING:
 
 @typechecked
 def _fetch_assets_page(context: "ImmichContext", page: int) -> object:
-    from immich_client.api.search import search_assets
-    from immich_client.models import MetadataSearchDto
-
-    from immich_autotag.logging.utils import log_debug
-
     body = MetadataSearchDto(page=page)
     log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
     response = search_assets.sync_detailed(client=context.client, body=body)
@@ -38,9 +32,7 @@ def _yield_assets_from_page(
     count: int,
 ) -> Generator["AssetResponseWrapper", None, None]:
 
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from immich_autotag.logging.utils import log_debug
-
+    # Use top-level imports where possible to avoid redefinition warnings.
     yielded = 0
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
@@ -59,10 +51,10 @@ def _yield_assets_from_page(
             yielded += 1
         else:
             log_debug(
-                f"[BUG] [ERROR] Could not load asset from search. search_assets returned None."
+                "[BUG] [ERROR] Could not load asset from search. search_assets returned None."
             )
             raise RuntimeError(
-                f"[ERROR] Could not load asset from search. search_assets returned None."
+                "[ERROR] Could not load asset from search. search_assets returned None."
             )
 
 
