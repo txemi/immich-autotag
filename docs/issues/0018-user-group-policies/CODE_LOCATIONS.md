@@ -82,7 +82,7 @@ def remove_user_from_album(client, album_id: str, user_id: str):
 
 ---
 
-## 3. FLUJO ACTUAL (Phase 1 - Dry-run)
+## 3. CURRENT FLOW (Phase 1 - Dry-run)
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -100,36 +100,36 @@ def remove_user_from_album(client, album_id: str, user_id: str):
 
 ---
 
-## 4. FLUJO PHASE 2 (PLANEADO - Sincronización)
+## 4. PHASE 2 FLOW (PLANNED - Synchronization)
 
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  immich_autotag/entrypoint.py                            │
-│  _execute_album_permissions() ← NUEVA FUNCIÓN PHASE 2    │
+│  _execute_album_permissions() ← NEW PHASE 2 FUNCTION     │
 │                                                          │
-│  For each album:                                      │
-│    ├─ Get resolved policy (resolver)                  │
-│    │                                                  │
-│    ├─ Get CURRENT members (API)                       │
-│    │  └─ album.get_user_shares()  ← NOT IMPLEMENTED   │
-│    │                                                  │
-│    ├─ COMPARE:                                        │
-│    │  ├─ Members to ADD = config - current            │
-│    │  └─ Members to REMOVE = current - config         │
-│    │                                                  │
-│    ├─ ADD: add_users_to_album.sync() ✓ EXISTS         │
-│    │  └─ Report: ALBUM_PERMISSION_SHARED              │
-│    │                                                  │
-│    └─ REMOVE: remove_user_from_album.sync() ❌ TODO   │
-│       └─ Report: ALBUM_PERMISSION_REMOVED             │
+│  For each album:                                         │
+│    ├─ Get resolved policy (resolver)                     │
+│    │                                                     │
+│    ├─ Get CURRENT members (API)                          │
+│    │  └─ album.get_user_shares()  ← NOT IMPLEMENTED      │
+│    │                                                     │
+│    ├─ COMPARE:                                           │
+│    │  ├─ Members to ADD = config - current               │
+│    │  └─ Members to REMOVE = current - config            │
+│    │                                                     │
+│    ├─ ADD: add_users_to_album.sync() ✓ EXISTS            │
+│    │  └─ Report: ALBUM_PERMISSION_SHARED                 │
+│    │                                                     │
+│    └─ REMOVE: remove_user_from_album.sync() ❌ TODO      │
+│       └─ Report: ALBUM_PERMISSION_REMOVED                │
 └──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 5. DÓNDE ESTÁ LA API DE IMMICH
+## 5. WHERE IMMICH API IS LOCATED
 
-**Archivo**: Dentro de `immich-client/` (cliente de la API)
+**File**: Inside `immich-client/` (API client)
 
 ```
 immich-client/
@@ -138,17 +138,17 @@ immich-client/
 │       └── albums.py          ← Here are the functions
 ```
 
-**Funciones disponibles en `albums.py`:**
-- ✅ `add_users_to_album()` - PONER usuarios
-- ❌ `remove_user_from_album()` - QUITAR usuarios (necesita verificar si existe)
-- ✅ `get_album_users()` o similar - OBTENER usuarios actuales
+**Available functions in `albums.py`:**
+- ✅ `add_users_to_album()` - SET users
+- ❌ `remove_user_from_album()` - REMOVE users (needs checking if it exists)
+- ✅ `get_album_users()` or similar - GET current users
 
 ---
 
-## 6. CÓDIGO ACTUAL QUE USA PERMISOS
+## 6. CURRENT CODE USING PERMISSIONS
 
-### Crear Álbum + Poner Permisos
-**Archivo**: `immich_autotag/albums/album_collection_wrapper.py:92-113`
+### Create Album + Set Permissions
+**File**: `immich_autotag/albums/album_collection_wrapper.py:92-113`
 
 ```python
 from immich_client.api.albums import add_users_to_album, create_album
@@ -163,62 +163,62 @@ add_users_to_album.sync(
 )
 ```
 
-**Resultado**: ✅ Usuario añadido como EDITOR al álbum
+**Result**: ✅ User added as EDITOR to the album
 
 ---
 
-## 7. TAREAS PENDIENTES PARA PHASE 2
+## 7. PENDING TASKS FOR PHASE 2
 
 ```
-NECESARIOS PARA IMPLEMENTAR:
+REQUIRED TO IMPLEMENT:
 
-1. ✓ Evento ALBUM_PERMISSION_REMOVED - YA AÑADIDO
-2. ✓ Documentación de sincronización - YA HECHA
-3. ❌ Función remove_user_from_album() - TODO
-4. ❌ Obtener lista de usuarios actuales en álbum - TODO
-5. ❌ Lógica de sincronización en entrypoint - TODO
-6. ❌ Tests de sincronización - TODO
+1. ✓ Event ALBUM_PERMISSION_REMOVED - ALREADY ADDED
+2. ✓ Synchronization documentation - ALREADY DONE
+3. ❌ Function remove_user_from_album() - TODO
+4. ❌ Get current user list in album - TODO
+5. ❌ Sync logic in entrypoint - TODO
+6. ❌ Sync tests - TODO
 ```
 
 ---
 
-## 8. MAPA MENTAL COMPLETO
+## 8. COMPLETE MENTAL MAP
 
 ```
-PUNTO DE ENTRADA:
+ENTRY POINT:
   entrypoint.py
   └─ run_main()
-     ├─ Phase 1: _process_album_permissions()  ✓ YA EXISTE
+     ├─ Phase 1: _process_album_permissions()  ✓ ALREADY EXISTS
      │  ├─ albums/album_policy_resolver.py
      │  │  └─ resolve_album_policy()
      │  └─ report/modification_report.py
      │     └─ add_album_permission_modification()
      │
      └─ Phase 2: _execute_album_permissions()  ❌ TODO
-        └─ Para cada album:
-           ├─ resolver: resolve_album_policy()  ✓ EXISTE
-           ├─ actual: get_album_users()  ❌ IMPLEMENTAR
-           ├─ sync: add_users_to_album.sync()  ✓ EXISTE
-           ├─ sync: remove_user_from_album.sync()  ❌ IMPLEMENTAR
-           └─ report: add_album_permission_modification()  ✓ EXISTE
+        └─ For each album:
+           ├─ resolver: resolve_album_policy()  ✓ EXISTS
+           ├─ actual: get_album_users()  ❌ IMPLEMENT
+           ├─ sync: add_users_to_album.sync()  ✓ EXISTS
+           ├─ sync: remove_user_from_album.sync()  ❌ IMPLEMENT
+           └─ report: add_album_permission_modification()  ✓ EXISTS
 ```
 
 ---
 
-## RESUMEN
+## SUMMARY
 
-| Acción | Ubicación | Estado |
+| Action | Location | Status |
 |--------|-----------|--------|
-| **PONER permisos** | `album_collection_wrapper.py:113` | ✅ YA FUNCIONA |
-| **QUITAR permisos** | No existe | ❌ TODO Phase 2 |
-| **Detectar (Phase 1)** | `entrypoint.py:_process_album_permissions()` | ✅ YA EXISTE |
-| **Resolver políticas** | `albums/album_policy_resolver.py` | ✅ YA EXISTE |
-| **Registrar cambios** | `report/modification_report.py` | ✅ YA EXISTE |
+| **SET permissions** | `album_collection_wrapper.py:113` | ✅ ALREADY WORKS |
+| **REMOVE permissions** | Does not exist | ❌ TODO Phase 2 |
+| **Detect (Phase 1)** | `entrypoint.py:_process_album_permissions()` | ✅ ALREADY EXISTS |
+| **Resolve policies** | `albums/album_policy_resolver.py` | ✅ ALREADY EXISTS |
+| **Register changes** | `report/modification_report.py` | ✅ ALREADY EXISTS |
 
 ---
 
-**En resumen:**
-- Ahora mismo **solo existe poner permisos** (cuando creas álbumes)
-- **No existe quitar permisos** (se implementará en Phase 2)
-- **Phase 1 solo detecta** (sin hacer cambios reales)
-- Cuando implementemos Phase 2, habrá dos nuevas funciones de sincronización
+**In summary:**
+- Right now **only setting permissions exists** (when creating albums)
+- **Removing permissions does not exist** (will be implemented in Phase 2)
+- **Phase 1 only detects** (without making real changes)
+- When we implement Phase 2, there will be two new synchronization functions

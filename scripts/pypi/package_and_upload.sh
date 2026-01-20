@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../..")"
 cd "$PROJECT_ROOT"
 
-# Llama a setup_venv.sh si existe
+# Call setup_venv.sh if it exists
 if [ -f "$PROJECT_ROOT/setup_venv.sh" ]; then
   echo "[INFO] Running setup_venv.sh to ensure venv and client are ready..."
   bash "$PROJECT_ROOT/setup_venv.sh"
