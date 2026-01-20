@@ -1,4 +1,3 @@
-
 """
 Album Policy Resolver
 
@@ -24,12 +23,13 @@ Admin users (system operators) should not appear in member lists to avoid accide
 import re
 from typing import Dict, List, Optional
 
+import attrs
+
 from immich_autotag.config.models import (
     AlbumSelectionRule,
     UserGroup,
 )
 
-import attrs
 
 @attrs.define(auto_attribs=True, slots=True)
 class ResolvedAlbumPolicy:
@@ -50,6 +50,7 @@ class ResolvedAlbumPolicy:
         - Used as the source of truth for permission synchronization and reporting.
         - Provides a string representation for logging and debugging.
     """
+
     album_name: str
     album_id: str
     matched_rules: list[str]
@@ -182,4 +183,3 @@ def build_user_groups_dict(
     if not user_groups:
         return {}
     return {group.name: group for group in user_groups}
-
