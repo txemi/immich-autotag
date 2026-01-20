@@ -1,4 +1,4 @@
-from typing import Iterator, MutableMapping, Optional
+from typing import Iterator, MutableMapping, Optional, Any
 
 from .album_list import AlbumList
 
@@ -22,7 +22,8 @@ class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
     def __len__(self) -> int:
         return len(self._map)
 
-    def get(self, key: str, default: Optional[AlbumList] = None) -> Optional[AlbumList]:
+    def get(self, key: Any, default: Optional[AlbumList] = None) -> Optional[AlbumList]:
+        # Accept Any for key to remain compatible with Mapping.get signature
         return self._map.get(key, default)
 
     def clear(self):
@@ -37,8 +38,12 @@ class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
     def values(self):
         return self._map.values()
 
-    def __contains__(self, key: str) -> bool:
-        return key in self._map
+    def __contains__(self, key: object) -> bool:
+        # Use object type to match the Container/Mapping protocol
+        try:
+            return key in self._map
+        except Exception:
+            return False
 
     def __repr__(self):
         return f"AssetToAlbumsMap({self._map!r})"

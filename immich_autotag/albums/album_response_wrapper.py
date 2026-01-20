@@ -89,6 +89,7 @@ class AlbumResponseWrapper:
             self.reload_from_api(self.get_default_client())
 
     def _get_partial(self) -> AlbumResponseDto:
+        assert self._album_partial is not None
         return self._album_partial
 
     def _get_full(self) -> AlbumResponseDto:
@@ -217,7 +218,7 @@ class AlbumResponseWrapper:
     def trim_name_if_needed(
         self,
         client: ImmichClient,
-        tag_mod_report: "ModificationReport",
+        tag_mod_report: "ModificationReport | None" = None,
     ) -> None:
         album_name = self.get_album_name()
         if album_name.startswith(" "):
@@ -543,6 +544,8 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         album_full = get_album_info.sync(id=album_id, client=client)
+        if album_full is None:
+            raise RuntimeError(f"get_album_info returned no album for id={album_id}")
         wrapper = AlbumResponseWrapper.from_full_dto(
             album_full, validate=False, tag_mod_report=tag_mod_report
         )
