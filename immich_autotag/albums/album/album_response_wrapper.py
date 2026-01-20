@@ -58,7 +58,9 @@ class AlbumResponseWrapper:
         """
         if self._album_partial is None and self._album_full is None:
             raise ValueError(
-                "AlbumResponseWrapper must be constructed with either a partial or full DTO"
+                (
+                    "AlbumResponseWrapper must be constructed with either a partial or full DTO"
+                )
             )
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
@@ -468,7 +470,8 @@ class AlbumResponseWrapper:
         tag_mod_report: "ModificationReport",
     ) -> None:
         """
-        Adds an asset to the album. If the asset is already present, raises AssetAlreadyInAlbumError.
+        Adds an asset to the album. If the asset is already present,
+        raises AssetAlreadyInAlbumError.
         """
         from immich_client.api.albums import add_assets_to_album
         from immich_client.models.bulk_ids_dto import BulkIdsDto
@@ -508,9 +511,9 @@ class AlbumResponseWrapper:
                         error_msg = None
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
-                    # If the error is 'duplicate', reactive refresh: reload album data from API
+                    # If the error is 'duplicate', reactive refresh: reload album data from API.
                     # This detects that our cached album data is stale, and subsequent assets in this
-                    # batch will benefit from the fresh data without additional API calls
+                    # batch will benefit from the fresh data without additional API calls.
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
                             f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (API duplicate error). Raising AssetAlreadyInAlbumError.",
@@ -534,8 +537,8 @@ class AlbumResponseWrapper:
                         )
                     else:
                         raise RuntimeError(
-                            f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: "
-                            f"{error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                            f"Asset {asset_wrapper.id} was not successfully added to album "
+                            f"{self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                         )
         if not found:
             raise RuntimeError(
@@ -573,7 +576,8 @@ class AlbumResponseWrapper:
         # Check if asset is in album first (use has_asset_wrapper for clarity)
         if not self.has_asset_wrapper(asset_wrapper):
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.get_album_id()}, skipping removal.",
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.get_album_id()}, "
+                "skipping removal.",
                 level=LogLevel.DEBUG,
             )
             return
@@ -626,12 +630,14 @@ class AlbumResponseWrapper:
                                 collection = AlbumCollectionWrapper.get_instance()
                                 removed = collection.remove_album_local(self)
                                 log(
-                                    f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') removed from collection due to not_found error during asset removal.",
+                                    f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') "
+                                    "removed from collection due to not_found error during asset removal.",
                                     level=LogLevel.FOCUS,
                                 )
                             except Exception as e:
                                 log(
-                                    f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} from collection after not_found: {e}",
+                                    f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} from collection "
+                                    f"after not_found: {e}",
                                     level=LogLevel.WARNING,
                                 )
                             log(
@@ -642,8 +648,8 @@ class AlbumResponseWrapper:
                             return
                         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                             raise RuntimeError(
-                                f"Asset {asset_wrapper.id} was not successfully removed from album {self.get_album_id()}: "
-                                f"{error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                                f"Asset {asset_wrapper.id} was not successfully removed from album "
+                                f"{self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                             )
                         else:
                             log(
@@ -654,8 +660,8 @@ class AlbumResponseWrapper:
                             return
                     # Otherwise, treat as fatal
                     raise RuntimeError(
-                        f"Asset {asset_wrapper.id} was not successfully removed from album {self.get_album_id()}: "
-                        f"{error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                        f"Asset {asset_wrapper.id} was not successfully removed from album "
+                        f"{self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                     )
 
         if not found:
@@ -716,7 +722,8 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.get_album_id()}. This may be an eventual consistency or API issue.",
+                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album "
+                    f"{self.get_album_id()}. This may be an eventual consistency or API issue.",
                     level=LogLevel.WARNING,
                 )
 
@@ -744,7 +751,8 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album {self.get_album_id()}. This may be an eventual consistency or API issue.",
+                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album "
+                    f"{self.get_album_id()}. This may be an eventual consistency or API issue.",
                     level=LogLevel.WARNING,
                 )
 
@@ -837,5 +845,7 @@ class AlbumResponseWrapper:
         or `from_full_dto` to make representation explicit.
         """
         raise RuntimeError(
-            "Use AlbumResponseWrapper.from_partial_dto or from_full_dto; from_dto is ambiguous"
+            (
+                "Use AlbumResponseWrapper.from_partial_dto or from_full_dto; from_dto is ambiguous"
+            )
         )
