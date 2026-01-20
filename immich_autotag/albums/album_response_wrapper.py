@@ -164,14 +164,18 @@ class AlbumResponseWrapper:
         try:
             import time
 
-            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
             from immich_autotag.albums.album_error_entry import AlbumErrorEntry
+            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
 
             now = time.time()
-            self._error_history.append(AlbumErrorEntry(timestamp=now, code=error_code, message=str(message)))
+            self._error_history.append(
+                AlbumErrorEntry(timestamp=now, code=error_code, message=str(message))
+            )
             cutoff = now - int(ALBUM_ERROR_WINDOW_SECONDS)
             # Keep only recent entries
-            self._error_history = [e for e in self._error_history if e.timestamp >= cutoff]
+            self._error_history = [
+                e for e in self._error_history if e.timestamp >= cutoff
+            ]
         except Exception:
             # Never let recording errors raise and break higher-level flows
             pass
@@ -183,8 +187,10 @@ class AlbumResponseWrapper:
 
             from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
 
-            window = int(window_seconds) if window_seconds is not None else int(
-                ALBUM_ERROR_WINDOW_SECONDS
+            window = (
+                int(window_seconds)
+                if window_seconds is not None
+                else int(ALBUM_ERROR_WINDOW_SECONDS)
             )
             cutoff = time.time() - window
             return sum(1 for e in self._error_history if e.timestamp >= cutoff)
@@ -221,12 +227,14 @@ class AlbumResponseWrapper:
                     album_name = dto_for_repr.album_name
                 except AttributeError:
                     album_name = None
-                # Create a short, safe summary instead of using repr() which
-                # can emit very large DTO dumps (causing huge CI logs).
+                    # Create a short, safe summary instead of using repr() which
+                    # can emit very large DTO dumps (causing huge CI logs).
                     try:
                         try:
                             assets_attr = dto_for_repr.assets
-                            asset_count = len(assets_attr) if assets_attr is not None else None
+                            asset_count = (
+                                len(assets_attr) if assets_attr is not None else None
+                            )
                         except Exception:
                             asset_count = None
 
@@ -256,7 +264,10 @@ class AlbumResponseWrapper:
             if status_code is None:
                 try:
                     msg = str(exc)
-                    if "status code: 400" in msg or "Unexpected status code: 400" in msg:
+                    if (
+                        "status code: 400" in msg
+                        or "Unexpected status code: 400" in msg
+                    ):
                         status_code = 400
                 except Exception:
                     status_code = None
@@ -292,7 +303,9 @@ class AlbumResponseWrapper:
                         ALBUM_ERROR_WINDOW_SECONDS,
                     )
 
-                    if self.should_mark_unavailable(ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS):
+                    if self.should_mark_unavailable(
+                        ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS
+                    ):
                         try:
                             self._unavailable = True
                         except Exception:
@@ -304,12 +317,14 @@ class AlbumResponseWrapper:
                             from immich_autotag.report.modification_report import (
                                 ModificationReport,
                             )
-                            from immich_autotag.tags.modification_kind import ModificationKind
+                            from immich_autotag.tags.modification_kind import (
+                                ModificationKind,
+                            )
 
                             tag_mod_report = ModificationReport.get_instance()
                             tag_mod_report.add_error_modification(
                                 kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                                album= self,
+                                album=self,
                                 error_message=partial_repr,
                                 error_category="HTTP_400",
                                 extra={"recent_errors": len(self._error_history)},

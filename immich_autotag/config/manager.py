@@ -5,7 +5,7 @@ Singleton Manager for the new experimental configuration.
 """
 
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any, Optional
 
 import attrs
 import yaml

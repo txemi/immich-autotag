@@ -95,7 +95,9 @@ def load_python_config(path: Path):
     try:
         md = module.__dict__
     except AttributeError:
-        raise AttributeError(f"Module object has no __dict__; cannot load config from {path}")
+        raise AttributeError(
+            f"Module object has no __dict__; cannot load config from {path}"
+        )
 
     if "user_config" in md:
         return md["user_config"]
