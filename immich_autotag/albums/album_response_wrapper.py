@@ -68,8 +68,9 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> None:
-        from immich_client.api.albums import get_album_info
+        """Reloads the album DTO from the API and clears the cache."""
         from immich_client import errors as immich_errors
+        from immich_client.api.albums import get_album_info
 
         try:
             album_dto = get_album_info.sync(id=self.album_partial.id, client=client)
