@@ -64,3 +64,17 @@ profile = "black"
 line_length = 88
 # Skip these directories when sorting imports (virtualenv, generated, or external code).
 skip = [".venv", "immich-client", "scripts"]
+
+[tool.ruff]
+# Ruff configuration: keep defaults minimal here; CI can add stricter rules.
+extend-select = ["E", "F", "W"]
+line-length = 88
+
+[project.optional-dependencies]
+dev = [
+	"ruff",
+	"black",
+	"isort",
+	"flake8",
+	"mypy",
+]
