@@ -453,6 +453,8 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def _handle_non_temporary_duplicate(
+        self,
+        *,
         existing: AlbumResponseWrapper,
         wrapper: AlbumResponseWrapper,
         tag_mod_report: ModificationReport | None,
