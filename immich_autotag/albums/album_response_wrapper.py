@@ -6,11 +6,13 @@ from urllib.parse import ParseResult
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
+from uuid import UUID
 
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
+    from immich_autotag.context.immich_context import ImmichContext
 
 from immich_autotag.utils.decorators import conditional_typechecked
 
@@ -154,8 +156,6 @@ class AlbumResponseWrapper:
         ]
 
     from typing import Optional
-
-    from immich_autotag.report.modification_report import ModificationReport
 
     @conditional_typechecked
     def trim_name_if_needed(
@@ -483,7 +483,7 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         album_full = get_album_info.sync(id=album_id, client=client)
-        wrapper = AlbumResponseWrapper(album_partial=album_full)
+        wrapper = AlbumResponseWrapper(album_full=album_full)
         wrapper._album_full = album_full
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
         return wrapper
