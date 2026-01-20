@@ -139,7 +139,9 @@ class AlbumResponseWrapper:
                 try:
                     try:
                         assets_attr = getattr(dto_for_repr, "assets", None)
-                        asset_count = len(assets_attr) if assets_attr is not None else None
+                        asset_count = (
+                            len(assets_attr) if assets_attr is not None else None
+                        )
                     except Exception:
                         asset_count = None
 

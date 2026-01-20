@@ -343,7 +343,10 @@ class AlbumCollectionWrapper:
             # Create wrapper with partial album data (no assets fetched yet)
             # Assets will be fetched lazily when needed
             wrapper = AlbumResponseWrapper(album_partial=album)
-            log(f"- {wrapper.get_album_name()} (assets: lazy-loaded)", level=LogLevel.DEBUG)
+            log(
+                f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
+                level=LogLevel.DEBUG,
+            )
             albums_wrapped.append(wrapper)
 
         tag_mod_report.flush()
