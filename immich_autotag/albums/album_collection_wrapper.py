@@ -173,7 +173,13 @@ class AlbumCollectionWrapper:
             from immich_autotag.utils.run_output_dir import get_run_output_dir
 
             summary_items = []
-            for wrapper in sorted(self._unavailable_albums, key=lambda w: w.get_album_id() if hasattr(w, 'get_album_id') else ''):
+            def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
+                try:
+                    return w.get_album_id() or 
+                except Exception:
+                    return 
+
+            for wrapper in sorted(self._unavailable_albums, key=_unavailable_sort_key):
                 try:
                     album_id = wrapper.get_album_id()
                 except Exception:
