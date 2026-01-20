@@ -7,6 +7,8 @@ class LogLevel(Enum):
     IMPORTANT = logging.WARNING  # 30
     WARNING = logging.WARNING  # 30
     PROGRESS = logging.INFO  # 20
+    # Standard INFO level alias for convenience (used across the codebase)
+    INFO = logging.INFO  # 20
     FOCUS = 15  # 15 (personalizado)
     DEBUG = logging.DEBUG  # 10
 
