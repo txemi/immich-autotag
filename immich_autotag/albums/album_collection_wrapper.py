@@ -451,7 +451,6 @@ class AlbumCollectionWrapper:
             )
             return True
 
-    @staticmethod
     @typechecked
     def _handle_non_temporary_duplicate(
         existing: AlbumResponseWrapper,
@@ -469,26 +468,12 @@ class AlbumCollectionWrapper:
 
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            # Intenta combinar los álbumes duplicados
-            from immich_autotag.albums.duplicates.merge_duplicate_albums import merge_duplicate_albums
+            # Centraliza el manejo en el método unificado
             # El wrapper duplicado es el que se intenta añadir, el existente es el destino
-            # Se asume que el wrapper duplicado debe ser fusionado en el existente
-            # El cliente y tag_mod_report pueden ser None en este contexto, pero se pasan si están disponibles
-            # Si no hay cliente, no se puede hacer merge, así que solo colecciona el duplicado
-            # El nombre destino es el del álbum existente
-            # Si no hay client, solo colecciona el duplicado
-            client = getattr(wrapper, 'client', None)
-            try:
-                merge_duplicate_albums(
-                    collection=existing._collection if hasattr(existing, '_collection') else None,
-                    duplicate_album=wrapper,
-                    target_album_name=name,
-                    client=client,
-                    tag_mod_report=tag_mod_report,
-                )
-            except Exception:
-                # Si el merge falla, colecciona el duplicado y sigue
-                pass
+            # El contexto se marca como 'duplicate_on_load'
+            # El método unificado gestiona el merge y la colección de duplicados
+            # Se asume que self está disponible como AlbumCollectionWrapper
+            self._handle_duplicate_album_conflict(existing, wrapper, context="duplicate_on_load")
         elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
@@ -540,7 +525,7 @@ class AlbumCollectionWrapper:
                         ):
                             return
                     # Duplicado no temporal
-                    AlbumCollectionWrapper._handle_non_temporary_duplicate(
+                    self._handle_non_temporary_duplicate(
                         existing, wrapper, tag_mod_report, duplicates_collected, name
                     )
                     return
