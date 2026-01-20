@@ -4,7 +4,9 @@ from typing import Optional
 
 from typeguard import typechecked
 
+
 from immich_autotag.utils.run_output_dir import find_recent_run_dirs
+from immich_autotag.duplicates.duplicates_cache_constants import DUPLICATES_CACHE_FILENAME
 
 
 @typechecked
@@ -19,13 +21,27 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
     checked_dirs = []
     candidate_caches: list[tuple[datetime, Path]] = []
     for subdir in find_recent_run_dirs(logs_dir, max_age_hours=max_age_hours):
-        checked_dirs.append(str(subdir))
-        cache_file = subdir / "duplicates_cache.pkl"
-        if cache_file.exists():
-            mtime = datetime.fromtimestamp(cache_file.stat().st_mtime)
-            candidate_caches.append((mtime, cache_file))
+        try:
+            # Check directory age to help diagnosis
+            dir_mtime = datetime.fromtimestamp(subdir.stat().st_mtime)
+            dir_age = (datetime.now() - dir_mtime).total_seconds() / 3600.0
+
+            cache_file = subdir / DUPLICATES_CACHE_FILENAME
+            if cache_file.exists():
+                mtime = datetime.fromtimestamp(cache_file.stat().st_mtime)
+                file_age = (datetime.now() - mtime).total_seconds() / 3600.0
+                checked_dirs.append(
+                    f"{subdir.name} (dir_age={dir_age:.2f}h, cache_age={file_age:.2f}h, found=YES)"
+                )
+                candidate_caches.append((mtime, cache_file))
+            else:
+                checked_dirs.append(f"{subdir.name} (dir_age={dir_age:.2f}h, found=NO)")
+        except Exception:
+            checked_dirs.append(f"{subdir} (error checking stats)")
+
     log(
-        f"[DUPLICATES CACHE] Checked directories for cache: {checked_dirs}",
+        "[DUPLICATES CACHE] Checked directories status:\n"
+        + "\n".join([f" - {d}" for d in checked_dirs]),
         level=LogLevel.PROGRESS,
     )
     if candidate_caches:
@@ -40,7 +56,7 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
         )
     else:
         log(
-            "[DUPLICATES CACHE] No candidate duplicates_cache.pkl files found in checked directories.",
+            f"[DUPLICATES CACHE] No candidate {DUPLICATES_CACHE_FILENAME} files found in checked directories.",
             level=LogLevel.PROGRESS,
         )
     candidate_caches.sort(reverse=True)
