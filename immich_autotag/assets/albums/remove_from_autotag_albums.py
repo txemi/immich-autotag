@@ -79,10 +79,10 @@ def remove_asset_from_autotag_temporary_albums(
             # <-- AQUÍ se imprime el mensaje '[WARNING] Failed to remove asset ...' si ocurre un error al eliminar el asset del álbum temporal.
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise
-                log(
-                    f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.get_partial().album_name}: {e}",
-                    level=LogLevel.IMPORTANT,
-                )
+            log(
+                f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.get_album_name()}: {e}",
+                level=LogLevel.IMPORTANT,
+            )
             # Continue processing other albums even if one fails
             continue
 
