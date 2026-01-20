@@ -3,12 +3,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
-from immich_autotag.conversions.conversion_wrapper import ConversionWrapper
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
@@ -33,7 +31,6 @@ from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
 )
 from immich_autotag.config.manager import ConfigManager
-from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
 if TYPE_CHECKING:
@@ -116,9 +113,7 @@ class AssetResponseWrapper:
         Updates the main date (created_at) of the asset using the Immich API.
         If tag_mod_report is provided, logs the modification.
         """
-        import pytz
         from immich_client.api.assets import update_asset
-        from immich_client.models.update_asset_dto import UpdateAssetDto
 
         old_date = self.asset.created_at
         # Ensure the date is timezone-aware in UTC
@@ -217,7 +212,6 @@ class AssetResponseWrapper:
         Returns a list of AssetResponseWrapper objects for all duplicates of this asset.
         If include_self is True, includes this asset as well.
         """
-        from uuid import UUID
 
         context = self.context
         duplicate_id = self.duplicate_id_as_uuid
@@ -258,7 +252,6 @@ class AssetResponseWrapper:
         After removal, reloads the asset and checks if the tag is still present. Raises if any remain.
         Uses TagWrapper from the tag collection for all reporting.
         """
-        from immich_client.api.assets import get_asset_info
         from immich_client.api.tags import untag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
@@ -292,7 +285,6 @@ class AssetResponseWrapper:
         tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
 
         removed_any = False
-        from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
@@ -336,7 +328,6 @@ class AssetResponseWrapper:
         from immich_client.api.tags import tag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
-        from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
@@ -486,9 +477,6 @@ class AssetResponseWrapper:
         from immich_autotag.classification.classification_rule_set import (
             ClassificationRuleSet,
         )
-        from immich_autotag.classification.classification_status import (
-            ClassificationStatus,
-        )
 
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         match_results = rule_set.matching_rules(self)
@@ -564,9 +552,6 @@ class AssetResponseWrapper:
         match_result_list = rule_set.matching_rules(self)
 
         # Determine classification status
-        from immich_autotag.classification.classification_status import (
-            ClassificationStatus,
-        )
 
         status = match_result_list.classification_status()
 
@@ -601,7 +586,6 @@ class AssetResponseWrapper:
         Idempotent: does nothing if already in correct state.
         Also logs and notifies the modification report.
         """
-        from immich_autotag.config.manager import ConfigManager
 
         tag_name = ConfigManager.get_instance().config.classification.autotag_unknown
         status = self.get_classification_status()
@@ -677,7 +661,6 @@ class AssetResponseWrapper:
             status: The ClassificationStatus determining if conflict tag should be present.
             user: Optional user for tracking tag removal. If None, derived from context.
         """
-        from immich_autotag.config.manager import ConfigManager
 
         tag_name = ConfigManager.get_instance().config.classification.autotag_conflict
         self._ensure_tag_for_classification_status(
@@ -761,11 +744,6 @@ class AssetResponseWrapper:
         from immich_autotag.classification.classification_status import (
             ClassificationStatus,
         )
-        from immich_autotag.config.manager import ConfigManager
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
-        from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.tags.modification_kind import ModificationKind
 
         if not ConfigManager.get_instance().config.album_detection_from_folders.enabled:
             return None
@@ -852,7 +830,6 @@ class AssetResponseWrapper:
         """
         Returns a ParseResult URL object for this asset.
         """
-        from urllib.parse import ParseResult, urlparse
 
         from immich_autotag.utils.url_helpers import get_immich_photo_url
 
@@ -874,7 +851,6 @@ class AssetResponseWrapper:
         """
         Returns a list of AssetResponseWrapper objects for all duplicates of this asset (excluding itself).
         """
-        from uuid import UUID
 
         context = self.context
         duplicate_id = self.duplicate_id_as_uuid
@@ -902,9 +878,6 @@ class AssetResponseWrapper:
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-        from immich_autotag.config.manager import (
-            ConfigManager,
-        )
 
         tag_name = (
             ConfigManager.get_instance().config.duplicate_processing.autotag_album_conflict
@@ -957,7 +930,6 @@ class AssetResponseWrapper:
         If there is conflict (multiple candidate folders), adds the tag if not present.
         If no conflict and tag is present, removes it.
         """
-        from immich_autotag.config.manager import ConfigManager
 
         tag_name = (
             ConfigManager.get_instance().config.duplicate_processing.autotag_album_detection_conflict

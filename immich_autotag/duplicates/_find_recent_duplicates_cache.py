@@ -13,8 +13,6 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
     Busca el archivo de caché de duplicados más reciente y válido en las subcarpetas de logs.
     Devuelve la ruta si existe y está dentro del umbral de antigüedad, o None.
     """
-    from datetime import datetime
-
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
@@ -31,13 +29,18 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
         level=LogLevel.PROGRESS,
     )
     if candidate_caches:
+        # Build a simple, safe string representation for logging
+        candidate_info = [
+            f"{{'path': '{str(p)}', 'mtime': '{m.strftime('%Y-%m-%d %H:%M:%S')}'}}"
+            for m, p in candidate_caches
+        ]
         log(
-            f"[DUPLICATES CACHE] Found candidate caches: {[{'path': str(p), 'mtime': m.strftime('%Y-%m-%d %H:%M:%S')} for m, p in candidate_caches]}",
+            "[DUPLICATES CACHE] Found candidate caches: " + str(candidate_info),
             level=LogLevel.PROGRESS,
         )
     else:
         log(
-            f"[DUPLICATES CACHE] No candidate duplicates_cache.pkl files found in checked directories.",
+            "[DUPLICATES CACHE] No candidate duplicates_cache.pkl files found in checked directories.",
             level=LogLevel.PROGRESS,
         )
     candidate_caches.sort(reverse=True)

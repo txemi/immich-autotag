@@ -1,5 +1,4 @@
 import attrs
-from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
 
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -50,7 +49,7 @@ class TagCollectionWrapper:
 
         logger = logging.getLogger(__name__)
         logger.warning(
-            f"[TAG_CACHE] Detected out-of-sync tag cache, refreshing from API"
+            "[TAG_CACHE] Detected out-of-sync tag cache, refreshing from API"
         )
 
         refreshed = self.from_api(client)

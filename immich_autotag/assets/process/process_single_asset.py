@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from threading import Lock
-
 from typeguard import typechecked
 
 from immich_autotag.assets.albums.analyze_and_assign_album import (

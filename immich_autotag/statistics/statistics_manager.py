@@ -22,9 +22,8 @@ Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
 
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper

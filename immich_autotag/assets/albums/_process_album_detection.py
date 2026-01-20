@@ -27,8 +27,8 @@ def _process_album_detection(
     album_wrapper = albums_collection.create_or_get_album_with_user(
         detected_album, client, tag_mod_report=tag_mod_report
     )
-    album = album_wrapper.album
-    if asset_wrapper.id not in [a.id for a in album.assets or []]:
+    # Check membership using explicit get_asset_ids() to avoid ambiguous property behavior
+    if asset_wrapper.id not in album_wrapper.get_asset_ids():
         log(
             f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' assigned to album '{detected_album}' (origin: {album_origin})",
             level=LogLevel.FOCUS,

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, Iterator, Optional, Union
+from typing import TYPE_CHECKING, Dict, Iterator, Optional
 from uuid import UUID
 
 import attrs
