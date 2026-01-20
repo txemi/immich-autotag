@@ -22,7 +22,7 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
     checked_dirs: list[DuplicatesCacheFile] = []
     candidate_caches: list[DuplicatesCacheFile] = []
     for subdir in find_recent_run_dirs(logs_dir, max_age_hours=max_age_hours):
-        cache = DuplicatesCacheFile(subdir)
+        cache = DuplicatesCacheFile(directory=subdir)
         checked_dirs.append(cache)
         if cache.exists():
             candidate_caches.append(cache)
