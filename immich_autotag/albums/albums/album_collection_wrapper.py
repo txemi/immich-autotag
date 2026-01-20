@@ -368,7 +368,7 @@ class AlbumCollectionWrapper:
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
         """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
 
-        Antes de construir el mapa, fuerza la carga de asset_ids en todos los álbumes (lazy loading).
+        Before building the map, forces the loading of asset_ids in all albums (lazy loading).
         """
         asset_map = AssetToAlbumsMap()
         assert (
@@ -875,7 +875,7 @@ class AlbumCollectionWrapper:
         log("Albums:", level=LogLevel.INFO)
         seen_names: set[str] = set()
 
-        # Creamos la colección vacía
+        # Create the empty collection
         collection = cls(albums=AlbumList([]))
 
         for album in albums:
@@ -905,6 +905,6 @@ class AlbumCollectionWrapper:
 
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
 
-        # Asignamos la lista final a la colección y la devolvemos
+        # Assign the final list to the collection and return it
         collection.set_albums(AlbumList(albums_wrapped))
         return collection
