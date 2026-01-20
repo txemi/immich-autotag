@@ -204,7 +204,7 @@ class AlbumCollectionWrapper:
             merge_duplicate_albums(
                 self,
                 existing_album,
-                existing_album.get_album_name(),
+                existing_album,
                 client,
                 tag_mod_report
             )
