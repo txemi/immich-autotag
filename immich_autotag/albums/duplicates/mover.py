@@ -13,9 +13,11 @@ from __future__ import annotations
 from typing import Optional
 from uuid import UUID
 
+
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
+from typeguard import typechecked
 
 @typechecked
 def move_assets_between_albums(
