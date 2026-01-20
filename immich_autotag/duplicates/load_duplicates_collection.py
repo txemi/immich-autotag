@@ -50,7 +50,10 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
         try:
             # Estimate size by counting groups and assets; avoid full serialization if huge.
             total_groups = len(duplicates_collection.groups_by_duplicate_id)
-            total_assets = sum(len(g.assets) for g in duplicates_collection.groups_by_duplicate_id.values())
+            total_assets = sum(
+                len(g.assets)
+                for g in duplicates_collection.groups_by_duplicate_id.values()
+            )
         except Exception:
             total_groups = -1
             total_assets = -1
@@ -59,10 +62,14 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
         GROUPS_THRESHOLD = 5000
         ASSETS_THRESHOLD = 100000
 
-        if (0 <= total_groups <= GROUPS_THRESHOLD) and (0 <= total_assets <= ASSETS_THRESHOLD):
+        if (0 <= total_groups <= GROUPS_THRESHOLD) and (
+            0 <= total_assets <= ASSETS_THRESHOLD
+        ):
             with open(cache_path, "wb") as f:
                 pickle.dump(duplicates_collection, f)
-            print(f"[INFO] Duplicates cached to {cache_path} (groups={total_groups}, assets={total_assets})")
+            print(
+                f"[INFO] Duplicates cached to {cache_path} (groups={total_groups}, assets={total_assets})"
+            )
         else:
             print(
                 f"[INFO] Skipping caching duplicates to {cache_path} because collection is large "
