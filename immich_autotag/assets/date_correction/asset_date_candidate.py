@@ -38,7 +38,11 @@ class AssetDateCandidate:
 
     @typechecked
     def __str__(self) -> str:
-        return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={getattr(self.asset_wrapper, 'id', None)})"
+        try:
+            asset_id = self.asset_wrapper.id
+        except Exception:
+            asset_id = None
+        return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={asset_id})"
 
     @typechecked
     def get_aware_date(self, user_tz: Optional[str] = None) -> datetime:
@@ -77,9 +81,8 @@ class AssetDateCandidate:
     @typechecked
     def format_info(self) -> str:
         aw = self.asset_wrapper
-        link = (
-            aw.get_immich_photo_url().geturl()
-            if hasattr(aw, "get_immich_photo_url")
-            else "(no link)"
-        )
+        try:
+            link = aw.get_immich_photo_url().geturl()
+        except Exception:
+            link = "(no link)"
         return f"[{self.source_kind.name}] date={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.id} | link={link}"
