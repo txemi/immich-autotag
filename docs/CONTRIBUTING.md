@@ -31,6 +31,72 @@ value = user.name  # ✅ Always preferred
 
 If in doubt, ask before using introspection.
 
+### 1.2.2. Models and class types (project conventions)
+
+- **Do NOT use Python `@dataclass` for new models or DTOs in this project.**
+- **Use `pydantic` models** (e.g. `pydantic.BaseModel`) for classes that are serialized, used as DTOs, or exchanged with external services (HTTP APIs, clients). Pydantic gives explicit validation, parsing, and consistent serialization behavior.
+- **Use `attrs`** (`attrs.define` / `attrs.dataclass` style) for internal/domain classes that contain logic, mutability rules, or non-trivial behaviour and are not intended primarily for direct serialization. `attrs` provides concise declarations and good runtime performance while integrating well with existing code patterns.
+
+Rationale:
+- `pydantic` → best for serialization & validation (external-facing contracts).
+- `attrs` → best for internal domain objects with behaviour.
+- `dataclasses` are intentionally avoided to keep a single, explicit approach for serializable models (`pydantic`) and for logic/domain classes (`attrs`). This helps static analysis, consistent validation, and predictable serialization across the codebase.
+
+Examples:
+
+Correct (serializable DTO):
+
+```py
+from pydantic import BaseModel
+
+class AssetDto(BaseModel):
+	id: str
+	filename: str
+
+```
+
+Correct (internal/domain class):
+
+```py
+import attrs
+
+@attrs.define(auto_attribs=True)
+class Album:
+	id: str
+	name: str
+
+	def rename(self, new_name: str) -> None:
+		self.name = new_name
+```
+
+Incorrect:
+
+```py
+from dataclasses import dataclass
+
+@dataclass
+class Model:
+	id: str
+	name: str
+```
+
+If you need to interoperate between `attrs` classes and `pydantic` (e.g., an internal class that must be serialized), convert explicitly in a well-tested adapter layer and prefer `pydantic` for the external contract.
+
+
+### 1.2.3. Tuple returns and typed return objects
+
+- **Do NOT return plain tuples from functions as a way to return multiple values.** Tuples are ambiguous and hinder static analysis and discoverability.
+- Instead, return a small typed object: a `pydantic` model if the value is a DTO/serializable, or an `attrs` class for internal value objects. Where backward compatibility is required, prefer wrapper objects that implement `__iter__` to allow tuple-like unpacking temporarily while callers are migrated.
+
+Tooling:
+- The repository includes an AST-based checker (`scripts/devtools/check_no_tuples.py`) that enforces this policy in CI. It will flag:
+  - functions that `return` tuple literals
+  - return annotations using `typing.Tuple` or `tuple`
+  - class-level attributes assigned tuple literals
+  - `self.attr = (...)` tuple assignments in `__init__`
+- There's also a codemod (`scripts/devtools/fix_tuples.py`) that can apply simple, safe transformations (creates small typed result classes and replaces tuple returns) — use with care and review changes.
+
+If you are unsure which type to pick for a specific case, open an issue or ask on the PR for guidance.
 
 ## 1.3. Branch Policy
 
