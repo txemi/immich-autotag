@@ -349,9 +349,10 @@ class AlbumResponseWrapper:
                             pass
                         # Notify the global collection about this album state change
                         try:
-                            from immich_autotag.albums.albums.album_collection_wrapper import (
-                                AlbumCollectionWrapper,
+                            from immich_autotag.albums.albums import (
+                                album_collection_wrapper,
                             )
+                            AlbumCollectionWrapper = album_collection_wrapper.AlbumCollectionWrapper
 
                             AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(
                                 self
@@ -545,11 +546,11 @@ class AlbumResponseWrapper:
                                 "album_url": album_url,
                                 "reason": "Stale cached album data detected and reloaded",
                             },
-                        )
-                        raise AssetAlreadyInAlbumError(
                             (
-                                f"Asset {asset_wrapper.id} is already in album "
-                                f"{self.get_album_id()} (API duplicate error)"
+                                f"Asset {asset_wrapper.id} was not successfully added to album "
+                                f"{self.get_album_id()}: {error_msg}\n"
+                            )
+                        )
                             )
                         )
                     else:
@@ -628,7 +629,8 @@ class AlbumResponseWrapper:
                 _success = item.success
             except AttributeError:
                 raise RuntimeError(
-                    f"Item in remove_assets_from_album response missing required attributes: {item}"
+                    f"Item in remove_assets_from_album response missing required attributes: "
+                    f"{item}"
                 )
             if _id == str(asset_wrapper.id):
                 found = True
@@ -654,8 +656,9 @@ class AlbumResponseWrapper:
                                 removed = collection.remove_album_local(self)
                                 log(
                                     (
-                                        f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') "
-                                        f"removed from collection due to not_found error during asset removal."
+                                        f"[ALBUM REMOVAL] Album {self.get_album_id()} "
+                                        f"('{self.get_album_name()}') removed from collection due to "
+                                        f"not_found error during asset removal."
                                     ),
                                     level=LogLevel.FOCUS,
                                 )
@@ -710,8 +713,8 @@ class AlbumResponseWrapper:
         if not found:
             log(
                 (
-                    f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album "
-                    f"{self.get_album_id()}. Treating as already removed."
+                    f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album "
+                    f"response for album {self.get_album_id()}. Treating as already removed."
                 ),
                 level=LogLevel.WARNING,
             )
