@@ -94,7 +94,8 @@ def get_previous_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path | None:
     current = get_run_output_dir(base_dir)
     # Ordenar por fecha descendente usando la función privada
     dirs.sort(
-        key=lambda d: _extract_datetime_from_run_dir(d) or datetime.min, reverse=True
+        key=lambda d: _extract_datetime_from_run_dir(d) or datetime.min,
+        reverse=True,
     )
     for d in dirs:
         if d != current:

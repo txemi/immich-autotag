@@ -1,8 +1,9 @@
-"""
-tee_logging.py
 
-Utility to duplicate stdout and stderr to a file in real time, without memory buffers.
-"""
+# tee_logging.py
+#
+# Utility to duplicate stdout and stderr to a file in real time,
+# without memory buffers.
+
 
 import sys
 
@@ -12,7 +13,9 @@ from typeguard import typechecked
 class Tee:
     def __init__(self, filename: str, mode: str = "a"):
         # Open the file with buffering=1 (line buffered) to ensure real-time logging
-        self.file = open(filename, mode, buffering=1, encoding="utf-8")
+        self.file = open(
+            filename, mode, buffering=1, encoding="utf-8"
+        )
         self.stdout = sys.stdout
         self.stderr = sys.stderr
         # Redirect global streams
@@ -36,11 +39,16 @@ class Tee:
                 for marker in banned_markers:
                     if marker in data:
                         # Replace the large representation with a concise marker.
-                        data = data.replace(marker, "[DTO_TRUNCATED:(")
+                        data = data.replace(
+                            marker, "[DTO_TRUNCATED:("
+                        )
                         # Additionally, if the line is extremely long, truncate it to a safe size
                         MAX_LEN = 1000
                         if len(data) > MAX_LEN:
-                            data = data[:MAX_LEN] + "... [TRUNCATED]\n"
+                            data = (
+                                data[:MAX_LEN]
+                                + "... [TRUNCATED]\n"
+                            )
                         break
         except Exception:
             # Don't let filtering break logging; fall back to original data
@@ -59,7 +67,7 @@ class Tee:
         if sys.stdout is self:
             sys.stdout = self.stdout
         if sys.stderr is self:
-            sys.stderr = self.stderr
+            self.stderr = self.stderr
         if not self.file.closed:
             self.file.close()
 
@@ -68,8 +76,8 @@ class Tee:
 def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
     """
     Duplicates stdout and stderr to a file in real time, without memory buffers.
-    The file is created in the current run's log directory (get_run_output_dir()),
-    and the base name can be customized.
+    The file is created in the current run's log directory
+    (get_run_output_dir()), and the base name can be customized.
     """
     from immich_autotag.utils.run_output_dir import get_run_output_dir
 
