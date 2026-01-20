@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process.process_assets import process_assets
 from immich_autotag.config.filter_wrapper import FilterConfigWrapper
