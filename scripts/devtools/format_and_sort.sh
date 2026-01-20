@@ -88,8 +88,10 @@ if ! "$REPO_ROOT/.venv/bin/python" -c "import flake8" 2>/dev/null; then
 	"$REPO_ROOT/.venv/bin/python" -m pip install flake8
 fi
 
-# Run flake8 with same exclusions
-"$REPO_ROOT/.venv/bin/python" -m flake8 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || {
+# Run flake8 with same exclusions. Align flake8 with Black defaults
+# (Black uses line-length 88 and recommends ignoring E203 and W503)
+"$REPO_ROOT/.venv/bin/python" -m flake8 --max-line-length=88 \
+	--extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || {
 	echo "[ERROR] flake8 reported issues. Fix them or run flake8 to see details.";
 	exit 1;
 }
