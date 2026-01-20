@@ -77,19 +77,17 @@ def _analyze_duplicate_tags(asset_wrapper: AssetResponseWrapper):
 def _analyze_and_assign_album(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
-    suppress_album_already_belongs_log: bool,
 ):
     """Analyze and assign the asset to an album if needed."""
     log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
     analyze_and_assign_album(
-        asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
+        asset_wrapper, tag_mod_report
     )
 
 
 @typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
-    suppress_album_already_belongs_log: bool = True,
 ) -> None:
     """
     Process a single asset: applies tag conversions, corrects date if enabled, analyzes duplicates,
@@ -119,7 +117,7 @@ def process_single_asset(
     _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
     _analyze_and_assign_album(
-        asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
+        asset_wrapper, tag_mod_report
     )
     _ = asset_wrapper.validate_and_update_classification()
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
