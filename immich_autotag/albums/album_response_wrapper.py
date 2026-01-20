@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
+from uuid import UUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
-from uuid import UUID
 
 from immich_autotag.types import ImmichClient
 
@@ -122,7 +122,7 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         try:
-            album_dto = get_album_info.sync(id=self.get_album_id(), client=client)
+            album_dto = get_album_info.sync(id=self.get_album_uuid_no_cache(), client=client)
             self._set_album_full(album_dto)
             self.invalidate_cache()
         except immich_errors.UnexpectedStatus as exc:
@@ -253,7 +253,7 @@ class AlbumResponseWrapper:
         if asset_wrapper.id in self.get_asset_ids():
             return
         result = add_assets_to_album.sync(
-            id=self.get_album_id(),
+            id=self.get_album_uuid_no_cache(),
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
@@ -350,7 +350,7 @@ class AlbumResponseWrapper:
 
         # Remove asset from album
         result = remove_asset_from_album.sync(
-            id=self.get_album_id(),
+            id=self.get_album_uuid_no_cache(),
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
@@ -523,7 +523,9 @@ class AlbumResponseWrapper:
         """
         from immich_client.api.albums import get_album_info
 
-        album_full = get_album_info.sync(id=album_id, client=client)
+        from uuid import UUID as _UUID
+
+        album_full = get_album_info.sync(id=_UUID(album_id), client=client)
         wrapper = AlbumResponseWrapper.from_full_dto(
             album_full, validate=False, tag_mod_report=tag_mod_report
         )
@@ -569,7 +571,9 @@ class AlbumResponseWrapper:
             except AttributeError:
                 assets_check = None
             if assets_check is None:
-                raise ValueError("Provided DTO does not contain assets; cannot treat as full DTO")
+                raise ValueError(
+                    "Provided DTO does not contain assets; cannot treat as full DTO"
+                )
 
         # Construct instance without calling __init__ / attrs post-init so we
         # can set the full DTO explicitly. This avoids triggering the
@@ -594,4 +598,6 @@ class AlbumResponseWrapper:
         Ambiguous constructor intentionally removed. Use `from_partial_dto`
         or `from_full_dto` to make representation explicit.
         """
-        raise RuntimeError("Use AlbumResponseWrapper.from_partial_dto or from_full_dto; from_dto is ambiguous")
+        raise RuntimeError(
+            "Use AlbumResponseWrapper.from_partial_dto or from_full_dto; from_dto is ambiguous"
+        )
