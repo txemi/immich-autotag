@@ -103,8 +103,16 @@ class AssetDateCandidates:
         aw = self.asset_wrapper
         lines = [f"[AssetDateCandidates] Asset: {aw.id} | {aw.original_file_name}"]
         lines.append(f"  Link: {aw.get_immich_photo_url().geturl()}")
+        try:
+            file_created_at = aw.asset.file_created_at
+        except AttributeError:
+            file_created_at = None
+        try:
+            exif_created_at = aw.asset.exif_created_at
+        except AttributeError:
+            exif_created_at = None
         lines.append(
-            f"  Main dates: created_at={aw.asset.created_at}, file_created_at={getattr(aw.asset, 'file_created_at', None)}, exif_created_at={getattr(aw.asset, 'exif_created_at', None)}"
+            f"  Main dates: created_at={aw.asset.created_at}, file_created_at={file_created_at}, exif_created_at={exif_created_at}"
         )
         lines.append(f"  Tags: {aw.get_tag_names()}")
         lines.append(f"  Albums: {aw.get_album_names()}")
