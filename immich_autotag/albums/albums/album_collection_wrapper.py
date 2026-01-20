@@ -133,8 +133,8 @@ class AlbumCollectionWrapper:
         """
         Removes an album from the internal collection and updates the map incrementally. Returns True if removed, False if not present.
         """
-        if album_wrapper in self.albums:
-            self.albums = [a for a in self.albums if a != album_wrapper]
+        if album_wrapper in self._albums:
+            self.set_albums([a for a in self._albums if a != album_wrapper])
             self._remove_album_from_map(album_wrapper)
             return True
         return False
@@ -244,7 +244,7 @@ class AlbumCollectionWrapper:
         Raises RuntimeError if a duplicate name is found. This enforces stricter
         correctness to avoid ambiguity in operations that rely on album names.
         """
-        for w in self.albums:
+        for w in self.get_albums():
             if w.get_album_name() == album_name:
                 self._handle_duplicate_album_conflict(w, context="ensure_unique")
                 return
@@ -372,12 +372,12 @@ class AlbumCollectionWrapper:
         """
         asset_map = AssetToAlbumsMap()
         assert (
-            len(self.albums) > 0
+            len(self._albums) > 0
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
         from immich_autotag.context.immich_context import ImmichContext
 
         client = ImmichContext.get_default_client()
-        for album_wrapper in self.albums:
+        for album_wrapper in self._albums:
             # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
             if not album_wrapper.get_asset_ids():
@@ -466,7 +466,7 @@ class AlbumCollectionWrapper:
         Returns a list of empty temporary albums to be removed after building the map.
         """
         albums_to_remove: list[AlbumResponseWrapper] = []
-        for album_wrapper in self.albums:
+        for album_wrapper in self.get_albums()  :
             if not album_wrapper.get_asset_ids() and is_temporary_album(
                 album_wrapper.get_album_name()
             ):
@@ -672,7 +672,7 @@ class AlbumCollectionWrapper:
         """
         name = wrapper.get_album_name()
         # Check for existing album with same name
-        for existing in list(self.albums):
+        for existing in list(self.get_albums()  ):
             try:
                 if existing.get_album_name() == name:
                     # Duplicate found
@@ -693,11 +693,8 @@ class AlbumCollectionWrapper:
                 raise
 
         # Append to collection and update maps
-        self.albums.append(wrapper)
-        try:
-            self._add_album_to_map(wrapper)
-        except Exception:
-            pass
+        self.add_album_wrapper(wrapper)
+
         return wrapper
 
     @conditional_typechecked
@@ -732,7 +729,7 @@ class AlbumCollectionWrapper:
         """
         Returns a generator of AlbumResponseWrapper for all albums with the given name.
         """
-        for album_wrapper in self.albums:
+        for album_wrapper in self.get_albums():
             if album_wrapper.get_album_name() == album_name:
                 yield album_wrapper
 
