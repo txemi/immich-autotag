@@ -1,3 +1,4 @@
+
 # internal_config.py
 # Centralizes internal variables and global project configuration.
 
@@ -60,3 +61,7 @@ ALBUM_ERROR_WINDOW_SECONDS = 24 * 3600
 # take global action (in DEVELOPMENT this causes fail-fast; in PRODUCTION we
 # log a summary). Default is an absolute count.
 GLOBAL_UNAVAILABLE_THRESHOLD = 5
+
+
+# Flag para activar/desactivar la funcionalidad de combinar álbumes con el mismo nombre
+MERGE_DUPLICATE_ALBUMS_ENABLED = False  # Cambia a True para activar la combinación de álbumes duplicados
