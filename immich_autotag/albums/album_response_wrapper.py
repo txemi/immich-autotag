@@ -27,12 +27,23 @@ from immich_autotag.logging.utils import log
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
-    _album_partial: AlbumResponseDto = attrs.field(
-        validator=attrs.validators.instance_of(AlbumResponseDto)
-    )
+    # Either `_album_partial` or `_album_full` will be present depending on
+    # how the wrapper was constructed. Allow `_album_partial` to be None so
+    # callers can create an instance explicitly from a full DTO.
+    _album_partial: AlbumResponseDto | None = attrs.field(default=None)
     _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
     # Explicit cache for asset ids. Use get_asset_ids() to access.
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
+
+    def __attrs_post_init__(self) -> None:
+        """
+        Ensure the wrapper reflects a concrete representation: at least one of
+        `_album_partial` or `_album_full` must be present after construction.
+        """
+        if self._album_partial is None and self._album_full is None:
+            raise ValueError(
+                "AlbumResponseWrapper must be constructed with either a partial or full DTO"
+            )
 
     @staticmethod
     @typechecked
@@ -47,17 +58,30 @@ class AlbumResponseWrapper:
 
     @typechecked
     def get_album_id(self) -> str:
-        return self._album_partial.id
+        dto = self._active_dto()
+        return dto.id
 
     @typechecked
     def get_album_name(self) -> str:
-        return getattr(self._album_partial, "album_name", "")
+        try:
+            return self._active_dto().album_name
+        except AttributeError:
+            return ""
 
     @typechecked
     def get_album_uuid(self) -> "UUID":
         from uuid import UUID
 
-        return UUID(self._album_partial.id)
+        return UUID(self.get_album_id())
+
+    @typechecked
+    def get_album_uuid_no_cache(self) -> "UUID":
+        """Return the album UUID without using any cache (always computed).
+
+        This method intentionally avoids relying on any cached value and
+        computes the UUID from the current album id on each call.
+        """
+        return UUID(self.get_album_id())
 
     @typechecked
     def ensure_full(self) -> None:
@@ -69,6 +93,17 @@ class AlbumResponseWrapper:
 
     def _get_full(self) -> AlbumResponseDto:
         return self._get_album_full_or_load()
+
+    def _active_dto(self) -> AlbumResponseDto:
+        """Return the DTO currently held by the wrapper (partial or full).
+
+        Raises ValueError if neither representation is present. Use this
+        helper to avoid repeating `self._album_partial or self._album_full`.
+        """
+        dto = self._album_partial or self._album_full
+        if dto is None:
+            raise ValueError("AlbumResponseWrapper has no DTO (partial or full)")
+        return dto
 
     @typechecked
     def _set_album_full(self, value: AlbumResponseDto) -> None:
@@ -87,20 +122,24 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         try:
-            album_dto = get_album_info.sync(id=self._album_partial.id, client=client)
+            album_dto = get_album_info.sync(id=self.get_album_id(), client=client)
             self._set_album_full(album_dto)
             self.invalidate_cache()
         except immich_errors.UnexpectedStatus as exc:
             try:
-                album_name = getattr(self._album_partial, "album_name", None)
-                partial_repr = repr(self._album_partial)
+                dto_for_repr = self._active_dto()
+                try:
+                    album_name = dto_for_repr.album_name
+                except AttributeError:
+                    album_name = None
+                partial_repr = repr(dto_for_repr)
             except Exception:
                 album_name = None
                 partial_repr = "<unrepresentable album_partial>"
 
             log(
                 (
-                    f"[FATAL] get_album_info failed for album id={self._album_partial.id!r} "
+                    f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
                     f"name={album_name!r}. Exception: {exc!r}. "
                     f"album_partial={partial_repr}"
                 ),
@@ -148,12 +187,11 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
-        if not (self._album_partial.assets):
-            return []
-        return [
-            context.asset_manager.get_wrapper_for_asset(a, context)
-            for a in self._get_album_full_or_load().assets
-        ]
+        # Assets are authoritative in the full DTO. Load the full DTO if
+        # needed and return wrapped assets. This avoids relying on the
+        # partial DTO for asset information.
+        assets = self._get_album_full_or_load().assets or []
+        return [context.asset_manager.get_wrapper_for_asset(a, context) for a in assets]
 
     from typing import Optional
 
@@ -163,7 +201,7 @@ class AlbumResponseWrapper:
         client: ImmichClient,
         tag_mod_report: "ModificationReport",
     ) -> None:
-        album_name = getattr(self._album_partial, "album_name", "")
+        album_name = self.get_album_name()
         if album_name.startswith(" "):
             cleaned_name = album_name.strip()
             from immich_client.api.albums import update_album_info
@@ -173,7 +211,7 @@ class AlbumResponseWrapper:
             from uuid import UUID
 
             update_album_info.sync(
-                id=UUID(self._album_partial.id),
+                id=UUID(self.get_album_id()),
                 client=client,
                 body=update_body,
             )
@@ -212,10 +250,10 @@ class AlbumResponseWrapper:
         from immich_autotag.tags.modification_kind import ModificationKind
 
         # Avoid adding if already present
-        if asset_wrapper.id in [a.id for a in (self._album_partial.assets or [])]:
+        if asset_wrapper.id in self.get_asset_ids():
             return
         result = add_assets_to_album.sync(
-            id=self._album_partial.id,
+            id=self.get_album_id(),
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
@@ -236,7 +274,10 @@ class AlbumResponseWrapper:
             if _id == str(asset_wrapper.id):
                 found = True
                 if not _success:
-                    error_msg = getattr(item, "error", None)
+                    try:
+                        error_msg = item.error
+                    except AttributeError:
+                        error_msg = None
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
                     # If the error is 'duplicate', reactive refresh: reload album data from API
@@ -244,8 +285,7 @@ class AlbumResponseWrapper:
                     # batch will benefit from the fresh data without additional API calls
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
-                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (detected stale cache). "
-                            f"Reloading album data for subsequent operations.",
+                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (detected stale cache). Reloading album data for subsequent operations.",
                             level=LogLevel.FOCUS,
                         )
                         # Reactive refresh: reload album from API to get fresh data
@@ -301,16 +341,16 @@ class AlbumResponseWrapper:
         from immich_autotag.tags.modification_kind import ModificationKind
 
         # Check if asset is in album first
-        if asset_wrapper.id not in [a.id for a in (self._album_partial.assets or [])]:
+        if asset_wrapper.id not in self.get_asset_ids():
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self._album_partial.id}, skipping removal.",
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.get_album_id()}, skipping removal.",
                 level=LogLevel.DEBUG,
             )
             return
 
         # Remove asset from album
         result = remove_asset_from_album.sync(
-            id=self._album_partial.id,
+            id=self.get_album_id(),
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
@@ -336,7 +376,10 @@ class AlbumResponseWrapper:
             if _id == str(asset_wrapper.id):
                 found = True
                 if not _success:
-                    error_msg = getattr(item, "error", None)
+                    try:
+                        error_msg = item.error
+                    except AttributeError:
+                        error_msg = None
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
                     # Handle known recoverable errors as warnings or errors depending on mode
@@ -353,12 +396,12 @@ class AlbumResponseWrapper:
                                 collection = AlbumCollectionWrapper.get_instance()
                                 removed = collection.remove_album_local(self)
                                 log(
-                                    f"[ALBUM REMOVAL] Album {self._album_partial.id} ('{self.get_album_name()}') removed from collection due to not_found error during asset removal.",
+                                    f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') removed from collection due to not_found error during asset removal.",
                                     level=LogLevel.FOCUS,
                                 )
                             except Exception as e:
                                 log(
-                                    f"[ALBUM REMOVAL] Failed to remove album {self._album_partial.id} from collection after not_found: {e}",
+                                    f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} from collection after not_found: {e}",
                                     level=LogLevel.WARNING,
                                 )
                             log(
@@ -383,19 +426,19 @@ class AlbumResponseWrapper:
 
         if not found:
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self._album_partial.id}. Treating as already removed.",
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.get_album_id()}. Treating as already removed.",
                 level=LogLevel.WARNING,
             )
             if DEFAULT_ERROR_MODE != ErrorHandlingMode.DEVELOPMENT:
                 return
 
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self._album_partial.id}."
+                f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.get_album_id()}."
             )
 
         # Log successful removal
         log(
-            f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self._album_partial.id} ('{self.get_album_name()}').",
+            f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self.get_album_id()} ('{self.get_album_name()}').",
             level=LogLevel.FOCUS,
         )
 
@@ -436,8 +479,7 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self._album_partial.id}. "
-                    f"This may be an eventual consistency or API issue.",
+                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.get_album_id()}. This may be an eventual consistency or API issue.",
                     level=LogLevel.WARNING,
                 )
 
@@ -465,8 +507,7 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album {self._album_partial.id}. "
-                    f"This may be an eventual consistency or API issue.",
+                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album {self.get_album_id()}. This may be an eventual consistency or API issue.",
                     level=LogLevel.WARNING,
                 )
 
@@ -483,20 +524,74 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         album_full = get_album_info.sync(id=album_id, client=client)
-        wrapper = AlbumResponseWrapper(album_full=album_full)
-        wrapper._album_full = album_full
+        wrapper = AlbumResponseWrapper.from_full_dto(
+            album_full, validate=False, tag_mod_report=tag_mod_report
+        )
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
         return wrapper
 
     @staticmethod
     @conditional_typechecked
-    def from_dto(
+    def from_partial_dto(
         dto: AlbumResponseDto,
         tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
-        Creates an AlbumResponseWrapper from a DTO without making API calls.
-        Uses album_partial to enable lazy-loading of full data on first access.
+        Create an AlbumResponseWrapper from a partial DTO.
+
+        The wrapper will store the provided DTO as `_album_partial` and
+        will not populate the full cache. Callers must explicitly request
+        loading the full DTO via `ensure_full`/`reload_from_api`.
         """
         wrapper = AlbumResponseWrapper(album_partial=dto)
         return wrapper
+
+    @staticmethod
+    @conditional_typechecked
+    def from_full_dto(
+        dto: AlbumResponseDto,
+        *,
+        validate: bool = True,
+        tag_mod_report: ModificationReport | None = None,
+    ) -> "AlbumResponseWrapper":
+        """
+        Create an AlbumResponseWrapper from a full DTO.
+
+        This constructor treats the provided DTO as the authoritative full
+        representation: `_album_full` will be set and `_album_partial` will
+        be left as None to make it explicit what representation the wrapper
+        holds. If `validate` is True, a basic sanity check is performed to
+        ensure the DTO contains `assets` before accepting it as full.
+        """
+        if validate:
+            try:
+                assets_check = dto.assets
+            except AttributeError:
+                assets_check = None
+            if assets_check is None:
+                raise ValueError("Provided DTO does not contain assets; cannot treat as full DTO")
+
+        # Construct instance without calling __init__ / attrs post-init so we
+        # can set the full DTO explicitly. This avoids triggering the
+        # `__attrs_post_init__` check which expects a valid representation
+        # during normal construction paths.
+        wrapper = object.__new__(AlbumResponseWrapper)
+        # Set the expected attributes directly for a full representation.
+        wrapper._album_partial = None
+        wrapper._album_full = dto
+        wrapper._asset_ids_cache = None
+        try:
+            assets = dto.assets or []
+            wrapper._asset_ids_cache = set(a.id for a in assets)
+        except Exception:
+            wrapper._asset_ids_cache = None
+
+        return wrapper
+
+    @staticmethod
+    def from_dto(*_args, **_kwargs) -> "AlbumResponseWrapper":
+        """
+        Ambiguous constructor intentionally removed. Use `from_partial_dto`
+        or `from_full_dto` to make representation explicit.
+        """
+        raise RuntimeError("Use AlbumResponseWrapper.from_partial_dto or from_full_dto; from_dto is ambiguous")
