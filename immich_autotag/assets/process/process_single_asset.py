@@ -130,7 +130,11 @@ def process_single_asset(
     config = ConfigManager.get_instance().config
 
     # Get threshold from new config section with fallback
-    if config and config.album_date_consistency and config.album_date_consistency.enabled:
+    if (
+        config
+        and config.album_date_consistency
+        and config.album_date_consistency.enabled
+    ):
         threshold_days = config.album_date_consistency.threshold_days
         check_album_date_consistency(asset_wrapper, tag_mod_report, threshold_days)
 
