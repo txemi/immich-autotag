@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 from zoneinfo import ZoneInfo
 
 from typeguard import typechecked
@@ -7,7 +6,6 @@ from typeguard import typechecked
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
-from .asset_date_candidates import AssetDateCandidates
 from .asset_date_sources_list import AssetDateSourcesList
 
 
@@ -74,7 +72,6 @@ def _check_filename_candidate_and_fix(
     if not candidates:
         return DateCorrectionStepResult.CONTINUE
     best_candidate = min(candidates, key=lambda c: c.get_aware_date())
-    from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
     # Use 1.1 days as threshold
     candidate_date = best_candidate.get_aware_date()

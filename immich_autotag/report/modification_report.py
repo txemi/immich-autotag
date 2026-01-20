@@ -116,7 +116,10 @@ class ModificationReport:
                 with self.report_path.open("w", encoding="utf-8"):
                     pass  # Truncate the file
             except Exception as e:
-                print(f"[WARN] Could not clear the tag modification report: {e}")
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+
+                log(f"Could not clear the tag modification report: {e}", level=LogLevel.WARNING)
             self._cleared_report = True
 
         # If user is None, obtain it from the singleton ImmichContext
@@ -350,10 +353,13 @@ class ModificationReport:
 
     @typechecked
     def print_summary(self) -> None:
-        print("\n[SUMMARY] Modifications:")
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log("[SUMMARY] Modifications:", level=LogLevel.INFO)
         for entry in self.modifications:
-            print(self._format_modification_entry(entry))
-        print(f"Total modifications: {len(self.modifications)}")
+            log(self._format_modification_entry(entry), level=LogLevel.INFO)
+        log(f"Total modifications: {len(self.modifications)}", level=LogLevel.INFO)
 
     @typechecked
     def _build_link(

@@ -3,9 +3,7 @@ YAML config generator with comments from Pydantic model descriptions.
 """
 
 from pathlib import Path
-from typing import Any
 
-import yaml
 from pydantic import BaseModel
 from typeguard import typechecked
 

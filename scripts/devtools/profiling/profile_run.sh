@@ -7,8 +7,17 @@ set -euo pipefail
 
 OUTPUT_FILE="profile.stats"
 
-echo "[profile_run] Running cProfile -> $OUTPUT_FILE"
-python -m cProfile -o "$OUTPUT_FILE" -s cumulative main.py "$@"
+# Allow CI or local users to disable profiling by setting SKIP_PROFILING=1
+# Default to skipping profiling to avoid OOM in CI environments.
+SKIP_PROFILING="${SKIP_PROFILING:-1}"
+
+if [ "$SKIP_PROFILING" = "1" ] || [ "$SKIP_PROFILING" = "true" ]; then
+	echo "[profile_run] SKIP_PROFILING set -> running main.py without cProfile"
+	python main.py "$@"
+else
+	echo "[profile_run] Running cProfile -> $OUTPUT_FILE"
+	python -m cProfile -o "$OUTPUT_FILE" -s cumulative main.py "$@"
+fi
 
 if [ ! -f "$OUTPUT_FILE" ]; then
 	echo "[profile_run] ERROR: profiling output not found: $OUTPUT_FILE" >&2

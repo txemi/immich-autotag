@@ -7,7 +7,7 @@ Implements complete synchronization: config is source of truth (add + remove).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 from uuid import UUID
 
 from immich_client.api.albums import add_users_to_album as immich_add_users_to_album
@@ -17,7 +17,6 @@ from immich_client.api.albums import (
 )
 from immich_client.api.users import search_users as immich_search_users
 from immich_client.models.add_users_dto import AddUsersDto
-from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole
@@ -106,9 +105,10 @@ def sync_album_permissions(
         resolved_policy: Resolved policy with target members (emails)
         context: ImmichContext with API client
     """
-    album = album_wrapper.album
-    album_id = album.id
-    album_name = album.album_name
+    album_id = album_wrapper.get_album_id()
+    album_name = album_wrapper.get_album_name()
+    # Use the no-cache UUID accessor when interacting with APIs that expect a UUID
+    album_uuid = album_wrapper.get_album_uuid_no_cache()
 
     report = ModificationReport.get_instance()
 
@@ -120,8 +120,8 @@ def sync_album_permissions(
     email_to_id_map, _ = _resolve_emails_to_user_ids(resolved_policy.members, context)
     target_user_ids = set(email_to_id_map.values())
 
-    # Get current members from API
-    current_members = _get_current_members(album_id, context)
+    # Get current members from API (pass UUID directly)
+    current_members = _get_current_members(album_uuid, context)
     current_user_ids = {str(member.user.id) for member in current_members}
 
     # Calculate diff
@@ -170,7 +170,7 @@ def sync_album_permissions(
 
 @typechecked
 def _get_current_members(
-    album_id: str, context: ImmichContext
+    album_id: UUID, context: ImmichContext
 ) -> List[AlbumUserResponseDto]:
     """
     Fetch current album members from API.
@@ -180,8 +180,10 @@ def _get_current_members(
     log_debug(f"[ALBUM_PERMISSIONS] Fetching current members for album {album_id}")
 
     client = context.client
+    # `album_id` may be a `str` or a `UUID`. Pass it directly to the client
+    # (the client accepts UUID objects); avoid double-wrapping with `UUID()`.
     response = immich_get_album_info.sync(
-        id=UUID(album_id),
+        id=album_id,
         client=client,
     )
 

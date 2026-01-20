@@ -22,9 +22,8 @@ Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
 
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -224,8 +223,12 @@ class StatisticsManager:
 
     @typechecked
     def delete_all(self) -> None:
-        print(
-            "[WARN] StatisticsManager.delete_all() is deprecated and should not be used. Statistics are preserved for logging."
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(
+            "StatisticsManager.delete_all() is deprecated and should not be used. Statistics are preserved for logging.",
+            level=LogLevel.WARNING,
         )
 
     @typechecked

@@ -33,26 +33,27 @@ setup_exception_hook()
 
 @typechecked
 def run_main():
-    import sys
 
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.utils.user_help import print_welcome_links
 
     # Get config FIRST (constructor initializes it)
-    print("[ENTRYPOINT] Initializing ConfigManager...")
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+
+    log("Initializing ConfigManager...", level=LogLevel.INFO)
     manager = ConfigManager.get_instance()
 
     # Verify config is actually loaded before doing anything else
     if manager.config is None:
-        print(
-            "[ENTRYPOINT] ❌ FATAL: ConfigManager.config is None after initialization. "
-            "This suggests the config file failed to load properly. "
-            "Check ~/.config/immich_autotag/config.py or config.yaml"
+        log(
+            "FATAL: ConfigManager.config is None after initialization. This suggests the config file failed to load properly. Check ~/.config/immich_autotag/config.py or config.yaml",
+            level=LogLevel.ERROR,
         )
         raise RuntimeError("ConfigManager.config is None after initialization")
 
-    print("[ENTRYPOINT] ✅ ConfigManager initialized successfully")
+    log("ConfigManager initialized successfully", level=LogLevel.INFO)
 
     # Now initialize logging (needs ConfigManager.config to be ready)
     initialize_logging()
@@ -111,7 +112,6 @@ def run_main():
         max_assets = None
         process_assets(context, max_assets=max_assets)
 
-    from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
@@ -152,11 +152,9 @@ def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  #
 
     # Process each album
     for album_wrapper in albums_collection.albums:
-        album = album_wrapper.album
-
         resolved_policy = resolve_album_policy(
-            album_name=album.album_name,
-            album_id=album.id,
+            album_name=album_wrapper.get_album_name(),
+            album_id=album_wrapper.get_album_id(),
             user_groups=user_groups_dict,
             selection_rules=album_perms_config.selection_rules or [],
         )

@@ -20,7 +20,7 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
     duplicate_wrappers = get_duplicate_wrappers(asset_wrapper)
     details = [w.format_info() for w in duplicate_wrappers]
     msg = (
-        f"[DUPLICATE TAGS][CONFLICT] Classification tags differ for duplicates. Detailed information of all involved:\n"
+        "[DUPLICATE TAGS][CONFLICT] Classification tags differ for duplicates. Detailed information of all involved:\n"
         + "\n".join(details)
     )
     log(msg, level=LogLevel.FOCUS)
