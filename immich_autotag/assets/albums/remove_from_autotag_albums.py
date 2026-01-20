@@ -47,7 +47,7 @@ def remove_asset_from_autotag_temporary_albums(
 
     for album_wrapper in temporary_albums:
         # Check if album name matches temporary album pattern
-        if not is_temporary_album(album_wrapper.get_partial().album_name):
+        if not is_temporary_album(album_wrapper.get_album_name()):
             continue
 
         # Skip if asset not in album (idempotent check)
@@ -68,10 +68,10 @@ def remove_asset_from_autotag_temporary_albums(
                 client=client,
                 tag_mod_report=tag_mod_report,
             )
-            removed_album_names.append(album_wrapper.get_partial().album_name)
+            removed_album_names.append(album_wrapper.get_album_name())
 
             log(
-                f"Asset {asset_wrapper.id} removed from temporary album {album_wrapper.get_partial().album_name}",
+                f"Asset {asset_wrapper.id} removed from temporary album {album_wrapper.get_album_name()}",
                 level=LogLevel.DEBUG,
             )
 
@@ -80,7 +80,7 @@ def remove_asset_from_autotag_temporary_albums(
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise
                 log(
-                f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.get_partial().album_name}: {e}",
+                f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.get_album_name()}: {e}",
                 level=LogLevel.IMPORTANT,
             )
             # Continue processing other albums even if one fails

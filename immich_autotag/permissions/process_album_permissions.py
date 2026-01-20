@@ -59,10 +59,9 @@ def process_album_permissions(
     matched_count = 0
     unmatched_count = 0
     for album_wrapper in albums_collection.albums:
-        album = album_wrapper.get_partial()
         resolved_policy = resolve_album_policy(
-            album_name=album.album_name,
-            album_id=album.id,
+            album_name=album_wrapper.get_album_name(),
+            album_id=album_wrapper.get_album_id(),
             user_groups=user_groups_dict,
             selection_rules=album_perms_config.selection_rules or [],
         )
@@ -70,7 +69,7 @@ def process_album_permissions(
         if resolved_policy.has_match:
             matched_count += 1
             log(
-                f"[ALBUM_PERMISSIONS] Album '{album.album_name}' → "
+                f"[ALBUM_PERMISSIONS] Album '{album_wrapper.get_album_name()}' → "
                 f"Groups: {resolved_policy.groups}, "
                 f"Members: {len(resolved_policy.members)}, "
                 f"Access: {resolved_policy.access_level}",
@@ -89,7 +88,7 @@ def process_album_permissions(
             unmatched_count += 1
             if album_perms_config.log_unmatched:
                 log(
-                    f"[ALBUM_PERMISSIONS] Album '{album.album_name}' → No matching rules",
+                    f"[ALBUM_PERMISSIONS] Album '{album_wrapper.get_album_name()}' → No matching rules",
                     level=LogLevel.DEBUG,
                 )
                 report.add_album_permission_modification(
