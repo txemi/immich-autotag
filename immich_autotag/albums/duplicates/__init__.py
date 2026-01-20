@@ -1,6 +1,6 @@
 """Duplicate albums management package.
 
-Provides a manager to collect duplicate-album occurrences and optionally
-perform an auto-merge (move assets then delete duplicate album) when
-configured.
+Provides a manager to collect occurrences of albums sharing the **same name** (duplicate name)
+and optionally perform an auto-merge (move assets from the duplicate to the target album,
+then delete the duplicate album) when configured.
 """
