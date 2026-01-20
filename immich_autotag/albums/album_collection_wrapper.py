@@ -175,9 +175,9 @@ class AlbumCollectionWrapper:
             summary_items = []
             def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
                 try:
-                    return w.get_album_id() or 
+                    return w.get_album_id() or ""
                 except Exception:
-                    return 
+                    return ""
 
             for wrapper in sorted(self._unavailable_albums, key=_unavailable_sort_key):
                 try:
