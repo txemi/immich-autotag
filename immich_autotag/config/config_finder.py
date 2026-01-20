@@ -2,7 +2,6 @@ import importlib.util
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 import attrs
 import yaml
