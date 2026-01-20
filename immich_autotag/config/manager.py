@@ -122,7 +122,7 @@ class ConfigManager:
         global _instance
         if _instance is None:
             ConfigManager()
-            # _instance._construction()
+        assert _instance is not None
         return _instance
 
     @typechecked
@@ -201,8 +201,13 @@ class ConfigManager:
     @staticmethod
     def is_checkpoint_resume_enabled() -> bool:
         config = ConfigManager.get_instance().config
+        if config is None:
+            return False
+        # Prefer explicit access to known config fields. The skip/resume logic
+        # is represented in `SkipConfig.resume_previous` on `UserConfig.skip`.
+        # Access fields explicitly to avoid dynamic attribute lookups (getattr).
         try:
-            return bool(config.features.enable_checkpoint_resume)
+            return bool(config.skip.resume_previous)
         except Exception:
             return False
 
