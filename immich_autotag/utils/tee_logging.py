@@ -23,6 +23,29 @@ class Tee:
         self.close()
 
     def write(self, data):
+        # Filter out extremely large DTO reprs that flood the logs.
+        # If a known DTO pattern appears in the output, replace it with a short placeholder.
+        try:
+            if isinstance(data, str) and data:
+                banned_markers = (
+                    "AssetResponseDto(",
+                    "ExifResponseDto(",
+                    "AlbumResponseDto(",
+                    "DuplicateResponseDto(",
+                )
+                for marker in banned_markers:
+                    if marker in data:
+                        # Replace the large representation with a concise marker.
+                        data = data.replace(marker, "[DTO_TRUNCATED:(")
+                        # Additionally, if the line is extremely long, truncate it to a safe size
+                        MAX_LEN = 1000
+                        if len(data) > MAX_LEN:
+                            data = data[:MAX_LEN] + "... [TRUNCATED]\n"
+                        break
+        except Exception:
+            # Don't let filtering break logging; fall back to original data
+            pass
+
         self.stdout.write(data)
         self.file.write(data)
         self.file.flush()
