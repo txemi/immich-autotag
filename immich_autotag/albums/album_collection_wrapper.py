@@ -459,11 +459,31 @@ class AlbumCollectionWrapper:
                     extra={"reason": "Removed duplicate temporary album during add"},
                 )
             return True
-        except Exception:
+        except Exception as exc:
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
+            msg = str(exc)
+            # Try to give a more specific reason if possible
+            if hasattr(exc, 'response') and hasattr(exc.response, 'status_code'):
+                code = exc.response.status_code
+                if code == 404:
+                    reason = "Album not found (already deleted)"
+                elif code == 400:
+                    reason = "Album not empty or bad request"
+                elif code == 403:
+                    reason = "Permission denied"
+                else:
+                    reason = f"HTTP {code}"
+            elif "not found" in msg.lower():
+                reason = "Album not found (already deleted)"
+            elif "not empty" in msg.lower():
+                reason = "Album not empty"
+            elif "permission" in msg.lower() or "forbidden" in msg.lower():
+                reason = "Permission denied"
+            else:
+                reason = "Unknown error"
             log(
-                f"Failed to delete temporary duplicate album '{name}' (id={wrapper.get_album_id()}) during add. Skipping.",
+                f"Failed to delete temporary duplicate album '{name}' (id={wrapper.get_album_id()}) during add. Reason: {reason}. Exception: {msg}",
                 level=LogLevel.WARNING,
             )
             return True
@@ -578,57 +598,8 @@ class AlbumCollectionWrapper:
                 if existing.get_album_name() == name:
                     # Duplicate found
                     if is_temporary_album(name) and client is not None:
-                        from uuid import UUID
-
-                        from immich_client.api.albums.delete_album import (
-                            sync_detailed as delete_album_sync,
-                        )
-
-                        try:
-                            delete_album_sync(
-                                id=UUID(existing.get_album_id()), client=client
-                            )
-                            # Remove from local collection
-                            self._remove_album_from_local_collection(existing)
-                            from immich_autotag.logging.levels import LogLevel
-                            from immich_autotag.logging.utils import log
-
-                            log(
-                                f"Temporary duplicate album '{name}' (id={existing.get_album_id()}) deleted during add and removed from local collection.",
-                                level=LogLevel.FOCUS,
-                            )
-                            if tag_mod_report is not None:
-                                try:
-                                    from immich_autotag.tags.modification_kind import (
-                                        ModificationKind,
-                                    )
-
-                                    tag_mod_report.add_album_modification(
-                                        kind=ModificationKind.DELETE_ALBUM,
-                                        album=existing,
-                                        old_value=name,
-                                        extra={
-                                            "reason": "Removed duplicate temporary album during add"
-                                        },
-                                    )
-                                except Exception:
-                                    pass
-                            break
-                        except Exception:
-                            # Deletion failed: log and skip deletion, but do not abort
-                            from immich_autotag.logging.levels import LogLevel
-                            from immich_autotag.logging.utils import log
-
-                            log(
-                                f"Failed to delete temporary duplicate album '{name}' (id={existing.get_album_id()}) during add. Skipping deletion.",
-                                level=LogLevel.WARNING,
-                            )
-                            # Attempt to continue by removing locally to avoid failing startup
-                            try:
-                                self._remove_album_from_local_collection(existing)
-                            except Exception:
-                                pass
-                            break
+                        self._handle_temporary_duplicate(existing, existing, client, tag_mod_report, name)
+                        break
                     # Not temporary or no client: cannot resolve automatically
 
                         # Unifica el manejo de duplicados no temporales
@@ -723,60 +694,8 @@ class AlbumCollectionWrapper:
                 if album_wrapper.get_album_name() == album_name:
                     try:
                         if is_temporary_album(album_name):
-                            from uuid import UUID
-
-                            from immich_client.api.albums.delete_album import (
-                                sync_detailed as delete_album_sync,
-                            )
-
-                            try:
-                                delete_album_sync(
-                                    id=UUID(album_wrapper.get_album_id()), client=client
-                                )
-                                # Remove locally
-                                self._remove_album_from_local_collection(album_wrapper)
-                                from immich_autotag.logging.levels import LogLevel
-                                from immich_autotag.logging.utils import log
-
-                                log(
-                                    f"Temporary duplicate album '{album_name}' (id={album_wrapper.get_album_id()}) deleted during create_or_get_album_with_user.",
-                                    level=LogLevel.FOCUS,
-                                )
-                                if tag_mod_report is not None:
-                                    try:
-                                        from immich_autotag.tags.modification_kind import (
-                                            ModificationKind,
-                                        )
-
-                                        tag_mod_report.add_album_modification(
-                                            kind=ModificationKind.DELETE_ALBUM,
-                                            album=album_wrapper,
-                                            old_value=album_name,
-                                            extra={
-                                                "reason": "Removed duplicate temporary album during create"
-                                            },
-                                        )
-                                    except Exception:
-                                        pass
-                                # continue to creation
-                                break
-                            except Exception:
-                                # If deletion fails, log a warning and skip removal to avoid aborting
-                                from immich_autotag.logging.levels import LogLevel
-                                from immich_autotag.logging.utils import log
-
-                                log(
-                                    f"Failed to delete temporary duplicate album '{album_name}' (id={album_wrapper.get_album_id()}) during create: continuing without deletion.",
-                                    level=LogLevel.WARNING,
-                                )
-                                # Try to proceed by removing local reference if possible
-                                try:
-                                    self._remove_album_from_local_collection(
-                                        album_wrapper
-                                    )
-                                except Exception:
-                                    pass
-                                break
+                            self._handle_temporary_duplicate(album_wrapper, album_wrapper, client, tag_mod_report, album_name)
+                            break
                         # Not temporary: decide based on error mode
                         # Centraliza el manejo de duplicados usando el método unificado
                         self._handle_duplicate_album_conflict(album_wrapper, None, context="duplicate_on_create")
@@ -873,7 +792,8 @@ class AlbumCollectionWrapper:
         if albums is None:
             raise RuntimeError("Failed to fetch albums: API returned None")
         albums_wrapped: list[AlbumResponseWrapper] = []
-        duplicates_collected: list[dict] = []
+        from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReports
+        duplicates_collected = DuplicateAlbumReports()
 
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
@@ -902,8 +822,9 @@ class AlbumCollectionWrapper:
             )
 
         tag_mod_report.flush()
-        if duplicates_collected:
-            AlbumCollectionWrapper.write_duplicates_summary(duplicates_collected)
+        if len(duplicates_collected) > 0:
+            from immich_autotag.albums.duplicates.write_duplicates_summary import write_duplicates_summary
+            write_duplicates_summary(duplicates_collected)
 
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
         MIN_ALBUMS = 326
