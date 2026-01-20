@@ -52,7 +52,7 @@ class AlbumResponseWrapper:
         return getattr(self._album_partial, "album_name", "")
 
     @typechecked
-    def get_album_uuid(self)-> "UUID":
+    def get_album_uuid(self) -> "UUID":
         from uuid import UUID
 
         return UUID(self._album_partial.id)
@@ -185,7 +185,10 @@ class AlbumResponseWrapper:
                 old_value=album_name,
                 new_value=cleaned_name,
             )
-            log(f"Album '{album_name}' renamed to '{cleaned_name}'", level=LogLevel.FOCUS)
+            log(
+                f"Album '{album_name}' renamed to '{cleaned_name}'",
+                level=LogLevel.FOCUS,
+            )
 
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":

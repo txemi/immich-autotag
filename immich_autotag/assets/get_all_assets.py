@@ -14,8 +14,6 @@ from immich_autotag.logging.utils import log_debug
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
 
-from typeguard import typechecked
-
 
 @typechecked
 def _fetch_assets_page(context: "ImmichContext", page: int) -> object:
