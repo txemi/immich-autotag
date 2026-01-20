@@ -134,7 +134,21 @@ class AlbumResponseWrapper:
                     album_name = dto_for_repr.album_name
                 except AttributeError:
                     album_name = None
-                partial_repr = repr(dto_for_repr)
+                # Create a short, safe summary instead of using repr() which
+                # can emit very large DTO dumps (causing huge CI logs).
+                try:
+                    try:
+                        assets_attr = getattr(dto_for_repr, "assets", None)
+                        asset_count = len(assets_attr) if assets_attr is not None else None
+                    except Exception:
+                        asset_count = None
+
+                    partial_repr = (
+                        f"AlbumDTO(id={getattr(dto_for_repr, 'id', None)!r}, "
+                        f"name={album_name!r}, assets={asset_count})"
+                    )
+                except Exception:
+                    partial_repr = "<unrepresentable album_partial>"
             except Exception:
                 album_name = None
                 partial_repr = "<unrepresentable album_partial>"
