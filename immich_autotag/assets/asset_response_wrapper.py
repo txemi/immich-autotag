@@ -76,8 +76,10 @@ class AssetResponseWrapper:
 
         from immich_client.api.assets import get_asset_info
 
+        # The immich client expects a UUID for the id parameter. Use the
+        # wrapper's UUID accessor to provide a UUID object rather than a raw string.
         self._asset_full = get_asset_info.sync(
-            id=self.asset_partial.id, client=self.context.client
+            id=self.id_as_uuid, client=self.context.client
         )
         if self._asset_full is None:
             raise RuntimeError(
