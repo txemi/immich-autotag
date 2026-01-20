@@ -42,11 +42,30 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
         print(
             f"[INFO] Duplicates loaded in {t1-t0:.2f} s. Total groups: {len(duplicates_collection.groups_by_duplicate_id)}"
         )
-        # Save the cache in the current execution directory
+        # Save the cache in the current execution directory.
+        # Avoid writing extremely large caches in CI or when the collection is huge.
         cache_path = get_run_output_dir() / "duplicates_cache.pkl"
         import pickle
 
-        with open(cache_path, "wb") as f:
-            pickle.dump(duplicates_collection, f)
-        print(f"[INFO] Duplicates cached to {cache_path}")
+        try:
+            # Estimate size by counting groups and assets; avoid full serialization if huge.
+            total_groups = len(duplicates_collection.groups_by_duplicate_id)
+            total_assets = sum(len(g.assets) for g in duplicates_collection.groups_by_duplicate_id.values())
+        except Exception:
+            total_groups = -1
+            total_assets = -1
+
+        # Thresholds (tunable): if exceeded, skip writing the full pickle to avoid huge files.
+        GROUPS_THRESHOLD = 5000
+        ASSETS_THRESHOLD = 100000
+
+        if (0 <= total_groups <= GROUPS_THRESHOLD) and (0 <= total_assets <= ASSETS_THRESHOLD):
+            with open(cache_path, "wb") as f:
+                pickle.dump(duplicates_collection, f)
+            print(f"[INFO] Duplicates cached to {cache_path} (groups={total_groups}, assets={total_assets})")
+        else:
+            print(
+                f"[INFO] Skipping caching duplicates to {cache_path} because collection is large "
+                f"(groups={total_groups}, assets={total_assets}). Set a higher threshold if you need caching."
+            )
     return duplicates_collection
