@@ -67,8 +67,10 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
             total_assets = -1
 
         # Thresholds (tunable): if exceeded, skip writing the full pickle to avoid huge files.
-        GROUPS_THRESHOLD = 5000
-        ASSETS_THRESHOLD = 100000
+        # Thresholds (tunable): if exceeded, skip writing the full pickle to avoid huge files.
+        # Increased thresholds to ensure cache is written for typical user libraries
+        GROUPS_THRESHOLD = 500000
+        ASSETS_THRESHOLD = 1000000
 
         if (0 <= total_groups <= GROUPS_THRESHOLD) and (
             0 <= total_assets <= ASSETS_THRESHOLD
