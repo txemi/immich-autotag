@@ -43,24 +43,26 @@ def process_assets_sequential(
         for asset_wrapper in context.asset_manager.iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
         ):
-            log_debug(
-                f"[BUG] Processing asset: {getattr(asset_wrapper, 'id', asset_wrapper)}"
-            )
+            asset_id = get_asset_id(asset_wrapper)
+            log_debug(f"[BUG] Processing asset: {asset_id}")
             t0 = time.time()
 
             try:
                 process_single_asset(asset_wrapper)
             except Exception as e:
                 # Categorize the error as recoverable or fatal
-                is_recoverable, category = categorize_error(e)
+                categorized = categorize_error(e)
+                is_recoverable = categorized.is_recoverable
+                category = categorized.category_name
 
                 # Si es recuperable, o no es recuperable pero estamos en modo BATCH, tratamos igual
                 if is_recoverable or error_mode == ErrorHandlingMode.USER:
                     import traceback
 
                     tb = traceback.format_exc()
+                    asset_id = get_asset_id(asset_wrapper)
                     log(
-                        f"[WARN] {category} - Skipping asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
+                        f"[WARN] {category} - Skipping asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
                     from immich_autotag.tags.modification_kind import ModificationKind
@@ -85,16 +87,28 @@ def process_assets_sequential(
                     import traceback
 
                     tb = traceback.format_exc()
+                    asset_id = get_asset_id(asset_wrapper)
                     log(
-                        f"[ERROR] {category} - Aborting at asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
+                        f"[ERROR] {category} - Aborting at asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
                     raise
 
+            asset_id = get_asset_id(asset_wrapper)
             log(
-                f"Iteration completed for asset: {getattr(asset_wrapper, 'id', asset_wrapper)}",
+                f"Iteration completed for asset: {asset_id}",
                 level=LogLevel.DEBUG,
             )
+            def get_asset_id(asset_wrapper):
+                """
+                Returns the asset's ID (prefer 'id', fallback to 'uuid'), never suppresses errors.
+                Raises AttributeError if neither is present.
+                """
+                if hasattr(asset_wrapper, "id"):
+                    return asset_wrapper.id
+                if hasattr(asset_wrapper, "uuid"):
+                    return asset_wrapper.uuid
+                raise AttributeError(f"Asset wrapper has neither 'id' nor 'uuid': {asset_wrapper!r}")
             count += 1
             StatisticsManager.get_instance().update_checkpoint(
                 asset_wrapper.id,
