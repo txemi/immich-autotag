@@ -14,13 +14,18 @@ from typing import Optional
 from uuid import UUID
 
 
+
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
-from typeguard import typechecked
 
+from typeguard import typechecked
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 @typechecked
 def move_assets_between_albums(
+    collection: 'AlbumCollectionWrapper',
     dest: AlbumResponseWrapper,
     src: AlbumResponseWrapper,
     client: ImmichClient,
@@ -35,115 +40,50 @@ def move_assets_between_albums(
     to continue.
     """
     # Local imports to avoid circular dependencies at module import time
-    from immich_client.api.albums import add_assets_to_album, remove_asset_from_album
-    from immich_client.models.bulk_ids_dto import BulkIdsDto
     from immich_autotag.logging.utils import log
     from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.tags.modification_kind import ModificationKind
     from immich_autotag.config._internal_types import ErrorHandlingMode
     from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+    from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
 
     moved_count = 0
+    tag_mod_report = tag_mod_report or collection.get_modification_report()
 
     try:
-        asset_ids = list(src.get_asset_ids() or [])
+        asset_wrappers = src.wrapped_assets(collection.context)
     except Exception:
-        asset_ids = []
+        asset_wrappers = []
 
-    for aid in asset_ids:
+    for asset_wrapper in asset_wrappers:
+        # Add to destination album using wrapper logic (handles duplicates)
         try:
-            aid_uuid = UUID(aid)
-        except Exception:
-            log(f"Skipping invalid asset id '{aid}' while merging albums.", level=LogLevel.WARNING)
-            continue
-
-        # Add to destination album
-        try:
-            add_result = add_assets_to_album.sync(id=UUID(dest.get_album_id()), client=client, body=BulkIdsDto(ids=[aid_uuid]))
-            # Expect a list response with elements containing id and success
-            if not isinstance(add_result, list):
-                raise RuntimeError(f"add_assets_to_album returned unexpected type: {type(add_result)}")
-            # Inspect result for this id
-            success_add = None
-            for item in add_result:
-                try:
-                    if item.id == str(aid):
-                        success_add = bool(item.success)
-                        break
-                except Exception:
-                    continue
-            if success_add is not True:
-                raise RuntimeError(f"Failed to add asset {aid} to album {dest.get_album_id()}: add_result={add_result}")
+            dest.add_asset(asset_wrapper, client, tag_mod_report)
         except Exception as e:
-            # Respect development mode
-            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
-                raise
-            log(f"Warning: failed to add asset {aid} to dest album {dest.get_album_id()}: {e}", level=LogLevel.WARNING)
-            # Continue to next asset
-            continue
-
-        # Remove from source album
-        try:
-            rem_result = remove_asset_from_album.sync(id=UUID(src.get_album_id()), client=client, body=BulkIdsDto(ids=[aid_uuid]))
-            if not isinstance(rem_result, list):
-                raise RuntimeError(f"remove_asset_from_album returned unexpected type: {type(rem_result)}")
-            success_rem = None
-            for item in rem_result:
-                try:
-                    if item.id == str(aid):
-                        success_rem = bool(item.success)
-                        break
-                except Exception:
-                    continue
-            if success_rem is not True:
-                raise RuntimeError(f"Failed to remove asset {aid} from album {src.get_album_id()}: rem_result={rem_result}")
-        except Exception as e:
-            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
-                raise
-            log(f"Warning: failed to remove asset {aid} from src album {src.get_album_id()}: {e}", level=LogLevel.WARNING)
-            # We attempted to add to dest but could not remove from source; continue
-            if tag_mod_report:
-                tag_mod_report.add_assignment_modification(
-                    kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
-                    asset_wrapper=None,
-                    album=dest,
-                    extra={"asset_id": aid, "note": "added_but_not_removed"},
-                )
-            moved_count += 1
-            # Attempt to refresh caches
-            try:
-                dest.reload_from_api(client)
-                src.reload_from_api(client)
-            except Exception:
+            from immich_autotag.albums.album_response_wrapper import AssetAlreadyInAlbumError
+            if isinstance(e, AssetAlreadyInAlbumError):
+                # Asset already in album: treat as non-error, continue as normal
                 pass
+            elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+                raise
+            else:
+                log(f"Warning: failed to add asset {asset_wrapper.id} to dest album {dest.get_album_id()}: {e}", level=LogLevel.WARNING)
+                continue
+
+        # Remove from source album using wrapper logic
+        try:
+            src.remove_asset(asset_wrapper, client, tag_mod_report)
+        except Exception as e:
+            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+                raise
+            log(f"Warning: failed to remove asset {asset_wrapper.id} from src album {src.get_album_id()}: {e}", level=LogLevel.WARNING)
             continue
 
-        # Success both add and remove
         moved_count += 1
-        if tag_mod_report:
-            # TagModification APIs expect asset_wrapper objects; if not available we log minimal info
-            try:
-                tag_mod_report.add_assignment_modification(
-                    kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
-                    asset_wrapper=None,
-                    album=dest,
-                    extra={"asset_id": aid},
-                )
-                tag_mod_report.add_assignment_modification(
-                    kind=ModificationKind.REMOVE_ASSET_FROM_ALBUM,
-                    asset_wrapper=None,
-                    album=src,
-                    extra={"asset_id": aid},
-                )
-            except Exception:
-                pass
-
-        # Refresh album caches incrementally
+        # Optionally refresh album caches
         try:
             dest.reload_from_api(client)
             src.reload_from_api(client)
         except Exception:
-            # Non-fatal: continue
             pass
 
     return moved_count
