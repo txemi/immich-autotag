@@ -59,7 +59,7 @@ def analyze_and_assign_album(
             remove_asset_from_autotag_temporary_albums,
         )
 
-        all_albums = (
+        all_albums = list(
             asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
                 asset_wrapper
             )
@@ -83,7 +83,7 @@ def analyze_and_assign_album(
             remove_asset_from_autotag_temporary_albums,
         )
 
-        all_albums = (
+        all_albums = list(
             asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
                 asset_wrapper
             )
@@ -131,7 +131,6 @@ def analyze_and_assign_album(
                     tag_mod_report,
                     detected_album,
                     album_origin,
-                    suppress_album_already_belongs_log=suppress_album_already_belongs_log,
                 )
                 return
 
