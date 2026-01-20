@@ -1,7 +1,9 @@
+
 from __future__ import annotations
 
 import attrs
 from typeguard import typechecked
+from typing import Iterable
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_list import AlbumList
@@ -52,7 +54,13 @@ class AlbumCollectionWrapper:
         Reemplaza la lista interna de álbumes por la proporcionada.
         """
         self._albums = value
-
+    @typechecked
+    def get_albums(self)-> AlbumList:
+        """
+        Returns an iterator over the albums in the collection.
+        Does not expose AlbumList directly.
+        """
+        return self._albums
     @typechecked
     def __attrs_post_init__(self) -> None:
         global _album_collection_singleton
@@ -187,26 +195,27 @@ class AlbumCollectionWrapper:
         incoming_album: AlbumResponseWrapper,
         existing_album: AlbumResponseWrapper,
         context: str = "ensure_unique",
-    ) -> None:
+    ) -> AlbumResponseWrapper:
         """
         Centraliza la lógica de manejo de álbumes duplicados:
-        - Aplica merge si el flag está activo
+        - Aplica merge si el flag está activo y retorna el álbum resultante
         - Falla rápido en modo desarrollo
         - Colecciona el duplicado en otros modos
+        Realiza un chequeo de integridad: ambos álbumes deben tener el mismo nombre.
         """
-        try:
-            from immich_autotag.config._internal_types import ErrorHandlingMode
-            from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-        except Exception:
-            DEFAULT_ERROR_MODE = None
-            ErrorHandlingMode = None
-
+        # Chequeo de integridad: ambos álbumes deben tener el mismo nombre
+        name_existing = existing_album.get_album_name()
+        name_incoming = incoming_album.get_album_name()
+        if name_existing != name_incoming:
+            raise ValueError(f"Integrity check failed in _handle_duplicate_album_conflict: album names differ ('{name_existing}' vs '{name_incoming}'). Context: {context}")
+        from immich_autotag.config._internal_types import ErrorHandlingMode
+        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
         from immich_autotag.config.internal_config import MERGE_DUPLICATE_ALBUMS_ENABLED
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
             client = AlbumCollectionWrapper.get_client()
             tag_mod_report = AlbumCollectionWrapper.get_modification_report()
-            merge_duplicate_albums(
+            return merge_duplicate_albums(
                 target_album=existing_album,
                 collection=self,
                 duplicate_album=incoming_album,
@@ -220,7 +229,7 @@ class AlbumCollectionWrapper:
         collect_duplicate(
             self._collected_duplicates, existing_album, incoming_album, context
         )
-        return
+        return existing_album
 
     @typechecked
     def _ensure_unique_album_name(self, album_name: str) -> None:
@@ -681,9 +690,11 @@ class AlbumCollectionWrapper:
     @conditional_typechecked
     def albums_for_asset(
         self, asset: AssetResponseWrapper
-    ) -> list[AlbumResponseWrapper]:
-        """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map)."""
-        return list(self._asset_to_albums_map.get(asset.id, AlbumList()))
+    ) -> Iterable[AlbumResponseWrapper]:
+        """
+        Returns an iterable of AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map).
+        """
+        return self._asset_to_albums_map.get(asset.id, AlbumList())
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseWrapper) -> list[str]:
@@ -692,21 +703,18 @@ class AlbumCollectionWrapper:
         """
         return [w.get_album_name() for w in self.albums_for_asset(asset)]
 
-    @conditional_typechecked
-    def albums_for_asset_wrapper(
-        self, asset_wrapper: "AssetResponseWrapper"
-    ) -> list[AlbumResponseWrapper]:
-        """Returns the AlbumResponseWrapper objects for all albums the asset (wrapped) belongs to."""
-        return self.albums_for_asset(asset_wrapper.asset)
+
 
     @conditional_typechecked
     def albums_wrappers_for_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper"
-    ) -> list[AlbumResponseWrapper]:
-        """Returns the AlbumResponseWrapper objects for all albums the asset (wrapped) belongs to.
-        This is now redundant with albums_for_asset_wrapper() but kept for compatibility.
-        This method is more explicit about returning wrapper objects."""
-        return self.albums_for_asset_wrapper(asset_wrapper)
+    ) -> Iterable[AlbumResponseWrapper]:
+        """
+        Returns an iterable of AlbumResponseWrapper objects for all albums the asset (wrapped or raw) belongs to.
+        Accepts either AssetResponseWrapper or AssetResponseDto.
+        """
+
+        return self.albums_for_asset(asset_wrapper)
 
     @typechecked
     def albums_with_name(self, album_name: str):
@@ -723,9 +731,31 @@ class AlbumCollectionWrapper:
         """
         Devuelve un generador de AlbumResponseWrapper para todos los álbumes con el nombre dado.
         """
-        for album_wrapper in self.albums:
+        for album_wrapper in self.get_albums():
             if album_wrapper.get_album_name() == album_name:
                 yield album_wrapper
+
+    @typechecked
+    def combine_duplicate_albums(self, albums: list[AlbumResponseWrapper], context: str) -> AlbumResponseWrapper:
+        """
+        Combina una lista de álbumes duplicados en uno solo, aplicando un algoritmo de reducción:
+        fusiona todos los álbumes de dos en dos usando la política de duplicados, quedándose siempre con el álbum superviviente,
+        hasta que solo queda uno. El argumento 'context' es obligatorio y debe indicar el origen o motivo de la combinación (para logs, excepciones, etc).
+        Devuelve el álbum final resultante.
+        """
+        if not albums:
+            raise ValueError(f"No albums provided to combine_duplicate_albums (context: {context})")
+        survivors = list(albums)
+        while len(survivors) > 1:
+            existing_album = survivors[0]
+            incoming_album = survivors[1]
+            surviving_album = self._handle_duplicate_album_conflict(
+                incoming_album=incoming_album,
+                existing_album=existing_album,
+                context=context
+            )
+            survivors = [surviving_album] + survivors[2:]
+        return survivors[0]
 
     @conditional_typechecked
     def create_or_get_album_with_user(
@@ -735,16 +765,15 @@ class AlbumCollectionWrapper:
         tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
-        Busca un álbum por nombre. Si existe, maneja duplicados según la política (merge, eliminar temporales, error, etc).
+        Busca un álbum por nombre. Si existe uno, lo retorna. Si hay más de uno, maneja duplicados según la política (merge, eliminar temporales, error, etc).
         Si no existe (o tras limpiar duplicados ya no existe), lo crea y asigna el usuario actual como EDITOR.
         """
-        # Buscar si existe un álbum con ese nombre
-        for album_wrapper in self.albums_with_name(album_name):
-            # Centraliza el manejo de duplicados (merge, eliminar temporales, error...)
-            self._handle_duplicate_album_conflict(
-                album_wrapper, context="duplicate_on_create"
-            )
-            return album_wrapper
+        # Buscar todos los álbumes con ese nombre
+        albums_found = list(self.albums_with_name(album_name))
+        if len(albums_found) == 1:
+            return albums_found[0]
+        elif len(albums_found) > 1:
+            return self.combine_duplicate_albums(albums_found, context="duplicate_on_create")
 
         # Si no existe, crearlo y asignar usuario
         from uuid import UUID

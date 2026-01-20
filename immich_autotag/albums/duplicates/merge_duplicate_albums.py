@@ -20,7 +20,7 @@ def merge_duplicate_albums(
     target_album: AlbumResponseWrapper,
     client: ImmichClient,
     tag_mod_report: ModificationReport,
-) -> None:
+) -> AlbumResponseWrapper:
     """
     Merge all assets from the duplicate album into the target album,
     then delete the duplicate album from the collection and server.
@@ -50,3 +50,6 @@ def merge_duplicate_albums(
             old_value=duplicate_album.get_album_name(),
             extra={"reason": "Merged and deleted duplicate album"},
         )
+
+    # Return the surviving album for convenience
+    return target_album
