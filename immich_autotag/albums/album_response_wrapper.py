@@ -25,7 +25,7 @@ from immich_autotag.logging.utils import log
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
-    album_partial: AlbumResponseDto = attrs.field(
+    _album_partial: AlbumResponseDto = attrs.field(
         validator=attrs.validators.instance_of(AlbumResponseDto)
     )
     _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
@@ -44,14 +44,28 @@ class AlbumResponseWrapper:
         return self._album_full is not None and self._album_full.assets is not None
 
     @typechecked
+    def get_album_id(self) -> str:
+        return self._album_partial.id
+
+    @typechecked
+    def get_album_name(self) -> str:
+        return getattr(self._album_partial, "album_name", "")
+
+    @typechecked
+    def get_album_uuid(self)-> "UUID":
+        from uuid import UUID
+
+        return UUID(self._album_partial.id)
+
+    @typechecked
     def ensure_full(self) -> None:
         if not self.is_full:
             self.reload_from_api(self.get_default_client())
 
-    def get_partial(self) -> AlbumResponseDto:
-        return self.album_partial
+    def _get_partial(self) -> AlbumResponseDto:
+        return self._album_partial
 
-    def get_full(self) -> AlbumResponseDto:
+    def _get_full(self) -> AlbumResponseDto:
         return self._get_album_full_or_load()
 
     @typechecked
@@ -71,20 +85,20 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         try:
-            album_dto = get_album_info.sync(id=self.album_partial.id, client=client)
+            album_dto = get_album_info.sync(id=self._album_partial.id, client=client)
             self._set_album_full(album_dto)
             self.invalidate_cache()
         except immich_errors.UnexpectedStatus as exc:
             try:
-                album_name = getattr(self.album_partial, "album_name", None)
-                partial_repr = repr(self.album_partial)
+                album_name = getattr(self._album_partial, "album_name", None)
+                partial_repr = repr(self._album_partial)
             except Exception:
                 album_name = None
                 partial_repr = "<unrepresentable album_partial>"
 
             log(
                 (
-                    f"[FATAL] get_album_info failed for album id={self.album_partial.id!r} "
+                    f"[FATAL] get_album_info failed for album id={self._album_partial.id!r} "
                     f"name={album_name!r}. Exception: {exc!r}. "
                     f"album_partial={partial_repr}"
                 ),
@@ -132,7 +146,7 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
-        if not (self.album_partial.assets):
+        if not (self._album_partial.assets):
             return []
         return [
             context.asset_manager.get_wrapper_for_asset(a, context)
@@ -149,8 +163,9 @@ class AlbumResponseWrapper:
         client: ImmichClient,
         tag_mod_report: "ModificationReport",
     ) -> None:
-        if self.album_partial.album_name.startswith(" "):
-            cleaned_name = self.album_partial.album_name.strip()
+        album_name = getattr(self._album_partial, "album_name", "")
+        if album_name.startswith(" "):
+            cleaned_name = album_name.strip()
             from immich_client.api.albums import update_album_info
             from immich_client.models.update_album_dto import UpdateAlbumDto
 
@@ -158,7 +173,7 @@ class AlbumResponseWrapper:
             from uuid import UUID
 
             update_album_info.sync(
-                id=UUID(self.album_partial.id),
+                id=UUID(self._album_partial.id),
                 client=client,
                 body=update_body,
             )
@@ -167,13 +182,10 @@ class AlbumResponseWrapper:
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.RENAME_ALBUM,
                 album=self,
-                old_value=self.album_partial.album_name,
+                old_value=album_name,
                 new_value=cleaned_name,
             )
-            log(
-                f"Album '{self.album_partial.album_name}' renamed to '{cleaned_name}'",
-                level=LogLevel.FOCUS,
-            )
+            log(f"Album '{album_name}' renamed to '{cleaned_name}'", level=LogLevel.FOCUS)
 
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
@@ -181,7 +193,7 @@ class AlbumResponseWrapper:
 
         from immich_autotag.config.internal_config import get_immich_web_base_url
 
-        url = f"{get_immich_web_base_url()}/albums/{self.album_partial.id}"
+        url = f"{get_immich_web_base_url()}/albums/{self.get_album_id()}"
         return urlparse(url)
 
     @conditional_typechecked
@@ -197,11 +209,10 @@ class AlbumResponseWrapper:
         from immich_autotag.tags.modification_kind import ModificationKind
 
         # Avoid adding if already present
-        if asset_wrapper.id in [a.id for a in (self.album_partial.assets or [])]:
-
+        if asset_wrapper.id in [a.id for a in (self._album_partial.assets or [])]:
             return
         result = add_assets_to_album.sync(
-            id=self.album_partial.id,
+            id=self._album_partial.id,
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
@@ -256,7 +267,7 @@ class AlbumResponseWrapper:
                         )
         if not found:
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {self.album_partial.id}."
+                f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {self._album_partial.id}."
             )
         tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
@@ -287,16 +298,16 @@ class AlbumResponseWrapper:
         from immich_autotag.tags.modification_kind import ModificationKind
 
         # Check if asset is in album first
-        if asset_wrapper.id not in [a.id for a in (self.album_partial.assets or [])]:
+        if asset_wrapper.id not in [a.id for a in (self._album_partial.assets or [])]:
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.album_partial.id}, skipping removal.",
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self._album_partial.id}, skipping removal.",
                 level=LogLevel.DEBUG,
             )
             return
 
         # Remove asset from album
         result = remove_asset_from_album.sync(
-            id=self.album_partial.id,
+            id=self._album_partial.id,
             client=client,
             body=BulkIdsDto(ids=[asset_wrapper.id]),
         )
@@ -339,22 +350,22 @@ class AlbumResponseWrapper:
                                 collection = AlbumCollectionWrapper.get_instance()
                                 removed = collection.remove_album_local(self)
                                 log(
-                                    f"[ALBUM REMOVAL] Album {self.album_partial.id} ('{self.album_partial.album_name}') removed from collection due to not_found error during asset removal.",
+                                    f"[ALBUM REMOVAL] Album {self._album_partial.id} ('{self.get_album_name()}') removed from collection due to not_found error during asset removal.",
                                     level=LogLevel.FOCUS,
                                 )
                             except Exception as e:
                                 log(
-                                    f"[ALBUM REMOVAL] Failed to remove album {self.album_partial.id} from collection after not_found: {e}",
+                                    f"[ALBUM REMOVAL] Failed to remove album {self._album_partial.id} from collection after not_found: {e}",
                                     level=LogLevel.WARNING,
                                 )
                             log(
-                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self._album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
                                 level=LogLevel.WARNING,
                             )
                             return
                         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                             raise RuntimeError(
-                                f"Asset {asset_wrapper.id} was not successfully removed from album {self.album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                                f"Asset {asset_wrapper.id} was not successfully removed from album {self._album_partial.id}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
                             )
                         else:
                             log(
@@ -369,19 +380,19 @@ class AlbumResponseWrapper:
 
         if not found:
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.album_partial.id}. Treating as already removed.",
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self._album_partial.id}. Treating as already removed.",
                 level=LogLevel.WARNING,
             )
             if DEFAULT_ERROR_MODE != ErrorHandlingMode.DEVELOPMENT:
                 return
 
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.album_partial.id}."
+                f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self._album_partial.id}."
             )
 
         # Log successful removal
         log(
-            f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self.album_partial.id} ('{self.album_partial.album_name}').",
+            f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self._album_partial.id} ('{self.get_album_name()}').",
             level=LogLevel.FOCUS,
         )
 
@@ -422,7 +433,7 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.album_partial.id}. "
+                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self._album_partial.id}. "
                     f"This may be an eventual consistency or API issue.",
                     level=LogLevel.WARNING,
                 )
@@ -451,7 +462,7 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album {self.album_partial.id}. "
+                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album {self._album_partial.id}. "
                     f"This may be an eventual consistency or API issue.",
                     level=LogLevel.WARNING,
                 )
@@ -469,7 +480,7 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         album_full = get_album_info.sync(id=album_id, client=client)
-        wrapper = AlbumResponseWrapper(album_partial=album_full)
+        wrapper = AlbumResponseWrapper(_album_partial=album_full)
         wrapper._album_full = album_full
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
         return wrapper
@@ -484,5 +495,5 @@ class AlbumResponseWrapper:
         Creates an AlbumResponseWrapper from a DTO without making API calls.
         Uses album_partial to enable lazy-loading of full data on first access.
         """
-        wrapper = AlbumResponseWrapper(album_partial=dto)
+        wrapper = AlbumResponseWrapper(_album_partial=dto)
         return wrapper
