@@ -378,7 +378,6 @@ class ModificationReport:
         """
         Build a link for the modification entry based on kind and wrappers.
         """
-        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         # If it's an asset, use the wrapper method
         if (
