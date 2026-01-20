@@ -175,9 +175,18 @@ class AlbumCollectionWrapper:
             summary_items = []
             def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
                 try:
-                    return w.get_album_id() or 
+                    aid = w.get_album_id()
+                    if aid is not None:
+                        return str(aid)
+                    # Fallback to album name when id unavailable
+                    name = w.get_album_name()
+                    return name or ""
                 except Exception:
-                    return 
+                    # Best-effort: try name, otherwise empty string
+                    try:
+                        return w.get_album_name() or ""
+                    except Exception:
+                        return ""
 
             for wrapper in sorted(self._unavailable_albums, key=_unavailable_sort_key):
                 try:
