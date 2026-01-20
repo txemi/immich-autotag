@@ -21,7 +21,13 @@ def merge_duplicate_albums(
     if client is None:
         raise RuntimeError("merge_duplicate_albums requires a valid ImmichClient instance.")
     # Move assets from duplicate to target
-    move_assets_between_albums(target_album, duplicate_album, client, tag_mod_report)
+    move_assets_between_albums(
+        collection=collection,
+        dest=target_album,
+        src=duplicate_album,
+        client=client,
+        tag_mod_report=tag_mod_report,
+    )
     # Remove duplicate album from server and collection
     collection.remove_album(duplicate_album, client)
     if tag_mod_report:
