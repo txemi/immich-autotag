@@ -7,7 +7,7 @@ Implements complete synchronization: config is source of truth (add + remove).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List
 from uuid import UUID
 
 from immich_client.api.albums import add_users_to_album as immich_add_users_to_album
@@ -32,11 +32,24 @@ from immich_autotag.tags.modification_kind import ModificationKind
 if TYPE_CHECKING:
     from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 
+import attrs
+
+
+@attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
+class ResolveEmailsResult:
+    resolved: Dict[str, str] = attrs.field(validator=attrs.validators.instance_of(dict))
+    unresolved: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
+
+    def __iter__(self):
+        # allow unpacking: resolved, unresolved = func(...)
+        yield self.resolved
+        yield self.unresolved
+
 
 @typechecked
 def _resolve_emails_to_user_ids(
     emails: List[str], context: ImmichContext
-) -> Tuple[Dict[str, str], List[str]]:
+) -> ResolveEmailsResult:
     """
     Resolve email addresses to Immich user IDs.
 
@@ -48,7 +61,7 @@ def _resolve_emails_to_user_ids(
     Fetches all users from Immich and maps their emails to IDs.
     """
     if not emails:
-        return {}, []
+        return ResolveEmailsResult(resolved={}, unresolved=[])
 
     log_debug(f"[ALBUM_PERMISSIONS] Resolving {len(emails)} emails to user IDs")
 
@@ -84,7 +97,7 @@ def _resolve_emails_to_user_ids(
     log_debug(
         f"[ALBUM_PERMISSIONS] Resolved {len(resolved)}/{len(email_set)} emails to user IDs"
     )
-    return resolved, unresolved
+    return ResolveEmailsResult(resolved=resolved, unresolved=unresolved)
 
 
 @typechecked

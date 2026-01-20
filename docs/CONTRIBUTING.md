@@ -60,10 +60,10 @@ Correct (internal/domain class):
 ```py
 import attrs
 
-@attrs.define(auto_attribs=True)
+@attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
 class Album:
-	id: str
-	name: str
+	id: str = attrs.field(validator=attrs.validators.instance_of(str))
+	name: str = attrs.field(validator=attrs.validators.instance_of(str))
 
 	def rename(self, new_name: str) -> None:
 		self.name = new_name
@@ -81,6 +81,21 @@ class Model:
 ```
 
 If you need to interoperate between `attrs` classes and `pydantic` (e.g., an internal class that must be serialized), convert explicitly in a well-tested adapter layer and prefer `pydantic` for the external contract.
+
+Validation policy for `attrs` classes:
+
+- All non-trivial `attrs` classes MUST declare per-field validators using `attrs.field(validator=...)` (at minimum `attrs.validators.instance_of(...)`).
+- `attrs` classes that are part of the public API or maintain important invariants MUST be declared with `on_setattr=attrs.setters.validate` to ensure assignments are validated at runtime.
+- These rules make runtime errors fail early and make static+dynamic checks complementary.
+
+Example:
+
+```py
+@attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
+class HostPort:
+	host: str = attrs.field(validator=attrs.validators.instance_of(str))
+	port: int = attrs.field(validator=attrs.validators.instance_of(int))
+```
 
 
 ### 1.2.3. Tuple returns and typed return objects
