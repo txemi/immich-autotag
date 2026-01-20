@@ -170,7 +170,7 @@ def sync_album_permissions(
 
 @typechecked
 def _get_current_members(
-    album_id: str | UUID, context: ImmichContext
+    album_id: UUID, context: ImmichContext
 ) -> List[AlbumUserResponseDto]:
     """
     Fetch current album members from API.
