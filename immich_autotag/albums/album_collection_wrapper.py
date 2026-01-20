@@ -63,16 +63,16 @@ class AlbumCollectionWrapper:
                 "AlbumCollectionWrapper is a singleton: only one instance is allowed."
             )
         _album_collection_singleton = self
-        self._rebuild_asset_to_albums_map()
+        # El mapa de assets se construye bajo demanda, no en la inicialización
 
-    @typechecked
+  
     @typechecked
     def _rebuild_asset_to_albums_map(self) -> None:
         """Rebuilds the asset-to-albums map from scratch."""
 
         self._asset_to_albums_map = self._asset_to_albums_map_build()
 
-    @typechecked
+
     @typechecked
     def _add_album_to_map(self, album_wrapper: AlbumResponseWrapper) -> None:
         for asset_id in album_wrapper.get_asset_ids():
@@ -80,7 +80,7 @@ class AlbumCollectionWrapper:
                 self._asset_to_albums_map[asset_id] = AlbumList()
             self._asset_to_albums_map[asset_id].append(album_wrapper)
 
-    @typechecked
+
     @typechecked
     def _remove_album_from_map(self, album_wrapper: AlbumResponseWrapper) -> None:
         for asset_id in album_wrapper.get_asset_ids():
@@ -499,7 +499,7 @@ class AlbumCollectionWrapper:
                 },
             )
         return
-    @staticmethod
+    @typechecked
     def _try_append_wrapper_to_list(
         albums_list: list[AlbumResponseWrapper],
         wrapper: AlbumResponseWrapper,
@@ -855,13 +855,14 @@ class AlbumCollectionWrapper:
 
         log("Albums:", level=LogLevel.INFO)
         seen_names: set[str] = set()
+
+        # Creamos la colección vacía
+        collection = cls(albums=AlbumList([]))
+
         for album in albums:
-            # Create wrapper with partial album data (no assets fetched yet)
-            # Assets will be fetched lazily when needed
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
-            # Use centralized helper to attempt append with duplicate handling
             try:
-                AlbumCollectionWrapper._try_append_wrapper_to_list(
+                collection._try_append_wrapper_to_list(
                     albums_wrapped,
                     wrapper,
                     client=client,
@@ -876,12 +877,8 @@ class AlbumCollectionWrapper:
             )
 
         tag_mod_report.flush()
-        # If any duplicates were collected during initial load and we're not
-        # running in DEVELOPMENT, write a small summary file for operator review.
-
         if duplicates_collected:
             AlbumCollectionWrapper.write_duplicates_summary(duplicates_collected)
-
 
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
         MIN_ALBUMS = 326
@@ -889,4 +886,6 @@ class AlbumCollectionWrapper:
             raise Exception(
                 f"ERROR: Unexpectedly low number of albums: {len(albums_wrapped)} < {MIN_ALBUMS}"
             )
-        return cls(albums=AlbumList(albums_wrapped))
+        # Asignamos la lista final a la colección y la devolvemos
+        collection.albums = AlbumList(albums_wrapped)
+        return collection
