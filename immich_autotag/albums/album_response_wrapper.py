@@ -122,7 +122,9 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         try:
-            album_dto = get_album_info.sync(id=self.get_album_uuid_no_cache(), client=client)
+            album_dto = get_album_info.sync(
+                id=self.get_album_uuid_no_cache(), client=client
+            )
             self._set_album_full(album_dto)
             self.invalidate_cache()
         except immich_errors.UnexpectedStatus as exc:
@@ -255,7 +257,7 @@ class AlbumResponseWrapper:
         result = add_assets_to_album.sync(
             id=self.get_album_uuid_no_cache(),
             client=client,
-            body=BulkIdsDto(ids=[asset_wrapper.id]),
+            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
         )
         # Strict validation of the result
         if not isinstance(result, list):
@@ -352,7 +354,7 @@ class AlbumResponseWrapper:
         result = remove_asset_from_album.sync(
             id=self.get_album_uuid_no_cache(),
             client=client,
-            body=BulkIdsDto(ids=[asset_wrapper.id]),
+            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
         )
 
         # Validate the result
@@ -515,17 +517,16 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def from_id(
         client: ImmichClient,
-        album_id: str,
+        album_id: UUID,
         tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
         Gets an album by ID, wraps it, and trims the name if necessary.
         """
+
         from immich_client.api.albums import get_album_info
 
-        from uuid import UUID as _UUID
-
-        album_full = get_album_info.sync(id=_UUID(album_id), client=client)
+        album_full = get_album_info.sync(id=album_id, client=client)
         wrapper = AlbumResponseWrapper.from_full_dto(
             album_full, validate=False, tag_mod_report=tag_mod_report
         )
