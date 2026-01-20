@@ -33,11 +33,17 @@ def _generate_links(config: UserConfig) -> List[str]:
     if config.classification:
         if config.classification.autotag_unknown:
             tags_to_add.append(
-                ("Classification: Unknown", config.classification.autotag_unknown)
+                (
+                    "Classification: Unknown",
+                    config.classification.autotag_unknown,
+                )
             )
         if config.classification.autotag_conflict:
             tags_to_add.append(
-                ("Classification: Conflict", config.classification.autotag_conflict)
+                (
+                    "Classification: Conflict",
+                    config.classification.autotag_conflict,
+                )
             )
 
     # From duplicate_processing
