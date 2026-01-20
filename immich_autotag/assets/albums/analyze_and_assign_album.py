@@ -3,7 +3,7 @@ from __future__ import annotations
 from typeguard import typechecked
 
 from immich_autotag.assets.albums._process_album_detection import (
-    _process_album_detection,
+    process_album_detection,
 )
 from immich_autotag.assets.albums.album_decision import AlbumDecision
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
