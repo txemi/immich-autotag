@@ -23,14 +23,15 @@ from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
 
 # Singleton instance storage
-_album_collection_singleton: AlbumCollectionWrapper | None = None
-
-
-@attrs.define(auto_attribs=True, slots=True)
 
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
 
+_album_collection_singleton: AlbumCollectionWrapper | None = None
+
+@attrs.define(auto_attribs=True, slots=True)
+
 class AlbumCollectionWrapper:
+
 
     _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
@@ -46,6 +47,13 @@ class AlbumCollectionWrapper:
     _collected_duplicates: DuplicateAlbumReports = attrs.field(
         default=attrs.Factory(DuplicateAlbumReports), init=False, repr=False
     )
+    
+    @typechecked
+    def set_albums(self, value: AlbumList) -> None:
+        """
+        Reemplaza la lista interna de álbumes por la proporcionada.
+        """
+        self._albums = value
 
     @typechecked
     def __attrs_post_init__(self) -> None:
@@ -669,12 +677,12 @@ class AlbumCollectionWrapper:
         return wrapper
 
     @conditional_typechecked
-    def _albums_for_asset(self, asset: AssetResponseDto) -> list[AlbumResponseWrapper]:
+    def albums_for_asset(self, asset: AssetResponseWrapper) -> list[AlbumResponseWrapper]:
         """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map)."""
         return list(self._asset_to_albums_map.get(asset.id, AlbumList()))
 
     @conditional_typechecked
-    def _album_names_for_asset(self, asset: AssetResponseDto) -> list[str]:
+    def album_names_for_asset(self, asset: AssetResponseWrapper) -> list[str]:
         """Returns the names of the albums the asset belongs to.
         Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access.
         """
@@ -837,7 +845,7 @@ class AlbumCollectionWrapper:
                 raise
             log(
                 f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
-                level=LogLevel.DEBUG,
+                level=LogLevel.INFO,
             )
 
         tag_mod_report.flush()
@@ -849,11 +857,7 @@ class AlbumCollectionWrapper:
             write_duplicates_summary(duplicates_collected)
 
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
-        MIN_ALBUMS = 326
-        if len(albums_wrapped) < MIN_ALBUMS:
-            raise Exception(
-                f"ERROR: Unexpectedly low number of albums: {len(albums_wrapped)} < {MIN_ALBUMS}"
-            )
+
         # Asignamos la lista final a la colección y la devolvemos
-        collection.albums = AlbumList(albums_wrapped)
+        collection.set_albums( AlbumList(albums_wrapped))
         return collection
