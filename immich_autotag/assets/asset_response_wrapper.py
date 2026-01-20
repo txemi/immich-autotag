@@ -43,10 +43,10 @@ from immich_autotag.classification.match_classification_result import (
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
+
+from immich_autotag.context.immich_context import ImmichContext
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from immich_autotag.context.immich_context import ImmichContext
 
 
 @attrs.define(auto_attribs=True, slots=True)
