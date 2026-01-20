@@ -483,7 +483,7 @@ class AlbumResponseWrapper:
         from immich_client.api.albums import get_album_info
 
         album_full = get_album_info.sync(id=album_id, client=client)
-        wrapper = AlbumResponseWrapper(_album_partial=album_full)
+        wrapper = AlbumResponseWrapper(album_partial=album_full)
         wrapper._album_full = album_full
         wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
         return wrapper
@@ -498,5 +498,5 @@ class AlbumResponseWrapper:
         Creates an AlbumResponseWrapper from a DTO without making API calls.
         Uses album_partial to enable lazy-loading of full data on first access.
         """
-        wrapper = AlbumResponseWrapper(_album_partial=dto)
+        wrapper = AlbumResponseWrapper(album_partial=dto)
         return wrapper
