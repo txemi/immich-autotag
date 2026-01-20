@@ -30,7 +30,7 @@ from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.modification_kind import ModificationKind
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 import attrs
 

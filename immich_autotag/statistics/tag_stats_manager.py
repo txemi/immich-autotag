@@ -4,7 +4,7 @@ import attr
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.tags.modification_kind import ModificationKind
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -122,7 +122,7 @@ class TagStatsManager:
     @typechecked
     def _increment_album_assignment(self, album: "AlbumResponseWrapper | None") -> None:
         if album is not None:
-            from immich_autotag.albums.album_response_wrapper import (
+            from immich_autotag.albums.album.album_response_wrapper import (
                 AlbumResponseWrapper,
             )
 

@@ -4,9 +4,9 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album_list import AlbumList
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.albums.asset_to_albums_map import AssetToAlbumsMap
+from immich_autotag.albums.albums.album_list import AlbumList
+from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
 from immich_autotag.albums.duplicates.duplicate_album_reports import (
     DuplicateAlbumReports,
@@ -27,19 +27,19 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
+
+from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
+
 class AlbumCollectionWrapper:
 
-    albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
+    _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
         factory=AssetToAlbumsMap,
         validator=attrs.validators.instance_of(AssetToAlbumsMap),
     )
-    # Count of albums marked unavailable during this run
-    _unavailable_count: int = attrs.field(default=0, init=False, repr=False)
-    # Track unavailable album wrappers to avoid double-counting
-    _unavailable_albums: set[AlbumResponseWrapper] = attrs.field(
-        default=attrs.Factory(set), init=False, repr=False
+    _unavailable: UnavailableAlbums = attrs.field(
+        init=False, factory=UnavailableAlbums, repr=False
     )
     # Collected duplicate album reports (instance-level). Used when running
     # in non-development modes to accumulate duplicates for operator review.
@@ -156,19 +156,15 @@ class AlbumCollectionWrapper:
         if album_id is None:
             return
         # Use wrapper identity (by album id) for membership; avoid double-counting
-        if album_wrapper in self._unavailable_albums:
+        added = self._unavailable.add(album_wrapper)
+        if not added:
             return
-        self._unavailable_albums.add(album_wrapper)
-        try:
-            self._unavailable_count += 1
-        except Exception:
-            self._unavailable_count = len(self._unavailable_albums)
 
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         log(
-            f"Album {album_id} marked unavailable (total_unavailable={self._unavailable_count}).",
+            f"Album {album_id} marked unavailable (total_unavailable={self._unavailable.count}).",
             level=LogLevel.FOCUS,
         )
 
@@ -181,7 +177,7 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def _handle_duplicate_album_conflict(
-        self, existing_album: AlbumResponseWrapper, context: str = "ensure_unique"
+        self,incoming_album: AlbumResponseWrapper, existing_album: AlbumResponseWrapper, context: str = "ensure_unique"
     ) -> None:
         """
         Centraliza la lógica de manejo de álbumes duplicados:
@@ -201,9 +197,9 @@ class AlbumCollectionWrapper:
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
             client = AlbumCollectionWrapper.get_client()
             tag_mod_report = AlbumCollectionWrapper.get_modification_report()
-            merge_duplicate_albums(
+            merge_duplicate_albums(target_album=existing_album,
                 collection=self,
-                duplicate_album=existing_album,
+                duplicate_album=incoming_album,
                 client=client,
                 tag_mod_report=tag_mod_report,
             )
@@ -263,7 +259,7 @@ class AlbumCollectionWrapper:
             return str(album_id)
 
         # Build summary; allow failures to surface (fail-fast on bad album data)
-        for wrapper in sorted(self._unavailable_albums, key=_unavailable_sort_key):
+        for wrapper in self._unavailable.sorted(_unavailable_sort_key):
             # These calls should not silently fail; surface issues to operator/dev.
             album_id = wrapper.get_album_id()
             if album_id is None:
@@ -316,11 +312,11 @@ class AlbumCollectionWrapper:
         except Exception:
             return
 
-        if self._unavailable_count >= threshold:
+        if self._unavailable.count >= threshold:
             # In development: fail fast to surface systemic problems
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise RuntimeError(
-                    f"Too many albums marked unavailable during run: {self._unavailable_count} >= {threshold}. Failing fast (DEVELOPMENT mode)."
+                    f"Too many albums marked unavailable during run: {self._unavailable.count} >= {threshold}. Failing fast (DEVELOPMENT mode)."
                 )
 
             # In production: record a summary event and continue
@@ -328,10 +324,10 @@ class AlbumCollectionWrapper:
                 tag_mod_report = ModificationReport.get_instance()
                 tag_mod_report.add_error_modification(
                     kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                    error_message=f"global unavailable threshold exceeded: {self._unavailable_count} >= {threshold}",
+                    error_message=f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}",
                     error_category="GLOBAL_THRESHOLD",
                     extra={
-                        "unavailable_count": self._unavailable_count,
+                        "unavailable_count": self._unavailable.count,
                         "threshold": threshold,
                     },
                 )
@@ -541,7 +537,7 @@ class AlbumCollectionWrapper:
         self,
         *,
         existing: AlbumResponseWrapper,
-        wrapper: AlbumResponseWrapper,
+        incoming_album: AlbumResponseWrapper,
         tag_mod_report: ModificationReport,
         duplicates_collected: list[dict],
         name: str,
@@ -673,12 +669,12 @@ class AlbumCollectionWrapper:
         return wrapper
 
     @conditional_typechecked
-    def albums_for_asset(self, asset: AssetResponseDto) -> list[AlbumResponseWrapper]:
+    def _albums_for_asset(self, asset: AssetResponseDto) -> list[AlbumResponseWrapper]:
         """Returns the AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map)."""
         return list(self._asset_to_albums_map.get(asset.id, AlbumList()))
 
     @conditional_typechecked
-    def album_names_for_asset(self, asset: AssetResponseDto) -> list[str]:
+    def _album_names_for_asset(self, asset: AssetResponseDto) -> list[str]:
         """Returns the names of the albums the asset belongs to.
         Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access.
         """

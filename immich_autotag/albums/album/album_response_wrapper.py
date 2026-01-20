@@ -173,7 +173,7 @@ class AlbumResponseWrapper:
         try:
             import time
 
-            from immich_autotag.albums.album_error_entry import AlbumErrorEntry
+            from immich_autotag.albums.albums.album_error_entry import AlbumErrorEntry
             from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
 
             now = time.time()
@@ -343,7 +343,7 @@ class AlbumResponseWrapper:
                             pass
                         # Notify the global collection about this album state change
                         try:
-                            from immich_autotag.albums.album_collection_wrapper import (
+                            from immich_autotag.albums.albums.album_collection_wrapper import (
                                 AlbumCollectionWrapper,
                             )
 
@@ -615,7 +615,7 @@ class AlbumResponseWrapper:
                         if str(error_msg).lower() == "not_found":
                             # Album is gone, notify AlbumCollectionWrapper singleton to remove it from collection
                             try:
-                                from immich_autotag.albums.album_collection_wrapper import (
+                                from immich_autotag.albums.albums.album_collection_wrapper import (
                                     AlbumCollectionWrapper,
                                 )
 

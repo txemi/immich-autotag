@@ -2,7 +2,7 @@ from typing import Optional
 
 from typeguard import typechecked
 
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.duplicates.duplicate_album_reports import (
     DuplicateAlbumReports,
 )

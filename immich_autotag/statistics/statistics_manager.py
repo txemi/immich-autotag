@@ -5,14 +5,14 @@ import git  # GitPython
 from immich_autotag.context.immich_context import ImmichContext
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 """
 statistics_manager.py

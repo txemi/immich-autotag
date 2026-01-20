@@ -17,7 +17,7 @@ import attrs
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -102,7 +102,7 @@ class ModificationReport:
         StatisticsManager.get_instance().increment_event(kind, extra_key=tag)
         # Local import to avoid circularity
         if album is not None:
-            from immich_autotag.albums.album_response_wrapper import (
+            from immich_autotag.albums.album.album_response_wrapper import (
                 AlbumResponseWrapper,
             )
 

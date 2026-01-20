@@ -23,7 +23,7 @@ from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 

@@ -1,6 +1,6 @@
 from typing import Iterable, Iterator
 
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 
 class AlbumList:
