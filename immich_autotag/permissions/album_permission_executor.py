@@ -212,7 +212,12 @@ def _get_current_members(
         log_debug(
             f"[ALBUM_PERMISSIONS] First member attributes: {dir(current_members[0])}"
         )
-        if hasattr(current_members[0], "__dict__"):
+        try:
+            _ = current_members[0].__dict__
+            has_dict = True
+        except AttributeError:
+            has_dict = False
+        if has_dict:
             log_debug(
                 f"[ALBUM_PERMISSIONS] First member __dict__: {current_members[0].__dict__}"
             )
