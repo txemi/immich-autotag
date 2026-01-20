@@ -38,7 +38,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 HOST_OUTPUT_DIR="$REPO_ROOT/logs_docker_one_shot"
 CONTAINER_OUTPUT_DIR="/home/autotaguser/logs"
 
-# Create output directory if it doesn't exist and asegurar permisos de escritura
+# Create output directory if it doesn't exist and ensure write permissions
 mkdir -p "$HOST_OUTPUT_DIR"
 chmod -R 777 "$HOST_OUTPUT_DIR"
 
