@@ -7,7 +7,12 @@ from typeguard import typechecked
 from immich_autotag.albums.album_list import AlbumList
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.asset_to_albums_map import AssetToAlbumsMap
-from immich_autotag.assets.albums.temporary_albums import is_temporary_album
+try:
+    # Prefer absolute import, but fall back to a package-relative import for
+    # environments where absolute package resolution may fail (CI, certain test runners).
+    from immich_autotag.assets.albums.temporary_albums import is_temporary_album
+except Exception:
+    from ..assets.albums.temporary_albums import is_temporary_album
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
