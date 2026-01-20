@@ -31,6 +31,13 @@ source "$VENV_PATH"
 
 # Chequeo de sintaxis e indentación en todos los .py del paquete
 echo "Comprobando errores de sintaxis e indentación..."
+echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
+if ! "$REPO_ROOT/.venv/bin/python" -m compileall -q "$TARGET_DIR" ; then
+	echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
+	exit 1
+fi
+
+# Fallback check per-file (keeps original behavior for precise messages)
 find "$TARGET_DIR" -name "*.py" -exec "$REPO_ROOT/.venv/bin/python" -m py_compile {} +
 
 # Install black and isort if not available
