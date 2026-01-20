@@ -93,6 +93,7 @@ class AlbumCollectionWrapper:
         if removed:
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
+
             log(
                 f"[ALBUM REMOVAL] Album {album_wrapper.get_partial().id} ('{album_wrapper.get_partial().album_name}') removed from collection (local, not_found cleanup).",
                 level=LogLevel.FOCUS,

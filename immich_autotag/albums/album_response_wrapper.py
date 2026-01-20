@@ -48,8 +48,6 @@ class AlbumResponseWrapper:
         if not self.is_full:
             self.reload_from_api(self.get_default_client())
 
-
-
     def get_partial(self) -> AlbumResponseDto:
         return self.album_partial
 

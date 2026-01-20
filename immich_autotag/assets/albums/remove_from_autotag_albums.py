@@ -80,9 +80,9 @@ def remove_asset_from_autotag_temporary_albums(
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise
                 log(
-                f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.get_partial().album_name}: {e}",
-                level=LogLevel.IMPORTANT,
-            )
+                    f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.get_partial().album_name}: {e}",
+                    level=LogLevel.IMPORTANT,
+                )
             # Continue processing other albums even if one fails
             continue
 
