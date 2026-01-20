@@ -863,8 +863,8 @@ class AlbumCollectionWrapper:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
             try:
                 collection._try_append_wrapper_to_list(
-                    albums_wrapped,
-                    wrapper,
+                    albums_list=albums_wrapped,
+                    wrapper=wrapper,
                     client=client,
                     tag_mod_report=tag_mod_report,
                     duplicates_collected=duplicates_collected,
