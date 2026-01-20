@@ -37,8 +37,8 @@ fi
 
 
 
-# ---- Línea de longitud sincronizada ----
-# El ancho de línea se extrae de pyproject.toml para que todas las herramientas usen la misma fuente de verdad.
+# ---- Synchronized line length ----
+# Screen line length is extracted from pyproject.toml so that all tools use the same source of truth.
 extract_line_length() {
 	grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
 }
@@ -51,7 +51,7 @@ extract_line_length() {
 
 MAX_LINE_LENGTH=$(extract_line_length "$REPO_ROOT/pyproject.toml")
 if [ -z "$MAX_LINE_LENGTH" ]; then
-	echo "[WARN] No se pudo extraer line-length de pyproject.toml, usando 88 por defecto."
+	echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default."
 	MAX_LINE_LENGTH=88
 fi
 
@@ -76,8 +76,8 @@ else
 fi
 
 
-# Chequeo de sintaxis e indentación en todos los .py del paquete
-echo "Comprobando errores de sintaxis e indentación..."
+# Syntax and indentation check on all .py files in the package
+echo "Checking for syntax and indentation errors..."
 echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
 if ! "$PY_BIN" -m compileall -q "$TARGET_DIR" ; then
 	echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
@@ -165,7 +165,7 @@ echo "[CHECK] Disallow tuple returns and tuple-typed class members (project poli
 
 
 
-# Flake8: usar el mismo ancho de línea sincronizado
+# Flake8: use the same synchronized line length
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
