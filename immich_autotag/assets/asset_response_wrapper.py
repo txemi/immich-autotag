@@ -1,7 +1,15 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List
+
+
+@dataclass(frozen=True)
+class ClassificationUpdateResult:
+    has_tags: bool
+    has_albums: bool
+
 
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
@@ -197,7 +205,23 @@ class AssetResponseWrapper:
         date_candidates: List[datetime] = []
         # Only DTO dates
         for attr in ("created_at", "file_created_at", "exif_created_at"):
-            dt = getattr(self.asset, attr, None)
+            if attr == "created_at":
+                try:
+                    dt = self.asset.created_at
+                except AttributeError:
+                    dt = None
+            elif attr == "file_created_at":
+                try:
+                    dt = self.asset.file_created_at
+                except AttributeError:
+                    dt = None
+            elif attr == "exif_created_at":
+                try:
+                    dt = self.asset.exif_created_at
+                except AttributeError:
+                    dt = None
+            else:
+                dt = None
             if dt is not None:
                 if not isinstance(dt, datetime):
                     raise TypeError(f"{attr} is not datetime: {dt!r}")
@@ -690,7 +714,7 @@ class AssetResponseWrapper:
         )
 
     @typechecked
-    def validate_and_update_classification(self) -> tuple[bool, bool]:
+    def validate_and_update_classification(self) -> "ClassificationUpdateResult":
         """
         Validates and updates asset classification state with proper tag management.
 
@@ -716,7 +740,7 @@ class AssetResponseWrapper:
             f"[CLASSIFICATION] Asset {self.id} | Name: {self.original_file_name} | Favorite: {self.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | Albums: {', '.join(album_names) if album_names else '-'} | Status: {status.value} | Date: {self.created_at} | original_path: {self.original_path}",
             level=LogLevel.FOCUS,
         )
-        return bool(tag_names), bool(album_names)
+        return ClassificationUpdateResult(bool(tag_names), bool(album_names))
 
     @typechecked
     def apply_tag_conversions(
@@ -999,15 +1023,31 @@ class AssetResponseWrapper:
         except Exception:
             link = "(no link)"
         lines.append(f"  Link: {link}")
-        lines.append(f"  created_at: {getattr(self.asset, 'created_at', None)}")
-        lines.append(
-            f"  file_created_at: {getattr(self.asset, 'file_created_at', None)}"
-        )
-        lines.append(
-            f"  exif_created_at: {getattr(self.asset, 'exif_created_at', None)}"
-        )
-        lines.append(f"  updated_at: {getattr(self.asset, 'updated_at', None)}")
+        try:
+            created_at = self.asset.created_at
+        except AttributeError:
+            created_at = None
+        lines.append(f"  created_at: {created_at}")
+        try:
+            file_created_at = self.asset.file_created_at
+        except AttributeError:
+            file_created_at = None
+        lines.append(f"  file_created_at: {file_created_at}")
+        try:
+            exif_created_at = self.asset.exif_created_at
+        except AttributeError:
+            exif_created_at = None
+        lines.append(f"  exif_created_at: {exif_created_at}")
+        try:
+            updated_at = self.asset.updated_at
+        except AttributeError:
+            updated_at = None
+        lines.append(f"  updated_at: {updated_at}")
         lines.append(f"  Tags: {self.get_tag_names()}")
         lines.append(f"  Albums: {self.get_album_names()}")
-        lines.append(f"  Path: {getattr(self.asset, 'original_path', None)}")
+        try:
+            original_path = self.asset.original_path
+        except AttributeError:
+            original_path = None
+        lines.append(f"  Path: {original_path}")
         return "\n".join(lines)
