@@ -2,13 +2,26 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Format and Sort Python",
+      "label": "Format and Sort (apply)",
       "type": "shell",
       "command": "bash scripts/devtools/format_and_sort.sh",
-      "group": "build",
-      "presentation": {
-        "reveal": "always"
-      }
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Format and Sort (check)",
+      "type": "shell",
+      "command": "bash scripts/devtools/format_and_sort.sh --check",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Flake8 Lint",
+      "type": "shell",
+      "command": "./.venv/bin/python -m flake8 --exclude=.venv,immich-client,scripts immich_autotag",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": ["$flake8"]
     }
   ]
 }
