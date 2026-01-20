@@ -2,6 +2,7 @@ import importlib.util
 import os
 from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 import attrs
 import yaml
@@ -44,37 +45,41 @@ def find_user_config() -> ConfigLocation:
     6. config.yaml in ~/.immich_autotag/
     7. Environment variable IMMICH_AUTOTAG_CONFIG
     """
-    # 1. user_config.py in the repo
-    repo_py = Path(__file__).parent / "user_config.py"
-    if repo_py.exists():
-        return ConfigLocation(repo_py)
-    # 2. user_config.yaml in the repo
-    repo_yaml = Path(__file__).parent / "user_config.yaml"
-    if repo_yaml.exists():
-        return ConfigLocation(repo_yaml)
-    # 3-4. XDG_CONFIG_HOME
-    xdg_config_home = os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))
-    xdg_dir = Path(xdg_config_home) / "immich_autotag"
-    xdg_py = xdg_dir / "config.py"
-    if xdg_py.exists():
-        return ConfigLocation(xdg_py)
-    xdg_yaml = xdg_dir / "config.yaml"
-    if xdg_yaml.exists():
-        return ConfigLocation(xdg_yaml)
-    # 5-6. Legacy ~/.immich_autotag
-    legacy_dir = Path.home() / ".immich_autotag"
-    legacy_py = legacy_dir / "config.py"
-    if legacy_py.exists():
-        return ConfigLocation(legacy_py)
-    legacy_yaml = legacy_dir / "config.yaml"
-    if legacy_yaml.exists():
-        return ConfigLocation(legacy_yaml)
-    # 7. Environment variable
-    env_path = os.environ.get("IMMICH_AUTOTAG_CONFIG")
-    if env_path:
-        env_path = Path(env_path)
-        if env_path.exists():
-            return ConfigLocation(env_path)
+    repo_dir = Path(__file__).parent
+
+    def _xdg_config_dir() -> Path:
+        xdg_config_home = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config_home:
+            return Path(xdg_config_home) / "immich_autotag"
+        return Path.home() / ".config" / "immich_autotag"
+
+    def _candidate_paths(base: Path) -> list[Path]:
+        """Return candidate config file paths in priority order for a given base dir.
+
+        This collapses the repeated pattern of checking for two filenames in three
+        symmetric locations (repo, xdg, legacy) into a single loop-friendly helper.
+        """
+        names = ["config.py", "config.yaml"]
+        return [base / name for name in names]
+
+    # Build the prioritized list of candidate paths
+    candidates: list[Path] = []
+
+    # Repo-level development overrides
+    candidates.extend(_candidate_paths(repo_dir))
+    # XDG
+    candidates.extend(_candidate_paths(_xdg_config_dir()))
+    # Legacy home folder
+    candidates.extend(_candidate_paths(Path.home() / ".immich_autotag"))
+    # Environment override (evaluated last)
+    env_path_str = os.environ.get("IMMICH_AUTOTAG_CONFIG")
+    if env_path_str:
+        candidates.append(Path(env_path_str))
+
+    for candidate in candidates:
+        if candidate.exists():
+            return ConfigLocation(candidate)
+
     raise FileNotFoundError("No configuration file found.")
 
 
