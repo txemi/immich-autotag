@@ -26,16 +26,6 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
-    @staticmethod
-    def write_duplicates_summary(duplicates_collected: list[dict]) -> None:
-        """Escribe un resumen JSON de duplicados detectados para revisión del operador."""
-        import json
-        from immich_autotag.utils.run_output_dir import get_run_output_dir
-        out_dir = get_run_output_dir()
-        out_dir.mkdir(parents=True, exist_ok=True)
-        out_file = out_dir / "albums_duplicates_summary.json"
-        with out_file.open("w", encoding="utf-8") as fh:
-            json.dump({"count": len(duplicates_collected), "duplicates": duplicates_collected}, fh, indent=2)
 
     albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
@@ -64,6 +54,25 @@ class AlbumCollectionWrapper:
             )
         _album_collection_singleton = self
         # El mapa de assets se construye bajo demanda, no en la inicialización
+    @staticmethod
+    @typechecked
+    def get_client() -> ImmichClient:
+        """Returns the current ImmichClient from the context singleton."""
+        try:
+            from immich_autotag.context.immich_context import ImmichContext
+            return ImmichContext.get_default_client()
+        except Exception as e:
+            raise RuntimeError(f"Could not retrieve ImmichClient: {e}")
+
+    @staticmethod
+    @typechecked
+    def get_modification_report() -> ModificationReport:
+        """Returns the current ModificationReport singleton."""
+        try:
+            from immich_autotag.report.modification_report import ModificationReport
+            return ModificationReport.get_instance()
+        except Exception as e:
+            raise RuntimeError(f"Could not retrieve ModificationReport: {e}")
 
   
     @typechecked
@@ -190,7 +199,15 @@ class AlbumCollectionWrapper:
 
         from immich_autotag.config.internal_config import MERGE_DUPLICATE_ALBUMS_ENABLED
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            merge_duplicate_albums(self, existing_album, existing_album.get_album_name())
+            client = AlbumCollectionWrapper.get_client()
+            tag_mod_report = AlbumCollectionWrapper.get_modification_report()
+            merge_duplicate_albums(
+                self,
+                existing_album,
+                existing_album.get_album_name(),
+                client,
+                tag_mod_report
+            )
         elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {existing_album.get_album_name()!r}"
@@ -471,11 +488,11 @@ class AlbumCollectionWrapper:
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
             # Centraliza el manejo en el método unificado
-            # El wrapper duplicado es el que se intenta añadir, el existente es el destino
-            # El contexto se marca como 'duplicate_on_load'
-            # El método unificado gestiona el merge y la colección de duplicados
-            # Se asume que self está disponible como AlbumCollectionWrapper
-            self._handle_duplicate_album_conflict(existing, wrapper, context="duplicate_on_load")
+            self._handle_duplicate_album_conflict(
+                existing,
+                wrapper,
+                context="duplicate_on_load"
+            )
         elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"

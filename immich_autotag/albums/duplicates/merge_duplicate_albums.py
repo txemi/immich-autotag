@@ -11,7 +11,7 @@ def merge_duplicate_albums(
     collection: "AlbumCollectionWrapper",
     duplicate_album: AlbumResponseWrapper,
     target_album_name: str,
-    client: ImmichClient | None = None,
+    client: ImmichClient ,
     tag_mod_report: ModificationReport | None = None,
 ) -> None:
     """
