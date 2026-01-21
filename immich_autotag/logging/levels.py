@@ -66,15 +66,3 @@ class LogLevel(Enum):
     def __str__(self):
         return self.name
 
-    @property
-    def is_custom(self) -> bool:
-        """Return True if this is a custom (non-standard) log level."""
-        return self.value.is_custom
-
-    @property
-    def description(self) -> str:
-        """Return a human-friendly description of the log level."""
-        return self._description
-
-    def __str__(self):
-        return self.name

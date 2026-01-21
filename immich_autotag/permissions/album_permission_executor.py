@@ -66,14 +66,11 @@ def _resolve_emails_to_user_ids(
     log_debug(f"[ALBUM_PERMISSIONS] Resolving {len(emails)} emails to user IDs")
 
     client = context.client
-    try:
-        all_users = immich_search_users.sync(client=client)
-    except Exception as e:
-        log(
-            f"[ALBUM_PERMISSIONS] ERROR fetching user list: {e}",
-            level=LogLevel.ERROR,
-        )
-        raise
+
+    all_users = immich_search_users.sync(client=client)
+    if all_users is None:
+        all_users = []
+
 
     # Build email → user_id map
     email_to_id = {}
@@ -83,10 +80,10 @@ def _resolve_emails_to_user_ids(
 
     # Check which emails were resolved
     email_set = set(emails)
-    resolved = {
+    resolved: Dict[str, str] = {
         email: email_to_id[email] for email in email_set if email in email_to_id
     }
-    unresolved = [email for email in email_set if email not in email_to_id]
+    unresolved: List[str] = [email for email in email_set if email not in email_to_id]
 
     if unresolved:
         log(
@@ -130,8 +127,8 @@ def sync_album_permissions(
         return
 
     # Resolve configured member emails to user IDs
-    email_to_id_map, _ = _resolve_emails_to_user_ids(resolved_policy.members, context)
-    target_user_ids = set(email_to_id_map.values())
+    result = _resolve_emails_to_user_ids(resolved_policy.members, context)
+    target_user_ids = set(result.resolved.values())
 
     # Get current members from API (pass UUID directly)
     current_members = _get_current_members(album_uuid, context)
@@ -143,7 +140,7 @@ def sync_album_permissions(
 
     # Phase 2A: PONER (add members)
     if users_to_add:
-        _add_members_to_album(
+        add_members_to_album(
             album_id,
             album_name,
             list(users_to_add),
@@ -311,7 +308,7 @@ def _remove_members_from_album(
 
     client = context.client
     for user_id in user_ids:
-        response = immich_remove_user_from_album.sync_detailed(
+        immich_remove_user_from_album.sync_detailed(
             id=UUID(album_id),
             user_id=user_id,
             client=client,
