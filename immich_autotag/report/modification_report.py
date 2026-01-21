@@ -210,6 +210,19 @@ class ModificationReport:
             ModificationKind.DELETE_ALBUM,
             ModificationKind.RENAME_ALBUM,
         }
+        # Centraliza el log aquí si corresponde
+        from immich_autotag.logging.utils import log
+        level = kind.log_level
+        # Mensajes por tipo
+        if kind == ModificationKind.DELETE_ALBUM:
+            msg = f"[DELETE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_id()}) deleted. Reason: {extra.get('reason') if extra else ''}"
+        elif kind == ModificationKind.CREATE_ALBUM:
+            msg = f"[CREATE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_id()}) created."
+        elif kind == ModificationKind.RENAME_ALBUM:
+            msg = f"[RENAME_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_id()}) renamed from '{old_value}' to '{new_value}'."
+        else:
+            msg = f"[ALBUM_MODIFICATION] Album '{album.get_album_name()}' (id={album.get_album_id()}) modification: {kind.name}"
+        log(msg, level=level)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind)
