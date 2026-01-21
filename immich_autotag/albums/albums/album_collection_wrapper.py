@@ -16,7 +16,7 @@ from immich_autotag.albums.duplicates.duplicate_album_reports import (
 from immich_autotag.albums.duplicates.merge_duplicate_albums import (
     merge_duplicate_albums,
 )
-from immich_autotag.assets.albums.temporary_albums import is_temporary_album
+from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
