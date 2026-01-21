@@ -15,6 +15,7 @@ class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
     El valor es una lista de álbumes (AlbumList) que contienen ese asset.
     Permite consultas O(1) para saber a qué álbumes pertenece un asset.
     """
+
     def __init__(self):
         self._map: dict[str, AlbumList] = dict()
 
