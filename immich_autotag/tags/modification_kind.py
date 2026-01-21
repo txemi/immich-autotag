@@ -1,8 +1,7 @@
-import enum
-
-
 from enum import Enum
+
 from immich_autotag.logging.levels import LogLevel
+
 
 class ModificationKind(Enum):
     def __new__(cls, *args, log_level=None):
@@ -21,9 +20,9 @@ class ModificationKind(Enum):
     REMOVE_TAG_GLOBALLY = ((),)
     WARNING_TAG_REMOVAL_FROM_ASSET_FAILED = ((),)
     WARNING_ASSET_ALREADY_IN_ALBUM = ((),)
-    CREATE_ALBUM = ((), {'log_level': LogLevel.PROGRESS})
-    DELETE_ALBUM = ((), {'log_level': LogLevel.PROGRESS})
-    RENAME_ALBUM = ((), {'log_level': LogLevel.PROGRESS})
+    CREATE_ALBUM = ((), {"log_level": LogLevel.PROGRESS})
+    DELETE_ALBUM = ((), {"log_level": LogLevel.PROGRESS})
+    RENAME_ALBUM = ((), {"log_level": LogLevel.PROGRESS})
     ASSIGN_ASSET_TO_ALBUM = ((),)
     REMOVE_ASSET_FROM_ALBUM = ((),)
     UPDATE_ASSET_DATE = ((),)
@@ -42,4 +41,4 @@ class ModificationKind(Enum):
     ALBUM_PERMISSION_REMOVED = ((),)
     ALBUM_PERMISSION_SHARE_FAILED = ((),)
 
-    ADD_USER_TO_ALBUM = ((), {'log_level': LogLevel.PROGRESS})
+    ADD_USER_TO_ALBUM = ((), {"log_level": LogLevel.PROGRESS})

@@ -49,12 +49,15 @@ class UserResponseWrapper:
     @typechecked
     def email(self) -> str:
         return self.user.email
+
     @property
     @typechecked
     def uuid(self) -> "UUID":
         """Devuelve el UUID del usuario (objeto UUID, no string)."""
         from uuid import UUID
+
         return UUID(self.id)
+
     @typechecked
     def __str__(self) -> str:
         return self.name or self.id or "<unknown user>"

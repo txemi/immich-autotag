@@ -1,6 +1,7 @@
 import attrs
 from typeguard import typechecked
 
+
 @attrs.define(auto_attribs=True, slots=True, on_setattr=attrs.setters.validate)
 class HostPort:
     host: str = attrs.field(validator=attrs.validators.instance_of(str))
