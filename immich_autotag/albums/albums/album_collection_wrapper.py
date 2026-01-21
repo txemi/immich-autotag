@@ -504,20 +504,8 @@ class AlbumCollectionWrapper:
             )
         try:
             delete_album_sync(id=UUID(wrapper.get_album_id()), client=client)
-            log(
-                f"Album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}) deleted. Reason: {reason}",
-                level=LogLevel.FOCUS,
-            )
-            if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
 
-                tag_mod_report.add_album_modification(
-                    kind=ModificationKind.DELETE_ALBUM,
-                    album=wrapper,
-                    old_value=wrapper.get_album_name(),
-                    extra={"reason": reason},
-                )
-            return True
+
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
@@ -564,7 +552,17 @@ class AlbumCollectionWrapper:
                     extra={"reason": f"{reason} (FAILED: {err_reason})"},
                 )
             return True
+        self.remove_album_local_public(wrapper)
+        if tag_mod_report:
+            from immich_autotag.tags.modification_kind import ModificationKind
 
+            tag_mod_report.add_album_modification(
+                kind=ModificationKind.DELETE_ALBUM,
+                album=wrapper,
+                old_value=wrapper.get_album_name(),
+                extra={"reason": f"{reason} (FAILED: {err_reason})"},
+            )
+        return True
     def remove_album_local_public(self, album_wrapper: AlbumResponseWrapper) -> bool:
         """
         Public wrapper for _remove_album_from_local_collection.
