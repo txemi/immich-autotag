@@ -36,7 +36,9 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
 
-    _albums: AlbumList = attrs.field(factory=AlbumList, validator=attrs.validators.instance_of(AlbumList))
+    _albums: AlbumList = attrs.field(
+        factory=AlbumList, validator=attrs.validators.instance_of(AlbumList)
+    )
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
         factory=AssetToAlbumsMap,

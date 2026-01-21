@@ -50,6 +50,7 @@ def cleanup_unhealthy_album(
     album_name = album_wrapper.get_album_name()
     if tag_mod_report:
         from immich_autotag.tags.modification_kind import ModificationKind
+
         tag_mod_report.add_album_modification(
             kind=ModificationKind.DELETE_ALBUM_UNHEALTHY,
             album=album_wrapper,

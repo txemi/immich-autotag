@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import attrs
 
-
-
-from typing import Optional
 from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumErrorEntry:

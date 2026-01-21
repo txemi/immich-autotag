@@ -17,7 +17,9 @@ class UserResponseWrapper:
 
     @staticmethod
     def _validate_user(
-        instance: "UserResponseWrapper", attribute: attrs.Attribute["UserResponseDto"], value: object
+        instance: "UserResponseWrapper",
+        attribute: attrs.Attribute["UserResponseDto"],
+        value: object,
     ) -> None:
         if value is None:
             raise ValueError("user cannot be None")

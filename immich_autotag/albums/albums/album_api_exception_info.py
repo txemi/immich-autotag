@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 from typing import Optional
+
 import attrs
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumApiExceptionInfo:
@@ -8,6 +11,7 @@ class AlbumApiExceptionInfo:
     Encapsulates details about an API exception for album operations, including
     the exception object, status code, and message parsing logic.
     """
+
     exc: Exception
     status_code: Optional[int] = attrs.field(init=False)
     message: str = attrs.field(init=False)

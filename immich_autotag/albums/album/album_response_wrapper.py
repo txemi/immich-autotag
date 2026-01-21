@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+
+@attrs.define(auto_attribs=True, slots=True)
+class AlbumPartialRepr:
+    album_name: str | None
+    partial_repr: str
+
+
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
@@ -14,13 +21,13 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
     from immich_autotag.context.immich_context import ImmichContext
 
-from immich_autotag.utils.decorators import conditional_typechecked
-
 from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
@@ -49,6 +56,7 @@ class AlbumResponseWrapper:
     _unavailable: bool = attrs.field(default=False, init=False)
     # Error history for this album, encapsulated in AlbumErrorHistory
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
+
     _error_history: AlbumErrorHistory = attrs.field(
         factory=AlbumErrorHistory,
         init=False,
@@ -132,7 +140,9 @@ class AlbumResponseWrapper:
         )
 
         collection = AlbumCollectionWrapper.get_instance()
-        same_name_albums = list(collection.find_all_albums_with_name(self.get_album_name()))
+        same_name_albums = list(
+            collection.find_all_albums_with_name(self.get_album_name())
+        )
         album_ids = [a.get_album_id() for a in same_name_albums]
         if self.get_album_id() not in album_ids:
             raise RuntimeError(
@@ -230,8 +240,6 @@ class AlbumResponseWrapper:
         except Exception:
             pass
 
-
-
     @typechecked
     def should_mark_unavailable(
         self, threshold: int | None = None, window_seconds: int | None = None
@@ -249,7 +257,10 @@ class AlbumResponseWrapper:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client import errors as immich_errors
         from immich_client.api.albums import get_album_info
-        from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+
+        from immich_autotag.albums.albums.album_api_exception_info import (
+            AlbumApiExceptionInfo,
+        )
 
         album_dto = None
         try:
@@ -258,11 +269,11 @@ class AlbumResponseWrapper:
             )
         except immich_errors.UnexpectedStatus as exc:
             api_exc = AlbumApiExceptionInfo(exc)
-            album_name, partial_repr = self._build_partial_repr()
+            partial = self._build_partial_repr()
             if api_exc.is_status(400):
-                self._handle_recoverable_400(api_exc, album_name, partial_repr)
+                self._handle_recoverable_400(api_exc, partial)
                 return
-            self._log_and_raise_fatal_error(api_exc, album_name, partial_repr)
+            self._log_and_raise_fatal_error(api_exc, partial)
         if album_dto is None:
             raise RuntimeError(
                 f"get_album_info.sync returned None for album id={self.get_album_uuid_no_cache()}"
@@ -272,7 +283,7 @@ class AlbumResponseWrapper:
             self.invalidate_cache()
 
     @typechecked
-    def _build_partial_repr(self) -> tuple[str | None, str]:
+    def _build_partial_repr(self) -> AlbumPartialRepr:
         """Construye una representación parcial segura del álbum para logs de error."""
         try:
             dto_for_repr = self._active_dto()
@@ -282,31 +293,37 @@ class AlbumResponseWrapper:
                 album_name = None
             try:
                 assets_attr = getattr(dto_for_repr, "assets", None)
-                asset_count: int | None = len(assets_attr) if assets_attr is not None else None
+                asset_count: int | None = (
+                    len(assets_attr) if assets_attr is not None else None
+                )
             except Exception:
                 asset_count = None
             try:
                 dto_id = getattr(dto_for_repr, "id", None)
             except Exception:
                 dto_id = None
-            partial_repr = f"AlbumDTO(id={dto_id!r}, name={album_name!r}, assets={asset_count})"
+            partial_repr = (
+                f"AlbumDTO(id={dto_id!r}, name={album_name!r}, assets={asset_count})"
+            )
         except Exception:
             album_name = None
             partial_repr = "<unrepresentable album_partial>"
-        return album_name, partial_repr
+        return AlbumPartialRepr(album_name=album_name, partial_repr=partial_repr)
 
     # _extract_status_code_from_exc is now handled by AlbumApiExceptionInfo
 
-    def _handle_recoverable_400(self, api_exc: AlbumApiExceptionInfo, album_name: str | None, partial_repr: str) -> None:
+    def _handle_recoverable_400(
+        self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
+    ) -> None:
         """Gestiona el error 400 (no encontrado/sin acceso) de forma recuperable."""
         self._error_history.append_api_exc(api_exc)
         current_count = self._error_history.count_in_window()
         log(
             (
                 f"[WARN] get_album_info returned 400 for album id="
-                f"{self.get_album_id()!r} name={album_name!r}. "
+                f"{self.get_album_id()!r} name={partial.album_name!r}. "
                 f"Recorded recoverable error (count={current_count}). "
-                f"album_partial={partial_repr}"
+                f"album_partial={partial.partial_repr}"
             ),
             level=LogLevel.WARNING,
         )
@@ -314,6 +331,7 @@ class AlbumResponseWrapper:
             ALBUM_ERROR_THRESHOLD,
             ALBUM_ERROR_WINDOW_SECONDS,
         )
+
         if self.should_mark_unavailable(
             ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS
         ):
@@ -325,29 +343,34 @@ class AlbumResponseWrapper:
             from immich_autotag.tags.modification_kind import (
                 ModificationKind,
             )
+
             tag_mod_report = ModificationReport.get_instance()
             extra = {"recent_errors": len(self._error_history), "album": self}  # type: ignore[arg-type]
             tag_mod_report.add_error_modification(
                 kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                error_message=partial_repr,
+                error_message=partial.partial_repr,
                 error_category="HTTP_400",
                 extra=extra,  # type: ignore[arg-type]
             )
             from immich_autotag.albums.albums.album_collection_wrapper import (
                 AlbumCollectionWrapper,
             )
+
             AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(self)
 
-    def _log_and_raise_fatal_error(self, api_exc: AlbumApiExceptionInfo, album_name: str | None, partial_repr: str) -> None:
+    def _log_and_raise_fatal_error(
+        self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
+    ) -> None:
         log(
             (
                 f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
-                f"name={album_name!r}. Exception: {api_exc.exc!r}. "
-                f"album_partial={partial_repr}"
+                f"name={partial.album_name!r}. Exception: {api_exc.exc!r}. "
+                f"album_partial={partial.partial_repr}"
             ),
             level=LogLevel.ERROR,
         )
         raise api_exc.exc
+
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
         if self._album_full is not None:
@@ -432,7 +455,9 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
         from urllib.parse import urlparse
+
         from immich_autotag.config.host_config import get_immich_web_base_url
+
         url = f"{get_immich_web_base_url()}/albums/{self.get_album_id()}"
         return urlparse(url)
 
@@ -872,4 +897,3 @@ class AlbumResponseWrapper:
             wrapper._asset_ids_cache = None
 
         return wrapper
-

@@ -65,4 +65,3 @@ class LogLevel(Enum):
 
     def __str__(self):
         return self.name
-

@@ -71,7 +71,6 @@ def _resolve_emails_to_user_ids(
     if all_users is None:
         all_users = []
 
-
     # Build email → user_id map
     email_to_id = {}
     for user in all_users:
