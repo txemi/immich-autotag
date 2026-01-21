@@ -60,7 +60,7 @@ class LogLevel(Enum):
         return self.value.description
 
     @property
-    def level_value(self):
+    def level_value(self) -> int:
         return self.value.level_value
 
     def __str__(self):
