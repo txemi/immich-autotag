@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
+
     @staticmethod
     def _validate_user(instance, attribute, value):
         if value is None:
@@ -48,7 +49,12 @@ class UserResponseWrapper:
     @typechecked
     def email(self) -> str:
         return self.user.email
-
+    @property
+    @typechecked
+    def uuid(self) -> "UUID":
+        """Devuelve el UUID del usuario (objeto UUID, no string)."""
+        from uuid import UUID
+        return UUID(self.id)
     @typechecked
     def __str__(self) -> str:
         return self.name or self.id or "<unknown user>"
