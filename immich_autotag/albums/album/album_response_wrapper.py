@@ -164,8 +164,8 @@ class AlbumResponseWrapper:
         assets = getattr(self._album_full, "assets", None)
         if not isinstance(assets, list):
             return False
-        # type: ignore[arg-type] for static checkers, as assets should be list[AssetResponseDto]
-        return len(assets) > 0  # type: ignore[arg-type]
+        # Defensive: assets should be a list[AssetResponseDto], but type checkers may not know
+        return len(assets) > 0
 
     @typechecked
     def get_album_id(self) -> str:
@@ -344,12 +344,12 @@ class AlbumResponseWrapper:
             )
 
             tag_mod_report = ModificationReport.get_instance()
-            extra = {"recent_errors": len(self._error_history), "album": self}  # type: ignore[arg-type]
+            extra = {"recent_errors": len(self._error_history), "album": self}
             tag_mod_report.add_error_modification(
                 kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
                 error_message=partial.partial_repr,
                 error_category="HTTP_400",
-                extra=extra,  # type: ignore[arg-type]
+                extra=extra,
             )
             from immich_autotag.albums.albums.album_collection_wrapper import (
                 AlbumCollectionWrapper,
@@ -590,7 +590,8 @@ class AlbumResponseWrapper:
         # Enforce safety: only allow removal from temporary or duplicate albums
         if not (self.is_temporary_album() or self.is_duplicate_album()):
             raise RuntimeError(
-                f"Refusing to remove asset from album '{self.get_album_name()}' (id={self.get_album_id()}): not a temporary or duplicate album."
+                f"Refusing to remove asset from album '{self.get_album_name()}' "
+                f"(id={self.get_album_id()}): not a temporary or duplicate album."
             )
 
         # Check if asset is in album first (use has_asset_wrapper for clarity)
@@ -772,8 +773,7 @@ class AlbumResponseWrapper:
                 log(
                     (
                         f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album "
-                        f"{self.get_album_id()}. "
-                        f"This may be an eventual consistency or API issue."
+                        f"{self.get_album_id()}. This may be an eventual consistency or API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
@@ -804,8 +804,7 @@ class AlbumResponseWrapper:
                 log(
                     (
                         f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album "
-                        f"{self.get_album_id()}. "
-                        f"This may be an eventual consistency or API issue."
+                        f"{self.get_album_id()}. This may be an eventual consistency or API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
@@ -847,10 +846,9 @@ class AlbumResponseWrapper:
         # NOTE: _album_partial is a private attribute, but is intentionally exposed as a kw_only argument
         # for factory construction. This is by design to allow explicit control over DTO representation.
         # Some type checkers may warn about passing a private attribute to the constructor; this is safe here.
-        # type: ignore[call-arg]
-        """
-        # Use kw_only to ensure correct field assignment
-        wrapper = AlbumResponseWrapper(album_partial=dto)  # type: ignore
+        # """
+
+        wrapper = AlbumResponseWrapper(album_partial=dto)
         return wrapper
 
     @staticmethod
