@@ -283,13 +283,14 @@ class AlbumCollectionWrapper:
                 )
             return album_id
 
-        for wrapper in self._unavailable.sorted(_unavailable_sort_key):
-            album_id = wrapper.get_album_id()
+        unavailable_sorted: list[AlbumResponseWrapper] = self._unavailable.sorted(_unavailable_sort_key)  # type: ignore
+        for wrapper in unavailable_sorted:
+            album_id: str = wrapper.get_album_id()
             if not album_id:
                 raise RuntimeError(
                     f"Album missing valid id while building summary: {wrapper!r}"
                 )
-            name = wrapper.get_album_name()
+            name: str = wrapper.get_album_name()
             summary_items.append({"id": album_id, "name": name})
 
         out_dir = get_run_output_dir()

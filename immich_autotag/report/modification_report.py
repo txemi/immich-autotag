@@ -269,7 +269,7 @@ class ModificationReport:
         asset_wrapper: Optional["AssetResponseWrapper"] = None,
         error_message: Optional[str] = None,
         error_category: Optional[str] = None,
-        extra: Optional[dict] = None,
+        extra: Optional[dict[str, object]] = None,
     ) -> None:
         """Records a recoverable error event for tracking failed assets.
 
