@@ -76,6 +76,5 @@ class LogLevel(Enum):
         """Return a human-friendly description of the log level."""
         return self._description
 
-
     def __str__(self):
         return self.name
