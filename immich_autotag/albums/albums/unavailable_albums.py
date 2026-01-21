@@ -1,4 +1,6 @@
 import attrs
+from typing import Callable
+from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
@@ -10,7 +12,7 @@ class UnavailableAlbums:
     """
 
     _albums: set[AlbumResponseWrapper] = attrs.field(
-        factory=set, init=False, repr=False
+        factory=lambda: set(), init=False, repr=False
     )
 
     def add(self, album: AlbumResponseWrapper) -> bool:
@@ -28,15 +30,15 @@ class UnavailableAlbums:
     @property
     def count(self) -> int:
         return len(self._albums)
-
-    def sorted(self, key):
+    @typechecked
+    def sorted(self, key: Callable[[AlbumResponseWrapper], str]) -> list[AlbumResponseWrapper]:
         return sorted(self._albums, key=key)
 
     def items(self):
         return self._albums
 
     @typechecked
-    def write_unavailable_summary(self) -> None:
+    def write_summary(self) -> None:
         """Write a small JSON summary of unavailable albums for operator inspection.
 
         Behavior:
@@ -55,7 +57,7 @@ class UnavailableAlbums:
         from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
         from immich_autotag.utils.run_output_dir import get_run_output_dir
 
-        summary_items = []
+        summary_items: list[dict[str, str]] = []
 
         def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
             album_id = w.get_album_id()
