@@ -212,6 +212,7 @@ class ModificationReport:
         }
         # Centraliza el log aquí si corresponde
         from immich_autotag.logging.utils import log
+
         level = kind.log_level
         # Mensajes por tipo
         if kind == ModificationKind.DELETE_ALBUM:

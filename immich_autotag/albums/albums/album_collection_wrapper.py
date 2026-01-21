@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from typing import Iterable
 from uuid import UUID
-from immich_client.models.album_response_dto import AlbumResponseDto
-from immich_autotag.context.immich_context import ImmichContext
 
 import attrs
+from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -23,6 +22,7 @@ from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_a
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
@@ -33,10 +33,8 @@ from immich_autotag.utils.decorators import conditional_typechecked
 _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 
-
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
-
 
     _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
@@ -52,8 +50,11 @@ class AlbumCollectionWrapper:
     _collected_duplicates: DuplicateAlbumReports = attrs.field(
         default=attrs.Factory(DuplicateAlbumReports), init=False, repr=False
     )
+
     @typechecked
-    def find_first_album_with_name(self, album_name: str) -> AlbumResponseWrapper | None:
+    def find_first_album_with_name(
+        self, album_name: str
+    ) -> AlbumResponseWrapper | None:
         """
         Returns the first album with the given name, or None if not found.
         Equivalent to next(self.find_all_albums_with_name(album_name), None).
@@ -62,6 +63,7 @@ class AlbumCollectionWrapper:
             if album.get_album_name() == album_name:
                 return album
         return None
+
     @typechecked
     def set_albums(self, value: AlbumList) -> None:
         """
@@ -250,8 +252,6 @@ class AlbumCollectionWrapper:
             self._collected_duplicates, existing_album, incoming_album, context
         )
         return existing_album
-
-
 
     @typechecked
     def write_unavailable_summary(self) -> None:
@@ -545,6 +545,7 @@ class AlbumCollectionWrapper:
             )
             self.remove_album_local_public(wrapper)
             from immich_autotag.tags.modification_kind import ModificationKind
+
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.DELETE_ALBUM,
                 album=wrapper,
@@ -554,6 +555,7 @@ class AlbumCollectionWrapper:
             return True
         self.remove_album_local_public(wrapper)
         from immich_autotag.tags.modification_kind import ModificationKind
+
         tag_mod_report.add_album_modification(
             kind=ModificationKind.DELETE_ALBUM,
             album=wrapper,
@@ -561,6 +563,7 @@ class AlbumCollectionWrapper:
             extra={"reason": f"{reason} (FAILED: {err_reason})"},
         )
         return True
+
     def remove_album_local_public(self, album_wrapper: AlbumResponseWrapper) -> bool:
         """
         Public wrapper for _remove_album_from_local_collection.
@@ -759,6 +762,7 @@ class AlbumCollectionWrapper:
             )
             survivors = [surviving_album] + survivors[2:]
         return survivors[0]
+
     @typechecked
     def _add_user_to_album(
         self,
@@ -770,9 +774,13 @@ class AlbumCollectionWrapper:
         """
         Private helper to add a user as EDITOR to an album. Handles only user addition, error reporting, and event logging.
         """
-        from immich_autotag.permissions.album_permission_executor import _add_members_to_album
+        from immich_autotag.permissions.album_permission_executor import (
+            _add_members_to_album,
+        )
+
         try:
             from immich_autotag.tags.modification_kind import ModificationKind
+
             _add_members_to_album(
                 album_id=album.id,
                 album_name=album.album_name,
@@ -802,8 +810,12 @@ class AlbumCollectionWrapper:
         """
         from immich_client.api.albums import create_album
         from immich_client.models.create_album_dto import CreateAlbumDto
+
         from immich_autotag.tags.modification_kind import ModificationKind
-        album = create_album.sync(client=client, body=CreateAlbumDto(album_name=album_name))
+
+        album = create_album.sync(
+            client=client, body=CreateAlbumDto(album_name=album_name)
+        )
         if album is None:
             raise RuntimeError("Failed to create album: API returned None")
         tag_mod_report.add_album_modification(
@@ -840,6 +852,7 @@ class AlbumCollectionWrapper:
         # If it doesn't exist, create it and assign user
         from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+
         if tag_mod_report is None:
             tag_mod_report = self.get_modification_report()
 

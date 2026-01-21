@@ -4,11 +4,8 @@
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
 
-import attrs
-from typeguard import typechecked
 
 from ._internal_types import ErrorHandlingMode
-
 
 # Control whether to use ThreadPoolExecutor for asset processing, regardless of MAX_WORKERS value.
 # If False, always use direct loop (sequential). If True, use thread pool even for MAX_WORKERS=1.

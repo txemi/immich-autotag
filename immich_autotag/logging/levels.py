@@ -1,4 +1,3 @@
-
 """
 Log levels for Immich Autotag
 
@@ -8,14 +7,43 @@ Objective: Help developers easily choose an appropriate log level by providing c
 import logging
 from enum import Enum
 
+
 class LogLevel(Enum):
-    ERROR = (logging.ERROR, False, "Standard error level. Use for serious problems that need immediate attention.")
-    IMPORTANT = (logging.WARNING, False, "Standard warning level. Use for important warnings that should not be ignored.")
-    WARNING = (logging.WARNING, False, "Standard warning level. Use for general warnings.")
-    PROGRESS = (logging.INFO, True, "Custom level. Use for progress updates and evolution of long-running processes. These messages should appear in standard application output to inform the user about processing status.")
-    INFO = (logging.INFO, False, "Standard info level. Use for general informational messages.")
-    FOCUS = (15, True, "Custom level. Use when the user is focusing on a specific asset and needs detailed information. These messages are hidden in standard mode but shown in focus mode to help with deep debugging or investigation.")
-    DEBUG = (logging.DEBUG, False, "Standard debug level. Use for low-level debugging information.")
+    ERROR = (
+        logging.ERROR,
+        False,
+        "Standard error level. Use for serious problems that need immediate attention.",
+    )
+    IMPORTANT = (
+        logging.WARNING,
+        False,
+        "Standard warning level. Use for important warnings that should not be ignored.",
+    )
+    WARNING = (
+        logging.WARNING,
+        False,
+        "Standard warning level. Use for general warnings.",
+    )
+    PROGRESS = (
+        logging.INFO,
+        True,
+        "Custom level. Use for progress updates and evolution of long-running processes. These messages should appear in standard application output to inform the user about processing status.",
+    )
+    INFO = (
+        logging.INFO,
+        False,
+        "Standard info level. Use for general informational messages.",
+    )
+    FOCUS = (
+        15,
+        True,
+        "Custom level. Use when the user is focusing on a specific asset and needs detailed information. These messages are hidden in standard mode but shown in focus mode to help with deep debugging or investigation.",
+    )
+    DEBUG = (
+        logging.DEBUG,
+        False,
+        "Standard debug level. Use for low-level debugging information.",
+    )
 
     def __init__(self, level_value, is_custom, description):
         self._level_value = level_value

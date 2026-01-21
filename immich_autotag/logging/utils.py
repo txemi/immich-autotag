@@ -10,7 +10,6 @@ from .levels import LogLevel
 # Register the FOCUS level ALWAYS before any setup_logging
 
 
-
 def register_custom_log_levels():
     """
     Register all custom (non-standard) log levels defined in LogLevel.
@@ -19,6 +18,7 @@ def register_custom_log_levels():
     for level in LogLevel:
         if level.is_custom and level.name not in logging._nameToLevel:
             logging.addLevelName(level.value, level.name)
+
 
 register_custom_log_levels()
 

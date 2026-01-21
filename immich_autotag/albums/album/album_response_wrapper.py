@@ -37,8 +37,6 @@ class AssetAlreadyInAlbumError(Exception):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
-
-
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -66,26 +64,30 @@ class AlbumResponseWrapper:
                     "full DTO"
                 )
             )
+
     @property
     @typechecked
     def owner_uuid(self) -> "UUID":
         """Devuelve el UUID del owner del álbum (objeto UUID, no string)."""
         from uuid import UUID
+
         # El owner_id puede estar en _album_partial o _album_full
         album = self._album_full or self._album_partial
         if album is None or not hasattr(album, "owner_id"):
             raise AttributeError("AlbumResponseWrapper: owner_id not available.")
         return UUID(album.owner_id)
 
-
-        
     @typechecked
     def is_temporary_album(self) -> bool:
         """
         Returns True if this album is a temporary autotag album (created automatically by autotag).
         """
-        from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
+        from immich_autotag.assets.albums.temporary_manager.naming import (
+            is_temporary_album,
+        )
+
         return is_temporary_album(self.get_album_name())
+
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible."""
         if not isinstance(other, AlbumResponseWrapper):
@@ -105,6 +107,7 @@ class AlbumResponseWrapper:
             return hash(self.get_album_id())
         except Exception:
             return object.__hash__(self)
+
     @typechecked
     def is_empty(self) -> bool:
         """
@@ -112,7 +115,7 @@ class AlbumResponseWrapper:
         Uses the cached asset ids if available for efficiency.
         """
         return len(self.get_asset_ids()) == 0
-        
+
     @typechecked
     def is_duplicate_album(self) -> bool:
         """
@@ -120,7 +123,10 @@ class AlbumResponseWrapper:
         This uses the AlbumCollectionWrapper singleton to ensure consistent duplicate detection.
         Raises if the current album is not found among the albums with the same name (should never happen in normal operation).
         """
-        from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+        from immich_autotag.albums.albums.album_collection_wrapper import (
+            AlbumCollectionWrapper,
+        )
+
         collection = AlbumCollectionWrapper.get_instance()
         same_name_albums = list(collection.albums_with_name(self.get_album_name()))
         album_ids = [a.get_album_id() for a in same_name_albums]
@@ -129,6 +135,7 @@ class AlbumResponseWrapper:
                 f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' not found among albums with the same name: {album_ids}"
             )
         return len(same_name_albums) > 1
+
     @staticmethod
     @typechecked
     def get_default_client() -> ImmichClient:
@@ -638,7 +645,6 @@ class AlbumResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
         from immich_autotag.tags.modification_kind import ModificationKind
-
 
         # Enforce safety: only allow removal from temporary or duplicate albums
         if not (self.is_temporary_album() or self.is_duplicate_album()):
