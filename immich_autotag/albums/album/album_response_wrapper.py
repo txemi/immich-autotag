@@ -152,7 +152,11 @@ class AlbumResponseWrapper:
 
     @property
     def is_full(self) -> bool:
-        return self._album_full is not None and self._album_full.assets is not None
+        # Defensive: assets should be a list, but check type to avoid always-true condition
+        if self._album_full is None:
+            return False
+        assets = getattr(self._album_full, "assets", None)
+        return isinstance(assets, list) and len(assets) > 0
 
     @typechecked
     def get_album_id(self) -> str:
