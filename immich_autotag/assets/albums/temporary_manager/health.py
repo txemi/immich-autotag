@@ -28,7 +28,7 @@ def is_temporary_album_healthy(
     if not assets or len(assets) < 2:
         return True
     # Example: assume each asset has a 'date' attribute (datetime)
-    dates = [getattr(a, "date", None) for a in assets if getattr(a, "date", None)]
+    dates = [a.get_best_date() for a in assets if a.get_best_date() is not None]
     if len(dates) < 2:
         return True
     min_date = min(dates)
