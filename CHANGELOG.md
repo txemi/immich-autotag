@@ -60,7 +60,7 @@ All versions follow [Semantic Versioning](https://semver.org/).
 
 
 ## [0.47.0] 
-**Description:** Infraestructura, comunidad y automatización: base técnica y social del proyecto.
+**Description:** [Convenience version, not a real product release] This version is used to register infrastructure, community, and automation features that were implemented incrementally and do not correspond to a real product release. Please improve this description if needed.
 ### Added
 - Announcement and outreach tracking across platforms ([issue](docs/issues/0011-announcement-tracking/))
 - Documentation coordination and planning via docs-track branch ([issue](docs/issues/0020-docs-track-branch/))
