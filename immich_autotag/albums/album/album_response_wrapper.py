@@ -49,7 +49,7 @@ class AlbumResponseWrapper:
     _unavailable: bool = attrs.field(default=False, init=False)
     # Recent error history for this album: list of AlbumErrorEntry objects
     from typing import List
-    _error_history: List[AlbumErrorEntry] = attrs.field(
+    _error_history: list[AlbumErrorEntry] = attrs.field(
         factory=list,
         init=False, repr=False,
         validator=attrs.validators.deep_iterable(
@@ -308,17 +308,18 @@ class AlbumResponseWrapper:
         self._set_album_full(album_dto)
         self.invalidate_cache()
 
-    def _build_partial_repr(self):
+    @typechecked
+    def _build_partial_repr(self) -> tuple[str | None, str]:
         """Construye una representación parcial segura del álbum para logs de error."""
         try:
             dto_for_repr = self._active_dto()
             try:
-                album_name = dto_for_repr.album_name
+                album_name: str | None = getattr(dto_for_repr, "album_name", None)
             except AttributeError:
                 album_name = None
             try:
                 assets_attr = getattr(dto_for_repr, "assets", None)
-                asset_count = len(assets_attr) if assets_attr is not None else None
+                asset_count: int | None = len(assets_attr) if assets_attr is not None else None
             except Exception:
                 asset_count = None
             try:
@@ -331,10 +332,11 @@ class AlbumResponseWrapper:
             partial_repr = "<unrepresentable album_partial>"
         return album_name, partial_repr
 
-    def _extract_status_code_from_exc(self, exc):
+    @typechecked
+    def _extract_status_code_from_exc(self, exc: Exception) -> int | None:
         """Extrae el status_code de la excepción, intentando parsear si es necesario."""
         try:
-            status_code = exc.status_code
+            status_code = getattr(exc, "status_code", None)
         except Exception:
             status_code = None
         if status_code is None:
@@ -346,7 +348,8 @@ class AlbumResponseWrapper:
                 status_code = None
         return status_code
 
-    def _handle_recoverable_400(self, exc, album_name, partial_repr):
+    @typechecked
+    def _handle_recoverable_400(self, exc: Exception, album_name: str | None, partial_repr: str) -> None:
         """Gestiona el error 400 (no encontrado/sin acceso) de forma recuperable."""
         try:
             self.record_error("HTTP_400", str(exc))
@@ -407,7 +410,8 @@ class AlbumResponseWrapper:
         except Exception:
             pass
 
-    def _log_and_raise_fatal_error(self, exc, album_name, partial_repr):
+    @typechecked
+    def _log_and_raise_fatal_error(self, exc: Exception, album_name: str | None, partial_repr: str) -> None:
         log(
             (
                 f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
