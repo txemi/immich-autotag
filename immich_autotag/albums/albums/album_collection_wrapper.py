@@ -134,7 +134,6 @@ class AlbumCollectionWrapper:
 
         self._asset_to_albums_map = self._asset_to_albums_map_build()
 
-
     @typechecked
     def _remove_album_from_local_collection(
         self, album_wrapper: AlbumResponseWrapper
@@ -194,7 +193,6 @@ class AlbumCollectionWrapper:
         # Evaluate global policy after this change
 
         self._evaluate_global_policy()
-
 
     @typechecked
     def _handle_duplicate_album_conflict(
@@ -260,13 +258,11 @@ class AlbumCollectionWrapper:
         from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.tags.modification_kind import ModificationKind
 
-
         threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
-
 
         if not self._unavailable.count >= threshold:
             return
-        
+
         # In development: fail fast to surface systemic problems
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
@@ -288,7 +284,6 @@ class AlbumCollectionWrapper:
         # Write a small summary file for operator inspection
 
         self._unavailable.write_summary()
-
 
     @typechecked
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
@@ -390,7 +385,9 @@ class AlbumCollectionWrapper:
         """
         albums_to_remove = AlbumList()
         for album_wrapper in self.get_albums():
-            if album_wrapper.is_empty() and is_temporary_album(album_wrapper.get_album_name()):
+            if album_wrapper.is_empty() and is_temporary_album(
+                album_wrapper.get_album_name()
+            ):
                 albums_to_remove.append(album_wrapper)
         return albums_to_remove
 
