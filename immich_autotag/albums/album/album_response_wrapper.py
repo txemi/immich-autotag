@@ -144,6 +144,7 @@ class AlbumResponseWrapper:
         album_ids = [a.get_album_id() for a in same_name_albums]
         if self.get_album_id() not in album_ids:
             if True:
+                aaa=list(collection.find_all_albums_with_name(album_name))
                 raise RuntimeError(
                     f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' not found among albums with the same name: {album_ids}"
                 )
