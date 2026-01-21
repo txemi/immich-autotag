@@ -448,8 +448,14 @@ class AlbumCollectionWrapper:
             msg = str(exc)
             # Try to give a more specific reason if possible
             err_reason = "Unknown error"
-            response = exc.response if hasattr(exc, "response") else None
-            code = response.status_code if response is not None and hasattr(response, "status_code") else None
+            from typing import cast, Any
+            response = None
+            code = None
+            # Try to access response and status_code only if present, using cast for static analysis
+            if hasattr(exc, "response"):
+                response = cast(Any, exc).response
+                if response is not None and hasattr(response, "status_code"):
+                    code = response.status_code
             if code is not None:
                 if code == 404:
                     err_reason = "Album not found (already deleted)"
@@ -499,7 +505,7 @@ class AlbumCollectionWrapper:
         existing: AlbumResponseWrapper,
         incoming_album: AlbumResponseWrapper,
         tag_mod_report: ModificationReport,
-        duplicates_collected: list[dict[str, object]],
+        duplicates_collected: DuplicateAlbumReports,
         name: str,
     ) -> None:
         """
@@ -523,13 +529,14 @@ class AlbumCollectionWrapper:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
             )
+        from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReport
         duplicates_collected.append(
-            {
-                "name": name,
-                "existing_id": existing.get_album_id(),
-                "incoming_id": incoming_album.get_album_id(),
-                "note": "duplicate skipped durante carga inicial",
-            }
+            DuplicateAlbumReport(
+                album_name=name,
+                existing_album=existing,
+                incoming_album=incoming_album,
+                note="duplicate skipped durante carga inicial",
+            )
         )
         from immich_autotag.tags.modification_kind import ModificationKind
 
@@ -566,7 +573,7 @@ class AlbumCollectionWrapper:
             try:
                 if existing.get_album_name() == name:
                     # Temporary duplicate
-                    if is_temporary_album(name) and client is not None:
+                    if is_temporary_album(name):
                         # Only call delete_album if client is of correct type
                         try:
                             if self.delete_album(
@@ -688,7 +695,7 @@ class AlbumCollectionWrapper:
         return survivors[0]
 
     @typechecked
-    def _add_user_to_album(
+    def add_user_to_album(
         self,
         album: AlbumResponseDto,
         user_id: UUID,
@@ -696,7 +703,7 @@ class AlbumCollectionWrapper:
         tag_mod_report: ModificationReport,
     ) -> None:
         """
-        Private helper to add a user as EDITOR to an album. Handles only user addition, error reporting, and event logging.
+        Public helper to add a user as EDITOR to an album. Handles only user addition, error reporting, and event logging.
         """
         from immich_autotag.permissions.album_permission_executor import (
             _add_members_to_album,
@@ -754,7 +761,7 @@ class AlbumCollectionWrapper:
         self,
         album_name: str,
         client: ImmichClient,
-        tag_mod_report: ModificationReport = None,
+        tag_mod_report: ModificationReport ,
     ) -> "AlbumResponseWrapper":
         """
         Searches for an album by name. If one exists, returns it. If there is more than one, handles duplicates according to the policy (merge, delete temporary, error, etc).
@@ -765,7 +772,7 @@ class AlbumCollectionWrapper:
         if len(albums_found) == 1:
             return albums_found[0]
         elif len(albums_found) > 1:
-            result = self.combine_duplicate_albums(
+            self.combine_duplicate_albums(
                 albums_found, context="duplicate_on_create"
             )
             # Lanzar excepción para desarrolladores tras la limpieza
@@ -777,19 +784,19 @@ class AlbumCollectionWrapper:
         from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
-        if tag_mod_report is None:
-            tag_mod_report = self.get_modification_report()
 
         album = self._create_album(album_name, client, tag_mod_report)
 
         # Centralized user access
         context = ImmichContext.get_instance()
-        user_wrapper = UserResponseWrapper.from_context(context)
-        user_id = user_wrapper.uuid
+        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        user_wrapper: UserResponseWrapper = UserResponseWrapper.from_context(context)
+        from uuid import UUID
+        user_id = user_wrapper.get_uuid()
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         owner_id = wrapper.owner_uuid
         if user_id != owner_id:
-            self._add_user_to_album(album, user_id, context, tag_mod_report)
+            self.add_user_to_album(album, user_id, context, tag_mod_report)
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         wrapper = self.add_album_wrapper(
             wrapper, client=client, tag_mod_report=tag_mod_report

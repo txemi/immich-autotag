@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
+
 
     @staticmethod
     def _validate_user(instance, attribute, value):
@@ -76,3 +78,9 @@ class UserResponseWrapper:
         user_dto = get_current_user(context)
         cls._cached_user_wrapper = cls(user=user_dto)
         return cls._cached_user_wrapper  # type: ignore
+    @typechecked
+    def get_uuid(self) -> "UUID":
+        from uuid import UUID
+
+        return UUID(self.id)
+    
