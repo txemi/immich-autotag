@@ -73,9 +73,13 @@ class AlbumResponseWrapper:
 
         # El owner_id puede estar en _album_partial o _album_full
         album = self._album_full or self._album_partial
-        if album is None or not hasattr(album, "owner_id"):
+        if album is None:
             raise AttributeError("AlbumResponseWrapper: owner_id not available.")
-        return UUID(album.owner_id)
+        try:
+            owner_id = album.owner_id
+        except AttributeError:
+            raise AttributeError("AlbumResponseWrapper: owner_id not available.")
+        return UUID(owner_id)
 
     @typechecked
     def is_temporary_album(self) -> bool:
