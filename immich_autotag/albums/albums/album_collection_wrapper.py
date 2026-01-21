@@ -784,21 +784,23 @@ class AlbumCollectionWrapper:
         from uuid import UUID
 
         from immich_client.api.albums import add_users_to_album, create_album
-        from immich_client.api.users import get_my_user
         from immich_client.models.add_users_dto import AddUsersDto
         from immich_client.models.album_user_add_dto import AlbumUserAddDto
         from immich_client.models.album_user_role import AlbumUserRole
         from immich_client.models.create_album_dto import CreateAlbumDto
+        from immich_autotag.context.immich_context import ImmichContext
+        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         album = create_album.sync(
             client=client, body=CreateAlbumDto(album_name=album_name)
         )
         if album is None:
             raise RuntimeError("Failed to create album: API returned None")
-        user = get_my_user.sync(client=client)
-        if user is None:
-            raise RuntimeError("Failed to get current user: API returned None")
-        user_id = UUID(user.id)
+
+        # Centralized user access
+        context = ImmichContext.get_instance()
+        user_wrapper = UserResponseWrapper.from_context(context)
+        user_id = UUID(user_wrapper.id)
         owner_id = UUID(album.owner_id)
         if user_id != owner_id:
             try:
