@@ -848,22 +848,15 @@ class AlbumCollectionWrapper:
         # Centralized user access
         context = ImmichContext.get_instance()
         user_wrapper = UserResponseWrapper.from_context(context)
-        import uuid
         user_id = user_wrapper.uuid
-        if not isinstance(user_id, uuid.UUID):
-            user_id = uuid.UUID(str(user_id))
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         owner_id = wrapper.owner_uuid
-        if not isinstance(owner_id, uuid.UUID):
-            owner_id = uuid.UUID(str(owner_id))
         if user_id != owner_id:
             self._add_user_to_album(album, user_id, context, tag_mod_report)
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
-        
         wrapper = self.add_album_wrapper(
             wrapper, client=client, tag_mod_report=tag_mod_report
         )
-        
         return wrapper
 
     @classmethod
