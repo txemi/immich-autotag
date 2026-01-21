@@ -7,7 +7,7 @@ from immich_autotag.albums.permissions.album_policy_resolver import resolve_albu
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process.process_assets import process_assets
 from immich_autotag.config.filter_wrapper import FilterConfigWrapper
-from immich_autotag.config.internal_config import get_immich_base_url
+from immich_autotag.config.host_config import get_immich_base_url
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.duplicates.load_duplicates_collection import (
     load_duplicates_collection,
