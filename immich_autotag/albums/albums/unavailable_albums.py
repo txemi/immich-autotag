@@ -1,5 +1,6 @@
-import attrs
 from typing import Callable
+
+import attrs
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -30,8 +31,11 @@ class UnavailableAlbums:
     @property
     def count(self) -> int:
         return len(self._albums)
+
     @typechecked
-    def sorted(self, key: Callable[[AlbumResponseWrapper], str]) -> list[AlbumResponseWrapper]:
+    def sorted(
+        self, key: Callable[[AlbumResponseWrapper], str]
+    ) -> list[AlbumResponseWrapper]:
         return sorted(self._albums, key=key)
 
     def items(self):
@@ -67,7 +71,9 @@ class UnavailableAlbums:
                 )
             return album_id
 
-        unavailable_sorted: list[AlbumResponseWrapper] = self.sorted(_unavailable_sort_key)  
+        unavailable_sorted: list[AlbumResponseWrapper] = self.sorted(
+            _unavailable_sort_key
+        )
         for wrapper in unavailable_sorted:
             album_id: str = wrapper.get_album_id()
             if not album_id:

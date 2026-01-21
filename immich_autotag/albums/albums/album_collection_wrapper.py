@@ -448,7 +448,8 @@ class AlbumCollectionWrapper:
             msg = str(exc)
             # Try to give a more specific reason if possible
             err_reason = "Unknown error"
-            from typing import cast, Any
+            from typing import Any, cast
+
             response = None
             code = None
             # Try to access response and status_code only if present, using cast for static analysis
@@ -529,7 +530,10 @@ class AlbumCollectionWrapper:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
             )
-        from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReport
+        from immich_autotag.albums.duplicates.duplicate_album_reports import (
+            DuplicateAlbumReport,
+        )
+
         duplicates_collected.append(
             DuplicateAlbumReport(
                 album_name=name,
@@ -761,7 +765,7 @@ class AlbumCollectionWrapper:
         self,
         album_name: str,
         client: ImmichClient,
-        tag_mod_report: ModificationReport ,
+        tag_mod_report: ModificationReport,
     ) -> "AlbumResponseWrapper":
         """
         Searches for an album by name. If one exists, returns it. If there is more than one, handles duplicates according to the policy (merge, delete temporary, error, etc).
@@ -772,9 +776,7 @@ class AlbumCollectionWrapper:
         if len(albums_found) == 1:
             return albums_found[0]
         elif len(albums_found) > 1:
-            self.combine_duplicate_albums(
-                albums_found, context="duplicate_on_create"
-            )
+            self.combine_duplicate_albums(albums_found, context="duplicate_on_create")
             # Lanzar excepción para desarrolladores tras la limpieza
             raise RuntimeError(
                 f"Duplicate albums with name '{album_name}' were found and combined. This indicates a data integrity issue. Review the logs and investigate the cause."
@@ -784,14 +786,11 @@ class AlbumCollectionWrapper:
         from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
-
         album = self._create_album(album_name, client, tag_mod_report)
 
         # Centralized user access
         context = ImmichContext.get_instance()
-        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
         user_wrapper: UserResponseWrapper = UserResponseWrapper.from_context(context)
-        from uuid import UUID
         user_id = user_wrapper.get_uuid()
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         owner_id = wrapper.owner_uuid

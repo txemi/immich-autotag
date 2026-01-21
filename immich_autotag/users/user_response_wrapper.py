@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -16,9 +15,10 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class UserResponseWrapper:
 
-
     @staticmethod
-    def _validate_user(instance: "UserResponseWrapper", attribute: attrs.Attribute, value: object) -> None:
+    def _validate_user(
+        instance: "UserResponseWrapper", attribute: attrs.Attribute, value: object
+    ) -> None:
         if value is None:
             raise ValueError("user cannot be None")
         try:
@@ -77,7 +77,7 @@ class UserResponseWrapper:
         user_dto = get_current_user(context)
         cls._cached_user_wrapper = cls(user=user_dto)
         return cls._cached_user_wrapper  # type: ignore
+
     @typechecked
     def get_uuid(self) -> UUID:
         return UUID(self.id)
-    
