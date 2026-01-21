@@ -16,8 +16,9 @@ class AlbumErrorHistory:
         self._errors.append(entry)
 
     def append_api_exc(self, api_exc: 'AlbumApiExceptionInfo') -> None:
-        """Append an error entry from an AlbumApiExceptionInfo object."""
+        """Append an error entry from an AlbumApiExceptionInfo object and prune old entries."""
         import time
+        from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
         now = time.time()
         code = f"HTTP_{api_exc.status_code}" if api_exc.status_code is not None else "API_ERROR"
         msg = api_exc.message
@@ -29,6 +30,9 @@ class AlbumErrorHistory:
                 api_exc=api_exc,
             )
         )
+        # Prune old errors after appending
+        cutoff = now - int(ALBUM_ERROR_WINDOW_SECONDS)
+        self.prune(cutoff)
 
 
     def prune(self, cutoff: float) -> None:

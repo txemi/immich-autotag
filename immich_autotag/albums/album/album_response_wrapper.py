@@ -230,22 +230,6 @@ class AlbumResponseWrapper:
         except Exception:
             pass
 
-    from typing import Optional
-    @typechecked
-    def record_error(self, api_exc: "AlbumApiExceptionInfo") -> None:
-        """Record an error event for this album and prune old entries.
-
-        Delegates to AlbumErrorHistory.append_api_exc for encapsulated logic.
-        """
-        try:
-            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
-            self._error_history.append_api_exc(api_exc)
-            import time
-            cutoff = time.time() - int(ALBUM_ERROR_WINDOW_SECONDS)
-            self._error_history.prune(cutoff)
-        except Exception:
-            # Never let recording errors raise and break higher-level flows
-            pass
 
 
     @typechecked
@@ -315,14 +299,8 @@ class AlbumResponseWrapper:
 
     def _handle_recoverable_400(self, api_exc: AlbumApiExceptionInfo, album_name: str | None, partial_repr: str) -> None:
         """Gestiona el error 400 (no encontrado/sin acceso) de forma recuperable."""
-        try:
-            self.record_error(api_exc)
-        except Exception:
-            pass
-        try:
-            current_count = self._error_history.count_in_window()
-        except Exception:
-            current_count = None
+        self._error_history.append_api_exc(api_exc)
+        current_count = self._error_history.count_in_window()
         log(
             (
                 f"[WARN] get_album_info returned 400 for album id="
@@ -332,47 +310,33 @@ class AlbumResponseWrapper:
             ),
             level=LogLevel.WARNING,
         )
-        try:
-            from immich_autotag.config.internal_config import (
-                ALBUM_ERROR_THRESHOLD,
-                ALBUM_ERROR_WINDOW_SECONDS,
+        from immich_autotag.config.internal_config import (
+            ALBUM_ERROR_THRESHOLD,
+            ALBUM_ERROR_WINDOW_SECONDS,
+        )
+        if self.should_mark_unavailable(
+            ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS
+        ):
+            self._unavailable = True
+            self.invalidate_cache()
+            from immich_autotag.report.modification_report import (
+                ModificationReport,
             )
-            if self.should_mark_unavailable(
-                ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS
-            ):
-                try:
-                    self._unavailable = True
-                except Exception:
-                    pass
-                self.invalidate_cache()
-                try:
-                    from immich_autotag.report.modification_report import (
-                        ModificationReport,
-                    )
-                    from immich_autotag.tags.modification_kind import (
-                        ModificationKind,
-                    )
-                    tag_mod_report = ModificationReport.get_instance()
-                    extra = {"recent_errors": len(self._error_history), "album": self}  # type: ignore[arg-type]
-                    tag_mod_report.add_error_modification(
-                        kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                        error_message=partial_repr,
-                        error_category="HTTP_400",
-                        extra=extra,  # type: ignore[arg-type]
-                    )
-                except Exception:
-                    pass
-                try:
-                    from immich_autotag.albums.albums.album_collection_wrapper import (
-                        AlbumCollectionWrapper,
-                    )
-                    AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(
-                        self
-                    )
-                except Exception:
-                    pass
-        except Exception:
-            pass
+            from immich_autotag.tags.modification_kind import (
+                ModificationKind,
+            )
+            tag_mod_report = ModificationReport.get_instance()
+            extra = {"recent_errors": len(self._error_history), "album": self}  # type: ignore[arg-type]
+            tag_mod_report.add_error_modification(
+                kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
+                error_message=partial_repr,
+                error_category="HTTP_400",
+                extra=extra,  # type: ignore[arg-type]
+            )
+            from immich_autotag.albums.albums.album_collection_wrapper import (
+                AlbumCollectionWrapper,
+            )
+            AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(self)
 
     def _log_and_raise_fatal_error(self, api_exc: AlbumApiExceptionInfo, album_name: str | None, partial_repr: str) -> None:
         log(
