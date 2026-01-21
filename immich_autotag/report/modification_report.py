@@ -244,7 +244,7 @@ class ModificationReport:
         asset_wrapper: Optional["AssetResponseWrapper"] = None,
         album: Optional["AlbumResponseWrapper"] = None,
         user: Optional[UserResponseWrapper] = None,
-        extra: Optional[dict] = None,
+        extra: Optional[dict[str, object]] = None,
     ) -> None:
         assert kind in {
             ModificationKind.ASSIGN_ASSET_TO_ALBUM,
