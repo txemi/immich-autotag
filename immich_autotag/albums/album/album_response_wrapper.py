@@ -37,6 +37,8 @@ class AssetAlreadyInAlbumError(Exception):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
+
+
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -64,7 +66,13 @@ class AlbumResponseWrapper:
                     "full DTO"
                 )
             )
-
+    @typechecked
+    def is_temporary_album(self) -> bool:
+        """
+        Returns True if this album is a temporary autotag album (created automatically by autotag).
+        """
+        from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
+        return is_temporary_album(self.get_album_name())
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible."""
         if not isinstance(other, AlbumResponseWrapper):

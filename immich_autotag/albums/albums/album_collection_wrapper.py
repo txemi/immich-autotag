@@ -497,6 +497,11 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
+        # Safety check: only allow deletion of temporary/autotag albums
+        if not wrapper.is_temporary_album():
+            raise RuntimeError(
+                f"Refusing to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): not a temporary/autotag album."
+            )
         try:
             delete_album_sync(id=UUID(wrapper.get_album_id()), client=client)
             log(
