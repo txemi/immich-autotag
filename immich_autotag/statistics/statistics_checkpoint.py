@@ -23,8 +23,8 @@ from immich_autotag.utils.run_output_dir import (
 @typechecked
 def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
-    Busca el máximo count de los runs en las últimas `hours` horas.
-    Devuelve el skip_n calculado o None si no hay datos.
+    Searches for the maximum count of runs in the last hours.
+    Returns the calculated skip_n or None if there is no data.
     """
     max_count = 0
     found = False
@@ -46,8 +46,8 @@ def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
 @typechecked
 def _get_count_from_stats_path(stats_path: Path, overlap: int) -> Optional[int]:
     """
-    Lee el count de un fichero run_statistics.yaml y calcula skip_n.
-    Devuelve None si no existe o hay error.
+    Reads the count from a run_statistics.yaml file and calculates skip_n.
+    Returns None if it does not exist or if there is an error.
     """
     if not stats_path.exists():
         return None
@@ -64,11 +64,11 @@ def get_previous_skip_n(
     overlap: int = 100, use_recent_max: bool = False, hours: int = 3
 ) -> Optional[int]:
     """
-    Busca el contador de la ejecución anterior (skip_n) a partir de run_statistics.yaml.
-    Si use_recent_max es True, busca el máximo de las últimas `hours` horas.
-    Devuelve None si no hay datos.
+    Searches for the counter of the previous execution (skip_n) from run_statistics.yaml.
+    If use_recent_max is True, searches for the maximum of the last hours.
+    Returns None if there is no data.
     """
-    # Si estamos en modo DEVELOPMENT, forzar uso de máximo reciente y ampliar umbral a 48h
+    # If we are in DEVELOPMENT mode, force use of recent maximum and extend threshold to 48h
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
         use_recent_max = True
         hours = 48
@@ -77,7 +77,7 @@ def get_previous_skip_n(
         result = _find_recent_max_count(overlap, hours)
         if result is not None:
             return result
-        # Si no hay datos, sigue con el modo por defecto
+        # If there is no data, proceed with default mode
 
     prev_dir = get_previous_run_output_dir()
     if prev_dir is None:

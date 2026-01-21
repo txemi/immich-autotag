@@ -7,7 +7,7 @@ Implements complete synchronization: config is source of truth (add + remove).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List
 from uuid import UUID
 
 from immich_client.api.albums import add_users_to_album as immich_add_users_to_album
@@ -22,21 +22,34 @@ from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
+from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.modification_kind import ModificationKind
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+
+import attrs
+
+
+@attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
+class ResolveEmailsResult:
+    resolved: Dict[str, str] = attrs.field(validator=attrs.validators.instance_of(dict))
+    unresolved: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
+
+    def __iter__(self):
+        # allow unpacking: resolved, unresolved = func(...)
+        yield self.resolved
+        yield self.unresolved
 
 
 @typechecked
 def _resolve_emails_to_user_ids(
     emails: List[str], context: ImmichContext
-) -> Tuple[Dict[str, str], List[str]]:
+) -> ResolveEmailsResult:
     """
     Resolve email addresses to Immich user IDs.
 
@@ -48,7 +61,7 @@ def _resolve_emails_to_user_ids(
     Fetches all users from Immich and maps their emails to IDs.
     """
     if not emails:
-        return {}, []
+        return ResolveEmailsResult(resolved={}, unresolved=[])
 
     log_debug(f"[ALBUM_PERMISSIONS] Resolving {len(emails)} emails to user IDs")
 
@@ -84,7 +97,7 @@ def _resolve_emails_to_user_ids(
     log_debug(
         f"[ALBUM_PERMISSIONS] Resolved {len(resolved)}/{len(email_set)} emails to user IDs"
     )
-    return resolved, unresolved
+    return ResolveEmailsResult(resolved=resolved, unresolved=unresolved)
 
 
 @typechecked
@@ -199,7 +212,12 @@ def _get_current_members(
         log_debug(
             f"[ALBUM_PERMISSIONS] First member attributes: {dir(current_members[0])}"
         )
-        if hasattr(current_members[0], "__dict__"):
+        try:
+            _ = current_members[0].__dict__
+            has_dict = True
+        except AttributeError:
+            has_dict = False
+        if has_dict:
             log_debug(
                 f"[ALBUM_PERMISSIONS] First member __dict__: {current_members[0].__dict__}"
             )

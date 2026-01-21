@@ -7,22 +7,22 @@ from typeguard import typechecked
 LOGS_LOCAL_DIR = Path("logs_local")
 _RUN_OUTPUT_DIR = None
 
-# --- Constantes internas para carpetas de ejecución ---
+# --- Internal constants for execution folders ---
 _RUN_DIR_PID_MARK = "PID"
 _RUN_DIR_PID_SEP = "_PID"
 _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
 
 
-# --- Funciones privadas reutilizables para carpetas de ejecuciones ---
+# --- Reusable private functions for execution folders ---
 @typechecked
 def _is_run_dir(subdir: Path) -> bool:
-    """Devuelve True si la subcarpeta es de ejecución (contiene _RUN_DIR_PID_MARK en el nombre)."""
+    """Returns True if the subfolder is an execution folder (contains _RUN_DIR_PID_MARK in the name)."""
     return subdir.is_dir() and _RUN_DIR_PID_MARK in subdir.name
 
 
 @typechecked
 def _extract_datetime_from_run_dir(subdir: Path) -> datetime | None:
-    """Extrae la fecha de la carpeta de ejecución (YYYYMMDD_HHMMSS antes de _RUN_DIR_PID_SEP)."""
+    """Extracts the date from the execution folder (YYYYMMDD_HHMMSS before _RUN_DIR_PID_SEP)."""
     try:
         dt_str = subdir.name.split(_RUN_DIR_PID_SEP)[0]
         return datetime.strptime(dt_str, _RUN_DIR_DATE_FORMAT)
@@ -32,7 +32,7 @@ def _extract_datetime_from_run_dir(subdir: Path) -> datetime | None:
 
 @typechecked
 def _list_run_dirs(base_dir: Path) -> list[Path]:
-    """Devuelve todas las subcarpetas válidas de ejecución en base_dir."""
+    """Returns all valid execution subfolders in base_dir."""
     return [d for d in base_dir.iterdir() if _is_run_dir(d)]
 
 
@@ -41,9 +41,9 @@ def find_recent_run_dirs(
     logs_dir: Path, max_age_hours: int = 3, exclude_current: bool = True
 ) -> list[Path]:
     """
-    Devuelve una lista de carpetas de ejecuciones recientes (subdirs con 'PID' en el nombre y fecha válida),
-    ordenadas de más reciente a más antigua, filtrando por antigüedad (max_age_hours).
-    Si exclude_current es True, excluye la carpeta de la ejecución actual.
+    Returns a list of recent execution folders (subdirs with 'PID' in the name and a valid date),
+    sorted from most recent to oldest, filtered by age (max_age_hours).
+    If exclude_current is True, excludes the current execution folder.
     """
     from datetime import datetime, timedelta
 
@@ -82,8 +82,8 @@ def get_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path:
 @typechecked
 def get_previous_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path | None:
     """
-    Busca la carpeta de la ejecución anterior más reciente en base_dir.
-    Devuelve Path o None si no hay ejecuciones previas.
+    Searches for the most recent previous execution folder in base_dir.
+    Returns Path or None if there are no previous executions.
     """
     base = base_dir
     if not base.exists() or not base.is_dir():
@@ -92,9 +92,10 @@ def get_previous_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path | None:
     if not dirs:
         return None
     current = get_run_output_dir(base_dir)
-    # Ordenar por fecha descendente usando la función privada
+    # Sort by descending date using the private function
     dirs.sort(
-        key=lambda d: _extract_datetime_from_run_dir(d) or datetime.min, reverse=True
+        key=lambda d: _extract_datetime_from_run_dir(d) or datetime.min,
+        reverse=True,
     )
     for d in dirs:
         if d != current:

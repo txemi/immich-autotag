@@ -16,6 +16,8 @@ Fatal errors: Should fail immediately
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from typeguard import typechecked
 
 
@@ -53,54 +55,64 @@ class TemporaryNetworkError(RecoverableError):
     pass
 
 
+@dataclass
+class CategorizedError:
+    is_recoverable: bool
+    category_name: str
+
+
 @typechecked
-def categorize_error(exc: Exception) -> tuple[bool, str]:
+def categorize_error(exc: Exception) -> CategorizedError:
     """
     Categorizes an exception as recoverable or fatal.
 
     Returns:
-        (is_recoverable: bool, category_name: str)
+        CategorizedError: with is_recoverable and category_name fields.
 
-    Recoverable errors return (True, category_name) - will skip this asset but continue.
-    Fatal errors return (False, category_name) - will raise immediately.
+    Recoverable errors return CategorizedError(is_recoverable=True, ...)
+    Fatal errors return CategorizedError(is_recoverable=False, ...)
     """
 
     # Check for explicit RecoverableError subclasses
     if isinstance(exc, RecoverableError):
         error_type = type(exc).__name__
-        return True, f"Recoverable ({error_type})"
+        return CategorizedError(True, f"Recoverable ({error_type})")
 
     # Check for API errors in exception message
     exc_str = str(exc)
 
     # 400/Bad Request - usually album not found or permission issue
     if "400" in exc_str or "Bad Request" in exc_str or "Not found" in exc_str:
-        return True, "Recoverable (API 400 - Resource not found)"
+        return CategorizedError(True, "Recoverable (API 400 - Resource not found)")
 
     # 403/Forbidden - permission denied
     if "403" in exc_str or "Forbidden" in exc_str or "access" in exc_str.lower():
-        return True, "Recoverable (API 403 - Permission denied)"
+        return CategorizedError(True, "Recoverable (API 403 - Permission denied)")
 
     # 404/Not Found
     if "404" in exc_str or "not found" in exc_str.lower():
-        return True, "Recoverable (API 404 - Asset deleted)"
+        return CategorizedError(True, "Recoverable (API 404 - Asset deleted)")
 
     # Timeout errors (temporary network issues)
     if any(
         x in type(exc).__name__.lower()
         for x in ["timeout", "connectionerror", "timeouterror"]
     ):
-        return True, "Recoverable (Network timeout)"
+        return CategorizedError(True, "Recoverable (Network timeout)")
 
     # Fatal: Programming errors - fail fast
     if isinstance(
         exc, (AttributeError, KeyError, TypeError, ValueError, IndexError, ImportError)
     ):
-        return False, f"Fatal (Programming error: {type(exc).__name__})"
+        return CategorizedError(
+            False, f"Fatal (Programming error: {type(exc).__name__})"
+        )
 
     # Fatal: Configuration errors
     if isinstance(exc, (FileNotFoundError, PermissionError)):
-        return False, f"Fatal (Configuration error: {type(exc).__name__})"
+        return CategorizedError(
+            False, f"Fatal (Configuration error: {type(exc).__name__})"
+        )
 
     # Fatal: Unknown errors - fail-fast by default (safe default)
-    return False, f"Fatal (Uncategorized: {type(exc).__name__})"
+    return CategorizedError(False, f"Fatal (Uncategorized: {type(exc).__name__})")

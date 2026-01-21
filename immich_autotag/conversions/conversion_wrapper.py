@@ -37,29 +37,29 @@ class ConversionWrapper:
 
     @typechecked
     def get_source_wrapper(self) -> ClassificationRuleWrapper:
-        """Devuelve un ClassificationRuleWrapper para el source de la conversión."""
+        """Returns a ClassificationRuleWrapper for the conversion source."""
         return ClassificationRuleWrapper(self.conversion.source)
 
     @typechecked
     def get_destination_wrapper(self) -> DestinationWrapper:
-        """Devuelve un DestinationWrapper para el destino de la conversión."""
+        """Returns a DestinationWrapper for the conversion destination."""
         return DestinationWrapper(self.conversion.destination)
 
     @typechecked
     def apply_to_asset(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
         """
-        Aplica la conversión sobre el asset_wrapper.
-        Utiliza el wrapper de origen para comprobar el match y el de destino para aplicar la acción.
-        Elimina los tags/álbumes de origen solo si el modo de conversión es MOVE.
+        Applies the conversion on the asset_wrapper.
+        Uses the source wrapper to check for a match and the destination wrapper to apply the action.
+        Removes source tags/albums only if the conversion mode is MOVE.
         """
         match_result = self.get_source_wrapper().matches_asset(asset_wrapper)
         source_matched = match_result is not None and match_result.is_match()
         changes = []
         if source_matched:
-            # Aplica la acción de destino (añadir etiquetas, álbumes, etc.)
+            # Applies the destination action (add tags, albums, etc.)
             result_action = self.get_destination_wrapper()
             changes.extend(result_action.apply_action(asset_wrapper))
-            # Según el modo de conversión, elimina los tags/álbumes de origen
+            # Depending on the conversion mode, removes the source tags/albums
             if self.conversion.mode == ConversionMode.MOVE:
                 changes.extend(
                     self.get_source_wrapper().remove_matches(

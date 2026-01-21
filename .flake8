@@ -1,0 +1,9 @@
+# WARNING: The max-line-length value must be kept in sync with pyproject.toml.
+# Flake8 does not read pyproject.toml, so if you run flake8 manually it will use this value.
+# If you use the formatting script, the value is extracted from pyproject.toml and passed as an argument.
+# There is only a risk of desynchronization if you run flake8 manually.
+[flake8]
+# Explicitly synchronized with Black and isort for maximum automation and legibility.
+# If you change this, update pyproject.toml as well.
+max-line-length = 88
+exclude = .venv,immich-client,scripts

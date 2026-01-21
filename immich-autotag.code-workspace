@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../../.config/immich_autotag"
+		},
+		{
+			"path": "../../../../run/user/1000/gvfs/sftp:host=ubuntu20jenkins.ad3.lab,user=ub20jenkins4ub20/home/ub20jenkins4ub20/txemi/ub20jenkins4ub20/workspace"
 		}
 	],
 	"settings": {}

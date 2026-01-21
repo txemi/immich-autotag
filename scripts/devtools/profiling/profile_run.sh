@@ -12,11 +12,13 @@ OUTPUT_FILE="profile.stats"
 SKIP_PROFILING="${SKIP_PROFILING:-1}"
 
 if [ "$SKIP_PROFILING" = "1" ] || [ "$SKIP_PROFILING" = "true" ]; then
-	echo "[profile_run] SKIP_PROFILING set -> running main.py without cProfile"
-	python main.py "$@"
+	echo "[profile_run] SKIP_PROFILING set -> running package without cProfile"
+	# Run package as module to ensure imports resolve consistently in CI
+	python -m immich_autotag "$@"
 else
 	echo "[profile_run] Running cProfile -> $OUTPUT_FILE"
-	python -m cProfile -o "$OUTPUT_FILE" -s cumulative main.py "$@"
+	# Profile the package module rather than the main.py script
+	python -m cProfile -o "$OUTPUT_FILE" -s cumulative -m immich_autotag "$@"
 fi
 
 if [ ! -f "$OUTPUT_FILE" ]; then

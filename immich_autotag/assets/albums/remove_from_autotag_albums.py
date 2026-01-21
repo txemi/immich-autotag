@@ -23,7 +23,7 @@ from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
@@ -76,7 +76,7 @@ def remove_asset_from_autotag_temporary_albums(
             )
 
         except Exception as e:
-            # <-- AQUÍ se imprime el mensaje '[WARNING] Failed to remove asset ...' si ocurre un error al eliminar el asset del álbum temporal.
+            # <-- HERE the message '[WARNING] Failed to remove asset ...' is printed if an error occurs while removing the asset from the temporary album.
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise
             log(

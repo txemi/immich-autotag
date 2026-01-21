@@ -128,19 +128,19 @@ class ClassificationRuleWrapper:
         self, asset_wrapper: "AssetResponseWrapper", match_result: "MatchResult"
     ) -> list[str]:
         """
-        Elimina del asset todos los tags y álbumes que hayan macheado con esta regla (según el MatchResult).
-        Devuelve una lista de cambios realizados.
+        Removes all tags and albums from the asset that matched this rule (based on the MatchResult).
+        Returns a list of changes made.
         """
         changes = []
-        # Eliminar tags macheados
+        # Remove matched tags
         for tag in match_result.tags_matched:
             if asset_wrapper.has_tag(tag):
                 asset_wrapper.remove_tag_by_name(tag)
                 changes.append(f"Removed matched tag '{tag}'")
-        # Eliminar álbumes macheados (si hay lógica para ello)
+        # Remove matched albums (if logic exists for it)
         # for album in match_result.albums_matched:
         #     if album in asset_wrapper.get_album_names():
-        #         ... # lógica para eliminar asset del álbum
+        #         ... # logic to remove asset from album
         #         changes.append(f"Removed asset from matched album '{album}'")
         return changes
 

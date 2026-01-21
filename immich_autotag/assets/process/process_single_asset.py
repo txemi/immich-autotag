@@ -22,11 +22,10 @@ def _get_asset_url(asset_wrapper: AssetResponseWrapper) -> str:
         log("[DEBUG] Getting asset URL...", level=LogLevel.FOCUS)
         return asset_wrapper.get_immich_photo_url().geturl()
     except Exception as e:
-        asset_name = (
-            getattr(asset_wrapper, "original_file_name", None)
-            or getattr(asset_wrapper, "filename", None)
-            or "[no name]"
-        )
+        try:
+            asset_name = asset_wrapper.original_file_name
+        except AttributeError:
+            asset_name = "[no name]"
         from pprint import pformat
 
         details = pformat(vars(asset_wrapper))
@@ -55,7 +54,12 @@ def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper):
     from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().config
-    if config and config.duplicate_processing.date_correction.enabled:
+    if (
+        config is not None
+        and config.duplicate_processing is not None
+        and config.duplicate_processing.date_correction is not None
+        and config.duplicate_processing.date_correction.enabled
+    ):
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
 
@@ -73,28 +77,32 @@ def _analyze_duplicate_tags(asset_wrapper: AssetResponseWrapper):
 def _analyze_and_assign_album(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
-    suppress_album_already_belongs_log: bool,
 ):
     """Analyze and assign the asset to an album if needed."""
     log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
-    analyze_and_assign_album(
-        asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
-    )
+    analyze_and_assign_album(asset_wrapper, tag_mod_report)
 
 
 @typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
-    suppress_album_already_belongs_log: bool = True,
 ) -> None:
     """
     Process a single asset: applies tag conversions, corrects date if enabled, analyzes duplicates,
     assigns album, validates classification, flushes the report, and updates tag counters.
     Thread-safe for report flushing.
     """
-    log_debug(f"[BUG] START process_single_asset {getattr(asset_wrapper, 'id', None)}")
+    try:
+        asset_id = asset_wrapper.id
+    except AttributeError:
+        asset_id = None
+    log_debug(f"[BUG] START process_single_asset {asset_id}")
+    try:
+        asset_id = asset_wrapper.id
+    except AttributeError:
+        asset_id = None
     log(
-        f"[DEBUG] [process_single_asset] START asset_id={getattr(asset_wrapper, 'id', None)}",
+        f"[DEBUG] [process_single_asset] START asset_id={asset_id}",
         level=LogLevel.FOCUS,
     )
 
@@ -106,10 +114,8 @@ def process_single_asset(
     _correct_date_if_enabled(asset_wrapper)
     _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
-    _analyze_and_assign_album(
-        asset_wrapper, tag_mod_report, suppress_album_already_belongs_log
-    )
-    asset_wrapper.validate_and_update_classification()
+    _analyze_and_assign_album(asset_wrapper, tag_mod_report)
+    _ = asset_wrapper.validate_and_update_classification()
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
     )
@@ -118,13 +124,21 @@ def process_single_asset(
     config = ConfigManager.get_instance().config
 
     # Get threshold from new config section with fallback
-    if config.album_date_consistency and config.album_date_consistency.enabled:
+    if (
+        config
+        and config.album_date_consistency
+        and config.album_date_consistency.enabled
+    ):
         threshold_days = config.album_date_consistency.threshold_days
         check_album_date_consistency(asset_wrapper, tag_mod_report, threshold_days)
 
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
+    try:
+        asset_id = asset_wrapper.id
+    except AttributeError:
+        asset_id = None
     log(
-        f"[DEBUG] [process_single_asset] END asset_id={getattr(asset_wrapper, 'id', None)}",
+        f"[DEBUG] [process_single_asset] END asset_id={asset_id}",
         level=LogLevel.FOCUS,
     )

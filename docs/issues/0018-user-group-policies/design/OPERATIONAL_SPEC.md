@@ -34,7 +34,7 @@ Define groups in `user_config.py`:
 ```python
 user_groups = {
     "familia": {
-        "description": "Familia directa",
+        "description": "Direct family",
         "members": [
             "abuelo@example.com",
             "madre@example.com",
@@ -42,14 +42,14 @@ user_groups = {
         ],
     },
     "amigos": {
-        "description": "Círculo de amigos",
+        "description": "Friends circle",
         "members": [
             "juan@example.com",
             "maria@example.com",
         ],
     },
     "trabajo": {
-        "description": "Equipo de trabajo",
+        "description": "Work team",
         "members": [
             "jefe@example.com",
             "colega1@example.com",
@@ -66,22 +66,22 @@ Define rules that select albums by name patterns:
 ```python
 album_selection_rules = [
     {
-        "name": "Compartir Familia",
+        "name": "Share Familia",
         "keyword": "familia",  # Case-insensitive substring match
         "groups": ["familia"],  # Groups to share with
         "access": "view",  # Permission level: view|edit|admin
     },
     {
-        "name": "Compartir Amigos",
+        "name": "Share Amigos",
         "keyword": "amigos",
         "groups": ["amigos"],
         "access": "view",
     },
     {
-        "name": "Compartir Trabajo",
+        "name": "Share Trabajo",
         "keyword": "trabajo",
         "groups": ["trabajo"],
-        "access": "edit",  # Trabajo puede editar
+        "access": "edit",  # Work can edit
     },
 ]
 ```
@@ -144,7 +144,7 @@ Example report entry:
 ```
 Album: 2024-Familia-Navidad
 Event: album_permission_matched_rule
-Rule: "Compartir Familia"
+Rule: "Share Familia"
 Keyword: "familia"
 Groups: ["familia"]
 Members: ["abuelo@example.com", "madre@example.com", "hermano@example.com"]

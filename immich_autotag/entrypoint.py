@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.assets.process.process_assets import process_assets
 from immich_autotag.config.filter_wrapper import FilterConfigWrapper
@@ -16,7 +17,6 @@ from immich_autotag.permissions import (
     process_album_permissions,
     sync_album_permissions,
 )
-from immich_autotag.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
 
@@ -36,11 +36,10 @@ def run_main():
 
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.utils.user_help import print_welcome_links
 
     # Get config FIRST (constructor initializes it)
-    from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
+    from immich_autotag.utils.user_help import print_welcome_links
 
     log("Initializing ConfigManager...", level=LogLevel.INFO)
     manager = ConfigManager.get_instance()
@@ -67,11 +66,11 @@ def run_main():
     client = ImmichClient(
         base_url=get_immich_base_url(),
         token=api_key,
-        prefix="",  # Immich usa x-api-key, no Bearer token
+        prefix="",  # Immich uses x-api-key, not Bearer token
         auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
-    # Inicializa el contexto SOLO con el cliente (los demás como None o vacíos)
+    # Initialize the context ONLY with the client (others as None or empty)
     context = ImmichContext.create_instance(
         client=client,
         albums_collection=None,
@@ -79,12 +78,12 @@ def run_main():
         duplicates_collection=None,
         asset_manager=None,
     )
-    # Ahora sí, crea los objetos dependientes
+    # Now, create the dependent objects
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client(client)
     duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)
-    # Asigna los objetos al contexto
+    # Assign the objects to the context
     context.albums_collection = albums_collection
     context.tag_collection = tag_collection
     context.duplicates_collection = duplicates_collection

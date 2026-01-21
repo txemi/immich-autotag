@@ -100,7 +100,7 @@ class RunStatistics(BaseModel):
         """
         key = event_kind.name
         if extra_key is not None:
-            # Usar el nombre de la etiqueta
+            # Use the tag name
             extra_val = extra_key.get_name()
             key = f"{key}_{extra_val}"
         if key not in self.event_counters:

@@ -9,7 +9,7 @@ from immich_autotag.types import ImmichClient
 
 
 @typechecked
-def print_asset_details_with_tags(asset_id: UUID , client: ImmichClient) -> None:
+def print_asset_details_with_tags(asset_id: UUID, client: ImmichClient) -> None:
     """Obtains and displays complete details of an asset, including tags.
 
     Accepts either a `UUID` or a string representation and converts to `UUID`

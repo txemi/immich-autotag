@@ -8,10 +8,11 @@ from enum import Enum
 from typing import List, Optional
 
 
-# Enum para modo de conversión
+# Enum for conversion mode
+# Enum for conversion mode
 class ConversionMode(str, Enum):
-    MOVE = "move"  # MOVE: Cuando se aplica la conversión, los valores de destino sustituyen a los de origen. Es decir, las etiquetas y álbumes de origen se eliminan y se asignan los de destino. (Comportamiento clásico de "convertir" o "mover")
-    COPY = "copy"  # COPY: Cuando se aplica la conversión, los valores de destino se añaden, pero los de origen se mantienen. Es decir, se agregan las etiquetas y álbumes de destino sin eliminar los de origen. (Comportamiento tipo "copiar")
+    MOVE = "move"  # MOVE: When the conversion is applied, the destination values replace the source values. That is, the source tags and albums are removed and the destination ones are assigned. (Classic "convert" or "move" behavior)
+    COPY = "copy"  # COPY: When the conversion is applied, the destination values are added, but the source values are kept. That is, the destination tags and albums are added without removing the source ones. ("Copy"-type behavior)
 
 
 from pydantic import BaseModel, Field
@@ -238,9 +239,7 @@ class UserGroup(BaseModel):
     description: Optional[str] = Field(
         None, description="Human-readable description of the group."
     )
-    members: List[str] = Field(
-        ..., description="List of member emails or user IDs.", min_items=1
-    )
+    members: List[str] = Field(..., description="List of member emails or user IDs.")
 
 
 class AlbumSelectionRule(BaseModel):
@@ -257,7 +256,6 @@ class AlbumSelectionRule(BaseModel):
     groups: List[str] = Field(
         ...,
         description="List of group names to assign to matching albums.",
-        min_items=1,
     )
     access: str = Field(
         default="view",
@@ -282,15 +280,6 @@ class AlbumPermissionsConfig(BaseModel):
     log_unmatched: bool = Field(
         default=False,
         description="Log albums that don't match any rule (can be noisy).",
-    )
-
-
-class PerformanceConfig(BaseModel):
-    """Performance and debugging settings."""
-
-    enable_type_checking: bool = Field(
-        default=False,
-        description="Enable @typechecked runtime type validation. Disable in production for ~50% performance improvement.",
     )
 
 

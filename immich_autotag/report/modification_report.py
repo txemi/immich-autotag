@@ -1,8 +1,8 @@
 """
 Module for auditing and reporting entity modifications (tags, albums, assets, etc.)
 
-TODO: El nombre de esta clase ('ModificationReport') no refleja bien su función actual. Ahora registra no solo modificaciones, sino también advertencias y eventos generales.
-    Debería renombrarse a algo más genérico en el futuro, ya que también reporta warnings y circunstancias relevantes de forma estructurada.
+TODO: The name of this class ('ModificationReport') does not accurately reflect its current function. It now records not only modifications but also warnings and general events.
+    It should be renamed to something more generic in the future as it also reports warnings and relevant circumstances in a structured way.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import attrs
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -96,13 +96,13 @@ class ModificationReport:
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> None:
-        # Contabilizar el evento en el gestor de estadísticas
+        # Account for the event in the statistics manager
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind, extra_key=tag)
         # Local import to avoid circularity
         if album is not None:
-            from immich_autotag.albums.album_response_wrapper import (
+            from immich_autotag.albums.album.album_response_wrapper import (
                 AlbumResponseWrapper,
             )
 
@@ -119,7 +119,10 @@ class ModificationReport:
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
 
-                log(f"Could not clear the tag modification report: {e}", level=LogLevel.WARNING)
+                log(
+                    f"Could not clear the tag modification report: {e}",
+                    level=LogLevel.WARNING,
+                )
             self._cleared_report = True
 
         # If user is None, obtain it from the singleton ImmichContext
@@ -368,14 +371,13 @@ class ModificationReport:
         asset_wrapper: Any = None,
         album_wrapper: Any = None,
     ) -> Optional["ParseResult"]:
-        # Contabilizar el evento en el gestor de estadísticas
+        # Account for the event in the statistics manager
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind)
         """
         Build a link for the modification entry based on kind and wrappers.
         """
-        from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
         # If it's an asset, use the wrapper method
         if (
@@ -389,11 +391,9 @@ class ModificationReport:
             }
             and asset_wrapper is not None
         ):
-            if hasattr(asset_wrapper, "get_immich_photo_url"):
-                return asset_wrapper.get_immich_photo_url()
-            asset_id = getattr(asset_wrapper, "id_as_uuid", None)
-            if asset_id is not None:
-                return get_immich_photo_url(asset_id)
+            # The URL must be obtainable for an asset. Do not swallow errors here —
+            # let exceptions surface so the failure can be noticed and fixed.
+            return asset_wrapper.get_immich_photo_url()
         elif (
             kind
             in {
@@ -403,8 +403,8 @@ class ModificationReport:
             }
             and album_wrapper is not None
         ):
-            if hasattr(album_wrapper, "get_immich_album_url"):
-                return album_wrapper.get_immich_album_url()
+            # The album URL must be obtainable; do not swallow exceptions here.
+            return album_wrapper.get_immich_album_url()
         return None
 
     @typechecked

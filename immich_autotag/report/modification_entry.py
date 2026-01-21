@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Optional
 import attrs
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 from immich_autotag.report.serializable_modification_entry import (
     SerializableModificationEntry,

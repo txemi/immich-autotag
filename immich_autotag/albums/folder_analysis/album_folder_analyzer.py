@@ -8,6 +8,19 @@ from typeguard import typechecked
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumFolderAnalyzer:
+    """
+    Analyzes a folder path to determine album-related metadata and naming.
+
+    Responsibility:
+        - Parses and processes a given filesystem path to extract folder components relevant for album detection.
+        - Identifies date-based folders and their positions to infer album structure.
+        - Applies exclusion patterns to filter out unwanted paths.
+        - Provides methods to determine if a path is ambiguous, excluded, or suitable for album creation.
+        - Generates a candidate album name based on configurable rules and folder structure.
+
+    Usage:
+        Instantiate with a Path object representing the original folder or file path. Use the provided methods to analyze the path and extract album information for further processing or album creation workflows.
+    """
 
     original_path: Path = attrs.field(validator=attrs.validators.instance_of(Path))
     folders: list[str] = attrs.field(
@@ -93,6 +106,17 @@ class AlbumFolderAnalyzer:
 
     @typechecked
     def get_album_name(self):
+        """
+        Determines the album name based on the folder path analysis.
+
+        Responsibility:
+            - Extracts a suitable album name from the folder structure, following these rules:
+                * If the folder path matches an exclusion pattern, returns None.
+                * If there are zero date folders, looks for a folder starting with a date prefix but not only the date; if found, raises NotImplementedError for suspiciously short names.
+                * If there are multiple date folders, returns None (ambiguous case, to be handled by the caller).
+                * If there is exactly one date folder, constructs the album name by concatenating up to MAX_ALBUM_DEPTH folders starting from the date folder, separated by SEPARATOR. If the resulting name is suspiciously short, raises NotImplementedError.
+            - Returns None if no valid album name can be determined.
+        """
         if self._is_excluded_by_pattern():
             return None
         import re

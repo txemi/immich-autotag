@@ -8,8 +8,11 @@ from .levels import LogLevel
 
 
 # Register the FOCUS level ALWAYS before any setup_logging
+
+
 def register_focus_level():
-    if not hasattr(logging, "FOCUS"):
+    # Register the custom 'FOCUS' level if it does not exist
+    if not any(name == "FOCUS" for name in logging._nameToLevel):
         logging.addLevelName(15, "FOCUS")
 
 

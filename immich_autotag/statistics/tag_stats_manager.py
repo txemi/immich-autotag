@@ -4,7 +4,7 @@ import attr
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.tags.modification_kind import ModificationKind
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -53,11 +53,12 @@ class TagStatsManager:
 
     @typechecked
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
-        if not hasattr(tag, "name"):
+        try:
+            tag_name = tag.name
+        except AttributeError:
             raise TypeError(
                 f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}"
             )
-        tag_name = tag.name
         if tag_name in self.stats_manager.RELEVANT_TAGS:
             stats = self.stats_manager.get_stats()
             if tag_name not in stats.output_tag_counters:
@@ -96,9 +97,10 @@ class TagStatsManager:
     @typechecked
     def _increment_album_date_mismatch(self) -> None:
         stats = self.stats_manager.get_stats()
-        if not hasattr(stats, "album_date_mismatch_count"):
-            stats.album_date_mismatch_count = 0
-        stats.album_date_mismatch_count += 1
+        try:
+            stats.album_date_mismatch_count += 1
+        except AttributeError:
+            stats.album_date_mismatch_count = 1
 
     @typechecked
     def _increment_tag_error(self, tag: "TagWrapper") -> None:
@@ -120,7 +122,7 @@ class TagStatsManager:
     @typechecked
     def _increment_album_assignment(self, album: "AlbumResponseWrapper | None") -> None:
         if album is not None:
-            from immich_autotag.albums.album_response_wrapper import (
+            from immich_autotag.albums.album.album_response_wrapper import (
                 AlbumResponseWrapper,
             )
 
