@@ -677,7 +677,7 @@ class AlbumResponseWrapper:
 
     @staticmethod
     @typechecked
-    def _find_asset_result_in_response(result: list, asset_id: str) -> object | None:
+    def _find_asset_result_in_response(result: list[BulkIdResponseDto], asset_id: str) -> object | None:
         """Finds the result item for a specific asset in the API response list."""
         for item in result:
             try:
