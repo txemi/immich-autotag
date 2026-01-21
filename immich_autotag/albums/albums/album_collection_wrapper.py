@@ -497,15 +497,15 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        # Safety check: only allow deletion of temporary/autotag albums
+        # Safety check: only allow deletion of temporary or duplicate albums
         if not wrapper.is_temporary_album():
-            raise RuntimeError(
-                f"Refusing to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): not a temporary/autotag album."
-            )
+            # Only allow deletion if it is a duplicate
+            if not wrapper.is_duplicate_album():
+                raise RuntimeError(
+                    f"Refusing to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): not a temporary or duplicate album."
+                )
         try:
             delete_album_sync(id=UUID(wrapper.get_album_id()), client=client)
-
-
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
@@ -542,26 +542,22 @@ class AlbumCollectionWrapper:
                 level=LogLevel.WARNING,
             )
             self.remove_album_local_public(wrapper)
-            if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
-
-                tag_mod_report.add_album_modification(
-                    kind=ModificationKind.DELETE_ALBUM,
-                    album=wrapper,
-                    old_value=wrapper.get_album_name(),
-                    extra={"reason": f"{reason} (FAILED: {err_reason})"},
-                )
-            return True
-        self.remove_album_local_public(wrapper)
-        if tag_mod_report:
             from immich_autotag.tags.modification_kind import ModificationKind
-
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.DELETE_ALBUM,
                 album=wrapper,
                 old_value=wrapper.get_album_name(),
                 extra={"reason": f"{reason} (FAILED: {err_reason})"},
             )
+            return True
+        self.remove_album_local_public(wrapper)
+        from immich_autotag.tags.modification_kind import ModificationKind
+        tag_mod_report.add_album_modification(
+            kind=ModificationKind.DELETE_ALBUM,
+            album=wrapper,
+            old_value=wrapper.get_album_name(),
+            extra={"reason": f"{reason} (FAILED: {err_reason})"},
+        )
         return True
     def remove_album_local_public(self, album_wrapper: AlbumResponseWrapper) -> bool:
         """
@@ -759,6 +755,12 @@ class AlbumCollectionWrapper:
             raise ValueError(
                 f"No albums provided to combine_duplicate_albums (context: {context})"
             )
+        # Safety: Ensure all albums are true duplicates before merging
+        for album in albums:
+            if not album.is_duplicate_album():
+                raise RuntimeError(
+                    f"Refusing to combine album '{album.get_album_name()}' (id={album.get_album_id()}): not a duplicate album."
+                )
         survivors = list(albums)
         while len(survivors) > 1:
             existing_album = survivors[0]
