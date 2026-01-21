@@ -35,11 +35,23 @@ class UnavailableAlbums:
     def items(self):
         return self._albums
 
+    @typechecked
+    def write_unavailable_summary(self) -> None:
+        """Write a small JSON summary of unavailable albums for operator inspection.
 
-        
-    def write_summary(self) -> None:
-        """Write a small JSON summary of unavailable albums for operator inspection."""
+        Behavior:
+        - The function returns `None` (it's a side-effecting writer).
+        - The helper `_unavailable_sort_key` returns a string used for sorting.
+        - If an unavailable album lacks an ID or retrieving the name/id raises,
+          this is considered a programming/data error and the function will
+          raise so the problem is surfaced (fail-fast).
+        - Only filesystem/write errors when persisting the summary are
+          swallowed in PRODUCTION mode; in DEVELOPMENT they will propagate.
+        """
         import json
+
+        # Import error-mode config so we can decide whether to swallow IO errors
+        # Fail-fast: configuration symbols must exist; let ImportError propagate.
         from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
         from immich_autotag.utils.run_output_dir import get_run_output_dir
 
@@ -53,7 +65,7 @@ class UnavailableAlbums:
                 )
             return album_id
 
-        unavailable_sorted: list[AlbumResponseWrapper] = self.sorted(_unavailable_sort_key)  # type: ignore
+        unavailable_sorted: list[AlbumResponseWrapper] = self.sorted(_unavailable_sort_key)  
         for wrapper in unavailable_sorted:
             album_id: str = wrapper.get_album_id()
             if not album_id:
@@ -61,7 +73,7 @@ class UnavailableAlbums:
                     f"Album missing valid id while building summary: {wrapper!r}"
                 )
             name: str = wrapper.get_album_name()
-            summary_items.append({"id": album_id, "name": name})  # type: ignore
+            summary_items.append({"id": album_id, "name": name})
 
         out_dir = get_run_output_dir()
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -71,8 +83,9 @@ class UnavailableAlbums:
             with out_file.open("w", encoding="utf-8") as fh:
                 json.dump(
                     {"count": len(summary_items), "albums": summary_items}, fh, indent=2
-                )  # type: ignore
+                )
         except Exception:
+            # In DEVELOPMENT we want to see IO problems; in PRODUCTION se traga el error
             try:
                 if DEFAULT_ERROR_MODE.name == "DEVELOPMENT":
                     raise
