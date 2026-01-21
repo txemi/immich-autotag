@@ -22,5 +22,7 @@ def load_cache(cache_path: Path) -> Optional[DuplicateCollectionWrapper]:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        log(f"Could not load duplicates cache {cache_path}: {e}", level=LogLevel.WARNING)
+        log(
+            f"Could not load duplicates cache {cache_path}: {e}", level=LogLevel.WARNING
+        )
         return None

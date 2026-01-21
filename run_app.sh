@@ -46,5 +46,7 @@ if [ "${PROFILE}" = "1" ]; then
   fi
 else
   cd "$SCRIPT_DIR"
-  python "$PYTHON_SCRIPT" "${ARGS[@]}"
+  # Run the package as a module to ensure absolute package imports resolve
+  # consistently in CI and local environments.
+  python -m immich_autotag "${ARGS[@]}"
 fi

@@ -5,7 +5,7 @@ Singleton Manager for the new experimental configuration.
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import attrs
 import yaml
@@ -91,7 +91,10 @@ class ConfigManager:
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
-            log(f"Loading Python config from {config_location.path}", level=LogLevel.INFO)
+            log(
+                f"Loading Python config from {config_location.path}",
+                level=LogLevel.INFO,
+            )
             config_obj = load_python_config(config_location.path)
             if isinstance(config_obj, UserConfig):
                 self.config = config_obj
@@ -119,7 +122,7 @@ class ConfigManager:
         global _instance
         if _instance is None:
             ConfigManager()
-            # _instance._construction()
+        assert _instance is not None
         return _instance
 
     @typechecked
@@ -157,17 +160,20 @@ class ConfigManager:
             raise TypeError(f"path must be str, Path or None, got {type(path)}")
         import enum
 
-        def enum_representer(dumper, data):
-            return dumper.represent_data(
-                str(data.value) if hasattr(data, "value") else str(data)
-            )
+        @typechecked
+        def enum_representer(dumper: Any, data: "enum.Enum") -> Any:
+            try:
+                rep = str(data.value)
+            except Exception:
+                rep = str(data)
+            return dumper.represent_data(rep)
 
         yaml.add_representer(enum.Enum, enum_representer)
-        # Volcado estándar
+        # Standard dump
         with open(str(path), "w", encoding="utf-8") as f:
             yaml.dump(self.config.model_dump(), f, allow_unicode=True, sort_keys=False)
 
-        # Volcado alternativo con comentarios
+        # Alternative dump with comments
         try:
             from immich_autotag.config.yaml_with_comments import (
                 generate_yaml_with_comments,
@@ -198,8 +204,13 @@ class ConfigManager:
     @staticmethod
     def is_checkpoint_resume_enabled() -> bool:
         config = ConfigManager.get_instance().config
+        if config is None:
+            return False
+        # Prefer explicit access to known config fields. The skip/resume logic
+        # is represented in `SkipConfig.resume_previous` on `UserConfig.skip`.
+        # Access fields explicitly to avoid dynamic attribute lookups (getattr).
         try:
-            return bool(config.features.enable_checkpoint_resume)
+            return bool(config.skip.resume_previous)
         except Exception:
             return False
 

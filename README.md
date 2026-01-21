@@ -158,6 +158,16 @@ You can run Immich AutoTag using any of the following methods:
       bash scripts/run/loop_run_app.sh
       ```
 
+    - **Alternative:** You can run the packaged app directly. This is the recommended way
+      to ensure imports resolve consistently (for example in CI):
+      ```bash
+      # Use the helper script which activates the venv and runs the package
+      bash run_app.sh
+
+      # Or run the package module directly
+      python -m immich_autotag
+      ```
+
 That's it! Your Immich autotagging tool is ready to use.
 
 > **Do you prefer to download the code and run it manually?**

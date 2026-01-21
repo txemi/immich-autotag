@@ -8,7 +8,9 @@ from typeguard import typechecked
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_collection_wrapper import AlbumCollectionWrapper
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
     from immich_autotag.assets.asset_manager import AssetManager
     from immich_autotag.duplicates.duplicate_collection_wrapper import (
         DuplicateCollectionWrapper,
@@ -89,6 +91,6 @@ class ImmichContext:
 
     @staticmethod
     def get_default_client():
-        """Devuelve el ImmichClient del contexto singleton global."""
+        """Returns the ImmichClient from the global singleton context."""
         ctx = ImmichContext.get_instance()
         return ctx.client

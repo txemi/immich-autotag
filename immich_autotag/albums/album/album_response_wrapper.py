@@ -20,8 +20,18 @@ if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
+from immich_autotag.albums.albums.album_error_entry import AlbumErrorEntry
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+
+
+class AssetAlreadyInAlbumError(Exception):
+    """
+    Raised when trying to add an asset to an album and it is already present.
+    This is not a fatal error for most workflows.
+    """
+
+    pass
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -34,6 +44,13 @@ class AlbumResponseWrapper:
     _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
     # Explicit cache for asset ids. Use get_asset_ids() to access.
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
+    # If True, the album is known to be unavailable (deleted or no access).
+    # When unavailable we avoid API reload attempts and treat asset list as empty.
+    _unavailable: bool = attrs.field(default=False, init=False)
+    # Recent error history for this album: list of AlbumErrorEntry objects
+    _error_history: list[AlbumErrorEntry] = attrs.field(
+        default=attrs.Factory(list), init=False, repr=False
+    )
 
     def __attrs_post_init__(self) -> None:
         """
@@ -42,8 +59,31 @@ class AlbumResponseWrapper:
         """
         if self._album_partial is None and self._album_full is None:
             raise ValueError(
-                "AlbumResponseWrapper must be constructed with either a partial or full DTO"
+                (
+                    "AlbumResponseWrapper must be constructed with either a partial or "
+                    "full DTO"
+                )
             )
+
+    def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
+        """Equality based on album id when possible."""
+        if not isinstance(other, AlbumResponseWrapper):
+            return False
+        try:
+            return self.get_album_id() == other.get_album_id()
+        except Exception:
+            return False
+
+    def __hash__(self) -> int:  # pragma: no cover - trivial
+        """Hash by album id when available; fallback to object id.
+
+        This allows storing wrappers in sets while reasoning by identity via
+        the album id (which is stable and unique per album).
+        """
+        try:
+            return hash(self.get_album_id())
+        except Exception:
+            return object.__hash__(self)
 
     @staticmethod
     @typechecked
@@ -85,16 +125,27 @@ class AlbumResponseWrapper:
 
     @typechecked
     def ensure_full(self) -> None:
+        # If the album has been explicitly marked unavailable, fail fast so
+        # callers become aware and can handle the condition. Do not silently
+        # continue as that hides real problems.
+        if self._unavailable:
+            raise RuntimeError(
+                "Album is marked unavailable; cannot ensure full DTO for this album"
+            )
+
         if not self.is_full:
             self.reload_from_api(self.get_default_client())
 
+    @typechecked
     def _get_partial(self) -> AlbumResponseDto:
         assert self._album_partial is not None
         return self._album_partial
 
+    @typechecked
     def _get_full(self) -> AlbumResponseDto:
         return self._get_album_full_or_load()
 
+    @typechecked
     def _active_dto(self) -> AlbumResponseDto:
         """Return the DTO currently held by the wrapper (partial or full).
 
@@ -110,11 +161,66 @@ class AlbumResponseWrapper:
     def _set_album_full(self, value: AlbumResponseDto) -> None:
         self._album_full = value
 
+    @typechecked
     def invalidate_cache(self) -> None:
         try:
             self._asset_ids_cache = None
         except Exception:
             pass
+
+    @typechecked
+    def record_error(self, error_code: str, message: str) -> None:
+        """Record an error event for this album and prune old entries.
+
+        The window for pruning is taken from config `ALBUM_ERROR_WINDOW_SECONDS`.
+        """
+        try:
+            import time
+
+            from immich_autotag.albums.albums.album_error_entry import AlbumErrorEntry
+            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
+
+            now = time.time()
+            self._error_history.append(
+                AlbumErrorEntry(timestamp=now, code=error_code, message=str(message))
+            )
+            cutoff = now - int(ALBUM_ERROR_WINDOW_SECONDS)
+            # Keep only recent entries
+            self._error_history = [
+                e for e in self._error_history if e.timestamp >= cutoff
+            ]
+        except Exception:
+            # Never let recording errors raise and break higher-level flows
+            pass
+
+    @typechecked
+    def error_count(self, window_seconds: int | None = None) -> int:
+        try:
+            import time
+
+            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
+
+            window = (
+                int(window_seconds)
+                if window_seconds is not None
+                else int(ALBUM_ERROR_WINDOW_SECONDS)
+            )
+            cutoff = time.time() - window
+            return sum(1 for e in self._error_history if e.timestamp >= cutoff)
+        except Exception:
+            return 0
+
+    @typechecked
+    def should_mark_unavailable(
+        self, threshold: int | None = None, window_seconds: int | None = None
+    ) -> bool:
+        try:
+            from immich_autotag.config.internal_config import ALBUM_ERROR_THRESHOLD
+
+            th = int(threshold) if threshold is not None else int(ALBUM_ERROR_THRESHOLD)
+            return self.error_count(window_seconds) >= th
+        except Exception:
+            return False
 
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> None:
@@ -135,32 +241,138 @@ class AlbumResponseWrapper:
                     album_name = dto_for_repr.album_name
                 except AttributeError:
                     album_name = None
-                # Create a short, safe summary instead of using repr() which
-                # can emit very large DTO dumps (causing huge CI logs).
-                try:
+                    # Create a short, safe summary instead of using repr() which
+                    # can emit very large DTO dumps (causing huge CI logs).
                     try:
-                        assets_attr = getattr(dto_for_repr, "assets", None)
-                        asset_count = (
-                            len(assets_attr) if assets_attr is not None else None
+                        try:
+                            assets_attr = dto_for_repr.assets
+                            asset_count = (
+                                len(assets_attr) if assets_attr is not None else None
+                            )
+                        except Exception:
+                            asset_count = None
+
+                        try:
+                            dto_id = dto_for_repr.id
+                        except Exception:
+                            dto_id = None
+
+                        partial_repr = (
+                            f"AlbumDTO(id={dto_id!r}, "
+                            f"name={album_name!r}, assets={asset_count})"
                         )
                     except Exception:
-                        asset_count = None
-
-                    partial_repr = (
-                        f"AlbumDTO(id={getattr(dto_for_repr, 'id', None)!r}, "
-                        f"name={album_name!r}, assets={asset_count})"
-                    )
+                        partial_repr = "<unrepresentable album_partial>"
                 except Exception:
                     partial_repr = "<unrepresentable album_partial>"
             except Exception:
                 album_name = None
                 partial_repr = "<unrepresentable album_partial>"
 
+            # Determine HTTP status code when available. immich_client's
+            # UnexpectedStatus may expose the code; fallback to parsing.
+            try:
+                status_code = exc.status_code
+            except Exception:
+                status_code = None
+            if status_code is None:
+                try:
+                    msg = str(exc)
+                    if (
+                        "status code: 400" in msg
+                        or "Unexpected status code: 400" in msg
+                    ):
+                        status_code = 400
+                except Exception:
+                    status_code = None
+
+            # Handle 400 (Not found / no access) as a non-fatal condition:
+            # mark album unavailable and continue. This prevents failing the
+            # whole run when some albums are no longer accessible.
+            if status_code == 400:
+                # Record the recoverable error and decide whether to mark unavailable
+                try:
+                    self.record_error("HTTP_400", str(exc))
+                except Exception:
+                    pass
+
+                # Log a concise warning including the current recent error count
+                try:
+                    current_count = self.error_count()
+                except Exception:
+                    current_count = None
+                log(
+                    (
+                        f"[WARN] get_album_info returned 400 for album id="
+                        f"{self.get_album_id()!r} name={album_name!r}. "
+                        f"Recorded recoverable error (count={current_count}). "
+                        f"album_partial={partial_repr}"
+                    ),
+                    level=LogLevel.WARNING,
+                )
+
+                # If the recent error count exceeds configured threshold,
+                # mark unavailable
+                try:
+                    from immich_autotag.config.internal_config import (
+                        ALBUM_ERROR_THRESHOLD,
+                        ALBUM_ERROR_WINDOW_SECONDS,
+                    )
+
+                    if self.should_mark_unavailable(
+                        ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS
+                    ):
+                        try:
+                            self._unavailable = True
+                        except Exception:
+                            pass
+                        # Clear any cached assets
+                        self.invalidate_cache()
+                        # Report the event to the modification report
+                        try:
+                            from immich_autotag.report.modification_report import (
+                                ModificationReport,
+                            )
+                            from immich_autotag.tags.modification_kind import (
+                                ModificationKind,
+                            )
+
+                            tag_mod_report = ModificationReport.get_instance()
+                            tag_mod_report.add_error_modification(
+                                kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
+                                album=self,
+                                error_message=partial_repr,
+                                error_category="HTTP_400",
+                                extra={"recent_errors": len(self._error_history)},
+                            )
+                        except Exception:
+                            pass
+                        # Notify the global collection about this album state change
+                        try:
+                            from immich_autotag.albums.albums.album_collection_wrapper import (
+                                AlbumCollectionWrapper,
+                            )
+
+                            AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(
+                                self
+                            )
+                        except Exception:
+                            pass
+                        return
+                except Exception:
+                    # If config lookup fails or check fails,
+                    # be conservative and do not mark unavailable
+                    pass
+                # Otherwise, do not mark unavailable yet; continue without raising
+
+            # Other unexpected statuses are treated as fatal and re-raised.
             log(
                 (
-                    f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
-                    f"name={album_name!r}. Exception: {exc!r}. "
-                    f"album_partial={partial_repr}"
+                    (
+                        f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
+                        f"name={album_name!r}. Exception: {exc!r}. "
+                        f"album_partial={partial_repr}"
+                    )
                 ),
                 level=LogLevel.ERROR,
             )
@@ -263,14 +475,20 @@ class AlbumResponseWrapper:
         client: ImmichClient,
         tag_mod_report: "ModificationReport",
     ) -> None:
+        """
+        Adds an asset to the album. If the asset is already present,
+        raises AssetAlreadyInAlbumError.
+        """
         from immich_client.api.albums import add_assets_to_album
         from immich_client.models.bulk_ids_dto import BulkIdsDto
 
         from immich_autotag.tags.modification_kind import ModificationKind
 
-        # Avoid adding if already present
-        if asset_wrapper.id in self.get_asset_ids():
-            return
+        # Avoid adding if already present (explicit, clear)
+        if self.has_asset_wrapper(asset_wrapper):
+            raise AssetAlreadyInAlbumError(
+                f"Asset {asset_wrapper.id} is already in album {self.get_album_id()}"
+            )
         result = add_assets_to_album.sync(
             id=self.get_album_uuid_no_cache(),
             client=client,
@@ -288,7 +506,10 @@ class AlbumResponseWrapper:
                 _success = item.success
             except AttributeError:
                 raise RuntimeError(
-                    f"Item in add_assets_to_album response missing required attributes: {item}"
+                    (
+                        f"Item in add_assets_to_album response missing required attributes: "
+                        f"{item}"
+                    )
                 )
             if _id == str(asset_wrapper.id):
                 found = True
@@ -299,18 +520,21 @@ class AlbumResponseWrapper:
                         error_msg = None
                     asset_url = asset_wrapper.get_immich_photo_url().geturl()
                     album_url = self.get_immich_album_url().geturl()
-                    # If the error is 'duplicate', reactive refresh: reload album data from API
-                    # This detects that our cached album data is stale, and subsequent assets in this
-                    # batch will benefit from the fresh data without additional API calls
+                    # If the error is 'duplicate', reactive refresh:
+                    # reload album data from API.
+                    # This detects that our cached album data is stale,
+                    # and subsequent assets in this batch will benefit
+                    # from the fresh data without additional API calls.
                     if error_msg and "duplicate" in str(error_msg).lower():
                         log(
-                            f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (detected stale cache). Reloading album data for subsequent operations.",
+                            (
+                                f"Asset {asset_wrapper.id} already in album "
+                                f"{self.get_album_id()} (API duplicate error). "
+                                f"Raising AssetAlreadyInAlbumError."
+                            ),
                             level=LogLevel.FOCUS,
                         )
-                        # Reactive refresh: reload album from API to get fresh data
-                        # This ensures subsequent assets see current state without preventive reloads
                         self.reload_from_api(client)
-
                         tag_mod_report.add_assignment_modification(
                             kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
                             asset_wrapper=asset_wrapper,
@@ -320,16 +544,28 @@ class AlbumResponseWrapper:
                                 "asset_url": asset_url,
                                 "album_url": album_url,
                                 "reason": "Stale cached album data detected and reloaded",
+                                "details": (
+                                    f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\n"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
+                                ),
                             },
                         )
-                        return
                     else:
                         raise RuntimeError(
-                            f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                            (
+                                f"Asset {asset_wrapper.id} was not successfully added to album "
+                                f"{self.get_album_id()}: {error_msg}\n"
+                                f"Asset link: {asset_url}\n"
+                                f"Album link: {album_url}"
+                            )
                         )
         if not found:
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album {self.get_album_id()}."
+                (
+                    f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album "
+                    f"{self.get_album_id()}."
+                )
             )
         tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
@@ -359,10 +595,11 @@ class AlbumResponseWrapper:
         from immich_autotag.logging.utils import log
         from immich_autotag.tags.modification_kind import ModificationKind
 
-        # Check if asset is in album first
-        if asset_wrapper.id not in self.get_asset_ids():
+        # Check if asset is in album first (use has_asset_wrapper for clarity)
+        if not self.has_asset_wrapper(asset_wrapper):
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.get_album_id()}, skipping removal.",
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.get_album_id()}, "
+                "skipping removal.",
                 level=LogLevel.DEBUG,
             )
             return
@@ -390,7 +627,8 @@ class AlbumResponseWrapper:
                 _success = item.success
             except AttributeError:
                 raise RuntimeError(
-                    f"Item in remove_assets_from_album response missing required attributes: {item}"
+                    f"Item in remove_assets_from_album response missing required attributes: "
+                    f"{item}"
                 )
             if _id == str(asset_wrapper.id):
                 found = True
@@ -408,56 +646,92 @@ class AlbumResponseWrapper:
                         if str(error_msg).lower() == "not_found":
                             # Album is gone, notify AlbumCollectionWrapper singleton to remove it from collection
                             try:
-                                from immich_autotag.albums.album_collection_wrapper import (
+                                from immich_autotag.albums.albums.album_collection_wrapper import (
                                     AlbumCollectionWrapper,
                                 )
 
                                 collection = AlbumCollectionWrapper.get_instance()
                                 removed = collection.remove_album_local(self)
                                 log(
-                                    f"[ALBUM REMOVAL] Album {self.get_album_id()} ('{self.get_album_name()}') removed from collection due to not_found error during asset removal.",
+                                    (
+                                        f"[ALBUM REMOVAL] Album {self.get_album_id()} "
+                                        f"('{self.get_album_name()}') removed from collection due to "
+                                        f"not_found error during asset removal."
+                                    ),
                                     level=LogLevel.FOCUS,
                                 )
                             except Exception as e:
                                 log(
-                                    f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} from collection after not_found: {e}",
+                                    (
+                                        f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} "
+                                        f"from collection after not_found: {e}"
+                                    ),
                                     level=LogLevel.WARNING,
                                 )
                             log(
-                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                (
+                                    f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album "
+                                    f"{self.get_album_id()}: {error_msg}\n"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
+                                ),
                                 level=LogLevel.WARNING,
                             )
                             return
                         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                             raise RuntimeError(
-                                f"Asset {asset_wrapper.id} was not successfully removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                                (
+                                    f"Asset {asset_wrapper.id} was not successfully removed from album "
+                                    f"{self.get_album_id()}: {error_msg}\n"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
+                                )
                             )
                         else:
                             log(
-                                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                (
+                                    f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from album "
+                                    f"{self.get_album_id()}: {error_msg}\n"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
+                                ),
                                 level=LogLevel.WARNING,
                             )
                             return
                     # Otherwise, treat as fatal
                     raise RuntimeError(
-                        f"Asset {asset_wrapper.id} was not successfully removed from album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}"
+                        (
+                            f"Asset {asset_wrapper.id} was not successfully removed from album "
+                            f"{self.get_album_id()}: {error_msg}\n"
+                            f"Asset link: {asset_url}\n"
+                            f"Album link: {album_url}"
+                        )
                     )
 
         if not found:
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.get_album_id()}. Treating as already removed.",
+                (
+                    f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album "
+                    f"response for album {self.get_album_id()}. Treating as already removed."
+                ),
                 level=LogLevel.WARNING,
             )
             if DEFAULT_ERROR_MODE != ErrorHandlingMode.DEVELOPMENT:
                 return
 
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album {self.get_album_id()}."
+                (
+                    f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album "
+                    f"{self.get_album_id()}."
+                )
             )
 
         # Log successful removal
         log(
-            f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self.get_album_id()} ('{self.get_album_name()}').",
+            (
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self.get_album_id()} "
+                f"('{self.get_album_name()}')."
+            ),
             level=LogLevel.FOCUS,
         )
 
@@ -489,7 +763,7 @@ class AlbumResponseWrapper:
 
         for attempt in range(max_retries):
             self.reload_from_api(client)
-            if self.has_asset(asset_wrapper.asset):
+            if self.has_asset_wrapper(asset_wrapper):
                 return  # Success - asset is in album
 
             if attempt < max_retries - 1:
@@ -498,7 +772,11 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album {self.get_album_id()}. This may be an eventual consistency or API issue.",
+                    (
+                        f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album "
+                        f"{self.get_album_id()}. "
+                        f"This may be an eventual consistency or API issue."
+                    ),
                     level=LogLevel.WARNING,
                 )
 
@@ -517,7 +795,7 @@ class AlbumResponseWrapper:
 
         for attempt in range(max_retries):
             self.reload_from_api(client)
-            if not self.has_asset(asset_wrapper.asset):
+            if not self.has_asset_wrapper(asset_wrapper):
                 return  # Success - asset is no longer in album
 
             if attempt < max_retries - 1:
@@ -526,7 +804,11 @@ class AlbumResponseWrapper:
                 time.sleep(wait_time)
             else:
                 log(
-                    f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album {self.get_album_id()}. This may be an eventual consistency or API issue.",
+                    (
+                        f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album "
+                        f"{self.get_album_id()}. "
+                        f"This may be an eventual consistency or API issue."
+                    ),
                     level=LogLevel.WARNING,
                 )
 
@@ -619,5 +901,8 @@ class AlbumResponseWrapper:
         or `from_full_dto` to make representation explicit.
         """
         raise RuntimeError(
-            "Use AlbumResponseWrapper.from_partial_dto or from_full_dto; from_dto is ambiguous"
+            (
+                "Use AlbumResponseWrapper.from_partial_dto or from_full_dto; "
+                "from_dto is ambiguous"
+            )
         )

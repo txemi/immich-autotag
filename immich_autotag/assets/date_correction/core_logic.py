@@ -119,7 +119,9 @@ def _check_filename_candidate_and_fix(
 
 
 @typechecked
-def correct_asset_date(asset_wrapper: AssetResponseWrapper, log: bool = False) -> None:
+def correct_asset_date(
+    asset_wrapper: AssetResponseWrapper, log_flag: bool = False
+) -> None:
     """
     Main entry point for asset date correction logic.
 

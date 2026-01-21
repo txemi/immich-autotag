@@ -1,8 +1,8 @@
-"""
-tee_logging.py
+# tee_logging.py
+#
+# Utility to duplicate stdout and stderr to a file in real time,
+# without memory buffers.
 
-Utility to duplicate stdout and stderr to a file in real time, without memory buffers.
-"""
 
 import sys
 
@@ -59,7 +59,7 @@ class Tee:
         if sys.stdout is self:
             sys.stdout = self.stdout
         if sys.stderr is self:
-            sys.stderr = self.stderr
+            self.stderr = self.stderr
         if not self.file.closed:
             self.file.close()
 
@@ -68,8 +68,8 @@ class Tee:
 def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
     """
     Duplicates stdout and stderr to a file in real time, without memory buffers.
-    The file is created in the current run's log directory (get_run_output_dir()),
-    and the base name can be customized.
+    The file is created in the current run's log directory
+    (get_run_output_dir()), and the base name can be customized.
     """
     from immich_autotag.utils.run_output_dir import get_run_output_dir
 

@@ -9,12 +9,11 @@ from immich_autotag.report.modification_report import ModificationReport
 
 
 @typechecked
-def _process_album_detection(
+def process_album_detection(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
     detected_album: str,
     album_origin: str,
-    suppress_album_already_belongs_log: bool = True,
 ) -> None:
     # Log candidate album always at FOCUS level
     log(

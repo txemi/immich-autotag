@@ -1,6 +1,8 @@
 from typing import Iterable, Iterator
 
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from typeguard import typechecked
+
+from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 
 class AlbumList:
@@ -37,7 +39,8 @@ class AlbumList:
     def __repr__(self):
         return f"AlbumList({self._albums!r})"
 
-    # Decorador eliminado, no existe 'typecheck'
+    # Decorator removed, 'typecheck' does not exist
+    @typechecked
     def remove_album(self, album: AlbumResponseWrapper):
         """Remove all occurrences of album from the list."""
         self._albums = [a for a in self._albums if a != album]

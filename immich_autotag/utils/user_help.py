@@ -33,11 +33,17 @@ def _generate_links(config: UserConfig) -> List[str]:
     if config.classification:
         if config.classification.autotag_unknown:
             tags_to_add.append(
-                ("Classification: Unknown", config.classification.autotag_unknown)
+                (
+                    "Classification: Unknown",
+                    config.classification.autotag_unknown,
+                )
             )
         if config.classification.autotag_conflict:
             tags_to_add.append(
-                ("Classification: Conflict", config.classification.autotag_conflict)
+                (
+                    "Classification: Conflict",
+                    config.classification.autotag_conflict,
+                )
             )
 
     # From duplicate_processing
@@ -80,7 +86,11 @@ def _generate_links(config: UserConfig) -> List[str]:
         links.append(f"- [{label}]({url})")
 
     links.append(
-        "\nFor configuration details, see: [README_config.md](https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/README_config.md)"
+        (
+            "\nFor configuration details, see: "
+            "[README_config.md](https://github.com/txemi/"
+            "immich-autotag/blob/main/immich_autotag/config/README_config.md)"
+        )
     )
     return links
 
@@ -92,7 +102,8 @@ def _print_links_to_console(config: UserConfig, links: List[str]) -> None:
     for line in links:
         if line.startswith("- [Albums]"):
             print(
-                f"- Albums:        http://{config.server.host}:{config.server.port}/albums"
+                f"- Albums:        http://{config.server.host}:"
+                f"{config.server.port}/albums"
             )
         elif line.startswith("- ["):
             # Extract label and url for pretty print
@@ -104,7 +115,8 @@ def _print_links_to_console(config: UserConfig, links: List[str]) -> None:
                 print(f"- {label}: {url}")
     print("\nFor configuration details, see:")
     print(
-        "https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/README_config.md\n"
+        "https://github.com/txemi/immich-autotag/blob/main/"
+        "immich_autotag/config/README_config.md\n"
     )
 
 
@@ -133,7 +145,10 @@ def print_welcome_links(config: UserConfig) -> None:
 @typechecked
 def print_config_help() -> None:
     local_path = "immich_autotag/config/README_config.md"
-    web_url = "https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/README_config.md"
+    web_url = (
+        "https://github.com/txemi/immich-autotag/blob/main/"
+        "immich_autotag/config/README_config.md"
+    )
     print("\nNo configuration found. Please see the configuration guide:")
     print(f"- Local file: {local_path}")
     print(f"- Online: {web_url}")
