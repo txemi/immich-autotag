@@ -23,6 +23,8 @@ from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_a
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
@@ -173,17 +175,12 @@ class AlbumCollectionWrapper:
 
         This updates internal counters and triggers a global policy evaluation.
         """
-        try:
-            album_id = album_wrapper.get_album_id()
-        except Exception:
-            return
+        album_id = album_wrapper.get_album_id()
+
         # Use wrapper identity (by album id) for membership; avoid double-counting
         added = self._unavailable.add(album_wrapper)
         if not added:
             return
-
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
 
         log(
             f"Album {album_id} marked unavailable (total_unavailable={self._unavailable.count}).",
