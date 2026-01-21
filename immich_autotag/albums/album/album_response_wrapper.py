@@ -40,7 +40,7 @@ class AlbumResponseWrapper:
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
-    _album_partial: AlbumResponseDto | None = attrs.field(default=None)
+    _album_partial: AlbumResponseDto | None = attrs.field(default=None, kw_only=True)
     _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
     # Explicit cache for asset ids. Use get_asset_ids() to access.
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
@@ -701,7 +701,7 @@ class AlbumResponseWrapper:
                                 )
 
                                 collection = AlbumCollectionWrapper.get_instance()
-                                removed = collection.remove_album_local(self)
+                                collection.remove_album_local(self)
                                 log(
                                     (
                                         f"[ALBUM REMOVAL] Album {self.get_album_id()} "
@@ -897,6 +897,7 @@ class AlbumResponseWrapper:
         will not populate the full cache. Callers must explicitly request
         loading the full DTO via `ensure_full`/`reload_from_api`.
         """
+        # Use kw_only to ensure correct field assignment
         wrapper = AlbumResponseWrapper(album_partial=dto)
         return wrapper
 
