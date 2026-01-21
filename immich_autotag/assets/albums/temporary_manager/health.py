@@ -2,7 +2,7 @@
 Health check logic for temporary albums.
 """
 
-def is_temporary_album_healthy(album_wrapper) -> bool:
+
 
 from typeguard import typechecked
 
