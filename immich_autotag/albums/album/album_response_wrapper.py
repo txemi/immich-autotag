@@ -94,6 +94,14 @@ class AlbumResponseWrapper:
         except Exception:
             return object.__hash__(self)
     @typechecked
+    def is_empty(self) -> bool:
+        """
+        Returns True if the album has no assets, False otherwise.
+        Uses the cached asset ids if available for efficiency.
+        """
+        return len(self.get_asset_ids()) == 0
+        
+    @typechecked
     def is_duplicate_album(self) -> bool:
         """
         Returns True if this album is a duplicate album (i.e., there is more than one album with the same name in the collection).
