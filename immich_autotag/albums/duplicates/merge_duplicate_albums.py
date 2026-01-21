@@ -25,6 +25,13 @@ def merge_duplicate_albums(
     Merge all assets from the duplicate album into the target album,
     then delete the duplicate album from the collection and server.
     """
+
+    # Safety: Ensure duplicate_album is actually a duplicate before proceeding
+    if not duplicate_album.is_duplicate_album():
+        raise RuntimeError(
+            f"Refusing to merge/delete album '{duplicate_album.get_album_name()}' (id={duplicate_album.get_album_id()}): not a duplicate album."
+        )
+
     # Move assets from duplicate to target
     move_assets_between_albums(
         collection=collection,
@@ -41,15 +48,7 @@ def merge_duplicate_albums(
         reason="Merged and deleted duplicate album",
     )
 
-    if tag_mod_report:
-        from immich_autotag.tags.modification_kind import ModificationKind
-
-        tag_mod_report.add_album_modification(
-            kind=ModificationKind.DELETE_ALBUM,
-            album=duplicate_album,
-            old_value=duplicate_album.get_album_name(),
-            extra={"reason": "Merged and deleted duplicate album"},
-        )
+    # ...existing code...
 
     # Return the surviving album for convenience
     return target_album
