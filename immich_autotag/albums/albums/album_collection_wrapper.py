@@ -30,8 +30,38 @@ from immich_autotag.utils.decorators import conditional_typechecked
 _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
+    def _add_user_to_album(self, album, user_id, context):
+        """
+        Private helper to add a user as EDITOR to an album. Handles only user addition and error reporting.
+        """
+        from immich_autotag.permissions.album_permission_executor import _add_members_to_album
+        try:
+            _add_members_to_album(
+                album_id=album.id,
+                album_name=album.album_name,
+                user_ids=[str(user_id)],
+                access_level="editor",
+                context=context,
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
+            ) from e
+
+    def _create_album(self, album_name: str, client: ImmichClient):
+        """
+        Private helper to create an album via the API. Returns the album object.
+        Handles only creation and error reporting for album creation.
+        """
+        from immich_client.api.albums import create_album
+        from immich_client.models.create_album_dto import CreateAlbumDto
+        album = create_album.sync(client=client, body=CreateAlbumDto(album_name=album_name))
+        if album is None:
+            raise RuntimeError("Failed to create album: API returned None")
+        return album
 
 
     _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
@@ -781,18 +811,10 @@ class AlbumCollectionWrapper:
             )
 
         # If it doesn't exist, create it and assign user
-        from uuid import UUID
-
-        from immich_client.api.albums import create_album
-        from immich_client.models.create_album_dto import CreateAlbumDto
         from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
-        album = create_album.sync(
-            client=client, body=CreateAlbumDto(album_name=album_name)
-        )
-        if album is None:
-            raise RuntimeError("Failed to create album: API returned None")
+        album = self._create_album(album_name, client)
 
         # Centralized user access
         context = ImmichContext.get_instance()
@@ -801,20 +823,7 @@ class AlbumCollectionWrapper:
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         owner_id = wrapper.owner_uuid
         if user_id != owner_id:
-            # Use centralized permission logic
-            from immich_autotag.permissions.album_permission_executor import _add_members_to_album
-            try:
-                _add_members_to_album(
-                    album_id=album.id,
-                    album_name=album.album_name,
-                    user_ids=[str(user_id)],
-                    access_level="editor",
-                    context=context,
-                )
-            except Exception as e:
-                raise RuntimeError(
-                    f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
-                ) from e
+            self._add_user_to_album(album, user_id, context)
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         try:
             wrapper = self.add_album_wrapper(
