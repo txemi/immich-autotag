@@ -20,18 +20,22 @@ PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
 
 
-# Parse args: support optional --check (or -c), --enforce-dynamic-attrs, and optional target dir
 CHECK_MODE=0
 ENFORCE_DYNAMIC_ATTRS=0
+TARGET_DIR=""
 for arg in "$@"; do
 	if [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
 		CHECK_MODE=1
 	elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 		ENFORCE_DYNAMIC_ATTRS=1
-	else
-		TARGET_DIR="${arg:-$PACKAGE_NAME}"
+	elif [[ "$arg" != --* ]]; then
+		TARGET_DIR="$arg"
 	fi
 done
+# If no positional argument was given, default to PACKAGE_NAME
+if [ -z "$TARGET_DIR" ]; then
+	TARGET_DIR="$PACKAGE_NAME"
+fi
 
 if [ "$CHECK_MODE" -eq 1 ]; then
 	echo "[MODE] Running in CHECK mode (no files will be modified)."
