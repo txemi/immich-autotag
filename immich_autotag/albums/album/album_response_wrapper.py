@@ -39,7 +39,6 @@ class AlbumResponseWrapper:
 
 
 
-
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -67,6 +66,19 @@ class AlbumResponseWrapper:
                     "full DTO"
                 )
             )
+    @property
+    @typechecked
+    def owner_uuid(self) -> "UUID":
+        """Devuelve el UUID del owner del álbum (objeto UUID, no string)."""
+        from uuid import UUID
+        # El owner_id puede estar en _album_partial o _album_full
+        album = self._album_full or self._album_partial
+        if album is None or not hasattr(album, "owner_id"):
+            raise AttributeError("AlbumResponseWrapper: owner_id not available.")
+        return UUID(album.owner_id)
+
+
+        
     @typechecked
     def is_temporary_album(self) -> bool:
         """
