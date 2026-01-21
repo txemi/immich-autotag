@@ -3,6 +3,8 @@
 All versions follow [Semantic Versioning](https://semver.org/).
 
 
+
+
 ## [0.10] - 2025-12-23
 **Description:** First version with automatic tags based on criteria, laying the groundwork for a future rule engine and conflict detection.
 ### Added
@@ -370,6 +372,43 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 - Link: [issue 0021 — Profiling & Performance Reports](docs/issues/0021-profiling-performance/)
 - Current blockers: Performance regression analysis
 
+
+
+
+## [0.74.0] - 2026-01-21
+**Status:** 🔖 Pending tag
+**Description:** Major refactors, error handling improvements, YAML config generation, logging/statistics enhancements, and documentation updates.
+
+### Added
+- YAML configuration generator with comments from Pydantic model descriptions ([issue](docs/issues/0009-config-system-refactor/))
+- Logging of unmatched albums in user configuration ([issue](docs/issues/0016-auto-album-creation/))
+- Enhanced user configuration template: improved skip options and album permissions ([issue](docs/issues/0017-rules-tag-album-combination/))
+- Batch tag/album conversions feature added to README ([issue](docs/issues/0022-batch-tag-album-conversions/))
+
+### Changed
+- Major refactor of asset processing, statistics checkpoint, and configuration management for clarity and maintainability ([issue](docs/issues/0008-statistics-checkpoint/))
+- Improved error handling: centralized error handling mode, better error categorization, and type checking ([issue](docs/issues/0019-album-date-consistency-config/))
+- Enhanced previous execution statistics validation and skip_n configuration ([issue](docs/issues/0016-auto-album-creation/))
+- Improved code formatting, import organization, and comments across multiple modules
+- Continuous tagging feature description updated for clarity and scheduling options ([issue](docs/issues/0021-profiling-performance/))
+
+### Fixed
+- Multiple bug fixes in YAML handling, error handling, and statistics logging
+- Improved handling of configuration loading errors and validation
+- Fixed missing imports and type annotations in several modules
+- Fixed link formatting in README and removed outdated CI/CD note from CONTRIBUTING.md
+
+### Documentation
+- Expanded and clarified practical use case steps in README
+- Added link to Functional Blocks Matrix for structured feature overview
+- Updated changelog and roadmap for new features and improvements
+
+### Known issues
+- Performance regression under investigation (see previous release notes)
+
+### Testing
+- All new features and refactors tested on Jenkins with large asset sets
+- All Python code formatted and sorted
 
 ## [Planned: Unmatched Albums Report]
 **Description:** Adds a report listing all albums that do not match any user-defined rule, helping users identify albums that may need new rules or manual review.
