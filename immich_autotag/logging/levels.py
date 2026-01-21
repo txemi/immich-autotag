@@ -5,50 +5,66 @@ Objective: Help developers easily choose an appropriate log level by providing c
 """
 
 import logging
+from dataclasses import dataclass
 from enum import Enum
 
 
+@dataclass(frozen=True)
+class LogLevelInfo:
+    level_value: int
+    is_custom: bool
+    description: str
+
+
 class LogLevel(Enum):
-    ERROR = (
+    ERROR = LogLevelInfo(
         logging.ERROR,
         False,
         "Standard error level. Use for serious problems that need immediate attention.",
     )
-    IMPORTANT = (
+    IMPORTANT = LogLevelInfo(
         logging.WARNING,
         False,
         "Standard warning level. Use for important warnings that should not be ignored.",
     )
-    WARNING = (
-        logging.WARNING,
-        False,
-        "Standard warning level. Use for general warnings.",
+    WARNING = LogLevelInfo(
+        logging.WARNING, False, "Standard warning level. Use for general warnings."
     )
-    PROGRESS = (
+    PROGRESS = LogLevelInfo(
         logging.INFO,
         True,
         "Custom level. Use for progress updates and evolution of long-running processes. These messages should appear in standard application output to inform the user about processing status.",
     )
-    INFO = (
+    INFO = LogLevelInfo(
         logging.INFO,
         False,
         "Standard info level. Use for general informational messages.",
     )
-    FOCUS = (
+    FOCUS = LogLevelInfo(
         15,
         True,
         "Custom level. Use when the user is focusing on a specific asset and needs detailed information. These messages are hidden in standard mode but shown in focus mode to help with deep debugging or investigation.",
     )
-    DEBUG = (
+    DEBUG = LogLevelInfo(
         logging.DEBUG,
         False,
         "Standard debug level. Use for low-level debugging information.",
     )
 
-    def __init__(self, level_value, is_custom, description):
-        self._level_value = level_value
-        self._is_custom = is_custom
-        self._description = description
+    @property
+    def is_custom(self) -> bool:
+        return self.value.is_custom
+
+    @property
+    def description(self) -> str:
+        return self.value.description
+
+    @property
+    def level_value(self):
+        return self.value.level_value
+
+    def __str__(self):
+        return self.name
 
     @property
     def is_custom(self) -> bool:
