@@ -57,6 +57,21 @@ All versions follow [Semantic Versioning](https://semver.org/).
 - The statistics file is now written immediately at application startup, ensuring it is always available for monitoring and debugging from the very beginning of each run.
 - All code, comments, and log messages are now in English for consistency and maintainability.
 
+
+
+## [0.47.0] 
+**Description:** Infraestructura, comunidad y automatización: base técnica y social del proyecto.
+### Added
+- Announcement and outreach tracking across platforms ([issue](docs/issues/0011-announcement-tracking/))
+- Documentation coordination and planning via docs-track branch ([issue](docs/issues/0020-docs-track-branch/))
+- System initialization and setup ([issue](docs/issues/0001-system-initialization/))
+- Local issue system adoption ([issue](docs/issues/0002-adopt-local-issue-system/))
+- Orphan albums and process refactor ([issue](docs/issues/0006-orphan-albums/), [issue](docs/issues/0007-refactor-process-single-asset/))
+- Cleanup and redeployment for public releases ([issue](docs/issues/0012-cleanup-redeploy/))
+- Git version traceability in statistics ([issue](docs/issues/0013-git-version-null-in-stats/))
+- Jenkins pipeline containerization ([issue](docs/issues/0014-jenkins-pipeline-containerization/))
+- GitHub Actions PyPI publishing ([issue](docs/issues/0015-github-actions-pypi-publishing/))
+
 ## [0.70.7-2-g8b496cb-dirty] - 2026-01-12
 **Description:** Work in progress: automating Python package and container generation using GitHub Actions and various improvements. Not final.
 ### Changed
