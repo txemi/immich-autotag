@@ -783,10 +783,7 @@ class AlbumCollectionWrapper:
         # If it doesn't exist, create it and assign user
         from uuid import UUID
 
-        from immich_client.api.albums import add_users_to_album, create_album
-        from immich_client.models.add_users_dto import AddUsersDto
-        from immich_client.models.album_user_add_dto import AlbumUserAddDto
-        from immich_client.models.album_user_role import AlbumUserRole
+        from immich_client.api.albums import create_album
         from immich_client.models.create_album_dto import CreateAlbumDto
         from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
@@ -804,15 +801,15 @@ class AlbumCollectionWrapper:
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         owner_id = wrapper.owner_uuid
         if user_id != owner_id:
+            # Use centralized permission logic
+            from immich_autotag.permissions.album_permission_executor import _add_members_to_album
             try:
-                add_users_to_album.sync(
-                    id=UUID(album.id),
-                    client=client,
-                    body=AddUsersDto(
-                        album_users=[
-                            AlbumUserAddDto(user_id=user_id, role=AlbumUserRole.EDITOR)
-                        ]
-                    ),
+                _add_members_to_album(
+                    album_id=album.id,
+                    album_name=album.album_name,
+                    user_ids=[str(user_id)],
+                    access_level="editor",
+                    context=context,
                 )
             except Exception as e:
                 raise RuntimeError(
