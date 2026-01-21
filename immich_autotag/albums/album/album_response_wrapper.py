@@ -43,6 +43,7 @@ class AssetAlreadyInAlbumError(Exception):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
+
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -256,10 +257,10 @@ class AlbumResponseWrapper:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client import errors as immich_errors
 
+        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
         from immich_autotag.albums.albums.album_api_exception_info import (
             AlbumApiExceptionInfo,
         )
-        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
 
         album_dto = None
         try:
@@ -892,3 +893,11 @@ class AlbumResponseWrapper:
             wrapper._asset_ids_cache = None
 
         return wrapper
+    @typechecked
+    def get_album_members(self):
+        """
+        Returns the list of album members (album_users) from the active DTO, or an empty list if not present.
+        This encapsulates access to the album's user/member list for permission logic.
+        """
+        dto = self._active_dto()
+        return dto.album_users
