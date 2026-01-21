@@ -66,3 +66,13 @@ class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
                 album_list.remove_album(album_wrapper)
                 if not album_list:
                     del self[asset_id]
+
+    @typechecked
+    def add_album_for_asset_ids(self, album_wrapper: AlbumResponseWrapper) -> None:
+        """
+        Adds the given album to the map for all its asset IDs. Creates a new AlbumList if needed.
+        """
+        for asset_id in album_wrapper.get_asset_ids():
+            if asset_id not in self:
+                self[asset_id] = AlbumList()
+            self[asset_id].append(album_wrapper)
