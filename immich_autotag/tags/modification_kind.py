@@ -1,3 +1,5 @@
+import enum
+
 
 from enum import Enum
 from immich_autotag.logging.levels import LogLevel
@@ -39,3 +41,5 @@ class ModificationKind(Enum):
     ALBUM_PERMISSION_SHARED = ((),)
     ALBUM_PERMISSION_REMOVED = ((),)
     ALBUM_PERMISSION_SHARE_FAILED = ((),)
+
+    ADD_USER_TO_ALBUM = ((), {'log_level': LogLevel.PROGRESS})
