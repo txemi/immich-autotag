@@ -414,10 +414,9 @@ class AlbumCollectionWrapper:
                 albums_to_remove.append(album_wrapper)
         return albums_to_remove
 
-    @staticmethod
     @typechecked
     def delete_album(
-        *,
+        self,
         wrapper: AlbumResponseWrapper,
         client: ImmichClient,
         tag_mod_report: ModificationReport,
@@ -448,34 +447,25 @@ class AlbumCollectionWrapper:
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
-            code_checked = False
-            try:
-                code = (
-                    exc.response.status_code
-                )  # Explicit access, will raise if not present
+            err_reason = "Unknown error"
+            response = exc.response if hasattr(exc, "response") else None
+            code = response.status_code if response is not None and hasattr(response, "status_code") else None
+            if code is not None:
                 if code == 404:
                     err_reason = "Album not found (already deleted)"
-                    code_checked = True
                 elif code == 400:
                     err_reason = "Album not empty or bad request"
-                    code_checked = True
                 elif code == 403:
                     err_reason = "Permission denied"
-                    code_checked = True
                 else:
                     err_reason = f"HTTP {code}"
-                    code_checked = True
-            except AttributeError:
-                pass
-            if not code_checked:
+            else:
                 if "not found" in msg.lower():
                     err_reason = "Album not found (already deleted)"
                 elif "not empty" in msg.lower():
                     err_reason = "Album not empty"
                 elif "permission" in msg.lower() or "forbidden" in msg.lower():
                     err_reason = "Permission denied"
-                else:
-                    err_reason = "Unknown error"
             log(
                 f"Failed to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). Reason: {err_reason}. Exception: {msg}",
                 level=LogLevel.WARNING,
@@ -577,13 +567,17 @@ class AlbumCollectionWrapper:
                 if existing.get_album_name() == name:
                     # Temporary duplicate
                     if is_temporary_album(name) and client is not None:
-                        if AlbumCollectionWrapper.delete_album(
-                            wrapper=wrapper,
-                            client=client,
-                            tag_mod_report=tag_mod_report,
-                            reason="Removed duplicate temporary album during add",
-                        ):
-                            return
+                        # Only call delete_album if client is of correct type
+                        try:
+                            if self.delete_album(
+                                wrapper=wrapper,
+                                client=client,
+                                tag_mod_report=tag_mod_report,
+                                reason="Removed duplicate temporary album during add",
+                            ):
+                                return
+                        except Exception:
+                            pass
                     # Non-temporary duplicate
                     self._handle_non_temporary_duplicate(
                         existing=existing,
