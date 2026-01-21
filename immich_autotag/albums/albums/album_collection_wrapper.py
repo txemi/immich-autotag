@@ -800,7 +800,7 @@ class AlbumCollectionWrapper:
         # Centralized user access
         context = ImmichContext.get_instance()
         user_wrapper = UserResponseWrapper.from_context(context)
-        user_id = UUID(user_wrapper.id)
+        user_id = user_wrapper.uuid
         owner_id = UUID(album.owner_id)
         if user_id != owner_id:
             try:
