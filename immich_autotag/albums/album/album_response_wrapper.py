@@ -294,8 +294,7 @@ class AlbumResponseWrapper:
             album_dto = get_album_info.sync(
                 id=self.get_album_uuid_no_cache(), client=client
             )
-            self._set_album_full(album_dto)
-            self.invalidate_cache()
+
         except immich_errors.UnexpectedStatus as exc:
             try:
                 dto_for_repr = self._active_dto()
@@ -439,7 +438,10 @@ class AlbumResponseWrapper:
                 level=LogLevel.ERROR,
             )
             raise
-
+        if album_dto is None:
+            raise RuntimeError("get_album_info.sync returned None for album id={}".format(self.get_album_uuid_no_cache()))
+        self._set_album_full(album_dto)
+        self.invalidate_cache()
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
         if self._album_full is not None:
