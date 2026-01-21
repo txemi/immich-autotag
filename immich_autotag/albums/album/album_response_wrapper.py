@@ -283,22 +283,22 @@ class AlbumResponseWrapper:
     def _build_partial_repr(self) -> AlbumPartialRepr:
         """Construye una representación parcial segura del álbum para logs de error."""
         try:
-            dto_for_repr = self._active_dto()
+            album_name: str | None = None
+            dto_id: str | None = None
+            asset_count: int | None = None
             try:
-                album_name: str | None = getattr(dto_for_repr, "album_name", None)
-            except AttributeError:
+                album_name = self.get_album_name()
+            except Exception:
                 album_name = None
             try:
-                assets_attr = getattr(dto_for_repr, "assets", None)
-                asset_count: int | None = (
-                    len(assets_attr) if assets_attr is not None else None
-                )
-            except Exception:
-                asset_count = None
-            try:
-                dto_id = getattr(dto_for_repr, "id", None)
+                dto_id = self.get_album_id()
             except Exception:
                 dto_id = None
+            try:
+                # Use get_asset_ids() for asset count if possible
+                asset_count = len(self.get_asset_ids())
+            except Exception:
+                asset_count = None
             partial_repr = (
                 f"AlbumDTO(id={dto_id!r}, name={album_name!r}, assets={asset_count})"
             )
