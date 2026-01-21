@@ -676,21 +676,9 @@ class AlbumCollectionWrapper:
         name = wrapper.get_album_name()
         existing = self.find_first_album_with_name(name)
         if existing is not None:
-            # Duplicate found
-            if is_temporary_album(name) and client is not None:
-                self.delete_album(
-                    wrapper=existing,
-                    client=client,
-                    tag_mod_report=tag_mod_report,
-                    reason="Removed duplicate temporary album during add",
-                )
-            else:
-                # Not temporary or no client: cannot resolve automatically
-                self._handle_duplicate_album_conflict(
-                    existing, context="duplicate_on_add"
-                )
-                return existing
-
+            raise RuntimeError(
+                f"Cannot add album: an album with the name '{name}' already exists (id={existing.get_album_id()})."
+            )
         # Append to collection and update maps
         self._albums.append(wrapper)
         # Optionally update asset-to-albums map or other structures here if needed
