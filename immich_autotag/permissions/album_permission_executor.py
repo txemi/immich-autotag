@@ -21,7 +21,6 @@ from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
@@ -188,33 +187,25 @@ def _get_current_members(
     """
     log_debug(f"[ALBUM_PERMISSIONS] Fetching current members for album {album_id}")
 
-    client = context.client
-    # `album_id` may be a `str` or a `UUID`. Pass it directly to the client
-    # (the client accepts UUID objects); avoid double-wrapping with `UUID()`.
-    response = get_album_info_by_id(album_id, client)
-
-    if response is None:
-        log_debug(f"[ALBUM_PERMISSIONS] Album {album_id} not found")
-        return []
-
-    current_members = response.album_users or []
-    log_debug(
-        f"[ALBUM_PERMISSIONS] Album {album_id} has {len(current_members)} members"
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
     )
-    if current_members:
+
+    # Try to get the album wrapper from the collection first
+    collection = AlbumCollectionWrapper.get_instance()
+    wrapper = collection.find_album_by_id(album_id)
+    album_members = wrapper.get_album_members()
+    if album_members:
         log_debug(
-            f"[ALBUM_PERMISSIONS] First member attributes: {dir(current_members[0])}"
+            f"[ALBUM_PERMISSIONS] Album {album_id} (from collection) has {len(album_members)} members"
         )
-        try:
-            _ = current_members[0].__dict__
-            has_dict = True
-        except AttributeError:
-            has_dict = False
-        if has_dict:
-            log_debug(
-                f"[ALBUM_PERMISSIONS] First member __dict__: {current_members[0].__dict__}"
-            )
-    return current_members
+
+    # Fallback: call API directly
+
+    log_debug(
+        f"[ALBUM_PERMISSIONS] Album {album_id} (API) has {len(current_members)} members"
+    )
+    return album_members
 
 
 @typechecked
