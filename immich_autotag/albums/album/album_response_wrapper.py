@@ -349,12 +349,8 @@ class AlbumResponseWrapper:
                             pass
                         # Notify the global collection about this album state change
                         try:
-                            from immich_autotag.albums.albums import (
-                                album_collection_wrapper,
-                            )
-
-                            AlbumCollectionWrapper = (
-                                album_collection_wrapper.AlbumCollectionWrapper
+                            from immich_autotag.albums.albums.album_collection_wrapper import (
+                                AlbumCollectionWrapper,
                             )
 
                             AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(
