@@ -376,103 +376,38 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 
 
 ## [0.74.0] - 2026-01-21
-**Status:** 🔖 Pending tag
+**Status:** 🔖 Pending tag  
 **Description:** Major refactors, error handling improvements, YAML config generation, logging/statistics enhancements, and documentation updates.
 
 ### Added
-- YAML configuration generator with comments from Pydantic model descriptions ([issue](docs/issues/0009-config-system-refactor/))
-- Logging of unmatched albums in user configuration ([issue](docs/issues/0016-auto-album-creation/))
-- Enhanced user configuration template: improved skip options and album permissions ([issue](docs/issues/0017-rules-tag-album-combination/))
-- Batch tag/album conversions feature added to README ([issue](docs/issues/0022-batch-tag-album-conversions/))
+- Automatic album creation and assignment (FB-001): Logging of unmatched albums in user configuration ([issue](docs/issues/0016-auto-album-creation/))
+- Rule-based classification engine (FB-002): Enhanced user configuration template: improved skip options and album permissions ([issue](docs/issues/0017-rules-tag-album-combination/))
+- Batch tag/album conversions (FB-009): Batch tag/album conversions feature added to README ([issue](docs/issues/0022-batch-tag-album-conversions/))
+- Modification and statistics logs (FB-007): YAML configuration generator with comments from Pydantic model descriptions ([issue](docs/issues/0009-config-system-refactor/))
 
 ### Changed
-- Major refactor of asset processing, statistics checkpoint, and configuration management for clarity and maintainability ([issue](docs/issues/0008-statistics-checkpoint/))
-- Improved error handling: centralized error handling mode, better error categorization, and type checking ([issue](docs/issues/0019-album-date-consistency-config/))
-- Enhanced previous execution statistics validation and skip_n configuration ([issue](docs/issues/0016-auto-album-creation/))
-- Improved code formatting, import organization, and comments across multiple modules
-- Continuous tagging feature description updated for clarity and scheduling options ([issue](docs/issues/0021-profiling-performance/))
+- Modification and statistics logs (FB-007): Major refactor of asset processing, statistics checkpoint, and configuration management for clarity and maintainability ([issue](docs/issues/0008-statistics-checkpoint/))
+- Automatic date correction (FB-004): Improved error handling: centralized error handling mode, better error categorization, and type checking ([issue](docs/issues/0019-album-date-consistency-config/))
+- Automatic album creation and assignment (FB-001): Enhanced previous execution statistics validation and skip_n configuration ([issue](docs/issues/0016-auto-album-creation/))
+- Modification and statistics logs (FB-007): Improved code formatting, import organization, and comments across multiple modules
+- Continuous or scheduled tagging (FB-008): Continuous tagging feature description updated for clarity and scheduling options ([issue](docs/issues/0021-profiling-performance/))
 
 ### Fixed
-- Multiple bug fixes in YAML handling, error handling, and statistics logging
-- Improved handling of configuration loading errors and validation
-- Fixed missing imports and type annotations in several modules
-- Fixed link formatting in README and removed outdated CI/CD note from CONTRIBUTING.md
+- Modification and statistics logs (FB-007): Multiple bug fixes in YAML handling, error handling, and statistics logging
+- Modification and statistics logs (FB-007): Improved handling of configuration loading errors and validation
+- Modification and statistics logs (FB-007): Fixed missing imports and type annotations in several modules
+- Modification and statistics logs (FB-007): Fixed link formatting in README and removed outdated CI/CD note from CONTRIBUTING.md
 
 ### Documentation
-- Expanded and clarified practical use case steps in README
-- Added link to Functional Blocks Matrix for structured feature overview
-- Updated changelog and roadmap for new features and improvements
+- Modification and statistics logs (FB-007): Expanded and clarified practical use case steps in README
+- Modification and statistics logs (FB-007): Added link to Functional Blocks Matrix for structured feature overview
+- Modification and statistics logs (FB-007): Updated changelog and roadmap for new features and improvements
 
 ### Known issues
-- Performance regression under investigation (see previous release notes)
+- Modification and statistics logs (FB-007): Performance regression under investigation (see previous release notes)
+- Automatic date correction (FB-004): Jenkins test run ended with an Immich API 500 error after 9.5h and 121,700 assets processed (see logs for details)
 
 ### Testing
+- Jenkins pipeline: processed 121,700 assets in 9.5 hours before encountering an Immich API 500 error (see logs for details)
 - All new features and refactors tested on Jenkins with large asset sets
 - All Python code formatted and sorted
-
-## [Planned: Unmatched Albums Report]
-**Description:** Adds a report listing all albums that do not match any user-defined rule, helping users identify albums that may need new rules or manual review.
-### Added
-- Generation of a report with all albums that are not matched by any user rule, making it easier to spot albums that require attention or new classification rules.
-
-## [Planned: Compilation Albums Support]
-**Description:** Adds support for "compilation" albums that can mix existing and newly added photos (for example, third-party or curated compilations). Classification behavior is relaxed for compilations so assets may belong to multiple albums or match multiple rules, while still providing validation warnings when an asset matches no rule.
-### Added
-- Support for "compilation" albums that combine existing and new photos, enabling curated or third-party collections.
-- Relaxed classification rules for compilation albums: assets may belong to multiple albums or match multiple rule sets to reflect overlapping selections.
-- A validation warning is generated when an asset in a compilation does not match any classification rule, helping users identify unclassified items.
-### Changed
-- Classification engine now supports multi-assignment semantics for assets within compilation albums; scoring and precedence logic adjusted to prefer stronger matches while allowing overlaps.
-
-## [Planned: Profiling & CI Performance Reports]
-**Description:** Add CI-integrated profiling and performance reporting so builds produce profiling artifacts and regressions can be detected automatically. See [issue 0021 — Profiling & Performance Reports](docs/issues/0021-profiling-performance/) for the issue details and implementation notes.
-### Added
-- CI jobs to run representative profiling workloads and archive CPU/memory profiles and flamegraphs.
-- Threshold-based regression detection that flags significant slowdowns in representative workloads.
-### Changed
-- CI pipelines updated to include a small profiling step for representative workloads (configuration and thresholds to be defined in the issue linked above).
-
-## [Planned: Code Quality Improvements (Sonar-like)]
-**Description:** Introduce automated static analysis and code-quality gates using SonarQube or similar tools, and apply initial remediation to address the most critical findings.
-### Added
-- CI job configuration to run static analysis (SonarQube / SonarCloud or equivalent) on pull requests and main branches.
-- A baseline report capturing current code quality metrics (bugs, vulnerabilities, code smells, coverage trends) to track improvement over time.
-- Documentation for developers on how to run local scans and interpret Sonar reports (basic onboarding instructions).
-### Changed
-- CI pipeline modified to fail or warn builds based on configurable quality gates (e.g., new blocker issues, decreasing coverage, or rapidly rising hotspot counts).
-- Project structure and packaging adjusted where necessary to enable more accurate analysis (e.g., excluding generated files, adding source roots for analyzers).
-### Fixed / Remediated (initial)
-- Addressed a prioritized subset of Sonar-style findings: high-priority security warnings and stability-related code smells reduced through targeted fixes and tests.
-
-
-## [Planned: Date Correction Improvements]
-**Description:** Planned improvements to date correction logic for edge cases and scenarios not currently handled correctly.
-### Added
-- Enhanced date extraction and correction for problematic or previously unhandled cases.
-
-## [Planned: Album Creation Review]
-**Description:** Planned review and overhaul of the automatic album creation system for better accuracy and flexibility.
-### Added
-- Refactored logic for automatic album creation, improving detection and assignment.
-
-## [Unreleased]
-**Description:** Improvements to the rule engine: more abstract, supports not only regex but also simplified common use cases.
-### Added
-
-- The internal categorization flow has been adapted to fully leverage the new configuration system introduced in v0.25, enabling more versatile categorizations based on multiple tags and flexible album patterns. ([issue](docs/issues/0009-config-system-refactor/))
-- Consolidation of experimental features from version 0.20:
-  - Resume processing from the last processed asset (checkpoint resume) is now stable and enabled by default. ([issue](docs/issues/0008-statistics-checkpoint/))
-  - Creation and assignment of albums based on folders from the file system library is now stable and enabled by default. ([issue](docs/issues/0004-album-detection/))
-
-
-
-## [Planned]
-**Description:** Automatic creation of user permissions and user groups based on the rule engine.
-### Added
-- Automatic assignment of permissions to users according to rules.
-- Creation and management of user groups for advanced access control.
-
-## [1.0] - YYYY-MM-DD
-### Added
-- Robust, uninterrupted processing of large photo sets (tested with 270,000 sample photos). ([issue](docs/issues/0008-statistics-checkpoint/))
-- Considered stable and complete for intensive use.
