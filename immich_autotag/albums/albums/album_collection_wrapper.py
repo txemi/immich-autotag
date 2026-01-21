@@ -277,7 +277,7 @@ class AlbumCollectionWrapper:
 
         def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
             album_id = w.get_album_id()
-            if not isinstance(album_id, str) or not album_id:
+            if not album_id:
                 raise RuntimeError(
                     f"Album missing valid id while writing unavailable summary: {w!r}"
                 )
@@ -285,7 +285,7 @@ class AlbumCollectionWrapper:
 
         for wrapper in self._unavailable.sorted(_unavailable_sort_key):
             album_id = wrapper.get_album_id()
-            if not isinstance(album_id, str) or not album_id:
+            if not album_id:
                 raise RuntimeError(
                     f"Album missing valid id while building summary: {wrapper!r}"
                 )
@@ -535,6 +535,10 @@ class AlbumCollectionWrapper:
                 f"Failed to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). Reason: {err_reason}. Exception: {msg}",
                 level=LogLevel.WARNING,
             )
+            raise RuntimeError(
+                f"Failed to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). Reason: {err_reason}."
+            ) from exc
+        else:
             self.remove_album_local_public(wrapper)
             from immich_autotag.tags.modification_kind import ModificationKind
 
@@ -545,16 +549,6 @@ class AlbumCollectionWrapper:
                 extra={"reason": f"{reason} (FAILED: {err_reason})"},
             )
             return True
-        self.remove_album_local_public(wrapper)
-        from immich_autotag.tags.modification_kind import ModificationKind
-
-        tag_mod_report.add_album_modification(
-            kind=ModificationKind.DELETE_ALBUM,
-            album=wrapper,
-            old_value=wrapper.get_album_name(),
-            extra={"reason": f"{reason} (FAILED: {err_reason})"},
-        )
-        return True
 
     def remove_album_local_public(self, album_wrapper: AlbumResponseWrapper) -> bool:
         """
@@ -593,15 +587,14 @@ class AlbumCollectionWrapper:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
             )
-        if duplicates_collected is not None:
-            duplicates_collected.append(
-                {
-                    "name": name,
-                    "existing_id": existing.get_album_id(),
-                    "incoming_id": incoming_album.get_album_id(),
-                    "note": "duplicate skipped durante carga inicial",
-                }
-            )
+        duplicates_collected.append(
+            {
+                "name": name,
+                "existing_id": existing.get_album_id(),
+                "incoming_id": wrapper.get_album_id(),
+                "note": "duplicate skipped durante carga inicial",
+            }
+        )
         if tag_mod_report is not None:
             from immich_autotag.tags.modification_kind import ModificationKind
 
