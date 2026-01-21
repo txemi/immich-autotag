@@ -268,8 +268,6 @@ class AlbumCollectionWrapper:
         """
         import json
 
-        from immich_autotag.config._internal_types import ErrorHandlingMode
-
         # Import error-mode config so we can decide whether to swallow IO errors
         # Fail-fast: configuration symbols must exist; let ImportError propagate.
         from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
@@ -278,22 +276,18 @@ class AlbumCollectionWrapper:
         summary_items = []
 
         def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
-            # Intent: return a stable string key for sorting. If the album has
-            # no id (None) we treat that as an error and raise so it is fixed.
             album_id = w.get_album_id()
-            if album_id is None:
+            if not isinstance(album_id, str) or not album_id:
                 raise RuntimeError(
-                    f"Album missing id while writing unavailable summary: {w!r}"
+                    f"Album missing valid id while writing unavailable summary: {w!r}"
                 )
-            return str(album_id)
+            return album_id
 
-        # Build summary; allow failures to surface (fail-fast on bad album data)
         for wrapper in self._unavailable.sorted(_unavailable_sort_key):
-            # These calls should not silently fail; surface issues to operator/dev.
             album_id = wrapper.get_album_id()
-            if album_id is None:
+            if not isinstance(album_id, str) or not album_id:
                 raise RuntimeError(
-                    f"Album missing id while building summary: {wrapper!r}"
+                    f"Album missing valid id while building summary: {wrapper!r}"
                 )
             name = wrapper.get_album_name()
             summary_items.append({"id": album_id, "name": name})
@@ -308,15 +302,13 @@ class AlbumCollectionWrapper:
                     {"count": len(summary_items), "albums": summary_items}, fh, indent=2
                 )
         except Exception:
-            # In DEVELOPMENT we want to see IO problems; in PRODUCTION we
-            # swallow write errors to avoid crashing the run.
-            if DEFAULT_ERROR_MODE is not None and ErrorHandlingMode is not None:
-                if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+            # In DEVELOPMENT we want to see IO problems; in PRODUCTION se traga el error
+            try:
+                if DEFAULT_ERROR_MODE.name == "DEVELOPMENT":
                     raise
-                # else: swallow in production
-            else:
-                # If we couldn't determine error mode, be conservative and raise
+            except AttributeError:
                 raise
+            # else: swallow in production
 
     @typechecked
     def _evaluate_global_policy(self) -> None:
