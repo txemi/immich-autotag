@@ -135,7 +135,7 @@ class AlbumResponseWrapper:
         )
 
         collection = AlbumCollectionWrapper.get_instance()
-        same_name_albums = list(collection.albums_with_name(self.get_album_name()))
+        same_name_albums = list(collection.find_all_albums_with_name(self.get_album_name()))
         album_ids = [a.get_album_id() for a in same_name_albums]
         if self.get_album_id() not in album_ids:
             raise RuntimeError(
