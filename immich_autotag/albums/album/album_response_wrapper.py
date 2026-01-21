@@ -39,6 +39,7 @@ class AlbumResponseWrapper:
 
 
 
+
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -92,7 +93,22 @@ class AlbumResponseWrapper:
             return hash(self.get_album_id())
         except Exception:
             return object.__hash__(self)
-
+    @typechecked
+    def is_duplicate_album(self) -> bool:
+        """
+        Returns True if this album is a duplicate album (i.e., there is more than one album with the same name in the collection).
+        This uses the AlbumCollectionWrapper singleton to ensure consistent duplicate detection.
+        Raises if the current album is not found among the albums with the same name (should never happen in normal operation).
+        """
+        from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+        collection = AlbumCollectionWrapper.get_instance()
+        same_name_albums = list(collection.albums_with_name(self.get_album_name()))
+        album_ids = [a.get_album_id() for a in same_name_albums]
+        if self.get_album_id() not in album_ids:
+            raise RuntimeError(
+                f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' not found among albums with the same name: {album_ids}"
+            )
+        return len(same_name_albums) > 1
     @staticmethod
     @typechecked
     def get_default_client() -> ImmichClient:
@@ -602,6 +618,13 @@ class AlbumResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
         from immich_autotag.tags.modification_kind import ModificationKind
+
+
+        # Enforce safety: only allow removal from temporary or duplicate albums
+        if not (self.is_temporary_album() or self.is_duplicate_album()):
+            raise RuntimeError(
+                f"Refusing to remove asset from album '{self.get_album_name()}' (id={self.get_album_id()}): not a temporary or duplicate album."
+            )
 
         # Check if asset is in album first (use has_asset_wrapper for clarity)
         if not self.has_asset_wrapper(asset_wrapper):
