@@ -544,7 +544,11 @@ class AlbumResponseWrapper:
                                 "asset_url": asset_url,
                                 "album_url": album_url,
                                 "reason": "Stale cached album data detected and reloaded",
-                                "details": f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
+                                "details": (
+                                    f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\n"
+                                    f"Asset link: {asset_url}\n"
+                                    f"Album link: {album_url}"
+                                ),
                             },
                         )
                     else:

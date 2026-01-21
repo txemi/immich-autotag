@@ -134,7 +134,7 @@ class AlbumCollectionWrapper:
         Removes an album from the internal collection and updates the map incrementally. Returns True if removed, False if not present.
         """
         if album_wrapper in self._albums:
-            self.set_albums([a for a in self._albums if a != album_wrapper])
+            self.set_albums(AlbumList([a for a in self._albums if a != album_wrapper]))
             self._remove_album_from_map(album_wrapper)
             return True
         return False
@@ -246,7 +246,9 @@ class AlbumCollectionWrapper:
         """
         for w in self.get_albums():
             if w.get_album_name() == album_name:
-                self._handle_duplicate_album_conflict(w, context="ensure_unique")
+                self._handle_duplicate_album_conflict(
+                    incoming_album=w, existing_album=w, context="ensure_unique"
+                )
                 return
 
     @typechecked
@@ -571,7 +573,7 @@ class AlbumCollectionWrapper:
         existing: AlbumResponseWrapper,
         incoming_album: AlbumResponseWrapper,
         tag_mod_report: ModificationReport,
-        duplicates_collected: list[dict],
+        duplicates_collected: list[dict[str, object]],
         name: str,
     ) -> None:
         """
@@ -585,8 +587,12 @@ class AlbumCollectionWrapper:
         )
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            # Centralizes handling in the unified method
-            self._handle_duplicate_album_conflict(existing, context="duplicate_on_load")
+            # Centralizes handling en el método unificado
+            self._handle_duplicate_album_conflict(
+                incoming_album=incoming_album,
+                existing_album=existing,
+                context="duplicate_on_load",
+            )
         elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
@@ -596,8 +602,8 @@ class AlbumCollectionWrapper:
                 {
                     "name": name,
                     "existing_id": existing.get_album_id(),
-                    "incoming_id": wrapper.get_album_id(),
-                    "note": "duplicate skipped during initial load",
+                    "incoming_id": incoming_album.get_album_id(),
+                    "note": "duplicate skipped durante carga inicial",
                 }
             )
         if tag_mod_report is not None:
@@ -609,7 +615,7 @@ class AlbumCollectionWrapper:
                 error_category="DUPLICATE_ALBUM",
                 extra={
                     "existing_id": existing.get_album_id(),
-                    "incoming_id": wrapper.get_album_id(),
+                    "incoming_id": incoming_album.get_album_id(),
                 },
             )
         return
@@ -632,7 +638,7 @@ class AlbumCollectionWrapper:
         during runtime album creation.
         """
         name = wrapper.get_album_name()
-        for existing in albums_list:
+        for existing in list(albums_list):
             try:
                 if existing.get_album_name() == name:
                     # Temporary duplicate
@@ -647,7 +653,7 @@ class AlbumCollectionWrapper:
                     # Non-temporary duplicate
                     self._handle_non_temporary_duplicate(
                         existing=existing,
-                        wrapper=wrapper,
+                        incoming_album=wrapper,
                         tag_mod_report=tag_mod_report,
                         duplicates_collected=duplicates_collected,
                         name=name,
@@ -724,14 +730,7 @@ class AlbumCollectionWrapper:
 
         return self.albums_for_asset(asset_wrapper)
 
-    @typechecked
-    def albums_with_name(self, album_name: str):
-        """
-        Returns a generator of AlbumResponseWrapper for all albums with the given name.
-        """
-        for album_wrapper in self.get_albums():
-            if album_wrapper.get_album_name() == album_name:
-                yield album_wrapper
+    # Método duplicado albums_with_name eliminado
 
     # remove_album deleted: use delete_album and _remove_album_from_local_collection
     @typechecked
@@ -873,10 +872,8 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.utils import log
 
         log("Albums:", level=LogLevel.INFO)
-        seen_names: set[str] = set()
-
         # Create the empty collection
-        collection = cls(albums=AlbumList([]))
+        collection = cls(_albums=AlbumList([]))
 
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
