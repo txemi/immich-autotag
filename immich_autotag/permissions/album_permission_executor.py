@@ -130,8 +130,8 @@ def sync_album_permissions(
 
     # Get current members from API (pass UUID directly)
     current_members = _get_current_members(album_uuid, context)
-    current_user_ids = {str(member.user.id) for member in current_members}
 
+    current_user_ids = {str(member.user.id) for member in current_members}
     # Calculate diff
     users_to_add = target_user_ids - current_user_ids
     users_to_remove = current_user_ids - target_user_ids
