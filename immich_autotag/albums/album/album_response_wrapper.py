@@ -474,7 +474,7 @@ class AlbumResponseWrapper:
     def trim_name_if_needed(
         self,
         client: ImmichClient,
-        tag_mod_report: "ModificationReport | None" = None,
+        tag_mod_report: "ModificationReport",
     ) -> None:
         album_name = self.get_album_name()
         if album_name.startswith(" "):
@@ -506,9 +506,7 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
         from urllib.parse import urlparse
-
-        from immich_autotag.config.internal_config import get_immich_web_base_url
-
+        from immich_autotag.config.host_config import get_immich_web_base_url
         url = f"{get_immich_web_base_url()}/albums/{self.get_album_id()}"
         return urlparse(url)
 
@@ -867,7 +865,7 @@ class AlbumResponseWrapper:
     def from_id(
         client: ImmichClient,
         album_id: UUID,
-        tag_mod_report: ModificationReport | None = None,
+        tag_mod_report: ModificationReport,
     ) -> "AlbumResponseWrapper":
         """
         Gets an album by ID, wraps it, and trims the name if necessary.
@@ -888,7 +886,6 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def from_partial_dto(
         dto: AlbumResponseDto,
-        tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
         Create an AlbumResponseWrapper from a partial DTO.
@@ -896,9 +893,14 @@ class AlbumResponseWrapper:
         The wrapper will store the provided DTO as `_album_partial` and
         will not populate the full cache. Callers must explicitly request
         loading the full DTO via `ensure_full`/`reload_from_api`.
+
+        # NOTE: _album_partial is a private attribute, but is intentionally exposed as a kw_only argument
+        # for factory construction. This is by design to allow explicit control over DTO representation.
+        # Some type checkers may warn about passing a private attribute to the constructor; this is safe here.
+        # type: ignore[call-arg]
         """
         # Use kw_only to ensure correct field assignment
-        wrapper = AlbumResponseWrapper(album_partial=dto)
+        wrapper = AlbumResponseWrapper(_album_partial=dto)  # type: ignore
         return wrapper
 
     @staticmethod
@@ -945,15 +947,3 @@ class AlbumResponseWrapper:
 
         return wrapper
 
-    @staticmethod
-    def from_dto(*_args, **_kwargs) -> "AlbumResponseWrapper":
-        """
-        Ambiguous constructor intentionally removed. Use `from_partial_dto`
-        or `from_full_dto` to make representation explicit.
-        """
-        raise RuntimeError(
-            (
-                "Use AlbumResponseWrapper.from_partial_dto or from_full_dto; "
-                "from_dto is ambiguous"
-            )
-        )
