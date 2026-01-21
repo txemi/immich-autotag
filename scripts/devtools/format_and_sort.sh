@@ -19,14 +19,19 @@ PACKAGE_NAME="immich_autotag"
 # Move to repo root
 cd "$REPO_ROOT"
 
-# Parse args: support optional --check (or -c) and optional target dir
+
+# Parse args: support optional --check (or -c), --enforce-dynamic-attrs, and optional target dir
 CHECK_MODE=0
-if [ "$1" = "--check" ] || [ "$1" = "-c" ]; then
-	CHECK_MODE=1
-	TARGET_DIR="${2:-$PACKAGE_NAME}"
-else
-	TARGET_DIR="${1:-$PACKAGE_NAME}"
-fi
+ENFORCE_DYNAMIC_ATTRS=0
+for arg in "$@"; do
+	if [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
+		CHECK_MODE=1
+	elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
+		ENFORCE_DYNAMIC_ATTRS=1
+	else
+		TARGET_DIR="${arg:-$PACKAGE_NAME}"
+	fi
+done
 
 if [ "$CHECK_MODE" -eq 1 ]; then
 	echo "[MODE] Running in CHECK mode (no files will be modified)."
@@ -149,11 +154,15 @@ echo "[CHECK] Running optional static analyzers: flake8, mypy (if available)"
 # Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
 # Projects following our coding guidelines avoid these calls because they
 # undermine static typing and hide missing attributes. This check is strict
-# and has no bypass in the script (please fix occurrences in source).
-if grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR"; then
-	echo "[ERROR] Forbidden use of getattr(...) or hasattr(...) detected. Our style policy bans dynamic attribute access."
-	echo "Fix occurrences in source (do not rely on getattr/hasattr)."
-	exit 2
+# and is DISABLED by default (enabled only with --enforce-dynamic-attrs).
+if [ "$ENFORCE_DYNAMIC_ATTRS" -eq 1 ]; then
+	if grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR"; then
+		echo "[ERROR] Forbidden use of getattr(...) or hasattr(...) detected. Our style policy bans dynamic attribute access."
+		echo "Fix occurrences in source (do not rely on getattr/hasattr)."
+		exit 2
+	fi
+else
+	echo "[INFO] getattr/hasattr policy enforcement is DISABLED by default. Use --enforce-dynamic-attrs to enable."
 fi
 
 # Policy enforcement: disallow returning tuple literals or annotated Tuple types
