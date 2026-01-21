@@ -213,7 +213,7 @@ class ModificationReport:
         # Centraliza el log aquí si corresponde
         from immich_autotag.logging.utils import log
 
-        level = kind.log_level
+        level = kind.value.log_level
         # Mensajes por tipo
         if kind == ModificationKind.DELETE_ALBUM:
             msg = f"[DELETE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_id()}) deleted. Reason: {extra.get('reason') if extra else ''}"
@@ -313,7 +313,7 @@ class ModificationReport:
         groups: Optional[list[str]] = None,
         members: Optional[list[str]] = None,
         access_level: Optional[str] = None,
-        extra: Optional[dict] = None,
+        extra: Optional[dict[str, object]] = None,
     ) -> None:
         """Records album permission events (detection, sharing, failures).
 
