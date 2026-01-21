@@ -225,7 +225,7 @@ def _get_current_members(
 
 
 @typechecked
-def _add_members_to_album(
+def add_members_to_album(
     album_id: str,
     album_name: str,
     user_ids: List[str],
