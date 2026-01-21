@@ -255,17 +255,15 @@ class AlbumResponseWrapper:
     def reload_from_api(self, client: ImmichClient) -> None:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client import errors as immich_errors
-        from immich_client.api.albums import get_album_info
 
         from immich_autotag.albums.albums.album_api_exception_info import (
             AlbumApiExceptionInfo,
         )
+        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
 
         album_dto = None
         try:
-            album_dto = get_album_info.sync(
-                id=self.get_album_uuid_no_cache(), client=client
-            )
+            album_dto = get_album_info_by_id(self.get_album_uuid_no_cache(), client)
         except immich_errors.UnexpectedStatus as exc:
             api_exc = AlbumApiExceptionInfo(exc)
             partial = self._build_partial_repr()
@@ -820,9 +818,9 @@ class AlbumResponseWrapper:
         Gets an album by ID, wraps it, and trims the name if necessary.
         """
 
-        from immich_client.api.albums import get_album_info
+        from immich_autotag.albums.albums.album_api_utils import get_album_info_by_id
 
-        album_full = get_album_info.sync(id=album_id, client=client)
+        album_full = get_album_info_by_id(album_id, client)
         if album_full is None:
             raise RuntimeError(f"get_album_info returned no album for id={album_id}")
         wrapper = AlbumResponseWrapper.from_full_dto(
@@ -846,7 +844,7 @@ class AlbumResponseWrapper:
         # NOTE: _album_partial is a private attribute, but is intentionally exposed as a kw_only argument
         # for factory construction. This is by design to allow explicit control over DTO representation.
         # Some type checkers may warn about passing a private attribute to the constructor; this is safe here.
-        # """
+        #"""
 
         wrapper = AlbumResponseWrapper(album_partial=dto)
         return wrapper

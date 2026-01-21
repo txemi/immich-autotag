@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Dict, List
 from uuid import UUID
 
 from immich_client.api.albums import add_users_to_album as immich_add_users_to_album
-from immich_client.api.albums import get_album_info as immich_get_album_info
 from immich_client.api.albums import (
     remove_user_from_album as immich_remove_user_from_album,
 )
@@ -22,6 +21,7 @@ from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
+from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
@@ -191,10 +191,7 @@ def _get_current_members(
     client = context.client
     # `album_id` may be a `str` or a `UUID`. Pass it directly to the client
     # (the client accepts UUID objects); avoid double-wrapping with `UUID()`.
-    response = immich_get_album_info.sync(
-        id=album_id,
-        client=client,
-    )
+    response = get_album_info_by_id(album_id, client)
 
     if response is None:
         log_debug(f"[ALBUM_PERMISSIONS] Album {album_id} not found")
