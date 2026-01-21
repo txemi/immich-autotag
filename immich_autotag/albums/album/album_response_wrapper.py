@@ -1,17 +1,13 @@
 from __future__ import annotations
 
+import attrs
 
-@attrs.define(auto_attribs=True, slots=True)
-class AlbumPartialRepr:
-    album_name: str | None
-    partial_repr: str
 
 
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
 
-import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
@@ -30,6 +26,11 @@ if TYPE_CHECKING:
 
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+
+@attrs.define(auto_attribs=True, slots=True)
+class AlbumPartialRepr:
+    album_name: str | None
+    partial_repr: str
 
 
 class AssetAlreadyInAlbumError(Exception):
