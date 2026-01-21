@@ -1,0 +1,20 @@
+immich_autotag/assets/asset_response_wrapper.py:691: Function 'validate_and_update_classification' has a Tuple/tuple return annotation
+immich_autotag/assets/asset_response_wrapper.py:717: Function 'validate_and_update_classification' returns a tuple literal
+immich_autotag/classification/match_classification_result.py:33: Function 'from_match_result_list' returns a tuple literal
+immich_autotag/config/internal_config.py:13: Function '_get_host_and_port' has a Tuple/tuple return annotation
+immich_autotag/config/internal_config.py:22: Function '_get_host_and_port' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:57: Function 'categorize_error' has a Tuple/tuple return annotation
+immich_autotag/errors/recoverable_error.py:106: Function 'categorize_error' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:71: Function 'categorize_error' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:78: Function 'categorize_error' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:82: Function 'categorize_error' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:86: Function 'categorize_error' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:93: Function 'categorize_error' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:99: Function 'categorize_error' returns a tuple literal
+immich_autotag/errors/recoverable_error.py:103: Function 'categorize_error' returns a tuple literal
+immich_autotag/permissions/album_permission_executor.py:37: Function '_resolve_emails_to_user_ids' has a Tuple/tuple return annotation
+immich_autotag/permissions/album_permission_executor.py:87: Function '_resolve_emails_to_user_ids' returns a tuple literal
+immich_autotag/permissions/album_permission_executor.py:51: Function '_resolve_emails_to_user_ids' returns a tuple literal
+immich_autotag/utils/perf/estimate_utils.py:7: Function 'adjust_estimates' has a Tuple/tuple return annotation
+immich_autotag/utils/perf/estimate_utils.py:21: Function 'adjust_estimates' returns a tuple literal
+Found 19 tuple-related style issues. Please replace tuples with typed classes/dataclasses or explicit types.

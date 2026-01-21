@@ -801,7 +801,8 @@ class AlbumCollectionWrapper:
         context = ImmichContext.get_instance()
         user_wrapper = UserResponseWrapper.from_context(context)
         user_id = user_wrapper.uuid
-        owner_id = UUID(album.owner_id)
+        wrapper = AlbumResponseWrapper.from_partial_dto(album)
+        owner_id = wrapper.owner_uuid
         if user_id != owner_id:
             try:
                 add_users_to_album.sync(
