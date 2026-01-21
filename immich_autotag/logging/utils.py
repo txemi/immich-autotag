@@ -10,13 +10,17 @@ from .levels import LogLevel
 # Register the FOCUS level ALWAYS before any setup_logging
 
 
-def register_focus_level():
-    # Register the custom 'FOCUS' level if it does not exist
-    if not any(name == "FOCUS" for name in logging._nameToLevel):
-        logging.addLevelName(15, "FOCUS")
 
+def register_custom_log_levels():
+    """
+    Register all custom (non-standard) log levels defined in LogLevel.
+    This avoids hardcoding which levels are custom; instead, each LogLevel knows if it is custom.
+    """
+    for level in LogLevel:
+        if level.is_custom and level.name not in logging._nameToLevel:
+            logging.addLevelName(level.value, level.name)
 
-register_focus_level()
+register_custom_log_levels()
 
 
 @typechecked
