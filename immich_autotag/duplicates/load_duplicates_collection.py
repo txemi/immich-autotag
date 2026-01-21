@@ -9,6 +9,7 @@ from immich_autotag.duplicates._load_cache import load_cache
 from immich_autotag.duplicates.duplicate_collection_wrapper import (
     DuplicateCollectionWrapper,
 )
+from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
 from immich_autotag.types import ImmichClient
 from immich_autotag.utils.run_output_dir import get_run_output_dir
@@ -52,7 +53,8 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
         )
         # Save the cache in the current execution directory.
         # Avoid writing extremely large caches in CI or when the collection is huge.
-        cache_path = get_run_output_dir() / "duplicates_cache.pkl"
+        cache_file = DuplicatesCacheFile(directory=get_run_output_dir())
+        cache_path = cache_file.path
         import pickle
 
         try:
@@ -67,8 +69,10 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
             total_assets = -1
 
         # Thresholds (tunable): if exceeded, skip writing the full pickle to avoid huge files.
-        GROUPS_THRESHOLD = 5000
-        ASSETS_THRESHOLD = 100000
+        # Thresholds (tunable): if exceeded, skip writing the full pickle to avoid huge files.
+        # Increased thresholds to ensure cache is written for typical user libraries
+        GROUPS_THRESHOLD = 500000
+        ASSETS_THRESHOLD = 1000000
 
         if (0 <= total_groups <= GROUPS_THRESHOLD) and (
             0 <= total_assets <= ASSETS_THRESHOLD

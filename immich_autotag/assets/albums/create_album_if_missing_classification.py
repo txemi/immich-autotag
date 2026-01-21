@@ -69,15 +69,14 @@ def create_album_if_missing_classification(
 
     # Assign asset to album using existing logic (creates if needed)
     from immich_autotag.assets.albums._process_album_detection import (
-        _process_album_detection,
+        process_album_detection,
     )
 
-    _process_album_detection(
+    process_album_detection(
         asset_wrapper,
         tag_mod_report,
         album_name,
         album_origin="auto-created",
-        suppress_album_already_belongs_log=False,
     )
     return album_name
 

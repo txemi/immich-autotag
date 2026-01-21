@@ -34,9 +34,30 @@ else
 	echo "[MODE] Running in APPLY mode (formatters may modify files)."
 fi
 
+
+
+
+# ---- Synchronized line length ----
+# Screen line length is extracted from pyproject.toml so that all tools use the same source of truth.
+extract_line_length() {
+	grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
+}
+# IMPORTANT NOTE ABOUT max-line-length AND FLAKE8:
+# ------------------------------------------------
+# The line-length value is extracted from pyproject.toml and used for Black, isort, ruff, and flake8.
+# However, flake8 does not read pyproject.toml by itself: if you run flake8 manually, it will use the value from .flake8.
+# If you use this script, the value is passed to flake8 as an argument and everything stays in sync.
+# There is only a risk of desynchronization if you edit pyproject.toml and .flake8 separately and run flake8 manually.
+
+MAX_LINE_LENGTH=$(extract_line_length "$REPO_ROOT/pyproject.toml")
+if [ -z "$MAX_LINE_LENGTH" ]; then
+	echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default."
+	MAX_LINE_LENGTH=88
+fi
+
 # Robust exclusions to avoid formatting .venv and other external directories
-BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts"
-ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts"
+BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --line-length $MAX_LINE_LENGTH"
+ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --line-length $MAX_LINE_LENGTH"
 
 # Activate project virtual environment robustly
 VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
@@ -55,8 +76,8 @@ else
 fi
 
 
-# Chequeo de sintaxis e indentación en todos los .py del paquete
-echo "Comprobando errores de sintaxis e indentación..."
+# Syntax and indentation check on all .py files in the package
+echo "Checking for syntax and indentation errors..."
 echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
 if ! "$PY_BIN" -m compileall -q "$TARGET_DIR" ; then
 	echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
@@ -142,9 +163,12 @@ echo "[CHECK] Disallow tuple returns and tuple-typed class members (project poli
     exit 3;
 }
 
+
+
+# Flake8: use the same synchronized line length
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
-"$PY_BIN" -m flake8 --max-line-length=88 --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
+"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
 
 ensure_tool mypy mypy
 MYPY_FAILED=0

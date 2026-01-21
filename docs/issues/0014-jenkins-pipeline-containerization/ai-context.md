@@ -9,10 +9,10 @@
 ## 🧠 Problem Analysis
 
 ### User's Pain Points
-- **"Mogollón de líos con las librerías":** Dependency management is a recurring issue
-- **"Que si Python, que si la madre que lo parió":** Version conflicts are frustrating
-- **"Siempre empiece del mismo punto":** Need deterministic, reproducible environment
-- **"No volvernos locos con errores extraños":** Want predictable CI behavior
+- **"A ton of mess with libraries":** Dependency management is a recurring issue
+- **"This Python thing and its endless trouble":** Version conflicts are frustrating
+- **"Always start from the same point":** Need deterministic, reproducible environment
+- **"Not go crazy with strange errors":** Want predictable CI behavior
 
 ### Root Cause
 Current setup relies on:

@@ -22,15 +22,15 @@ from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
+from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.modification_kind import ModificationKind
 
 if TYPE_CHECKING:
-    from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 import attrs
 
@@ -212,7 +212,12 @@ def _get_current_members(
         log_debug(
             f"[ALBUM_PERMISSIONS] First member attributes: {dir(current_members[0])}"
         )
-        if hasattr(current_members[0], "__dict__"):
+        try:
+            _ = current_members[0].__dict__
+            has_dict = True
+        except AttributeError:
+            has_dict = False
+        if has_dict:
             log_debug(
                 f"[ALBUM_PERMISSIONS] First member __dict__: {current_members[0].__dict__}"
             )

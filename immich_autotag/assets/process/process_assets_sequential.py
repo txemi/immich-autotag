@@ -30,12 +30,15 @@ def process_assets_sequential(
     cm = ConfigManager.get_instance()
     assert isinstance(cm, ConfigManager)
 
-    # Determinar skip_n: si resume_previous está activo, consultar estadísticas; si no, usar config
-    if cm.config.skip.resume_previous:
-        skip_n_stats = get_previous_skip_n()
-        skip_n = skip_n_stats if skip_n_stats is not None else cm.config.skip.skip_n
+    # Determine skip_n: check for config and skip attribute
+    if cm.config is not None and cm.config.skip is not None:
+        if cm.config.skip.resume_previous:
+            skip_n_stats = get_previous_skip_n()
+            skip_n = skip_n_stats if skip_n_stats is not None else cm.config.skip.skip_n
+        else:
+            skip_n = cm.config.skip.skip_n
     else:
-        skip_n = cm.config.skip.skip_n
+        skip_n = 0
     max_assets = stats.max_assets
     count = 0
     error_mode = DEFAULT_ERROR_MODE
@@ -43,24 +46,26 @@ def process_assets_sequential(
         for asset_wrapper in context.asset_manager.iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
         ):
-            log_debug(
-                f"[BUG] Processing asset: {getattr(asset_wrapper, 'id', asset_wrapper)}"
-            )
+            asset_id = asset_wrapper.id
+            log_debug(f"[BUG] Processing asset: {asset_id}")
             t0 = time.time()
 
             try:
                 process_single_asset(asset_wrapper)
             except Exception as e:
                 # Categorize the error as recoverable or fatal
-                is_recoverable, category = categorize_error(e)
+                categorized = categorize_error(e)
+                is_recoverable = categorized.is_recoverable
+                category = categorized.category_name
 
                 # Si es recuperable, o no es recuperable pero estamos en modo BATCH, tratamos igual
                 if is_recoverable or error_mode == ErrorHandlingMode.USER:
                     import traceback
 
                     tb = traceback.format_exc()
+                    asset_id = asset_wrapper.uuid
                     log(
-                        f"[WARN] {category} - Skipping asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
+                        f"[WARN] {category} - Skipping asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
                     from immich_autotag.tags.modification_kind import ModificationKind
@@ -85,14 +90,16 @@ def process_assets_sequential(
                     import traceback
 
                     tb = traceback.format_exc()
+                    asset_id = asset_wrapper.id
                     log(
-                        f"[ERROR] {category} - Aborting at asset {getattr(asset_wrapper, 'id', '?')}: {e}\nTraceback:\n{tb}",
+                        f"[ERROR] {category} - Aborting at asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
                     raise
 
+            asset_id = asset_wrapper.uuid
             log(
-                f"Iteration completed for asset: {getattr(asset_wrapper, 'id', asset_wrapper)}",
+                f"Iteration completed for asset: {asset_id}",
                 level=LogLevel.DEBUG,
             )
             count += 1

@@ -1,18 +1,21 @@
 """
 Album Policy Resolver
 
-Resolves which user groups should have access to an album based on:
-1. Album name keyword matching
-2. Configured selection rules
-3. User group definitions
+This module provides logic for resolving which user groups and members should have access to an album, based on album name keyword matching, configured selection rules, and user group definitions.
 
-SYNCHRONIZATION POLICY (IMPORTANT):
-- Configuration is the source of truth for album permissions
-- Phase 1: Detection & logging only (no API calls)
-- Phase 2: Complete synchronization - only configured members will have access
-  * Members in config but not in album → ADDED
-  * Members in album but not in config → REMOVED
-  * This prevents accidental orphaned permissions when configuration changes
+Responsibility:
+        - Centralizes all logic for album permission assignment and synchronization.
+        - Ensures configuration is the source of truth for album permissions.
+        - Supports dry-run (detection & logging) and full synchronization modes.
+        - Prevents orphaned or stale permissions by enforcing config-driven membership.
+        - Should be the only place in the codebase that determines album access policy.
+
+Synchronization Policy (IMPORTANT):
+        - Phase 1: Detection & logging only (no API calls)
+        - Phase 2: Complete synchronization - only configured members will have access
+                * Members in config but not in album → ADDED
+                * Members in album but not in config → REMOVED
+                * This prevents accidental orphaned permissions when configuration changes
 
 Admin users (system operators) should not appear in member lists to avoid accidental removal.
 """
@@ -20,31 +23,44 @@ Admin users (system operators) should not appear in member lists to avoid accide
 import re
 from typing import Dict, List, Optional
 
+import attrs
+
 from immich_autotag.config.models import (
     AlbumSelectionRule,
     UserGroup,
 )
 
 
+@attrs.define(auto_attribs=True, slots=True)
 class ResolvedAlbumPolicy:
-    """Result of resolving an album's permission policy."""
+    """
+    Result of resolving an album's permission policy.
 
-    def __init__(
-        self,
-        album_name: str,
-        album_id: str,
-        matched_rules: List[str],
-        groups: List[str],
-        members: List[str],
-        access_level: str,
-    ):
-        self.album_name = album_name
-        self.album_id = album_id
-        self.matched_rules = matched_rules  # Rule names that matched
-        self.groups = groups  # Group names
-        self.members = members  # Actual member emails
-        self.access_level = access_level
-        self.has_match = len(matched_rules) > 0
+    Attributes:
+        album_name: Name of the album being resolved.
+        album_id: Unique identifier for the album.
+        matched_rules: List of rule names that matched this album.
+        groups: List of group names that should have access.
+        members: List of member emails/user IDs that should have access.
+        access_level: Permission level (e.g., 'view', 'edit', 'admin').
+        has_match: True if any rule matched, False otherwise.
+
+    Responsibility:
+        - Encapsulates the result of permission resolution for a single album.
+        - Used as the source of truth for permission synchronization and reporting.
+        - Provides a string representation for logging and debugging.
+    """
+
+    album_name: str = attrs.field(validator=attrs.validators.instance_of(str))
+    album_id: str = attrs.field(validator=attrs.validators.instance_of(str))
+    matched_rules: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    groups: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    members: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    access_level: str = attrs.field(validator=attrs.validators.instance_of(str))
+    has_match: bool = attrs.field(init=False)
+
+    def __attrs_post_init__(self):
+        self.has_match = len(self.matched_rules) > 0
 
     def __str__(self) -> str:
         if not self.has_match:

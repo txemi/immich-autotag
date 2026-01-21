@@ -1,67 +1,67 @@
-# Localización EXACTA del Código de Permisos
+# EXACT Code Location for Permissions
 
-## PONER PERMISOS (Cuando se crea un álbum)
+## SET PERMISSIONS (When an album is created)
 
-### Archivo: `immich_autotag/albums/album_collection_wrapper.py`
+### File: `immich_autotag/albums/album_collection_wrapper.py`
 
 ```
-LÍNEA  CÓDIGO
+LINE   CODE
 ────────────────────────────────────────────────────────────────
- 92    from immich_client.api.albums import add_users_to_album, ← AQUÍ se importa
- 92    create_album                                              la función para PONER
+ 92    from immich_client.api.albums import add_users_to_album, ← HERE it is imported
+ 92    create_album                                              the function to SET
 
- 99    def find_or_create_album(                                ← FUNCIÓN que PONE permisos
+ 99    def find_or_create_album(                                ← FUNCTION that SETS permissions
  99        self, ...)
 
-113    add_users_to_album.sync(                                ← AQUÍ es donde se PONE
-       id=album.id,                                             el permiso (REAL)
+ 113   add_users_to_album.sync(                                ← HERE is where it is SET
+       id=album.id,                                             the (REAL) permission
        client=client,
        body=AddUsersDto(
            album_users=[
                AlbumUserAddDto(
                    user_id=user_id,
-                   role=AlbumUserRole.EDITOR    ← EDITOR = lectura + edición
+                   role=AlbumUserRole.EDITOR    ← EDITOR = read + edit
                )
            ]
        ),
     )
 ```
 
-**¿Qué hace?**
-1. Crea un álbum nuevo
-2. Obtiene el ID del usuario actual
-3. Llama a `add_users_to_album.sync()` 
-4. Añade el usuario como EDITOR
+**What does it do?**
+1. Creates a new album
+2. Gets the current user ID
+3. Calls `add_users_to_album.sync()` 
+4. Adds the user as EDITOR
 
-**¿Cuándo se ejecuta?**
-- Al crear un álbum nuevo en Immich
+**When is it executed?**
+- When creating a new album in Immich
 
 ---
 
-## QUITAR PERMISOS (NO EXISTE AÚN)
+## REMOVE PERMISSIONS (DOES NOT EXIST YET)
 
-### Debería ir en: `immich_autotag/permissions/` (Phase 2)
+### Should go in: `immich_autotag/permissions/` (Phase 2)
 
-**Implementación futura sería:**
+**Future implementation would be:**
 
 ```python
-# immich_autotag/permissions/album_permission_executor.py (NUEVO)
+# immich_autotag/permissions/album_permission_executor.py (NEW)
 
 from immich_client.api.albums import remove_user_from_album
 
 def sync_album_permissions(client, album, resolved_policy):
-    """Sincroniza permisos completos del álbum."""
+    """Synchronizes full album permissions."""
     
-    # 1. Obtener usuarios actuales
+    # 1. Get current users
     current_users = get_album_members(client, album.id)  # API call
     
-    # 2. Comparar
+    # 2. Compare
     to_add = set(resolved_policy.members) - set(current_users)
     to_remove = set(current_users) - set(resolved_policy.members)
     
-    # 3. AÑADIR nuevos
+    # 3. ADD new ones
     for user_email in to_add:
-        add_users_to_album.sync(                         ← YA EXISTE
+        add_users_to_album.sync(                         ← ALREADY EXISTS
             id=album.id,
             client=client,
             body=AddUsersDto(
@@ -72,9 +72,9 @@ def sync_album_permissions(client, album, resolved_policy):
             kind=ModificationKind.ALBUM_PERMISSION_SHARED
         )
     
-    # 4. QUITAR antiguos  ← NECESITA IMPLEMENTARSE
+    # 4. REMOVE old ones  ← NEEDS TO BE IMPLEMENTED
     for user_id in to_remove:
-        remove_user_from_album.sync(                     ← TODAVÍA NO EXISTE
+        remove_user_from_album.sync(                     ← DOES NOT EXIST YET
             id=album.id,
             user_id=user_id,
             client=client
@@ -86,98 +86,98 @@ def sync_album_permissions(client, album, resolved_policy):
 
 ---
 
-## FLUJO ACTUAL (Phase 1)
+## CURRENT FLOW (Phase 1)
 
-### Archivo: `immich_autotag/entrypoint.py`
+### File: `immich_autotag/entrypoint.py`
 
 ```
-LÍNEA  CÓDIGO
+LINE   CODE
 ────────────────────────────────────────────────────────────────
-  32   def _process_album_permissions(                  ← FUNCIÓN Phase 1
+  32   def _process_album_permissions(                  ← Phase 1 FUNCTION
   32       user_config,
   32       context: ImmichContext
   32   ) -> None:
 
   56   log(
-  56       "[ALBUM_PERMISSIONS] Starting Phase 1..."    ← LOG: Iniciando
+  56       "[ALBUM_PERMISSIONS] Starting Phase 1..."    ← LOG: Starting
   56   )
 
-  62   albums_collection = context.albums_collection    ← Lee álbumes
+  62   albums_collection = context.albums_collection    ← Reads albums
   64   user_groups_dict = {}                           ← Build lookup dict
   65   if album_perms_config.user_groups:
   66       for group in album_perms_config.user_groups:
   67           user_groups_dict[group.name] = group
 
-  73   for album in albums_collection.values():         ← LOOP: cada álbum
-  74       resolved_policy = resolve_album_policy(      ← RESUELVE política
+  73   for album in albums_collection.values():         ← LOOP: each album
+  74       resolved_policy = resolve_album_policy(      ← RESOLVE policy
   74           album_name=album.album_name,
   74           album_id=album.id,
   74           user_groups=user_groups_dict,
   74           selection_rules=album_perms_config.selection_rules
   74       )
 
-  76   if resolved_policy.has_match:                     ← ¿Coincidió?
+  76   if resolved_policy.has_match:                     ← Did it match?
   77       matched_count += 1
-  78       log(...)                                      ← LOG: coincidencia
-  86       report.add_album_permission_modification(    ← REGISTRA evento
+  78       log(...)                                      ← LOG: match
+  86       report.add_album_permission_modification(    ← REGISTERS event
   86           kind=ModificationKind.ALBUM_PERMISSION_RULE_MATCHED,
   86           ...
   86       )
 
-  107  log(                                              ← LOG: resumen final
+  107  log(                                              ← LOG: final summary
   107      f"[ALBUM_PERMISSIONS] Summary: {matched_count}..."
   107  )
 ```
 
-**¿Qué hace Phase 1?**
-- Solo LEE la configuración
-- Solo RESUELVE qué usuarios deberían tener acceso
-- Solo REGISTRA en el report
-- ❌ NO hace cambios reales en Immich
+**What does Phase 1 do?**
+- Only READS the configuration
+- Only RESOLVES which users should have access
+- Only REGISTERS in the report
+- ❌ NO real changes made in Immich
 
 ---
 
-## DONDE ESTÁ LA RESOLUCIÓN DE POLÍTICAS
+## WHERE POLICY RESOLUTION IS LOCATED
 
-### Archivo: `immich_autotag/albums/album_policy_resolver.py`
+### File: `immich_autotag/albums/album_policy_resolver.py`
 
 ```
-LÍNEA  CÓDIGO
+LINE   CODE
 ────────────────────────────────────────────────────────────────
-  96   def resolve_album_policy(                        ← FUNCIÓN: resuelve
+  96   def resolve_album_policy(                        ← FUNCTION: resolve
   96       album_name: str,
   96       album_id: str,
   96       user_groups: Dict[str, UserGroup],
   96       selection_rules: List[AlbumSelectionRule],
   96   ) -> ResolvedAlbumPolicy:
 
- 122   for rule in selection_rules:                     ← LOOP: cada regla
- 123       if _match_keyword_in_album(album_name, rule.keyword):
- 124           matched_rules_names.append(rule.name)
- 125           all_groups.extend(rule.groups)           ← Acumula grupos
+  122  for rule in selection_rules:                     ← LOOP: each rule
+  123      if _match_keyword_in_album(album_name, rule.keyword):
+  124          matched_rules_names.append(rule.name)
+  125          all_groups.extend(rule.groups)           ← Accumulates groups
 
- 130   for group_name in all_groups_unique:             ← LOOP: cada grupo
- 131       if group_name in user_groups:
- 132           group = user_groups[group_name]
- 133           all_members.extend(group.members)        ← Acumula miembros
+  130  for group_name in all_groups_unique:             ← LOOP: each group
+  131      if group_name in user_groups:
+  132          group = user_groups[group_name]
+  133          all_members.extend(group.members)        ← Accumulates members
 
- 137   return ResolvedAlbumPolicy(                       ← RETORNA resultado
- 137       album_name=album_name,
- 137       matched_rules=matched_rules_names,
- 137       groups=all_groups_unique,
- 137       members=all_members_unique,                  ← ESTOS son los que
- 137       access_level=access_level,                     deberían tener acceso
- 137   )
+  137  return ResolvedAlbumPolicy(                       ← RETURNS result
+  137      album_name=album_name,
+  137      matched_rules=matched_rules_names,
+  137      groups=all_groups_unique,
+  137      members=all_members_unique,                  ← THESE are the ones who
+  137      access_level=access_level,                     should have access
+  137  )
 ```
 
-**¿Qué devuelve?**
+**What does it return?**
 ```
 ResolvedAlbumPolicy(
     album_name="2024-Familia-Vacation",
     album_id="abc123",
     matched_rules=["Share Familia albums"],
     groups=["familia"],
-    members=["abuelo@ex.com", "madre@ex.com"],    ← ESTOS deben tener acceso
+    members=["abuelo@ex.com", "madre@ex.com"],    ← THESE must have access
     access_level="view",
     has_match=True
 )
@@ -185,14 +185,14 @@ ResolvedAlbumPolicy(
 
 ---
 
-## DONDE SE REGISTRAN LOS CAMBIOS
+## WHERE CHANGES ARE REGISTERED
 
-### Archivo: `immich_autotag/report/modification_report.py`
+### File: `immich_autotag/report/modification_report.py`
 
 ```
-LÍNEA  CÓDIGO
+LINE   CODE
 ────────────────────────────────────────────────────────────────
- 268   def add_album_permission_modification(           ← MÉTODO para registrar
+ 268   def add_album_permission_modification(           ← METHOD to register
  268       self,
  268       kind: ModificationKind,
  268       album: Optional[AlbumResponseWrapper] = None,
@@ -203,88 +203,88 @@ LÍNEA  CÓDIGO
  268       extra: Optional[dict] = None,
  268   ) -> None:
 
- 291   assert kind in {                                 ← VALIDA que sea
+ 291   assert kind in {                                 ← VALIDATES that it is
  291       ModificationKind.ALBUM_PERMISSION_RULE_MATCHED,
  291       ModificationKind.ALBUM_PERMISSION_GROUPS_RESOLVED,
  291       ModificationKind.ALBUM_PERMISSION_NO_MATCH,
- 291       ModificationKind.ALBUM_PERMISSION_SHARED,    ← cuando se PONE
- 291       ModificationKind.ALBUM_PERMISSION_REMOVED,   ← cuando se QUITA ✨ NUEVO
+ 291       ModificationKind.ALBUM_PERMISSION_SHARED,    ← when it is SET
+ 291       ModificationKind.ALBUM_PERMISSION_REMOVED,   ← when it is REMOVED ✨ NEW
  291       ModificationKind.ALBUM_PERMISSION_SHARE_FAILED,
  291   }
 
- 311   self.add_modification(                           ← REGISTRA en report
+ 311   self.add_modification(                           ← REGISTERS in report
  311       kind=kind,
  311       album=album,
- 311       extra=extra,  # Con miembros, grupos, etc.
+ 311       extra=extra,  # With members, groups, etc.
  311   )
 ```
 
-**¿Qué registra?**
-- Cada decisión de permiso
-- A qué álbum afecta
-- Qué usuarios, grupos y reglas estuvieron involucrados
-- Se guardará en `modification_report.txt`
+**What does it register?**
+- Each permission decision
+- Which album it affects
+- Which users, groups, and rules were involved
+- It will be saved in `modification_report.txt`
 
 ---
 
-## EVENTOS DISPONIBLES
+## AVAILABLE EVENTS
 
-### Archivo: `immich_autotag/tags/modification_kind.py`
+### File: `immich_autotag/tags/modification_kind.py`
 
 ```
-LÍNEA  CÓDIGO
+LINE   CODE
 ────────────────────────────────────────────────────────────────
-  46   ALBUM_PERMISSION_RULE_MATCHED = auto()           ← Álbum coincidió
-  47   ALBUM_PERMISSION_GROUPS_RESOLVED = auto()        ← Grupos resueltos
-  48   ALBUM_PERMISSION_NO_MATCH = auto()               ← Sin coincidencia
+  46   ALBUM_PERMISSION_RULE_MATCHED = auto()           ← Album matched
+  47   ALBUM_PERMISSION_GROUPS_RESOLVED = auto()        ← Groups resolved
+  48   ALBUM_PERMISSION_NO_MATCH = auto()               ← No match
   49   
   50   # Phase 2: actual sharing
-  51   ALBUM_PERMISSION_SHARED = auto()                  ← Usuario AÑADIDO ✅
-  52   ALBUM_PERMISSION_REMOVED = auto()                 ← Usuario REMOVIDO ✅ NUEVO
-  53   ALBUM_PERMISSION_SHARE_FAILED = auto()            ← Error al añadir
+  51   ALBUM_PERMISSION_SHARED = auto()                  ← User ADDED ✅
+  52   ALBUM_PERMISSION_REMOVED = auto()                 ← User REMOVED ✅ NEW
+  53   ALBUM_PERMISSION_SHARE_FAILED = auto()            ← Error adding
 ```
 
 ---
 
-## RESUMEN: DÓNDE PASA CADA COSA
+## SUMMARY: WHERE EVERYTHING HAPPENS
 
-| QUÉ | DÓNDE | LÍNEA | ESTADO |
+| WHAT | WHERE | LINE | STATUS |
 |-----|-------|-------|--------|
-| **Se resuelve** qué usuarios deben tener acceso | `album_policy_resolver.py` | 96-137 | ✅ |
-| **Se obtienen** usuarios actuales del álbum | API Immich | — | ❌ TODO |
-| **Se PONEN** nuevos permisos | `album_collection_wrapper.py` | 113 | ✅ |
-| **Se QUITAN** permisos antiguos | API Immich | — | ❌ TODO |
-| **Se registra** en report | `modification_report.py` | 268 | ✅ |
-| **Phase 1** (detecta, sin hacer nada) | `entrypoint.py` | 32 | ✅ |
-| **Phase 2** (ejecuta cambios reales) | — | — | ❌ TODO |
+| **Policy resolution** | `album_policy_resolver.py` | 96-137 | ✅ |
+| **Get current members** | Immich API | — | ❌ TODO |
+| **SET new permissions** | `album_collection_wrapper.py` | 113 | ✅ |
+| **REMOVE old permissions** | Immich API | — | ❌ TODO |
+| **Register in report** | `modification_report.py` | 268 | ✅ |
+| **Phase 1** (detect, doing nothing) | `entrypoint.py` | 32 | ✅ |
+| **Phase 2** (execute real changes) | — | — | ❌ TODO |
 
 ---
 
-## PRÓXIMO PASO: PHASE 2
+## NEXT STEP: PHASE 2
 
-Para implementar Phase 2, necesitaremos:
+To implement Phase 2, we will need:
 
-1. **Obtener usuarios actuales del álbum**
-   - Usar API: `get_album_users()` de Immich client
-   - Extrae IDs/emails de quien tiene acceso ahora
+1. **Obtain current album users**
+   - Use API: `get_album_users()` from Immich client
+   - Extract IDs/emails of who has access now
 
-2. **Función de sincronización**
+2. **Synchronization function**
    ```python
-   # Nuevo módulo: immich_autotag/permissions/album_permission_executor.py
+   # New module: immich_autotag/permissions/album_permission_executor.py
    
    def sync_album_permissions(client, album, resolved_policy):
        current = get_album_users(client, album.id)  # Get current
        to_add = resolved_policy.members - current    # Calculate diff
        to_remove = current - resolved_policy.members
        
-       # Add new (usar add_users_to_album - YA EXISTE)
-       # Remove old (usar remove_user_from_album - IMPLEMENTAR)
+       # Add new (use add_users_to_album - ALREADY EXISTS)
+       # Remove old (use remove_user_from_album - IMPLEMENT)
    ```
 
-3. **Llamar desde entrypoint**
+3. **Call from entrypoint**
    ```python
    # immich_autotag/entrypoint.py
-   _execute_album_permissions(manager.config, context)  # Nueva función
+   _execute_album_permissions(manager.config, context)  # New function
    ```
 
-¿Quieres que continúe con Phase 2? 🚀
+Do you want me to continue with Phase 2? 🚀

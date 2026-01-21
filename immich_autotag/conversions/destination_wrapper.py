@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class DestinationWrapper:
     destination: Destination = attrs.field()
 
-    # Aquí puedes añadir métodos avanzados para Destination
+    # Here you can add advanced methods for Destination
     def get_tag_names(self) -> list[str]:
         return self.destination.tag_names or []
 
@@ -23,11 +23,11 @@ class DestinationWrapper:
     @typechecked
     def apply_action(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
         """
-        Aplica la acción de destino sobre el asset_wrapper.
-        Añade todas las etiquetas destino y añade el asset a todos los álbumes destino si no están ya.
+        Applies the destination action on the asset_wrapper.
+        Adds all destination tags and adds the asset to all destination albums if not already present.
         """
         changes = []
-        # Añadir etiquetas destino
+        # Add destination tags
         for tag in self.get_tag_names():
             if not asset_wrapper.has_tag(tag):
                 try:
@@ -35,7 +35,7 @@ class DestinationWrapper:
                     changes.append(f"Added tag '{tag}'")
                 except Exception as e:
                     changes.append(f"Failed to add tag '{tag}': {e}")
-        # Añadir a álbumes destino
+        # Add to destination albums
         for album in self.get_album_names():
             if album not in asset_wrapper.get_album_names():
                 try:
@@ -50,5 +50,5 @@ class DestinationWrapper:
     def __attrs_post_init__(self):
         if not (self.get_tag_names() or self.get_album_names()):
             raise ValueError(
-                "DestinationWrapper: destination debe tener al menos un tag o un álbum de destino."
+                "DestinationWrapper: destination must have at least one tag or one destination album."
             )

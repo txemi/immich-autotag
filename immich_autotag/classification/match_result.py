@@ -34,7 +34,7 @@ class MatchResult:
     @typechecked
     def has_match(self) -> bool:
         """
-        Devuelve True si hay al menos un tag, álbum o asset link coincidente en el resultado.
+        Returns True if there is at least one matching tag, album, or asset link in the result.
         """
         return bool(
             self.tags_matched or self.albums_matched or self.asset_links_matched
@@ -43,7 +43,7 @@ class MatchResult:
     @typechecked
     def is_match(self) -> bool:
         """
-        Devuelve True si hay al menos un tag, álbum o asset link coincidente en el resultado.
+        Returns True if there is at least one matching tag, album, or asset link in the result.
         """
         return bool(
             self.tags_matched or self.albums_matched or self.asset_links_matched

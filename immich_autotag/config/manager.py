@@ -169,11 +169,11 @@ class ConfigManager:
             return dumper.represent_data(rep)
 
         yaml.add_representer(enum.Enum, enum_representer)
-        # Volcado estándar
+        # Standard dump
         with open(str(path), "w", encoding="utf-8") as f:
             yaml.dump(self.config.model_dump(), f, allow_unicode=True, sort_keys=False)
 
-        # Volcado alternativo con comentarios
+        # Alternative dump with comments
         try:
             from immich_autotag.config.yaml_with_comments import (
                 generate_yaml_with_comments,

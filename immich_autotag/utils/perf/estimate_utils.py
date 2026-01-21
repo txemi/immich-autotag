@@ -1,6 +1,6 @@
 from typing import Optional
-import attrs
 
+import attrs
 from typeguard import typechecked
 
 

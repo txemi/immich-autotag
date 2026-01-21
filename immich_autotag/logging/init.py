@@ -18,7 +18,7 @@ def initialize_logging() -> None:
     # Note: ConfigManager constructor raises exceptions if config fails to load
     # So if we reach here, config is guaranteed to exist
     filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
-    # Si estamos filtrando miuy pocos assets es psiblemente por diagnostico, subir nivel de log
+    # If we are filtering very few assets, it is possibly for diagnostics, raise log level
     if filter_wrapper.is_focused():
         setup_logging(level=LogLevel.FOCUS)
         log(
@@ -26,7 +26,7 @@ def initialize_logging() -> None:
             level=LogLevel.FOCUS,
         )
     else:
-        # sino sencillamente reportar progreso
+        # Otherwise, simply report progress
         setup_logging(level=LogLevel.PROGRESS)
         # Silence HTTP logs from httpx and noisy dependencies
     logging.getLogger("httpx").setLevel(logging.WARNING)
