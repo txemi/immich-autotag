@@ -49,3 +49,5 @@ class ModificationKind(Enum):
         "ALBUM_PERMISSION_SHARE_FAILED"
     )
     ADD_USER_TO_ALBUM = ModificationKindInfo("ADD_USER_TO_ALBUM", LogLevel.PROGRESS)
+
+    DELETE_ALBUM_UNHEALTHY = ModificationKindInfo("DELETE_ALBUM_UNHEALTHY", LogLevel.PROGRESS)

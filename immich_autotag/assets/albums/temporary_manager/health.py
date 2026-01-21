@@ -28,7 +28,7 @@ def is_temporary_album_healthy(
     if not assets or len(assets) < 2:
         return True
     # Example: assume each asset has a 'date' attribute (datetime)
-    dates = [a.get_best_date() for a in assets if a.get_best_date() is not None]
+    dates = [date for date in (a.get_best_date() for a in assets) if date is not None]
     if len(dates) < 2:
         return True
     min_date = min(dates)
@@ -40,7 +40,6 @@ def is_temporary_album_healthy(
 @typechecked
 def cleanup_unhealthy_album(
     album_wrapper: AlbumResponseWrapper,
-    client,
     tag_mod_report: "ModificationReport" = None,
 ):
     """
@@ -50,8 +49,9 @@ def cleanup_unhealthy_album(
     # Example: album_wrapper.delete(client)
     album_name = album_wrapper.get_album_name()
     if tag_mod_report:
+        from immich_autotag.tags.modification_kind import ModificationKind
         tag_mod_report.add_album_modification(
-            kind="DELETE_ALBUM_UNHEALTHY",
+            kind=ModificationKind.DELETE_ALBUM_UNHEALTHY,
             album=album_wrapper,
             old_value=album_name,
             extra={"reason": "Unhealthy temporary album deleted automatically"},
