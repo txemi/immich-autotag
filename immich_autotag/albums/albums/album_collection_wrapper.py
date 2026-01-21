@@ -36,7 +36,7 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
 
-    _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
+    _albums: AlbumList = attrs.field(factory=AlbumList, validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
         factory=AssetToAlbumsMap,
@@ -836,7 +836,7 @@ class AlbumCollectionWrapper:
 
         log("Albums:", level=LogLevel.INFO)
         # Create the empty collection
-        collection = cls(albums=AlbumList([]))
+        collection = cls()
 
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
