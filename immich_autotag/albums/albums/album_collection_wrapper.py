@@ -33,6 +33,7 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
 
+
     _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
@@ -47,7 +48,16 @@ class AlbumCollectionWrapper:
     _collected_duplicates: DuplicateAlbumReports = attrs.field(
         default=attrs.Factory(DuplicateAlbumReports), init=False, repr=False
     )
-
+    @typechecked
+    def find_first_album_with_name(self, album_name: str) -> AlbumResponseWrapper | None:
+        """
+        Returns the first album with the given name, or None if not found.
+        Equivalent to next(self.find_all_albums_with_name(album_name), None).
+        """
+        for album in self.get_albums():
+            if album.get_album_name() == album_name:
+                return album
+        return None
     @typechecked
     def set_albums(self, value: AlbumList) -> None:
         """
@@ -237,19 +247,7 @@ class AlbumCollectionWrapper:
         )
         return existing_album
 
-    @typechecked
-    def _ensure_unique_album_name(self, album_name: str) -> None:
-        """Ensure no other album in the collection has the same name.
 
-        Raises RuntimeError if a duplicate name is found. This enforces stricter
-        correctness to avoid ambiguity in operations that rely on album names.
-        """
-        for w in self.get_albums():
-            if w.get_album_name() == album_name:
-                self._handle_duplicate_album_conflict(
-                    incoming_album=w, existing_album=w, context="ensure_unique"
-                )
-                return
 
     @typechecked
     def write_unavailable_summary(self) -> None:
@@ -382,7 +380,7 @@ class AlbumCollectionWrapper:
         for album_wrapper in self._albums:
             # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
-            if not album_wrapper.get_asset_ids():
+            if album_wrapper.is_empty():
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
 
@@ -469,7 +467,7 @@ class AlbumCollectionWrapper:
         """
         albums_to_remove: list[AlbumResponseWrapper] = []
         for album_wrapper in self.get_albums():
-            if not album_wrapper.get_asset_ids() and is_temporary_album(
+            if album_wrapper.is_empty() and is_temporary_album(
                 album_wrapper.get_album_name()
             ):
                 albums_to_remove.append(album_wrapper)
@@ -676,26 +674,22 @@ class AlbumCollectionWrapper:
         non-temporary, raise RuntimeError.
         """
         name = wrapper.get_album_name()
-        # Check for existing album with same name
-        for existing in list(self.get_albums()):
-            try:
-                if existing.get_album_name() == name:
-                    # Duplicate found
-                    if is_temporary_album(name) and client is not None:
-                        self.delete_album(
-                            wrapper=existing,
-                            client=client,
-                            tag_mod_report=tag_mod_report,
-                            reason="Removed duplicate temporary album during add",
-                        )
-                        break
-                    # Not temporary or no client: cannot resolve automatically
-                    self._handle_duplicate_album_conflict(
-                        existing, context="duplicate_on_add"
-                    )
-                    return existing
-            except Exception:
-                raise
+        existing = self.find_first_album_with_name(name)
+        if existing is not None:
+            # Duplicate found
+            if is_temporary_album(name) and client is not None:
+                self.delete_album(
+                    wrapper=existing,
+                    client=client,
+                    tag_mod_report=tag_mod_report,
+                    reason="Removed duplicate temporary album during add",
+                )
+            else:
+                # Not temporary or no client: cannot resolve automatically
+                self._handle_duplicate_album_conflict(
+                    existing, context="duplicate_on_add"
+                )
+                return existing
 
         # Append to collection and update maps
         self._albums.append(wrapper)
@@ -733,9 +727,10 @@ class AlbumCollectionWrapper:
 
     # remove_album deleted: use delete_album and _remove_album_from_local_collection
     @typechecked
-    def albums_with_name(self, album_name: str):
+    def find_all_albums_with_name(self, album_name: str):
         """
-        Returns a generator of AlbumResponseWrapper for all albums with the given name.
+        Yields all AlbumResponseWrapper objects with the given name.
+        Returns a generator (may yield none).
         """
         for album_wrapper in self.get_albums():
             if album_wrapper.get_album_name() == album_name:
@@ -785,7 +780,7 @@ class AlbumCollectionWrapper:
         If it doesn't exist (or after cleaning duplicates it no longer exists), creates it and assigns the current user as EDITOR.
         """
         # Search for all albums with that name
-        albums_found = list(self.albums_with_name(album_name))
+        albums_found = list(self.find_all_albums_with_name(album_name))
         if len(albums_found) == 1:
             return albums_found[0]
         elif len(albums_found) > 1:
