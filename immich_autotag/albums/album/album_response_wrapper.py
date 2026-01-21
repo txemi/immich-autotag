@@ -131,22 +131,34 @@ class AlbumResponseWrapper:
     def is_duplicate_album(self) -> bool:
         """
         Returns True if this album is a duplicate album (i.e., there is more than one album with the same name in the collection).
-        This uses the AlbumCollectionWrapper singleton to ensure consistent duplicate detection.
-        Raises if the current album is not found among the albums with the same name (should never happen in normal operation).
+        Si el álbum no se encuentra entre los duplicados, hace un resync y vuelve a comprobar antes de lanzar excepción.
         """
         from immich_autotag.albums.albums.album_collection_wrapper import (
             AlbumCollectionWrapper,
         )
+        from immich_autotag.context.immich_context import ImmichContext
 
         collection = AlbumCollectionWrapper.get_instance()
-        same_name_albums = list(
-            collection.find_all_albums_with_name(self.get_album_name())
-        )
+        album_name = self.get_album_name()
+        same_name_albums = list(collection.find_all_albums_with_name(album_name))
         album_ids = [a.get_album_id() for a in same_name_albums]
         if self.get_album_id() not in album_ids:
-            raise RuntimeError(
-                f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' not found among albums with the same name: {album_ids}"
-            )
+            if True:
+                raise RuntimeError(
+                    f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' not found among albums with the same name: {album_ids}"
+                )
+            else:
+                # Intentar resync de la colección y volver a comprobar
+                client = ImmichContext.get_default_client()
+                new_collection = AlbumCollectionWrapper.resync_from_api(client)
+                same_name_albums = list(
+                    new_collection.find_all_albums_with_name(album_name)
+                )
+                album_ids = [a.get_album_id() for a in same_name_albums]
+                if self.get_album_id() not in album_ids:
+                    raise RuntimeError(
+                        f"Album with id={self.get_album_id()} and name='{album_name}' not found among albums with the same name (tras resync): {album_ids}"
+                    )
         return len(same_name_albums) > 1
 
     @staticmethod
@@ -493,7 +505,9 @@ class AlbumResponseWrapper:
         item = self._find_asset_result_in_response(result, str(asset_wrapper.id))
         if item:
             if not item.success:
-                self._handle_add_asset_error(item, asset_wrapper, client, tag_mod_report)
+                self._handle_add_asset_error(
+                    item, asset_wrapper, client, tag_mod_report
+                )
         else:
             raise RuntimeError(
                 (
@@ -677,7 +691,9 @@ class AlbumResponseWrapper:
 
     @staticmethod
     @typechecked
-    def _find_asset_result_in_response(result: list[BulkIdResponseDto], asset_id: str) -> object | None:
+    def _find_asset_result_in_response(
+        result: list[BulkIdResponseDto], asset_id: str
+    ) -> object | None:
         """Finds the result item for a specific asset in the API response list."""
         for item in result:
             try:

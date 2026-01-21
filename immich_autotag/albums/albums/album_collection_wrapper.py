@@ -850,3 +850,46 @@ class AlbumCollectionWrapper:
             if album.get_album_id() == str(album_id):
                 return album
         return None
+
+    @classmethod
+    def resync_from_api(cls, client: "ImmichClient") -> None:
+        """
+        Sincroniza la colección singleton de álbumes con la lista actual de la API.
+        - Actualiza los álbumes existentes con el nuevo DTO parcial.
+        - Añade los nuevos álbumes.
+        - Marca como 'unavailable' los que ya no existen en la API.
+        No devuelve nada, actualiza en sitio.
+        """
+        from immich_client.api.albums import get_all_albums
+
+        from immich_autotag.albums.album.album_response_wrapper import (
+            AlbumResponseWrapper,
+        )
+
+        api_albums = get_all_albums.sync(client=client)
+        api_album_ids = set(a.id for a in api_albums)
+
+        current = cls.get_instance()
+        local_albums = {a.get_album_id(): a for a in current.get_albums()}
+
+        updated_albums = []
+        for dto in api_albums:
+            if dto.id in local_albums:
+                wrapper = local_albums[dto.id]
+                wrapper._album_partial = dto
+                updated_albums.append(wrapper)
+            else:
+                wrapper = AlbumResponseWrapper.from_partial_dto(dto)
+                updated_albums.append(wrapper)
+
+        removed = [a for id_, a in local_albums.items() if id_ not in api_album_ids]
+        for album in removed:
+            try:
+                album._unavailable = True
+            except Exception:
+                pass
+
+        # Actualizar la lista interna del singleton
+        current._albums = type(current._albums)(updated_albums)
+        # Opcional: actualizar mapas auxiliares aquí si es necesario
+        # No retorna nada
