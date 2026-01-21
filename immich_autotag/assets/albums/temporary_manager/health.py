@@ -9,8 +9,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 if TYPE_CHECKING:
-    from immich_autotag.report.modification_report import ModificationReport
-    from immich_autotag.types import ImmichClient
+    pass
 
 
 @typechecked

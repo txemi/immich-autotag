@@ -72,7 +72,6 @@ class StatisticsManager:
         _instance = self
         self.checkpoint = CheckpointManager(stats_manager=self)
         self.tags = TagStatsManager(stats_manager=self)
-        self.checkpoint = CheckpointManager(stats_manager=self)
 
     @typechecked
     def increment_event(
