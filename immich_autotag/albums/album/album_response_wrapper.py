@@ -352,7 +352,10 @@ class AlbumResponseWrapper:
                             from immich_autotag.albums.albums import (
                                 album_collection_wrapper,
                             )
-                            AlbumCollectionWrapper = album_collection_wrapper.AlbumCollectionWrapper
+
+                            AlbumCollectionWrapper = (
+                                album_collection_wrapper.AlbumCollectionWrapper
+                            )
 
                             AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(
                                 self
@@ -545,13 +548,8 @@ class AlbumResponseWrapper:
                                 "asset_url": asset_url,
                                 "album_url": album_url,
                                 "reason": "Stale cached album data detected and reloaded",
+                                "details": f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\nAsset link: {asset_url}\nAlbum link: {album_url}",
                             },
-                            (
-                                f"Asset {asset_wrapper.id} was not successfully added to album "
-                                f"{self.get_album_id()}: {error_msg}\n"
-                            )
-                        )
-                            )
                         )
                     else:
                         raise RuntimeError(
