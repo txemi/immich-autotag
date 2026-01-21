@@ -51,4 +51,4 @@ def is_log_level_enabled(level: LogLevel) -> bool:
     Returns True if the given log level is enabled for the root logger.
     Usage: if is_log_level_enabled(LogLevel.DEBUG): ...
     """
-    return logging.getLogger().isEnabledFor(level.value)
+    return logging.getLogger().isEnabledFor(level.level_value)
