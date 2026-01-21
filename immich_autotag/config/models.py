@@ -42,6 +42,7 @@ class ClassificationRule(BaseModel):
     tag_names: Optional[List[str]] = None
     album_name_patterns: Optional[List[str]] = None
     asset_links: Optional[List[str]] = None
+    description: Optional[str] = None
 
     @classmethod
     def model_validate(cls, value):
