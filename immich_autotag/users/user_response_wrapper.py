@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 import attrs
 from typeguard import typechecked
@@ -17,7 +18,7 @@ class UserResponseWrapper:
 
 
     @staticmethod
-    def _validate_user(instance, attribute, value):
+    def _validate_user(instance: "UserResponseWrapper", attribute: attrs.Attribute, value: object) -> None:
         if value is None:
             raise ValueError("user cannot be None")
         try:
@@ -54,10 +55,8 @@ class UserResponseWrapper:
 
     @property
     @typechecked
-    def uuid(self) -> "UUID":
+    def uuid(self) -> UUID:
         """Devuelve el UUID del usuario (objeto UUID, no string)."""
-        from uuid import UUID
-
         return UUID(self.id)
 
     @typechecked
@@ -79,8 +78,6 @@ class UserResponseWrapper:
         cls._cached_user_wrapper = cls(user=user_dto)
         return cls._cached_user_wrapper  # type: ignore
     @typechecked
-    def get_uuid(self) -> "UUID":
-        from uuid import UUID
-
+    def get_uuid(self) -> UUID:
         return UUID(self.id)
     
