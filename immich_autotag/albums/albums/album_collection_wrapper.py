@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from typing import Iterable
+from uuid import UUID
+from immich_client.models.album_response_dto import AlbumResponseDto
+from immich_autotag.context.immich_context import ImmichContext
 
 import attrs
 from typeguard import typechecked
@@ -33,35 +36,6 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
-    def _add_user_to_album(self, album, user_id, context):
-        """
-        Private helper to add a user as EDITOR to an album. Handles only user addition and error reporting.
-        """
-        from immich_autotag.permissions.album_permission_executor import _add_members_to_album
-        try:
-            _add_members_to_album(
-                album_id=album.id,
-                album_name=album.album_name,
-                user_ids=[str(user_id)],
-                access_level="editor",
-                context=context,
-            )
-        except Exception as e:
-            raise RuntimeError(
-                f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
-            ) from e
-
-    def _create_album(self, album_name: str, client: ImmichClient):
-        """
-        Private helper to create an album via the API. Returns the album object.
-        Handles only creation and error reporting for album creation.
-        """
-        from immich_client.api.albums import create_album
-        from immich_client.models.create_album_dto import CreateAlbumDto
-        album = create_album.sync(client=client, body=CreateAlbumDto(album_name=album_name))
-        if album is None:
-            raise RuntimeError("Failed to create album: API returned None")
-        return album
 
 
     _albums: AlbumList = attrs.field(validator=attrs.validators.instance_of(AlbumList))
@@ -785,13 +759,66 @@ class AlbumCollectionWrapper:
             )
             survivors = [surviving_album] + survivors[2:]
         return survivors[0]
+    @typechecked
+    def _add_user_to_album(
+        self,
+        album: AlbumResponseDto,
+        user_id: UUID,
+        context: ImmichContext,
+        tag_mod_report: ModificationReport,
+    ) -> None:
+        """
+        Private helper to add a user as EDITOR to an album. Handles only user addition, error reporting, and event logging.
+        """
+        from immich_autotag.permissions.album_permission_executor import _add_members_to_album
+        try:
+            from immich_autotag.tags.modification_kind import ModificationKind
+            _add_members_to_album(
+                album_id=album.id,
+                album_name=album.album_name,
+                user_ids=[str(user_id)],
+                access_level="editor",
+                context=context,
+            )
+            tag_mod_report.add_album_modification(
+                kind=ModificationKind.ADD_USER_TO_ALBUM,
+                album=AlbumResponseWrapper.from_partial_dto(album),
+                extra={"added_user": str(user_id)},
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
+            ) from e
+
+    @typechecked
+    def _create_album(
+        self,
+        album_name: str,
+        client: ImmichClient,
+        tag_mod_report: ModificationReport,
+    ) -> AlbumResponseDto:
+        """
+        Private helper to create an album via the API. Returns the album object. Handles creation, error reporting, and event logging.
+        """
+        from immich_client.api.albums import create_album
+        from immich_client.models.create_album_dto import CreateAlbumDto
+        from immich_autotag.tags.modification_kind import ModificationKind
+        album = create_album.sync(client=client, body=CreateAlbumDto(album_name=album_name))
+        if album is None:
+            raise RuntimeError("Failed to create album: API returned None")
+        tag_mod_report.add_album_modification(
+            kind=ModificationKind.CREATE_ALBUM,
+            album=AlbumResponseWrapper.from_partial_dto(album),
+            extra={"created": True},
+        )
+        return album
 
     @conditional_typechecked
     def create_or_get_album_with_user(
         self,
         album_name: str,
         client: ImmichClient,
-        tag_mod_report: ModificationReport | None = None,
+        tag_mod_report: ModificationReport = None,
     ) -> "AlbumResponseWrapper":
         """
         Searches for an album by name. If one exists, returns it. If there is more than one, handles duplicates according to the policy (merge, delete temporary, error, etc).
@@ -813,31 +840,30 @@ class AlbumCollectionWrapper:
         # If it doesn't exist, create it and assign user
         from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+        if tag_mod_report is None:
+            tag_mod_report = self.get_modification_report()
 
-        album = self._create_album(album_name, client)
+        album = self._create_album(album_name, client, tag_mod_report)
 
         # Centralized user access
         context = ImmichContext.get_instance()
         user_wrapper = UserResponseWrapper.from_context(context)
+        import uuid
         user_id = user_wrapper.uuid
+        if not isinstance(user_id, uuid.UUID):
+            user_id = uuid.UUID(str(user_id))
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
         owner_id = wrapper.owner_uuid
+        if not isinstance(owner_id, uuid.UUID):
+            owner_id = uuid.UUID(str(owner_id))
         if user_id != owner_id:
-            self._add_user_to_album(album, user_id, context)
+            self._add_user_to_album(album, user_id, context, tag_mod_report)
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
-        try:
-            wrapper = self.add_album_wrapper(
-                wrapper, client=client, tag_mod_report=tag_mod_report
-            )
-        except Exception:
-            raise
-        if tag_mod_report:
-            from immich_autotag.tags.modification_kind import ModificationKind
-
-            tag_mod_report.add_album_modification(
-                kind=ModificationKind.CREATE_ALBUM,
-                album=wrapper,
-            )
+        
+        wrapper = self.add_album_wrapper(
+            wrapper, client=client, tag_mod_report=tag_mod_report
+        )
+        
         return wrapper
 
     @classmethod
