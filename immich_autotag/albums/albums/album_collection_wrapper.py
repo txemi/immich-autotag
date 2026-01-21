@@ -798,7 +798,6 @@ class AlbumCollectionWrapper:
         albums = get_all_albums.sync(client=client)
         if albums is None:
             raise RuntimeError("Failed to fetch albums: API returned None")
-        albums_wrapped: list[AlbumResponseWrapper] = []
         from immich_autotag.albums.duplicates.duplicate_album_reports import (
             DuplicateAlbumReports,
         )
@@ -815,7 +814,7 @@ class AlbumCollectionWrapper:
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
             collection._try_append_wrapper_to_list(
-                albums_list=albums_wrapped,
+
                 wrapper=wrapper,
                 client=client,
                 tag_mod_report=tag_mod_report,
