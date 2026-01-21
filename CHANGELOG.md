@@ -391,8 +391,10 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 
 
 ## [0.74.0] - 2026-01-21
-**Status:** 🔖 Pending tag  
+**Status:** 🔖 Tagged (not published)  
 **Description:** Major refactors, error handling improvements, YAML config generation, logging/statistics enhancements, and documentation updates.
+
+> **Note:** The tag `v0.74.0` was created manually at commit `75f3dd380d7d15ed4707d775ae231b9eaa050338` (Jenkins-tested). Previous tag attempts were corrected to ensure the tag matches the commit actually validated in CI. See Jenkins log #45 for test evidence.
 
 ### Added
 - **Automatic album creation and assignment (FB-001):** Logging of unmatched albums in user configuration ([issue](docs/issues/0016-auto-album-creation/))
@@ -430,7 +432,7 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 - All Python code formatted and sorted
 
 ### Commit
-- **Commit hash:** `1736bd45f003f8dc5073096ab5c86714d5181191`
+- **Commit hash:** `75f3dd380d7d15ed4707d775ae231b9eaa050338` (Jenkins-tested, tag v0.74.0)
 
 
 
