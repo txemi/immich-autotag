@@ -3,12 +3,11 @@ from uuid import UUID
 
 import attrs
 from immich_client import Client
+from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.get_all_assets import get_all_assets
-
-from immich_client.models.asset_response_dto import AssetResponseDto
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
@@ -56,8 +55,6 @@ class AssetManager:
         asset = AssetResponseWrapper.from_dto(dto, context)
         self._assets[asset_id] = asset
         return asset
-
-    from immich_client.models.asset_response_dto import AssetResponseDto
 
     @typechecked
     def get_wrapper_for_asset(
