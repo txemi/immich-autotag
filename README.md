@@ -19,6 +19,7 @@ When starting to use Immich, it is common to import large volumes of photos from
 
 
 
+
 ## 1.3. Key Features
 
 - **Automatic album creation and assignment:** Create and assign albums based on detected duplicates in Immich, or from folders in your file system (if enabled). Both methods can be used to save time when organizing large libraries.
@@ -28,9 +29,10 @@ When starting to use Immich, it is common to import large volumes of photos from
 - **Global filtering:** Use inclusion or exclusion filters to process only specific assets, albums, or tags, instead of the entire library.
 - **Date mismatch tagging:** Automatically tag assets whose date does not match the date in their album name (for date-patterned albums), making it easy to review and correct inconsistencies.
 - **Modification and statistics logs:** The system generates detailed modification reports and statistics files, including counters for unclassified assets and detected conflicts, to help you track progress and quality.
- - **Continuous or scheduled tagging:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, or can be easily scheduled (e.g., nightly runs) using Docker or cron—making it easy to keep up with rapid changes or automate regular organization.
- - **Batch tag/album conversions:** Apply new tags or albums to assets in bulk (by name pattern, tag, or asset), keeping or removing originals—ideal for reorganizing or refactoring your library as your needs evolve.
+- **Continuous or scheduled tagging:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, or can be easily scheduled (e.g., nightly runs) using Docker or cron—making it easy to keep up with rapid changes or automate regular organization.
+- **Batch tag/album conversions:** Apply new tags or albums to assets in bulk (by name pattern, tag, or asset), keeping or removing originals—ideal for reorganizing or refactoring your library as your needs evolve.
 
+For a more structured and detailed overview (including internal tools and links to technical issues), see the [Functional Blocks Matrix](./docs/functional_blocks_matrix.md).
 
 This classification relies on a rule engine that is continuously evolving to become more abstract and flexible, allowing adaptation to the specific needs of different users.
 
