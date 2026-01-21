@@ -75,11 +75,9 @@ class AlbumResponseWrapper:
         album = self._album_full or self._album_partial
         if album is None:
             raise AttributeError("AlbumResponseWrapper: owner_id not available.")
-        try:
-            owner_id = album.owner_id
-        except AttributeError:
-            raise AttributeError("AlbumResponseWrapper: owner_id not available.")
-        return UUID(owner_id)
+
+
+        return UUID(album.owner_id)
 
     @typechecked
     def is_temporary_album(self) -> bool:
