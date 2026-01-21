@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from urllib.parse import ParseResult
 from uuid import UUID
 
@@ -49,13 +49,14 @@ class AlbumResponseWrapper:
     _unavailable: bool = attrs.field(default=False, init=False)
     # Recent error history for this album: list of AlbumErrorEntry objects
     from typing import List
-    _error_history: list[AlbumErrorEntry] = attrs.field(
+    _error_history: List[AlbumErrorEntry] = attrs.field(
         factory=list,
-        init=False, repr=False,
+        init=False,
+        repr=False,
         validator=attrs.validators.deep_iterable(
             member_validator=attrs.validators.instance_of(AlbumErrorEntry),
             iterable_validator=attrs.validators.instance_of(list),
-        ),
+        ),  # type: ignore
     )
 
     def __attrs_post_init__(self) -> None:
