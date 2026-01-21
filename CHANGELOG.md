@@ -380,32 +380,32 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 **Description:** Major refactors, error handling improvements, YAML config generation, logging/statistics enhancements, and documentation updates.
 
 ### Added
-- Automatic album creation and assignment (FB-001): Logging of unmatched albums in user configuration ([issue](docs/issues/0016-auto-album-creation/))
-- Rule-based classification engine (FB-002): Enhanced user configuration template: improved skip options and album permissions ([issue](docs/issues/0017-rules-tag-album-combination/))
-- Batch tag/album conversions (FB-009): Batch tag/album conversions feature added to README ([issue](docs/issues/0022-batch-tag-album-conversions/))
-- Modification and statistics logs (FB-007): YAML configuration generator with comments from Pydantic model descriptions ([issue](docs/issues/0009-config-system-refactor/))
+- **Automatic album creation and assignment (FB-001):** Logging of unmatched albums in user configuration ([issue](docs/issues/0016-auto-album-creation/))
+- **Rule-based classification engine (FB-002):** Enhanced user configuration template: improved skip options and album permissions ([issue](docs/issues/0017-rules-tag-album-combination/))
+- **Batch tag/album conversions (FB-009):** Batch tag/album conversions feature added to README ([issue](docs/issues/0022-batch-tag-album-conversions/))
+- **Modification and statistics logs (FB-007):** YAML configuration generator with comments from Pydantic model descriptions ([issue](docs/issues/0009-config-system-refactor/))
 
 ### Changed
-- Modification and statistics logs (FB-007): Major refactor of asset processing, statistics checkpoint, and configuration management for clarity and maintainability ([issue](docs/issues/0008-statistics-checkpoint/))
-- Automatic date correction (FB-004): Improved error handling: centralized error handling mode, better error categorization, and type checking ([issue](docs/issues/0019-album-date-consistency-config/))
-- Automatic album creation and assignment (FB-001): Enhanced previous execution statistics validation and skip_n configuration ([issue](docs/issues/0016-auto-album-creation/))
-- Modification and statistics logs (FB-007): Improved code formatting, import organization, and comments across multiple modules
-- Continuous or scheduled tagging (FB-008): Continuous tagging feature description updated for clarity and scheduling options ([issue](docs/issues/0021-profiling-performance/))
+- **Modification and statistics logs (FB-007):** Major refactor of asset processing, statistics checkpoint, and configuration management for clarity and maintainability ([issue](docs/issues/0008-statistics-checkpoint/))
+- **Automatic date correction (FB-004):** Improved error handling: centralized error handling mode, better error categorization, and type checking ([issue](docs/issues/0019-album-date-consistency-config/))
+- **Automatic album creation and assignment (FB-001):** Enhanced previous execution statistics validation and skip_n configuration ([issue](docs/issues/0016-auto-album-creation/))
+- **Modification and statistics logs (FB-007):** Improved code formatting, import organization, and comments across multiple modules
+- **Continuous or scheduled tagging (FB-008):** Continuous tagging feature description updated for clarity and scheduling options ([issue](docs/issues/0021-profiling-performance/))
 
 ### Fixed
-- Modification and statistics logs (FB-007): Multiple bug fixes in YAML handling, error handling, and statistics logging
-- Modification and statistics logs (FB-007): Improved handling of configuration loading errors and validation
-- Modification and statistics logs (FB-007): Fixed missing imports and type annotations in several modules
-- Modification and statistics logs (FB-007): Fixed link formatting in README and removed outdated CI/CD note from CONTRIBUTING.md
+- **Modification and statistics logs (FB-007):** Multiple bug fixes in YAML handling, error handling, and statistics logging
+- **Modification and statistics logs (FB-007):** Improved handling of configuration loading errors and validation
+- **Modification and statistics logs (FB-007):** Fixed missing imports and type annotations in several modules
+- **Modification and statistics logs (FB-007):** Fixed link formatting in README and removed outdated CI/CD note from CONTRIBUTING.md
 
 ### Documentation
-- Modification and statistics logs (FB-007): Expanded and clarified practical use case steps in README
-- Modification and statistics logs (FB-007): Added link to Functional Blocks Matrix for structured feature overview
-- Modification and statistics logs (FB-007): Updated changelog and roadmap for new features and improvements
+- **Modification and statistics logs (FB-007):** Expanded and clarified practical use case steps in README
+- **Modification and statistics logs (FB-007):** Added link to Functional Blocks Matrix for structured feature overview
+- **Modification and statistics logs (FB-007):** Updated changelog and roadmap for new features and improvements
 
 ### Known issues
-- Modification and statistics logs (FB-007): Performance regression under investigation (see previous release notes)
-- Automatic date correction (FB-004): Jenkins test run ended with an Immich API 500 error after 9.5h and 121,700 assets processed (see logs for details)
+- **Modification and statistics logs (FB-007):** Performance regression under investigation (see previous release notes)
+- **Automatic date correction (FB-004):** Jenkins test run ended with an Immich API 500 error after 9.5h and 121,700 assets processed (see logs for details)
 
 ### Testing
 - Jenkins pipeline: processed 121,700 assets in 9.5 hours before encountering an Immich API 500 error (see logs for details)
