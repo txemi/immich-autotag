@@ -73,11 +73,11 @@ def create_album_if_missing_classification(
     album_wrapper = albums_collection.create_or_get_album_with_user(
         album_name, client, tag_mod_report=tag_mod_report
     )
-    album = album_wrapper.album
-    if is_temporary_album(album.album_name):
+    album_name_actual = album_wrapper.get_album_name()
+    if is_temporary_album(album_name_actual):
         if not is_temporary_album_healthy(album_wrapper):
             log(
-                f"[TEMP ALBUM HEALTH] Album '{album.album_name}' is unhealthy. Deleting and recreating.",
+                f"[TEMP ALBUM HEALTH] Album '{album_name_actual}' is unhealthy. Deleting and recreating.",
                 level=LogLevel.IMPORTANT,
             )
             cleanup_unhealthy_album(album_wrapper, client, tag_mod_report)
