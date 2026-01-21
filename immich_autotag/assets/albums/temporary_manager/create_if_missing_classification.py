@@ -86,7 +86,7 @@ def create_album_if_missing_classification(
                 f"[TEMP ALBUM HEALTH] Album '{album_name_actual}' is unhealthy. Deleting and recreating.",
                 level=LogLevel.IMPORTANT,
             )
-            cleanup_unhealthy_album(album_wrapper, client, tag_mod_report)
+            cleanup_unhealthy_album(album_wrapper)
 
     # Assign asset to album using existing logic (creates if needed)
     from immich_autotag.assets.albums._process_album_detection import (

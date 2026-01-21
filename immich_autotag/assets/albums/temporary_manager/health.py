@@ -10,6 +10,7 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
+    from immich_autotag.types import ImmichClient
 
 
 @typechecked
@@ -40,22 +41,25 @@ def is_temporary_album_healthy(
 @typechecked
 def cleanup_unhealthy_album(
     album_wrapper: AlbumResponseWrapper,
-    tag_mod_report: "ModificationReport" = None,
 ):
     """
-    Deletes the album if it is unhealthy. Optionally logs the operation.
+    Deletes the album if it is unhealthy.
     """
-    # TODO: Implement actual deletion logic using album_wrapper and client
-    # Example: album_wrapper.delete(client)
-    album_name = album_wrapper.get_album_name()
-    if tag_mod_report:
-        from immich_autotag.tags.modification_kind import ModificationKind
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
+    from immich_autotag.context.immich_context import ImmichContext
+    from immich_autotag.report.modification_report import ModificationReport
 
-        tag_mod_report.add_album_modification(
-            kind=ModificationKind.DELETE_ALBUM_UNHEALTHY,
-            album=album_wrapper,
-            old_value=album_name,
-            extra={"reason": "Unhealthy temporary album deleted automatically"},
-        )
-    # Placeholder for deletion
+    album_name = album_wrapper.get_album_name()
+    collection = AlbumCollectionWrapper.get_instance()
+    client = ImmichContext.get_default_client()
+    tag_mod_report = ModificationReport.get_instance()
+
+    collection.delete_album(
+        wrapper=album_wrapper,
+        client=client,
+        tag_mod_report=tag_mod_report,
+        reason="Unhealthy temporary album deleted automatically",
+    )
     print(f"Deleted unhealthy album: {album_name}")
