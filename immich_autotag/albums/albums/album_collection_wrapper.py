@@ -542,11 +542,12 @@ class AlbumCollectionWrapper:
             self.remove_album_local_public(wrapper)
             from immich_autotag.tags.modification_kind import ModificationKind
 
+            # On success, err_reason is not set, so use a default
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.DELETE_ALBUM,
                 album=wrapper,
                 old_value=wrapper.get_album_name(),
-                extra={"reason": f"{reason} (FAILED: {err_reason})"},
+                extra={"reason": f"{reason} (SUCCESS)"},
             )
             return True
 
@@ -591,22 +592,21 @@ class AlbumCollectionWrapper:
             {
                 "name": name,
                 "existing_id": existing.get_album_id(),
-                "incoming_id": wrapper.get_album_id(),
+                "incoming_id": incoming_album.get_album_id(),
                 "note": "duplicate skipped durante carga inicial",
             }
         )
-        if tag_mod_report is not None:
-            from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.tags.modification_kind import ModificationKind
 
-            tag_mod_report.add_error_modification(
-                kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                error_message=f"duplicate album name encountered: {name}",
-                error_category="DUPLICATE_ALBUM",
-                extra={
-                    "existing_id": existing.get_album_id(),
-                    "incoming_id": incoming_album.get_album_id(),
-                },
-            )
+        tag_mod_report.add_error_modification(
+            kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
+            error_message=f"duplicate album name encountered: {name}",
+            error_category="DUPLICATE_ALBUM",
+            extra={
+                "existing_id": existing.get_album_id(),
+                "incoming_id": incoming_album.get_album_id(),
+            },
+        )
         return
 
     @typechecked
