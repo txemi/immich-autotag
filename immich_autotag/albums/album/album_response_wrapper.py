@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
 
@@ -49,14 +49,14 @@ class AlbumResponseWrapper:
     _unavailable: bool = attrs.field(default=False, init=False)
     # Recent error history for this album: list of AlbumErrorEntry objects
     from typing import List
-    _error_history: List[AlbumErrorEntry] = attrs.field(
+    _error_history: list[AlbumErrorEntry] = attrs.field(  # type: ignore[valid-type]
         factory=list,
         init=False,
         repr=False,
         validator=attrs.validators.deep_iterable(
             member_validator=attrs.validators.instance_of(AlbumErrorEntry),
-            iterable_validator=attrs.validators.instance_of(list),
-        ),  # type: ignore
+            iterable_validator=attrs.validators.instance_of(list),  # type: ignore[arg-type]
+        ),
     )
 
     def __attrs_post_init__(self) -> None:
@@ -153,11 +153,14 @@ class AlbumResponseWrapper:
 
     @property
     def is_full(self) -> bool:
-        # Defensive: assets should be a list, but check type to avoid always-true condition
+        # Defensive: assets should be a list[AssetResponseDto], but check type to avoid always-true condition
         if self._album_full is None:
             return False
         assets = getattr(self._album_full, "assets", None)
-        return isinstance(assets, list) and len(assets) > 0
+        if not isinstance(assets, list):
+            return False
+        # type: ignore[arg-type] for static checkers, as assets should be list[AssetResponseDto]
+        return len(assets) > 0  # type: ignore[arg-type]
 
     @typechecked
     def get_album_id(self) -> str:
@@ -291,6 +294,7 @@ class AlbumResponseWrapper:
         from immich_client import errors as immich_errors
         from immich_client.api.albums import get_album_info
 
+        album_dto = None
         try:
             album_dto = get_album_info.sync(
                 id=self.get_album_uuid_no_cache(), client=client
@@ -306,8 +310,9 @@ class AlbumResponseWrapper:
             raise RuntimeError(
                 f"get_album_info.sync returned None for album id={self.get_album_uuid_no_cache()}"
             )
-        self._set_album_full(album_dto)
-        self.invalidate_cache()
+        else:
+            self._set_album_full(album_dto)
+            self.invalidate_cache()
 
     @typechecked
     def _build_partial_repr(self) -> tuple[str | None, str]:
@@ -622,7 +627,7 @@ class AlbumResponseWrapper:
         self,
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
-        tag_mod_report: "ModificationReport" = None,
+        tag_mod_report: "ModificationReport",
     ) -> None:
         """
         Removes the asset from the album using the API and validates the result.
@@ -900,7 +905,7 @@ class AlbumResponseWrapper:
         # type: ignore[call-arg]
         """
         # Use kw_only to ensure correct field assignment
-        wrapper = AlbumResponseWrapper(_album_partial=dto)  # type: ignore
+        wrapper = AlbumResponseWrapper(album_partial=dto)  # type: ignore
         return wrapper
 
     @staticmethod
