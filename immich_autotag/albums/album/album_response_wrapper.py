@@ -16,11 +16,11 @@ if TYPE_CHECKING:
 
 from immich_autotag.utils.decorators import conditional_typechecked
 
+from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+
 if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-
-from immich_autotag.albums.albums.album_error_entry import AlbumErrorEntry
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
@@ -47,16 +47,12 @@ class AlbumResponseWrapper:
     # If True, the album is known to be unavailable (deleted or no access).
     # When unavailable we avoid API reload attempts and treat asset list as empty.
     _unavailable: bool = attrs.field(default=False, init=False)
-    # Recent error history for this album: list of AlbumErrorEntry objects
-    from typing import List
-    _error_history: list[AlbumErrorEntry] = attrs.field(  # type: ignore[valid-type]
-        factory=list,
+    # Error history for this album, encapsulated in AlbumErrorHistory
+    from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
+    _error_history: AlbumErrorHistory = attrs.field(
+        factory=AlbumErrorHistory,
         init=False,
         repr=False,
-        validator=attrs.validators.deep_iterable(
-            member_validator=attrs.validators.instance_of(AlbumErrorEntry),
-            iterable_validator=attrs.validators.instance_of(list),  # type: ignore[arg-type]
-        ),
     )
 
     def __attrs_post_init__(self) -> None:
@@ -234,47 +230,23 @@ class AlbumResponseWrapper:
         except Exception:
             pass
 
+    from typing import Optional
     @typechecked
-    def record_error(self, error_code: str, message: str) -> None:
+    def record_error(self, api_exc: "AlbumApiExceptionInfo") -> None:
         """Record an error event for this album and prune old entries.
 
-        The window for pruning is taken from config `ALBUM_ERROR_WINDOW_SECONDS`.
+        Delegates to AlbumErrorHistory.append_api_exc for encapsulated logic.
         """
         try:
-            import time
-
-            from immich_autotag.albums.albums.album_error_entry import AlbumErrorEntry
             from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
-
-            now = time.time()
-            self._error_history.append(
-                AlbumErrorEntry(timestamp=now, code=error_code, message=str(message))
-            )
-            cutoff = now - int(ALBUM_ERROR_WINDOW_SECONDS)
-            # Keep only recent entries
-            self._error_history = [
-                e for e in self._error_history if e.timestamp >= cutoff
-            ]
+            self._error_history.append_api_exc(api_exc)
+            import time
+            cutoff = time.time() - int(ALBUM_ERROR_WINDOW_SECONDS)
+            self._error_history.prune(cutoff)
         except Exception:
             # Never let recording errors raise and break higher-level flows
             pass
 
-    @typechecked
-    def error_count(self, window_seconds: int | None = None) -> int:
-        try:
-            import time
-
-            from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS
-
-            window = (
-                int(window_seconds)
-                if window_seconds is not None
-                else int(ALBUM_ERROR_WINDOW_SECONDS)
-            )
-            cutoff = time.time() - window
-            return sum(1 for e in self._error_history if e.timestamp >= cutoff)
-        except Exception:
-            return 0
 
     @typechecked
     def should_mark_unavailable(
@@ -284,7 +256,7 @@ class AlbumResponseWrapper:
             from immich_autotag.config.internal_config import ALBUM_ERROR_THRESHOLD
 
             th = int(threshold) if threshold is not None else int(ALBUM_ERROR_THRESHOLD)
-            return self.error_count(window_seconds) >= th
+            return self._error_history.count_in_window(window_seconds) >= th
         except Exception:
             return False
 
@@ -293,6 +265,7 @@ class AlbumResponseWrapper:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client import errors as immich_errors
         from immich_client.api.albums import get_album_info
+        from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
 
         album_dto = None
         try:
@@ -300,12 +273,12 @@ class AlbumResponseWrapper:
                 id=self.get_album_uuid_no_cache(), client=client
             )
         except immich_errors.UnexpectedStatus as exc:
+            api_exc = AlbumApiExceptionInfo(exc)
             album_name, partial_repr = self._build_partial_repr()
-            status_code = self._extract_status_code_from_exc(exc)
-            if status_code == 400:
-                self._handle_recoverable_400(exc, album_name, partial_repr)
+            if api_exc.is_status(400):
+                self._handle_recoverable_400(api_exc, album_name, partial_repr)
                 return
-            self._log_and_raise_fatal_error(exc, album_name, partial_repr)
+            self._log_and_raise_fatal_error(api_exc, album_name, partial_repr)
         if album_dto is None:
             raise RuntimeError(
                 f"get_album_info.sync returned None for album id={self.get_album_uuid_no_cache()}"
@@ -338,31 +311,16 @@ class AlbumResponseWrapper:
             partial_repr = "<unrepresentable album_partial>"
         return album_name, partial_repr
 
-    @typechecked
-    def _extract_status_code_from_exc(self, exc: Exception) -> int | None:
-        """Extrae el status_code de la excepción, intentando parsear si es necesario."""
-        try:
-            status_code = getattr(exc, "status_code", None)
-        except Exception:
-            status_code = None
-        if status_code is None:
-            try:
-                msg = str(exc)
-                if "status code: 400" in msg or "Unexpected status code: 400" in msg:
-                    status_code = 400
-            except Exception:
-                status_code = None
-        return status_code
+    # _extract_status_code_from_exc is now handled by AlbumApiExceptionInfo
 
-    @typechecked
-    def _handle_recoverable_400(self, exc: Exception, album_name: str | None, partial_repr: str) -> None:
+    def _handle_recoverable_400(self, api_exc: AlbumApiExceptionInfo, album_name: str | None, partial_repr: str) -> None:
         """Gestiona el error 400 (no encontrado/sin acceso) de forma recuperable."""
         try:
-            self.record_error("HTTP_400", str(exc))
+            self.record_error(api_exc)
         except Exception:
             pass
         try:
-            current_count = self.error_count()
+            current_count = self._error_history.count_in_window()
         except Exception:
             current_count = None
         log(
@@ -395,12 +353,12 @@ class AlbumResponseWrapper:
                         ModificationKind,
                     )
                     tag_mod_report = ModificationReport.get_instance()
+                    extra = {"recent_errors": len(self._error_history), "album": self}  # type: ignore[arg-type]
                     tag_mod_report.add_error_modification(
                         kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                        album=self,
                         error_message=partial_repr,
                         error_category="HTTP_400",
-                        extra={"recent_errors": len(self._error_history)},
+                        extra=extra,  # type: ignore[arg-type]
                     )
                 except Exception:
                     pass
@@ -416,17 +374,16 @@ class AlbumResponseWrapper:
         except Exception:
             pass
 
-    @typechecked
-    def _log_and_raise_fatal_error(self, exc: Exception, album_name: str | None, partial_repr: str) -> None:
+    def _log_and_raise_fatal_error(self, api_exc: AlbumApiExceptionInfo, album_name: str | None, partial_repr: str) -> None:
         log(
             (
                 f"[FATAL] get_album_info failed for album id={self.get_album_id()!r} "
-                f"name={album_name!r}. Exception: {exc!r}. "
+                f"name={album_name!r}. Exception: {api_exc.exc!r}. "
                 f"album_partial={partial_repr}"
             ),
             level=LogLevel.ERROR,
         )
-        raise exc
+        raise api_exc.exc
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
         if self._album_full is not None:
