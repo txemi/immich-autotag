@@ -873,7 +873,7 @@ class AlbumCollectionWrapper:
 
         log("Albums:", level=LogLevel.INFO)
         # Create the empty collection
-        collection = cls(_albums=AlbumList([]))
+        collection = cls(albums=AlbumList([]))
 
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
