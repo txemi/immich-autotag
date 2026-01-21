@@ -35,9 +35,22 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
+    """
+    Singleton class that manages the collection of all albums in the system.
+
+    Responsibilities:
+    - Maintains the master list of albums (AlbumList) and provides access to them.
+    - Manages a map from asset_id to the list of albums containing each asset (AssetToAlbumsMap),
+        enabling O(1) lookup of albums for a given asset.
+    - Handles unavailable albums and duplicate album detection/merging.
+    - Provides methods for adding, removing, and searching albums by name or UUID.
+    - Coordinates album-related operations, including API synchronization and integrity checks.
+
+    Only one instance of this class is allowed (singleton pattern).
+    """
 
     _albums: AlbumList = attrs.field(
-        factory=AlbumList, validator=attrs.validators.instance_of(AlbumList)
+        init=False, factory=AlbumList, validator=attrs.validators.instance_of(AlbumList)
     )
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
@@ -54,34 +67,6 @@ class AlbumCollectionWrapper:
     )
 
     @typechecked
-    def find_first_album_with_name(
-        self, album_name: str
-    ) -> AlbumResponseWrapper | None:
-        """
-        Returns the first album with the given name, or None if not found.
-        Equivalent to next(self.find_all_albums_with_name(album_name), None).
-        """
-        for album in self.get_albums():
-            if album.get_album_name() == album_name:
-                return album
-        return None
-
-    @typechecked
-    def set_albums(self, value: AlbumList) -> None:
-        """
-        Replaces the internal list of albums with the provided one.
-        """
-        self._albums = value
-
-    @typechecked
-    def get_albums(self) -> AlbumList:
-        """
-        Returns an iterator over the albums in the collection.
-        Does not expose AlbumList directly.
-        """
-        return self._albums
-
-    @typechecked
     def __attrs_post_init__(self) -> None:
         global _album_collection_singleton
         if _album_collection_singleton is not None:
@@ -90,6 +75,15 @@ class AlbumCollectionWrapper:
             )
         _album_collection_singleton = self
         # Asset map is built on demand, not during initialization
+
+    @classmethod
+    def get_instance(cls) -> "AlbumCollectionWrapper":
+        global _album_collection_singleton
+        if _album_collection_singleton is None:
+            raise RuntimeError(
+                "AlbumCollectionWrapper singleton has not been initialized yet."
+            )
+        return _album_collection_singleton
 
     @staticmethod
     @typechecked
@@ -114,35 +108,32 @@ class AlbumCollectionWrapper:
             raise RuntimeError(f"Could not retrieve ModificationReport: {e}")
 
     @typechecked
+    def find_first_album_with_name(
+        self, album_name: str
+    ) -> AlbumResponseWrapper | None:
+        """
+        Returns the first album with the given name, or None if not found.
+        Equivalent to next(self.find_all_albums_with_name(album_name), None).
+        """
+        for album in self.get_albums():
+            if album.get_album_name() == album_name:
+                return album
+        return None
+
+    @typechecked
+    def get_albums(self) -> AlbumList:
+        """
+        Returns an iterator over the albums in the collection.
+        Does not expose AlbumList directly.
+        """
+        return self._albums
+
+    @typechecked
     def _rebuild_asset_to_albums_map(self) -> None:
         """Rebuilds the asset-to-albums map from scratch."""
 
         self._asset_to_albums_map = self._asset_to_albums_map_build()
 
-    @typechecked
-    def _add_album_to_map(self, album_wrapper: AlbumResponseWrapper) -> None:
-        for asset_id in album_wrapper.get_asset_ids():
-            if asset_id not in self._asset_to_albums_map:
-                self._asset_to_albums_map[asset_id] = AlbumList()
-            self._asset_to_albums_map[asset_id].append(album_wrapper)
-
-    @typechecked
-    def _remove_album_from_map(self, album_wrapper: AlbumResponseWrapper) -> None:
-        for asset_id in album_wrapper.get_asset_ids():
-            if asset_id in self._asset_to_albums_map:
-                album_list = self._asset_to_albums_map[asset_id]
-                album_list.remove_album(album_wrapper)
-                if not album_list:
-                    del self._asset_to_albums_map[asset_id]
-
-    @classmethod
-    def get_instance(cls) -> "AlbumCollectionWrapper":
-        global _album_collection_singleton
-        if _album_collection_singleton is None:
-            raise RuntimeError(
-                "AlbumCollectionWrapper singleton has not been initialized yet."
-            )
-        return _album_collection_singleton
 
     @typechecked
     def _remove_album_from_local_collection(
@@ -152,8 +143,8 @@ class AlbumCollectionWrapper:
         Removes an album from the internal collection and updates the map incrementally. Returns True if removed, False if not present.
         """
         if album_wrapper in self._albums:
-            self.set_albums(AlbumList([a for a in self._albums if a != album_wrapper]))
-            self._remove_album_from_map(album_wrapper)
+            self._albums.remove_album(album_wrapper)
+            self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
             return True
         return False
 
@@ -186,8 +177,6 @@ class AlbumCollectionWrapper:
         try:
             album_id = album_wrapper.get_album_id()
         except Exception:
-            album_id = None
-        if album_id is None:
             return
         # Use wrapper identity (by album id) for membership; avoid double-counting
         added = self._unavailable.add(album_wrapper)
@@ -203,11 +192,9 @@ class AlbumCollectionWrapper:
         )
 
         # Evaluate global policy after this change
-        try:
-            self._evaluate_global_policy()
-        except Exception:
-            # Bubble up in development mode, otherwise swallow to continue processing
-            raise
+
+        self._evaluate_global_policy()
+
 
     @typechecked
     def _handle_duplicate_album_conflict(
@@ -264,48 +251,44 @@ class AlbumCollectionWrapper:
         In DEVELOPMENT mode this may raise to fail-fast. In PRODUCTION it logs and
         records a summary event.
         """
-        try:
-            from immich_autotag.config._internal_types import ErrorHandlingMode
-            from immich_autotag.config.internal_config import (
-                DEFAULT_ERROR_MODE,
-                GLOBAL_UNAVAILABLE_THRESHOLD,
+
+        from immich_autotag.config._internal_types import ErrorHandlingMode
+        from immich_autotag.config.internal_config import (
+            DEFAULT_ERROR_MODE,
+            GLOBAL_UNAVAILABLE_THRESHOLD,
+        )
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.tags.modification_kind import ModificationKind
+
+
+        threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
+
+
+        if not self._unavailable.count >= threshold:
+            return
+        
+        # In development: fail fast to surface systemic problems
+        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+            raise RuntimeError(
+                f"Too many albums marked unavailable during run: {self._unavailable.count} >= {threshold}. Failing fast (DEVELOPMENT mode)."
             )
-            from immich_autotag.report.modification_report import ModificationReport
-            from immich_autotag.tags.modification_kind import ModificationKind
-        except Exception:
-            return
 
-        try:
-            threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
-        except Exception:
-            return
+        # In production: record a summary event and continue
 
-        if self._unavailable.count >= threshold:
-            # In development: fail fast to surface systemic problems
-            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
-                raise RuntimeError(
-                    f"Too many albums marked unavailable during run: {self._unavailable.count} >= {threshold}. Failing fast (DEVELOPMENT mode)."
-                )
+        tag_mod_report = ModificationReport.get_instance()
+        tag_mod_report.add_error_modification(
+            kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
+            error_message=f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}",
+            error_category="GLOBAL_THRESHOLD",
+            extra={
+                "unavailable_count": self._unavailable.count,
+                "threshold": threshold,
+            },
+        )
+        # Write a small summary file for operator inspection
 
-            # In production: record a summary event and continue
-            try:
-                tag_mod_report = ModificationReport.get_instance()
-                tag_mod_report.add_error_modification(
-                    kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                    error_message=f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}",
-                    error_category="GLOBAL_THRESHOLD",
-                    extra={
-                        "unavailable_count": self._unavailable.count,
-                        "threshold": threshold,
-                    },
-                )
-                # Write a small summary file for operator inspection
-                try:
-                    self._unavailable.write_summary()
-                except Exception:
-                    pass
-            except Exception:
-                pass
+        self._unavailable.write_summary()
+
 
     @typechecked
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
@@ -354,10 +337,7 @@ class AlbumCollectionWrapper:
                     f"Album '{album_wrapper.get_album_name()}' reloaded with {len(album_wrapper.get_asset_ids())} assets.",
                     level=LogLevel.INFO,
                 )
-            for asset_id in album_wrapper.get_asset_ids():
-                if asset_id not in asset_map:
-                    asset_map[asset_id] = AlbumList()
-                asset_map[asset_id].append(album_wrapper)
+            asset_map.add_album_for_asset_ids(album_wrapper)
         albums_to_remove = self._detect_empty_temporary_albums()
 
         # Removes empty temporary albums detected after building the map
@@ -404,15 +384,13 @@ class AlbumCollectionWrapper:
                 raise
 
     @typechecked
-    def _detect_empty_temporary_albums(self) -> list[AlbumResponseWrapper]:
+    def _detect_empty_temporary_albums(self) -> AlbumList:
         """
-        Returns a list of empty temporary albums to be removed after building the map.
+        Returns an AlbumList of empty temporary albums to be removed after building the map.
         """
-        albums_to_remove: list[AlbumResponseWrapper] = []
+        albums_to_remove = AlbumList()
         for album_wrapper in self.get_albums():
-            if album_wrapper.is_empty() and is_temporary_album(
-                album_wrapper.get_album_name()
-            ):
+            if album_wrapper.is_empty() and is_temporary_album(album_wrapper.get_album_name()):
                 albums_to_remove.append(album_wrapper)
         return albums_to_remove
 
@@ -842,16 +820,14 @@ class AlbumCollectionWrapper:
 
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
-            try:
-                collection._try_append_wrapper_to_list(
-                    albums_list=albums_wrapped,
-                    wrapper=wrapper,
-                    client=client,
-                    tag_mod_report=tag_mod_report,
-                    duplicates_collected=duplicates_collected,
-                )
-            except RuntimeError:
-                raise
+            collection._try_append_wrapper_to_list(
+                albums_list=albums_wrapped,
+                wrapper=wrapper,
+                client=client,
+                tag_mod_report=tag_mod_report,
+                duplicates_collected=duplicates_collected,
+            )
+
             log(
                 f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
                 level=LogLevel.INFO,
@@ -868,5 +844,15 @@ class AlbumCollectionWrapper:
         log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
 
         # Assign the final list to the collection and return it
-        collection.set_albums(AlbumList(albums_wrapped))
+
         return collection
+
+    @typechecked
+    def find_album_by_id(self, album_id: UUID) -> AlbumResponseWrapper | None:
+        """
+        Returns the first album with the given UUID, or None if not found.
+        """
+        for album in self.get_albums():
+            if album.get_album_id() == str(album_id):
+                return album
+        return None
