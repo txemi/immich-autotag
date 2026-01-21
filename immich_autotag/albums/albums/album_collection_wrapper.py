@@ -772,8 +772,12 @@ class AlbumCollectionWrapper:
         if len(albums_found) == 1:
             return albums_found[0]
         elif len(albums_found) > 1:
-            return self.combine_duplicate_albums(
+            result = self.combine_duplicate_albums(
                 albums_found, context="duplicate_on_create"
+            )
+            # Lanzar excepción para desarrolladores tras la limpieza
+            raise RuntimeError(
+                f"Duplicate albums with name '{album_name}' were found and combined. This indicates a data integrity issue. Review the logs and investigate the cause."
             )
 
         # If it doesn't exist, create it and assign user
