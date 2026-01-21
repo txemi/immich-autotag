@@ -76,7 +76,6 @@ class AlbumResponseWrapper:
         if album is None:
             raise AttributeError("AlbumResponseWrapper: owner_id not available.")
 
-
         return UUID(album.owner_id)
 
     @typechecked
