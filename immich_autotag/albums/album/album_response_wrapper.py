@@ -48,8 +48,14 @@ class AlbumResponseWrapper:
     # When unavailable we avoid API reload attempts and treat asset list as empty.
     _unavailable: bool = attrs.field(default=False, init=False)
     # Recent error history for this album: list of AlbumErrorEntry objects
-    _error_history: list[AlbumErrorEntry] = attrs.field(
-        default=attrs.Factory(list), init=False, repr=False
+    from typing import List
+    _error_history: List[AlbumErrorEntry] = attrs.field(
+        factory=list,
+        init=False, repr=False,
+        validator=attrs.validators.deep_iterable(
+            member_validator=attrs.validators.instance_of(AlbumErrorEntry),
+            iterable_validator=attrs.validators.instance_of(list),
+        ),
     )
 
     def __attrs_post_init__(self) -> None:
