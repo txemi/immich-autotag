@@ -13,7 +13,8 @@ def get_progress_description_from_perf_tracker(
     perf_tracker: Optional[PerformanceTracker], current_count: int = 0
 ) -> str:
     """
-    Returns a textual description of current progress, including percentage and time estimation if available.
+    Returns a textual description of current progress, including percentage and
+    time estimation if available.
     perf_tracker: PerformanceTracker with the necessary attributes.
     current_count: number of processed elements (optional, default 0)
     """

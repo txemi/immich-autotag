@@ -41,7 +41,8 @@ def find_recent_run_dirs(
     logs_dir: Path, max_age_hours: int = 3, exclude_current: bool = True
 ) -> list[Path]:
     """
-    Returns a list of recent execution folders (subdirs with 'PID' in the name and a valid date),
+    Returns a list of recent execution folders (subdirs with 'PID' in the name and a
+    valid date),
     sorted from most recent to oldest, filtered by age (max_age_hours).
     If exclude_current is True, excludes the current execution folder.
     """
