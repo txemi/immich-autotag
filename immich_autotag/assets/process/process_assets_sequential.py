@@ -13,7 +13,6 @@ from immich_autotag.errors.recoverable_error import categorize_error
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.statistics.statistics_checkpoint import get_previous_skip_n
 from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
@@ -35,7 +34,7 @@ def process_assets_sequential(
     config_resume_previous = True
     if cm.config is not None and cm.config.skip is not None:
         config_skip_n = cm.config.skip.skip_n or 0
-        config_resume_previous = cm.config.skip.resume_previous 
+        config_resume_previous = cm.config.skip.resume_previous
     # Usar la lógica centralizada del CheckpointManager para decidir y loguear el origen
     skip_n = StatisticsManager.get_instance().checkpoint.get_effective_skip_n(
         config_skip_n=config_skip_n, config_resume_previous=config_resume_previous

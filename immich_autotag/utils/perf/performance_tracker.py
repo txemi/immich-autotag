@@ -1,4 +1,3 @@
-
 import time
 from typing import Optional
 
@@ -32,11 +31,13 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] total_to_process is not defined. Cannot initialize the tracker."
             )
+
     @typechecked
     def set_progress_timing(self, start_time: float, log_interval: int = 5):
         self.start_time = start_time
         self.last_log_time = start_time
         self.log_interval = log_interval
+
     @typechecked
     def update(self, count: int):
         now = time.time()
@@ -45,11 +46,13 @@ class PerformanceTracker:
             elapsed = now - self.start_time
             self.print_progress(count, elapsed)
             self.last_log_time = now
+
     @typechecked
     def print_progress(self, count: int, elapsed: Optional[float] = None):
         if elapsed is None:
             elapsed = time.time() - self.start_time
         print("[PERF] " + self._format_perf_progress(count, elapsed))
+
     @typechecked
     def get_progress_description(self, count: int = 0) -> str:
         """
@@ -57,6 +60,7 @@ class PerformanceTracker:
         """
         elapsed = time.time() - self.start_time
         return self._format_perf_progress(count, elapsed)
+
     @typechecked
     def _format_perf_progress(self, count: int, elapsed: float) -> str:
         avg = elapsed / count if count else 0
@@ -80,7 +84,10 @@ class PerformanceTracker:
                 est_total_rel = avg * total_to_process
                 est_remaining_rel = est_total_rel - elapsed
             from immich_autotag.utils.perf.estimate_utils import adjust_estimates
-            est_total_rel, est_remaining_rel = adjust_estimates(elapsed, est_total_rel, est_remaining_rel)
+
+            est_total_rel, est_remaining_rel = adjust_estimates(
+                elapsed, est_total_rel, est_remaining_rel
+            )
             percent_rel = (count / total_to_process) * 100
 
             # Absoluto (incluyendo skip_n)
@@ -96,7 +103,9 @@ class PerformanceTracker:
                 # Estimación absoluta: extrapolamos el tiempo medio a todo el total
                 est_total_abs = avg * abs_total
                 est_remaining_abs = est_total_abs - elapsed
-                est_total_abs, est_remaining_abs = adjust_estimates(elapsed, est_total_abs, est_remaining_abs)
+                est_total_abs, est_remaining_abs = adjust_estimates(
+                    elapsed, est_total_abs, est_remaining_abs
+                )
 
             def fmt_time(minutes: float) -> str:
                 if minutes >= 60:
@@ -109,7 +118,11 @@ class PerformanceTracker:
                 msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absoluto)"
             msg += f") procesados. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. "
             msg += f"Est. restante (relativo): {fmt_time(est_remaining_rel/60)}/{fmt_time(est_total_rel/60)}"
-            if percent_abs is not None and est_remaining_abs is not None and est_total_abs is not None:
+            if (
+                percent_abs is not None
+                and est_remaining_abs is not None
+                and est_total_abs is not None
+            ):
                 msg += f" | Est. restante (absoluto): {fmt_time(est_remaining_abs/60)}/{fmt_time(est_total_abs/60)}"
             return msg
         else:

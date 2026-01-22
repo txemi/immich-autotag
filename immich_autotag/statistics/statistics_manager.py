@@ -86,7 +86,6 @@ class StatisticsManager:
                 self.start_run()
             self._current_stats.increment_event(event_kind, extra_key=extra_key)
 
-
     @typechecked
     def get_progress_description(self) -> str:
         count = self._current_stats.count if self._current_stats else 0
