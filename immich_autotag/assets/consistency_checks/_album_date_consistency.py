@@ -12,7 +12,7 @@ from typeguard import typechecked
 
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.tags.modification_kind import ModificationKind
+from immich_autotag.report.modification_kind import ModificationKind
 
 
 @typechecked

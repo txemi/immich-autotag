@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from immich_autotag.tags.modification_kind import ModificationKind
+    from immich_autotag.report.modification_kind import ModificationKind
 
 from threading import RLock
 

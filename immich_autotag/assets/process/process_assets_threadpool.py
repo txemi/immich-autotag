@@ -60,7 +60,7 @@ def process_assets_threadpool(
                     )
 
                     # Register the error in modification report
-                    from immich_autotag.tags.modification_kind import ModificationKind
+                    from immich_autotag.report.modification_kind import ModificationKind
 
                     tag_mod_report = ModificationReport.get_instance()
                     if tag_mod_report:

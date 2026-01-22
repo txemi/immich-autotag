@@ -99,7 +99,7 @@ def analyze_and_assign_album(
             level=LogLevel.ERROR,
         )
         # Register this in the modification report for auditing
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
         tag_mod_report.add_modification(
             kind=ModificationKind.CLASSIFICATION_CONFLICT,
