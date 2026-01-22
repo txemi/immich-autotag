@@ -3,8 +3,8 @@ from __future__ import annotations
 from typeguard import typechecked
 
 from immich_autotag.assets.albums.analyze_and_assign_album import (
-    analyze_and_assign_album,
     AlbumAssignmentResult,
+    analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (

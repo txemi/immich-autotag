@@ -52,8 +52,6 @@ class AlbumLoadSource(enum.Enum):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
-
-
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -84,6 +82,7 @@ class AlbumResponseWrapper:
             raise ValueError("AlbumResponseWrapper must be constructed with a DTO.")
         if not hasattr(self, "_loaded_at") or self._loaded_at is None:
             self._loaded_at = datetime.datetime.now()
+
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
         """
@@ -91,12 +90,12 @@ class AlbumResponseWrapper:
         Siempre usar este método para acceder a los asset IDs.
         """
         from uuid import UUID
+
         if self._asset_ids_cache is not None:
             return self._asset_ids_cache
         assets = self._album_dto.assets
         self._asset_ids_cache = set(UUID(a.id) for a in assets)
         return self._asset_ids_cache
-
 
     @typechecked
     def _mark_deleted(self) -> None:
@@ -469,6 +468,7 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
         from uuid import UUID
+
         return UUID(asset.id) in self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
@@ -476,6 +476,7 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
         from uuid import UUID
+
         return UUID(asset_wrapper.asset.id) in self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
@@ -1030,7 +1031,9 @@ class AlbumResponseWrapper:
         return AlbumUserList(users)
 
     @typechecked
-    def merge_from_dto(self, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
+    def merge_from_dto(
+        self, dto: AlbumResponseDto, load_source: AlbumLoadSource
+    ) -> None:
         """
         Unifies DTO update logic. Updates the wrapper with the new DTO and load_source if:
         - The new load_source is DETAIL (always update to full)
@@ -1047,10 +1050,11 @@ class AlbumResponseWrapper:
         if should_update:
             now = datetime.datetime.now()
             if hasattr(self, "_loaded_at") and now < self._loaded_at:
-                raise RuntimeError("New loaded_at timestamp is earlier than previous loaded_at.")
+                raise RuntimeError(
+                    "New loaded_at timestamp is earlier than previous loaded_at."
+                )
             self._album_dto = dto
             self._load_source = load_source
             self._loaded_at = now
 
             self._asset_ids_cache = None
-

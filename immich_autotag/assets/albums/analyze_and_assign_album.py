@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from enum import Enum, auto
+from typing import TYPE_CHECKING
 
 from typeguard import typechecked
-
-from typing import TYPE_CHECKING
 
 from immich_autotag.assets.albums._process_album_detection import (
     process_album_detection,
