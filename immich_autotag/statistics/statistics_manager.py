@@ -31,6 +31,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from immich_autotag.report.modification_kind import ModificationKind
 
+
+import time
 from threading import RLock
 
 import attr
