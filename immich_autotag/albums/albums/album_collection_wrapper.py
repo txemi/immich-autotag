@@ -662,6 +662,18 @@ class AlbumCollectionWrapper:
 
         # This will fetch and replace the albums in the singleton
         self.resync_from_api()
+        return self
+
+    @typechecked
+    def get_asset_to_albums_map(self) -> AssetToAlbumsMap:
+        """
+        Returns the current asset-to-albums map, building it if not already done.
+        """
+
+        self._ensure_fully_loaded()
+        if self._asset_to_albums_map is None:
+            self._rebuild_asset_to_albums_map()
+        return self._asset_to_albums_map
 
     @conditional_typechecked
     def albums_for_asset(
@@ -671,8 +683,7 @@ class AlbumCollectionWrapper:
         Returns an iterable of AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map).
         Ensures all albums are loaded before proceeding.
         """
-        self._ensure_fully_loaded()
-        return self._asset_to_albums_map.get(asset.uuid, AlbumList())
+        return self.get_asset_to_albums_map().get_from_uuid(asset.get_uuid())
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseWrapper) -> list[str]:
