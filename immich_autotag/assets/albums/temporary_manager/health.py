@@ -44,8 +44,13 @@ def is_temporary_album_healthy(
         if isinstance(album_max_date, str):
             album_max_date = datetime.datetime.fromisoformat(album_max_date)
         # Compare only the date part (ignore time)
-        if min_date.date() != album_min_date.date() or max_date.date() != album_max_date.date():
-            raise RuntimeError(f"Temporary album date mismatch: calculated min/max {min_date.date()} - {max_date.date()} vs album-provided {album_min_date.date()} - {album_max_date.date()}")
+        if (
+            min_date.date() != album_min_date.date()
+            or max_date.date() != album_max_date.date()
+        ):
+            raise RuntimeError(
+                f"Temporary album date mismatch: calculated min/max {min_date.date()} - {max_date.date()} vs album-provided {album_min_date.date()} - {album_max_date.date()}"
+            )
         # Use album-provided dates for delta calculation
         delta = (album_max_date - album_min_date).days
     else:

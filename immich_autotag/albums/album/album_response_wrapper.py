@@ -209,7 +209,9 @@ class AlbumResponseWrapper:
                 raise RuntimeError(
                     f"Album with id={self.get_album_id()} and name='"
                     f"{self.get_album_name()}' not found among albums with the same name: "
-                    f"{album_ids}"
+                    f"{album_ids[:40]}..."
+                    if len(str(album_ids)) > 40
+                    else f"{album_ids}"
                 )
             else:
                 # Intentar resync de la colección y volver a comprobar
@@ -707,8 +709,9 @@ class AlbumResponseWrapper:
             # Not found in response
             log(
                 (
-                    f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album "
-                    f"response for album {self.get_album_id()}. "
+                    f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in "
+                    f"remove_assets_from_album response for album "
+                    f"{self.get_album_id()}. "
                     f"Treating as already removed."
                 ),
                 level=LogLevel.WARNING,
@@ -719,7 +722,8 @@ class AlbumResponseWrapper:
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise RuntimeError(
                     (
-                        f"Asset {asset_wrapper.id} not found in remove_assets_from_album response for album "
+                        f"Asset {asset_wrapper.id} not found in "
+                        f"remove_assets_from_album response for album "
                         f"{self.get_album_id()}."
                     )
                 )
@@ -728,8 +732,8 @@ class AlbumResponseWrapper:
         # Log successful removal
         log(
             (
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album {self.get_album_id()} "
-                f"('{self.get_album_name()}')."
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album "
+                f"{self.get_album_id()} ('{self.get_album_name()}')."
             ),
             level=LogLevel.FOCUS,
         )
@@ -858,8 +862,8 @@ class AlbumResponseWrapper:
 
         log(
             (
-                f"[ALBUM REMOVAL] Asset could not be removed because album {self.get_album_id()} "
-                f"was not found (HTTP 404): {error_msg}\n"
+                f"[ALBUM REMOVAL] Asset could not be removed because album "
+                f"{self.get_album_id()} was not found (HTTP 404): {error_msg}\n"
                 f"Asset link: {asset_url}\n"
                 f"Album link: {album_url}"
             ),
@@ -891,9 +895,10 @@ class AlbumResponseWrapper:
             else:
                 log(
                     (
-                        f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album "
-                        f"{self.get_album_id()}. "
-                        f"This may be an eventual consistency or API issue."
+                        f"After {max_retries} retries, asset {asset_wrapper.id} "
+                        f"does NOT appear in album {self.get_album_id()}. "
+                        f"This may be an eventual consistency or "
+                        f"API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
@@ -925,7 +930,8 @@ class AlbumResponseWrapper:
                     (
                         f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album "
                         f"{self.get_album_id()}. "
-                        f"This may be an eventual consistency or API issue."
+                        f"This may be an eventual consistency or "
+                        f"API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
