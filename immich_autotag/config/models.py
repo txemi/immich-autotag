@@ -110,7 +110,18 @@ class Conversion(BaseModel):
         default=None, description="Optional description for the conversion rule."
     )
 
-
+class ConversionConfig(BaseModel):
+    """
+    Configuration block for asset tag/album conversions.
+    Allows batch conversion, copying, or transformation of tags and albums for compatibility, refactoring, or testing different classification strategies.
+    """
+    model_config = {"extra": "forbid"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for the conversion configuration block."
+    )
+    conversions: list[Conversion] = Field(
+        default_factory=list, description="List of conversion rules to apply."
+    )
 class ClassificationConfig(BaseModel):
     """
     Allows the user to define classification categories to use in the application.
@@ -120,7 +131,10 @@ class ClassificationConfig(BaseModel):
     This helps the user easily detect unclassified or conflicting assets and resolve them manually.
     """
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "allow"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for the classification configuration."
+    )
     rules: List[ClassificationRule] = Field(
         default_factory=list, description="List of classification rules."
     )
@@ -156,7 +170,10 @@ class AlbumDateConsistencyConfig(BaseModel):
     Compares the asset's taken date with its album's date and tags mismatches for user review.
     """
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "allow"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for the album date consistency configuration."
+    )
     enabled: bool = Field(
         default=True, description="Enable album date consistency checks."
     )
@@ -176,7 +193,10 @@ class DuplicateProcessingConfig(BaseModel):
     This allows detection and tagging of differences in date, classification, or albums, since all duplicates should ideally match in these aspects.
     """
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "allow"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for the duplicate processing configuration."
+    )
     autotag_album_conflict: Optional[str] = Field(
         default="autotag_output_duplicate_asset_album_conflict",
         description="Tag for assets with album conflicts among duplicates.",
@@ -208,7 +228,10 @@ class AlbumDetectionFromFoldersConfig(BaseModel):
     Folders listed in 'excluded_paths' will be ignored.
     """
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "allow"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for the album date consistency configuration."
+    )
     enabled: bool = Field(
         ...,
         description="Enable automatic album creation from folders with a date in their name.",
@@ -223,7 +246,10 @@ class PerformanceConfig(BaseModel):
     Performance and debugging settings.
     """
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "allow"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for the album detection from folders configuration."
+    )
     enable_type_checking: bool = Field(
         default=False,
         description="Enable @typechecked runtime type validation. Disable in production for ~50% performance improvement.",
@@ -270,7 +296,10 @@ class AlbumPermissionsConfig(BaseModel):
     Configuration for automatic album permission assignment.
     """
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "allow"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for the album permissions configuration."
+    )
     enabled: bool = Field(default=False, description="Enable album permission feature.")
     user_groups: Optional[List[UserGroup]] = Field(
         None, description="Define logical user groups."
@@ -331,8 +360,8 @@ class UserConfig(BaseModel):
     filters: Optional[FilterConfig] = Field(
         default=None, description="Filter configuration for item selection."
     )
-    conversions: List[Conversion] = Field(
-        ..., description="List of conversion rules to apply."
+    conversions: ConversionConfig = Field(
+        ..., description="Conversion configuration block."
     )
     classification: ClassificationConfig = Field(
         ..., description="Classification configuration block."
