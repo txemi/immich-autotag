@@ -210,16 +210,17 @@ class AlbumResponseWrapper:
 
         return ImmichContext.get_default_client()
 
-    @property
-    def is_full(self) -> bool:
-        # Defensive: assets should be a list[AssetResponseDto], but check type to avoid always-true condition
-        if self._album_full is None:
-            return False
-        assets = getattr(self._album_full, "assets", None)
-        if not isinstance(assets, list):
-            return False
-        # Defensive: assets should be a list[AssetResponseDto], but type checkers may not know
-        return len(assets) > 0
+    def _is_full(self) -> bool:
+            """
+            Returns True if the album was loaded from DETAIL (full), False if from SEARCH (partial).
+            Raises if _load_source is not recognized (defensive programming).
+            """
+            if self._load_source == AlbumLoadSource.DETAIL:
+                return True
+            elif self._load_source == AlbumLoadSource.SEARCH:
+                return False
+            else:
+                raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
 
     @typechecked
 
@@ -256,7 +257,7 @@ class AlbumResponseWrapper:
                 "Album is marked unavailable; cannot ensure full DTO for this album"
             )
 
-        if not self.is_full:
+        if not self._is_full():
             self.reload_from_api(self.get_default_client())
 
     @typechecked
