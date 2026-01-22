@@ -5,7 +5,7 @@ import attr
 from typeguard import typechecked
 
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
-from immich_autotag.utils.perf.print_perf import print_perf
+from immich_autotag.utils.perf.print_perf import format_perf_progress
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 
@@ -49,12 +49,15 @@ class PerformanceTracker:
     def print_progress(self, count: int, elapsed: Optional[float] = None):
         if elapsed is None:
             elapsed = time.time() - self.start_time
-        print_perf(
-            count=count,
-            elapsed=elapsed,
-            total_to_process=self.total_to_process,
-            estimator=self.estimator,
-            skip_n=self.skip_n,
-            total_assets=self.total_assets,
-            estimation_mode=self.estimation_mode,
+        print(
+            "[PERF] "
+            + format_perf_progress(
+                count=count,
+                elapsed=elapsed,
+                total_to_process=self.total_to_process,
+                estimator=self.estimator,
+                skip_n=self.skip_n,
+                total_assets=self.total_assets,
+                estimation_mode=self.estimation_mode,
+            )
         )

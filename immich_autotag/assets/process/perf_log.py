@@ -3,7 +3,7 @@ from __future__ import annotations
 from typeguard import typechecked
 
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
-from immich_autotag.utils.perf.print_perf import print_perf
+from immich_autotag.utils.perf.print_perf import format_perf_progress
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 
@@ -16,12 +16,15 @@ def perf_log(
     skip_n: int,
     total_assets: int | None,
 ) -> None:
-    print_perf(
-        count,
-        elapsed,
-        total_to_process,
-        estimator,
-        skip_n=skip_n if skip_n else 0,
-        total_assets=total_assets,
-        estimation_mode=TimeEstimationMode.LINEAR,
+    print(
+        "[PERF] "
+        + format_perf_progress(
+            count=count,
+            elapsed=elapsed,
+            total_to_process=total_to_process,
+            estimator=estimator,
+            skip_n=skip_n if skip_n else 0,
+            total_assets=total_assets,
+            estimation_mode=TimeEstimationMode.LINEAR,
+        )
     )

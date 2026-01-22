@@ -73,32 +73,3 @@ def format_perf_progress(
         )
 
 
-@typechecked
-def print_perf(
-    count: int,
-    elapsed: float,
-    total_to_process: Optional[int] = None,
-    estimator: Optional[AdaptiveTimeEstimator] = None,
-    skip_n: Optional[int] = None,
-    total_assets: Optional[int] = None,
-    estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR,
-) -> None:
-    """
-    Print performance statistics for asset processing.
-    Args:
-        count (int): Number of assets processed.
-        elapsed (float): Elapsed time in seconds.
-        total_assets (int, optional): Total number of assets to process.
-    """
-    print(
-        "[PERF] "
-        + format_perf_progress(
-            count=count,
-            elapsed=elapsed,
-            total_to_process=total_to_process,
-            estimator=estimator,
-            skip_n=skip_n,
-            total_assets=total_assets,
-            estimation_mode=estimation_mode,
-        )
-    )
