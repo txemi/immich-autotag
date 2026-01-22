@@ -126,12 +126,7 @@ class StatisticsManager:
             self._save_to_file()
             self._get_or_create_perf_tracker()
 
-    @typechecked
-    def set_max_assets(self, max_assets: int) -> None:
-        with self._lock:
-            self.get_or_create_run_stats().max_assets = max_assets
-            self._save_to_file()
-            self._get_or_create_perf_tracker()
+
 
     def maybe_print_progress(self, count: int) -> None:
         self._get_or_create_perf_tracker().update(count)
@@ -219,6 +214,7 @@ class StatisticsManager:
             level=LogLevel.WARNING,
         )
 
+
     @typechecked
     def finish_run(self) -> None:
         from datetime import datetime, timezone
@@ -234,16 +230,7 @@ class StatisticsManager:
 
     @typechecked
     def abrupt_exit(self) -> None:
-        from datetime import datetime, timezone
-
-        with self._lock:
-            now = datetime.now(timezone.utc)
-            self.get_or_create_run_stats().abrupt_exit_at = now
-            # Sumar el tiempo de esta sesión al acumulado
-            if self.get_or_create_run_stats().started_at is not None:
-                session_time = (now - self._current_stats.started_at).total_seconds()
-                self.get_or_create_run_stats().previous_sessions_time += session_time
-            self._save_to_file()
+        self.finish_run()
 
     @property
     def RELEVANT_TAGS(self):
@@ -297,11 +284,12 @@ class StatisticsManager:
 
     # Tag/album methods delegated to TagStatsManager
     @typechecked
-    def initialize_for_run(self, max_assets: int) -> None:
+    def initialize_for_run(self, total_assets: int) -> None:
         total_assets = max_assets
-        self._get_or_create_perf_tracker().total_assets = total_assets
+        self._get_or_create_perf_tracker().set_total_assets(total_assets)
+        
         # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
         self._current_stats.total_assets = total_assets
-        self.set_max_assets(max_assets if max_assets is not None else -1)
+        self.set_total_assets(total_assets)
         skip_n = self.get_effective_skip_n()
         self.set_skip_n(skip_n)
