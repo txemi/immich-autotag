@@ -8,7 +8,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.albums.albums.album_list import AlbumList
+from immich_autotag.albums.albums.album_map import AlbumMap
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
@@ -51,8 +51,8 @@ class AlbumCollectionWrapper:
     Only one instance of this class is allowed (singleton pattern).
     """
 
-    _albums: AlbumList = attrs.field(
-        init=False, factory=AlbumList, validator=attrs.validators.instance_of(AlbumList)
+    _albums: AlbumMap = attrs.field(
+        init=False, factory=AlbumMap, validator=attrs.validators.instance_of(AlbumMap)
     )
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
