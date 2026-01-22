@@ -27,7 +27,6 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
-      
 
     @typechecked
     def set_progress_timing(self, start_time: float, log_interval: int = 5):

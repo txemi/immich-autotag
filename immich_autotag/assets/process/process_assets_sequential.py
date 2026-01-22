@@ -36,7 +36,7 @@ def process_assets_sequential(
         config_skip_n = cm.config.skip.skip_n or 0
         config_resume_previous = cm.config.skip.resume_previous
     # Usar la lógica centralizada del CheckpointManager para decidir y loguear el origen
-    skip_n = StatisticsManager.get_instance().checkpoint.get_effective_skip_n(
+    skip_n = StatisticsManager.get_instance().get_checkpoint_manager().get_effective_skip_n(
         config_skip_n=config_skip_n, config_resume_previous=config_resume_previous
     )
     max_assets = stats.max_assets
