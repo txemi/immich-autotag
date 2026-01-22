@@ -95,7 +95,7 @@ class StatisticsManager:
     @typechecked
     def _try_init_perf_tracker(self):
         if self._perf_tracker is not None:
-            return self_perf_tracker
+            return self._perf_tracker
         total = self.start_run().total_assets or self.start_run().max_assets
 
         from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
@@ -281,7 +281,7 @@ class StatisticsManager:
 
     @typechecked
     def get_effective_skip_n(self) -> int:
-        return self.checkpoint.get_effective_skip_n()
+        return self._checkpoint.get_effective_skip_n()
 
     @typechecked
     def increment_tag_action(
