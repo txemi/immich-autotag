@@ -910,6 +910,9 @@ class AssetResponseWrapper:
     def uuid(self) -> UUID:
         return UUID(self.asset.id)
 
+    def get_uuid(self) -> UUID:
+        return UUID(self.asset.id)
+
     def get_album_names(self) -> list[str]:
         """
         Returns the names of the albums this asset belongs to.

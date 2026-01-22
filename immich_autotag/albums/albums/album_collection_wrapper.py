@@ -23,6 +23,10 @@ from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_a
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.config._internal_types import ErrorHandlingMode
+
+# Import config for error mode
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
@@ -828,7 +832,11 @@ class AlbumCollectionWrapper:
         return wrapper
 
     @classmethod
-    def from_client(cls, client: ImmichClient) -> "AlbumCollectionWrapper":
+    def from_client(
+        cls,
+        client: ImmichClient,
+        preload_albums: bool = DEFAULT_ERROR_MODE != ErrorHandlingMode.CRAZY_DEBUG,
+    ) -> "AlbumCollectionWrapper":
         """
         Fetches all album metadata from the API (without assets initially).
 
@@ -861,19 +869,19 @@ class AlbumCollectionWrapper:
         log("Albums:", level=LogLevel.PROGRESS)
         # Create the empty collection
         collection = cls()
+        if preload_albums:
+            for album in albums:
+                wrapper = AlbumResponseWrapper.from_partial_dto(album)
+                collection._try_append_wrapper_to_list(
+                    wrapper=wrapper,
+                    client=client,
+                    tag_mod_report=tag_mod_report,
+                )
 
-        for album in albums:
-            wrapper = AlbumResponseWrapper.from_partial_dto(album)
-            collection._try_append_wrapper_to_list(
-                wrapper=wrapper,
-                client=client,
-                tag_mod_report=tag_mod_report,
-            )
-
-            log(
-                f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
-                level=LogLevel.INFO,
-            )
+                log(
+                    f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
+                    level=LogLevel.INFO,
+                )
 
         tag_mod_report.flush()
         if len(duplicates_collected) > 0:

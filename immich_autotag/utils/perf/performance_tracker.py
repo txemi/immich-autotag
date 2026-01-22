@@ -5,10 +5,9 @@ from typing import Optional
 import attr
 from typeguard import typechecked
 
+from immich_autotag.logging.utils import log_debug
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
-
-from immich_autotag.logging.utils import log_debug
 
 
 # --- Tuple replacement dataclasses ---

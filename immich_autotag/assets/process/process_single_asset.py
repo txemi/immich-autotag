@@ -15,7 +15,6 @@ from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
-
 @typechecked
 def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
     """Apply tag conversions to the asset using the current config."""
@@ -70,15 +69,11 @@ def process_single_asset(
     assigns album, validates classification, flushes the report, and updates tag counters.
     Thread-safe for report flushing.
     """
-    try:
-        asset_id = asset_wrapper.id
-    except AttributeError:
-        asset_id = None
+
+    asset_id = asset_wrapper.get_uuid()
+
     log_debug(f"[BUG] START process_single_asset {asset_id}")
-    try:
-        asset_id = asset_wrapper.id
-    except AttributeError:
-        asset_id = None
+
     log(
         f"[DEBUG] [process_single_asset] START asset_id={asset_id}",
         level=LogLevel.FOCUS,
@@ -89,6 +84,8 @@ def process_single_asset(
     log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
 
     _apply_tag_conversions(asset_wrapper)
+    if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
+        raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
     _correct_date_if_enabled(asset_wrapper)
     _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
