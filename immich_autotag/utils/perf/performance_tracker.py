@@ -1,4 +1,5 @@
 import time
+from dataclasses import dataclass
 from typing import Optional
 
 import attr
@@ -6,6 +7,21 @@ from typeguard import typechecked
 
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
+
+
+# --- Tuple replacement dataclasses ---
+@dataclass
+class AbsTotalAndAvg:
+    abs_total: Optional[int]
+    avg: float
+
+
+@dataclass
+class AvgAndTotals:
+    avg: float
+    total_to_process: Optional[int]
+    estimator: Optional[AdaptiveTimeEstimator]
+    estimation_mode: TimeEstimationMode
 
 
 @typechecked
@@ -94,11 +110,11 @@ class PerformanceTracker:
     @typechecked
     def _printable_value__get_abs_total_and_avg(
         self, count: int, elapsed: float
-    ) -> tuple[Optional[int], float]:
+    ) -> AbsTotalAndAvg:
         """Returns abs_total and avg for methods that use them together."""
         abs_total = self._printable_value_abs_total()
         avg = self._printable_value_avg(count, elapsed)
-        return abs_total, avg
+        return AbsTotalAndAvg(abs_total=abs_total, avg=avg)
 
     @typechecked
     def _printable_value__get_remaining(self, count: int) -> Optional[int]:
@@ -151,20 +167,29 @@ class PerformanceTracker:
     def _printable_value_estimator(self) -> Optional[AdaptiveTimeEstimator]:
         return self._estimator
 
-    def _printable_value__get_avg_and_totals(self, count: int, elapsed: float):
+    def _printable_value__get_avg_and_totals(
+        self, count: int, elapsed: float
+    ) -> AvgAndTotals:
         avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         estimator = self._printable_value_estimator()
         estimation_mode = self._printable_value_estimation_mode()
-        return avg, total_to_process, estimator, estimation_mode
+        return AvgAndTotals(
+            avg=avg,
+            total_to_process=total_to_process,
+            estimator=estimator,
+            estimation_mode=estimation_mode,
+        )
 
     @typechecked
     def _printable_value_est_total_session(
         self, count: int, elapsed: float
     ) -> Optional[float]:
-        avg, total_to_process, estimator, estimation_mode = (
-            self._printable_value__get_avg_and_totals(count, elapsed)
-        )
+        avg_and_totals = self._printable_value__get_avg_and_totals(count, elapsed)
+        avg = avg_and_totals.avg
+        total_to_process = avg_and_totals.total_to_process
+        estimator = avg_and_totals.estimator
+        estimation_mode = avg_and_totals.estimation_mode
         if total_to_process and count > 0:
             if (
                 estimation_mode == TimeEstimationMode.EWMA
@@ -181,9 +206,11 @@ class PerformanceTracker:
     def _printable_value_est_remaining_session(
         self, count: int, elapsed: float
     ) -> Optional[float]:
-        avg, total_to_process, estimator, estimation_mode = (
-            self._printable_value__get_avg_and_totals(count, elapsed)
-        )
+        avg_and_totals = self._printable_value__get_avg_and_totals(count, elapsed)
+        avg = avg_and_totals.avg
+        total_to_process = avg_and_totals.total_to_process
+        estimator = avg_and_totals.estimator
+        estimation_mode = avg_and_totals.estimation_mode
         remaining = self._printable_value__get_remaining(count)
         if total_to_process and count > 0 and remaining is not None:
             if (
@@ -201,7 +228,9 @@ class PerformanceTracker:
     def _printable_value_est_total_all(
         self, count: int, elapsed: float
     ) -> Optional[float]:
-        abs_total, avg = self._printable_value__get_abs_total_and_avg(count, elapsed)
+        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(count, elapsed)
+        abs_total = abs_total_and_avg.abs_total
+        avg = abs_total_and_avg.avg
         if abs_total and count > 0:
             return avg * abs_total
         return None
@@ -210,7 +239,9 @@ class PerformanceTracker:
     def _printable_value_est_remaining_all(
         self, count: int, elapsed: float, previous_sessions_time: float
     ) -> Optional[float]:
-        abs_total, avg = self._printable_value__get_abs_total_and_avg(count, elapsed)
+        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(count, elapsed)
+        abs_total = abs_total_and_avg.abs_total
+        avg = abs_total_and_avg.avg
         if abs_total and count > 0:
             return avg * abs_total - (previous_sessions_time + elapsed)
         return None
@@ -228,6 +259,7 @@ class PerformanceTracker:
 
     @typechecked
     def _format_perf_progress(self, count: int, elapsed: float) -> str:
+
         avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         skip_n = self._printable_value_skip_n()
@@ -269,7 +301,10 @@ class PerformanceTracker:
             msg += " Remaining:?/"
 
         msg += f"{self._printable_value_fmt_time(elapsed)}(Elapsed)"
-        msg += f"/{self._printable_value_fmt_time(previous_sessions_time + elapsed)}(TotalElapsed)"
+        msg += (
+            f"/{self._printable_value_fmt_time(previous_sessions_time + elapsed)}"
+            "(TotalElapsed)"
+        )
 
         if est_total_all is not None:
             msg += f"/{self._printable_value_fmt_time(est_total_all)}(est_total_all)"
@@ -283,7 +318,8 @@ class PerformanceTracker:
     @typechecked
     def get_progress_description(self, count: int) -> str:
         """
-        Returns a textual description of current progress, including percentage and time estimation if available.
+        Returns a textual description of current progress, including percentage and
+        time estimation if available.
         Mirrors the output of print_progress but as a string.
         """
         elapsed = time.time() - self._start_time
