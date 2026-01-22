@@ -72,6 +72,10 @@ class StatisticsManager:
         self._tags = TagStatsManager(stats_manager=self)
 
     @typechecked
+    def get_checkpoint_manager(self) -> CheckpointManager:
+        return self._checkpoint
+
+    @typechecked
     def increment_event(
         self, event_kind: "ModificationKind", extra_key: "TagWrapper | None" = None
     ) -> None:
@@ -151,6 +155,7 @@ class StatisticsManager:
 
     @typechecked
     def start_run(self, initial_stats: Optional[RunStatistics] = None) -> RunStatistics:
+        # TODO: refactorizar a get_s
         with self._lock:
             if self._current_stats is not None:
                 return self._current_stats
@@ -199,7 +204,7 @@ class StatisticsManager:
             if count % 100 == 0:
                 self._save_to_file()
         self.maybe_print_progress(count)
-        return start_run()
+        return self.start_run()
 
     @typechecked
     def save(self) -> None:
@@ -262,15 +267,15 @@ class StatisticsManager:
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
-        self.tags.process_asset_tags(tag_names)
+        self._tags.process_asset_tags(tag_names)
 
     @typechecked
     def increment_tag_added(self, tag: "TagWrapper") -> None:
-        self.tags.increment_tag_added(tag)
+        self._tags.increment_tag_added(tag)
 
     @typechecked
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
-        self.tags.increment_tag_removed(tag)
+        self._tags.increment_tag_removed(tag)
 
     @typechecked
     def set_skip_n(self, skip_n: int) -> None:
@@ -290,7 +295,7 @@ class StatisticsManager:
         kind: "ModificationKind",
         album: "AlbumResponseWrapper | None",
     ) -> None:
-        self.tags.increment_tag_action(tag, kind, album)
+        self._tags.increment_tag_action(tag, kind, album)
 
     # Tag/album methods delegated to TagStatsManager
     @typechecked

@@ -160,6 +160,10 @@ class RunStatistics(BaseModel):
     def save_to_file(self) -> None:
 
         with open(
-            get_run_output_dir() / RUN_STATISTICS_FILENAME, "w", encoding="utf-8"
+            self.get_stats_dir() / RUN_STATISTICS_FILENAME, "w", encoding="utf-8"
         ) as f:
             f.write(self.to_yaml())
+
+    @staticmethod
+    def get_stats_dir():
+        return get_run_output_dir()
