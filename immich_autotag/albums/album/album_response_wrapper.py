@@ -428,7 +428,7 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> None:
-        if self._album_full is not None:
+        if self._load_source == AlbumLoadSource.DETAIL:
             return
         self.reload_from_api(client)
 
@@ -438,11 +438,11 @@ class AlbumResponseWrapper:
 
         client = ImmichContext.get_default_client()
         self._ensure_full_album_loaded(client)
-        if self._album_full is None:
+        if self._load_source!= AlbumLoadSource.DETAIL :
 
             self._ensure_full_album_loaded(client)
             raise RuntimeError()
-        return self._album_full
+        return self._album_dto
 
     def get_asset_ids(self) -> set[str]:
         if self._asset_ids_cache is not None:
