@@ -6,6 +6,7 @@ from uuid import UUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
+from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
 from immich_autotag.types import ImmichClient
@@ -551,7 +552,7 @@ class AlbumResponseWrapper:
                 f"add_assets_to_album did not return a list, got {type(result)}"
             )
 
-        item = self._find_asset_result_in_response(result, str(asset_wrapper.id))
+        item = self._find_asset_result_in_response(result, asset_wrapper.id_as_uuid)
         if item:
             if not item.success:
                 self._handle_add_asset_error(
@@ -741,19 +742,16 @@ class AlbumResponseWrapper:
     @staticmethod
     @typechecked
     def _find_asset_result_in_response(
-        result: list[BulkIdResponseDto], asset_id: str
-    ) -> object | None:
+        result: list[BulkIdResponseDto], asset_id: UUID
+    ) -> BulkIdResponseDto | None:
         """Finds the result item for a specific asset in the API response list."""
         for item in result:
-            try:
-                if item.id == asset_id:
-                    # Enforce existence of success attribute
-                    _ = item.success
-                    return item
-            except AttributeError:
+            if item.success is not True:
                 raise RuntimeError(
-                    f"Item in API response missing required attributes (id/success): {item}"
-                )
+                    "API returned non-boolean success value in BulkIdResponseDto"   )
+            if UUID( item.id) == asset_id:
+                return item
+
         return None
 
     def _handle_remove_asset_error(
