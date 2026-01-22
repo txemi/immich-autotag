@@ -113,7 +113,10 @@ class PerformanceTracker:
 
             # Obtener tiempo acumulado de sesiones previas
             try:
-                from immich_autotag.statistics.statistics_manager import StatisticsManager
+                from immich_autotag.statistics.statistics_manager import (
+                    StatisticsManager,
+                )
+
                 stats = StatisticsManager.get_instance().get_stats()
                 previous_sessions_time = getattr(stats, "previous_sessions_time", 0.0)
             except Exception:
@@ -139,7 +142,9 @@ class PerformanceTracker:
                 msg += f"Tiempo estimado previsto (EWMA, total): {fmt_time(tiempo_total_estimado/60)}."
             else:
                 msg += f"Tiempo estimado previsto (lineal, total): {fmt_time(tiempo_total_estimado/60)}."
-            msg += f" Tiempo estimado restante (sesión): {fmt_time(est_remaining_rel/60)}."
+            msg += (
+                f" Tiempo estimado restante (sesión): {fmt_time(est_remaining_rel/60)}."
+            )
             if (
                 percent_abs is not None
                 and est_remaining_abs is not None
@@ -149,7 +154,10 @@ class PerformanceTracker:
             return msg
         else:
             try:
-                from immich_autotag.statistics.statistics_manager import StatisticsManager
+                from immich_autotag.statistics.statistics_manager import (
+                    StatisticsManager,
+                )
+
                 stats = StatisticsManager.get_instance().get_stats()
                 previous_sessions_time = getattr(stats, "previous_sessions_time", 0.0)
             except Exception:
