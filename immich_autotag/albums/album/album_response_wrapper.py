@@ -52,6 +52,7 @@ class AlbumLoadSource(enum.Enum):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
+
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -986,7 +987,6 @@ class AlbumResponseWrapper:
         dto: AlbumResponseDto,
         *,
         validate: bool = True,
-        tag_mod_report: ModificationReport | None = None,
     ) -> "AlbumResponseWrapper":
         """
         Create an AlbumResponseWrapper from a full DTO.
@@ -1037,3 +1037,31 @@ class AlbumResponseWrapper:
         dto = self._active_dto()
         users = [AlbumUserWrapper(user=u) for u in dto.album_users]
         return AlbumUserList(users)
+
+    @typechecked
+    def merge_from_dto(self, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
+        """
+        Actualiza los campos relevantes del wrapper con los datos del nuevo DTO recibido.
+        El parámetro load_source indica si el DTO proviene de SEARCH (búsqueda) o DETAIL (detalle completo).
+        Solo actualiza si:
+        - El nuevo load_source es DETAIL (siempre actualiza a full)
+        - O el actual es SEARCH (permite pasar de SEARCH a SEARCH o a DETAIL)
+        Si el actual es DETAIL y el nuevo es SEARCH, ignora la actualización.
+        """
+        update = False
+        if load_source == AlbumLoadSource.DETAIL:
+            # Siempre actualiza a full
+            update = True
+        elif self._load_source == AlbumLoadSource.SEARCH:
+            # Permite actualizar si el actual es SEARCH
+            update = True
+        if update:
+            self._album_dto = dto
+            self._load_source = load_source
+            if hasattr(dto, 'assets') and dto.assets is not None:
+                try:
+                    self._asset_ids_cache = set(a.id for a in dto.assets)
+                except Exception:
+                    self._asset_ids_cache = None
+            import datetime
+            self._loaded_at = datetime.datetime.now()
