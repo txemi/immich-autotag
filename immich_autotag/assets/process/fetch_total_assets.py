@@ -10,8 +10,8 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
 @typechecked
-def fetch_total_assets(context: ImmichContext) -> int :
-    stats = get_server_statistics.sync(client=context.client)
+def fetch_total_assets(client: ImmichClient) -> int :
+    stats = get_server_statistics.sync(client=client)
     total_assets = stats.photos + stats.videos
     log(
         f"Total assets (photos + videos) reported by Immich: {total_assets}",
