@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
+from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 
 # Strict typing for output tag counters
@@ -154,3 +155,15 @@ class RunStatistics(BaseModel):
         if self.started_at is None:
             raise RuntimeError("RunStatistics.started_at is not set")
         return self.started_at.timestamp()
+
+    @typechecked
+    def save_to_file(self) -> None:
+
+        with open(
+            self.get_stats_dir() / RUN_STATISTICS_FILENAME, "w", encoding="utf-8"
+        ) as f:
+            f.write(self.to_yaml())
+
+    @staticmethod
+    def get_stats_dir():
+        return get_run_output_dir()

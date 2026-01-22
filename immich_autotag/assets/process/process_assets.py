@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
+from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets
 from immich_autotag.assets.process.log_execution_parameters import (
     log_execution_parameters,
 )
@@ -18,10 +19,10 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
 @typechecked
-def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
+def process_assets(context: ImmichContext) -> None:
     log_execution_parameters()
-    StatisticsManager.get_instance().initialize_for_run(context, max_assets)
-    stats = StatisticsManager.get_instance().get_stats()
+    total_assets = fetch_total_assets(context.client)
+    StatisticsManager.get_instance().initialize_for_run(total_assets)
 
     if USE_THREADPOOL:
         process_assets_threadpool(context)

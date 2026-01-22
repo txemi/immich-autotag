@@ -108,8 +108,8 @@ def run_main():
             process_single_asset(asset_wrapper=wrapper)
     else:
         # You can change the max_assets value here or pass it as an external argument
-        max_assets = None
-        process_assets(context, max_assets=max_assets)
+
+        process_assets(context)
 
     from immich_autotag.logging.utils import log
 
