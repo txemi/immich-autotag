@@ -545,11 +545,11 @@ class AlbumCollectionWrapper:
         """
         albums_list = self._albums  # Access the internal list
         albums_list.append(wrapper)
-
+        name = wrapper.get_album_name()
         if self.is_duplicated(wrapper):
 
             # Temporary duplicate
-            if is_temporary_album(wrapper.get_album_name()):
+            if is_temporary_album(name):
                 # Only call delete_album if client is of correct type
                 if self.delete_album(
                     wrapper=wrapper,
@@ -557,16 +557,35 @@ class AlbumCollectionWrapper:
                     tag_mod_report=tag_mod_report,
                     reason="Removed duplicate temporary album during add",
                 ):
-                    return
+                    return self.find_first_album_with_name(name)
 
             else:
-                # Non-temporary duplicate
-                self._handle_non_temporary_duplicate(
-                    existing=existing,
-                    incoming_album=wrapper,
-                    tag_mod_report=tag_mod_report,
-                    name=name,
-                )
+                if True:
+                    # no podemos usar esto, no tenemos
+                    # Combine all duplicates into one
+                    surviving_album = self.combine_duplicate_albums(
+                        list(self.find_all_albums_with_name(name)),
+                        context="duplicate_on_create",
+                    )
+                    # After combining, check if any duplicates remain
+                    albums_after = list(self.find_all_albums_with_name(name))
+                    assert surviving_album in albums_after
+                    if len(albums_after) == 1:
+                        return albums_after[0]
+                    else:
+                        # Lanzar excepción para desarrolladores tras la limpieza
+                        raise RuntimeError(
+                            f"Duplicate albums with name '{name}' were found and combined, but multiple still remain. This indicates a data integrity issue. Review the logs and investigate the cause."
+                        )
+                else:
+
+                    # Non-temporary duplicate
+                    self._handle_non_temporary_duplicate(
+                        existing=existing,
+                        incoming_album=wrapper,
+                        tag_mod_report=tag_mod_report,
+                        name=name,
+                    )
 
     @typechecked
     def add_album_wrapper(
@@ -737,6 +756,7 @@ class AlbumCollectionWrapper:
         Searches for an album by name. If one exists, returns it. If there is more than one, handles duplicates according to the policy (merge, delete temporary, error, etc).
         If it doesn't exist (or after cleaning duplicates it no longer exists), creates it and assigns the current user as EDITOR.
         """
+
         # Search for all albums with that name
         albums_found = list(self.find_all_albums_with_name(album_name))
         if len(albums_found) == 1:

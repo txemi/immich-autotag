@@ -18,4 +18,6 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> AlbumResponseD
     Returns the album DTO or raises on error.
     """
     uuid_str = str(album_id)
-    return get_album_info.sync(id=uuid_str, client=client)
+    a = get_album_info.sync(id=uuid_str, client=client)
+    log_debug(f"Fetched album info for id={album_id}: {a}")
+    return a
