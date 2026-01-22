@@ -231,12 +231,30 @@ class StatisticsManager:
 
     @typechecked
     def finish_run(self) -> None:
+        from datetime import datetime, timezone
         with self._lock:
             if self._current_stats is None:
                 self.start_run()
-            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
+            self._current_stats.finished_at = now
+            # Sumar el tiempo de esta sesión al acumulado
+            if self._current_stats.started_at is not None:
+                session_time = (now - self._current_stats.started_at).total_seconds()
+                self._current_stats.previous_sessions_time += session_time
+            self._save_to_file()
 
-            self._current_stats.finished_at = datetime.now(timezone.utc)
+    @typechecked
+    def abrupt_exit(self) -> None:
+        from datetime import datetime, timezone
+        with self._lock:
+            if self._current_stats is None:
+                self.start_run()
+            now = datetime.now(timezone.utc)
+            self._current_stats.abrupt_exit_at = now
+            # Sumar el tiempo de esta sesión al acumulado
+            if self._current_stats.started_at is not None:
+                session_time = (now - self._current_stats.started_at).total_seconds()
+                self._current_stats.previous_sessions_time += session_time
             self._save_to_file()
 
     @property

@@ -16,8 +16,11 @@ def setup_exception_hook():
 
     def custom_excepthook(exc_type, exc_value, exc_traceback):
         _original_excepthook(exc_type, exc_value, exc_traceback)
-        print(
-            f"[ERROR] Process terminated by uncaught exception at {datetime.now().isoformat()}"
-        )
+        print(f"[ERROR] Process terminated by uncaught exception at {datetime.now().isoformat()}")
+        try:
+            from immich_autotag.statistics.statistics_manager import StatisticsManager
+            StatisticsManager.get_instance().abrupt_exit()
+        except Exception as e:
+            print(f"[ERROR] Could not save abrupt exit time: {e}")
 
     sys.excepthook = custom_excepthook
