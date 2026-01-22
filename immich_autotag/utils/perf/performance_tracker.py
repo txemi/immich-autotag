@@ -194,13 +194,9 @@ class PerformanceTracker:
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
         est_total_session = self._printable_value_est_total_session(count, elapsed)
-        est_remaining_session = self._printable_value_est_remaining_session(
-            count, elapsed
-        )
+        est_remaining_session = self._printable_value_est_remaining_session(count, elapsed)
         est_total_all = self._printable_value_est_total_all(count, elapsed)
-        est_remaining_all = self._printable_value_est_remaining_all(
-            count, elapsed, previous_sessions_time
-        )
+        est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)
 
         msg = f"Processed:{count}"
         if total_to_process:
@@ -210,10 +206,18 @@ class PerformanceTracker:
         if abs_total:
             msg += f"/{abs_total}(abs_total)"
 
+        # Add percentage progress if possible
+        percent = None
+        if abs_total:
+            percent = 100.0 * abs_count / abs_total
+            msg += f" [{percent:.1f}%]"
+
+        # Add skip count if any
+        if skip_n:
+            msg += f" SKIP:{skip_n}"
+
         if est_remaining_session is not None:
-            msg += (
-                f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
-            )
+            msg += f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
         else:
             msg += " Remaining:?/"
 
