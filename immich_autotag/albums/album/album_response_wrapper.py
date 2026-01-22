@@ -41,7 +41,6 @@ class AssetAlreadyInAlbumError(Exception):
     pass
 
 
-
 import datetime
 import enum
 
@@ -142,7 +141,8 @@ class AlbumResponseWrapper:
     @typechecked
     def is_temporary_album(self) -> bool:
         """
-        Returns True if this album is a temporary autotag album (created automatically by autotag).
+        Returns True if this album is a temporary autotag album
+        (created automatically by autotag).
         """
         from immich_autotag.assets.albums.temporary_manager.naming import (
             is_temporary_album,
@@ -190,7 +190,8 @@ class AlbumResponseWrapper:
     @typechecked
     def is_duplicate_album(self) -> bool:
         """
-        Returns True if this album is a duplicate album (i.e., there is more than one album with the same name in the collection).
+        Returns True if this album is a duplicate album (i.e., there is more than one
+        album with the same name in the collection).
         Si el álbum no se encuentra entre los duplicados, hace un resync y vuelve a
         comprobar antes de lanzar excepción.
         """
@@ -205,10 +206,11 @@ class AlbumResponseWrapper:
         album_ids = [a.get_album_id() for a in same_name_albums]
         if self.get_album_id() not in album_ids:
             if True:
-                aaa = list(collection.find_all_albums_with_name(album_name))
+                # Extra check removed: unused variable 'aaa' and split long lines
                 raise RuntimeError(
-                    f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' "
-                    f"not found among albums with the same name: {album_ids}"
+                    f"Album with id={self.get_album_id()} and name='"
+                    f"{self.get_album_name()}' not found among albums with the same name: "
+                    f"{album_ids}"
                 )
             else:
                 # Intentar resync de la colección y volver a comprobar
@@ -221,7 +223,8 @@ class AlbumResponseWrapper:
                 if self.get_album_id() not in album_ids:
                     raise RuntimeError(
                         f"Album with id={self.get_album_id()} and name='{album_name}' "
-                        f"not found among albums with the same name (tras resync): {album_ids}"
+                        f"not found among albums with the same name (tras resync): "
+                        f"{album_ids}"
                     )
         return len(same_name_albums) > 1
 
