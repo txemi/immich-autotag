@@ -208,11 +208,10 @@ class AlbumResponseWrapper:
                 # Extra check removed: unused variable 'aaa' and split long lines
                 raise RuntimeError(
                     f"Album with id={self.get_album_id()} and name='"
-                    f"{self.get_album_name()}' not found among albums with the same name: "(
-                        f"{album_ids[:40]}..."
-                        if len(str(album_ids)) > 40
-                        else f"{album_ids}"
-                    )
+                    f"{self.get_album_name()}' not found among albums with the same name: "
+                    f"{album_ids[:40]}..."
+                    if len(str(album_ids)) > 40
+                    else f"{album_ids}"
                 )
             else:
                 # Intentar resync de la colección y volver a comprobar
@@ -880,8 +879,7 @@ class AlbumResponseWrapper:
     ) -> None:
         """
         Verifies that an asset appears in the album after adding it, with retry logic for
-        eventual consistency.
-        Uses exponential backoff to handle API delays.
+        eventual consistency. Uses exponential backoff to handle API delays.
         """
         import time
 
@@ -914,8 +912,7 @@ class AlbumResponseWrapper:
     ) -> None:
         """
         Verifies that an asset has been removed from the album after removing it, with retry
-        logic for eventual consistency.
-        Uses exponential backoff to handle API delays.
+        logic for eventual consistency. Uses exponential backoff to handle API delays.
         """
         import time
 
@@ -969,8 +966,7 @@ class AlbumResponseWrapper:
         Create an AlbumResponseWrapper from a partial DTO.
 
         The wrapper will store the provided DTO as _album_partial and will not populate the
-        full cache.
-        Callers must explicitly request loading the full DTO via ensure_full/
+        full cache. Callers must explicitly request loading the full DTO via ensure_full/
         reload_from_api.
         """
         wrapper = AlbumResponseWrapper(album_dto=dto)
