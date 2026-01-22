@@ -43,11 +43,12 @@ class AlbumCollectionWrapper:
 
     Responsibilities:
     - Maintains the master list of albums (AlbumList) and provides access to them.
-    - Manages a map from asset_id to the list of albums containing each asset (AssetToAlbumsMap),
-        enabling O(1) lookup of albums for a given asset.
-    - Handles unavailable albums and duplicate album detection/merging.
-    - Provides methods for adding, removing, and searching albums by name or UUID.
-    - Coordinates album-related operations, including API synchronization and integrity checks.
+        - Manages a map from asset_id to the list of albums containing each asset (AssetToAlbumsMap),
+            enabling O(1) lookup of albums for a given asset.
+        - Handles unavailable albums and duplicate album detection/merging.
+        - Provides methods for adding, removing, and searching albums by name or UUID.
+        - Coordinates album-related operations, including API synchronization and
+            integrity checks.
 
     Only one instance of this class is allowed (singleton pattern).
     """
@@ -112,7 +113,8 @@ class AlbumCollectionWrapper:
 
     def __len__(self) -> int:
         """
-        Returns the number of albums in the collection (including deleted unless filtered elsewhere).
+        Returns the number of albums in the collection (including deleted unless
+        filtered elsewhere).
         """
         return len(self._albums)
 
@@ -151,11 +153,13 @@ class AlbumCollectionWrapper:
         """
         if album_wrapper not in self._albums:
             raise RuntimeError(
-                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is not present in the collection."
+                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) "
+                f"is not present in the collection."
             )
         if album_wrapper.is_deleted():
             raise RuntimeError(
-                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is already deleted."
+                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) "
+                f"is already deleted."
             )
         album_wrapper.mark_deleted()
         self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
@@ -174,7 +178,8 @@ class AlbumCollectionWrapper:
             from immich_autotag.logging.utils import log
 
             log(
-                f"[ALBUM REMOVAL] Album {album_wrapper.get_album_id()} ('{album_wrapper.get_album_name()}') removed from collection (local, not_found cleanup).",
+                f"[ALBUM REMOVAL] Album {album_wrapper.get_album_id()} ('{album_wrapper.get_album_name()}') "
+                f"removed from collection (local, not_found cleanup).",
                 level=LogLevel.FOCUS,
             )
         return removed
@@ -222,7 +227,8 @@ class AlbumCollectionWrapper:
         name_incoming = incoming_album.get_album_name()
         if name_existing != name_incoming:
             raise ValueError(
-                f"Integrity check failed in _handle_duplicate_album_conflict: album names differ ('{name_existing}' vs '{name_incoming}'). Context: {context}"
+                f"Integrity check failed in _handle_duplicate_album_conflict: album names differ "
+                f"('{name_existing}' vs '{name_incoming}'). Context: {context}"
             )
         from immich_autotag.config._internal_types import ErrorHandlingMode
         from immich_autotag.config.internal_config import (
@@ -242,7 +248,8 @@ class AlbumCollectionWrapper:
             )
         elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
-                f"Duplicate album name detected when adding album: {existing_album.get_album_name()!r}"
+                f"Duplicate album name detected when adding album: "
+                f"{existing_album.get_album_name()!r}"
             )
         collect_duplicate(
             self._collected_duplicates, existing_album, incoming_album, context
@@ -275,7 +282,8 @@ class AlbumCollectionWrapper:
         # In development: fail fast to surface systemic problems
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
-                f"Too many albums marked unavailable during run: {self._unavailable.count} >= {threshold}. Failing fast (DEVELOPMENT mode)."
+                f"Too many albums marked unavailable during run: {self._unavailable.count} >= {threshold}. "
+                f"Failing fast (DEVELOPMENT mode)."
             )
 
         # In production: record a summary event and continue
@@ -283,7 +291,9 @@ class AlbumCollectionWrapper:
         tag_mod_report = ModificationReport.get_instance()
         tag_mod_report.add_error_modification(
             kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-            error_message=f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}",
+            error_message=(
+                f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}"
+            ),
             error_category="GLOBAL_THRESHOLD",
             extra={
                 "unavailable_count": self._unavailable.count,
@@ -298,7 +308,8 @@ class AlbumCollectionWrapper:
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
         """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
 
-        Before building the map, forces the loading of asset_ids in all albums (lazy loading).
+        Before building the map, forces the loading of asset_ids in all albums
+        (lazy loading).
         """
         asset_map = AssetToAlbumsMap()
         assert (
@@ -322,8 +333,10 @@ class AlbumCollectionWrapper:
                 if album_wrapper.get_asset_ids():
                     album_url = album_wrapper.get_immich_album_url().geturl()
                     raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' (URL: {album_url}) had empty asset_ids after initial load, but after a redundant reload it now has assets. "
-                        "This suggests a possible synchronization or lazy loading bug. Please review the album loading logic."
+                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' (URL: {album_url}) "
+                        f"had empty asset_ids after initial load, but after a redundant reload it now has assets. "
+                        "This suggests a possible synchronization or lazy loading bug. "
+                        "Please review the album loading logic."
                     )
                 if is_temporary_album(album_wrapper.get_album_name()):
                     from immich_autotag.logging.levels import LogLevel
@@ -363,7 +376,8 @@ class AlbumCollectionWrapper:
         for album_wrapper in albums_to_remove:
             if not is_temporary_album(album_wrapper.get_album_name()):
                 raise RuntimeError(
-                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is not temporary but was passed to _remove_empty_temporary_albums."
+                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) "
+                    f"is not temporary but was passed to _remove_empty_temporary_albums."
                 )
 
         tag_mod_report = ModificationReport.get_instance()
@@ -373,7 +387,9 @@ class AlbumCollectionWrapper:
                     wrapper=album_wrapper,
                     client=client,
                     tag_mod_report=tag_mod_report,
-                    reason="Removed automatically after map build because it was empty and temporary",
+                    reason=(
+                        "Removed automatically after map build because it was empty and temporary"
+                    ),
                 )
                 self._remove_album_from_local_collection(album_wrapper)
             except Exception as e:
