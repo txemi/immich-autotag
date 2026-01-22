@@ -982,48 +982,7 @@ class AlbumResponseWrapper:
         wrapper = AlbumResponseWrapper(album_dto=dto)
         return wrapper
 
-    @staticmethod
-    @conditional_typechecked
-    def from_full_dto(
-        dto: AlbumResponseDto,
-        *,
-        validate: bool = True,
-    ) -> "AlbumResponseWrapper":
-        """
-        Create an AlbumResponseWrapper from a full DTO.
 
-        This constructor treats the provided DTO as the authoritative full
-        representation: `_album_full` will be set and `_album_partial` will
-        be left as None to make it explicit what representation the wrapper
-        holds. If `validate` is True, a basic sanity check is performed to
-        ensure the DTO contains `assets` before accepting it as full.
-        """
-        if validate:
-            try:
-                assets_check = dto.assets
-            except AttributeError:
-                assets_check = None
-            if assets_check is None:
-                raise ValueError(
-                    "Provided DTO does not contain assets; cannot treat as full DTO"
-                )
-
-        # Construct instance without calling __init__ / attrs post-init so we
-        # can set the full DTO explicitly. This avoids triggering the
-        # `__attrs_post_init__` check which expects a valid representation
-        # during normal construction paths.
-        wrapper = object.__new__(AlbumResponseWrapper)
-        # Set the expected attributes directly for a full representation.
-        wrapper._album_partial = None
-        wrapper._album_full = dto
-        wrapper._asset_ids_cache = None
-        try:
-            assets = dto.assets or []
-            wrapper._asset_ids_cache = set(a.id for a in assets)
-        except Exception:
-            wrapper._asset_ids_cache = None
-
-        return wrapper
 
     @typechecked
     def get_album_users(self) -> "AlbumUserList":
