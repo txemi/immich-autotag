@@ -27,13 +27,28 @@ def is_temporary_album_healthy(
     assets = album_wrapper.wrapped_assets(context)
     if not assets or len(assets) < 2:
         return True
-    # Example: assume each asset has a 'date' attribute (datetime)
+    # Calculate min/max from assets
     dates = [date for date in (a.get_best_date() for a in assets) if date is not None]
     if len(dates) < 2:
         return True
     min_date = min(dates)
     max_date = max(dates)
-    delta = (max_date - min_date).days
+    # Try to get album-provided min/max dates if available
+    album_min_date = album_wrapper._album_dto.start_date
+    album_max_date = album_wrapper._album_dto.end_date
+    # If album-provided dates exist, compare with calculated
+    if album_min_date and album_max_date:
+        # Convert to datetime if needed
+        if isinstance(album_min_date, str):
+            album_min_date = datetime.datetime.fromisoformat(album_min_date)
+        if isinstance(album_max_date, str):
+            album_max_date = datetime.datetime.fromisoformat(album_max_date)
+        if min_date != album_min_date or max_date != album_max_date:
+            raise RuntimeError(f"Temporary album date mismatch: calculated min/max {min_date} - {max_date} vs album-provided {album_min_date} - {album_max_date}")
+        # Use album-provided dates for delta calculation
+        delta = (album_max_date - album_min_date).days
+    else:
+        delta = (max_date - min_date).days
     return delta <= max_days_apart
 
 
