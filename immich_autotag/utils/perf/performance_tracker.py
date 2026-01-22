@@ -86,6 +86,7 @@ class PerformanceTracker:
     def _printable_value_previous_sessions_time(self) -> float:
         try:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
+
             stats = StatisticsManager.get_instance().get_stats()
             return getattr(stats, "previous_sessions_time", 0.0)
         except Exception:
@@ -232,3 +233,12 @@ class PerformanceTracker:
         msg += f"Average time per asset: {avg:.3f} s"
 
         return msg
+
+    @typechecked
+    def get_progress_description(self, count: int) -> str:
+        """
+        Returns a textual description of current progress, including percentage and time estimation if available.
+        Mirrors the output of print_progress but as a string.
+        """
+        elapsed = time.time() - self.start_time
+        return self._format_perf_progress(count, elapsed)
