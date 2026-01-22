@@ -27,10 +27,7 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
-        if self.total_to_process is None:
-            raise ValueError(
-                "[PERFORMANCE TRACKER] total_to_process is not defined. Cannot initialize the tracker."
-            )
+      
 
     @typechecked
     def set_progress_timing(self, start_time: float, log_interval: int = 5):
