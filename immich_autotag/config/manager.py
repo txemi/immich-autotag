@@ -214,5 +214,10 @@ class ConfigManager:
         except Exception:
             return False
 
+    def get_config(self) -> UserConfig:
+        if self.config is None:
+            raise RuntimeError("No configuration loaded.")
+        return self.config
+
 
 # --- Automatic loading at startup (usage example) ---

@@ -9,45 +9,86 @@ from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 
 @typechecked
-@attr.s(auto_attribs=True, kw_only=True)
+@attr.s(auto_attribs=True, kw_only=True, slots=True)
 class PerformanceTracker:
 
-    start_time: float = attr.ib(factory=lambda: time.time())
-    log_interval: int = 5
-    estimator: Optional[AdaptiveTimeEstimator] = None
-    estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR
-    total_to_process: Optional[int] = None
-    total_assets: Optional[int] = None
-    skip_n: Optional[int] = None
-    last_log_time: float = attr.ib(init=False)
+    _start_time: float = attr.ib(
+        factory=lambda: time.time(), validator=attr.validators.instance_of(float)
+    )
+    _log_interval: int = attr.ib(default=5, validator=attr.validators.instance_of(int))
+    _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(
+            attr.validators.instance_of(AdaptiveTimeEstimator)
+        ),
+    )
+    _estimation_mode: TimeEstimationMode = attr.ib(
+        default=TimeEstimationMode.LINEAR,
+        validator=attr.validators.instance_of(TimeEstimationMode),
+    )
+    # total_to_process is now always calculated dynamically
+    _max_assets: Optional[int] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
+    _total_assets: Optional[int] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
+    _skip_n: Optional[int] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
+    _last_log_time: float = attr.ib(
+        init=False, validator=attr.validators.instance_of(float)
+    )
 
     def __attrs_post_init__(self):
-        self.last_log_time = self.start_time
+        self._last_log_time = self._start_time
         # Strict validation: if something essential is missing, crash
-        if self.estimation_mode == TimeEstimationMode.EWMA and self.estimator is None:
+        if self._estimation_mode == TimeEstimationMode.EWMA and self._estimator is None:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
 
     @typechecked
-    def set_progress_timing(self, start_time: float, log_interval: int = 5):
-        self.start_time = start_time
-        self.last_log_time = start_time
-        self.log_interval = log_interval
+    def set_skip_n(self, value: int) -> None:
+        """
+        Setter público para actualizar skip_n de forma controlada.
+        """
+        self._skip_n = value
+
+    @typechecked
+    def set_total_assets(self, value: int):
+        self._total_assets = value
+
+    @typechecked
+    def _calc_total_to_process(self) -> Optional[int]:
+        """
+        Returns the number of assets to process, using the minimum of max_assets and (total_assets - skip_n) if both are set.
+        """
+        skip_n = self._printable_value_skip_n()
+        if self._max_assets is not None and self._total_assets is not None:
+            return min(self._max_assets, self._total_assets - skip_n)
+        if self._max_assets is not None:
+            return self._max_assets
+        if self._total_assets is not None:
+            return self._total_assets - skip_n
+        return None
 
     @typechecked
     def update(self, count: int):
         now = time.time()
         # If the tracker is not properly initialized, it should never reach here
-        if now - self.last_log_time >= self.log_interval:
-            elapsed = now - self.start_time
+        if now - self._last_log_time >= self._log_interval:
+            elapsed = now - self._start_time
             self.print_progress(count, elapsed)
-            self.last_log_time = now
+            self._last_log_time = now
 
     @typechecked
     def print_progress(self, count: int, elapsed: Optional[float] = None):
         if elapsed is None:
-            elapsed = time.time() - self.start_time
+            elapsed = time.time() - self._start_time
         print("[PERF] " + self._format_perf_progress(count, elapsed))
 
     @typechecked
@@ -72,15 +113,15 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_total_to_process(self) -> Optional[int]:
-        return self.total_to_process
+        return self._calc_total_to_process()
 
     @typechecked
     def _printable_value_skip_n(self) -> int:
-        return self.skip_n or 0
+        return self._skip_n or 0
 
     @typechecked
     def _printable_value_total_assets(self) -> Optional[int]:
-        return self.total_assets
+        return self._total_assets
 
     @typechecked
     def _printable_value_previous_sessions_time(self) -> float:
@@ -98,16 +139,17 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_abs_total(self) -> Optional[int]:
-        total_assets = self._printable_value_total_assets()
-        return total_assets if total_assets and total_assets > 0 else None
+        if self._total_assets and self._total_assets > 0:
+            return self._total_assets
+        return None
 
     @typechecked
     def _printable_value_estimation_mode(self) -> TimeEstimationMode:
-        return self.estimation_mode
+        return self._estimation_mode
 
     @typechecked
     def _printable_value_estimator(self) -> Optional[AdaptiveTimeEstimator]:
-        return self.estimator
+        return self._estimator
 
     def _printable_value__get_avg_and_totals(self, count: int, elapsed: float):
         avg = self._printable_value_avg(count, elapsed)
@@ -189,19 +231,20 @@ class PerformanceTracker:
         avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         skip_n = self._printable_value_skip_n()
-        total_assets = self._printable_value_total_assets()
+        # Removed unused variable assignment for total_assets
         previous_sessions_time = self._printable_value_previous_sessions_time()
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
-        est_total_session = self._printable_value_est_total_session(count, elapsed)
+        # est_total_session = self._printable_value_est_total_session(count, elapsed)  # Unused
         est_remaining_session = self._printable_value_est_remaining_session(
             count, elapsed
         )
         est_total_all = self._printable_value_est_total_all(count, elapsed)
-        est_remaining_all = self._printable_value_est_remaining_all(
-            count, elapsed, previous_sessions_time
-        )
+        # est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)  # Unused
 
+        debug_log(
+            f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
+        )
         msg = f"Processed:{count}"
         if total_to_process:
             msg += f"/{total_to_process}(total_to_process)"
@@ -209,6 +252,14 @@ class PerformanceTracker:
         msg += f"/{abs_count}(abs_count)"
         if abs_total:
             msg += f"/{abs_total}(abs_total)"
+
+        # Always print skip_n
+        msg += f" Skip:{skip_n}"
+
+        # Progress percentage
+        if abs_total and abs_total > 0:
+            percent = 100.0 * abs_count / abs_total
+            msg += f" [{percent:.2f}%]"
 
         if est_remaining_session is not None:
             msg += (
@@ -235,5 +286,11 @@ class PerformanceTracker:
         Returns a textual description of current progress, including percentage and time estimation if available.
         Mirrors the output of print_progress but as a string.
         """
-        elapsed = time.time() - self.start_time
+        elapsed = time.time() - self._start_time
         return self._format_perf_progress(count, elapsed)
+
+    def set_max_assets(self, value: int | None) -> None:
+        """
+        Setter público para actualizar max_assets de forma controlada. Permite None para desactivar el límite.
+        """
+        self._max_assets = value

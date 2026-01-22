@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 
-import git  # GitPython
+import git
+
+from immich_autotag.config.models import UserConfig  # GitPython
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -49,6 +51,7 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class StatisticsManager:
+
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
     _current_stats: Optional[RunStatistics] = attr.ib(
@@ -70,6 +73,8 @@ class StatisticsManager:
         # Initialize declared attributes
         self._checkpoint = CheckpointManager(stats_manager=self)
         self._tags = TagStatsManager(stats_manager=self)
+        self._set_max_assets()
+        self._set_skip_n()
 
     @typechecked
     def get_checkpoint_manager(self) -> CheckpointManager:
@@ -85,22 +90,25 @@ class StatisticsManager:
         """
         with self._lock:
 
-            self.start_run().increment_event(event_kind, extra_key=extra_key)
+            self.get_or_create_run_stats().increment_event(
+                event_kind, extra_key=extra_key
+            )
 
     @typechecked
     def get_progress_description(self) -> str:
-        count = self.start_run().count
+        count = self.get_or_create_run_stats().count
         if self._perf_tracker is None:
             raise RuntimeError(
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
-        return self._try_init_perf_tracker().get_progress_description(count)
+        return self._get_or_create_perf_tracker().get_progress_description(count)
 
     @typechecked
-    def _try_init_perf_tracker(self):
+    def _get_or_create_perf_tracker(self) -> PerformanceTracker:
         if self._perf_tracker is not None:
             return self._perf_tracker
-        total = self.start_run().total_assets or self.start_run().max_assets
+        total_assets = self.get_or_create_run_stats().total_assets
+        max_assets = self.get_or_create_run_stats().max_assets
 
         from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
         from immich_autotag.utils.perf.time_estimation_mode import (
@@ -112,31 +120,21 @@ class StatisticsManager:
             log_interval=5,
             estimator=AdaptiveTimeEstimator(),
             estimation_mode=TimeEstimationMode.LINEAR,
-            total_to_process=total,
-            total_assets=self.start_run().total_assets,
-            skip_n=self.start_run().skip_n,
+            total_assets=total_assets,
+            max_assets=max_assets,
+            skip_n=self.get_or_create_run_stats().skip_n,
         )
         return self._perf_tracker
 
     @typechecked
     def set_total_assets(self, total_assets: int) -> None:
         with self._lock:
-
-            self.start_run().total_assets = total_assets
+            self.get_or_create_run_stats().total_assets = total_assets
             self._save_to_file()
-            self._try_init_perf_tracker()
-
-    @typechecked
-    def set_max_assets(self, max_assets: int) -> None:
-        with self._lock:
-
-            self.start_run().max_assets = max_assets
-            self._save_to_file()
-            self._try_init_perf_tracker()
+            self._get_or_create_perf_tracker()
 
     def maybe_print_progress(self, count: int) -> None:
-
-        self._try_init_perf_tracker().update(count)
+        self._get_or_create_perf_tracker().update(count)
 
     @typechecked
     def print_progress(self, count: int) -> None:
@@ -144,7 +142,7 @@ class StatisticsManager:
             raise RuntimeError(
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
-        self._try_init_perf_tracker().print_progress(count)
+        self._get_or_create_perf_tracker().print_progress(count)
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
@@ -154,7 +152,9 @@ class StatisticsManager:
         return _instance
 
     @typechecked
-    def start_run(self, initial_stats: Optional[RunStatistics] = None) -> RunStatistics:
+    def get_or_create_run_stats(
+        self, initial_stats: Optional[RunStatistics] = None
+    ) -> RunStatistics:
         # TODO: refactorizar a get_s
         with self._lock:
             if self._current_stats is not None:
@@ -186,25 +186,27 @@ class StatisticsManager:
     def _save_to_file(self) -> None:
         if self._current_stats and self._current_file:
             # Always update progress_description before saving
-            self.start_run().progress_description = self.get_progress_description()
-            self.start_run().save_to_file()
+            self.get_or_create_run_stats().progress_description = (
+                self.get_progress_description()
+            )
+            self.get_or_create_run_stats().save_to_file()
 
     @typechecked
     def get_stats(self) -> RunStatistics:
 
-        return self.start_run()
+        return self.get_or_create_run_stats()
 
     @typechecked
     def update_checkpoint(self, last_processed_id: str, count: int) -> RunStatistics:
         with self._lock:
 
-            self.start_run().last_processed_id = last_processed_id
-            self.start_run().count = count
+            self.get_or_create_run_stats().last_processed_id = last_processed_id
+            self.get_or_create_run_stats().count = count
             # Only save to disk every 100 assets (not every asset) for performance
             if count % 100 == 0:
                 self._save_to_file()
         self.maybe_print_progress(count)
-        return self.start_run()
+        return self.get_or_create_run_stats()
 
     @typechecked
     def save(self) -> None:
@@ -227,25 +229,35 @@ class StatisticsManager:
 
         with self._lock:
             now = datetime.now(timezone.utc)
-            self.start_run().finished_at = now
+            self.get_or_create_run_stats().finished_at = now
             # Sumar el tiempo de esta sesión al acumulado
-            if self.start_run().started_at is not None:
+            if self.get_or_create_run_stats().started_at is not None:
                 session_time = (now - self._current_stats.started_at).total_seconds()
-                self.start_run().previous_sessions_time += session_time
+                self.get_or_create_run_stats().previous_sessions_time += session_time
             self._save_to_file()
 
     @typechecked
     def abrupt_exit(self) -> None:
-        from datetime import datetime, timezone
+        self.finish_run()
 
-        with self._lock:
-            now = datetime.now(timezone.utc)
-            self.start_run().abrupt_exit_at = now
-            # Sumar el tiempo de esta sesión al acumulado
-            if self.start_run().started_at is not None:
-                session_time = (now - self._current_stats.started_at).total_seconds()
-                self.start_run().previous_sessions_time += session_time
-            self._save_to_file()
+    @typechecked
+    def _set_max_assets(self) -> None:
+        """
+        Lee max_assets desde la configuración y actualiza el valor en las estadísticas y el PerformanceTracker.
+        """
+        from immich_autotag.config.manager import ConfigManager
+
+        config = ConfigManager.get_instance().get_config()
+        assert isinstance(config, UserConfig)
+        # Acceso directo, si falta algún atributo, que falle con AttributeError
+        max_assets = config.skip.max_items
+
+        self.get_or_create_run_stats().max_assets = max_assets
+        self._save_to_file()
+        # Si el PerformanceTracker ya existe, actualiza su valor interno
+        perf_tracker = self._get_or_create_perf_tracker()
+        assert isinstance(perf_tracker, PerformanceTracker)
+        perf_tracker.set_max_assets(max_assets)
 
     @property
     def RELEVANT_TAGS(self):
@@ -278,15 +290,14 @@ class StatisticsManager:
         self._tags.increment_tag_removed(tag)
 
     @typechecked
-    def set_skip_n(self, skip_n: int) -> None:
+    def _set_skip_n(self) -> None:
+
+        skip_n = self._checkpoint.get_effective_skip_n()
         with self._lock:
 
-            self.start_run().skip_n = skip_n
+            self.get_or_create_run_stats().skip_n = skip_n
             self._save_to_file()
-
-    @typechecked
-    def get_effective_skip_n(self) -> int:
-        return self._checkpoint.get_effective_skip_n()
+            self._get_or_create_perf_tracker().set_skip_n(skip_n)
 
     @typechecked
     def increment_tag_action(
@@ -299,12 +310,10 @@ class StatisticsManager:
 
     # Tag/album methods delegated to TagStatsManager
     @typechecked
-    def initialize_for_run(self, max_assets: int) -> None:
+    def initialize_for_run(self, total_assets: int) -> None:
 
-        total_assets = max_assets
-        self._try_init_perf_tracker().total_assets = total_assets
+        self._get_or_create_perf_tracker().set_total_assets(total_assets)
+
         # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
-        self._current_stats.total_assets = total_assets
-        self.set_max_assets(max_assets if max_assets is not None else -1)
-        skip_n = self.get_effective_skip_n()
-        self.set_skip_n(skip_n)
+        self.get_or_create_run_stats().total_assets = total_assets
+        self.set_total_assets(total_assets)
