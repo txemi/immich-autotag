@@ -63,7 +63,7 @@ class AlbumResponseWrapper:
     _unavailable: bool = attrs.field(default=False, init=False)
     _loaded_at: datetime.datetime = attrs.field(factory=datetime.datetime.now, init=False)
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
-    _load_source: AlbumLoadSource = attrs.field(default=AlbumLoadSource.SEARCH, init=False)
+    _load_source: AlbumLoadSource = attrs.field(default=AlbumLoadSource.SEARCH, init=True)
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
     _error_history: AlbumErrorHistory = attrs.field(
         factory=AlbumErrorHistory,
@@ -931,10 +931,8 @@ class AlbumResponseWrapper:
         Callers must explicitly request loading the full DTO via ensure_full/reload_from_api.
         """
         # Create instance with required _album_dto argument
-        wrapper = AlbumResponseWrapper(_album_dto=dto)
-        # Set _album_partial for partial representation
-        wrapper._album_partial = dto
-        wrapper._album_full = None
+        wrapper = AlbumResponseWrapper(album_dto=dto, load_source=AlbumLoadSource.SEARCH)
+
         return wrapper
 
     @staticmethod
