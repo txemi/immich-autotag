@@ -70,6 +70,7 @@ class StatisticsManager:
         # Initialize declared attributes
         self._checkpoint = CheckpointManager(stats_manager=self)
         self._tags = TagStatsManager(stats_manager=self)
+        self._set_max_assets()
 
     @typechecked
     def get_checkpoint_manager(self) -> CheckpointManager:
@@ -97,7 +98,7 @@ class StatisticsManager:
         return self._get_or_create_perf_tracker().get_progress_description(count)
 
     @typechecked
-    def _get_or_create_perf_tracker(self):
+    def _get_or_create_perf_tracker(self)->PerformanceTracker:
         if self._perf_tracker is not None:
             return self._perf_tracker
         total_assets = self.get_or_create_run_stats().total_assets
@@ -231,6 +232,24 @@ class StatisticsManager:
     @typechecked
     def abrupt_exit(self) -> None:
         self.finish_run()
+
+    @typechecked
+    def _set_max_assets(self) -> None:
+        """
+        Lee max_assets desde la configuración y actualiza el valor en las estadísticas y el PerformanceTracker.
+        """
+        from immich_autotag.config.manager import ConfigManager
+
+        config = ConfigManager.get_instance().config
+        # Acceso directo, si falta algún atributo, que falle con AttributeError
+        max_assets = config.limits.max_assets
+
+        self.get_or_create_run_stats().max_assets = max_assets
+        self._save_to_file()
+        # Si el PerformanceTracker ya existe, actualiza su valor interno
+        perf_tracker = self._get_or_create_perf_tracker()
+        assert isinstance(perf_tracker, PerformanceTracker)
+        perf_tracker.set_max_assets(max_assets)
 
     @property
     def RELEVANT_TAGS(self):

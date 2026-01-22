@@ -1,6 +1,4 @@
-def _debug_log(msg: str):
-    # Simple debug print, replace with logging if needed
-    print(f"[PERF-DEBUG] {msg}")
+
 import time
 from typing import Optional
 
@@ -262,3 +260,8 @@ class PerformanceTracker:
         """
         elapsed = time.time() - self._start_time
         return self._format_perf_progress(count, elapsed)
+    def set_max_assets(self, value: int) -> None:
+        """
+        Setter público para actualizar max_assets de forma controlada.
+        """
+        self._max_assets = value
