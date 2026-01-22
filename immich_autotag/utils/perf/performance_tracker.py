@@ -8,6 +8,8 @@ from typeguard import typechecked
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
+from immich_autotag.logging.utils import log_debug
+
 
 # --- Tuple replacement dataclasses ---
 @dataclass
@@ -274,7 +276,7 @@ class PerformanceTracker:
         est_total_all = self._printable_value_est_total_all(count, elapsed)
         # est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)  # Unused
 
-        debug_log(
+        log_debug(
             f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
         )
         msg = f"Processed:{count}"
