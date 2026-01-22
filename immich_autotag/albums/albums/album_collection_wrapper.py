@@ -851,72 +851,14 @@ class AlbumCollectionWrapper:
             wrapper, client=client, tag_mod_report=tag_mod_report
         )
         return wrapper
-
     @classmethod
-    def from_client(
-        cls,
-        client: ImmichClient,
-        preload_albums: bool = DEFAULT_ERROR_MODE != ErrorHandlingMode.CRAZY_DEBUG,
-    ) -> "AlbumCollectionWrapper":
+    def resync_from_api_class(cls, client: "ImmichClient") -> None:
         """
-        Fetches all album metadata from the API (without assets initially).
-
-        Asset data is NOT loaded upfront to avoid N+1 API calls (which can timeout).
-        Instead, assets are fetched lazily only when actually needed via AlbumResponseWrapper.
-
-        This optimization reduces load time from hours (timeout) to seconds.
-        Albums without assets will show (assets: unknown) until accessed.
+        Wrapper de clase para mantener compatibilidad: llama al método de instancia sobre el singleton.
         """
-        from immich_client.api.albums import get_all_albums
-
-        from immich_autotag.report.modification_report import ModificationReport
-
-        tag_mod_report = ModificationReport.get_instance()
-        assert isinstance(tag_mod_report, ModificationReport)
-
-        # Fetch only basic album metadata (without assets)
-        albums = get_all_albums.sync(client=client)
-        if albums is None:
-            raise RuntimeError("Failed to fetch albums: API returned None")
-        from immich_autotag.albums.duplicates.duplicate_album_reports import (
-            DuplicateAlbumReports,
-        )
-
-        duplicates_collected = DuplicateAlbumReports()
-
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
-
-        log("Albums:", level=LogLevel.PROGRESS)
-        # Create the empty collection
-        collection = cls()
-        if preload_albums:
-            for album in albums:
-                wrapper = AlbumResponseWrapper.from_partial_dto(album)
-                collection._try_append_wrapper_to_list(
-                    wrapper=wrapper,
-                    client=client,
-                    tag_mod_report=tag_mod_report,
-                )
-
-                log(
-                    f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
-                    level=LogLevel.INFO,
-                )
-
-        tag_mod_report.flush()
-        if len(duplicates_collected) > 0:
-            from immich_autotag.albums.duplicates.write_duplicates_summary import (
-                write_duplicates_summary,
-            )
-
-            write_duplicates_summary(duplicates_collected)
-
-        log(f"Total albums: {len(collection)}", level=LogLevel.INFO)
-
-        # Assign the final list to the collection and return it
-
-        return collection
+        instance = cls.get_instance()
+        instance.resync_from_api(client)
+   
 
     @typechecked
     def find_album_by_id(self, album_id: UUID) -> AlbumResponseWrapper | None:
@@ -928,7 +870,7 @@ class AlbumCollectionWrapper:
                 return album
         return None
 
-
+    @typechecked
     def resync_from_api(self) -> None:
         """
         Recarga la colección de álbumes desde la API, igual que from_client pero sobre la instancia actual.
