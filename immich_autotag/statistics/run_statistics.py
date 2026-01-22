@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
+from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 
 # Strict typing for output tag counters
