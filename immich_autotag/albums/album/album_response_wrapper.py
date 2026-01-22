@@ -368,13 +368,16 @@ class AlbumResponseWrapper:
         """Gestiona el error 400 (no encontrado/sin acceso) de forma recuperable."""
         self._error_history.append_api_exc(api_exc)
         current_count = self._error_history.count_in_window()
+        # Include the album link in the log for diagnostics
+        album_url = self.get_immich_album_url().geturl()
+        log_msg = (
+            f"[WARN] get_album_info returned 400 for album id="
+            f"{self.get_album_id()!r} name={partial.album_name!r}. "
+            f"Recorded recoverable error (count={current_count}). "
+            f"album_partial={partial.partial_repr} album_link={album_url}"
+        )
         log(
-            (
-                f"[WARN] get_album_info returned 400 for album id="
-                f"{self.get_album_id()!r} name={partial.album_name!r}. "
-                f"Recorded recoverable error (count={current_count}). "
-                f"album_partial={partial.partial_repr}"
-            ),
+            log_msg,
             level=LogLevel.WARNING,
         )
         from immich_autotag.config.internal_config import (
