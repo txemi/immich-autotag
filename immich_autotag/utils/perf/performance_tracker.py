@@ -202,35 +202,30 @@ class PerformanceTracker:
             count, elapsed, previous_sessions_time
         )
 
-        msg = f"Processed in this session: {count}"
+        msg = f"Processed:{count}"
         if total_to_process:
-            msg += f" / {total_to_process}"
-        msg += "\n"
+            msg += f"/{total_to_process}(total_to_process)"
 
-        msg += f"Processed since start: {abs_count}"
+        msg += f"/{abs_count}(abs_count)"
         if abs_total:
-            msg += f" / {abs_total}"
-        msg += "\n"
-
-        if abs_total:
-            msg += f"Total elements in immich: {abs_total}\n"
-        else:
-            msg += "Total elements in immich: ?\n"
-
-        msg += f"\nElapsed time in this session: {self._printable_value_fmt_time(elapsed)}\n"
-        msg += f"Elapsed time in all sessions: {self._printable_value_fmt_time(previous_sessions_time + elapsed)}\n"
+            msg += f"/{abs_total}(abs_total)"
 
         if est_remaining_session is not None:
-            msg += f"Estimated remaining time for this session: {self._printable_value_fmt_time(est_remaining_session)}\n"
+            msg += f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
         else:
-            msg += "Estimated remaining time for this session: ?\n"
+            msg += " Remaining:?/"
+
+        msg += f"{self._printable_value_fmt_time(elapsed)}(Elapsed)"
+        msg += f"/{self._printable_value_fmt_time(previous_sessions_time + elapsed)}(TotalElapsed)"
+
+
 
         if est_total_all is not None:
-            msg += f"Estimated total time for all sessions: {self._printable_value_fmt_time(est_total_all)}\n"
+            msg += f"/{self._printable_value_fmt_time(est_total_all)}(est_total_all)"
         else:
-            msg += "Estimated total time for all sessions: ?\n"
+            msg += "/?(est_total_all)"
 
-        msg += f"Average time per asset: {avg:.3f} s"
+        msg += f" Average: {avg:.3f} s"
 
         return msg
 
