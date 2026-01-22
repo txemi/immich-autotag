@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
 class AlbumErrorHistory:
     """
-    Encapsulates the error history for an album, including append, prune, count, and windowed count logic.
+    Encapsulates the error history for an album, including append, prune, count,
+    and windowed count logic.
     """
 
     def __init__(self) -> None:
@@ -22,7 +23,8 @@ class AlbumErrorHistory:
         self._errors.append(entry)
 
     def append_api_exc(self, api_exc: "AlbumApiExceptionInfo") -> None:
-        """Append an error entry from an AlbumApiExceptionInfo object and prune old entries."""
+        """Append an error entry from an AlbumApiExceptionInfo object and prune old
+        entries."""
         import time
 
         from immich_autotag.config.internal_config import ALBUM_ERROR_WINDOW_SECONDS

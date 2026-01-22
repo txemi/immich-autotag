@@ -2,13 +2,16 @@ from typing import Iterator, List, Optional
 
 import attrs
 
-from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album.album_response_wrapper import (
+    AlbumResponseWrapper,
+)
 
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class DuplicateAlbumReport:
     """
-    Represents an album duplicate report with explicit references to the two albums involved.
+    Represents an album duplicate report with explicit references
+    to the two albums involved.
     """
 
     album_name: str = attrs.field(validator=attrs.validators.instance_of(str))
@@ -27,7 +30,8 @@ class DuplicateAlbumReport:
 @attrs.define(auto_attribs=True, slots=True)
 class DuplicateAlbumReports:
     """
-    Encapsulates the list of album duplicate reports for clearer and safer handling.
+    Encapsulates the list of album duplicate reports for clearer
+    and safer handling.
     """
 
     items: List[DuplicateAlbumReport] = attrs.field(
