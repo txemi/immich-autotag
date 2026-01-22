@@ -483,7 +483,9 @@ class AlbumResponseWrapper:
         """
         return self._get_album_full_or_load()
 
-    def _update_from_dto(self, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
+    def _update_from_dto(
+        self, dto: AlbumResponseDto, load_source: AlbumLoadSource
+    ) -> None:
         """
         Centraliza la lógica de actualización de DTO, load_source, loaded_at y asset_ids_cache.
         """

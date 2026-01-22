@@ -80,6 +80,7 @@ def run_main():
     )
     # Now, create the dependent objects
     tag_collection = list_tags(client)
+    # Initialize the singleton and load albums from API
     albums_collection = AlbumCollectionWrapper.from_client(client)
     duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)

@@ -14,7 +14,7 @@ USE_THREADPOOL = False  # Set to True to force thread pool usage, False for dire
 MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
 # Internal usage example:
-DEFAULT_ERROR_MODE = ErrorHandlingMode.DEVELOPMENT
+DEFAULT_ERROR_MODE = ErrorHandlingMode.CRAZY_DEBUG
 
 # Album error handling thresholds (tunable)
 # Number of errors in the window required to mark an album unavailable

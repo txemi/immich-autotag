@@ -241,9 +241,7 @@ class AlbumCollectionWrapper:
                 f"album names differ ('{name_existing}' vs '{name_incoming}'). "
                 f"Context: {context}"
             )
-        from immich_autotag.config._internal_types import ErrorHandlingMode
         from immich_autotag.config.internal_config import (
-            DEFAULT_ERROR_MODE,
             MERGE_DUPLICATE_ALBUMS_ENABLED,
         )
 
@@ -277,9 +275,7 @@ class AlbumCollectionWrapper:
         records a summary event.
         """
 
-        from immich_autotag.config._internal_types import ErrorHandlingMode
         from immich_autotag.config.internal_config import (
-            DEFAULT_ERROR_MODE,
             GLOBAL_UNAVAILABLE_THRESHOLD,
         )
         from immich_autotag.report.modification_kind import ModificationKind
@@ -529,9 +525,7 @@ class AlbumCollectionWrapper:
         Handles the case of a non-temporary duplicate: error in development, collection in other modes.
         """
 
-        from immich_autotag.config._internal_types import ErrorHandlingMode
         from immich_autotag.config.internal_config import (
-            DEFAULT_ERROR_MODE,
             MERGE_DUPLICATE_ALBUMS_ENABLED,
         )
 
@@ -657,7 +651,6 @@ class AlbumCollectionWrapper:
         # Optionally update asset-to-albums map or other structures here if needed
         return wrapper
 
-
     def _ensure_fully_loaded(self):
         """
         Ensures that all albums have been loaded (search performed). If not, triggers a full load.
@@ -666,11 +659,9 @@ class AlbumCollectionWrapper:
             return
         # Trigger full load here (implementation depends on how albums are loaded)
         # For now, we assume a method self._load_all_albums_from_api() exists or similar logic
-        from immich_autotag.context.immich_context import ImmichContext
 
         # This will fetch and replace the albums in the singleton
         self.resync_from_api()
-
 
     @conditional_typechecked
     def albums_for_asset(
@@ -688,7 +679,7 @@ class AlbumCollectionWrapper:
         """Returns the names of the albums the asset belongs to.
         Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access.
         """
-        
+
         return [w.get_album_name() for w in self.albums_for_asset(asset)]
 
     @conditional_typechecked
@@ -851,6 +842,7 @@ class AlbumCollectionWrapper:
             wrapper, client=client, tag_mod_report=tag_mod_report
         )
         return wrapper
+
     @classmethod
     def resync_from_api_class(cls, client: "ImmichClient") -> None:
         """
@@ -858,7 +850,6 @@ class AlbumCollectionWrapper:
         """
         instance = cls.get_instance()
         instance.resync_from_api(client)
-   
 
     @typechecked
     def find_album_by_id(self, album_id: UUID) -> AlbumResponseWrapper | None:
@@ -880,9 +871,11 @@ class AlbumCollectionWrapper:
         - Maneja duplicados y logging igual que from_client.
         """
         from immich_client.api.albums import get_all_albums
-        from immich_autotag.report.modification_report import ModificationReport
+
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
+        from immich_autotag.report.modification_report import ModificationReport
+
         client = ImmichContext.get_default_client()
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
@@ -902,7 +895,9 @@ class AlbumCollectionWrapper:
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
             # Si clear_first, simplemente añadimos; si no, solo añadimos si no existe
-            if clear_first or not self.find_first_album_with_name(wrapper.get_album_name()):
+            if clear_first or not self.find_first_album_with_name(
+                wrapper.get_album_name()
+            ):
                 self._try_append_wrapper_to_list(
                     wrapper=wrapper,
                     client=client,
@@ -918,6 +913,7 @@ class AlbumCollectionWrapper:
             from immich_autotag.albums.duplicates.write_duplicates_summary import (
                 write_duplicates_summary,
             )
+
             write_duplicates_summary(self._collected_duplicates)
 
         log(f"[RESYNC] Total albums: {len(self)}", level=LogLevel.INFO)
@@ -932,3 +928,13 @@ class AlbumCollectionWrapper:
         name = wrapper.get_album_name()
         names = self.find_all_albums_with_name(name)
         return len(list(names)) > 1
+
+    @classmethod
+    def from_client(cls, client: "ImmichClient") -> "AlbumCollectionWrapper":
+        """
+        Instantiates the singleton and loads albums from the API using the provided client.
+        Returns the singleton instance.
+        """
+        instance = cls()
+        instance.resync_from_api()
+        return instance

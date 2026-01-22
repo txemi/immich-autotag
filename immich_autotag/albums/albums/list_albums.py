@@ -14,4 +14,6 @@ def list_albums(client: ImmichClient) -> AlbumCollectionWrapper:
     Returns the collection of extended albums (wrappers)
     encapsulated in AlbumCollectionWrapper.
     """
-    return AlbumCollectionWrapper.from_client(client)
+    # Initialize the singleton and load albums from API
+    albums_collection = AlbumCollectionWrapper.from_client(client)
+    return albums_collection
