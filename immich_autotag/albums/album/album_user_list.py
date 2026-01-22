@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumUserList:
     """
-    Encapsulates a list of AlbumUserWrapper objects, enforcing type safety and providing helper methods.
+    Encapsulates a list of AlbumUserWrapper objects, enforcing type safety and
+    providing helper methods.
     """
 
     _users: list["AlbumUserWrapper"] = attrs.field(factory=list)

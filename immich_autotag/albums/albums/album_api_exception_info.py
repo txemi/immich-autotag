@@ -44,4 +44,7 @@ class AlbumApiExceptionInfo:
         return self.status_code == code
 
     def __str__(self) -> str:
-        return f"AlbumApiExceptionInfo(status_code={self.status_code}, message={self.message!r})"
+        return (
+            f"AlbumApiExceptionInfo(status_code={self.status_code}, "
+            f"message={self.message!r})"
+        )
