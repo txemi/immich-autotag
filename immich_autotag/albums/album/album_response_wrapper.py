@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+import enum
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
@@ -22,6 +24,7 @@ if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
+from immich_autotag.albums.album.album_user_list import AlbumUserList
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
@@ -39,11 +42,6 @@ class AssetAlreadyInAlbumError(Exception):
     """
 
     pass
-
-
-
-import datetime
-import enum
 
 
 class AlbumLoadSource(enum.Enum):
@@ -577,7 +575,8 @@ class AlbumResponseWrapper:
         else:
             raise RuntimeError(
                 (
-                    f"Asset {asset_wrapper.id} not found in add_assets_to_album response for album "
+                    f"Asset {asset_wrapper.id} not found in add_assets_to_album "
+                    f"response for album {self.get_album_id()}. "
                     f"{self.get_album_id()}."
                 )
             )
@@ -680,7 +679,8 @@ class AlbumResponseWrapper:
         # Check if asset is in album first (use has_asset_wrapper for clarity)
         if not self.has_asset_wrapper(asset_wrapper):
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album {self.get_album_id()}, "
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album "
+                f"{self.get_album_id()}, "
                 "skipping removal.",
                 level=LogLevel.DEBUG,
             )
@@ -892,7 +892,8 @@ class AlbumResponseWrapper:
                 log(
                     (
                         f"After {max_retries} retries, asset {asset_wrapper.id} does NOT appear in album "
-                        f"{self.get_album_id()}. This may be an eventual consistency or API issue."
+                        f"{self.get_album_id()}. "
+                        f"This may be an eventual consistency or API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
@@ -923,7 +924,8 @@ class AlbumResponseWrapper:
                 log(
                     (
                         f"After {max_retries} retries, asset {asset_wrapper.id} still appears in album "
-                        f"{self.get_album_id()}. This may be an eventual consistency or API issue."
+                        f"{self.get_album_id()}. "
+                        f"This may be an eventual consistency or API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
@@ -959,7 +961,8 @@ class AlbumResponseWrapper:
         Create an AlbumResponseWrapper from a partial DTO.
 
         The wrapper will store the provided DTO as _album_partial and will not populate the full cache.
-        Callers must explicitly request loading the full DTO via ensure_full/reload_from_api.
+        Callers must explicitly request loading the full DTO via ensure_full/
+        reload_from_api.
         """
         wrapper = AlbumResponseWrapper(album_dto=dto)
         return wrapper

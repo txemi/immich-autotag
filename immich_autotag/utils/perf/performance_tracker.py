@@ -85,7 +85,10 @@ class PerformanceTracker:
                 est_total_rel = avg * total_to_process
                 est_remaining_rel = est_total_rel - elapsed
             from immich_autotag.utils.perf.estimate_utils import adjust_estimates
-            est_total_rel, est_remaining_rel = adjust_estimates(elapsed, est_total_rel, est_remaining_rel)
+
+            est_total_rel, est_remaining_rel = adjust_estimates(
+                elapsed, est_total_rel, est_remaining_rel
+            )
             percent_rel = (count / total_to_process) * 100
 
             # Absoluto (incluyendo skip_n)
@@ -98,7 +101,9 @@ class PerformanceTracker:
                 percent_abs = (abs_count / abs_total) * 100
                 est_total_abs = avg * abs_total
                 est_remaining_abs = est_total_abs - elapsed
-                est_total_abs, est_remaining_abs = adjust_estimates(elapsed, est_total_abs, est_remaining_abs)
+                est_total_abs, est_remaining_abs = adjust_estimates(
+                    elapsed, est_total_abs, est_remaining_abs
+                )
 
             def fmt_time(minutes: float) -> str:
                 if minutes >= 60:
