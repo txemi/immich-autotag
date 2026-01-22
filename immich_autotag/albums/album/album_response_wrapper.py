@@ -1032,43 +1032,25 @@ class AlbumResponseWrapper:
     @typechecked
     def merge_from_dto(self, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
         """
-        Actualiza los campos relevantes del wrapper con los datos del nuevo DTO recibido.
-        El parámetro load_source indica si el DTO proviene de SEARCH (búsqueda) o DETAIL (detalle completo).
-        Solo actualiza si:
-        - El nuevo load_source es DETAIL (siempre actualiza a full)
-        - O el actual es SEARCH (permite pasar de SEARCH a SEARCH o a DETAIL)
-        Si el actual es DETAIL y el nuevo es SEARCH, ignora la actualización.
+        Unifies DTO update logic. Updates the wrapper with the new DTO and load_source if:
+        - The new load_source is DETAIL (always update to full)
+        - The current load_source is SEARCH (allow update from SEARCH to SEARCH or DETAIL)
+        - Ensures loaded_at is monotonic (never decreases)
+        - Updates asset ID cache as UUIDs
+        If the current is DETAIL and the new is SEARCH, ignores the update.
         """
-        update = False
+        should_update = False
         if load_source == AlbumLoadSource.DETAIL:
-            # Siempre actualiza a full
-            update = True
+            should_update = True
         elif self._load_source == AlbumLoadSource.SEARCH:
-            # Permite actualizar si el actual es SEARCH
-            update = True
-        if update:
+            should_update = True
+        if should_update:
+            now = datetime.datetime.now()
+            if hasattr(self, "_loaded_at") and now < self._loaded_at:
+                raise RuntimeError("New loaded_at timestamp is earlier than previous loaded_at.")
             self._album_dto = dto
             self._load_source = load_source
-            if hasattr(dto, 'assets') and dto.assets is not None:
-                try:
-                    self._asset_ids_cache = set(a.id for a in dto.assets)
-                except Exception:
-                    self._asset_ids_cache = None
-            import datetime
-            self._loaded_at = datetime.datetime.now()
+            self._loaded_at = now
 
+            self._asset_ids_cache = None
 
-    @typechecked
-    def _update_dto(self, new_dto: AlbumResponseDto, source: AlbumLoadSource) -> None:
-        """
-        Update the internal DTO with a new one, updating the load source and loaded_at.
-        loaded_at must always increase.
-        """
-        now = datetime.datetime.now()
-        if now < self._loaded_at:
-            raise RuntimeError(
-                "New loaded_at timestamp is earlier than previous loaded_at."
-            )
-        self._album_dto = new_dto
-        self._load_source = source
-        self._loaded_at = now            
