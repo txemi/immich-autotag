@@ -31,9 +31,9 @@ def merge_duplicate_albums(
     # Safety: Ensure duplicate_album is actually a duplicate before proceeding
     if not duplicate_album.is_duplicate_album():
         raise RuntimeError(
-            f"Refusing to merge/delete album '",
+            "Refusing to merge/delete album '",
             f"{duplicate_album.get_album_name()}' (id=",
-            f"{duplicate_album.get_album_id()}): not a duplicate album."
+            f"{duplicate_album.get_album_id()}): not a duplicate album.",
         )
 
     # Move assets from duplicate to target

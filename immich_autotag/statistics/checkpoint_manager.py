@@ -32,7 +32,9 @@ class CheckpointManager:
             )
 
     @typechecked
-    def get_effective_skip_n(self, config_skip_n: int = 0, config_resume_previous: bool = True) -> int:
+    def get_effective_skip_n(
+        self, config_skip_n: int = 0, config_resume_previous: bool = True
+    ) -> int:
         """
         Decide el valor de skip_n y deja claro en el log su origen: checkpoint previo, config, o ninguno.
         """

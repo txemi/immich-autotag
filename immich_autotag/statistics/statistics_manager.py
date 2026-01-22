@@ -86,12 +86,14 @@ class StatisticsManager:
                 self.start_run()
             self._current_stats.increment_event(event_kind, extra_key=extra_key)
 
-
     @typechecked
     def get_progress_description(self) -> str:
         count = self._current_stats.count if self._current_stats else 0
+        self._try_init_perf_tracker()
         if self._perf_tracker is None:
-            return "Progress not available: PerformanceTracker not initialized."
+            raise RuntimeError(
+                "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
+            )
         return self._perf_tracker.get_progress_description(count)
 
     @typechecked
