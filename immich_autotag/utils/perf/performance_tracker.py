@@ -111,6 +111,20 @@ class PerformanceTracker:
                 else:
                     return f"{minutes:.1f} min"
 
+            # Obtener tiempo acumulado de sesiones previas
+            try:
+                from immich_autotag.statistics.statistics_manager import (
+                    StatisticsManager,
+                )
+
+                stats = StatisticsManager.get_instance().get_stats()
+                previous_sessions_time = getattr(stats, "previous_sessions_time", 0.0)
+            except Exception:
+                previous_sessions_time = 0.0
+
+            tiempo_total = previous_sessions_time + elapsed
+            tiempo_total_estimado = previous_sessions_time + est_total_rel
+
             msg = (
                 f"Procesados en esta sesión: {count}/{total_to_process} ({percent_rel:.1f}%) | "
                 f"Procesados totales: {abs_count}/{abs_total}"
@@ -118,19 +132,16 @@ class PerformanceTracker:
             if percent_abs is not None:
                 msg += f" ({percent_abs:.1f}%)"
             msg += f". Avg: {avg:.3f} s. Tiempo transcurrido (sesión): {fmt_time(elapsed/60)}. "
+            msg += f"Tiempo transcurrido (todas las sesiones): {fmt_time(tiempo_total/60)}. "
             # Mostrar tiempo estimado previsto (lineal o EWMA)
             if (
                 estimation_mode == TimeEstimationMode.EWMA
                 and estimator is not None
                 and estimator.get_estimated_time_per_asset() > 0
             ):
-                msg += (
-                    f" Tiempo estimado previsto (EWMA): {fmt_time(est_total_rel/60)}."
-                )
+                msg += f"Tiempo estimado previsto (EWMA, total): {fmt_time(tiempo_total_estimado/60)}."
             else:
-                msg += (
-                    f" Tiempo estimado previsto (lineal): {fmt_time(est_total_rel/60)}."
-                )
+                msg += f"Tiempo estimado previsto (lineal, total): {fmt_time(tiempo_total_estimado/60)}."
             msg += (
                 f" Tiempo estimado restante (sesión): {fmt_time(est_remaining_rel/60)}."
             )
@@ -142,7 +153,17 @@ class PerformanceTracker:
                 msg += f" | Tiempo estimado restante (absoluto): {fmt_time(est_remaining_abs/60)}/{fmt_time(est_total_abs/60)}"
             return msg
         else:
+            try:
+                from immich_autotag.statistics.statistics_manager import (
+                    StatisticsManager,
+                )
+
+                stats = StatisticsManager.get_instance().get_stats()
+                previous_sessions_time = getattr(stats, "previous_sessions_time", 0.0)
+            except Exception:
+                previous_sessions_time = 0.0
             return (
                 f"Procesados en esta sesión: {count}. Avg por elemento: {avg:.3f} s. "
-                f"Tiempo transcurrido (sesión): {elapsed:.1f} s"
+                f"Tiempo transcurrido (sesión): {elapsed:.1f} s. "
+                f"Tiempo transcurrido (todas las sesiones): {((previous_sessions_time+elapsed)/60):.1f} min"
             )
