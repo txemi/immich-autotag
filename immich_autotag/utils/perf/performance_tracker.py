@@ -49,98 +49,96 @@ class PerformanceTracker:
             elapsed = time.time() - self.start_time
         print("[PERF] " + self._format_perf_progress(count, elapsed))
 
+    @typechecked
     def _printable_value_avg(self, count: int, elapsed: float) -> float:
         return elapsed / count if count else 0
 
+    @typechecked
     def _printable_value_total_to_process(self) -> Optional[int]:
         return self.total_to_process
 
+    @typechecked
     def _printable_value_skip_n(self) -> int:
         return self.skip_n or 0
 
+    @typechecked
     def _printable_value_total_assets(self) -> Optional[int]:
         return self.total_assets
 
+    @typechecked
     def _printable_value_previous_sessions_time(self) -> float:
         try:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
-
             stats = StatisticsManager.get_instance().get_stats()
             return getattr(stats, "previous_sessions_time", 0.0)
         except Exception:
             return 0.0
 
+    @typechecked
     def _printable_value_abs_count(self, count: int) -> int:
         return count + self._printable_value_skip_n()
 
+    @typechecked
     def _printable_value_abs_total(self) -> Optional[int]:
         total_assets = self._printable_value_total_assets()
         return total_assets if total_assets and total_assets > 0 else None
 
-    def _printable_value_estimation_mode(self):
+    @typechecked
+    def _printable_value_estimation_mode(self) -> TimeEstimationMode:
         return self.estimation_mode
 
-    def _printable_value_estimator(self):
+    @typechecked
+    def _printable_value_estimator(self) -> Optional[AdaptiveTimeEstimator]:
         return self.estimator
 
-    def _printable_value_est_total_session(
-        self, count: int, elapsed: float
-    ) -> Optional[float]:
+    def _printable_value__get_avg_and_totals(self, count: int, elapsed: float):
+        avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         estimator = self._printable_value_estimator()
         estimation_mode = self._printable_value_estimation_mode()
-        avg = self._printable_value_avg(count, elapsed)
+        return avg, total_to_process, estimator, estimation_mode
+
+    @typechecked
+    def _printable_value_est_total_session(self, count: int, elapsed: float) -> Optional[float]:
+        avg, total_to_process, estimator, estimation_mode = self._printable_value__get_avg_and_totals(count, elapsed)
         if total_to_process and count > 0:
-            if (
-                estimation_mode == TimeEstimationMode.EWMA
-                and estimator is not None
-                and estimator.get_estimated_time_per_asset() > 0
-            ):
+            if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
                 ewma = estimator.get_estimated_time_per_asset()
                 return ewma * total_to_process
             else:
                 return avg * total_to_process
         return None
 
-    def _printable_value_est_remaining_session(
-        self, count: int, elapsed: float
-    ) -> Optional[float]:
-        total_to_process = self._printable_value_total_to_process()
-        estimator = self._printable_value_estimator()
-        estimation_mode = self._printable_value_estimation_mode()
-        avg = self._printable_value_avg(count, elapsed)
+    @typechecked
+    def _printable_value_est_remaining_session(self, count: int, elapsed: float) -> Optional[float]:
+        avg, total_to_process, estimator, estimation_mode = self._printable_value__get_avg_and_totals(count, elapsed)
         if total_to_process and count > 0:
             remaining = total_to_process - count
-            if (
-                estimation_mode == TimeEstimationMode.EWMA
-                and estimator is not None
-                and estimator.get_estimated_time_per_asset() > 0
-            ):
+            if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
                 ewma = estimator.get_estimated_time_per_asset()
                 return ewma * remaining
             else:
                 return avg * total_to_process - elapsed
         return None
 
-    def _printable_value_est_total_all(
-        self, count: int, elapsed: float
-    ) -> Optional[float]:
+    @typechecked
+    def _printable_value_est_total_all(self, count: int, elapsed: float) -> Optional[float]:
         abs_total = self._printable_value_abs_total()
         avg = self._printable_value_avg(count, elapsed)
         if abs_total and count > 0:
             return avg * abs_total
         return None
 
-    def _printable_value_est_remaining_all(
-        self, count: int, elapsed: float, previous_sessions_time: float
-    ) -> Optional[float]:
+    @typechecked
+    def _printable_value_est_remaining_all(self, count: int, elapsed: float, previous_sessions_time: float) -> Optional[float]:
         abs_total = self._printable_value_abs_total()
         avg = self._printable_value_avg(count, elapsed)
         if abs_total and count > 0:
             return avg * abs_total - (previous_sessions_time + elapsed)
         return None
 
-    def _printable_value_fmt_time(self, seconds) -> str:
+    @typechecked
+    def _printable_value_fmt_time(self, seconds: Optional[float]) -> str:
         if seconds is None:
             return "?"
         if seconds >= 3600:
