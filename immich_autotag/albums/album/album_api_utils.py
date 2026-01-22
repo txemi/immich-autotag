@@ -2,6 +2,8 @@
 Utility functions for Immich album API calls (singular album).
 """
 
+
+from immich_autotag.logging.utils import log_debug
 from uuid import UUID
 
 from immich_client.api.albums import get_album_info
@@ -17,7 +19,8 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> AlbumResponseD
     Unified wrapper for get_album_info.sync(id=..., client=...).
     Returns the album DTO or raises on error.
     """
-    uuid_str = str(album_id)
-    a = get_album_info.sync(id=uuid_str, client=client)
+    a = get_album_info.sync(id=album_id, client=client)
     log_debug(f"Fetched album info for id={album_id}: {a}")
+    if a is None:
+        raise RuntimeError(f"get_album_info.sync returned None for album id={album_id}")
     return a
