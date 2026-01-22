@@ -38,6 +38,7 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
+
     """
     Singleton class that manages the collection of all albums in the system.
 
@@ -109,7 +110,11 @@ class AlbumCollectionWrapper:
             return ModificationReport.get_instance()
         except Exception as e:
             raise RuntimeError(f"Could not retrieve ModificationReport: {e}")
-
+    def __len__(self) -> int:
+        """
+        Returns the number of albums in the collection (including deleted unless filtered elsewhere).
+        """
+        return len(self._albums)
     @typechecked
     def find_first_album_with_name(
         self, album_name: str
@@ -846,7 +851,7 @@ class AlbumCollectionWrapper:
 
             write_duplicates_summary(duplicates_collected)
 
-        log(f"Total albums: {len(albums_wrapped)}", level=LogLevel.INFO)
+        log(f"Total albums: {len(collection)}", level=LogLevel.INFO)
 
         # Assign the final list to the collection and return it
 
