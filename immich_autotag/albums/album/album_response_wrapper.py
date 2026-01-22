@@ -209,9 +209,11 @@ class AlbumResponseWrapper:
                 raise RuntimeError(
                     f"Album with id={self.get_album_id()} and name='"
                     f"{self.get_album_name()}' not found among albums with the same name: "
-                    f"{album_ids[:40]}..."
-                    if len(str(album_ids)) > 40
-                    else f"{album_ids}"
+                    + (
+                        f"{album_ids[:20]}..." f"{album_ids[20:40]}..."
+                        if len(str(album_ids)) > 40
+                        else f"{album_ids}"
+                    )
                 )
             else:
                 # Intentar resync de la colección y volver a comprobar
@@ -804,8 +806,8 @@ class AlbumResponseWrapper:
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise RuntimeError(
                     (
-                        f"Asset {asset_wrapper.id} was not successfully removed from album "
-                        f"{self.get_album_id()}: {error_msg}\n"
+                        f"Asset {asset_wrapper.id} was not successfully removed from "
+                        f"album {self.get_album_id()}: {error_msg}\n"
                         f"Asset link: {asset_url}\n"
                         f"Album link: {album_url}"
                     )
@@ -878,8 +880,10 @@ class AlbumResponseWrapper:
         max_retries: int = 3,
     ) -> None:
         """
-        Verifies that an asset appears in the album after adding it, with retry logic for
-        eventual consistency. Uses exponential backoff to handle API delays.
+        Verifies that an asset appears in the album after adding it,
+        with retry logic for
+        eventual consistency.
+        Uses exponential backoff to handle API delays.
         """
         import time
 
@@ -911,8 +915,10 @@ class AlbumResponseWrapper:
         max_retries: int = 3,
     ) -> None:
         """
-        Verifies that an asset has been removed from the album after removing it, with retry
-        logic for eventual consistency. Uses exponential backoff to handle API delays.
+        Verifies that an asset has been removed from the album after removing it,
+        with retry
+        logic for eventual consistency.
+        Uses exponential backoff to handle API delays.
         """
         import time
 
@@ -928,9 +934,9 @@ class AlbumResponseWrapper:
             else:
                 log(
                     (
-                        f"After {max_retries} retries, asset {asset_wrapper.id} still appears in "
-                        f"album {self.get_album_id()}. This may be an eventual consistency or "
-                        f"API issue."
+                        f"After {max_retries} retries, asset {asset_wrapper.id} "
+                        f"still appears in album {self.get_album_id()}. "
+                        f"This may be an eventual consistency or API issue."
                     ),
                     level=LogLevel.WARNING,
                 )
@@ -965,8 +971,10 @@ class AlbumResponseWrapper:
         """
         Create an AlbumResponseWrapper from a partial DTO.
 
-        The wrapper will store the provided DTO as _album_partial and will not populate the
-        full cache. Callers must explicitly request loading the full DTO via ensure_full/
+        The wrapper will store the provided DTO as _album_partial
+        and will not populate the
+        full cache.
+        Callers must explicitly request loading the full DTO via ensure_full/
         reload_from_api.
         """
         wrapper = AlbumResponseWrapper(album_dto=dto)

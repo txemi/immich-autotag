@@ -211,14 +211,14 @@ class PerformanceTracker:
             msg += f"/{abs_total}(abs_total)"
 
         if est_remaining_session is not None:
-            msg += f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
+            msg += (
+                f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
+            )
         else:
             msg += " Remaining:?/"
 
         msg += f"{self._printable_value_fmt_time(elapsed)}(Elapsed)"
         msg += f"/{self._printable_value_fmt_time(previous_sessions_time + elapsed)}(TotalElapsed)"
-
-
 
         if est_total_all is not None:
             msg += f"/{self._printable_value_fmt_time(est_total_all)}(est_total_all)"
