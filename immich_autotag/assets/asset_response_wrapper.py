@@ -773,7 +773,7 @@ class AssetResponseWrapper:
     def apply_tag_conversions(
         self,
         tag_conversions: TagConversions,
-    ) -> None:
+    ) -> list[str]:
         """
         Applies each conversion by calling its apply_to_asset method.
         """
@@ -800,6 +800,7 @@ class AssetResponseWrapper:
             f"[TAG CONVERSION] Tag conversion finished for asset {self.id} ({self.original_file_name})",
             level=LogLevel.FOCUS,
         )
+        return changes
 
     @typechecked
     def try_detect_album_from_folders(self) -> str | None:

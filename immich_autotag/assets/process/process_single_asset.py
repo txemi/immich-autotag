@@ -22,7 +22,7 @@ def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
     from immich_autotag.conversions.tag_conversions import TagConversions
 
     tag_conversions = TagConversions.from_config_manager()
-    asset_wrapper.apply_tag_conversions(tag_conversions)
+    return asset_wrapper.apply_tag_conversions(tag_conversions)
 
 
 @typechecked
@@ -83,10 +83,11 @@ def process_single_asset(
     asset_name = asset_wrapper.original_file_name or "[no name]"
     log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
 
-    _apply_tag_conversions(asset_wrapper)
+    applied_conversions=_apply_tag_conversions(asset_wrapper)
+
+    _correct_date_if_enabled(asset_wrapper)
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
         raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
-    _correct_date_if_enabled(asset_wrapper)
     _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
     _analyze_and_assign_album(asset_wrapper, tag_mod_report)
