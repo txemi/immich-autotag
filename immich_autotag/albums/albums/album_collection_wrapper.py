@@ -255,7 +255,7 @@ class AlbumCollectionWrapper:
             GLOBAL_UNAVAILABLE_THRESHOLD,
         )
         from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
         threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
 
@@ -458,7 +458,7 @@ class AlbumCollectionWrapper:
             ) from exc
         else:
             self.remove_album_local_public(wrapper)
-            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
             # On success, err_reason is not set, so use a default
             tag_mod_report.add_album_modification(
@@ -517,7 +517,7 @@ class AlbumCollectionWrapper:
                 note="duplicate skipped durante carga inicial",
             )
         )
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
         tag_mod_report.add_error_modification(
             kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
@@ -701,7 +701,7 @@ class AlbumCollectionWrapper:
         )
 
         try:
-            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
             add_members_to_album(
                 album_id=album.id,
@@ -733,7 +733,7 @@ class AlbumCollectionWrapper:
         from immich_client.api.albums import create_album
         from immich_client.models.create_album_dto import CreateAlbumDto
 
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
         album = create_album.sync(
             client=client, body=CreateAlbumDto(album_name=album_name)

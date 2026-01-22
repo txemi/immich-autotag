@@ -5,7 +5,7 @@ from typeguard import typechecked
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-    from immich_autotag.tags.modification_kind import ModificationKind
+    from immich_autotag.report.modification_kind import ModificationKind
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
     from .statistics_manager import StatisticsManager
@@ -75,7 +75,7 @@ class TagStatsManager:
         kind: "ModificationKind",
         album: "AlbumResponseWrapper | None",
     ) -> None:
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
         if kind == ModificationKind.ADD_TAG_TO_ASSET:
             self.increment_tag_added(tag)

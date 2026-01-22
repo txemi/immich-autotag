@@ -153,7 +153,7 @@ class AssetResponseWrapper:
             )
             log_debug(f"[BUG] {log_msg}")
         from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
@@ -347,7 +347,7 @@ class AssetResponseWrapper:
                     f"Response: {response}"
                 )
             removed_any = True
-            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
             tag_mod_report.add_modification(
                 kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
@@ -412,7 +412,7 @@ class AssetResponseWrapper:
             from immich_autotag.logging.utils import log
 
             log(error_msg, level=LogLevel.ERROR)
-            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
             tag_mod_report.add_modification(
                 kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
@@ -429,7 +429,7 @@ class AssetResponseWrapper:
 
             log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.report.modification_kind import ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_id=None,
@@ -462,7 +462,7 @@ class AssetResponseWrapper:
             error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
             log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.report.modification_kind import ModificationKind
 
                 tag_mod_report.add_modification(
                     asset_wrapper=self,
@@ -480,7 +480,7 @@ class AssetResponseWrapper:
             f"[INFO] Added tag '{tag_name}' to asset.id={self.id}.",
             level=LogLevel.DEBUG,
         )
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
         tag_mod_report.add_modification(
             kind=ModificationKind.ADD_TAG_TO_ASSET,
@@ -1024,7 +1024,7 @@ class AssetResponseWrapper:
                 )
                 # Register in modification report
                 from immich_autotag.report.modification_report import ModificationReport
-                from immich_autotag.tags.modification_kind import ModificationKind
+                from immich_autotag.report.modification_kind import ModificationKind
 
                 report = ModificationReport.get_instance()
                 report.add_modification(

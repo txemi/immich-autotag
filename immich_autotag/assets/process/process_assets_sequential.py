@@ -68,7 +68,7 @@ def process_assets_sequential(
                         f"[WARN] {category} - Skipping asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
-                    from immich_autotag.tags.modification_kind import ModificationKind
+                    from immich_autotag.report.modification_kind import ModificationKind
 
                     tag_mod_report = ModificationReport.get_instance()
                     if tag_mod_report:

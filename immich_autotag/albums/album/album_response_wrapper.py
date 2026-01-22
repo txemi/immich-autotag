@@ -390,7 +390,7 @@ class AlbumResponseWrapper:
             from immich_autotag.report.modification_report import (
                 ModificationReport,
             )
-            from immich_autotag.tags.modification_kind import (
+            from immich_autotag.report.modification_kind import (
                 ModificationKind,
             )
 
@@ -492,7 +492,7 @@ class AlbumResponseWrapper:
                 client=client,
                 body=update_body,
             )
-            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.RENAME_ALBUM,
@@ -560,7 +560,7 @@ class AlbumResponseWrapper:
                 )
             )
 
-        from immich_autotag.tags.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
         tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
@@ -599,7 +599,7 @@ class AlbumResponseWrapper:
             )
             self.reload_from_api(client)
 
-            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
             tag_mod_report.add_assignment_modification(
                 kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
@@ -711,7 +711,7 @@ class AlbumResponseWrapper:
 
         # Track modification if report provided
         if tag_mod_report:
-            from immich_autotag.tags.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
             tag_mod_report.add_assignment_modification(
                 kind=ModificationKind.REMOVE_ASSET_FROM_ALBUM,
