@@ -232,6 +232,7 @@ class StatisticsManager:
     @typechecked
     def finish_run(self) -> None:
         from datetime import datetime, timezone
+
         with self._lock:
             if self._current_stats is None:
                 self.start_run()
@@ -246,6 +247,7 @@ class StatisticsManager:
     @typechecked
     def abrupt_exit(self) -> None:
         from datetime import datetime, timezone
+
         with self._lock:
             if self._current_stats is None:
                 self.start_run()
