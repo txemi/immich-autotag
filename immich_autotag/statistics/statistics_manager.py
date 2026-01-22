@@ -298,7 +298,8 @@ class StatisticsManager:
         from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets
 
         total_assets = fetch_total_assets(context)
-        skip_n = self.get_effective_skip_n()
-        self.set_max_assets(max_assets if max_assets is not None else -1)
-        self.set_skip_n(skip_n)
+        # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
         self._current_stats.total_assets = total_assets
+        self.set_max_assets(max_assets if max_assets is not None else -1)
+        skip_n = self.get_effective_skip_n()
+        self.set_skip_n(skip_n)
