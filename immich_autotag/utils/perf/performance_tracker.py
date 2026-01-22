@@ -66,10 +66,11 @@ class PerformanceTracker:
         avg = elapsed / count if count else 0
         total_to_process = self.total_to_process
         estimator = self.estimator
-        skip_n = self.skip_n
+        skip_n = self.skip_n or 0
         total_assets = self.total_assets
         estimation_mode = self.estimation_mode
-        if total_to_process and count > 0:
+        # Determinar el total real a procesar
+        if total_to_process is not None and total_to_process > 0 and count > 0:
             remaining = total_to_process - count
             # Relativo (solo esta sesión)
             if (
@@ -84,28 +85,20 @@ class PerformanceTracker:
                 est_total_rel = avg * total_to_process
                 est_remaining_rel = est_total_rel - elapsed
             from immich_autotag.utils.perf.estimate_utils import adjust_estimates
-
-            est_total_rel, est_remaining_rel = adjust_estimates(
-                elapsed, est_total_rel, est_remaining_rel
-            )
+            est_total_rel, est_remaining_rel = adjust_estimates(elapsed, est_total_rel, est_remaining_rel)
             percent_rel = (count / total_to_process) * 100
 
             # Absoluto (incluyendo skip_n)
             percent_abs = None
-            abs_count = count
-            abs_total = total_to_process
+            abs_count = count + skip_n
+            abs_total = total_assets if total_assets and total_assets > 0 else "todos"
             est_total_abs = None
             est_remaining_abs = None
-            if skip_n is not None and total_assets is not None and total_assets > 0:
-                abs_count = count + skip_n
-                abs_total = total_assets
+            if isinstance(abs_total, int):
                 percent_abs = (abs_count / abs_total) * 100
-                # Estimación absoluta: extrapolamos el tiempo medio a todo el total
                 est_total_abs = avg * abs_total
                 est_remaining_abs = est_total_abs - elapsed
-                est_total_abs, est_remaining_abs = adjust_estimates(
-                    elapsed, est_total_abs, est_remaining_abs
-                )
+                est_total_abs, est_remaining_abs = adjust_estimates(elapsed, est_total_abs, est_remaining_abs)
 
             def fmt_time(minutes: float) -> str:
                 if minutes >= 60:
@@ -113,20 +106,19 @@ class PerformanceTracker:
                 else:
                     return f"{minutes:.1f} min"
 
-            msg = f"{count}/{total_to_process} ({percent_rel:.1f}% relativo"
+            msg = (
+                f"Procesados en esta sesión: {count}/{total_to_process} ({percent_rel:.1f}%) | "
+                f"Procesados en total: {abs_count}/{abs_total}"
+            )
             if percent_abs is not None:
-                msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absoluto)"
-            msg += f") procesados. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. "
-            msg += f"Est. restante (relativo): {fmt_time(est_remaining_rel/60)}/{fmt_time(est_total_rel/60)}"
-            if (
-                percent_abs is not None
-                and est_remaining_abs is not None
-                and est_total_abs is not None
-            ):
-                msg += f" | Est. restante (absoluto): {fmt_time(est_remaining_abs/60)}/{fmt_time(est_total_abs/60)}"
+                msg += f" ({percent_abs:.1f}%)"
+            msg += f". Avg: {avg:.3f} s. Tiempo transcurrido (sesión): {fmt_time(elapsed/60)}. "
+            msg += f"Tiempo estimado restante (sesión): {fmt_time(est_remaining_rel/60)}/{fmt_time(est_total_rel/60)}"
+            if percent_abs is not None and est_remaining_abs is not None and est_total_abs is not None:
+                msg += f" | Tiempo estimado restante (absoluto): {fmt_time(est_remaining_abs/60)}/{fmt_time(est_total_abs/60)}"
             return msg
         else:
             return (
-                f"Processed {count} elements. Avg per element: {avg:.3f} s. "
-                f"Elapsed: {elapsed:.1f} s"
+                f"Procesados en esta sesión: {count}. Avg por elemento: {avg:.3f} s. "
+                f"Tiempo transcurrido (sesión): {elapsed:.1f} s"
             )
