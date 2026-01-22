@@ -18,9 +18,10 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
 @typechecked
-def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
+def process_assets(context: ImmichContext) -> None:
     log_execution_parameters()
-    StatisticsManager.get_instance().initialize_for_run(context, max_assets)
+    total_assets = fetch_total_assets(context.client)
+    StatisticsManager.get_instance().initialize_for_run( total_assets)
     stats = StatisticsManager.get_instance().get_stats()
 
     if USE_THREADPOOL:
