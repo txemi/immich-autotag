@@ -7,7 +7,9 @@ if TYPE_CHECKING:
         AlbumCollectionWrapper,
     )
 
-from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album.album_response_wrapper import (
+    AlbumResponseWrapper,
+)
 from immich_autotag.albums.duplicates.mover import move_assets_between_albums
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
@@ -29,7 +31,9 @@ def merge_duplicate_albums(
     # Safety: Ensure duplicate_album is actually a duplicate before proceeding
     if not duplicate_album.is_duplicate_album():
         raise RuntimeError(
-            f"Refusing to merge/delete album '{duplicate_album.get_album_name()}' (id={duplicate_album.get_album_id()}): not a duplicate album."
+            f"Refusing to merge/delete album '",
+            f"{duplicate_album.get_album_name()}' (id=",
+            f"{duplicate_album.get_album_id()}): not a duplicate album."
         )
 
     # Move assets from duplicate to target
