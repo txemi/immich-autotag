@@ -76,6 +76,9 @@ class AlbumCollectionWrapper:
         default=attrs.Factory(DuplicateAlbumReports), init=False, repr=False
     )
 
+    # Flag to indicate if all albums have been fully loaded (search performed)
+    _fully_loaded: bool = attrs.field(default=False, init=False, repr=False)
+
     @typechecked
     def __attrs_post_init__(self) -> None:
         global _album_collection_singleton
@@ -654,13 +657,30 @@ class AlbumCollectionWrapper:
         # Optionally update asset-to-albums map or other structures here if needed
         return wrapper
 
+
+    def _ensure_fully_loaded(self):
+        """
+        Ensures that all albums have been loaded (search performed). If not, triggers a full load.
+        """
+        if self._fully_loaded:
+            return
+        # Trigger full load here (implementation depends on how albums are loaded)
+        # For now, we assume a method self._load_all_albums_from_api() exists or similar logic
+        from immich_autotag.context.immich_context import ImmichContext
+
+        # This will fetch and replace the albums in the singleton
+        self.resync_from_api()
+
+
     @conditional_typechecked
     def albums_for_asset(
         self, asset: AssetResponseWrapper
     ) -> Iterable[AlbumResponseWrapper]:
         """
         Returns an iterable of AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map).
+        Ensures all albums are loaded before proceeding.
         """
+        self._ensure_fully_loaded()
         return self._asset_to_albums_map.get(asset.uuid, AlbumList())
 
     @conditional_typechecked
@@ -668,6 +688,7 @@ class AlbumCollectionWrapper:
         """Returns the names of the albums the asset belongs to.
         Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access.
         """
+        
         return [w.get_album_name() for w in self.albums_for_asset(asset)]
 
     @conditional_typechecked
@@ -907,48 +928,55 @@ class AlbumCollectionWrapper:
                 return album
         return None
 
-    @classmethod
-    def resync_from_api(cls, client: "ImmichClient") -> None:
+
+    def resync_from_api(self) -> None:
         """
-        Sincroniza la colección singleton de álbumes con la lista actual de la API.
-        - Actualiza los álbumes existentes con el nuevo DTO parcial.
-        - Añade los nuevos álbumes.
-        - Marca como 'unavailable' los que ya no existen en la API.
-        No devuelve nada, actualiza en sitio.
+        Recarga la colección de álbumes desde la API, igual que from_client pero sobre la instancia actual.
+        - Descarga todos los álbumes de la API (sin assets inicialmente).
+        - Limpia y reconstruye la colección local, usando la misma lógica que from_client.
+        - Maneja duplicados y logging igual que from_client.
         """
         from immich_client.api.albums import get_all_albums
+        from immich_autotag.report.modification_report import ModificationReport
+        from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReports
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+        client = ImmichContext.get_default_client()
+        tag_mod_report = ModificationReport.get_instance()
+        assert isinstance(tag_mod_report, ModificationReport)
 
-        from immich_autotag.albums.album.album_response_wrapper import (
-            AlbumResponseWrapper,
-        )
+        albums = get_all_albums.sync(client=client)
+        if albums is None:
+            raise RuntimeError("Failed to fetch albums: API returned None")
 
-        api_albums = get_all_albums.sync(client=client)
-        api_album_ids = set(a.id for a in api_albums)
+        duplicates_collected = DuplicateAlbumReports()
 
-        current = cls.get_instance()
-        local_albums = {a.get_album_id(): a for a in current.get_albums()}
+        log("[RESYNC] Albums:", level=LogLevel.PROGRESS)
+        # Limpiar la colección actual
+        self._albums.clear()
+        # Reconstruir la colección igual que from_client
+        for album in albums:
+            wrapper = AlbumResponseWrapper.from_partial_dto(album)
+            self._try_append_wrapper_to_list(
+                wrapper=wrapper,
+                client=client,
+                tag_mod_report=tag_mod_report,
+            )
+            log(
+                f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
+                level=LogLevel.INFO,
+            )
 
-        updated_albums = []
-        for dto in api_albums:
-            if dto.id in local_albums:
-                wrapper = local_albums[dto.id]
-                wrapper._album_partial = dto
-                updated_albums.append(wrapper)
-            else:
-                wrapper = AlbumResponseWrapper.from_partial_dto(dto)
-                updated_albums.append(wrapper)
+        tag_mod_report.flush()
+        if len(duplicates_collected) > 0:
+            from immich_autotag.albums.duplicates.write_duplicates_summary import (
+                write_duplicates_summary,
+            )
+            write_duplicates_summary(duplicates_collected)
 
-        removed = [a for id_, a in local_albums.items() if id_ not in api_album_ids]
-        for album in removed:
-            try:
-                album._unavailable = True
-            except Exception:
-                pass
-
-        # Actualizar la lista interna del singleton
-        current._albums = type(current._albums)(updated_albums)
-        # Opcional: actualizar mapas auxiliares aquí si es necesario
-        # No retorna nada
+        log(f"[RESYNC] Total albums: {len(self)}", level=LogLevel.INFO)
+        # Marcar como fully loaded
+        self._fully_loaded = True
 
     @typechecked
     def is_duplicated(self, wrapper: "AlbumResponseWrapper") -> bool:
