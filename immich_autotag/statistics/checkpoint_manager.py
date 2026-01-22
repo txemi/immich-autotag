@@ -32,31 +32,41 @@ class CheckpointManager:
             )
 
     @typechecked
-    def get_effective_skip_n(self) -> int:
+    def get_effective_skip_n(self, config_skip_n: int = 0, config_resume_previous: bool = True) -> int:
+        """
+        Decide el valor de skip_n y deja claro en el log su origen: checkpoint previo, config, o ninguno.
+        """
         enable_checkpoint_resume = ConfigManager.is_checkpoint_resume_enabled()
         stats_dir = self.stats_manager.stats_dir
-        if enable_checkpoint_resume:
+        skip_n = 0
+        origen = None
+        if enable_checkpoint_resume and config_resume_previous:
             logs_dir = stats_dir.parent if stats_dir else Path("logs")
             max_skip_n = get_max_skip_n_from_recent(
                 logs_dir, max_age_hours=3, overlap=self.OVERLAP
             )
-            if max_skip_n is not None:
+            if max_skip_n is not None and max_skip_n > 0:
                 skip_n = max_skip_n
-                log(
-                    f"[CHECKPOINT] Will skip {skip_n} assets (from most advanced run in last 3h).",
-                    level=LogLevel.PROGRESS,
-                )
+                origen = f"checkpoint (stats previos en logs, overlap={self.OVERLAP})"
+            elif config_skip_n > 0:
+                skip_n = config_skip_n
+                origen = "configuración (skip.skip_n)"
             else:
                 skip_n = 0
-                log(
-                    "[CHECKPOINT] No previous stats found. Starting from the beginning.",
-                    level=LogLevel.PROGRESS,
-                )
+                origen = "ninguno (empezando desde el principio)"
+        elif config_skip_n > 0:
+            skip_n = config_skip_n
+            origen = "configuración (skip.skip_n)"
         else:
             skip_n = 0
-            log(
-                "[CHECKPOINT] Checkpoint resume is disabled. Starting from the beginning.",
-                level=LogLevel.PROGRESS,
-            )
+            if not enable_checkpoint_resume:
+                origen = "checkpoint deshabilitado"
+            else:
+                origen = "ninguno (empezando desde el principio)"
+
+        log(
+            f"[CHECKPOINT] skip_n={skip_n} (origen: {origen})",
+            level=LogLevel.PROGRESS,
+        )
         self.stats_manager.set_skip_n(skip_n)
         return skip_n

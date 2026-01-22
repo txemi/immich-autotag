@@ -18,29 +18,39 @@ def format_perf_progress(
     total_assets: Optional[int] = None,
     estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR,
 ) -> str:
+
     avg = elapsed / count if count else 0
     if total_to_process and count > 0:
         remaining = total_to_process - count
+        # Relativo (solo esta sesión)
         if (
             estimation_mode == TimeEstimationMode.EWMA
             and estimator is not None
             and estimator.get_estimated_time_per_asset() > 0
         ):
             ewma = estimator.get_estimated_time_per_asset()
-            est_total = ewma * total_to_process
-            est_remaining = ewma * remaining
+            est_total_rel = ewma * total_to_process
+            est_remaining_rel = ewma * remaining
         else:
-            est_total = avg * total_to_process
-            est_remaining = est_total - elapsed
-        est_total, est_remaining = adjust_estimates(elapsed, est_total, est_remaining)
+            est_total_rel = avg * total_to_process
+            est_remaining_rel = est_total_rel - elapsed
+        est_total_rel, est_remaining_rel = adjust_estimates(elapsed, est_total_rel, est_remaining_rel)
         percent_rel = (count / total_to_process) * 100
+
+        # Absoluto (incluyendo skip_n)
         percent_abs = None
         abs_count = count
         abs_total = total_to_process
-        if skip_n is not None and total_assets is not None:
+        est_total_abs = None
+        est_remaining_abs = None
+        if skip_n is not None and total_assets is not None and total_assets > 0:
             abs_count = count + skip_n
             abs_total = total_assets
-            percent_abs = (abs_count / abs_total) * 100 if abs_total else None
+            percent_abs = (abs_count / abs_total) * 100
+            # Estimación absoluta: extrapolamos el tiempo medio a todo el total
+            est_total_abs = avg * abs_total
+            est_remaining_abs = est_total_abs - elapsed
+            est_total_abs, est_remaining_abs = adjust_estimates(elapsed, est_total_abs, est_remaining_abs)
 
         def fmt_time(minutes: float) -> str:
             if minutes >= 60:
@@ -48,13 +58,13 @@ def format_perf_progress(
             else:
                 return f"{minutes:.1f} min"
 
-        msg = f"{count}/{total_to_process} ({percent_rel:.1f}% relative"
+        msg = f"{count}/{total_to_process} ({percent_rel:.1f}% relativo"
         if percent_abs is not None:
-            msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absolute)"
-        msg += (
-            f") processed. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. "
-            f"Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
-        )
+            msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absoluto)"
+        msg += f") procesados. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. "
+        msg += f"Est. restante (relativo): {fmt_time(est_remaining_rel/60)}/{fmt_time(est_total_rel/60)}"
+        if percent_abs is not None and est_remaining_abs is not None and est_total_abs is not None:
+            msg += f" | Est. restante (absoluto): {fmt_time(est_remaining_abs/60)}/{fmt_time(est_total_abs/60)}"
         return msg
     else:
         return (
@@ -63,32 +73,3 @@ def format_perf_progress(
         )
 
 
-@typechecked
-def print_perf(
-    count: int,
-    elapsed: float,
-    total_to_process: Optional[int] = None,
-    estimator: Optional[AdaptiveTimeEstimator] = None,
-    skip_n: Optional[int] = None,
-    total_assets: Optional[int] = None,
-    estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR,
-) -> None:
-    """
-    Print performance statistics for asset processing.
-    Args:
-        count (int): Number of assets processed.
-        elapsed (float): Elapsed time in seconds.
-        total_assets (int, optional): Total number of assets to process.
-    """
-    print(
-        "[PERF] "
-        + format_perf_progress(
-            count=count,
-            elapsed=elapsed,
-            total_to_process=total_to_process,
-            estimator=estimator,
-            skip_n=skip_n,
-            total_assets=total_assets,
-            estimation_mode=estimation_mode,
-        )
-    )
