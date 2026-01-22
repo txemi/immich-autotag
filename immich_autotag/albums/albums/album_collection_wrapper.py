@@ -880,7 +880,6 @@ class AlbumCollectionWrapper:
         """
         from immich_client.api.albums import get_all_albums
         from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReports
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
         client = ImmichContext.get_default_client()
@@ -891,7 +890,8 @@ class AlbumCollectionWrapper:
         if albums is None:
             raise RuntimeError("Failed to fetch albums: API returned None")
 
-        duplicates_collected = DuplicateAlbumReports()
+        # Limpiar duplicados previos antes de recargar
+        self._collected_duplicates.clear()
 
         log("[RESYNC] Albums:", level=LogLevel.PROGRESS)
         # Limpiar la colección actual
@@ -910,11 +910,11 @@ class AlbumCollectionWrapper:
             )
 
         tag_mod_report.flush()
-        if len(duplicates_collected) > 0:
+        if len(self._collected_duplicates) > 0:
             from immich_autotag.albums.duplicates.write_duplicates_summary import (
                 write_duplicates_summary,
             )
-            write_duplicates_summary(duplicates_collected)
+            write_duplicates_summary(self._collected_duplicates)
 
         log(f"[RESYNC] Total albums: {len(self)}", level=LogLevel.INFO)
         # Marcar como fully loaded
