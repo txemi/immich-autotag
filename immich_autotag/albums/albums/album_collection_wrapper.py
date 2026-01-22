@@ -559,7 +559,7 @@ class AlbumCollectionWrapper:
                     tag_mod_report=tag_mod_report,
                     reason="Removed duplicate temporary album during add",
                 ):
-                    return self.find_first_album_with_name(name)
+                    return
 
             else:
                 if True:
