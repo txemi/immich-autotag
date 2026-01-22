@@ -93,6 +93,7 @@ class AlbumResponseWrapper:
         self._load_source = source
         self._loaded_at = now
 
+    @typechecked
     def _mark_deleted(self) -> None:
         """
         Logically mark this album as deleted by setting _deleted_at to now.
@@ -926,16 +927,14 @@ class AlbumResponseWrapper:
         """
         Create an AlbumResponseWrapper from a partial DTO.
 
-        The wrapper will store the provided DTO as `_album_partial` and
-        will not populate the full cache. Callers must explicitly request
-        loading the full DTO via `ensure_full`/`reload_from_api`.
-
-        # NOTE: _album_partial is a private attribute, but is intentionally exposed as a kw_only argument
-        # for factory construction. This is by design to allow explicit control over DTO representation.
-        # Some type checkers may warn about passing a private attribute to the constructor; this is safe here.
-        #"""
-
-        wrapper = AlbumResponseWrapper(album_partial=dto)
+        The wrapper will store the provided DTO as _album_partial and will not populate the full cache.
+        Callers must explicitly request loading the full DTO via ensure_full/reload_from_api.
+        """
+        # Create instance with required _album_dto argument
+        wrapper = AlbumResponseWrapper(_album_dto=dto)
+        # Set _album_partial for partial representation
+        wrapper._album_partial = dto
+        wrapper._album_full = None
         return wrapper
 
     @staticmethod
