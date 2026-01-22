@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 
-import git  # GitPython
+import git
+
+from immich_autotag.config.models import UserConfig  # GitPython
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -243,9 +245,10 @@ class StatisticsManager:
         """
         from immich_autotag.config.manager import ConfigManager
 
-        config = ConfigManager.get_instance().config
+        config = ConfigManager.get_instance().get_config()
+        assert isinstance(config, UserConfig)
         # Acceso directo, si falta algún atributo, que falle con AttributeError
-        max_assets = config.limits.max_assets
+        max_assets = config.skip.max_items
 
         self.get_or_create_run_stats().max_assets = max_assets
         self._save_to_file()

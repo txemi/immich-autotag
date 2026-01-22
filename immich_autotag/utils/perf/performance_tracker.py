@@ -282,8 +282,8 @@ class PerformanceTracker:
         elapsed = time.time() - self._start_time
         return self._format_perf_progress(count, elapsed)
 
-    def set_max_assets(self, value: int) -> None:
+    def set_max_assets(self, value: int | None) -> None:
         """
-        Setter público para actualizar max_assets de forma controlada.
+        Setter público para actualizar max_assets de forma controlada. Permite None para desactivar el límite.
         """
         self._max_assets = value
