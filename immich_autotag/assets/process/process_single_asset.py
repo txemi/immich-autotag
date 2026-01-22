@@ -1,7 +1,4 @@
-
 from __future__ import annotations
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-from immich_autotag.config._internal_types import ErrorHandlingMode
 
 from typeguard import typechecked
 
@@ -10,9 +7,11 @@ from immich_autotag.assets.albums.analyze_and_assign_album import (
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
-    analyze_duplicate_classification_tags,
     DuplicateTagAnalysisResult,
+    analyze_duplicate_classification_tags,
 )
+from immich_autotag.config._internal_types import ErrorHandlingMode
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
@@ -31,8 +30,11 @@ def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
 
 from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepResult
 
+
 @typechecked
-def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper) -> DateCorrectionStepResult | None:
+def _correct_date_if_enabled(
+    asset_wrapper: AssetResponseWrapper,
+) -> DateCorrectionStepResult | None:
     """Correct the asset date if the feature is enabled in config."""
     from immich_autotag.config.manager import ConfigManager
 
@@ -45,12 +47,15 @@ def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper) -> DateCorrect
     ):
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
+
         return correct_asset_date(asset_wrapper)
     return None
 
 
 @typechecked
-def _analyze_duplicate_tags(asset_wrapper: AssetResponseWrapper) -> DuplicateTagAnalysisResult:
+def _analyze_duplicate_tags(
+    asset_wrapper: AssetResponseWrapper,
+) -> DuplicateTagAnalysisResult:
     """Analyze duplicate classification tags for the asset."""
     log("[DEBUG] Analyzing duplicate classification tags...", level=LogLevel.FOCUS)
     return analyze_duplicate_classification_tags(asset_wrapper)
@@ -95,7 +100,7 @@ def process_single_asset(
 
     duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-        raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")    
+        raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
     tag_mod_report = ModificationReport.get_instance()
     _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     _ = asset_wrapper.validate_and_update_classification()

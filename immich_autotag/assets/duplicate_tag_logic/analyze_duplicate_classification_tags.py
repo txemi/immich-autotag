@@ -1,3 +1,5 @@
+from enum import Enum, auto
+
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -9,14 +11,13 @@ from .__try_autofix import try_autofix
 from ._classification_tag_comparison_result import ClassificationTagComparisonResult
 
 
-from enum import Enum, auto
-
 class DuplicateTagAnalysisResult(Enum):
     NO_DUPLICATES = auto()
     ALL_EQUAL = auto()
     AUTOFIXED = auto()
     CONFLICT = auto()
     ERROR = auto()
+
 
 @typechecked
 def analyze_duplicate_classification_tags(
