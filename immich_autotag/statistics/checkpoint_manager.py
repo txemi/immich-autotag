@@ -39,7 +39,7 @@ class CheckpointManager:
         Decide el valor de skip_n y deja claro en el log su origen: checkpoint previo, config, o ninguno.
         """
         enable_checkpoint_resume = ConfigManager.is_checkpoint_resume_enabled()
-        stats_dir = self.stats_manager.start_run().get_stats_dir()
+        stats_dir = self.stats_manager.get_or_create_run_stats().get_stats_dir()
         skip_n = 0
         origen = None
         if enable_checkpoint_resume and config_resume_previous:
