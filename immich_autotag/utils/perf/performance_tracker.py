@@ -74,6 +74,7 @@ class PerformanceTracker:
         # Obtener tiempo acumulado de sesiones previas
         try:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
+
             stats = StatisticsManager.get_instance().get_stats()
             previous_sessions_time = getattr(stats, "previous_sessions_time", 0.0)
         except Exception:
@@ -86,7 +87,11 @@ class PerformanceTracker:
         # --- Estimaciones de tiempo ---
         if total_to_process and count > 0:
             remaining = total_to_process - count
-            if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
+            if (
+                estimation_mode == TimeEstimationMode.EWMA
+                and estimator is not None
+                and estimator.get_estimated_time_per_asset() > 0
+            ):
                 ewma = estimator.get_estimated_time_per_asset()
                 est_total_session = ewma * total_to_process
                 est_remaining_session = ewma * remaining
@@ -95,7 +100,10 @@ class PerformanceTracker:
                 est_remaining_session = est_total_session - elapsed
 
             from immich_autotag.utils.perf.estimate_utils import adjust_estimates
-            est_total_session, est_remaining_session = adjust_estimates(elapsed, est_total_session, est_remaining_session)
+
+            est_total_session, est_remaining_session = adjust_estimates(
+                elapsed, est_total_session, est_remaining_session
+            )
         else:
             est_total_session = None
             est_remaining_session = None
@@ -105,7 +113,10 @@ class PerformanceTracker:
             est_total_all = avg * abs_total
             est_remaining_all = est_total_all - (previous_sessions_time + elapsed)
             from immich_autotag.utils.perf.estimate_utils import adjust_estimates
-            est_total_all, est_remaining_all = adjust_estimates(previous_sessions_time + elapsed, est_total_all, est_remaining_all)
+
+            est_total_all, est_remaining_all = adjust_estimates(
+                previous_sessions_time + elapsed, est_total_all, est_remaining_all
+            )
         else:
             est_total_all = None
             est_remaining_all = None
@@ -122,9 +133,7 @@ class PerformanceTracker:
                 return f"{seconds:.1f} s"
 
         # --- Mensaje final ---
-        msg = (
-            f"Procesados en esta sesión: {count}"
-        )
+        msg = f"Procesados en esta sesión: {count}"
         if total_to_process:
             msg += f" / {total_to_process}"
         msg += "\n"
@@ -137,7 +146,7 @@ class PerformanceTracker:
         if abs_total:
             msg += f"Total de elementos en immich: {abs_total}\n"
         else:
-            msg += f"Total de elementos en immich: ?\n"
+            msg += "Total de elementos en immich: ?\n"
 
         msg += f"\nTiempo transcurrido en esta sesión: {fmt_time(elapsed)}\n"
         msg += f"Tiempo transcurrido en todas las sesiones: {fmt_time(previous_sessions_time + elapsed)}\n"
@@ -145,12 +154,12 @@ class PerformanceTracker:
         if est_remaining_session is not None:
             msg += f"Tiempo pendiente estimado para esta sesión: {fmt_time(est_remaining_session)}\n"
         else:
-            msg += f"Tiempo pendiente estimado para esta sesión: ?\n"
+            msg += "Tiempo pendiente estimado para esta sesión: ?\n"
 
         if est_total_all is not None:
             msg += f"Tiempo total estimado de todas las sesiones: {fmt_time(est_total_all)}\n"
         else:
-            msg += f"Tiempo total estimado de todas las sesiones: ?\n"
+            msg += "Tiempo total estimado de todas las sesiones: ?\n"
 
         msg += f"Tiempo medio de cada asset: {avg:.3f} s"
 
