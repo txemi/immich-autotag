@@ -41,6 +41,7 @@ class AssetAlreadyInAlbumError(Exception):
     pass
 
 
+
 import datetime
 import enum
 
@@ -110,7 +111,8 @@ class AlbumResponseWrapper:
     @typechecked
     def has_loaded_assets(self) -> bool:
         """
-        Returns True si los assets del álbum están cargados (full/DETAIL), False si no (SEARCH/partial).
+        Returns True si los assets del álbum están cargados (full/DETAIL),
+        False si no (SEARCH/partial).
         No provoca carga ni acceso a la red.
         """
         return self._is_full()
@@ -189,7 +191,8 @@ class AlbumResponseWrapper:
     def is_duplicate_album(self) -> bool:
         """
         Returns True if this album is a duplicate album (i.e., there is more than one album with the same name in the collection).
-        Si el álbum no se encuentra entre los duplicados, hace un resync y vuelve a comprobar antes de lanzar excepción.
+        Si el álbum no se encuentra entre los duplicados, hace un resync y vuelve a
+        comprobar antes de lanzar excepción.
         """
         from immich_autotag.albums.albums.album_collection_wrapper import (
             AlbumCollectionWrapper,
@@ -204,7 +207,8 @@ class AlbumResponseWrapper:
             if True:
                 aaa = list(collection.find_all_albums_with_name(album_name))
                 raise RuntimeError(
-                    f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' not found among albums with the same name: {album_ids}"
+                    f"Album with id={self.get_album_id()} and name='{self.get_album_name()}' "
+                    f"not found among albums with the same name: {album_ids}"
                 )
             else:
                 # Intentar resync de la colección y volver a comprobar
@@ -216,7 +220,8 @@ class AlbumResponseWrapper:
                 album_ids = [a.get_album_id() for a in same_name_albums]
                 if self.get_album_id() not in album_ids:
                     raise RuntimeError(
-                        f"Album with id={self.get_album_id()} and name='{album_name}' not found among albums with the same name (tras resync): {album_ids}"
+                        f"Album with id={self.get_album_id()} and name='{album_name}' "
+                        f"not found among albums with the same name (tras resync): {album_ids}"
                     )
         return len(same_name_albums) > 1
 
@@ -229,7 +234,8 @@ class AlbumResponseWrapper:
 
     def _is_full(self) -> bool:
         """
-        Returns True if the album was loaded from DETAIL (full), False if from SEARCH (partial).
+        Returns True if the album was loaded from DETAIL (full),
+        False if from SEARCH (partial).
         Raises if _load_source is not recognized (defensive programming).
         """
         if self._load_source == AlbumLoadSource.DETAIL:
@@ -1000,6 +1006,7 @@ class AlbumResponseWrapper:
         Returns an AlbumUserList encapsulating all users in the album (album_users).
         This provides a robust, consistent interface for album user access.
         """
+
         from immich_autotag.albums.album.album_user_list import AlbumUserList
         from immich_autotag.albums.album.album_user_wrapper import AlbumUserWrapper
 
