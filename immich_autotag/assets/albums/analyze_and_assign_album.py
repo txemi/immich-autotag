@@ -71,7 +71,8 @@ def analyze_and_assign_album(
         # Remove 'unknown' tag if present and update classification tags
         _ = asset_wrapper.validate_and_update_classification()
         log(
-            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' classified. Temporary album cleanup and tags updated.",
+            f"[ALBUM ASSIGNMENT] Asset '{asset_name}' classified. "
+            f"Temporary album cleanup and tags updated.",
             level=LogLevel.FOCUS,
         )
         return

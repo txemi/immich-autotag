@@ -54,7 +54,9 @@ class AlbumCollectionWrapper:
     """
 
     _albums: AlbumMap = attrs.field(
-        init=False, factory=AlbumMap, validator=attrs.validators.instance_of(AlbumMap)
+        init=False,
+        factory=AlbumMap,
+        validator=attrs.validators.instance_of(AlbumMap),
     )
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
@@ -153,13 +155,13 @@ class AlbumCollectionWrapper:
         """
         if album_wrapper not in self._albums:
             raise RuntimeError(
-                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) "
-                f"is not present in the collection."
+                f"Album '{album_wrapper.get_album_name()}' "
+                f"(id={album_wrapper.get_album_id()}) is not present in the collection."
             )
         if album_wrapper.is_deleted():
             raise RuntimeError(
-                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) "
-                f"is already deleted."
+                f"Album '{album_wrapper.get_album_name()}' "
+                f"(id={album_wrapper.get_album_id()}) is already deleted."
             )
         album_wrapper.mark_deleted()
         self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
@@ -200,7 +202,8 @@ class AlbumCollectionWrapper:
             return
 
         log(
-            f"Album {album_id} marked unavailable (total_unavailable={self._unavailable.count}).",
+            f"Album {album_id} marked unavailable "
+            f"(total_unavailable={self._unavailable.count}).",
             level=LogLevel.FOCUS,
         )
 
@@ -227,8 +230,9 @@ class AlbumCollectionWrapper:
         name_incoming = incoming_album.get_album_name()
         if name_existing != name_incoming:
             raise ValueError(
-                f"Integrity check failed in _handle_duplicate_album_conflict: album names differ "
-                f"('{name_existing}' vs '{name_incoming}'). Context: {context}"
+                f"Integrity check failed in _handle_duplicate_album_conflict: "
+                f"album names differ ('{name_existing}' vs '{name_incoming}'). "
+                f"Context: {context}"
             )
         from immich_autotag.config._internal_types import ErrorHandlingMode
         from immich_autotag.config.internal_config import (
@@ -282,7 +286,8 @@ class AlbumCollectionWrapper:
         # In development: fail fast to surface systemic problems
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
-                f"Too many albums marked unavailable during run: {self._unavailable.count} >= {threshold}. "
+                f"Too many albums marked unavailable during run: "
+                f"{self._unavailable.count} >= {threshold}. "
                 f"Failing fast (DEVELOPMENT mode)."
             )
 
@@ -326,15 +331,17 @@ class AlbumCollectionWrapper:
                 from immich_autotag.logging.utils import log
 
                 log(
-                    f"Album '{album_wrapper.get_album_name()}' has no assets after forced reload.",
+                    f"Album '{album_wrapper.get_album_name()}' "
+                    f"has no assets after forced reload.",
                     level=LogLevel.WARNING,
                 )
                 # album_wrapper.reload_from_api(client)
                 if album_wrapper.get_asset_ids():
                     album_url = album_wrapper.get_immich_album_url().geturl()
                     raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' (URL: {album_url}) "
-                        f"had empty asset_ids after initial load, but after a redundant reload it now has assets. "
+                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' "
+                        f"(URL: {album_url}) had empty asset_ids after initial load, "
+                        f"but after a redundant reload it now has assets. "
                         "This suggests a possible synchronization or lazy loading bug. "
                         "Please review the album loading logic."
                     )
@@ -343,8 +350,8 @@ class AlbumCollectionWrapper:
                     from immich_autotag.logging.utils import log
 
                     log(
-                        f"Temporary album '{album_wrapper.get_album_name()}"
-                        "' marked for removal after map build.",
+                        f"Temporary album '{album_wrapper.get_album_name()}' "
+                        f"marked for removal after map build.",
                         level=LogLevel.WARNING,
                     )
             else:
@@ -609,8 +616,8 @@ class AlbumCollectionWrapper:
                             f"Review the logs and investigate the cause."
                         )
                 else:
-
                     # Non-temporary duplicate
+                    existing = self.find_first_album_with_name(name)
                     self._handle_non_temporary_duplicate(
                         existing=existing,
                         incoming_album=wrapper,
