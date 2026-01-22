@@ -49,11 +49,6 @@ class PerformanceTracker:
             return self._total_assets - skip_n
         return None
 
-    @typechecked
-    def set_progress_timing(self, start_time: float, log_interval: int = 5):
-        self._start_time = start_time
-        self._last_log_time = start_time
-        self._log_interval = log_interval
 
     @typechecked
     def update(self, count: int):
