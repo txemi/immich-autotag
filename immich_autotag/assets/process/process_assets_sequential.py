@@ -30,15 +30,16 @@ def process_assets_sequential(
     cm = ConfigManager.get_instance()
     assert isinstance(cm, ConfigManager)
 
-    # Determine skip_n: check for config and skip attribute
+    # Determinar skip_n y mostrar su origen de forma clara
+    config_skip_n = 0
+    config_resume_previous = True
     if cm.config is not None and cm.config.skip is not None:
-        if cm.config.skip.resume_previous:
-            skip_n_stats = get_previous_skip_n()
-            skip_n = skip_n_stats if skip_n_stats is not None else cm.config.skip.skip_n
-        else:
-            skip_n = cm.config.skip.skip_n
-    else:
-        skip_n = 0
+        config_skip_n = cm.config.skip.skip_n or 0
+        config_resume_previous = cm.config.skip.resume_previous 
+    # Usar la lógica centralizada del CheckpointManager para decidir y loguear el origen
+    skip_n = StatisticsManager.get_instance().checkpoint.get_effective_skip_n(
+        config_skip_n=config_skip_n, config_resume_previous=config_resume_previous
+    )
     max_assets = stats.max_assets
     count = 0
     error_mode = DEFAULT_ERROR_MODE
