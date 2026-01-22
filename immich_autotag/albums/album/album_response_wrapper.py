@@ -41,6 +41,7 @@ class AssetAlreadyInAlbumError(Exception):
     pass
 
 
+
 import datetime
 import enum
 
@@ -351,7 +352,8 @@ class AlbumResponseWrapper:
             self._log_and_raise_fatal_error(api_exc, partial)
         if album_dto is None:
             raise RuntimeError(
-                f"get_album_info.sync returned None for album id={self.get_album_uuid_no_cache()}"
+                f"get_album_info.sync returned None for album id="
+                f"{self.get_album_uuid_no_cache()}"
             )
         else:
             self._set_album_full(album_dto)
@@ -631,7 +633,8 @@ class AlbumResponseWrapper:
                     "album_url": album_url,
                     "reason": "Stale cached album data detected and reloaded",
                     "details": (
-                        f"Asset {asset_wrapper.id} was not successfully added to album {self.get_album_id()}: {error_msg}\n"
+                        f"Asset {asset_wrapper.id} was not successfully added to album "
+                        f"{self.get_album_id()}: {error_msg}\n"
                         f"Asset link: {asset_url}\n"
                         f"Album link: {album_url}"
                     ),
@@ -642,7 +645,8 @@ class AlbumResponseWrapper:
             )
 
             raise AssetAlreadyInAlbumError(
-                f"Asset {asset_wrapper.id} already in album {self.get_album_id()} (API duplicate error)"
+                f"Asset {asset_wrapper.id} already in album "
+                f"{self.get_album_id()} (API duplicate error)"
             )
         else:
             raise RuntimeError(
@@ -704,7 +708,8 @@ class AlbumResponseWrapper:
             log(
                 (
                     f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in remove_assets_from_album "
-                    f"response for album {self.get_album_id()}. Treating as already removed."
+                    f"response for album {self.get_album_id()}. "
+                    f"Treating as already removed."
                 ),
                 level=LogLevel.WARNING,
             )
