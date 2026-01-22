@@ -178,11 +178,11 @@ class PerformanceTracker:
         if seconds is None:
             return "?"
         if seconds >= 3600:
-            return f"{seconds/3600:.1f} h"
+            return f"{seconds/3600:.1f}h"
         elif seconds >= 60:
-            return f"{seconds/60:.1f} min"
+            return f"{seconds/60:.1f}min"
         else:
-            return f"{seconds:.1f} s"
+            return f"{seconds:.1f}s"
 
     @typechecked
     def _format_perf_progress(self, count: int, elapsed: float) -> str:
