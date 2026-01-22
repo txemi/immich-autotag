@@ -62,10 +62,10 @@ class AlbumCollectionWrapper:
         factory=AlbumMap,
         validator=attrs.validators.instance_of(AlbumMap),
     )
-    _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
+    _asset_to_albums_map: AssetToAlbumsMap | None = attrs.field(
         init=False,
-        factory=AssetToAlbumsMap,
-        validator=attrs.validators.instance_of(AssetToAlbumsMap),
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(AssetToAlbumsMap)),
     )
     _unavailable: UnavailableAlbums = attrs.field(
         init=False, factory=UnavailableAlbums, repr=False
@@ -144,14 +144,15 @@ class AlbumCollectionWrapper:
         """
         Returns an AlbumList of only non-deleted albums.
         """
-        return AlbumList([a for a in self._albums if not a.is_deleted()])
+        all_allbums=self._ensure_fully_loaded()._albums
+        return AlbumList([a for a in all_allbums if not a.is_deleted()])
 
     @typechecked
     def _rebuild_asset_to_albums_map(self) -> None:
         """Rebuilds the asset-to-albums map from scratch."""
 
         self._asset_to_albums_map = self._asset_to_albums_map_build()
-
+    
     @typechecked
     def _remove_album_from_local_collection(
         self, album_wrapper: AlbumResponseWrapper
