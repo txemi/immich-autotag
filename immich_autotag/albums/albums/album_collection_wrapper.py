@@ -417,7 +417,7 @@ class AlbumCollectionWrapper:
                     f"Refusing to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): not a temporary or duplicate album."
                 )
         try:
-            delete_album_sync(id=UUID(wrapper.get_album_id()), client=client)
+            delete_album_sync(id=wrapper.get_album_uuid(), client=client)
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
