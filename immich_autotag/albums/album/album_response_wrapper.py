@@ -393,7 +393,10 @@ class AlbumResponseWrapper:
 
         client = ImmichContext.get_default_client()
         self._ensure_full_album_loaded(client)
-        assert self._album_full is not None
+        if self._album_full is None:
+
+            self._ensure_full_album_loaded(client)
+            raise RuntimeError()
         return self._album_full
 
     def get_asset_ids(self) -> set[str]:

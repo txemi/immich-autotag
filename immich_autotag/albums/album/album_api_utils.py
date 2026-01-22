@@ -17,4 +17,5 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> AlbumResponseD
     Unified wrapper for get_album_info.sync(id=..., client=...).
     Returns the album DTO or raises on error.
     """
-    return get_album_info.sync(id=album_id, client=client)
+    uuid_str = str(album_id)
+    return get_album_info.sync(id=uuid_str, client=client)

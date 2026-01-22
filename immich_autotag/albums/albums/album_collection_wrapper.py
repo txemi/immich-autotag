@@ -480,7 +480,6 @@ class AlbumCollectionWrapper:
         existing: AlbumResponseWrapper,
         incoming_album: AlbumResponseWrapper,
         tag_mod_report: ModificationReport,
-        duplicates_collected: DuplicateAlbumReports,
         name: str,
     ) -> None:
         """
@@ -508,7 +507,7 @@ class AlbumCollectionWrapper:
             DuplicateAlbumReport,
         )
 
-        duplicates_collected.append(
+        self._collected_duplicates.append(
             DuplicateAlbumReport(
                 album_name=name,
                 existing_album=existing,
@@ -536,7 +535,6 @@ class AlbumCollectionWrapper:
         wrapper: AlbumResponseWrapper,
         client: ImmichClient,
         tag_mod_report: ModificationReport,
-        duplicates_collected: "DuplicateAlbumReports",
     ) -> None:
         """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
 
@@ -545,15 +543,13 @@ class AlbumCollectionWrapper:
         raise RuntimeError. This centralizes duplicate detection used during initial load and
         during runtime album creation.
         """
-        albums_list=self._albums  # Access the internal list
-        name = wrapper.get_album_name()
-        if self.find_first_album_with_name(name) is  None:   
-            albums_list.append(wrapper)
-            return
-        for existing in self.find_all_albums_with_name(name):
+        albums_list = self._albums  # Access the internal list
+        albums_list.append(wrapper)
+
+        if self.is_duplicated(wrapper):
 
             # Temporary duplicate
-            if is_temporary_album(name):
+            if is_temporary_album(wrapper.get_album_name()):
                 # Only call delete_album if client is of correct type
                 if self.delete_album(
                     wrapper=wrapper,
@@ -569,12 +565,8 @@ class AlbumCollectionWrapper:
                     existing=existing,
                     incoming_album=wrapper,
                     tag_mod_report=tag_mod_report,
-                    duplicates_collected=duplicates_collected,
                     name=name,
                 )
-            
-
-
 
     @typechecked
     def add_album_wrapper(
@@ -807,18 +799,16 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        log("Albums:", level=LogLevel.INFO)
+        log("Albums:", level=LogLevel.PROGRESS)
         # Create the empty collection
         collection = cls()
 
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
             collection._try_append_wrapper_to_list(
-
                 wrapper=wrapper,
                 client=client,
                 tag_mod_report=tag_mod_report,
-                duplicates_collected=duplicates_collected,
             )
 
             log(
@@ -892,3 +882,12 @@ class AlbumCollectionWrapper:
         current._albums = type(current._albums)(updated_albums)
         # Opcional: actualizar mapas auxiliares aquí si es necesario
         # No retorna nada
+
+    @typechecked
+    def is_duplicated(self, wrapper: "AlbumResponseWrapper") -> bool:
+        """
+        Returns True if an album with the same name as 'wrapper' exists in the collection.
+        """
+        name = wrapper.get_album_name()
+        names = self.find_all_albums_with_name(name)
+        return len(list(names)) > 1
