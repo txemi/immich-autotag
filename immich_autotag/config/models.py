@@ -315,6 +315,9 @@ class UserConfig(BaseModel):
     """
 
     model_config = {"extra": "forbid"}
+    description: Optional[str] = Field(
+        default=None, description="Optional description for this configuration block."
+    )
     server: ServerConfig = Field(
         ..., description="Immich server connection configuration."
     )
