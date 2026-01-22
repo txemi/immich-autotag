@@ -4,6 +4,7 @@ from typeguard import typechecked
 
 from immich_autotag.assets.albums.analyze_and_assign_album import (
     analyze_and_assign_album,
+    AlbumAssignmentResult,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
@@ -65,10 +66,10 @@ def _analyze_duplicate_tags(
 def _analyze_and_assign_album(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
-):
-    """Analyze and assign the asset to an album if needed."""
+) -> AlbumAssignmentResult:
+    """Analyze and assign the asset to an album if needed. Returns the result of analyze_and_assign_album."""
     log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
-    analyze_and_assign_album(asset_wrapper, tag_mod_report)
+    return analyze_and_assign_album(asset_wrapper, tag_mod_report)
 
 
 @typechecked
@@ -99,10 +100,11 @@ def process_single_asset(
     date_correction_result = _correct_date_if_enabled(asset_wrapper)
 
     duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
+
+    tag_mod_report = ModificationReport.get_instance()
+    album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
         raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
-    tag_mod_report = ModificationReport.get_instance()
-    _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     _ = asset_wrapper.validate_and_update_classification()
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,

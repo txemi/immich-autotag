@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from enum import Enum, auto
+
 from typeguard import typechecked
 
 from immich_autotag.assets.albums._process_album_detection import (
@@ -12,11 +14,20 @@ from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 
 
+class AlbumAssignmentResult(Enum):
+    CLASSIFIED = auto()
+    CONFLICT = auto()
+    ASSIGNED_UNIQUE = auto()
+    CREATED_TEMPORARY = auto()
+    UNCLASSIFIED_NO_ALBUM = auto()
+    ERROR = auto()
+
+
 @typechecked
 def analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
-) -> None:
+) -> AlbumAssignmentResult:
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
     """
@@ -75,7 +86,7 @@ def analyze_and_assign_album(
             f"Temporary album cleanup and tags updated.",
             level=LogLevel.FOCUS,
         )
-        return
+        return AlbumAssignmentResult.CLASSIFIED
 
     elif status == ClassificationStatus.CONFLICT:
         # If there is a conflict, remove from all temporary/autotag albums
@@ -112,7 +123,7 @@ def analyze_and_assign_album(
                 "asset_id": asset_id,
             },
         )
-        return
+        return AlbumAssignmentResult.CONFLICT
 
     elif status == ClassificationStatus.UNCLASSIFIED:
         # Asset is not classified, try to assign an album through detection logic
@@ -132,7 +143,7 @@ def analyze_and_assign_album(
                     detected_album,
                     album_origin,
                 )
-                return
+                return AlbumAssignmentResult.ASSIGNED_UNIQUE
 
         # If no unique album detected, try to create a temporary album
         from immich_autotag.assets.albums.temporary_manager.create_if_missing_classification import (
@@ -142,11 +153,14 @@ def analyze_and_assign_album(
         created_album = create_album_if_missing_classification(
             asset_wrapper, tag_mod_report
         )
-        if not created_album:
+        if created_album:
+            return AlbumAssignmentResult.CREATED_TEMPORARY
+        else:
             log(
                 f"[ALBUM ASSIGNMENT] Asset '{asset_name}' is not classified and no album could be assigned.",
                 level=LogLevel.DEBUG,
             )
+            return AlbumAssignmentResult.UNCLASSIFIED_NO_ALBUM
 
     else:
         # Exhaustive pattern match - should never reach here
