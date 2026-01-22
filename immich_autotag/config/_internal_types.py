@@ -10,3 +10,4 @@ class ErrorHandlingMode(Enum):
 
     USER = auto()
     DEVELOPMENT = auto()
+    CRAZY_DEBUG = auto()  # Modo de depuración extrema: activa checks y validaciones solo para desarrollador avanzado
