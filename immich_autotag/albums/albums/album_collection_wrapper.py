@@ -343,7 +343,8 @@ class AlbumCollectionWrapper:
                     from immich_autotag.logging.utils import log
 
                     log(
-                        f"Temporary album '{album_wrapper.get_album_name()}' marked for removal after map build.",
+                        f"Temporary album '{album_wrapper.get_album_name()}"
+                        "' marked for removal after map build.",
                         level=LogLevel.WARNING,
                     )
             else:
@@ -351,7 +352,8 @@ class AlbumCollectionWrapper:
                 from immich_autotag.logging.utils import log
 
                 log(
-                    f"Album '{album_wrapper.get_album_name()}' reloaded with {len(album_wrapper.get_asset_ids())} assets.",
+                    f"Album '{album_wrapper.get_album_name()}' reloaded with "
+                    f"{len(album_wrapper.get_asset_ids())} assets.",
                     level=LogLevel.INFO,
                 )
             asset_map.add_album_for_asset_ids(album_wrapper)
@@ -376,8 +378,8 @@ class AlbumCollectionWrapper:
         for album_wrapper in albums_to_remove:
             if not is_temporary_album(album_wrapper.get_album_name()):
                 raise RuntimeError(
-                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) "
-                    f"is not temporary but was passed to _remove_empty_temporary_albums."
+                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' "
+                    f"(id={album_wrapper.get_album_id()}) is not temporary but was passed to _remove_empty_temporary_albums."
                 )
 
         tag_mod_report = ModificationReport.get_instance()
@@ -602,7 +604,9 @@ class AlbumCollectionWrapper:
                     else:
                         # Lanzar excepción para desarrolladores tras la limpieza
                         raise RuntimeError(
-                            f"Duplicate albums with name '{name}' were found and combined, but multiple still remain. This indicates a data integrity issue. Review the logs and investigate the cause."
+                            f"Duplicate albums with name '{name}' were found and combined, "
+                            f"but multiple still remain. This indicates a data integrity issue. "
+                            f"Review the logs and investigate the cause."
                         )
                 else:
 
@@ -631,7 +635,8 @@ class AlbumCollectionWrapper:
         existing = self.find_first_album_with_name(name)
         if existing is not None:
             raise RuntimeError(
-                f"Cannot add album: an album with the name '{name}' already exists (id={existing.get_album_id()})."
+                f"Cannot add album: an album with the name '{name}' already exists "
+                f"(id={existing.get_album_id()})."
             )
         # Append to collection and update maps
         self._albums.append(wrapper)
