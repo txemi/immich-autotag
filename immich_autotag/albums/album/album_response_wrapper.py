@@ -51,6 +51,19 @@ class AlbumLoadSource(enum.Enum):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
+    def _update_from_dto(self, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
+        """
+        Centraliza la lógica de actualización de DTO, load_source, loaded_at y asset_ids_cache.
+        """
+        now = datetime.datetime.now()
+        if self._loaded_at and now < self._loaded_at:
+            raise RuntimeError(
+                "New loaded_at timestamp is earlier than previous loaded_at."
+            )
+        self._album_dto = dto
+        self._load_source = load_source
+        self._loaded_at = now
+        self.invalidate_cache()
 
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
@@ -87,9 +100,11 @@ class AlbumResponseWrapper:
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
         """
         Devuelve el set de asset IDs como UUID, construyendo la caché si no existe.
-        Siempre usar este método para acceder a los asset IDs.
+        Si el álbum no está en modo DETAIL/full, garantiza modo full usando ensure_full().
         """
         from uuid import UUID
+
+        self.ensure_full()
 
         if self._asset_ids_cache is not None:
             return self._asset_ids_cache
@@ -136,6 +151,13 @@ class AlbumResponseWrapper:
 
         return UUID(self._album_dto.owner_id)
 
+
+    @typechecked
+    def get_owner_uuid(self) -> "UUID":
+        """Returns the UUID of the album owner (UUID object, not string)."""
+        from uuid import UUID
+
+        return UUID(self._album_dto.owner_id)
     @typechecked
     def is_temporary_album(self) -> bool:
         """
@@ -179,8 +201,12 @@ class AlbumResponseWrapper:
     def is_empty(self) -> bool:
         """
         Returns True if the album has no assets, False otherwise.
+        Optimizado: no fuerza recarga ni construcción de caché si no es necesario.
         """
-        return len(self._get_or_build_asset_ids_cache()) == 0
+        assets = self._album_dto.assets
+        if assets is None:
+            return True
+        return len(assets) == 0
 
     @typechecked
     def is_duplicate_album(self) -> bool:
@@ -283,38 +309,21 @@ class AlbumResponseWrapper:
         if not self._is_full():
             self.reload_from_api(self.get_default_client())
 
-    @typechecked
-    def _get_partial(self) -> AlbumResponseDto:
-        assert self._album_partial is not None
-        return self._album_partial
+
 
     @typechecked
     def _get_full(self) -> AlbumResponseDto:
         return self._get_album_full_or_load()
 
-    @typechecked
-    def _active_dto(self) -> AlbumResponseDto:
-        """Return the DTO currently held by the wrapper (partial or full).
 
-        Raises ValueError if neither representation is present. Use this
-        helper to avoid repeating `self._album_partial or self._album_full`.
-        """
-        dto = self._album_partial or self._album_full
-        if dto is None:
-            raise ValueError("AlbumResponseWrapper has no DTO (partial or full)")
-        return dto
 
     @typechecked
     def _set_album_full(self, value: AlbumResponseDto) -> None:
-        self._album_dto = value
-        self._load_source = AlbumLoadSource.DETAIL
+        self._update_from_dto(value, AlbumLoadSource.DETAIL)
 
     @typechecked
     def invalidate_cache(self) -> None:
-        try:
-            self._asset_ids_cache = None
-        except Exception:
-            pass
+        self._asset_ids_cache = None
 
     @typechecked
     def should_mark_unavailable(
@@ -1048,13 +1057,4 @@ class AlbumResponseWrapper:
         elif self._load_source == AlbumLoadSource.SEARCH:
             should_update = True
         if should_update:
-            now = datetime.datetime.now()
-            if hasattr(self, "_loaded_at") and now < self._loaded_at:
-                raise RuntimeError(
-                    "New loaded_at timestamp is earlier than previous loaded_at."
-                )
-            self._album_dto = dto
-            self._load_source = load_source
-            self._loaded_at = now
-
-            self._asset_ids_cache = None
+            self._update_from_dto(dto, load_source)
