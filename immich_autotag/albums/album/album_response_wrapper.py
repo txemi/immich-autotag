@@ -997,6 +997,6 @@ class AlbumResponseWrapper:
         Construct an AlbumResponseWrapper from a partial AlbumResponseDto (SEARCH result).
         Sets load_source to SEARCH.
         """
-        obj = cls(_album_dto=dto)
+        obj = cls(album_dto=dto)
         object.__setattr__(obj, "_load_source", AlbumLoadSource.SEARCH)
         return obj
