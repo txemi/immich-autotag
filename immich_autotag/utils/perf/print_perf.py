@@ -51,10 +51,16 @@ def format_perf_progress(
         msg = f"{count}/{total_to_process} ({percent_rel:.1f}% relative"
         if percent_abs is not None:
             msg += f", {abs_count}/{abs_total} ({percent_abs:.1f}% absolute)"
-        msg += f") processed. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
+        msg += (
+            f") processed. Avg: {avg:.3f} s. Elapsed: {fmt_time(elapsed/60)}. "
+            f"Est. remaining: {fmt_time(est_remaining/60)}/{fmt_time(est_total/60)}"
+        )
         return msg
     else:
-        return f"Processed {count} elements. Avg per element: {avg:.3f} s. Elapsed: {elapsed:.1f} s"
+        return (
+            f"Processed {count} elements. Avg per element: {avg:.3f} s. "
+            f"Elapsed: {elapsed:.1f} s"
+        )
 
 
 @typechecked
