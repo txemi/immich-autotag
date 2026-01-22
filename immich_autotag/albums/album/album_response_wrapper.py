@@ -40,22 +40,31 @@ class AssetAlreadyInAlbumError(Exception):
     pass
 
 
+
+
+import datetime
+import enum
+
+
+class AlbumLoadSource(enum.Enum):
+    SEARCH = "search"  # Loaded from album list/search API
+    DETAIL = "detail"  # Loaded from album detail API (full)
+
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
+
 
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
-    _album_partial: AlbumResponseDto | None = attrs.field(default=None, kw_only=True)
-    _album_full: AlbumResponseDto | None = attrs.field(default=None, init=False)
-    # Explicit cache for asset ids. Use get_asset_ids() to access.
-    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
-    # If True, the album is known to be unavailable (deleted or no access).
-    # When unavailable we avoid API reload attempts and treat asset list as empty.
-    _unavailable: bool = attrs.field(default=False, init=False)
-    # Error history for this album, encapsulated in AlbumErrorHistory
-    from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
 
+    _album_dto: AlbumResponseDto = attrs.field(kw_only=True)
+    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
+    _unavailable: bool = attrs.field(default=False, init=False)
+    _loaded_at: datetime.datetime = attrs.field(factory=datetime.datetime.now, init=False)
+    _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
+    _load_source: AlbumLoadSource = attrs.field(default=AlbumLoadSource.SEARCH, init=False)
+    from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
     _error_history: AlbumErrorHistory = attrs.field(
         factory=AlbumErrorHistory,
         init=False,
@@ -64,29 +73,53 @@ class AlbumResponseWrapper:
 
     def __attrs_post_init__(self) -> None:
         """
-        Ensure the wrapper reflects a concrete representation: at least one of
-        `_album_partial` or `_album_full` must be present after construction.
+        Ensure the wrapper has a DTO and set _loaded_at to now if not already set.
         """
-        if self._album_partial is None and self._album_full is None:
-            raise ValueError(
-                (
-                    "AlbumResponseWrapper must be constructed with either a partial or "
-                    "full DTO"
-                )
-            )
+        if self._album_dto is None:
+            raise ValueError("AlbumResponseWrapper must be constructed with a DTO.")
+        if not hasattr(self, "_loaded_at") or self._loaded_at is None:
+            self._loaded_at = datetime.datetime.now()
 
+    @typechecked
+    def _update_dto(self, new_dto: AlbumResponseDto, source: AlbumLoadSource) -> None:
+        """
+        Update the internal DTO with a new one, updating the load source and loaded_at.
+        loaded_at must always increase.
+        """
+        now = datetime.datetime.now()
+        if now < self._loaded_at:
+            raise RuntimeError("New loaded_at timestamp is earlier than previous loaded_at.")
+        self._album_dto = new_dto
+        self._load_source = source
+        self._loaded_at = now
+
+    def _mark_deleted(self) -> None:
+        """
+        Logically mark this album as deleted by setting _deleted_at to now.
+        """
+        if self._deleted_at is None:
+            self._deleted_at = datetime.datetime.now()
+
+
+    @typechecked
+    def is_deleted(self) -> bool:
+        """
+        Returns True if the album has been logically deleted (i.e., _deleted_at is set).
+        """
+        return self._deleted_at is not None
+
+    @typechecked
+    def mark_deleted(self) -> None:
+        """
+        Public method to logically mark this album as deleted.
+        """
+        self._mark_deleted()
     @property
     @typechecked
     def owner_uuid(self) -> "UUID":
-        """Devuelve el UUID del owner del álbum (objeto UUID, no string)."""
+        """Returns the UUID of the album owner (UUID object, not string)."""
         from uuid import UUID
-
-        # El owner_id puede estar en _album_partial o _album_full
-        album = self._album_full or self._album_partial
-        if album is None:
-            raise AttributeError("AlbumResponseWrapper: owner_id not available.")
-
-        return UUID(album.owner_id)
+        return UUID(self._album_dto.owner_id)
 
     @typechecked
     def is_temporary_album(self) -> bool:
@@ -181,21 +214,19 @@ class AlbumResponseWrapper:
         return len(assets) > 0
 
     @typechecked
+
     def get_album_id(self) -> str:
-        dto = self._active_dto()
-        return dto.id
+        return self._album_dto.id
 
     @typechecked
+
     def get_album_name(self) -> str:
-        try:
-            return self._active_dto().album_name
-        except AttributeError:
-            return ""
+        return self._album_dto.album_name
 
     @typechecked
+
     def get_album_uuid(self) -> "UUID":
         from uuid import UUID
-
         return UUID(self.get_album_id())
 
     @typechecked

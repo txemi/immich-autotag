@@ -114,8 +114,7 @@ class AlbumCollectionWrapper:
         self, album_name: str
     ) -> AlbumResponseWrapper | None:
         """
-        Returns the first album with the given name, or None if not found.
-        Equivalent to next(self.find_all_albums_with_name(album_name), None).
+        Returns the first non-deleted album with the given name, or None if not found.
         """
         for album in self.get_albums():
             if album.get_album_name() == album_name:
@@ -125,10 +124,9 @@ class AlbumCollectionWrapper:
     @typechecked
     def get_albums(self) -> AlbumList:
         """
-        Returns an iterator over the albums in the collection.
-        Does not expose AlbumList directly.
+        Returns an AlbumList of only non-deleted albums.
         """
-        return self._albums
+        return AlbumList([a for a in self._albums if not a.is_deleted()])
 
     @typechecked
     def _rebuild_asset_to_albums_map(self) -> None:
@@ -141,13 +139,16 @@ class AlbumCollectionWrapper:
         self, album_wrapper: AlbumResponseWrapper
     ) -> bool:
         """
-        Removes an album from the internal collection and updates the map incrementally. Returns True if removed, False if not present.
+        Logically deletes an album by marking it as deleted, does not remove from the list.
+        Returns True if marked. Raises if already deleted or not present.
         """
-        if album_wrapper in self._albums:
-            self._albums.remove_album(album_wrapper)
-            self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
-            return True
-        return False
+        if album_wrapper not in self._albums:
+            raise RuntimeError(f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is not present in the collection.")
+        if album_wrapper.is_deleted():
+            raise RuntimeError(f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is already deleted.")
+        album_wrapper.mark_deleted()
+        self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
+        return True
 
     @typechecked
     def remove_album_local(self, album_wrapper: AlbumResponseWrapper) -> bool:
@@ -644,7 +645,7 @@ class AlbumCollectionWrapper:
     @typechecked
     def find_all_albums_with_name(self, album_name: str):
         """
-        Yields all AlbumResponseWrapper objects with the given name.
+        Yields all non-deleted AlbumResponseWrapper objects with the given name.
         Returns a generator (may yield none).
         """
         for album_wrapper in self.get_albums():
