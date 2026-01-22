@@ -871,11 +871,12 @@ class AlbumCollectionWrapper:
         return None
 
     @typechecked
-    def resync_from_api(self) -> None:
+    def resync_from_api(self, clear_first: bool = True) -> None:
         """
         Recarga la colección de álbumes desde la API, igual que from_client pero sobre la instancia actual.
         - Descarga todos los álbumes de la API (sin assets inicialmente).
-        - Limpia y reconstruye la colección local, usando la misma lógica que from_client.
+        - Si clear_first es True (por defecto), limpia y reconstruye la colección local.
+        - Si clear_first es False, mergea los álbumes nuevos con los existentes (sin borrar los actuales).
         - Maneja duplicados y logging igual que from_client.
         """
         from immich_client.api.albums import get_all_albums
@@ -894,20 +895,23 @@ class AlbumCollectionWrapper:
         self._collected_duplicates.clear()
 
         log("[RESYNC] Albums:", level=LogLevel.PROGRESS)
-        # Limpiar la colección actual
-        self._albums.clear()
+        if clear_first:
+            # Limpiar la colección actual
+            self._albums.clear()
         # Reconstruir la colección igual que from_client
         for album in albums:
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
-            self._try_append_wrapper_to_list(
-                wrapper=wrapper,
-                client=client,
-                tag_mod_report=tag_mod_report,
-            )
-            log(
-                f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
-                level=LogLevel.INFO,
-            )
+            # Si clear_first, simplemente añadimos; si no, solo añadimos si no existe
+            if clear_first or not self.find_first_album_with_name(wrapper.get_album_name()):
+                self._try_append_wrapper_to_list(
+                    wrapper=wrapper,
+                    client=client,
+                    tag_mod_report=tag_mod_report,
+                )
+                log(
+                    f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
+                    level=LogLevel.INFO,
+                )
 
         tag_mod_report.flush()
         if len(self._collected_duplicates) > 0:
