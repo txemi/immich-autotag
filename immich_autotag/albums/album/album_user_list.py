@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+
 from typing import TYPE_CHECKING, Iterator
+from uuid import UUID
 
 import attrs
 from typeguard import typechecked
