@@ -90,26 +90,9 @@ class StatisticsManager:
     @typechecked
     def get_progress_description(self) -> str:
         count = self._current_stats.count if self._current_stats else 0
-        return self._get_progress_description_from_perf_tracker(self._perf_tracker, current_count=count)
-
-    def _get_progress_description_from_perf_tracker(self, perf_tracker, current_count: int = 0) -> str:
-        """
-        Devuelve una descripción textual del progreso actual, incluyendo porcentaje y estimación de tiempo si está disponible.
-        """
-        if perf_tracker is None:
+        if self._perf_tracker is None:
             return "Progress not available: PerformanceTracker not initialized."
-        import time
-        from immich_autotag.utils.perf.print_perf import format_perf_progress
-        elapsed = time.time() - perf_tracker.start_time
-        return format_perf_progress(
-            count=current_count,
-            elapsed=elapsed,
-            total_to_process=perf_tracker.total_to_process,
-            estimator=perf_tracker.estimator,
-            skip_n=perf_tracker.skip_n,
-            total_assets=perf_tracker.total_assets,
-            estimation_mode=perf_tracker.estimation_mode,
-        )
+        return self._perf_tracker.get_progress_description(count)
 
     @typechecked
     def _try_init_perf_tracker(self):
