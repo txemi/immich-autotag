@@ -51,6 +51,7 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class StatisticsManager:
+
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
     _current_stats: Optional[RunStatistics] = attr.ib(
@@ -291,15 +292,12 @@ class StatisticsManager:
     @typechecked
     def _set_skip_n(self) -> None:
 
-        skip_n = self.get_effective_skip_n()
+        skip_n = self._checkpoint.get_effective_skip_n()
         with self._lock:
 
             self.get_or_create_run_stats().skip_n = skip_n
             self._save_to_file()
-
-    @typechecked
-    def get_effective_skip_n(self) -> int:
-        return self._checkpoint.get_effective_skip_n()
+            self._get_or_create_perf_tracker().set_skip_n(skip_n)
 
     @typechecked
     def increment_tag_action(
@@ -319,4 +317,3 @@ class StatisticsManager:
         # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
         self.get_or_create_run_stats().total_assets = total_assets
         self.set_total_assets(total_assets)
-

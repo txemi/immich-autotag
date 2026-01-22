@@ -14,11 +14,9 @@ if TYPE_CHECKING:
 
 
 @typechecked
-@attr.s(auto_attribs=True, kw_only=True)
+@attr.s(auto_attribs=True, kw_only=True,slots=True)
 class CheckpointManager:
-    stats_manager: "StatisticsManager" = attr.ib(
-        validator=attr.validators.instance_of(object)
-    )
+    stats_manager: "StatisticsManager" = attr.ib(init=True)
     OVERLAP: int = attr.ib(default=100, init=False)
 
     @stats_manager.validator
@@ -70,5 +68,4 @@ class CheckpointManager:
             f"[CHECKPOINT] skip_n={skip_n} (origen: {origen})",
             level=LogLevel.PROGRESS,
         )
-        self.stats_manager.set_skip_n(skip_n)
         return skip_n

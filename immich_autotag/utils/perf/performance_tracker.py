@@ -52,6 +52,13 @@ class PerformanceTracker:
             )
 
     @typechecked
+    def set_skip_n(self, value: int) -> None:
+        """
+        Setter público para actualizar skip_n de forma controlada.
+        """
+        self._skip_n = value
+
+    @typechecked
     def set_total_assets(self, value: int):
         self._total_assets = value
 
@@ -235,7 +242,7 @@ class PerformanceTracker:
         est_total_all = self._printable_value_est_total_all(count, elapsed)
         # est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)  # Unused
 
-        _debug_log(
+        debug_log(
             f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
         )
         msg = f"Processed:{count}"
