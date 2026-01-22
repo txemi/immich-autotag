@@ -199,11 +199,4 @@ class PerformanceTracker:
         msg += f"Tiempo medio de cada asset: {avg:.3f} s"
 
         return msg
-        if est_total_all is not None:
-            msg += f"Tiempo total estimado de todas las sesiones: {fmt_time(est_total_all)}\n"
-        else:
-            msg += "Tiempo total estimado de todas las sesiones: ?\n"
 
-        msg += f"Tiempo medio de cada asset: {avg:.3f} s"
-
-        return msg
