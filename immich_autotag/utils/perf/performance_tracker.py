@@ -85,7 +85,10 @@ class PerformanceTracker:
                 est_total_rel = avg * total_to_process
                 est_remaining_rel = est_total_rel - elapsed
             from immich_autotag.utils.perf.estimate_utils import adjust_estimates
-            est_total_rel, est_remaining_rel = adjust_estimates(elapsed, est_total_rel, est_remaining_rel)
+
+            est_total_rel, est_remaining_rel = adjust_estimates(
+                elapsed, est_total_rel, est_remaining_rel
+            )
             percent_rel = (count / total_to_process) * 100
 
             # Absoluto (incluyendo skip_n)
@@ -98,7 +101,9 @@ class PerformanceTracker:
                 percent_abs = (abs_count / abs_total) * 100
                 est_total_abs = avg * abs_total
                 est_remaining_abs = est_total_abs - elapsed
-                est_total_abs, est_remaining_abs = adjust_estimates(elapsed, est_total_abs, est_remaining_abs)
+                est_total_abs, est_remaining_abs = adjust_estimates(
+                    elapsed, est_total_abs, est_remaining_abs
+                )
 
             def fmt_time(minutes: float) -> str:
                 if minutes >= 60:
@@ -114,7 +119,11 @@ class PerformanceTracker:
                 msg += f" ({percent_abs:.1f}%)"
             msg += f". Avg: {avg:.3f} s. Tiempo transcurrido (sesión): {fmt_time(elapsed/60)}. "
             msg += f"Tiempo estimado restante (sesión): {fmt_time(est_remaining_rel/60)}/{fmt_time(est_total_rel/60)}"
-            if percent_abs is not None and est_remaining_abs is not None and est_total_abs is not None:
+            if (
+                percent_abs is not None
+                and est_remaining_abs is not None
+                and est_total_abs is not None
+            ):
                 msg += f" | Tiempo estimado restante (absoluto): {fmt_time(est_remaining_abs/60)}/{fmt_time(est_total_abs/60)}"
             return msg
         else:

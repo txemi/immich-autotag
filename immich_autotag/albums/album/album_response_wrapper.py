@@ -1,8 +1,7 @@
-
 from __future__ import annotations
+
 import datetime
 import enum
-
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
@@ -25,11 +24,9 @@ if TYPE_CHECKING:
     from immich_client.models.asset_response_dto import AssetResponseDto
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
-
+from immich_autotag.albums.album.album_user_list import AlbumUserList
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.albums.album.album_user_list import AlbumUserList
-from immich_autotag.report.modification_entry import ModificationKind
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -45,11 +42,6 @@ class AssetAlreadyInAlbumError(Exception):
     """
 
     pass
-
-
-
-import datetime
-import enum
 
 
 class AlbumLoadSource(enum.Enum):
@@ -894,7 +886,7 @@ class AlbumResponseWrapper:
 
             if attempt < max_retries - 1:
                 # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
-                wait_time = 0.1 * (2 ** attempt)
+                wait_time = 0.1 * (2**attempt)
                 time.sleep(wait_time)
             else:
                 log(
