@@ -70,12 +70,26 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
 
     @typechecked
     def remove_album_for_asset_ids(self, album_wrapper: AlbumResponseWrapper) -> None:
-        for asset_uuid in album_wrapper.get_asset_uuids():
-            if asset_uuid in self:
-                album_list = self[asset_uuid]
+        """
+        Remove the album from all asset lists. If the album is full, use its asset UUIDs directly.
+        If not full, remove the album from all AlbumLists in the map (slower, but avoids triggering a full load).
+        """
+        if album_wrapper.has_loaded_assets():
+            for asset_uuid in album_wrapper.get_asset_uuids():
+                if asset_uuid in self:
+                    album_list = self[asset_uuid]
+                    album_list.remove_album(album_wrapper)
+                    if not album_list:
+                        del self[asset_uuid]
+        else:
+            # Not full: must scan all asset lists and remove the album from each
+            to_remove = []
+            for asset_uuid, album_list in self._map.items():
                 album_list.remove_album(album_wrapper)
                 if not album_list:
-                    del self[asset_uuid]
+                    to_remove.append(asset_uuid)
+            for asset_uuid in to_remove:
+                del self._map[asset_uuid]
 
     @typechecked
     def add_album_for_asset_ids(self, album_wrapper: AlbumResponseWrapper) -> None:

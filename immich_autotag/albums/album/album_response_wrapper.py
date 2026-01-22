@@ -53,6 +53,7 @@ class AlbumLoadSource(enum.Enum):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
+
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -100,7 +101,13 @@ class AlbumResponseWrapper:
         if self._deleted_at is None:
             self._deleted_at = datetime.datetime.now()
 
-
+    @typechecked
+    def has_loaded_assets(self) -> bool:
+        """
+        Returns True si los assets del álbum están cargados (full/DETAIL), False si no (SEARCH/partial).
+        No provoca carga ni acceso a la red.
+        """
+        return self._is_full()
     @typechecked
     def is_deleted(self) -> bool:
         """
