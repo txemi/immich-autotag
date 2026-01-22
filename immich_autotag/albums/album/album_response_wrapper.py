@@ -283,7 +283,8 @@ class AlbumResponseWrapper:
 
     @typechecked
     def _set_album_full(self, value: AlbumResponseDto) -> None:
-        self._album_full = value
+        self._album_dto = value
+        self._load_source= AlbumLoadSource.DETAIL
 
     @typechecked
     def invalidate_cache(self) -> None:
@@ -913,7 +914,7 @@ class AlbumResponseWrapper:
         Gets an album by ID, wraps it, and trims the name if necessary.
         """
 
-        from immich_autotag.albums.albums.album_api_utils import get_album_info_by_id
+        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
 
         album_full = get_album_info_by_id(album_id, client)
         if album_full is None:
@@ -935,9 +936,7 @@ class AlbumResponseWrapper:
         The wrapper will store the provided DTO as _album_partial and will not populate the full cache.
         Callers must explicitly request loading the full DTO via ensure_full/reload_from_api.
         """
-        # Create instance with required _album_dto argument
-        wrapper = AlbumResponseWrapper(album_dto=dto, load_source=AlbumLoadSource.SEARCH)
-
+        wrapper = AlbumResponseWrapper(album_dto=dto)
         return wrapper
 
     @staticmethod
