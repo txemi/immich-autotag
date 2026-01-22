@@ -41,8 +41,6 @@ class AssetAlreadyInAlbumError(Exception):
     pass
 
 
-
-
 import datetime
 import enum
 
@@ -51,9 +49,9 @@ class AlbumLoadSource(enum.Enum):
     SEARCH = "search"  # Loaded from album list/search API
     DETAIL = "detail"  # Loaded from album detail API (full)
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
-
 
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
@@ -62,10 +60,15 @@ class AlbumResponseWrapper:
     _album_dto: AlbumResponseDto = attrs.field(kw_only=True)
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
     _unavailable: bool = attrs.field(default=False, init=False)
-    _loaded_at: datetime.datetime = attrs.field(factory=datetime.datetime.now, init=False)
+    _loaded_at: datetime.datetime = attrs.field(
+        factory=datetime.datetime.now, init=False
+    )
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
-    _load_source: AlbumLoadSource = attrs.field(default=AlbumLoadSource.SEARCH, init=True)
+    _load_source: AlbumLoadSource = attrs.field(
+        default=AlbumLoadSource.SEARCH, init=True
+    )
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
+
     _error_history: AlbumErrorHistory = attrs.field(
         factory=AlbumErrorHistory,
         init=False,
@@ -89,7 +92,9 @@ class AlbumResponseWrapper:
         """
         now = datetime.datetime.now()
         if now < self._loaded_at:
-            raise RuntimeError("New loaded_at timestamp is earlier than previous loaded_at.")
+            raise RuntimeError(
+                "New loaded_at timestamp is earlier than previous loaded_at."
+            )
         self._album_dto = new_dto
         self._load_source = source
         self._loaded_at = now
@@ -109,6 +114,7 @@ class AlbumResponseWrapper:
         No provoca carga ni acceso a la red.
         """
         return self._is_full()
+
     @typechecked
     def is_deleted(self) -> bool:
         """
@@ -122,11 +128,13 @@ class AlbumResponseWrapper:
         Public method to logically mark this album as deleted.
         """
         self._mark_deleted()
+
     @property
     @typechecked
     def owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
         from uuid import UUID
+
         return UUID(self._album_dto.owner_id)
 
     @typechecked
@@ -159,14 +167,15 @@ class AlbumResponseWrapper:
             return hash(self.get_album_id())
         except Exception:
             return object.__hash__(self)
+
     @conditional_typechecked
     def get_asset_uuids(self) -> set[UUID]:
         """
         Returns the asset IDs as a set of UUID objects.
         """
         from uuid import UUID
-        return set(UUID(asset_id) for asset_id in self.get_asset_ids())
 
+        return set(UUID(asset_id) for asset_id in self.get_asset_ids())
 
     @typechecked
     def is_empty(self) -> bool:
@@ -219,31 +228,29 @@ class AlbumResponseWrapper:
         return ImmichContext.get_default_client()
 
     def _is_full(self) -> bool:
-            """
-            Returns True if the album was loaded from DETAIL (full), False if from SEARCH (partial).
-            Raises if _load_source is not recognized (defensive programming).
-            """
-            if self._load_source == AlbumLoadSource.DETAIL:
-                return True
-            elif self._load_source == AlbumLoadSource.SEARCH:
-                return False
-            else:
-                raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
+        """
+        Returns True if the album was loaded from DETAIL (full), False if from SEARCH (partial).
+        Raises if _load_source is not recognized (defensive programming).
+        """
+        if self._load_source == AlbumLoadSource.DETAIL:
+            return True
+        elif self._load_source == AlbumLoadSource.SEARCH:
+            return False
+        else:
+            raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
 
     @typechecked
-
     def get_album_id(self) -> str:
         return self._album_dto.id
 
     @typechecked
-
     def get_album_name(self) -> str:
         return self._album_dto.album_name
 
     @typechecked
-
     def get_album_uuid(self) -> "UUID":
         from uuid import UUID
+
         return UUID(self.get_album_id())
 
     @typechecked
@@ -292,7 +299,7 @@ class AlbumResponseWrapper:
     @typechecked
     def _set_album_full(self, value: AlbumResponseDto) -> None:
         self._album_dto = value
-        self._load_source= AlbumLoadSource.DETAIL
+        self._load_source = AlbumLoadSource.DETAIL
 
     @typechecked
     def invalidate_cache(self) -> None:
@@ -355,9 +362,7 @@ class AlbumResponseWrapper:
                 dto_id = self.get_album_id()
             except Exception:
                 dto_id = None
-            partial_repr = (
-                f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
-            )
+            partial_repr = f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
         except Exception:
             album_name = None
             partial_repr = "<unrepresentable album_partial>"
@@ -393,11 +398,11 @@ class AlbumResponseWrapper:
         ):
             self._unavailable = True
             self.invalidate_cache()
-            from immich_autotag.report.modification_report import (
-                ModificationReport,
-            )
             from immich_autotag.report.modification_kind import (
                 ModificationKind,
+            )
+            from immich_autotag.report.modification_report import (
+                ModificationReport,
             )
 
             tag_mod_report = ModificationReport.get_instance()
@@ -439,7 +444,7 @@ class AlbumResponseWrapper:
 
         client = ImmichContext.get_default_client()
         self._ensure_full_album_loaded(client)
-        if self._load_source!= AlbumLoadSource.DETAIL :
+        if self._load_source != AlbumLoadSource.DETAIL:
 
             self._ensure_full_album_loaded(client)
             raise RuntimeError()
@@ -748,8 +753,9 @@ class AlbumResponseWrapper:
         for item in result:
             if item.success is not True:
                 raise RuntimeError(
-                    "API returned non-boolean success value in BulkIdResponseDto"   )
-            if UUID( item.id) == asset_id:
+                    "API returned non-boolean success value in BulkIdResponseDto"
+                )
+            if UUID(item.id) == asset_id:
                 return item
 
         return None

@@ -1,14 +1,18 @@
 from typing import Iterator
 from uuid import UUID
+
 import attrs
 from typeguard import typechecked
+
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumMap:
     """
     Stores albums in a dict keyed by UUID. Prevents duplicates.
     """
+
     _albums: dict[UUID, AlbumResponseWrapper] = attrs.field(factory=dict)
 
     @typechecked

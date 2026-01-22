@@ -2,14 +2,13 @@
 Utility functions for Immich album API calls (singular album).
 """
 
-
-from immich_autotag.logging.utils import log_debug
 from uuid import UUID
 
 from immich_client.api.albums import get_album_info
 from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
+from immich_autotag.logging.utils import log_debug
 from immich_autotag.types import ImmichClient
 
 

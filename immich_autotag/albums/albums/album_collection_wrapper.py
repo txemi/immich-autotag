@@ -38,7 +38,6 @@ _album_collection_singleton: AlbumCollectionWrapper | None = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
-
     """
     Singleton class that manages the collection of all albums in the system.
 
@@ -110,11 +109,13 @@ class AlbumCollectionWrapper:
             return ModificationReport.get_instance()
         except Exception as e:
             raise RuntimeError(f"Could not retrieve ModificationReport: {e}")
+
     def __len__(self) -> int:
         """
         Returns the number of albums in the collection (including deleted unless filtered elsewhere).
         """
         return len(self._albums)
+
     @typechecked
     def find_first_album_with_name(
         self, album_name: str
@@ -149,9 +150,13 @@ class AlbumCollectionWrapper:
         Returns True if marked. Raises if already deleted or not present.
         """
         if album_wrapper not in self._albums:
-            raise RuntimeError(f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is not present in the collection.")
+            raise RuntimeError(
+                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is not present in the collection."
+            )
         if album_wrapper.is_deleted():
-            raise RuntimeError(f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is already deleted.")
+            raise RuntimeError(
+                f"Album '{album_wrapper.get_album_name()}' (id={album_wrapper.get_album_id()}) is already deleted."
+            )
         album_wrapper.mark_deleted()
         self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
         return True
@@ -259,8 +264,8 @@ class AlbumCollectionWrapper:
             DEFAULT_ERROR_MODE,
             GLOBAL_UNAVAILABLE_THRESHOLD,
         )
-        from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.report.modification_kind import ModificationKind
+        from immich_autotag.report.modification_report import ModificationReport
 
         threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
 
@@ -407,7 +412,6 @@ class AlbumCollectionWrapper:
         Deletes an album on the server and records the action, whether temporary or not.
         Returns True if deleted successfully or if it no longer exists.
         """
-        from uuid import UUID
 
         from immich_client.api.albums.delete_album import (
             sync_detailed as delete_album_sync,

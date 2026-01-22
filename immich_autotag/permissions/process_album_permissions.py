@@ -31,8 +31,8 @@ def process_album_permissions(
     from immich_autotag.config.models import UserConfig
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
-    from immich_autotag.report.modification_report import ModificationReport
     from immich_autotag.report.modification_kind import ModificationKind
+    from immich_autotag.report.modification_report import ModificationReport
 
     if not user_config or not isinstance(user_config, UserConfig):
         return

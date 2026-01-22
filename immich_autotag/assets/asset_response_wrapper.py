@@ -152,8 +152,8 @@ class AssetResponseWrapper:
                 f"[INFO] Immich photo link: {photo_url}"
             )
             log_debug(f"[BUG] {log_msg}")
-        from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.report.modification_kind import ModificationKind
+        from immich_autotag.report.modification_report import ModificationReport
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
@@ -1023,8 +1023,8 @@ class AssetResponseWrapper:
                     level=LogLevel.FOCUS,
                 )
                 # Register in modification report
-                from immich_autotag.report.modification_report import ModificationReport
                 from immich_autotag.report.modification_kind import ModificationKind
+                from immich_autotag.report.modification_report import ModificationReport
 
                 report = ModificationReport.get_instance()
                 report.add_modification(

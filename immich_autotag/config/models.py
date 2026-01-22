@@ -110,18 +110,23 @@ class Conversion(BaseModel):
         default=None, description="Optional description for the conversion rule."
     )
 
+
 class ConversionConfig(BaseModel):
     """
     Configuration block for asset tag/album conversions.
     Allows batch conversion, copying, or transformation of tags and albums for compatibility, refactoring, or testing different classification strategies.
     """
+
     model_config = {"extra": "forbid"}
     description: Optional[str] = Field(
-        default=None, description="Optional description for the conversion configuration block."
+        default=None,
+        description="Optional description for the conversion configuration block.",
     )
     conversions: list[Conversion] = Field(
         default_factory=list, description="List of conversion rules to apply."
     )
+
+
 class ClassificationConfig(BaseModel):
     """
     Allows the user to define classification categories to use in the application.
@@ -133,7 +138,8 @@ class ClassificationConfig(BaseModel):
 
     model_config = {"extra": "allow"}
     description: Optional[str] = Field(
-        default=None, description="Optional description for the classification configuration."
+        default=None,
+        description="Optional description for the classification configuration.",
     )
     rules: List[ClassificationRule] = Field(
         default_factory=list, description="List of classification rules."
@@ -172,7 +178,8 @@ class AlbumDateConsistencyConfig(BaseModel):
 
     model_config = {"extra": "allow"}
     description: Optional[str] = Field(
-        default=None, description="Optional description for the album date consistency configuration."
+        default=None,
+        description="Optional description for the album date consistency configuration.",
     )
     enabled: bool = Field(
         default=True, description="Enable album date consistency checks."
@@ -195,7 +202,8 @@ class DuplicateProcessingConfig(BaseModel):
 
     model_config = {"extra": "allow"}
     description: Optional[str] = Field(
-        default=None, description="Optional description for the duplicate processing configuration."
+        default=None,
+        description="Optional description for the duplicate processing configuration.",
     )
     autotag_album_conflict: Optional[str] = Field(
         default="autotag_output_duplicate_asset_album_conflict",
@@ -230,7 +238,8 @@ class AlbumDetectionFromFoldersConfig(BaseModel):
 
     model_config = {"extra": "allow"}
     description: Optional[str] = Field(
-        default=None, description="Optional description for the album date consistency configuration."
+        default=None,
+        description="Optional description for the album date consistency configuration.",
     )
     enabled: bool = Field(
         ...,
@@ -248,7 +257,8 @@ class PerformanceConfig(BaseModel):
 
     model_config = {"extra": "allow"}
     description: Optional[str] = Field(
-        default=None, description="Optional description for the album detection from folders configuration."
+        default=None,
+        description="Optional description for the album detection from folders configuration.",
     )
     enable_type_checking: bool = Field(
         default=False,
@@ -298,7 +308,8 @@ class AlbumPermissionsConfig(BaseModel):
 
     model_config = {"extra": "allow"}
     description: Optional[str] = Field(
-        default=None, description="Optional description for the album permissions configuration."
+        default=None,
+        description="Optional description for the album permissions configuration.",
     )
     enabled: bool = Field(default=False, description="Enable album permission feature.")
     user_groups: Optional[List[UserGroup]] = Field(

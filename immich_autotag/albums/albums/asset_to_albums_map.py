@@ -19,24 +19,34 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
 
     def __init__(self):
         from uuid import UUID
+
         self._map: dict[UUID, AlbumList] = dict()
 
     def __getitem__(self, key: UUID) -> AlbumList:
         from uuid import UUID
+
         if not isinstance(key, UUID):
-            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
+            raise TypeError(
+                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+            )
         return self._map[key]
 
     def __setitem__(self, key: UUID, value: AlbumList) -> None:
         from uuid import UUID
+
         if not isinstance(key, UUID):
-            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
+            raise TypeError(
+                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+            )
         self._map[key] = value
 
     def __delitem__(self, key: UUID) -> None:
         from uuid import UUID
+
         if not isinstance(key, UUID):
-            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
+            raise TypeError(
+                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+            )
         del self._map[key]
 
     def __iter__(self) -> Iterator[UUID]:
@@ -61,8 +71,11 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
 
     def __contains__(self, key: object) -> bool:
         from uuid import UUID
+
         if not isinstance(key, UUID):
-            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
+            raise TypeError(
+                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+            )
         return key in self._map
 
     def __repr__(self) -> str:

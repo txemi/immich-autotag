@@ -15,7 +15,9 @@ class ModificationKind(Enum):
     # --- Asset-related modifications ---
     ADD_TAG_TO_ASSET = ModificationKindInfo("ADD_TAG_TO_ASSET")
     REMOVE_TAG_FROM_ASSET = ModificationKindInfo("REMOVE_TAG_FROM_ASSET")
-    REMOVE_TAG_GLOBALLY = ModificationKindInfo("REMOVE_TAG_GLOBALLY", LogLevel.IMPORTANT)
+    REMOVE_TAG_GLOBALLY = ModificationKindInfo(
+        "REMOVE_TAG_GLOBALLY", LogLevel.IMPORTANT
+    )
     WARNING_TAG_REMOVAL_FROM_ASSET_FAILED = ModificationKindInfo(
         "WARNING_TAG_REMOVAL_FROM_ASSET_FAILED", LogLevel.WARNING
     )
@@ -38,8 +40,12 @@ class ModificationKind(Enum):
     )
     RENAME_ALBUM = ModificationKindInfo("RENAME_ALBUM", LogLevel.PROGRESS)
     ALBUM_DATE_MISMATCH = ModificationKindInfo("ALBUM_DATE_MISMATCH", LogLevel.WARNING)
-    ALBUM_DETECTION_CONFLICT = ModificationKindInfo("ALBUM_DETECTION_CONFLICT", LogLevel.WARNING)
-    CLASSIFICATION_CONFLICT = ModificationKindInfo("CLASSIFICATION_CONFLICT", LogLevel.WARNING)
+    ALBUM_DETECTION_CONFLICT = ModificationKindInfo(
+        "ALBUM_DETECTION_CONFLICT", LogLevel.WARNING
+    )
+    CLASSIFICATION_CONFLICT = ModificationKindInfo(
+        "CLASSIFICATION_CONFLICT", LogLevel.WARNING
+    )
 
     # --- Authorization/permission-related modifications ---
     ALBUM_PERMISSION_RULE_MATCHED = ModificationKindInfo(
@@ -57,6 +63,12 @@ class ModificationKind(Enum):
     ADD_USER_TO_ALBUM = ModificationKindInfo("ADD_USER_TO_ALBUM", LogLevel.PROGRESS)
 
     # --- Error-related modifications ---
-    ERROR_ALBUM_NOT_FOUND = ModificationKindInfo("ERROR_ALBUM_NOT_FOUND", LogLevel.ERROR)
-    ERROR_PERMISSION_DENIED = ModificationKindInfo("ERROR_PERMISSION_DENIED", LogLevel.ERROR)
-    ERROR_NETWORK_TEMPORARY = ModificationKindInfo("ERROR_NETWORK_TEMPORARY", LogLevel.ERROR)
+    ERROR_ALBUM_NOT_FOUND = ModificationKindInfo(
+        "ERROR_ALBUM_NOT_FOUND", LogLevel.ERROR
+    )
+    ERROR_PERMISSION_DENIED = ModificationKindInfo(
+        "ERROR_PERMISSION_DENIED", LogLevel.ERROR
+    )
+    ERROR_NETWORK_TEMPORARY = ModificationKindInfo(
+        "ERROR_NETWORK_TEMPORARY", LogLevel.ERROR
+    )

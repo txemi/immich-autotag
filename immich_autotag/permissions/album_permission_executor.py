@@ -25,8 +25,8 @@ from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbu
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.report.modification_kind import ModificationKind
+from immich_autotag.report.modification_report import ModificationReport
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
