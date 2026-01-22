@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @typechecked
-@attr.s(auto_attribs=True, kw_only=True,slots=True)
+@attr.s(auto_attribs=True, kw_only=True, slots=True)
 class CheckpointManager:
     stats_manager: "StatisticsManager" = attr.ib(init=True)
     OVERLAP: int = attr.ib(default=100, init=False)
