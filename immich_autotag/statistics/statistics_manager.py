@@ -85,11 +85,11 @@ class StatisticsManager:
         """
         with self._lock:
 
-            self.start_run().increment_event(event_kind, extra_key=extra_key)
+            self.get_or_create_run_stats().increment_event(event_kind, extra_key=extra_key)
 
     @typechecked
     def get_progress_description(self) -> str:
-        count = self.start_run().count
+        count = self.get_or_create_run_stats().count
         if self._perf_tracker is None:
             raise RuntimeError(
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
@@ -100,8 +100,8 @@ class StatisticsManager:
     def _get_or_create_perf_tracker(self):
         if self._perf_tracker is not None:
             return self._perf_tracker
-        total_assets = self.start_run().total_assets
-        max_assets = self.start_run().max_assets
+        total_assets = self.get_or_create_run_stats().total_assets
+        max_assets = self.get_or_create_run_stats().max_assets
 
         from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
         from immich_autotag.utils.perf.time_estimation_mode import (
@@ -115,21 +115,21 @@ class StatisticsManager:
             estimation_mode=TimeEstimationMode.LINEAR,
             total_assets=total_assets,
             max_assets=max_assets,
-            skip_n=self.start_run().skip_n,
+            skip_n=self.get_or_create_run_stats().skip_n,
         )
         return self._perf_tracker
 
     @typechecked
     def set_total_assets(self, total_assets: int) -> None:
         with self._lock:
-            self.start_run().total_assets = total_assets
+            self.get_or_create_run_stats().total_assets = total_assets
             self._save_to_file()
             self._get_or_create_perf_tracker()
 
     @typechecked
     def set_max_assets(self, max_assets: int) -> None:
         with self._lock:
-            self.start_run().max_assets = max_assets
+            self.get_or_create_run_stats().max_assets = max_assets
             self._save_to_file()
             self._get_or_create_perf_tracker()
 
@@ -152,7 +152,7 @@ class StatisticsManager:
         return _instance
 
     @typechecked
-    def start_run(self, initial_stats: Optional[RunStatistics] = None) -> RunStatistics:
+    def get_or_create_run_stats(self, initial_stats: Optional[RunStatistics] = None) -> RunStatistics:
         # TODO: refactorizar a get_s
         with self._lock:
             if self._current_stats is not None:
@@ -184,25 +184,25 @@ class StatisticsManager:
     def _save_to_file(self) -> None:
         if self._current_stats and self._current_file:
             # Always update progress_description before saving
-            self.start_run().progress_description = self.get_progress_description()
-            self.start_run().save_to_file()
+            self.get_or_create_run_stats().progress_description = self.get_progress_description()
+            self.get_or_create_run_stats().save_to_file()
 
     @typechecked
     def get_stats(self) -> RunStatistics:
 
-        return self.start_run()
+        return self.get_or_create_run_stats()
 
     @typechecked
     def update_checkpoint(self, last_processed_id: str, count: int) -> RunStatistics:
         with self._lock:
 
-            self.start_run().last_processed_id = last_processed_id
-            self.start_run().count = count
+            self.get_or_create_run_stats().last_processed_id = last_processed_id
+            self.get_or_create_run_stats().count = count
             # Only save to disk every 100 assets (not every asset) for performance
             if count % 100 == 0:
                 self._save_to_file()
         self.maybe_print_progress(count)
-        return self.start_run()
+        return self.get_or_create_run_stats()
 
     @typechecked
     def save(self) -> None:
@@ -225,11 +225,11 @@ class StatisticsManager:
 
         with self._lock:
             now = datetime.now(timezone.utc)
-            self.start_run().finished_at = now
+            self.get_or_create_run_stats().finished_at = now
             # Sumar el tiempo de esta sesión al acumulado
-            if self.start_run().started_at is not None:
+            if self.get_or_create_run_stats().started_at is not None:
                 session_time = (now - self._current_stats.started_at).total_seconds()
-                self.start_run().previous_sessions_time += session_time
+                self.get_or_create_run_stats().previous_sessions_time += session_time
             self._save_to_file()
 
     @typechecked
@@ -238,11 +238,11 @@ class StatisticsManager:
 
         with self._lock:
             now = datetime.now(timezone.utc)
-            self.start_run().abrupt_exit_at = now
+            self.get_or_create_run_stats().abrupt_exit_at = now
             # Sumar el tiempo de esta sesión al acumulado
-            if self.start_run().started_at is not None:
+            if self.get_or_create_run_stats().started_at is not None:
                 session_time = (now - self._current_stats.started_at).total_seconds()
-                self.start_run().previous_sessions_time += session_time
+                self.get_or_create_run_stats().previous_sessions_time += session_time
             self._save_to_file()
 
     @property
@@ -279,7 +279,7 @@ class StatisticsManager:
     def set_skip_n(self, skip_n: int) -> None:
         with self._lock:
 
-            self.start_run().skip_n = skip_n
+            self.get_or_create_run_stats().skip_n = skip_n
             self._save_to_file()
 
     @typechecked
