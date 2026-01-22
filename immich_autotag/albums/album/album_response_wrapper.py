@@ -53,7 +53,6 @@ class AlbumLoadSource(enum.Enum):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
 
-
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -152,6 +151,14 @@ class AlbumResponseWrapper:
             return hash(self.get_album_id())
         except Exception:
             return object.__hash__(self)
+    @conditional_typechecked
+    def get_asset_uuids(self) -> set[UUID]:
+        """
+        Returns the asset IDs as a set of UUID objects.
+        """
+        from uuid import UUID
+        return set(UUID(asset_id) for asset_id in self.get_asset_ids())
+
 
     @typechecked
     def is_empty(self) -> bool:

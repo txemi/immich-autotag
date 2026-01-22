@@ -8,6 +8,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.album_map import AlbumMap
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums

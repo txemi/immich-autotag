@@ -1,4 +1,5 @@
 from typing import Iterator, MutableMapping
+from uuid import UUID
 
 from typeguard import typechecked
 
@@ -8,7 +9,7 @@ from immich_autotag.albums.albums.album_list import AlbumList
 from .album_list import AlbumList
 
 
-class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
+class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
     """
     Mapa de asset_id (str) a AlbumList.
     La clave del mapa es el asset_id (string) de cada asset.
@@ -17,18 +18,28 @@ class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
     """
 
     def __init__(self):
-        self._map: dict[str, AlbumList] = dict()
+        from uuid import UUID
+        self._map: dict[UUID, AlbumList] = dict()
 
-    def __getitem__(self, key: str) -> AlbumList:
+    def __getitem__(self, key: UUID) -> AlbumList:
+        from uuid import UUID
+        if not isinstance(key, UUID):
+            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
         return self._map[key]
 
-    def __setitem__(self, key: str, value: AlbumList) -> None:
+    def __setitem__(self, key: UUID, value: AlbumList) -> None:
+        from uuid import UUID
+        if not isinstance(key, UUID):
+            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
         self._map[key] = value
 
-    def __delitem__(self, key: str) -> None:
+    def __delitem__(self, key: UUID) -> None:
+        from uuid import UUID
+        if not isinstance(key, UUID):
+            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
         del self._map[key]
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[UUID]:
         return iter(self._map)
 
     def __len__(self) -> int:
@@ -49,30 +60,29 @@ class AssetToAlbumsMap(MutableMapping[str, AlbumList]):
         return self._map.values()
 
     def __contains__(self, key: object) -> bool:
-        # Use object type to match the Container/Mapping protocol
-        try:
-            return key in self._map
-        except Exception:
-            return False
+        from uuid import UUID
+        if not isinstance(key, UUID):
+            raise TypeError(f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}")
+        return key in self._map
 
     def __repr__(self) -> str:
         return f"AssetToAlbumsMap({self._map!r})"
 
     @typechecked
     def remove_album_for_asset_ids(self, album_wrapper: AlbumResponseWrapper) -> None:
-        for asset_id in album_wrapper.get_asset_ids():
-            if asset_id in self:
-                album_list = self[asset_id]
+        for asset_uuid in album_wrapper.get_asset_uuids():
+            if asset_uuid in self:
+                album_list = self[asset_uuid]
                 album_list.remove_album(album_wrapper)
                 if not album_list:
-                    del self[asset_id]
+                    del self[asset_uuid]
 
     @typechecked
     def add_album_for_asset_ids(self, album_wrapper: AlbumResponseWrapper) -> None:
         """
-        Adds the given album to the map for all its asset IDs. Creates a new AlbumList if needed.
+        Adds the given album to the map for all its asset UUIDs. Creates a new AlbumList if needed.
         """
-        for asset_id in album_wrapper.get_asset_ids():
-            if asset_id not in self:
-                self[asset_id] = AlbumList()
-            self[asset_id].append(album_wrapper)
+        for asset_uuid in album_wrapper.get_asset_uuids():
+            if asset_uuid not in self:
+                self[asset_uuid] = AlbumList()
+            self[asset_uuid].append(album_wrapper)
