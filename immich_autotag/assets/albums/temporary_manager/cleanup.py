@@ -71,7 +71,8 @@ def remove_asset_from_autotag_temporary_albums(
             removed_album_names.append(album_wrapper.get_album_name())
 
             log(
-                f"Asset {asset_wrapper.id} removed from temporary album {album_wrapper.get_album_name()}",
+                f"Asset {asset_wrapper.id} removed from temporary album "
+                f"{album_wrapper.get_album_name()}",
                 level=LogLevel.DEBUG,
             )
 
