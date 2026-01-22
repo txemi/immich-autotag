@@ -943,44 +943,6 @@ class AlbumResponseWrapper:
                     level=LogLevel.WARNING,
                 )
 
-    @staticmethod
-    @conditional_typechecked
-    def from_id(
-        client: ImmichClient,
-        album_id: UUID,
-        tag_mod_report: ModificationReport,
-    ) -> "AlbumResponseWrapper":
-        """
-        Gets an album by ID, wraps it, and trims the name if necessary.
-        """
-
-        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
-
-        album_full = get_album_info_by_id(album_id, client)
-        if album_full is None:
-            raise RuntimeError(f"get_album_info returned no album for id={album_id}")
-        wrapper = AlbumResponseWrapper.from_full_dto(
-            album_full, validate=False, tag_mod_report=tag_mod_report
-        )
-        wrapper.trim_name_if_needed(client=client, tag_mod_report=tag_mod_report)
-        return wrapper
-
-    @staticmethod
-    @conditional_typechecked
-    def from_partial_dto(
-        dto: AlbumResponseDto,
-    ) -> "AlbumResponseWrapper":
-        """
-        Create an AlbumResponseWrapper from a partial DTO.
-
-        The wrapper will store the provided DTO as _album_partial
-        and will not populate the
-        full cache.
-        Callers must explicitly request loading the full DTO via ensure_full/
-        reload_from_api.
-        """
-        wrapper = AlbumResponseWrapper(album_dto=dto)
-        return wrapper
 
 
 
