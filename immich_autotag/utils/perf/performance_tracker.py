@@ -54,7 +54,7 @@ class PerformanceTracker:
     def _printable_value__get_abs_total_and_avg(
         self, count: int, elapsed: float
     ) -> tuple[Optional[int], float]:
-        """Devuelve abs_total y avg para los métodos que lo usan juntos."""
+        """Returns abs_total and avg for methods that use them together."""
         abs_total = self._printable_value_abs_total()
         avg = self._printable_value_avg(count, elapsed)
         return abs_total, avg
@@ -86,7 +86,6 @@ class PerformanceTracker:
     def _printable_value_previous_sessions_time(self) -> float:
         try:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
-
             stats = StatisticsManager.get_instance().get_stats()
             return getattr(stats, "previous_sessions_time", 0.0)
         except Exception:
@@ -202,34 +201,34 @@ class PerformanceTracker:
             count, elapsed, previous_sessions_time
         )
 
-        msg = f"Procesados en esta sesión: {count}"
+        msg = f"Processed in this session: {count}"
         if total_to_process:
             msg += f" / {total_to_process}"
         msg += "\n"
 
-        msg += f"Procesados desde el inicio: {abs_count}"
+        msg += f"Processed since start: {abs_count}"
         if abs_total:
             msg += f" / {abs_total}"
         msg += "\n"
 
         if abs_total:
-            msg += f"Total de elementos en immich: {abs_total}\n"
+            msg += f"Total elements in immich: {abs_total}\n"
         else:
-            msg += "Total de elementos en immich: ?\n"
+            msg += "Total elements in immich: ?\n"
 
-        msg += f"\nTiempo transcurrido en esta sesión: {self._printable_value_fmt_time(elapsed)}\n"
-        msg += f"Tiempo transcurrido en todas las sesiones: {self._printable_value_fmt_time(previous_sessions_time + elapsed)}\n"
+        msg += f"\nElapsed time in this session: {self._printable_value_fmt_time(elapsed)}\n"
+        msg += f"Elapsed time in all sessions: {self._printable_value_fmt_time(previous_sessions_time + elapsed)}\n"
 
         if est_remaining_session is not None:
-            msg += f"Tiempo pendiente estimado para esta sesión: {self._printable_value_fmt_time(est_remaining_session)}\n"
+            msg += f"Estimated remaining time for this session: {self._printable_value_fmt_time(est_remaining_session)}\n"
         else:
-            msg += "Tiempo pendiente estimado para esta sesión: ?\n"
+            msg += "Estimated remaining time for this session: ?\n"
 
         if est_total_all is not None:
-            msg += f"Tiempo total estimado de todas las sesiones: {self._printable_value_fmt_time(est_total_all)}\n"
+            msg += f"Estimated total time for all sessions: {self._printable_value_fmt_time(est_total_all)}\n"
         else:
-            msg += "Tiempo total estimado de todas las sesiones: ?\n"
+            msg += "Estimated total time for all sessions: ?\n"
 
-        msg += f"Tiempo medio de cada asset: {avg:.3f} s"
+        msg += f"Average time per asset: {avg:.3f} s"
 
         return msg
