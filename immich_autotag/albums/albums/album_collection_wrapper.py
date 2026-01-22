@@ -625,7 +625,7 @@ class AlbumCollectionWrapper:
         """
         Returns an iterable of AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map).
         """
-        return self._asset_to_albums_map.get(asset.id, AlbumList())
+        return self._asset_to_albums_map.get(asset.uuid, AlbumList())
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseWrapper) -> list[str]:
