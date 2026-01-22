@@ -10,19 +10,11 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
 @typechecked
-def fetch_total_assets(context: ImmichContext) -> int | None:
-    try:
-        stats = get_server_statistics.sync(client=context.client)
-        total_assets = stats.photos + stats.videos
-        log(
-            f"Total assets (photos + videos) reported by Immich: {total_assets}",
-            level=LogLevel.PROGRESS,
-        )
-        StatisticsManager.get_instance().set_total_assets(total_assets)
-        return total_assets
-    except Exception as e:
-        log(
-            f"[ERROR] Could not get total assets from API: {e}",
-            level=LogLevel.IMPORTANT,
-        )
-        return None
+def fetch_total_assets(context: ImmichContext) -> int :
+    stats = get_server_statistics.sync(client=context.client)
+    total_assets = stats.photos + stats.videos
+    log(
+        f"Total assets (photos + videos) reported by Immich: {total_assets}",
+        level=LogLevel.PROGRESS,
+    )
+    return total_assets
