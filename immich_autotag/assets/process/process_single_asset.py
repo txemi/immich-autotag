@@ -1,3 +1,5 @@
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+from immich_autotag.config._internal_types import ErrorHandlingMode
 from __future__ import annotations
 
 from typeguard import typechecked
@@ -25,8 +27,10 @@ def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
     return asset_wrapper.apply_tag_conversions(tag_conversions)
 
 
+from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepResult
+
 @typechecked
-def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper):
+def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper) -> DateCorrectionStepResult | None:
     """Correct the asset date if the feature is enabled in config."""
     from immich_autotag.config.manager import ConfigManager
 
@@ -39,8 +43,8 @@ def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper):
     ):
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
-
-        correct_asset_date(asset_wrapper)
+        return correct_asset_date(asset_wrapper)
+    return None
 
 
 @typechecked
@@ -85,7 +89,7 @@ def process_single_asset(
 
     applied_conversions=_apply_tag_conversions(asset_wrapper)
 
-    _correct_date_if_enabled(asset_wrapper)
+    date_correction_result = _correct_date_if_enabled(asset_wrapper)
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
         raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
     _analyze_duplicate_tags(asset_wrapper)

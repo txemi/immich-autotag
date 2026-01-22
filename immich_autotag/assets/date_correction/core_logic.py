@@ -121,7 +121,7 @@ def _check_filename_candidate_and_fix(
 @typechecked
 def correct_asset_date(
     asset_wrapper: AssetResponseWrapper, log_flag: bool = False
-) -> None:
+) -> "DateCorrectionStepResult":
     """
     Main entry point for asset date correction logic.
 
@@ -150,14 +150,14 @@ def correct_asset_date(
             f"[DATE CORRECTION] Date corrected by filename for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
-        return
+        return step_result
 
     if not flat_candidates:
         log(
             f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
-        return
+        return DateCorrectionStepResult.EXIT
 
     oldest_candidate = date_sources_list.oldest_candidate()
     oldest: datetime = oldest_candidate.get_aware_date()
@@ -167,26 +167,26 @@ def correct_asset_date(
             f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
-        return
+        return DateCorrectionStepResult.EXIT
     if immich_date.date() == oldest.date():
         log(
             f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
-        return
+        return DateCorrectionStepResult.EXIT
     if _is_precise_and_rounded_midnight_close(immich_date, oldest):
         log(
             f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
-        return
+        return DateCorrectionStepResult.EXIT
     diff_seconds_abs = abs((immich_date - oldest).total_seconds())
     if diff_seconds_abs < 20 * 3600:
         log(
             f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
             level=LogLevel.FOCUS,
         )
-        return
+        return DateCorrectionStepResult.EXIT
 
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
