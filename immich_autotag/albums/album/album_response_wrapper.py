@@ -53,6 +53,7 @@ class AlbumLoadSource(enum.Enum):
 class AlbumResponseWrapper:
 
 
+
     # Either `_album_partial` or `_album_full` will be present depending on
     # how the wrapper was constructed. Allow `_album_partial` to be None so
     # callers can create an instance explicitly from a full DTO.
@@ -83,21 +84,19 @@ class AlbumResponseWrapper:
             raise ValueError("AlbumResponseWrapper must be constructed with a DTO.")
         if not hasattr(self, "_loaded_at") or self._loaded_at is None:
             self._loaded_at = datetime.datetime.now()
-
     @typechecked
-    def _update_dto(self, new_dto: AlbumResponseDto, source: AlbumLoadSource) -> None:
+    def _get_or_build_asset_ids_cache(self) -> set[UUID]:
         """
-        Update the internal DTO with a new one, updating the load source and loaded_at.
-        loaded_at must always increase.
+        Devuelve el set de asset IDs como UUID, construyendo la caché si no existe.
+        Siempre usar este método para acceder a los asset IDs.
         """
-        now = datetime.datetime.now()
-        if now < self._loaded_at:
-            raise RuntimeError(
-                "New loaded_at timestamp is earlier than previous loaded_at."
-            )
-        self._album_dto = new_dto
-        self._load_source = source
-        self._loaded_at = now
+        from uuid import UUID
+        if self._asset_ids_cache is not None:
+            return self._asset_ids_cache
+        assets = self._album_dto.assets
+        self._asset_ids_cache = set(UUID(a.id) for a in assets)
+        return self._asset_ids_cache
+
 
     @typechecked
     def _mark_deleted(self) -> None:
@@ -175,17 +174,14 @@ class AlbumResponseWrapper:
         """
         Returns the asset IDs as a set of UUID objects.
         """
-        from uuid import UUID
-
-        return set(UUID(asset_id) for asset_id in self.get_asset_ids())
+        return self._get_or_build_asset_ids_cache()
 
     @typechecked
     def is_empty(self) -> bool:
         """
         Returns True if the album has no assets, False otherwise.
-        Uses the cached asset ids if available for efficiency.
         """
-        return len(self.get_asset_ids()) == 0
+        return len(self._get_or_build_asset_ids_cache()) == 0
 
     @typechecked
     def is_duplicate_album(self) -> bool:
@@ -464,28 +460,23 @@ class AlbumResponseWrapper:
             raise RuntimeError()
         return self._album_dto
 
-    def get_asset_ids(self) -> set[str]:
-        if self._asset_ids_cache is not None:
-            return self._asset_ids_cache
-
-        # Ensure album full data is loaded (may raise)
-        self.ensure_full()
-        assets = self._get_album_full_or_load().assets or []
-        self._asset_ids_cache = set(a.id for a in assets)
-        return self._asset_ids_cache
+    def get_asset_ids(self) -> set[UUID]:
+        """
+        Devuelve el set de asset IDs como UUID usando la caché centralizada.
+        """
+        return self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
-        return asset.id in self.get_asset_ids()
+        from uuid import UUID
+        return UUID(asset.id) in self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
     def has_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
-        if use_cache:
-            return asset_wrapper.asset.id in self.get_asset_ids()
-        else:
-            return self.has_asset(asset_wrapper.asset)
+        from uuid import UUID
+        return UUID(asset_wrapper.asset.id) in self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
@@ -1065,3 +1056,19 @@ class AlbumResponseWrapper:
                     self._asset_ids_cache = None
             import datetime
             self._loaded_at = datetime.datetime.now()
+
+
+    @typechecked
+    def _update_dto(self, new_dto: AlbumResponseDto, source: AlbumLoadSource) -> None:
+        """
+        Update the internal DTO with a new one, updating the load source and loaded_at.
+        loaded_at must always increase.
+        """
+        now = datetime.datetime.now()
+        if now < self._loaded_at:
+            raise RuntimeError(
+                "New loaded_at timestamp is earlier than previous loaded_at."
+            )
+        self._album_dto = new_dto
+        self._load_source = source
+        self._loaded_at = now            
