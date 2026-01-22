@@ -14,7 +14,9 @@ from immich_autotag.assets.process.process_assets_threadpool import (
 )
 from immich_autotag.config.internal_config import USE_THREADPOOL
 from immich_autotag.context.immich_context import ImmichContext
+
 from immich_autotag.statistics.statistics_manager import StatisticsManager
+from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets
 
 
 @typechecked
