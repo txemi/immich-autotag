@@ -418,6 +418,8 @@ class AlbumCollectionWrapper:
                 raise RuntimeError(
                     f"Refusing to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): not a temporary or duplicate album."
                 )
+        # Remove locally first to avoid errors if already deleted
+        self.remove_album_local_public(wrapper)
         try:
             delete_album_sync(id=wrapper.get_album_uuid(), client=client)
         except Exception as exc:
@@ -456,18 +458,16 @@ class AlbumCollectionWrapper:
             raise RuntimeError(
                 f"Failed to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). Reason: {err_reason}."
             ) from exc
-        else:
-            self.remove_album_local_public(wrapper)
-            from immich_autotag.report.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
-            # On success, err_reason is not set, so use a default
-            tag_mod_report.add_album_modification(
-                kind=ModificationKind.DELETE_ALBUM,
-                album=wrapper,
-                old_value=wrapper.get_album_name(),
-                extra={"reason": f"{reason} (SUCCESS)"},
-            )
-            return True
+        # On success, err_reason is not set, so use a default
+        tag_mod_report.add_album_modification(
+            kind=ModificationKind.DELETE_ALBUM,
+            album=wrapper,
+            old_value=wrapper.get_album_name(),
+            extra={"reason": f"{reason} (SUCCESS)"},
+        )
+        return True
 
     def remove_album_local_public(self, album_wrapper: AlbumResponseWrapper) -> bool:
         """
