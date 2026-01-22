@@ -108,12 +108,17 @@ class PerformanceTracker:
 
             msg = (
                 f"Procesados en esta sesión: {count}/{total_to_process} ({percent_rel:.1f}%) | "
-                f"Procesados en total: {abs_count}/{abs_total}"
+                f"Procesados totales: {abs_count}/{abs_total}"
             )
             if percent_abs is not None:
                 msg += f" ({percent_abs:.1f}%)"
             msg += f". Avg: {avg:.3f} s. Tiempo transcurrido (sesión): {fmt_time(elapsed/60)}. "
-            msg += f"Tiempo estimado restante (sesión): {fmt_time(est_remaining_rel/60)}/{fmt_time(est_total_rel/60)}"
+            # Mostrar tiempo estimado previsto (lineal o EWMA)
+            if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
+                msg += f" Tiempo estimado previsto (EWMA): {fmt_time(est_total_rel/60)}."
+            else:
+                msg += f" Tiempo estimado previsto (lineal): {fmt_time(est_total_rel/60)}."
+            msg += f" Tiempo estimado restante (sesión): {fmt_time(est_remaining_rel/60)}."
             if percent_abs is not None and est_remaining_abs is not None and est_total_abs is not None:
                 msg += f" | Tiempo estimado restante (absoluto): {fmt_time(est_remaining_abs/60)}/{fmt_time(est_total_abs/60)}"
             return msg

@@ -70,6 +70,12 @@ class RunStatistics(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc)
     )
     finished_at: Optional[datetime] = None
+    abrupt_exit_at: Optional[datetime] = Field(
+        None, description="Datetime when an abrupt exit occurred (if any)"
+    )
+    previous_sessions_time: float = Field(
+        0.0, description="Accumulated time (seconds) of previous sessions for this run."
+    )
     extra: Dict[str, Any] = Field(
         default_factory=dict, description="Extensible field for future stats"
     )
