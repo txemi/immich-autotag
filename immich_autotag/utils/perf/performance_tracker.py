@@ -16,7 +16,8 @@ class PerformanceTracker:
     log_interval: int = 5
     estimator: Optional[AdaptiveTimeEstimator] = None
     estimation_mode: TimeEstimationMode = TimeEstimationMode.LINEAR
-    total_to_process: Optional[int] = None
+    # total_to_process is now always calculated dynamically
+    max_assets: Optional[int] = None
     total_assets: Optional[int] = None
     skip_n: Optional[int] = None
     last_log_time: float = attr.ib(init=False)
@@ -28,6 +29,20 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
+
+    @typechecked
+    def _calc_total_to_process(self) -> Optional[int]:
+        """
+        Returns the number of assets to process, using the minimum of max_assets and (total_assets - skip_n) if both are set.
+        """
+        skip_n = self._printable_value_skip_n()
+        if self.max_assets is not None and self.total_assets is not None:
+            return min(self.max_assets, self.total_assets - skip_n)
+        if self.max_assets is not None:
+            return self.max_assets
+        if self.total_assets is not None:
+            return self.total_assets - skip_n
+        return None
 
     @typechecked
     def set_progress_timing(self, start_time: float, log_interval: int = 5):
@@ -72,7 +87,7 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_total_to_process(self) -> Optional[int]:
-        return self.total_to_process
+        return self._calc_total_to_process()
 
     @typechecked
     def _printable_value_skip_n(self) -> int:
@@ -98,8 +113,9 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_abs_total(self) -> Optional[int]:
-        total_assets = self._printable_value_total_assets()
-        return total_assets if total_assets and total_assets > 0 else None
+        if self.total_assets and self.total_assets > 0:
+            return self.total_assets
+        return None
 
     @typechecked
     def _printable_value_estimation_mode(self) -> TimeEstimationMode:
@@ -189,15 +205,16 @@ class PerformanceTracker:
         avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         skip_n = self._printable_value_skip_n()
-        total_assets = self._printable_value_total_assets()
+        # Removed unused variable assignment for total_assets
         previous_sessions_time = self._printable_value_previous_sessions_time()
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
-        est_total_session = self._printable_value_est_total_session(count, elapsed)
+        # est_total_session = self._printable_value_est_total_session(count, elapsed)  # Unused
         est_remaining_session = self._printable_value_est_remaining_session(count, elapsed)
         est_total_all = self._printable_value_est_total_all(count, elapsed)
-        est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)
+        # est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)  # Unused
 
+        self._debug_log(f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}")
         msg = f"Processed:{count}"
         if total_to_process:
             msg += f"/{total_to_process}(total_to_process)"
@@ -206,18 +223,18 @@ class PerformanceTracker:
         if abs_total:
             msg += f"/{abs_total}(abs_total)"
 
-        # Add percentage progress if possible
-        percent = None
-        if abs_total:
-            percent = 100.0 * abs_count / abs_total
-            msg += f" [{percent:.1f}%]"
+        # Always print skip_n
+        msg += f" Skip:{skip_n}"
 
-        # Add skip count if any
-        if skip_n:
-            msg += f" SKIP:{skip_n}"
+        # Progress percentage
+        if abs_total and abs_total > 0:
+            percent = 100.0 * abs_count / abs_total
+            msg += f" [{percent:.2f}%]"
 
         if est_remaining_session is not None:
-            msg += f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
+            msg += (
+                f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
+            )
         else:
             msg += " Remaining:?/"
 
