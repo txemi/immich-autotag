@@ -115,3 +115,13 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
             if asset_uuid not in self:
                 self[asset_uuid] = AlbumList()
             self[asset_uuid].append(album_wrapper)
+
+    @typechecked
+    def get_from_uuid(self, asset_uuid: UUID) -> AlbumList:
+        """
+        Returns the AlbumList for the given asset UUID, or an empty AlbumList if none.
+        """
+        if asset_uuid in self:
+            return self[asset_uuid]
+        else:
+            raise KeyError(f"Asset UUID {asset_uuid} not found in AssetToAlbumsMap.")
