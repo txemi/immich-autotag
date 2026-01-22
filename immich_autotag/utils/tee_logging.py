@@ -72,7 +72,9 @@ def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
     (get_run_output_dir()), and the base name can be customized.
     """
     from immich_autotag.utils.run_output_dir import get_run_output_dir
+    from immich_autotag.logging.utils import log, LogLevel
 
     log_dir = get_run_output_dir()
     log_path = log_dir / basename
     Tee(str(log_path), "a")
+    log(f"[LOG] Tee logging initialized. Absolute log file path: {log_path.resolve()}", level=LogLevel.FOCUS)

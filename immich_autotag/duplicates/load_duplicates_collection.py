@@ -80,7 +80,7 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
             with open(cache_path, "wb") as f:
                 pickle.dump(duplicates_collection, f)
             log(
-                f"Duplicates cached to {cache_path} (groups={total_groups}, assets={total_assets})",
+                f"Duplicates cached to {cache_path.resolve()} (groups={total_groups}, assets={total_assets})",
                 level=LogLevel.INFO,
             )
         else:

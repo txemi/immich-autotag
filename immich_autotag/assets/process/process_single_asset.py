@@ -15,28 +15,6 @@ from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
 
 
-@typechecked
-def _get_asset_url(asset_wrapper: AssetResponseWrapper) -> str:
-    """Get the Immich URL for the asset, raising a detailed error if it fails."""
-    try:
-        log("[DEBUG] Getting asset URL...", level=LogLevel.FOCUS)
-        return asset_wrapper.get_immich_photo_url().geturl()
-    except Exception as e:
-        try:
-            asset_name = asset_wrapper.original_file_name
-        except AttributeError:
-            asset_name = "[no name]"
-        from pprint import pformat
-
-        details = pformat(vars(asset_wrapper))
-        log(
-            f"[ERROR] Could not obtain the Immich URL for the asset. Name: {asset_name}\nDetails: {details}",
-            level=LogLevel.FOCUS,
-        )
-        raise RuntimeError(
-            f"Could not obtain Immich URL for asset. Name: {asset_name}. Exception: {e}\nDetails: {details}"
-        )
-
 
 @typechecked
 def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
@@ -106,7 +84,7 @@ def process_single_asset(
         level=LogLevel.FOCUS,
     )
 
-    asset_url = _get_asset_url(asset_wrapper)
+    asset_url = asset_wrapper.get_immich_photo_url().geturl()
     asset_name = asset_wrapper.original_file_name or "[no name]"
     log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
 
