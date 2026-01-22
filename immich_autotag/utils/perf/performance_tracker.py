@@ -1,3 +1,4 @@
+
 import time
 from typing import Optional
 
@@ -60,4 +61,20 @@ class PerformanceTracker:
                 total_assets=self.total_assets,
                 estimation_mode=self.estimation_mode,
             )
+        )
+    @typechecked
+    def get_progress_description(self, count: int = 0) -> str:
+        """
+        Devuelve una descripción textual del progreso actual, incluyendo porcentaje y estimación de tiempo si está disponible.
+        """
+        elapsed = time.time() - self.start_time
+        from immich_autotag.utils.perf.print_perf import format_perf_progress
+        return format_perf_progress(
+            count=count,
+            elapsed=elapsed,
+            total_to_process=self.total_to_process,
+            estimator=self.estimator,
+            skip_n=self.skip_n,
+            total_assets=self.total_assets,
+            estimation_mode=self.estimation_mode,
         )
