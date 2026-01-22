@@ -1,4 +1,3 @@
-
 import time
 from typing import Optional
 
@@ -11,21 +10,38 @@ from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 @typechecked
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
-
-
 class PerformanceTracker:
 
-
-
-    _start_time: float = attr.ib(factory=lambda: time.time(), validator=attr.validators.instance_of(float))
+    _start_time: float = attr.ib(
+        factory=lambda: time.time(), validator=attr.validators.instance_of(float)
+    )
     _log_interval: int = attr.ib(default=5, validator=attr.validators.instance_of(int))
-    _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(AdaptiveTimeEstimator)))
-    _estimation_mode: TimeEstimationMode = attr.ib(default=TimeEstimationMode.LINEAR, validator=attr.validators.instance_of(TimeEstimationMode))
+    _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(
+            attr.validators.instance_of(AdaptiveTimeEstimator)
+        ),
+    )
+    _estimation_mode: TimeEstimationMode = attr.ib(
+        default=TimeEstimationMode.LINEAR,
+        validator=attr.validators.instance_of(TimeEstimationMode),
+    )
     # total_to_process is now always calculated dynamically
-    _max_assets: Optional[int] = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(int)))
-    _total_assets: Optional[int] = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(int)))
-    _skip_n: Optional[int] = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(int)))
-    _last_log_time: float = attr.ib(init=False, validator=attr.validators.instance_of(float))
+    _max_assets: Optional[int] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
+    _total_assets: Optional[int] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
+    _skip_n: Optional[int] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
+    _last_log_time: float = attr.ib(
+        init=False, validator=attr.validators.instance_of(float)
+    )
 
     def __attrs_post_init__(self):
         self._last_log_time = self._start_time
@@ -34,9 +50,11 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
+
     @typechecked
     def set_total_assets(self, value: int):
         self._total_assets = value
+
     @typechecked
     def _calc_total_to_process(self) -> Optional[int]:
         """
@@ -50,7 +68,6 @@ class PerformanceTracker:
         if self._total_assets is not None:
             return self._total_assets - skip_n
         return None
-
 
     @typechecked
     def update(self, count: int):
@@ -212,11 +229,15 @@ class PerformanceTracker:
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
         # est_total_session = self._printable_value_est_total_session(count, elapsed)  # Unused
-        est_remaining_session = self._printable_value_est_remaining_session(count, elapsed)
+        est_remaining_session = self._printable_value_est_remaining_session(
+            count, elapsed
+        )
         est_total_all = self._printable_value_est_total_all(count, elapsed)
         # est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)  # Unused
 
-        _debug_log(f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}")
+        _debug_log(
+            f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
+        )
         msg = f"Processed:{count}"
         if total_to_process:
             msg += f"/{total_to_process}(total_to_process)"
@@ -260,6 +281,7 @@ class PerformanceTracker:
         """
         elapsed = time.time() - self._start_time
         return self._format_perf_progress(count, elapsed)
+
     def set_max_assets(self, value: int) -> None:
         """
         Setter público para actualizar max_assets de forma controlada.

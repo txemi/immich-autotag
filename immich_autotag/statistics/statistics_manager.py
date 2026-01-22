@@ -86,7 +86,9 @@ class StatisticsManager:
         """
         with self._lock:
 
-            self.get_or_create_run_stats().increment_event(event_kind, extra_key=extra_key)
+            self.get_or_create_run_stats().increment_event(
+                event_kind, extra_key=extra_key
+            )
 
     @typechecked
     def get_progress_description(self) -> str:
@@ -98,7 +100,7 @@ class StatisticsManager:
         return self._get_or_create_perf_tracker().get_progress_description(count)
 
     @typechecked
-    def _get_or_create_perf_tracker(self)->PerformanceTracker:
+    def _get_or_create_perf_tracker(self) -> PerformanceTracker:
         if self._perf_tracker is not None:
             return self._perf_tracker
         total_assets = self.get_or_create_run_stats().total_assets
@@ -127,8 +129,6 @@ class StatisticsManager:
             self._save_to_file()
             self._get_or_create_perf_tracker()
 
-
-
     def maybe_print_progress(self, count: int) -> None:
         self._get_or_create_perf_tracker().update(count)
 
@@ -148,7 +148,9 @@ class StatisticsManager:
         return _instance
 
     @typechecked
-    def get_or_create_run_stats(self, initial_stats: Optional[RunStatistics] = None) -> RunStatistics:
+    def get_or_create_run_stats(
+        self, initial_stats: Optional[RunStatistics] = None
+    ) -> RunStatistics:
         # TODO: refactorizar a get_s
         with self._lock:
             if self._current_stats is not None:
@@ -180,7 +182,9 @@ class StatisticsManager:
     def _save_to_file(self) -> None:
         if self._current_stats and self._current_file:
             # Always update progress_description before saving
-            self.get_or_create_run_stats().progress_description = self.get_progress_description()
+            self.get_or_create_run_stats().progress_description = (
+                self.get_progress_description()
+            )
             self.get_or_create_run_stats().save_to_file()
 
     @typechecked
@@ -214,7 +218,6 @@ class StatisticsManager:
             "StatisticsManager.delete_all() is deprecated and should not be used. Statistics are preserved for logging.",
             level=LogLevel.WARNING,
         )
-
 
     @typechecked
     def finish_run(self) -> None:
@@ -306,7 +309,7 @@ class StatisticsManager:
     def initialize_for_run(self, total_assets: int) -> None:
         total_assets = max_assets
         self._get_or_create_perf_tracker().set_total_assets(total_assets)
-        
+
         # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
         self._current_stats.total_assets = total_assets
         self.set_total_assets(total_assets)
