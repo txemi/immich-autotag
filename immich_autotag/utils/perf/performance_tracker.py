@@ -64,6 +64,7 @@ class PerformanceTracker:
     def _printable_value_previous_sessions_time(self) -> float:
         try:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
+
             stats = StatisticsManager.get_instance().get_stats()
             return getattr(stats, "previous_sessions_time", 0.0)
         except Exception:
@@ -82,41 +83,57 @@ class PerformanceTracker:
     def _printable_value_estimator(self):
         return self.estimator
 
-    def _printable_value_est_total_session(self, count: int, elapsed: float) -> Optional[float]:
+    def _printable_value_est_total_session(
+        self, count: int, elapsed: float
+    ) -> Optional[float]:
         total_to_process = self._printable_value_total_to_process()
         estimator = self._printable_value_estimator()
         estimation_mode = self._printable_value_estimation_mode()
         avg = self._printable_value_avg(count, elapsed)
         if total_to_process and count > 0:
-            if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
+            if (
+                estimation_mode == TimeEstimationMode.EWMA
+                and estimator is not None
+                and estimator.get_estimated_time_per_asset() > 0
+            ):
                 ewma = estimator.get_estimated_time_per_asset()
                 return ewma * total_to_process
             else:
                 return avg * total_to_process
         return None
 
-    def _printable_value_est_remaining_session(self, count: int, elapsed: float) -> Optional[float]:
+    def _printable_value_est_remaining_session(
+        self, count: int, elapsed: float
+    ) -> Optional[float]:
         total_to_process = self._printable_value_total_to_process()
         estimator = self._printable_value_estimator()
         estimation_mode = self._printable_value_estimation_mode()
         avg = self._printable_value_avg(count, elapsed)
         if total_to_process and count > 0:
             remaining = total_to_process - count
-            if estimation_mode == TimeEstimationMode.EWMA and estimator is not None and estimator.get_estimated_time_per_asset() > 0:
+            if (
+                estimation_mode == TimeEstimationMode.EWMA
+                and estimator is not None
+                and estimator.get_estimated_time_per_asset() > 0
+            ):
                 ewma = estimator.get_estimated_time_per_asset()
                 return ewma * remaining
             else:
                 return avg * total_to_process - elapsed
         return None
 
-    def _printable_value_est_total_all(self, count: int, elapsed: float) -> Optional[float]:
+    def _printable_value_est_total_all(
+        self, count: int, elapsed: float
+    ) -> Optional[float]:
         abs_total = self._printable_value_abs_total()
         avg = self._printable_value_avg(count, elapsed)
         if abs_total and count > 0:
             return avg * abs_total
         return None
 
-    def _printable_value_est_remaining_all(self, count: int, elapsed: float, previous_sessions_time: float) -> Optional[float]:
+    def _printable_value_est_remaining_all(
+        self, count: int, elapsed: float, previous_sessions_time: float
+    ) -> Optional[float]:
         abs_total = self._printable_value_abs_total()
         avg = self._printable_value_avg(count, elapsed)
         if abs_total and count > 0:
@@ -132,6 +149,7 @@ class PerformanceTracker:
             return f"{seconds/60:.1f} min"
         else:
             return f"{seconds:.1f} s"
+
     @typechecked
     def _format_perf_progress(self, count: int, elapsed: float) -> str:
         avg = self._printable_value_avg(count, elapsed)
@@ -142,9 +160,13 @@ class PerformanceTracker:
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
         est_total_session = self._printable_value_est_total_session(count, elapsed)
-        est_remaining_session = self._printable_value_est_remaining_session(count, elapsed)
+        est_remaining_session = self._printable_value_est_remaining_session(
+            count, elapsed
+        )
         est_total_all = self._printable_value_est_total_all(count, elapsed)
-        est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)
+        est_remaining_all = self._printable_value_est_remaining_all(
+            count, elapsed, previous_sessions_time
+        )
 
         msg = f"Procesados en esta sesión: {count}"
         if total_to_process:
