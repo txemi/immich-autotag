@@ -1,5 +1,8 @@
 from typing import TYPE_CHECKING
 
+from immich_autotag.config._internal_types import ErrorHandlingMode
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
@@ -62,6 +65,12 @@ class ClassificationRuleWrapper:
 
         asset_tags = set(asset_wrapper.get_tag_names())
         album_names = set(asset_wrapper.get_album_names())
+
+        if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
+            if not album_names:
+                raise Exception(
+                    "CRAZY_DEBUG mode active - stopping after tag conversions"
+                )
         tags_matched = [tag for tag in asset_tags if self.has_tag(tag)]
         albums_matched = [album for album in album_names if self.matches_album(album)]
 
