@@ -17,6 +17,8 @@ from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 class PerformanceTracker:
 
+
+
     _start_time: float = attr.ib(factory=lambda: time.time(), validator=attr.validators.instance_of(float))
     _log_interval: int = attr.ib(default=5, validator=attr.validators.instance_of(int))
     _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(AdaptiveTimeEstimator)))
@@ -34,7 +36,9 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
-
+    @typechecked
+    def set_total_assets(self, value: int):
+        self._total_assets = value
     @typechecked
     def _calc_total_to_process(self) -> Optional[int]:
         """
