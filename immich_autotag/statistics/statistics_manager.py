@@ -94,13 +94,14 @@ class StatisticsManager:
             raise RuntimeError(
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
-        return self._try_init_perf_tracker().get_progress_description(count)
+        return self._get_or_create_perf_tracker().get_progress_description(count)
 
     @typechecked
-    def _try_init_perf_tracker(self):
+    def _get_or_create_perf_tracker(self):
         if self._perf_tracker is not None:
             return self._perf_tracker
-        total = self.start_run().total_assets or self.start_run().max_assets
+        total_assets = self.start_run().total_assets
+        max_assets = self.start_run().max_assets
 
         from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
         from immich_autotag.utils.perf.time_estimation_mode import (
@@ -112,8 +113,8 @@ class StatisticsManager:
             log_interval=5,
             estimator=AdaptiveTimeEstimator(),
             estimation_mode=TimeEstimationMode.LINEAR,
-            total_to_process=total,
-            total_assets=self.start_run().total_assets,
+            total_assets=total_assets,
+            max_assets=max_assets,
             skip_n=self.start_run().skip_n,
         )
         return self._perf_tracker
@@ -121,22 +122,19 @@ class StatisticsManager:
     @typechecked
     def set_total_assets(self, total_assets: int) -> None:
         with self._lock:
-
             self.start_run().total_assets = total_assets
             self._save_to_file()
-            self._try_init_perf_tracker()
+            self._get_or_create_perf_tracker()
 
     @typechecked
     def set_max_assets(self, max_assets: int) -> None:
         with self._lock:
-
             self.start_run().max_assets = max_assets
             self._save_to_file()
-            self._try_init_perf_tracker()
+            self._get_or_create_perf_tracker()
 
     def maybe_print_progress(self, count: int) -> None:
-
-        self._try_init_perf_tracker().update(count)
+        self._get_or_create_perf_tracker().update(count)
 
     @typechecked
     def print_progress(self, count: int) -> None:
@@ -144,7 +142,7 @@ class StatisticsManager:
             raise RuntimeError(
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
-        self._try_init_perf_tracker().print_progress(count)
+        self._get_or_create_perf_tracker().print_progress(count)
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
@@ -300,9 +298,8 @@ class StatisticsManager:
     # Tag/album methods delegated to TagStatsManager
     @typechecked
     def initialize_for_run(self, max_assets: int) -> None:
-
         total_assets = max_assets
-        self._try_init_perf_tracker().total_assets = total_assets
+        self._get_or_create_perf_tracker().total_assets = total_assets
         # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
         self._current_stats.total_assets = total_assets
         self.set_max_assets(max_assets if max_assets is not None else -1)
