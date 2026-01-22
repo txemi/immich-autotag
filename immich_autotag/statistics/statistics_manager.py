@@ -2,8 +2,6 @@ from typing import TYPE_CHECKING
 
 import git  # GitPython
 
-from immich_autotag.context.immich_context import ImmichContext
-
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
@@ -37,9 +35,7 @@ from threading import RLock
 
 import attr
 
-from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
-from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 from .checkpoint_manager import CheckpointManager
 from .run_statistics import RunStatistics
@@ -49,15 +45,17 @@ from .tag_stats_manager import TagStatsManager
 _instance = None
 
 
-
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class StatisticsManager:
     _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
-    _current_stats: Optional[RunStatistics] = attr.ib(default=None, init=False, repr=False)
+    _current_stats: Optional[RunStatistics] = attr.ib(
+        default=None, init=False, repr=False
+    )
     _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
     _checkpoint: CheckpointManager = attr.ib(default=None, init=False, repr=False)
     _tags: TagStatsManager = attr.ib(default=None, init=False, repr=False)
+
     # Event counters are now stored in self._current_stats.event_counters
     def __attrs_post_init__(self) -> None:
         # The folder is already created by get_run_output_dir
@@ -70,6 +68,7 @@ class StatisticsManager:
         # Initialize declared attributes
         self._checkpoint = CheckpointManager(stats_manager=self)
         self._tags = TagStatsManager(stats_manager=self)
+
     @typechecked
     def increment_event(
         self, event_kind: "ModificationKind", extra_key: "TagWrapper | None" = None
@@ -84,7 +83,7 @@ class StatisticsManager:
 
     @typechecked
     def get_progress_description(self) -> str:
-        count = self.start_run().count 
+        count = self.start_run().count
         if self._perf_tracker is None:
             raise RuntimeError(
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
@@ -96,7 +95,6 @@ class StatisticsManager:
         if self._perf_tracker is not None:
             return self_perf_tracker
         total = self.start_run().total_assets or self.start_run().max_assets
-
 
         from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
         from immich_autotag.utils.perf.time_estimation_mode import (
@@ -113,7 +111,7 @@ class StatisticsManager:
             skip_n=self.start_run().skip_n,
         )
         return self._perf_tracker
-    
+
     @typechecked
     def set_total_assets(self, total_assets: int) -> None:
         with self._lock:
@@ -148,7 +146,6 @@ class StatisticsManager:
         if _instance is None:
             StatisticsManager()
         return _instance
-    
 
     @typechecked
     def start_run(self, initial_stats: Optional[RunStatistics] = None) -> RunStatistics:
@@ -293,16 +290,12 @@ class StatisticsManager:
     ) -> None:
         self.tags.increment_tag_action(tag, kind, album)
 
-
-    
     # Tag/album methods delegated to TagStatsManager
     @typechecked
-    def initialize_for_run(
-        self, max_assets: int 
-    ) -> None:
+    def initialize_for_run(self, max_assets: int) -> None:
 
         total_assets = max_assets
-        self._try_init_perf_tracker().total_assets=total_assets
+        self._try_init_perf_tracker().total_assets = total_assets
         # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
         self._current_stats.total_assets = total_assets
         self.set_max_assets(max_assets if max_assets is not None else -1)

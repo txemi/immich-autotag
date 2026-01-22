@@ -3,12 +3,12 @@ from __future__ import annotations
 from immich_client.api.server import get_server_statistics
 from typeguard import typechecked
 
-from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
+
 @typechecked
-def fetch_total_assets(client: ImmichClient) -> int :
+def fetch_total_assets(client: ImmichClient) -> int:
     stats = get_server_statistics.sync(client=client)
     total_assets = stats.photos + stats.videos
     log(

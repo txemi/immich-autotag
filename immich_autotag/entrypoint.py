@@ -5,7 +5,6 @@ from typeguard import typechecked
 from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.assets.asset_manager import AssetManager
-from immich_autotag.assets.process.fetch_total_assets import fetch_total_assets
 from immich_autotag.assets.process.process_assets import process_assets
 from immich_autotag.config.filter_wrapper import FilterConfigWrapper
 from immich_autotag.config.host_config import get_immich_base_url
@@ -109,7 +108,6 @@ def run_main():
             process_single_asset(asset_wrapper=wrapper)
     else:
         # You can change the max_assets value here or pass it as an external argument
-
 
         process_assets(context)
 

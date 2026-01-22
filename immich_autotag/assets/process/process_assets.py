@@ -21,7 +21,7 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 def process_assets(context: ImmichContext) -> None:
     log_execution_parameters()
     total_assets = fetch_total_assets(context.client)
-    StatisticsManager.get_instance().initialize_for_run( total_assets)
+    StatisticsManager.get_instance().initialize_for_run(total_assets)
     stats = StatisticsManager.get_instance().get_stats()
 
     if USE_THREADPOOL:
