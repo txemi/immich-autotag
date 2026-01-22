@@ -338,7 +338,6 @@ class AlbumResponseWrapper:
         try:
             album_name: str | None = None
             dto_id: str | None = None
-            asset_count: int | None = None
             try:
                 album_name = self.get_album_name()
             except Exception:
@@ -347,13 +346,8 @@ class AlbumResponseWrapper:
                 dto_id = self.get_album_id()
             except Exception:
                 dto_id = None
-            try:
-                # Use get_asset_ids() for asset count if possible
-                asset_count = len(self.get_asset_ids())
-            except Exception:
-                asset_count = None
             partial_repr = (
-                f"AlbumDTO(id={dto_id!r}, name={album_name!r}, assets={asset_count})"
+                f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
             )
         except Exception:
             album_name = None
