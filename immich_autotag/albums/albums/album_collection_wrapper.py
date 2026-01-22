@@ -327,7 +327,9 @@ class AlbumCollectionWrapper:
         from immich_autotag.context.immich_context import ImmichContext
 
         client = ImmichContext.get_default_client()
-        for album_wrapper in self._albums:
+        albums=self.get_albums()
+        total = len(albums)
+        for idx, album_wrapper in enumerate(albums, 1):
             # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
             if album_wrapper.is_empty():
@@ -363,7 +365,7 @@ class AlbumCollectionWrapper:
                 from immich_autotag.logging.utils import log
 
                 log(
-                    f"Album '{album_wrapper.get_album_name()}' reloaded with "
+                    f"[{idx}/{total}] Album '{album_wrapper.get_album_name()}' reloaded with "
                     f"{len(album_wrapper.get_asset_ids())} assets.",
                     level=LogLevel.INFO,
                 )
