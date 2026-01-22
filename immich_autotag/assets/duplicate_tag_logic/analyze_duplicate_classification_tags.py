@@ -9,10 +9,19 @@ from .__try_autofix import try_autofix
 from ._classification_tag_comparison_result import ClassificationTagComparisonResult
 
 
+from enum import Enum, auto
+
+class DuplicateTagAnalysisResult(Enum):
+    NO_DUPLICATES = auto()
+    ALL_EQUAL = auto()
+    AUTOFIXED = auto()
+    CONFLICT = auto()
+    ERROR = auto()
+
 @typechecked
 def analyze_duplicate_classification_tags(
     asset_wrapper: AssetResponseWrapper,
-) -> None:
+) -> DuplicateTagAnalysisResult:
     """
     Checks the classification tags of all duplicates of the given asset.
     - If tags are equal, does nothing.
@@ -29,9 +38,10 @@ def analyze_duplicate_classification_tags(
             f"[DUPLICATE TAGS] Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name}) has no duplicates. Nothing to check.",
             level=LogLevel.FOCUS,
         )
-        return
+        return DuplicateTagAnalysisResult.NO_DUPLICATES
     duplicate_wrappers = get_duplicate_wrappers(asset_wrapper)
     any_autofix = False
+    all_equal = True
     for duplicate_wrapper in duplicate_wrappers:
         if duplicate_wrapper.asset.id == asset_wrapper.asset.id:
             continue
@@ -42,7 +52,8 @@ def analyze_duplicate_classification_tags(
         comp_result = compare_classification_tags(asset_wrapper, duplicate_wrapper)
         if comp_result.result == ClassificationTagComparisonResult.EQUAL:
             continue
-        elif comp_result.result in (
+        all_equal = False
+        if comp_result.result in (
             ClassificationTagComparisonResult.AUTOFIX_OTHER,
             ClassificationTagComparisonResult.AUTOFIX_SELF,
         ):
@@ -62,9 +73,9 @@ def analyze_duplicate_classification_tags(
             continue
         elif comp_result.result == ClassificationTagComparisonResult.CONFLICT:
             mark_and_log_conflict(asset_wrapper)
-            return
-    if not any_autofix:
-        log(
-            f"[DUPLICATE TAGS] No classification tag changes were made for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
-            level=LogLevel.FOCUS,
-        )
+            return DuplicateTagAnalysisResult.CONFLICT
+    if any_autofix:
+        return DuplicateTagAnalysisResult.AUTOFIXED
+    if all_equal:
+        return DuplicateTagAnalysisResult.ALL_EQUAL
+    return DuplicateTagAnalysisResult.ERROR

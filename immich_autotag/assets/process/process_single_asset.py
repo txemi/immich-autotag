@@ -1,6 +1,7 @@
+
+from __future__ import annotations
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.config._internal_types import ErrorHandlingMode
-from __future__ import annotations
 
 from typeguard import typechecked
 
@@ -10,6 +11,7 @@ from immich_autotag.assets.albums.analyze_and_assign_album import (
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     analyze_duplicate_classification_tags,
+    DuplicateTagAnalysisResult,
 )
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
@@ -48,10 +50,10 @@ def _correct_date_if_enabled(asset_wrapper: AssetResponseWrapper) -> DateCorrect
 
 
 @typechecked
-def _analyze_duplicate_tags(asset_wrapper: AssetResponseWrapper):
+def _analyze_duplicate_tags(asset_wrapper: AssetResponseWrapper) -> DuplicateTagAnalysisResult:
     """Analyze duplicate classification tags for the asset."""
     log("[DEBUG] Analyzing duplicate classification tags...", level=LogLevel.FOCUS)
-    analyze_duplicate_classification_tags(asset_wrapper)
+    return analyze_duplicate_classification_tags(asset_wrapper)
 
 
 @typechecked
@@ -87,12 +89,13 @@ def process_single_asset(
     asset_name = asset_wrapper.original_file_name or "[no name]"
     log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
 
-    applied_conversions=_apply_tag_conversions(asset_wrapper)
+    tag_conversion_result = _apply_tag_conversions(asset_wrapper)
 
     date_correction_result = _correct_date_if_enabled(asset_wrapper)
+
+    duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-        raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
-    _analyze_duplicate_tags(asset_wrapper)
+        raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")    
     tag_mod_report = ModificationReport.get_instance()
     _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     _ = asset_wrapper.validate_and_update_classification()
