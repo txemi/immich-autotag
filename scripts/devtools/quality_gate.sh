@@ -16,7 +16,7 @@
 # | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |
 # | flake8 (style)                    | Style linter                                |   ✔️     |   Warn*      |
 # | mypy (type check)                 | Type checking                               |   ✔️     |   Warn       |
-# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   Warn*      |
+# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   ✔️         |
 # | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**       |
 # | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |
 # | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |
@@ -38,7 +38,7 @@
 # | 3        | ruff       | Already enforced as blocker                | ✅ Already blocker |
 # | 4        | flake8     | Medium cost, depends on rules              | Pending            |
 # | 5        | jscpd      | Already enforced as blocker                | ✅ Already blocker |
-# | 6        | uvx ssort  | Low-medium cost, depends on method order   | Pending            |
+# | 6        | uvx ssort  | Already enforced as blocker                | ✅ Already blocker |
 # | 7        | mypy       | High cost, requires typing                 | Pending            |
 # ------------------------------------------------------------------------------
 
