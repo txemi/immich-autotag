@@ -1,3 +1,5 @@
+# Import para tipado de FORCED_LOG_LEVEL
+from immich_autotag.logging.levels import LogLevelInfo
 # internal_config.py
 # Centralizes internal variables and global project configuration.
 
@@ -31,3 +33,10 @@ GLOBAL_UNAVAILABLE_THRESHOLD = 5
 MERGE_DUPLICATE_ALBUMS_ENABLED = (
     True  # Change to True to enable merging of duplicate albums
 )
+
+# ==================== LOGGING CONTROL FOR DEVELOPMENT/CI ====================
+# If set to a log level string (e.g., 'DEBUG', 'INFO', 'PROGRESS', 'FOCUS'),
+# this will force the global log level for the app, ignorando cualquier otra lógica.
+# If None, normal logic applies.
+FORCED_LOG_LEVEL:LogLevelInfo = LogLevelInfo.DEBUG  # Cambia a 'DEBUG' para forzar log masivo en desarrollo/CI
+
