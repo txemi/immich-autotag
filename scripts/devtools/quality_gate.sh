@@ -14,7 +14,7 @@
 # | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |
 # | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |
 # | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |
-# | flake8 (style)                    | Style linter                                |   ✔️     |   Warn*      |
+# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |
 # | mypy (type check)                 | Type checking                               |   ✔️     |   Warn       |
 # | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   ✔️         |
 # | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**       |
@@ -22,7 +22,7 @@
 # | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |
 # | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |
 # -----------------------------------------------------------------------------
-# * En modo relajado, flake8 ignora E501, uvx ssort y flake8/mypy solo avisan, no bloquean el build.
+# * En modo relajado, flake8 ignora E501, y flake8/mypy solo avisan, no bloquean el build.
 # ** Solo si se usa --enforce-dynamic-attrs
 #
 # Add/modify this table if new checks are added.
@@ -36,10 +36,10 @@
 # | 1        | black      | Already enforced as blocker                | ✅ Already blocker |
 # | 2        | isort      | Already enforced as blocker                | ✅ Already blocker |
 # | 3        | ruff       | Already enforced as blocker                | ✅ Already blocker |
-# | 4        | flake8     | Medium cost, depends on rules              | Pending            |
+# | 4        | flake8     | Medium cost, depends on rules              | ✔️ (bloquea siempre) |
 # | 5        | jscpd      | Already enforced as blocker                | ✅ Already blocker |
 # | 6        | uvx ssort  | Already enforced as blocker                | ✅ Already blocker |
-# | 7        | mypy       | High cost, requires typing                 | Pending            |
+# | 7        | mypy       | High cost, requires typing                 | Warn (relaxed)     |
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -48,7 +48,7 @@
 # | Priority | Check  | Reason/Robustness provided                   | Status             |
 # |----------|--------|----------------------------------------------|--------------------|
 # | 1        | mypy   | Maximum robustness, detects real errors      | Pending            |
-# | 2        | flake8 | Medium robustness, helps with style/errors   | Pending            |
+# | 2        | flake8 | Medium robustness, helps with style/errors   | ✔️ (bloquea siempre) |
 # | 3        | ruff   | Already enforced as blocker                  | ✅ Already blocker |
 # | 4        | black  | Already enforced as blocker                  | ✅ Already blocker |
 # | 5        | isort  | Already enforced as blocker                  | ✅ Already blocker |
@@ -345,8 +345,11 @@ ensure_tool mypy mypy
 MYPY_FAILED=0
 MYPY_OUT="/tmp/mypy_output_$$.txt"
 echo "[INFO] Showing mypy errors below (if any):"
+set +e
 "$PY_BIN" -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1 | tee "$MYPY_OUT"
-if [ ${PIPESTATUS[0]} -ne 0 ]; then
+MYPY_EXIT_CODE=${PIPESTATUS[0]}
+set -e
+if [ $MYPY_EXIT_CODE -ne 0 ]; then
 	MYPY_FAILED=1
 fi
 
@@ -355,6 +358,10 @@ fi
 
 # --- Enhanced error reporting for flake8 and mypy ---
 
+
+
+
+# Flake8 SIEMPRE bloquea, mypy solo bloquea en modo estricto
 if [ $FLAKE_FAILED -ne 0 ] || [ $MYPY_FAILED -ne 0 ]; then
 	echo "[WARNING] Static analyzers reported issues:"
 	TOTAL_ERRS=0
@@ -372,12 +379,20 @@ if [ $FLAKE_FAILED -ne 0 ] || [ $MYPY_FAILED -ne 0 ]; then
 		head -20 "$MYPY_OUT"
 		[ $MYPY_ERRS -gt 20 ] && echo "  ... (showing first 20 of $MYPY_ERRS errors)"
 	fi
-	echo "[SUMMARY] Quality Gate failed: $TOTAL_ERRS static analysis errors (flake8+mypy)."
-	if [ $RELAXED_MODE -eq 1 ]; then
-		echo "[RELAXED MODE] Failing build due to flake8/mypy errors (except E501 line length)."
+	echo "[SUMMARY] Quality Gate: $TOTAL_ERRS static analysis errors (flake8+mypy)."
+	# Si flake8 falla, siempre bloquea
+	if [ $FLAKE_FAILED -ne 0 ]; then
 		exit 1
-	else
-		exit 1
+	fi
+	# Si solo falla mypy, solo bloquea en modo estricto
+	if [ $MYPY_FAILED -ne 0 ]; then
+		if [ $RELAXED_MODE -eq 1 ]; then
+			echo "[RELAXED MODE] Not blocking build on mypy errors."
+			# exit 0, pero solo si flake8 NO ha fallado
+			exit 0
+		else
+			exit 1
+		fi
 	fi
 fi
 
