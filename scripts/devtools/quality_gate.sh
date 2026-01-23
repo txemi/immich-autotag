@@ -140,9 +140,9 @@ if [ -z "$MAX_LINE_LENGTH" ]; then
 	MAX_LINE_LENGTH=88
 fi
 
-# Robust exclusions to avoid formatting .venv and other external directories
-BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --line-length $MAX_LINE_LENGTH"
-ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --line-length $MAX_LINE_LENGTH"
+# Robust exclusions to avoid formatting .venv, jenkins_logs and other external directories
+BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
+ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
 
 # Activate project virtual environment robustly
 VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
@@ -282,7 +282,7 @@ FLAKE8_IGNORE="E203,W503"
 if [ $RELAXED_MODE -eq 1 ]; then
 	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
 fi
-"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
+"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR" || FLAKE_FAILED=1
 
 
 # --- Ensure uvx is installed and run ssort for deterministic method ordering ---
@@ -335,7 +335,7 @@ echo "Static checks (ruff/flake8/mypy) completed successfully."
 
 # --- Spanish language character check (quality gate) ---
 echo "Checking for Spanish language characters in source files..."
-SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local} || true)
+SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
 if [ -n "$SPANISH_MATCHES" ]; then
 	echo '❌ Spanish language characters detected in the following files/lines:'
 	echo "$SPANISH_MATCHES"
