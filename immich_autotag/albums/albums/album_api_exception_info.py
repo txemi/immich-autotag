@@ -16,10 +16,6 @@ class AlbumApiExceptionInfo:
     status_code: Optional[int] = attrs.field(init=False)
     message: str = attrs.field(init=False)
 
-    def __attrs_post_init__(self) -> None:
-        self.status_code = self._extract_status_code()
-        self.message = str(self.exc)
-
     def _extract_status_code(self) -> Optional[int]:
         # Try to get status_code attribute
         try:
@@ -39,6 +35,10 @@ class AlbumApiExceptionInfo:
         except Exception:
             pass
         return None
+
+    def __attrs_post_init__(self) -> None:
+        self.status_code = self._extract_status_code()
+        self.message = str(self.exc)
 
     def is_status(self, code: int) -> bool:
         return self.status_code == code

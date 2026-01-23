@@ -76,8 +76,8 @@ class AlbumErrorHistory:
     def as_list(self) -> List[AlbumErrorEntry]:
         return list(self._errors)
 
-    def __len__(self) -> int:
-        return len(self._errors)
-
     def __iter__(self):
         return iter(self._errors)
+
+    def __len__(self) -> int:
+        return len(self._errors)

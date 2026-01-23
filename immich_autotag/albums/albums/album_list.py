@@ -31,29 +31,11 @@ class AlbumList:
     def remove(self, album: AlbumResponseWrapper):
         self._albums.remove(album)
 
-    def __iter__(self) -> Iterator[AlbumResponseWrapper]:
-        return iter(self._albums)
-
-    def __len__(self) -> int:
-        return len(self._albums)
-
-    def __contains__(self, album: AlbumResponseWrapper) -> bool:
-        return album in self._albums
-
     def to_list(self) -> list[AlbumResponseWrapper]:
         return list(self._albums)
 
     def clear(self):
         self._albums.clear()
-
-    def __bool__(self):
-        return bool(self._albums)
-
-    def __getitem__(self, idx: int) -> AlbumResponseWrapper:
-        return self._albums[idx]
-
-    def __repr__(self):
-        return f"AlbumList({self._albums!r})"
 
     @typechecked
     def remove_album(self, album: AlbumResponseWrapper):
@@ -62,3 +44,21 @@ class AlbumList:
             self._albums.remove(album)
         except ValueError:
             pass  # If not present, do nothing
+
+    def __getitem__(self, idx: int) -> AlbumResponseWrapper:
+        return self._albums[idx]
+
+    def __iter__(self) -> Iterator[AlbumResponseWrapper]:
+        return iter(self._albums)
+
+    def __contains__(self, album: AlbumResponseWrapper) -> bool:
+        return album in self._albums
+
+    def __len__(self) -> int:
+        return len(self._albums)
+
+    def __bool__(self):
+        return bool(self._albums)
+
+    def __repr__(self):
+        return f"AlbumList({self._albums!r})"

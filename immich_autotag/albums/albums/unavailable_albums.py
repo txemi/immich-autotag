@@ -22,12 +22,6 @@ class UnavailableAlbums:
         self._albums.add(album)
         return True
 
-    def __contains__(self, album: AlbumResponseWrapper) -> bool:
-        return album in self._albums
-
-    def __len__(self) -> int:
-        return len(self._albums)
-
     @property
     def count(self) -> int:
         return len(self._albums)
@@ -100,3 +94,9 @@ class UnavailableAlbums:
             except AttributeError:
                 raise
             # else: swallow in production
+
+    def __contains__(self, album: AlbumResponseWrapper) -> bool:
+        return album in self._albums
+
+    def __len__(self) -> int:
+        return len(self._albums)

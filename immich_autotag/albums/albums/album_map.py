@@ -36,28 +36,28 @@ class AlbumMap:
         else:
             raise ValueError(f"Album with uuid {album_id} not found in AlbumMap")
 
-    @typechecked
-    def __iter__(self) -> Iterator[AlbumResponseWrapper]:
-        return iter(self._albums.values())
-
-    @typechecked
-    def __len__(self) -> int:
-        return len(self._albums)
-
-    def __contains__(self, album: AlbumResponseWrapper) -> bool:
-        return album.get_album_uuid() in self._albums
-
     def to_list(self) -> list[AlbumResponseWrapper]:
         return list(self._albums.values())
 
     def clear(self):
         self._albums.clear()
 
-    def __bool__(self):
-        return bool(self._albums)
-
     def __getitem__(self, uuid: UUID) -> AlbumResponseWrapper:
         return self._albums[uuid]
+
+    @typechecked
+    def __iter__(self) -> Iterator[AlbumResponseWrapper]:
+        return iter(self._albums.values())
+
+    def __contains__(self, album: AlbumResponseWrapper) -> bool:
+        return album.get_album_uuid() in self._albums
+
+    @typechecked
+    def __len__(self) -> int:
+        return len(self._albums)
+
+    def __bool__(self):
+        return bool(self._albums)
 
     def __repr__(self):
         return f"AlbumMap({self._albums!r})"
