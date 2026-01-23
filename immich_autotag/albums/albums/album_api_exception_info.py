@@ -17,9 +17,12 @@ class AlbumApiExceptionInfo:
     message: str = attrs.field(init=False)
 
     def _extract_status_code(self) -> Optional[int]:
-        # Try to get status_code attribute
+        # Try to get status_code attribute directly
         try:
-            status_code = getattr(self.exc, "status_code", None)
+            if hasattr(self.exc, "status_code"):
+                status_code = self.exc.status_code  # type: ignore[attr-defined]
+            else:
+                status_code = None
         except Exception:
             status_code = None
         if status_code is not None:
