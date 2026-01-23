@@ -4,7 +4,7 @@ from typeguard import typechecked
 
 from .levels import LogLevel
 
-## No longer necessary to map LOGLEVEL_TO_LOGGING, we use LogLevel.value directly
+# No longer necessary to map LOGLEVEL_TO_LOGGING, we use LogLevel.value directly
 
 
 # Register the FOCUS level ALWAYS before any setup_logging
