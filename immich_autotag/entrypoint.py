@@ -49,7 +49,7 @@ def _sync_all_album_permissions(user_config: Optional[UserConfig], context: Immi
         return
 
     album_perms_config: AlbumPermissionsConfig = user_config.album_permissions  # type: ignore
-    if not album_perms_config.enabled: 
+    if not album_perms_config.enabled:
         return
 
     log(
@@ -60,7 +60,7 @@ def _sync_all_album_permissions(user_config: Optional[UserConfig], context: Immi
     albums_collection = context.albums_collection
     # Build user groups dictionary for quick lookup
     user_groups_dict: dict[str, "UserGroup"] = {}
-    user_groups =album_perms_config.user_groups
+    user_groups = album_perms_config.user_groups
     if user_groups:
         for group in user_groups:
             user_groups_dict[group.name] = group
