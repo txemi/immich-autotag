@@ -80,6 +80,7 @@ def run_main():
     )
     # Now, create the dependent objects
     tag_collection = list_tags(client)
+
     # Initialize the singleton and load albums from API
     albums_collection = AlbumCollectionWrapper.from_client(client)
     duplicates_collection = load_duplicates_collection(client)
@@ -90,8 +91,10 @@ def run_main():
     context.duplicates_collection = duplicates_collection
     context.asset_manager = asset_manager
 
+    # --- FORCE FULL LOADING OF ALL ALBUMS BEFORE ASSET ITERATION ---
+    albums_collection._ensure_all_albums_full()
+
     # --- ALBUM PERMISSIONS: Phase 1 & 2 (BEFORE processing assets)
-    # Permissions are fast, assets processing is slow (hours/days)
     process_album_permissions(manager.config, context)
     _sync_all_album_permissions(manager.config, context)
 
@@ -109,10 +112,7 @@ def run_main():
             process_single_asset(asset_wrapper=wrapper)
     else:
         # You can change the max_assets value here or pass it as an external argument
-
         process_assets(context)
-
-    from immich_autotag.logging.utils import log
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
     print_welcome_links(manager.config)

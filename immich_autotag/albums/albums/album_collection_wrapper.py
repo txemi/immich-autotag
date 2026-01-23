@@ -47,6 +47,23 @@ class SyncState(Enum):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
+    def _ensure_all_albums_full(self) -> None:
+        """
+        Forces all albums in the collection to be fully loaded (DETAIL/full mode).
+        Adds timing logs at PROGRESS level. Internal use only.
+        """
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
+        import time
+        log("[PROGRESS] Starting full album loading before asset iteration...", level=LogLevel.PROGRESS)
+        t0 = time.time()
+        for idx, album_wrapper in enumerate(self.get_albums(), 1):
+            try:
+                album_wrapper.ensure_full()
+            except Exception as e:
+                log(f"[WARNING] Failed to fully load album '{album_wrapper.get_album_name()}': {e}", level=LogLevel.WARNING)
+        t1 = time.time()
+        log(f"[PROGRESS] Finished full album loading. Elapsed: {t1-t0:.2f} seconds.", level=LogLevel.PROGRESS)
     """
     Singleton class that manages the collection of all albums in the system.
 
