@@ -139,7 +139,11 @@ def run_main():
     # Initialize the singleton and load albums from API
     albums_collection = AlbumCollectionWrapper.from_client(client)
     # --- LOG LAZY LOAD DE ÁLBUMES ---
+    from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
+
+    perf_phase_tracker.mark("lazy", "start")
     albums_collection.log_lazy_load_timing()
+    perf_phase_tracker.mark("lazy", "end")
     duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)
     # Assign the objects to the context
@@ -154,6 +158,7 @@ def run_main():
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
+    perf_phase_tracker.mark("full", "start")
     log(
         "[PROGRESS] [ALBUM-FULL-LOAD] Inicio carga full de álbumes",
         level=LogLevel.PROGRESS,
@@ -165,6 +170,7 @@ def run_main():
         f"[PROGRESS] [ALBUM-FULL-LOAD] Fin carga full de álbumes. Elapsed: {t1-t0:.2f} seconds.",
         level=LogLevel.PROGRESS,
     )
+    perf_phase_tracker.mark("full", "end")
 
     # --- ALBUM PERMISSIONS: Phase 1 & 2 (BEFORE processing assets)
     process_album_permissions(manager.config, context)
@@ -185,6 +191,7 @@ def run_main():
 
     else:
         # You can change the max_assets value here or pass it as an external argument
+        perf_phase_tracker.mark("assets", "start")
         log(
             "[PROGRESS] [ASSET-PROCESS] Inicio procesado de activos",
             level=LogLevel.PROGRESS,
@@ -196,6 +203,7 @@ def run_main():
             f"[PROGRESS] [ASSET-PROCESS] Fin procesado de activos. Elapsed: {t1-t0:.2f} seconds.",
             level=LogLevel.PROGRESS,
         )
+        perf_phase_tracker.mark("assets", "end")
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
     print_welcome_links(manager.config)

@@ -21,9 +21,11 @@ def setup_exception_hook():
         )
         try:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
+            from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
             StatisticsManager.get_instance().abrupt_exit()
+            perf_phase_tracker.log_summary()
         except Exception as e:
-            print(f"[ERROR] Could not save abrupt exit time: {e}")
+            print(f"[ERROR] Could not save abrupt exit time or log perf summary: {e}")
 
     sys.excepthook = custom_excepthook
