@@ -190,7 +190,7 @@ class AlbumCollectionWrapper:
         Returns an AlbumList of only non-deleted albums.
         """
         all_allbums = self._ensure_fully_loaded()._albums
-        return AlbumList([a for a in all_allbums if not a.is_deleted()])
+        return AlbumList([a for a in all_allbums.all() if not a.is_deleted()])
 
     @typechecked
     def _remove_album_from_local_collection(
