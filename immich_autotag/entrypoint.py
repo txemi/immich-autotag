@@ -25,7 +25,7 @@ from immich_autotag.permissions import (
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
 
-# --- Inicialización de logging y exception hook global ---
+# --- Logging and global exception hook initialization ---
 from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
 
 setup_logging_and_exceptions()
@@ -138,7 +138,7 @@ def run_main():
 
     # Initialize the singleton and load albums from API
     albums_collection = AlbumCollectionWrapper.from_client(client)
-    # --- LOG LAZY LOAD DE ÁLBUMES ---
+    # --- LOG LAZY LOAD OF ALBUMS ---
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
     perf_phase_tracker.mark("lazy", "start")
@@ -160,14 +160,14 @@ def run_main():
 
     perf_phase_tracker.mark("full", "start")
     log(
-        "[PROGRESS] [ALBUM-FULL-LOAD] Inicio carga full de álbumes",
+        "[PROGRESS] [ALBUM-FULL-LOAD] Starting full album load",
         level=LogLevel.PROGRESS,
     )
     t0 = time.time()
     albums_collection._ensure_all_albums_full()
     t1 = time.time()
     log(
-        f"[PROGRESS] [ALBUM-FULL-LOAD] Fin carga full de álbumes. Elapsed: {t1-t0:.2f} seconds.",
+        f"[PROGRESS] [ALBUM-FULL-LOAD] Finished full album load. Elapsed: {t1-t0:.2f} seconds.",
         level=LogLevel.PROGRESS,
     )
     perf_phase_tracker.mark("full", "end")
@@ -193,14 +193,14 @@ def run_main():
         # You can change the max_assets value here or pass it as an external argument
         perf_phase_tracker.mark("assets", "start")
         log(
-            "[PROGRESS] [ASSET-PROCESS] Inicio procesado de activos",
+            "[PROGRESS] [ASSET-PROCESS] Starting asset processing",
             level=LogLevel.PROGRESS,
         )
         t0 = time.time()
         process_assets(context)
         t1 = time.time()
         log(
-            f"[PROGRESS] [ASSET-PROCESS] Fin procesado de activos. Elapsed: {t1-t0:.2f} seconds.",
+            f"[PROGRESS] [ASSET-PROCESS] Finished asset processing. Elapsed: {t1-t0:.2f} seconds.",
             level=LogLevel.PROGRESS,
         )
         perf_phase_tracker.mark("assets", "end")
