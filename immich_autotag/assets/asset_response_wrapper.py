@@ -1,19 +1,16 @@
-
 from __future__ import annotations
-from typing import Optional
-from immich_client.models.tag_response_dto import TagResponseDto
-from immich_autotag.config.models import UserConfig
-from immich_client.types import Unset
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Optional
 from urllib.parse import ParseResult
 from uuid import UUID
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.tag_response_dto import TagResponseDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
+from immich_client.types import Unset
 from typeguard import typechecked
 
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
@@ -24,6 +21,7 @@ from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
 )
 from immich_autotag.config.manager import ConfigManager
+from immich_autotag.config.models import UserConfig
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
@@ -209,12 +207,12 @@ class AssetResponseWrapper:
         - local_date_time
         Chooses the oldest and raises an exception if any is earlier than the chosen one.
         """
+
         def get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
             yield asset__.created_at
             yield asset__.file_created_at
             yield asset__.file_modified_at
             yield asset__.local_date_time
-
 
         date_candidates = list(get_dates(self.asset))
         if not date_candidates:
@@ -260,6 +258,7 @@ class AssetResponseWrapper:
         Returns True if the asset has the tag with that name (case-insensitive).
         """
         from immich_client.types import Unset
+
         tags: list[TagResponseDto] | Unset = self.tags
         if isinstance(tags, Unset):
             return False
@@ -282,8 +281,9 @@ class AssetResponseWrapper:
         """
         from immich_client.api.tags import untag_assets
         from immich_client.models.bulk_ids_dto import BulkIdsDto
-        from immich_autotag.logging.utils import is_log_level_enabled, log_debug
         from immich_client.types import Unset
+
+        from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 
         tags: list[TagResponseDto] | Unset = self.tags
         if isinstance(tags, Unset):
@@ -474,6 +474,7 @@ class AssetResponseWrapper:
     def _get_current_tag_ids(self) -> list[str]:
         """Returns the IDs of the asset's current tags."""
         from immich_client.types import Unset
+
         tags: list[TagResponseDto] | Unset = self.tags
         if isinstance(tags, Unset):
             return []
@@ -492,6 +493,7 @@ class AssetResponseWrapper:
         Returns the names of the tags associated with this asset.
         """
         from immich_client.types import Unset
+
         tags: list[TagResponseDto] | Unset = self.tags
         if isinstance(tags, Unset):
             return []
@@ -688,10 +690,8 @@ class AssetResponseWrapper:
         Also logs and notifies the modification report.
         """
 
-        from typing import Optional
-        from immich_autotag.config.models import UserConfig, ClassificationConfig
-        from typing import Optional
-        from immich_autotag.config.models import UserConfig
+        from immich_autotag.config.models import ClassificationConfig
+
         config: Optional[UserConfig] = ConfigManager.get_instance().config
         tag_name = None
         if config is not None and config.classification is not None:
@@ -699,7 +699,10 @@ class AssetResponseWrapper:
             tag_name = classification.autotag_unknown
         if tag_name is None:
             from immich_autotag.logging.utils import log
-            log("[WARNING] autotag_unknown not set in config.classification; skipping tag management.")
+
+            log(
+                "[WARNING] autotag_unknown not set in config.classification; skipping tag management."
+            )
             return
         status = self.get_classification_status()
         self._ensure_tag_for_classification_status(
@@ -726,8 +729,8 @@ class AssetResponseWrapper:
             user: Optional user for tracking tag removal. If None, derived from context.
         """
 
-        from typing import Optional
-        from immich_autotag.config.models import UserConfig, ClassificationConfig
+        from immich_autotag.config.models import ClassificationConfig
+
         config: Optional[UserConfig] = ConfigManager.get_instance().config
         tag_name = None
         if config is not None and config.classification is not None:
@@ -735,7 +738,10 @@ class AssetResponseWrapper:
             tag_name = classification.autotag_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
-            log("[WARNING] autotag_conflict not set in config.classification; skipping tag management.")
+
+            log(
+                "[WARNING] autotag_conflict not set in config.classification; skipping tag management."
+            )
             return
         self._ensure_tag_for_classification_status(
             tag_name=tag_name,
@@ -824,10 +830,12 @@ class AssetResponseWrapper:
             ClassificationStatus,
         )
 
-        from typing import Optional
-        from immich_autotag.config.models import UserConfig
         config: Optional[UserConfig] = ConfigManager.get_instance().config
-        if not (config and config.album_detection_from_folders is not None and config.album_detection_from_folders.enabled):
+        if not (
+            config
+            and config.album_detection_from_folders is not None
+            and config.album_detection_from_folders.enabled
+        ):
             return None
 
         # If already classified or conflicted by tag or album, skip
@@ -956,14 +964,17 @@ class AssetResponseWrapper:
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
 
-        config : Optional[UserConfig] = ConfigManager.get_instance().config
+        config: Optional[UserConfig] = ConfigManager.get_instance().config
         tag_name = None
         # Use explicit type and direct access for duplicate_processing
         if config and config.duplicate_processing is not None:
             tag_name = config.duplicate_processing.autotag_album_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
-            log("[WARNING] autotag_album_conflict not set in config.duplicate_processing; skipping tag management.")
+
+            log(
+                "[WARNING] autotag_album_conflict not set in config.duplicate_processing; skipping tag management."
+            )
             return
         # Generic tag
         from immich_autotag.logging.levels import LogLevel
@@ -984,7 +995,11 @@ class AssetResponseWrapper:
                     f"because duplicate album conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
-                user_wrapper = user if user is None or isinstance(user, UserResponseWrapper) else None
+                user_wrapper = (
+                    user
+                    if user is None or isinstance(user, UserResponseWrapper)
+                    else None
+                )
                 self.remove_tag_by_name(tag_name, user=user_wrapper)
         # Per-duplicate-set tag
         if duplicate_id:
@@ -1002,7 +1017,11 @@ class AssetResponseWrapper:
                         f"Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved.",
                         level=LogLevel.FOCUS,
                     )
-                    user_wrapper = user if user is None or isinstance(user, UserResponseWrapper) else None
+                    user_wrapper = (
+                        user
+                        if user is None or isinstance(user, UserResponseWrapper)
+                        else None
+                    )
                     self.remove_tag_by_name(tag_for_set, user=user_wrapper)
 
     @typechecked
@@ -1018,15 +1037,17 @@ class AssetResponseWrapper:
         If no conflict and tag is present, removes it.
         """
 
-
-        config : Optional[UserConfig] = ConfigManager.get_instance().config
+        config: Optional[UserConfig] = ConfigManager.get_instance().config
         tag_name = None
         # Use explicit type and direct access for duplicate_processing
         if config and config.duplicate_processing is not None:
             tag_name = config.duplicate_processing.autotag_album_detection_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
-            log("[WARNING] autotag_album_detection_conflict not set in config.duplicate_processing; skipping tag management.")
+
+            log(
+                "[WARNING] autotag_album_detection_conflict not set in config.duplicate_processing; skipping tag management."
+            )
             return
         if not tag_name:
             return  # Tag not configured, skip
@@ -1064,7 +1085,11 @@ class AssetResponseWrapper:
                     f"because album detection conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
-                user_wrapper = user if user is None or isinstance(user, UserResponseWrapper) else None
+                user_wrapper = (
+                    user
+                    if user is None or isinstance(user, UserResponseWrapper)
+                    else None
+                )
                 self.remove_tag_by_name(tag_name, user=user_wrapper)
 
     @typechecked
@@ -1086,7 +1111,7 @@ class AssetResponseWrapper:
             file_created_at = None
         lines.append(f"  file_created_at: {file_created_at}")
         # exif_created_at is not present in AssetResponseDto
-        lines.append(f"  exif_created_at: (not available)")
+        lines.append("  exif_created_at: (not available)")
         try:
             updated_at = self.asset.updated_at
         except AttributeError:
