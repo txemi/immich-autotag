@@ -5,7 +5,10 @@
 
 set -euo pipefail
 
-OUTPUT_FILE="profile.stats"
+
+# Añadir timestamp al nombre del fichero de estadísticas para que sea único por ejecución
+TS=$(date -u +"%Y%m%dT%H%M%SZ")
+OUTPUT_FILE="profile_${TS}.stats"
 
 # Allow CI or local users to disable profiling by setting SKIP_PROFILING=1
 # Default to skipping profiling to avoid OOM in CI environments.
