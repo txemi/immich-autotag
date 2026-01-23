@@ -23,7 +23,7 @@ class AlbumUserWrapper:
         # noinspection PyUnresolvedReferences,PyTypeHints
         from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 
-        if not isinstance(self.user, AlbumUserResponseDto):
+        if not isinstance(self.user, AlbumUserResponseDto):  # type: ignore[unnecessary-isinstance]  # noqa: F821
             raise TypeError(f"user must be AlbumUserResponseDto, got {type(self.user)}")
 
     @property
