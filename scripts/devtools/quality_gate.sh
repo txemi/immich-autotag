@@ -27,6 +27,42 @@
 #
 # Add/modify this table if new checks are added.
 # ============================================================================
+##
+# ------------------------------------------------------------------------------
+# Prioritization table for hardening the Quality Gate (by ease of activation as blockers)
+# ------------------------------------------------------------------------------
+# | Priority | Check      | Reason/Estimated cost                      |
+# |----------|------------|--------------------------------------------|
+# | 1        | black      | Very low cost, just format once            |
+# | 2        | isort      | Very low cost, just sort imports           |
+# | 3        | ruff       | Low cost, highly configurable              |
+# | 4        | flake8     | Medium cost, depends on rules              |
+# | 5        | jscpd      | Variable cost, depends on duplication      |
+# | 6        | uvx ssort  | Low-medium cost, depends on method order   |
+# | 7        | mypy       | High cost, requires typing                 |
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# Prioritization table for robustness (static analysis checks)
+# ------------------------------------------------------------------------------
+# | Priority | Check  | Reason/Robustness provided                   |
+# |----------|--------|----------------------------------------------|
+# | 1        | mypy   | Maximum robustness, detects real errors      |
+# | 2        | flake8 | Medium robustness, helps with style/errors   |
+# | 3        | ruff   | Similar to flake8, configurable              |
+# | 4        | black  | Formatting, not functional robustness        |
+# | 5        | isort  | Import order, little impact on robustness    |
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# Recommended plan to harden the Quality Gate (in order of priority):
+# 1. Activate black as a blocker (minimal cost, maximum ease).
+# 2. Activate isort as a blocker (minimal cost, maximum ease).
+# 3. Activate ruff as a blocker (low effort, configurable).
+# 4. Activate flake8 as a blocker (medium cost, adds style/error robustness).
+# 5. Activate mypy as a blocker (high cost, maximum robustness, requires typing everywhere).
+#
+# When the main checks table is updated, also update these tables and the plan if needed.
 set -x
 set -e
 set -o pipefail
