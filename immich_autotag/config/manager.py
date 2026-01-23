@@ -178,23 +178,9 @@ class ConfigManager:
             return dumper.represent_data(rep)
 
         yaml.add_representer(enum.Enum, enum_representer)
-        # Standard dump
+        # Standard dump only
         with open(str(path), "w", encoding="utf-8") as f:
             yaml.dump(self.config.model_dump(), f, allow_unicode=True, sort_keys=False)
-
-        # Alternative dump with comments
-        try:
-            from immich_autotag.config.yaml_with_comments import (
-                generate_yaml_with_comments,
-            )
-
-            commented_path = str(path).replace(".yaml", "_with_comments.yaml")
-            generate_yaml_with_comments(type(self.config), commented_path)
-        except Exception as e:
-            from immich_autotag.logging.levels import LogLevel
-            from immich_autotag.logging.utils import log
-
-            log(f"Could not generate commented YAML: {e}", level=LogLevel.WARNING)
 
     @typechecked
     def print_config(self):
