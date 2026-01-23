@@ -1,18 +1,20 @@
+import atexit
 from typing import TYPE_CHECKING, Dict, Iterator, Optional
 from uuid import UUID
 
 import attrs
 from immich_client import Client
 from immich_client.models.asset_response_dto import AssetResponseDto
+from typeguard import typechecked
 
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.get_all_assets import get_all_assets
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
 # --- Diagnóstico de llamadas a la API de assets ---
 _asset_api_call_count = 0
 _asset_api_ids = set()
-
-import atexit
 
 
 def _print_asset_api_call_summary():
@@ -25,10 +27,6 @@ def _print_asset_api_call_summary():
 
 
 atexit.register(_print_asset_api_call_summary)
-from typeguard import typechecked
-
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.get_all_assets import get_all_assets
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
