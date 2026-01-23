@@ -96,87 +96,6 @@ def _resolve_emails_to_user_ids(
 
 
 @typechecked
-def sync_album_permissions(
-    album_wrapper: "AlbumResponseWrapper",
-    resolved_policy: ResolvedAlbumPolicy,
-    context: ImmichContext,
-) -> None:
-    """
-    Phase 2: Synchronize album permissions with configured rules.
-
-    Complete sync strategy: config is source of truth.
-    - PONER (add): Members in config but not in album
-    - QUITAR (remove): Members in album but not in config
-
-    Args:
-        album_wrapper: Album wrapper with album data
-        resolved_policy: Resolved policy with target members (emails)
-        context: ImmichContext with API client
-    """
-    album_id = album_wrapper.get_album_id()
-    album_name = album_wrapper.get_album_name()
-    # Use the no-cache UUID accessor when interacting with APIs that expect a UUID
-    album_uuid = album_wrapper.get_album_uuid_no_cache()
-
-    report = ModificationReport.get_instance()
-
-    if not resolved_policy.has_match:
-        log_debug(f"[ALBUM_PERMISSIONS] Skipping {album_name}: no matching rules")
-        return
-
-    # Resolve configured member emails to user IDs
-    result = _resolve_emails_to_user_ids(resolved_policy.members, context)
-    target_user_ids = set(result.resolved.values())
-
-    # Get current members from API (pass UUID directly)
-    current_members = _get_current_members(album_uuid, context)
-    current_user_ids = {str(member.user.id) for member in current_members}
-
-    # Calculate diff
-    users_to_add = target_user_ids - current_user_ids
-    users_to_remove = current_user_ids - target_user_ids
-
-    # Phase 2A: PONER (add members)
-    if users_to_add:
-        add_members_to_album(
-            album_id,
-            album_name,
-            list(users_to_add),
-            resolved_policy.access_level,
-            context,
-        )
-        report.add_album_permission_modification(
-            kind=ModificationKind.ALBUM_PERMISSION_SHARED,
-            album=album_wrapper,
-            matched_rules=resolved_policy.matched_rules,
-            groups=resolved_policy.groups,
-            members=list(users_to_add),
-            access_level=resolved_policy.access_level,
-        )
-
-    # Phase 2B: QUITAR (remove members)
-    if users_to_remove:
-        _remove_members_from_album(album_id, album_name, list(users_to_remove), context)
-        report.add_album_permission_modification(
-            kind=ModificationKind.ALBUM_PERMISSION_REMOVED,
-            album=album_wrapper,
-            matched_rules=resolved_policy.matched_rules,
-            groups=resolved_policy.groups,
-            members=list(users_to_remove),
-            access_level="none",
-        )
-
-    if users_to_add or users_to_remove:
-        log(
-            f"[ALBUM_PERMISSIONS] Synced {album_name}: "
-            f"+{len(users_to_add)} PONER, -{len(users_to_remove)} QUITAR",
-            level=LogLevel.FOCUS,
-        )
-    else:
-        log_debug(f"[ALBUM_PERMISSIONS] {album_name}: No changes needed")
-
-
-@typechecked
 def _get_current_members(
     album_id: UUID, context: ImmichContext
 ) -> List[AlbumUserResponseDto]:
@@ -203,7 +122,7 @@ def _get_current_members(
     # Fallback: call API directly
 
     log_debug(
-        f"[ALBUM_PERMISSIONS] Album {album_id} (API) has {len(current_members)} members"
+        f"[ALBUM_PERMISSIONS] Album {album_id} (API) has {len(album_members)} members"
     )
     return album_members
 
@@ -301,3 +220,85 @@ def _remove_members_from_album(
             client=client,
         )
         log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
+
+
+@typechecked
+def sync_album_permissions(
+    album_wrapper: "AlbumResponseWrapper",
+    resolved_policy: ResolvedAlbumPolicy,
+    context: ImmichContext,
+) -> None:
+    """
+    Phase 2: Synchronize album permissions with configured rules.
+
+    Complete sync strategy: config is source of truth.
+    - PONER (add): Members in config but not in album
+    - QUITAR (remove): Members in album but not in config
+
+    Args:
+        album_wrapper: Album wrapper with album data
+        resolved_policy: Resolved policy with target members (emails)
+        context: ImmichContext with API client
+    """
+    album_id = album_wrapper.get_album_id()
+    album_name = album_wrapper.get_album_name()
+    # Use the no-cache UUID accessor when interacting with APIs that expect a UUID
+    album_uuid = album_wrapper.get_album_uuid_no_cache()
+
+    report = ModificationReport.get_instance()
+
+    if not resolved_policy.has_match:
+        log_debug(f"[ALBUM_PERMISSIONS] Skipping {album_name}: no matching rules")
+        return
+
+    # Resolve configured member emails to user IDs
+    result = _resolve_emails_to_user_ids(resolved_policy.members, context)
+    target_user_ids = set(result.resolved.values())
+
+    # Get current members from API (pass UUID directly)
+    # current_members is assigned from _get_current_members, which is defined below. No import needed.
+    current_members = _get_current_members(album_uuid, context)
+    current_user_ids = {str(member.user.id) for member in current_members}
+
+    # Calculate diff
+    users_to_add = target_user_ids - current_user_ids
+    users_to_remove = current_user_ids - target_user_ids
+
+    # Phase 2A: PONER (add members)
+    if users_to_add:
+        add_members_to_album(
+            album_id,
+            album_name,
+            list(users_to_add),
+            resolved_policy.access_level,
+            context,
+        )
+        report.add_album_permission_modification(
+            kind=ModificationKind.ALBUM_PERMISSION_SHARED,
+            album=album_wrapper,
+            matched_rules=resolved_policy.matched_rules,
+            groups=resolved_policy.groups,
+            members=list(users_to_add),
+            access_level=resolved_policy.access_level,
+        )
+
+    # Phase 2B: QUITAR (remove members)
+    if users_to_remove:
+        _remove_members_from_album(album_id, album_name, list(users_to_remove), context)
+        report.add_album_permission_modification(
+            kind=ModificationKind.ALBUM_PERMISSION_REMOVED,
+            album=album_wrapper,
+            matched_rules=resolved_policy.matched_rules,
+            groups=resolved_policy.groups,
+            members=list(users_to_remove),
+            access_level="none",
+        )
+
+    if users_to_add or users_to_remove:
+        log(
+            f"[ALBUM_PERMISSIONS] Synced {album_name}: "
+            f"+{len(users_to_add)} PONER, -{len(users_to_remove)} QUITAR",
+            level=LogLevel.FOCUS,
+        )
+    else:
+        log_debug(f"[ALBUM_PERMISSIONS] {album_name}: No changes needed")
