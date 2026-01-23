@@ -51,7 +51,7 @@ class AlbumLoadSource(enum.Enum):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
-    # --- 1. Atributos (Fields) ---
+    # --- 1. Fields ---
     _album_dto: AlbumResponseDto = attrs.field(kw_only=True)
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
     _unavailable: bool = attrs.field(default=False, init=False)
@@ -70,7 +70,7 @@ class AlbumResponseWrapper:
         repr=False,
     )
 
-    # --- 2. Métodos Especiales ---
+    # --- 2. Special Methods ---
     def __attrs_post_init__(self) -> None:
         """
         Ensure the wrapper has a DTO and set _loaded_at to now if not already set.
@@ -80,7 +80,7 @@ class AlbumResponseWrapper:
         if not hasattr(self, "_loaded_at") or self._loaded_at is None:
             self._loaded_at = datetime.datetime.now()
 
-    # --- 3. Propiedades ---
+    # --- 3. Properties ---
     @property
     @typechecked
     def owner_uuid(self) -> "UUID":
@@ -89,7 +89,7 @@ class AlbumResponseWrapper:
 
         return UUID(self._album_dto.owner_id)
 
-    # --- 4. Métodos Estáticos ---
+    # --- 4. Static Methods ---
     @staticmethod
     @typechecked
     def get_default_client() -> ImmichClient:
@@ -113,7 +113,7 @@ class AlbumResponseWrapper:
 
         return None
 
-    # --- 5. Métodos Públicos - Metadatos e Identificación ---
+    # --- 5. Public Methods - Metadata and Identification ---
     @typechecked
     def get_album_id(self) -> str:
         return self._album_dto.id
@@ -189,7 +189,7 @@ class AlbumResponseWrapper:
             raise RuntimeError()
         return self._album_dto
 
-    # --- 9. Métodos Privados - Lógica Interna ---
+    # --- 9. Private Methods - Internal Logic ---
     def _active_dto(self) -> AlbumResponseDto:
         """
         Returns the current DTO, ensuring it's full if we need detailed info
@@ -220,8 +220,8 @@ class AlbumResponseWrapper:
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
         """
-        Devuelve el set de asset IDs como UUID, construyendo la caché si no existe.
-        Si el álbum no está en modo DETAIL/full, garantiza modo full usando ensure_full().
+        Returns the set of asset IDs as UUIDs, building the cache if it does not exist.
+        If the album is not in DETAIL/full mode, ensures full mode using ensure_full().
         """
         from uuid import UUID
 
@@ -233,10 +233,10 @@ class AlbumResponseWrapper:
         self._asset_ids_cache = set(UUID(a.id) for a in assets)
         return self._asset_ids_cache
 
-    # --- 6. Métodos Públicos - Gestión de Assets ---
+    # --- 6. Public Methods - Asset Management ---
     def get_asset_ids(self) -> set[UUID]:
         """
-        Devuelve el set de asset IDs como UUID usando la caché centralizada.
+        Returns the set of asset IDs as UUIDs using the centralized cache.
         """
         return self._get_or_build_asset_ids_cache()
 
@@ -273,7 +273,7 @@ class AlbumResponseWrapper:
     def is_empty(self) -> bool:
         """
         Returns True if the album has no assets, False otherwise.
-        Optimizado: no fuerza recarga ni construcción de caché si no es necesario.
+        Optimized: does not force reload or cache construction if not needed.
         """
         assets = self._ensure_full_album_loaded(
             self.get_default_client()
@@ -286,7 +286,8 @@ class AlbumResponseWrapper:
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> None:
         """
-        Centraliza la lógica de actualización de DTO, load_source, loaded_at y asset_ids_cache.
+        Centralizes the logic for updating DTO, load_source, loaded_at, and
+        asset_ids_cache.
         """
         now = datetime.datetime.now()
         if self._loaded_at and now < self._loaded_at:
@@ -302,10 +303,10 @@ class AlbumResponseWrapper:
     def _set_album_full(self, value: AlbumResponseDto) -> None:
         self._update_from_dto(value, AlbumLoadSource.DETAIL)
 
-    # --- 10. Métodos Privados - Gestión de Errores y Verificación ---
+    # --- 10. Private Methods - Error Handling and Verification ---
     @typechecked
     def _build_partial_repr(self) -> AlbumPartialRepr:
-        """Construye una representación parcial segura del álbum para logs de error."""
+        """Builds a safe partial representation of the album for error logs."""
         try:
             album_name: str | None = None
             dto_id: str | None = None
@@ -326,7 +327,7 @@ class AlbumResponseWrapper:
     def _handle_recoverable_400(
         self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
     ) -> None:
-        """Gestiona el error 400 (no encontrado/sin acceso) de forma recuperable."""
+        """Handles 400 error (not found/no access) in a recoverable way."""
         self._error_history.append_api_exc(api_exc)
         current_count = self._error_history.count_in_window()
         # Include the album link in the log for diagnostics
@@ -385,7 +386,7 @@ class AlbumResponseWrapper:
         )
         raise api_exc.exc
 
-    # --- 7. Métodos Públicos - Ciclo de Vida y Estado ---
+    # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> None:
         """Reloads the album DTO from the API and clears the cache."""
@@ -421,8 +422,9 @@ class AlbumResponseWrapper:
     ) -> None:
         """
         Unifies DTO update logic. Updates the wrapper with the new DTO and load_source if:
-        - The new load_source is DETAIL (always update to full)
-        - The current load_source is SEARCH (allow update from SEARCH to SEARCH or DETAIL)
+                - The new load_source is DETAIL (always update to full)
+                - The current load_source is SEARCH (allow update from SEARCH to SEARCH or
+                    DETAIL)
         - Ensures loaded_at is monotonic (never decreases)
         - Updates asset ID cache as UUIDs
         If the current is DETAIL and the new is SEARCH, ignores the update.
@@ -651,7 +653,7 @@ class AlbumResponseWrapper:
                     level=LogLevel.WARNING,
                 )
 
-    # --- 8. Métodos Públicos - Acciones de Modificación ---
+    # --- 8. Public Methods - Modification Actions ---
     @conditional_typechecked
     def add_asset(
         self,
@@ -748,7 +750,8 @@ class AlbumResponseWrapper:
 
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in removal response for album {self.get_album_id()}."
+                f"Asset {asset_wrapper.id} not found in removal response for album "
+                f"{self.get_album_id()}."
             )
 
     @typechecked

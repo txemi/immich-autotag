@@ -35,11 +35,6 @@ from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
 from immich_autotag.utils.decorators import conditional_typechecked
 
-# Singleton instance storage
-
-
-_album_collection_singleton: AlbumCollectionWrapper | None = None
-
 
 class SyncState(Enum):
     NOT_STARTED = auto()
@@ -54,12 +49,13 @@ class AlbumCollectionWrapper:
 
     Responsibilities:
     - Maintains the master list of albums (AlbumList) and provides access to them.
-        - Manages a map from asset_id to the list of albums containing each asset (AssetToAlbumsMap),
-            enabling O(1) lookup of albums for a given asset.
-        - Handles unavailable albums and duplicate album detection/merging.
-        - Provides methods for adding, removing, and searching albums by name or UUID.
-        - Coordinates album-related operations, including API synchronization and
-            integrity checks.
+    - Manages a map from asset_id to the list of albums containing each asset
+        (AssetToAlbumsMap),
+        enabling O(1) lookup of albums for a given asset.
+    - Handles unavailable albums and duplicate album detection/merging.
+    - Provides methods for adding, removing, and searching albums by name or UUID.
+    - Coordinates album-related operations, including API synchronization and
+        integrity checks.
 
     Only one instance of this class is allowed (singleton pattern).
     """
@@ -96,7 +92,8 @@ class AlbumCollectionWrapper:
 
     def _ensure_fully_loaded(self):
         """
-        Ensures that all albums have been loaded (search performed). If not, triggers a full load.
+        Ensures that all albums have been loaded (search performed).
+        If not, triggers a full load.
         Prevents recursive resyncs by checking sync state.
         """
         if self._sync_state == SyncState.SYNCED:
@@ -116,14 +113,15 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.utils import log
 
         log(
-            "[PROGRESS] [ALBUM-LAZY-LOAD] Inicio carga lazy de álbumes",
+            "[PROGRESS] [ALBUM-LAZY-LOAD] Starting lazy album loading",
             level=LogLevel.PROGRESS,
         )
         t0 = time.time()
         self._ensure_fully_loaded()
         t1 = time.time()
         log(
-            f"[PROGRESS] [ALBUM-LAZY-LOAD] Fin carga lazy de álbumes. Elapsed: {t1-t0:.2f} seconds.",
+            f"[PROGRESS] [ALBUM-LAZY-LOAD] Finished lazy album loading. "
+            f"Elapsed: {t1-t0:.2f} seconds.",
             level=LogLevel.PROGRESS,
         )
 
@@ -147,7 +145,8 @@ class AlbumCollectionWrapper:
                 album_wrapper.ensure_full()
             except Exception as e:
                 log(
-                    f"[WARNING] Failed to fully load album '{album_wrapper.get_album_name()}': {e}",
+                    f"[WARNING] Failed to fully load album "
+                    f"'{album_wrapper.get_album_name()}': {e}",
                     level=LogLevel.WARNING,
                 )
         t1 = time.time()
@@ -158,22 +157,12 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def __attrs_post_init__(self) -> None:
-        global _album_collection_singleton
-        if _album_collection_singleton is not None:
-            raise RuntimeError(
-                "AlbumCollectionWrapper is a singleton: only one instance is allowed."
-            )
-        _album_collection_singleton = self
         # Asset map is built on demand, not during initialization
+        pass
 
     @classmethod
     def get_instance(cls) -> "AlbumCollectionWrapper":
-        global _album_collection_singleton
-        if _album_collection_singleton is None:
-            raise RuntimeError(
-                "AlbumCollectionWrapper singleton has not been initialized yet."
-            )
-        return _album_collection_singleton
+        raise NotImplementedError("Singleton pattern is not implemented.")
 
     @staticmethod
     @typechecked
@@ -219,7 +208,8 @@ class AlbumCollectionWrapper:
         self, album_wrapper: AlbumResponseWrapper
     ) -> bool:
         """
-        Logically deletes an album by marking it as deleted, does not remove from the list.
+        Logically deletes an album by marking it as deleted.
+        Does not remove from the list.
         Returns True if marked. Raises if already deleted or not present.
         """
         if (
@@ -255,7 +245,8 @@ class AlbumCollectionWrapper:
             if not is_temporary_album(album_wrapper.get_album_name()):
                 raise RuntimeError(
                     f"Integrity check failed: album '{album_wrapper.get_album_name()}' "
-                    f"(id={album_wrapper.get_album_id()}) is not temporary but was passed to _remove_empty_temporary_albums."
+                    f"(id={album_wrapper.get_album_id()}) is not temporary but was "
+                    f"passed to _remove_empty_temporary_albums."
                 )
 
         tag_mod_report = ModificationReport.get_instance()
@@ -266,7 +257,8 @@ class AlbumCollectionWrapper:
                     client=client,
                     tag_mod_report=tag_mod_report,
                     reason=(
-                        "Removed automatically after map build because it was empty and temporary"
+                        "Removed automatically after map build because it was empty "
+                        "and temporary"
                     ),
                 )
                 self._remove_album_from_local_collection(album_wrapper)
@@ -284,7 +276,8 @@ class AlbumCollectionWrapper:
     @typechecked
     def _detect_empty_temporary_albums(self) -> AlbumList:
         """
-        Returns an AlbumList of empty temporary albums to be removed after building the map.
+        Returns an AlbumList of empty temporary albums to be removed
+        after building the map.
         """
         albums_to_remove = AlbumList()
         for album_wrapper in self.get_albums():
@@ -296,7 +289,8 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
-        """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
+        """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects
+        (O(1) lookup).
 
         Before building the map, forces the loading of asset_ids in all albums
         (lazy loading).
@@ -326,9 +320,10 @@ class AlbumCollectionWrapper:
                 if album_wrapper.get_asset_ids():
                     album_url = album_wrapper.get_immich_album_url().geturl()
                     raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' "
-                        f"(URL: {album_url}) had empty asset_ids after initial load, "
-                        f"but after a redundant reload it now has assets. "
+                        f"[DEBUG] Anomalous behavior: Album "
+                        f"'{album_wrapper.get_album_name()}' (URL: {album_url}) "
+                        "had empty asset_ids after initial load, "
+                        "but after a redundant reload it now has assets. "
                         "This suggests a possible synchronization or lazy loading bug. "
                         "Please review the album loading logic."
                     )
@@ -346,7 +341,8 @@ class AlbumCollectionWrapper:
                 from immich_autotag.logging.utils import log
 
                 log(
-                    f"[ALBUM-LOAD][API][{idx}/{total}] Album '{album_wrapper.get_album_name()}' reloaded with "
+                    f"[ALBUM-LOAD][API][{idx}/{total}] Album "
+                    f"'{album_wrapper.get_album_name()}' reloaded with "
                     f"{len(album_wrapper.get_asset_ids())} assets.",
                     level=LogLevel.INFO,
                 )
@@ -377,8 +373,9 @@ class AlbumCollectionWrapper:
             from immich_autotag.logging.utils import log
 
             log(
-                f"[ALBUM REMOVAL] Album {album_wrapper.get_album_id()} ('{album_wrapper.get_album_name()}') "
-                f"removed from collection (local, not_found cleanup).",
+                f"[ALBUM REMOVAL] Album {album_wrapper.get_album_id()} ('"
+                f"{album_wrapper.get_album_name()}') removed from collection "
+                f"(local, not_found cleanup).",
                 level=LogLevel.FOCUS,
             )
         return removed
@@ -418,7 +415,8 @@ class AlbumCollectionWrapper:
         tag_mod_report.add_error_modification(
             kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
             error_message=(
-                f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}"
+                f"global unavailable threshold exceeded: "
+                f"{self._unavailable.count} >= {threshold}"
             ),
             error_category="GLOBAL_THRESHOLD",
             extra={
@@ -527,7 +525,9 @@ class AlbumCollectionWrapper:
             # Only allow deletion if it is a duplicate
             if not wrapper.is_duplicate_album():
                 raise RuntimeError(
-                    f"Refusing to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): not a temporary or duplicate album."
+                    f"Refusing to delete album "
+                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): "
+                    "not a temporary or duplicate album."
                 )
         # Remove locally first to avoid errors if already deleted
         self.remove_album_local_public(wrapper)
@@ -541,7 +541,8 @@ class AlbumCollectionWrapper:
 
             response = None
             code = None
-            # Try to access response and status_code only if present, using cast for static analysis
+            # Try to access response and status_code only if present,
+            # using cast for static analysis
             if hasattr(exc, "response"):
                 response = cast(Any, exc).response
                 if response is not None and hasattr(response, "status_code"):
@@ -563,11 +564,15 @@ class AlbumCollectionWrapper:
                 elif "permission" in msg.lower() or "forbidden" in msg.lower():
                     err_reason = "Permission denied"
             log(
-                f"Failed to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). Reason: {err_reason}. Exception: {msg}",
+                f"Failed to delete album "
+                f"'{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). "
+                f"Reason: {err_reason}. Exception: {msg}",
                 level=LogLevel.WARNING,
             )
             raise RuntimeError(
-                f"Failed to delete album '{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). Reason: {err_reason}."
+                f"Failed to delete album "
+                f"'{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). "
+                f"Reason: {err_reason}."
             ) from exc
         from immich_autotag.report.modification_kind import ModificationKind
 
@@ -596,7 +601,8 @@ class AlbumCollectionWrapper:
         name: str,
     ) -> None:
         """
-        Handles the case of a non-temporary duplicate: error in development, collection in other modes.
+        Handles the case of a non-temporary duplicate:
+        error in development, collection in other modes.
         """
 
         from immich_autotag.config.internal_config import (
@@ -604,7 +610,7 @@ class AlbumCollectionWrapper:
         )
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            # Centralizes handling en el método unificado
+            # Centralizes handling in the unified method
             self._handle_duplicate_album_conflict(
                 incoming_album=incoming_album,
                 existing_album=existing,
@@ -649,9 +655,10 @@ class AlbumCollectionWrapper:
     ) -> None:
         """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
 
-        If a duplicate name exists and it's a temporary album, attempt to delete the duplicate on
-        the server (if `client` is provided) and skip adding. If it's a non-temporary duplicate,
-        raise RuntimeError. This centralizes duplicate detection used during initial load and
+        If a duplicate name exists and it's a temporary album,
+        attempt to delete the duplicate on the server (if `client` is provided)
+        and skip adding. If it's a non-temporary duplicate, raise RuntimeError.
+        This centralizes duplicate detection used during initial load and
         during runtime album creation.
         """
         albums_list = self._albums  # Access the internal dual map
@@ -684,7 +691,7 @@ class AlbumCollectionWrapper:
                     if len(albums_after) == 1:
                         return albums_after[0]
                     else:
-                        # Lanzar excepción para desarrolladores tras la limpieza
+                        # Raise exception for developers after cleanup
                         raise RuntimeError(
                             f"Duplicate albums with name '{name}' were found and combined, "
                             f"but multiple still remain. This indicates a data integrity issue. "
@@ -741,15 +748,16 @@ class AlbumCollectionWrapper:
         self, asset: AssetResponseWrapper
     ) -> Iterable[AlbumResponseWrapper]:
         """
-        Returns an iterable of AlbumResponseWrapper objects for all albums the asset belongs to (O(1) lookup via map).
-        Ensures all albums are loaded before proceeding.
+        Returns an iterable of AlbumResponseWrapper objects for all albums
+        the asset belongs to (O(1) lookup via map). Ensures all albums are loaded before proceeding.
         """
         return self.get_asset_to_albums_map().get_from_uuid(asset.get_uuid())
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseWrapper) -> list[str]:
         """Returns the names of the albums the asset belongs to.
-        Use this only if you need names (e.g., for logging). Prefer albums_for_asset() for object access.
+        Use this only if you need names (e.g., for logging).
+        Prefer albums_for_asset() for object access.
         """
 
         return [w.get_album_name() for w in self.albums_for_asset(asset)]
@@ -759,13 +767,13 @@ class AlbumCollectionWrapper:
         self, asset_wrapper: "AssetResponseWrapper"
     ) -> Iterable[AlbumResponseWrapper]:
         """
-        Returns an iterable of AlbumResponseWrapper objects for all albums the asset (wrapped or raw) belongs to.
-        Accepts either AssetResponseWrapper or AssetResponseDto.
+        Returns an iterable of AlbumResponseWrapper objects for all albums
+        the asset (wrapped or raw) belongs to. Accepts either AssetResponseWrapper or AssetResponseDto.
         """
 
         return self.albums_for_asset(asset_wrapper)
 
-    # Método duplicado albums_with_name eliminado
+    # Duplicate method albums_with_name removed
 
     # remove_album deleted: use delete_album and _remove_album_from_local_collection
     @typechecked
@@ -785,8 +793,8 @@ class AlbumCollectionWrapper:
         """
         Combines a list of duplicate albums into one, applying a reduction algorithm:
         merges all albums two by two using the duplicate policy, always keeping the surviving album,
-        until only one remains. The 'context' argument is mandatory and must indicate the origin or reason for the combination (for logs, exceptions, etc).
-        Returns the resulting final album.
+        until only one remains. The 'context' argument is mandatory and must indicate the origin or
+        reason for the combination (for logs, exceptions, etc). Returns the resulting final album.
         """
         if not albums:
             raise ValueError(
@@ -796,7 +804,8 @@ class AlbumCollectionWrapper:
         for album in albums:
             if not album.is_duplicate_album():
                 raise RuntimeError(
-                    f"Refusing to combine album '{album.get_album_name()}' (id={album.get_album_id()}): not a duplicate album."
+                    f"Refusing to combine album '{album.get_album_name()}' "
+                    f"(id={album.get_album_id()}): not a duplicate album."
                 )
         survivors = list(albums)
         while len(survivors) > 1:
@@ -842,7 +851,8 @@ class AlbumCollectionWrapper:
             )
         except Exception as e:
             raise RuntimeError(
-                f"Error adding user {user_id} as EDITOR to album {album.id} ('{album.album_name}'): {e}"
+                f"Error adding user {user_id} as EDITOR to album {album.id} "
+                f"('{album.album_name}'): {e}"
             ) from e
 
     @typechecked
@@ -861,7 +871,8 @@ class AlbumCollectionWrapper:
         from immich_autotag.report.modification_kind import ModificationKind
 
         album = create_album.sync(
-            client=client, body=CreateAlbumDto(album_name=album_name)
+            client=client,
+            body=CreateAlbumDto(album_name=album_name),
         )
         if album is None:
             raise RuntimeError("Failed to create album: API returned None")
@@ -890,7 +901,7 @@ class AlbumCollectionWrapper:
             return albums_found[0]
         elif len(albums_found) > 1:
             self.combine_duplicate_albums(albums_found, context="duplicate_on_create")
-            # Lanzar excepción para desarrolladores tras la limpieza
+            # Raise exception for developers after cleanup
             raise RuntimeError(
                 f"Duplicate albums with name '{album_name}' were found and combined. This indicates a data integrity issue. Review the logs and investigate the cause."
             )
@@ -918,7 +929,7 @@ class AlbumCollectionWrapper:
     @classmethod
     def resync_from_api_class(cls, client: "ImmichClient") -> None:
         """
-        Wrapper de clase para mantener compatibilidad: llama al método de instancia sobre el singleton.
+        Class wrapper to maintain compatibility: calls the instance method on the singleton.
         """
         instance = cls.get_instance()
         instance.resync_from_api(client)
@@ -936,11 +947,11 @@ class AlbumCollectionWrapper:
     @typechecked
     def resync_from_api(self, clear_first: bool = True) -> None:
         """
-        Recarga la colección de álbumes desde la API, igual que from_client pero sobre la instancia actual.
-        - Descarga todos los álbumes de la API (sin assets inicialmente).
-        - Si clear_first es True (por defecto), limpia y reconstruye la colección local.
-        - Si clear_first es False, mergea los álbumes nuevos con los existentes (sin borrar los actuales).
-        - Maneja duplicados y logging igual que from_client.
+        Reloads the album collection from the API, same as from_client but on the current instance.
+        - Downloads all albums from the API (initially without assets).
+        - If clear_first is True (default), clears and rebuilds the local collection.
+        - If clear_first is False, merges new albums with existing ones (without deleting current ones).
+        - Handles duplicates and logging same as from_client.
         """
         from immich_client.api.albums import get_all_albums
 
@@ -972,12 +983,12 @@ class AlbumCollectionWrapper:
         tracker = PerformanceTracker(total_assets=len(albums))
 
         if clear_first:
-            # Limpiar la colección actual
+            # Clear the current collection
             self._albums.clear()
-        # Reconstruir la colección igual que from_client
+        # Rebuild the collection same as from_client
         for idx, album in enumerate(albums, 1):
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
-            # Si clear_first, simplemente añadimos; si no, solo añadimos si no existe
+            # If clear_first, just add; if not, only add if it does not exist
             if clear_first or not self.find_first_album_with_name(
                 wrapper.get_album_name()
             ):
@@ -1030,3 +1041,9 @@ class AlbumCollectionWrapper:
         filtered elsewhere).
         """
         return len(self._albums)
+
+
+# Singleton instance storage
+
+
+_album_collection_singleton: AlbumCollectionWrapper | None = None
