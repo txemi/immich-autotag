@@ -24,7 +24,7 @@ def initialize_logging() -> None:
         # FORCED_LOG_LEVEL siempre es LogLevelInfo (vuestro enum)
         # Convertir a LogLevel si es necesario
         # Usar directamente los atributos del objeto LogLevelInfo
-        forced_info = FORCED_LOG_LEVEL
+        forced_info: LogLevelInfo = FORCED_LOG_LEVEL
         setup_logging(level=forced_info.level_value)
         log(
             f"[LOG] Logging system initialized: FORCED_LOG_LEVEL={forced_info.name}",
