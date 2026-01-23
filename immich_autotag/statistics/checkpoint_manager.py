@@ -47,22 +47,22 @@ class CheckpointManager:
             )
             if max_skip_n is not None and max_skip_n > 0:
                 skip_n = max_skip_n
-                origen = f"checkpoint (stats previos en logs, overlap={self.OVERLAP})"
+                origen = f"checkpoint (previous stats in logs, overlap={self.OVERLAP})"
             elif config_skip_n > 0:
                 skip_n = config_skip_n
-                origen = "configuración (skip.skip_n)"
+                origen = "configuration (skip.skip_n)"
             else:
                 skip_n = 0
-                origen = "ninguno (empezando desde el principio)"
+                origen = "none (starting from the beginning)"
         elif config_skip_n > 0:
             skip_n = config_skip_n
-            origen = "configuración (skip.skip_n)"
+            origen = "configuration (skip.skip_n)"
         else:
             skip_n = 0
             if not enable_checkpoint_resume:
-                origen = "checkpoint deshabilitado"
+                origen = "checkpoint disabled"
             else:
-                origen = "ninguno (empezando desde el principio)"
+                origen = "none (starting from the beginning)"
 
         log(
             f"[CHECKPOINT] skip_n={skip_n} (origen: {origen})",
