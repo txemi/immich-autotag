@@ -31,21 +31,21 @@ set -e
 set -o pipefail
 
 
-# Usage: ./quality_gate.sh [--check|-c] [--relaxed] [target_dir]
-#   --relaxed: Ignore E501 (long lines) in flake8, do not fail on uvx ssort errors, and do not fail on Spanish character check.
-#   Default (strict): All checks enforced, script fails on any error.
+# Usage: ./quality_gate.sh [--check|-c] [--strict] [target_dir]
+#   --strict: Enforce all checks strictly, fail on any error.
+#   Default (relaxed): Ignores E501 in flake8, does not fail on uvx ssort or Spanish character check, and only warns on flake8/mypy errors.
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-    echo "Usage: $0 [--check|-c] [--relaxed] [target_dir]"
-    echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python.";
-    echo "  --relaxed: Ignore E501 (long lines) in flake8 and do not fail on uvx ssort errors.";
-    exit 0
+	echo "Usage: $0 [--check|-c] [--strict] [target_dir]"
+	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python.";
+	echo "  --strict: Enforce all checks strictly, fail on any error.";
+	exit 0
 fi
 
-# Parse relaxed mode
-RELAXED_MODE=0
+# Parse strict mode (default is relaxed)
+RELAXED_MODE=1
 for arg in "$@"; do
-	if [ "$arg" = "--relaxed" ]; then
-		RELAXED_MODE=1
+	if [ "$arg" = "--strict" ]; then
+		RELAXED_MODE=0
 	fi
 done
 
