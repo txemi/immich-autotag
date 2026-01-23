@@ -11,6 +11,8 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 if TYPE_CHECKING:
     pass
 
+# Fix: Add missing import for datetime
+import datetime
 import enum
 
 
