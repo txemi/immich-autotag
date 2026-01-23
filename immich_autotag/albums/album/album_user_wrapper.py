@@ -16,9 +16,7 @@ class AlbumUserWrapper:
     Wrapper for AlbumUserResponseDto to provide a consistent interface for album users.
     """
 
-    user: "AlbumUserResponseDto" = attrs.field(
-        validator=attrs.validators.instance_of(object)
-    )
+    user: "AlbumUserResponseDto"
 
     def __attrs_post_init__(self):
         # Runtime type check for AlbumUserResponseDto
