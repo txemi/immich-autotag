@@ -1,4 +1,3 @@
-from uuid import UUID
 from typing import Iterator, MutableMapping
 from uuid import UUID
 
