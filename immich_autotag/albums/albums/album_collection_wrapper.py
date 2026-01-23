@@ -368,7 +368,7 @@ class AlbumCollectionWrapper:
                 from immich_autotag.logging.utils import log
 
                 log(
-                    f"[{idx}/{total}] Album '{album_wrapper.get_album_name()}' reloaded with "
+                    f"[ALBUM-LOAD][API][{idx}/{total}] Album '{album_wrapper.get_album_name()}' reloaded with "
                     f"{len(album_wrapper.get_asset_ids())} assets.",
                     level=LogLevel.INFO,
                 )
@@ -932,7 +932,7 @@ class AlbumCollectionWrapper:
                 # Log de progreso y tiempo estimado
                 tracker.print_progress(idx)
                 log(
-                    f"[{idx}/{len(albums)}] Album '{wrapper.get_album_name()}' reloaded with {len(wrapper.get_asset_ids())} assets.",
+                    f"[ALBUM-LOAD][API-BULK][{idx}/{len(albums)}] Album '{wrapper.get_album_name()}' processed after bulk fetch with {len(wrapper.get_asset_ids())} assets.",
                     level=LogLevel.INFO,
                 )
 
