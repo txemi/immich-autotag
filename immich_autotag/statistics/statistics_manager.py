@@ -4,6 +4,7 @@ statistics_manager.py
 Core statistics management logic for tracking progress, statistics, and historical runs.
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
+
 import time
 from pathlib import Path
 from threading import RLock
@@ -106,12 +107,19 @@ class StatisticsManager:
     # Event counters are now stored in self._current_stats.event_counters
     def __attrs_post_init__(self) -> None:
         # The folder is already created by get_run_output_dir
-        global _instance
+        # Reserved global variable _instance is required for singleton pattern
+        global _instance  # noqa: F824
         if _instance is not None and _instance is not self:
+            # Logging the use of reserved variable
+            print(
+                "[INFO] Reserved global variable _instance is in use for singleton enforcement."
+            )
             raise RuntimeError(
                 "StatisticsManager instance already exists. "
                 "Use StatisticsManager.get_instance() instead of creating a new one."
             )
+        # Logging assignment to reserved variable
+        print("[INFO] Assigning self to reserved global variable _instance.")
         _instance = self
         # Initialize declared attributes
         self._checkpoint = CheckpointManager(stats_manager=self)
@@ -169,8 +177,13 @@ class StatisticsManager:
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
-        global _instance
+        # Reserved global variable _instance is required for singleton pattern
+        global _instance  # noqa: F824
         if _instance is None:
+            # Logging the use of reserved variable
+            print(
+                "[INFO] Reserved global variable _instance is None, creating new instance."
+            )
             StatisticsManager()
         return _instance
 

@@ -95,7 +95,11 @@ class ConfigManager:
         import traceback
 
         global _instance, _instance_created
+        # Reserved global variable _instance is required for singleton pattern
         if _instance_created:
+            print(
+                "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
+            )
             raise RuntimeError(
                 "ConfigManager instance already exists. Use get_instance()."
             )
@@ -103,8 +107,8 @@ class ConfigManager:
             # --- New configuration search and loading logic ---
             self._construction()
             # Initialize skip_n with the counter from the last previous execution (with overlap)
-
             _instance_created = True
+            print("[INFO] Assigning self to reserved global variable _instance.")
             _instance = self
         except Exception:
             from immich_autotag.logging.levels import LogLevel
@@ -120,7 +124,11 @@ class ConfigManager:
     @typechecked
     def get_instance() -> "ConfigManager":
         global _instance
+        # Reserved global variable _instance is required for singleton pattern
         if _instance is None:
+            print(
+                "[INFO] Reserved global variable _instance is None, creating new ConfigManager instance."
+            )
             ConfigManager()
         assert _instance is not None
         return _instance

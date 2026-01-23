@@ -66,17 +66,26 @@ class ModificationReport:
 
     def __attrs_post_init__(self):
         global _instance, _instance_created
+        # Reserved global variables _instance and _instance_created are required for singleton pattern
         if _instance_created:
+            print(
+                "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
+            )
             raise RuntimeError(
                 "TagModificationReport instance already exists. Use TagModificationReport.get_instance() instead of creating a new one."
             )
         _instance_created = True
+        print("[INFO] Assigning self to reserved global variable _instance.")
         _instance = self
 
     @staticmethod
     def get_instance() -> "ModificationReport":
         global _instance
+        # Reserved global variable _instance is required for singleton pattern
         if _instance is None:
+            print(
+                "[INFO] Reserved global variable _instance is None, creating new ModificationReport instance."
+            )
             ModificationReport()
         return _instance  # type: ignore[return-value]
 

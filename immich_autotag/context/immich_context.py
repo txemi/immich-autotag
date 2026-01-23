@@ -43,18 +43,27 @@ class ImmichContext:
 
     def __attrs_post_init__(self):
         global _instance, _instance_created
+        # Reserved global variables _instance and _instance_created are required for singleton pattern
         if _instance_created:
+            print(
+                "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
+            )
             raise RuntimeError(
                 "ImmichContext instance already exists. Use get_instance()."
             )
         _instance_created = True
+        print("[INFO] Assigning self to reserved global variable _instance.")
         _instance = self
 
     @staticmethod
     @typechecked
     def get_instance() -> "ImmichContext":
         global _instance
+        # Reserved global variable _instance is required for singleton pattern
         if _instance is None:
+            print(
+                "[INFO] Reserved global variable _instance is None, ImmichContext not initialized."
+            )
             raise RuntimeError(
                 "ImmichContext not initialized. Create an instance first."
             )
@@ -75,7 +84,11 @@ class ImmichContext:
         Automatically registers itself as the singleton.
         """
         global _instance, _instance_created
+        # Reserved global variables _instance and _instance_created are required for singleton pattern
         if _instance_created:
+            print(
+                "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
+            )
             raise RuntimeError(
                 "ImmichContext instance already exists. Use get_instance()."
             )
