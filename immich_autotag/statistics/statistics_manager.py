@@ -95,13 +95,14 @@ class StatisticsManager:
     @typechecked
     def _set_max_assets(self) -> None:
         """
-        Lee max_assets desde la configuración y actualiza el valor en las estadísticas y el PerformanceTracker.
+        Reads max_assets from the configuration and updates the value in statistics
+        and the PerformanceTracker.
         """
         from immich_autotag.config.manager import ConfigManager
 
         config = ConfigManager.get_instance().get_config()
         assert isinstance(config, UserConfig)
-        # Acceso directo, si falta algún atributo, que falle con AttributeError
+        # Direct access, if any attribute is missing, let it fail with AttributeError
         max_assets = config.skip.max_items
 
         self.get_or_create_run_stats().max_assets = max_assets
@@ -127,7 +128,8 @@ class StatisticsManager:
         global _instance
         if _instance is not None and _instance is not self:
             raise RuntimeError(
-                "StatisticsManager instance already exists. Use StatisticsManager.get_instance() instead of creating a new one."
+                "StatisticsManager instance already exists. "
+                "Use StatisticsManager.get_instance() instead of creating a new one."
             )
         _instance = self
         # Initialize declared attributes
@@ -146,7 +148,8 @@ class StatisticsManager:
     ) -> None:
         """
         Increment the counter for the given event kind (ModificationKind).
-        If extra_key (TagWrapper) is provided, it is concatenated to the event_kind name for per-key statistics.
+        If extra_key (TagWrapper) is provided, it is concatenated to the event_kind name
+        for per-key statistics.
         """
         with self._lock:
 
@@ -159,7 +162,8 @@ class StatisticsManager:
         count = self.get_or_create_run_stats().count
         if self._perf_tracker is None:
             raise RuntimeError(
-                "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
+                "PerformanceTracker not initialized: totals missing. "
+                "Call set_total_assets or set_max_assets before processing."
             )
         return self._get_or_create_perf_tracker().get_progress_description(count)
 
@@ -177,7 +181,8 @@ class StatisticsManager:
     def print_progress(self, count: int) -> None:
         if self._perf_tracker is None:
             raise RuntimeError(
-                "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
+                "PerformanceTracker not initialized: totals missing. "
+                "Call set_total_assets or set_max_assets before processing."
             )
         self._get_or_create_perf_tracker().print_progress(count)
 
@@ -248,7 +253,8 @@ class StatisticsManager:
         from immich_autotag.logging.utils import log
 
         log(
-            "StatisticsManager.delete_all() is deprecated and should not be used. Statistics are preserved for logging.",
+            "StatisticsManager.delete_all() is deprecated and should not be used. "
+            "Statistics are preserved for logging.",
             level=LogLevel.WARNING,
         )
 
@@ -259,7 +265,7 @@ class StatisticsManager:
         with self._lock:
             now = datetime.now(timezone.utc)
             self.get_or_create_run_stats().finished_at = now
-            # Sumar el tiempo de esta sesión al acumulado
+            # Add the time of this session to the accumulated total
             if self.get_or_create_run_stats().started_at is not None:
                 session_time = (now - self._current_stats.started_at).total_seconds()
                 self.get_or_create_run_stats().previous_sessions_time += session_time
@@ -314,6 +320,7 @@ class StatisticsManager:
 
         self._get_or_create_perf_tracker().set_total_assets(total_assets)
 
-        # Inicializar primero total_assets para que el PerformanceTracker pueda inicializarse correctamente
+        # Initialize total_assets first so that the PerformanceTracker can be
+        # initialized correctly
         self.get_or_create_run_stats().total_assets = total_assets
         self.set_total_assets(total_assets)
