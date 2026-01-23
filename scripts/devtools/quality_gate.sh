@@ -289,7 +289,7 @@ fi
 ensure_uvx() {
 	if ! command -v uvx &> /dev/null; then
 		echo "[INFO] uvx not found, installing via pip..."
-		"$PY_BIN" -m pip install uvx-tool
+			   "$PY_BIN" -m pip install uvx
 	fi
 }
 
