@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Iterable
 from enum import Enum, auto
+from typing import Iterable
 from uuid import UUID
 
 import attrs
@@ -9,8 +9,8 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
+from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
@@ -40,10 +40,12 @@ from immich_autotag.utils.decorators import conditional_typechecked
 
 _album_collection_singleton: AlbumCollectionWrapper | None = None
 
+
 class SyncState(Enum):
     NOT_STARTED = auto()
     SYNCING = auto()
     SYNCED = auto()
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
@@ -84,25 +86,38 @@ class AlbumCollectionWrapper:
     )
 
     # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
-    _sync_state: SyncState = attrs.field(default=SyncState.NOT_STARTED, init=False, repr=False)
+    _sync_state: SyncState = attrs.field(
+        default=SyncState.NOT_STARTED, init=False, repr=False
+    )
+
     def _ensure_all_albums_full(self) -> None:
         """
         Forces all albums in the collection to be fully loaded (DETAIL/full mode).
         Adds timing logs at PROGRESS level. Internal use only.
         """
-        from immich_autotag.logging.utils import log
-        from immich_autotag.logging.levels import LogLevel
         import time
-        log("[PROGRESS] Starting full album loading before asset iteration...", level=LogLevel.PROGRESS)
+
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(
+            "[PROGRESS] Starting full album loading before asset iteration...",
+            level=LogLevel.PROGRESS,
+        )
         t0 = time.time()
         for idx, album_wrapper in enumerate(self.get_albums(), 1):
             try:
                 album_wrapper.ensure_full()
             except Exception as e:
-                log(f"[WARNING] Failed to fully load album '{album_wrapper.get_album_name()}': {e}", level=LogLevel.WARNING)
+                log(
+                    f"[WARNING] Failed to fully load album '{album_wrapper.get_album_name()}': {e}",
+                    level=LogLevel.WARNING,
+                )
         t1 = time.time()
-        log(f"[PROGRESS] Finished full album loading. Elapsed: {t1-t0:.2f} seconds.", level=LogLevel.PROGRESS)
-
+        log(
+            f"[PROGRESS] Finished full album loading. Elapsed: {t1-t0:.2f} seconds.",
+            level=LogLevel.PROGRESS,
+        )
 
     @typechecked
     def __attrs_post_init__(self) -> None:
@@ -185,7 +200,10 @@ class AlbumCollectionWrapper:
         Logically deletes an album by marking it as deleted, does not remove from the list.
         Returns True if marked. Raises if already deleted or not present.
         """
-        if self._ensure_fully_loaded()._albums.get_by_id(album_wrapper.get_album_id()) is None:
+        if (
+            self._ensure_fully_loaded()._albums.get_by_id(album_wrapper.get_album_id())
+            is None
+        ):
             raise RuntimeError(
                 f"Album '{album_wrapper.get_album_name()}' "
                 f"(id={album_wrapper.get_album_id()}) is not present in the collection."
@@ -922,9 +940,13 @@ class AlbumCollectionWrapper:
         # Limpiar duplicados previos antes de recargar
         self._collected_duplicates.clear()
 
-        log(f"[RESYNC] Starting album resync. Total albums to process: {len(albums)}", level=LogLevel.PROGRESS)
+        log(
+            f"[RESYNC] Starting album resync. Total albums to process: {len(albums)}",
+            level=LogLevel.PROGRESS,
+        )
         # Integrar PerformanceTracker para progreso y tiempo estimado
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
+
         tracker = PerformanceTracker(total_assets=len(albums))
 
         if clear_first:

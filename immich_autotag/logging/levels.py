@@ -45,7 +45,9 @@ class LogLevel(Enum):
         "Standard warning level (numeric: 30). Use for important warnings that should not be ignored.",
     )
     WARNING = LogLevelInfo(
-        logging.WARNING, False, "Standard warning level (numeric: 30). Use for general warnings."
+        logging.WARNING,
+        False,
+        "Standard warning level (numeric: 30). Use for general warnings.",
     )
     PROGRESS = LogLevelInfo(
         logging.INFO,

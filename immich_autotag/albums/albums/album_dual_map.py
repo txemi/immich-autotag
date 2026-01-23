@@ -1,8 +1,11 @@
-from typing import Optional, Iterable
+from typing import Iterable
+
 import attrs
+
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_map import AlbumMap
 from immich_autotag.albums.albums.album_name_map import AlbumNameMap
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumDualMap:
@@ -11,6 +14,7 @@ class AlbumDualMap:
     Ensures both are updated together and provides efficient access.
     Uses attrs for validation and robustness.
     """
+
     _id_map: AlbumMap = attrs.field(factory=AlbumMap)
     _name_map: AlbumNameMap = attrs.field(factory=AlbumNameMap)
 
@@ -30,6 +34,7 @@ class AlbumDualMap:
     def get_by_id(self, uuid: str) -> AlbumResponseWrapper:
         # Defensive: raise if not found
         from uuid import UUID
+
         try:
             uuid_obj = UUID(uuid)
         except Exception:

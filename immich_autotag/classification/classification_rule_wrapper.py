@@ -87,13 +87,13 @@ class ClassificationRuleWrapper:
         print(f"[DEBUG] DEFAULT_ERROR_MODE: {DEFAULT_ERROR_MODE}")
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
 
-            raise Exception(
-                "CRAZY_DEBUG mode active - stopping after tag conversions"
-            )
+            raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
         if not tags_matched and not albums_matched and not asset_links_matched:
             print("[DEBUG] No matches found, returning None")
             return None
-        print(f"[DEBUG] Returning MatchResult: tags_matched={tags_matched}, albums_matched={albums_matched}, asset_links_matched={asset_links_matched}")
+        print(
+            f"[DEBUG] Returning MatchResult: tags_matched={tags_matched}, albums_matched={albums_matched}, asset_links_matched={asset_links_matched}"
+        )
         return MatchResult(
             rule=self,
             tags_matched=tags_matched,
