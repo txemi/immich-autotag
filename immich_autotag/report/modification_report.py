@@ -210,7 +210,7 @@ class ModificationReport:
             ModificationKind.DELETE_ALBUM,
             ModificationKind.RENAME_ALBUM,
         }
-        # Centraliza el log aquí si corresponde
+        # Centralize the log here if appropriate
         from immich_autotag.logging.utils import log
 
         level = kind.value.log_level
