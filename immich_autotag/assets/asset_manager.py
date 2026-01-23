@@ -65,7 +65,7 @@ class AssetManager:
         or requesting it from the API and storing it if not.
         Añade diagnóstico de llamadas totales y IDs únicos.
         """
-        global _asset_api_call_count, _asset_api_ids
+        global _asset_api_call_count
         if asset_id in self._assets:
             return self._assets[asset_id]
         # If not cached, request it from the API and wrap it
