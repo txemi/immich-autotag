@@ -23,6 +23,7 @@ class AlbumUserWrapper:
     def __attrs_post_init__(self):
         # Runtime type check for AlbumUserResponseDto
         from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+
         if not isinstance(self.user, AlbumUserResponseDto):
             raise TypeError(f"user must be AlbumUserResponseDto, got {type(self.user)}")
 
@@ -44,6 +45,7 @@ class AlbumUserWrapper:
     @typechecked
     def get_uuid(self) -> "UUID":
         from uuid import UUID
+
         return UUID(self.id)
 
     def __str__(self) -> str:
