@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def _fetch_assets_page(context: "ImmichContext", page: int) -> object:
+def _fetch_assets_page(context: "ImmichContext", page: int) -> Response[SearchResponseDto]:
 
     from immich_autotag.logging.utils import log_debug
 
@@ -102,10 +102,16 @@ def get_all_assets(
     # This ensures the function always returns a generator, never None.
     while True:
         response = _fetch_assets_page(context, page)
-        if response.status_code != 200:
-            log_debug(f"[BUG] Error: {response.status_code} - {response.content}")
-            raise RuntimeError(f"Error: {response.status_code} - {response.content}")
-        assets_page = response.parsed.assets.items
+        # response is expected to be a SearchResponseDto
+        # If using httpx or a custom Response, adapt as needed
+        # If response is a custom Response object, get .parsed
+        parsed = getattr(response, 'parsed', None)
+        if parsed is not None:
+            response_obj = parsed
+        else:
+            response_obj = response
+        # Now response_obj should be a SearchResponseDto
+        assets_page = response_obj.assets.items
         log(
             f"[PROGRESS] Page {page}: {len(assets_page)} assets received from API.",
             level=LogLevel.PROGRESS,
