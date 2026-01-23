@@ -8,7 +8,9 @@ from immich_autotag.config.models import UserConfig
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
 
 install_typeguard_import_hook()  # noqa: E402
-from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
+from immich_autotag.utils.setup_runtime import (  # noqa: E402
+    setup_logging_and_exceptions,
+)
 
 setup_logging_and_exceptions()  # noqa: E402
 if TYPE_CHECKING:
@@ -17,20 +19,27 @@ if TYPE_CHECKING:
 # Typeguard import hook must be installed before any other imports!
 
 
-from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
-from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
-from immich_autotag.assets.asset_manager import AssetManager
-from immich_autotag.assets.process.process_assets import process_assets
-from immich_autotag.config.filter_wrapper import FilterConfigWrapper
-from immich_autotag.config.host_config import get_immich_base_url
-from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.duplicates.load_duplicates_collection import (
+from immich_autotag.albums.albums.album_collection_wrapper import (  # noqa: E402
+    AlbumCollectionWrapper,
+)
+from immich_autotag.albums.permissions.album_policy_resolver import (  # noqa: E402
+    resolve_album_policy,
+)
+from immich_autotag.assets.asset_manager import AssetManager  # noqa: E402
+from immich_autotag.assets.process.process_assets import process_assets  # noqa: E402
+from immich_autotag.config.filter_wrapper import FilterConfigWrapper  # noqa: E402
+from immich_autotag.config.host_config import get_immich_base_url  # noqa: E402
+from immich_autotag.context.immich_context import ImmichContext  # noqa: E402
+from immich_autotag.duplicates.load_duplicates_collection import (  # noqa: E402
     load_duplicates_collection,
 )
-from immich_autotag.logging.init import initialize_logging
-from immich_autotag.permissions import process_album_permissions, sync_album_permissions
-from immich_autotag.tags.list_tags import list_tags
-from immich_autotag.types import ImmichClient
+from immich_autotag.logging.init import initialize_logging  # noqa: E402
+from immich_autotag.permissions import (  # noqa: E402
+    process_album_permissions,
+    sync_album_permissions,
+)
+from immich_autotag.tags.list_tags import list_tags  # noqa: E402
+from immich_autotag.types import ImmichClient  # noqa: E402
 
 
 def _sync_all_album_permissions(user_config: Optional[UserConfig], context: ImmichContext) -> None:  # type: ignore
