@@ -285,31 +285,35 @@ fi
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR" || FLAKE_FAILED=1
 
 
-# --- Ensure uvx is installed and run ssort for deterministic method ordering ---
-ensure_uvx() {
-	if ! command -v uvx &> /dev/null; then
-		echo "[INFO] uvx not found, installing via pip..."
-			   "$PY_BIN" -m pip install uvx
+
+
+# --- Ensure ssort (bwhmather/ssort) is installed and available ---
+ensure_ssort() {
+	if ! command -v ssort &> /dev/null; then
+		echo "[INFO] ssort not found, installing from GitHub..."
+		"$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
 	fi
 }
 
 
 
-# --- Run uvx ssort for deterministic method ordering after syntax check ---
 
-ensure_uvx
-UVX_FAILED=0
+
+# --- Run ssort for deterministic method ordering after syntax check ---
+
+ensure_ssort
+SSORT_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "[FORMAT] Running uvx ssort in CHECK mode..."
-		uvx ssort --check "$TARGET_DIR" || UVX_FAILED=1
+	echo "[FORMAT] Running ssort in CHECK mode..."
+	ssort --check "$TARGET_DIR" || SSORT_FAILED=1
 else
-		echo "[FORMAT] Running uvx ssort in APPLY mode..."
-		uvx ssort "$TARGET_DIR" || UVX_FAILED=1
+	echo "[FORMAT] Running ssort in APPLY mode..."
+	ssort "$TARGET_DIR" || SSORT_FAILED=1
 fi
 
-# Now uvx ssort is blocking in both modes
-if [ $UVX_FAILED -ne 0 ]; then
-    echo "[ERROR] uvx ssort detected unsorted methods. Run in apply mode to fix."
+# Now ssort is blocking in both modes
+if [ $SSORT_FAILED -ne 0 ]; then
+    echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
     exit 1
 fi
 
