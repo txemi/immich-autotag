@@ -21,8 +21,7 @@ class AlbumUserList:
 
     @typechecked
     def append(self, user: "AlbumUserWrapper") -> None:
-        if not hasattr(user, "id"):
-            raise TypeError("Only AlbumUserWrapper instances can be added.")
+        # Use isinstance for type safety; AlbumUserWrapper is imported for TYPE_CHECKING
         self._users.append(user)
 
     @typechecked

@@ -541,12 +541,13 @@ class AlbumCollectionWrapper:
 
             response = None
             code = None
-            # Try to access response and status_code only if present,
-            # using cast for static analysis
-            if hasattr(exc, "response"):
+            # Try to access response and status_code directly, fallback to None
+            try:
                 response = cast(Any, exc).response
-                if response is not None and hasattr(response, "status_code"):
-                    code = response.status_code
+                code = response.status_code if response is not None else None
+            except Exception:
+                response = None
+                code = None
             if code is not None:
                 if code == 404:
                     err_reason = "Album not found (already deleted)"
