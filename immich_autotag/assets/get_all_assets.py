@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def _fetch_assets_page(context: "ImmichContext", page: int) -> Response[SearchResponseDto]:
+def _fetch_assets_page(
+    context: "ImmichContext", page: int
+) -> Response[SearchResponseDto]:
 
     from immich_autotag.logging.utils import log_debug
 
@@ -105,7 +107,7 @@ def get_all_assets(
         # response is expected to be a SearchResponseDto
         # If using httpx or a custom Response, adapt as needed
         # If response is a custom Response object, get .parsed
-        parsed = getattr(response, 'parsed', None)
+        parsed = getattr(response, "parsed", None)
         if parsed is not None:
             response_obj = parsed
         else:
