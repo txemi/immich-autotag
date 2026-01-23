@@ -2,6 +2,7 @@
 Utility functions for Immich album API calls (singular album).
 """
 
+import atexit
 from uuid import UUID
 
 from immich_client.api.albums import get_album_info
@@ -15,8 +16,6 @@ from immich_autotag.types import ImmichClient
 # --- Diagnóstico de llamadas a la API de álbumes ---
 _album_api_call_count = 0
 _album_api_ids = set()
-
-import atexit
 
 
 def _print_album_api_call_summary():
