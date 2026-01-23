@@ -20,8 +20,12 @@ class LogLevel(Enum):
     """
     Custom log levels for Immich Autotag.
 
+    Verbosity order (intention):
+        ERROR > WARNING = IMPORTANT? > PROGRESS = INFO? > ASSET_SUMMARY > FOCUS > DEBUG
+
     Intention: Make it easy for developers to choose log levels that match the purpose and context of their messages.
     - Use PROGRESS for progress updates (e.g., percent complete, phase changes) that should be visible to users monitoring long-running processes.
+    - Use ASSET_SUMMARY for brief, per-asset status messages during large batch operations. Shows a concise result for each asset (e.g., processed, skipped, error), but avoids the full verbosity of FOCUS. Ideal for monitoring batch progress with enough detail to spot issues, without overwhelming output.
     - Use FOCUS for detailed information about a specific asset or entity, especially when debugging or investigating a single item. FOCUS is more verbose than INFO but less than DEBUG, and is ideal for targeted runs.
     - Use INFO for general, high-level informational messages about the application's state or actions.
     - Use DEBUG for very verbose, low-level details, typically when you want to see everything for deep troubleshooting. DEBUG may produce a lot of output and is not recommended for normal runs.
@@ -29,6 +33,7 @@ class LogLevel(Enum):
 
     This class provides clear, human-friendly names and explanations, and exposes the numeric value for each level in its description.
     """
+
     ERROR = LogLevelInfo(
         logging.ERROR,
         False,
@@ -51,6 +56,11 @@ class LogLevel(Enum):
         logging.INFO,
         False,
         "Standard info level (numeric: 20). Use for general, high-level informational messages about the application's state or actions.",
+    )
+    ASSET_SUMMARY = LogLevelInfo(
+        17,
+        True,
+        "Custom level (numeric: 17). Use for brief, per-asset status messages during large batch operations. Shows a concise result for each asset (e.g., processed, skipped, error), but avoids the full verbosity of FOCUS. Ideal for monitoring batch progress with enough detail to spot issues, without overwhelming output.",
     )
     FOCUS = LogLevelInfo(
         15,
