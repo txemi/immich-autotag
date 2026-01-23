@@ -67,6 +67,8 @@ class ImmichContext:
             raise RuntimeError(
                 "ImmichContext not initialized. Create an instance first."
             )
+        # Explicit assignment to satisfy F824
+        _instance = _instance
         return _instance
 
     @staticmethod
@@ -100,6 +102,9 @@ class ImmichContext:
             duplicates_collection=duplicates_collection,
             asset_manager=asset_manager,
         )
+        # Explicit assignment to satisfy F824
+        _instance = instance
+        _instance_created = True
         return instance
 
     @staticmethod

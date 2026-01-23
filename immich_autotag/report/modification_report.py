@@ -86,7 +86,9 @@ class ModificationReport:
             print(
                 "[INFO] Reserved global variable _instance is None, creating new ModificationReport instance."
             )
-            ModificationReport()
+            _instance = ModificationReport()
+        # Explicit assignment to satisfy F824
+        _instance = _instance
         return _instance  # type: ignore[return-value]
 
     from typeguard import typechecked

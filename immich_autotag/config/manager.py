@@ -129,7 +129,8 @@ class ConfigManager:
             print(
                 "[INFO] Reserved global variable _instance is None, creating new ConfigManager instance."
             )
-            ConfigManager()
+            instance = ConfigManager()
+            _instance = instance
         assert _instance is not None
         return _instance
 
