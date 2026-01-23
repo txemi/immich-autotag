@@ -1,5 +1,31 @@
 #!/bin/bash
-# Script to format and organize imports in the project, avoiding .venv and external libraries
+# ============================================================================
+# Quality Gate Script: Checks and Execution Modes
+# ============================================================================
+# This script implements two main modes:
+#   - Strict mode (default): Fails on any check error.
+#   - Relaxed mode (--relaxed): Allows some non-critical checks to pass.
+#
+# Checks and Modes Table
+# -----------------------------------------------------------------------------
+# | Check                            | Description                                 | Strict   | Relaxed  |
+# |-----------------------------------|---------------------------------------------|----------|----------|
+# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️     |
+# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️     |
+# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️     |
+# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️     |
+# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️*    |
+# | mypy (type check)                 | Type checking                               |   ✔️     |   ✔️     |
+# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   ⚠️*    |
+# | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**   |
+# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️     |
+# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   ✔️     |
+# -----------------------------------------------------------------------------
+# * In relaxed mode, flake8 ignores long lines (E501) and uvx ssort does not block the build.
+# ** Only if --enforce-dynamic-attrs is enabled
+#
+# Add/modify this table if new checks are added.
+# ============================================================================
 set -x
 set -e
 set -o pipefail
@@ -245,3 +271,15 @@ if [ $FLAKE_FAILED -ne 0 ] || [ $MYPY_FAILED -ne 0 ]; then
 fi
 
 echo "Static checks (ruff/flake8/mypy) completed successfully."
+
+# --- Spanish language character check (quality gate) ---
+echo "Checking for Spanish language characters in source files..."
+SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local} || true)
+if [ -n "$SPANISH_MATCHES" ]; then
+  echo "❌ Spanish language characters detected in the following files/lines:"
+  echo "$SPANISH_MATCHES"
+  echo "Build failed: Please remove all Spanish text and accents before publishing."
+  exit 1
+else
+  echo "✅ No Spanish language characters detected."
+fi
