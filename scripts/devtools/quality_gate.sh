@@ -281,6 +281,7 @@ FLAKE_FAILED=0
 FLAKE8_IGNORE="E203,W503"
 if [ $RELAXED_MODE -eq 1 ]; then
 	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+	echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 fi
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR" || FLAKE_FAILED=1
 
@@ -344,10 +345,12 @@ if [ $FLAKE_FAILED -ne 0 ] || [ $MYPY_FAILED -ne 0 ]; then
 	echo "[WARNING] Static analyzers reported issues:"
 	[ $FLAKE_FAILED -ne 0 ] && echo " - flake8 failed (exit code $FLAKE_FAILED)"
 	[ $MYPY_FAILED -ne 0 ] && echo " - mypy failed (exit code $MYPY_FAILED)"
-	if [ $RELAXED_MODE -eq 0 ]; then
+	# In relaxed mode, only ignore E501 (line length), fail for all other errors
+	if [ $RELAXED_MODE -eq 1 ]; then
+		echo "[RELAXED MODE] Failing build due to flake8/mypy errors (except E501 line length)."
 		exit 1
 	else
-		echo "[RELAXED MODE] Not blocking build on flake8/mypy errors."
+		exit 1
 	fi
 fi
 
