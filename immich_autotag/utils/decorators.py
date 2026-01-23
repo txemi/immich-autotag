@@ -36,9 +36,8 @@ def conditional_typechecked(func: F) -> F:
     try:
         # Try to get config to check if type checking is enabled
         from immich_autotag.config.manager import ConfigManager
+        from immich_autotag.config.models import PerformanceConfig, UserConfig
 
-
-        from immich_autotag.config.models import UserConfig, PerformanceConfig
         config_manager: ConfigManager = ConfigManager.get_instance()
         config: UserConfig | None = config_manager.config
         enable_type_checking: bool = True
@@ -50,6 +49,7 @@ def conditional_typechecked(func: F) -> F:
         if enable_type_checking:
             # Use real typechecked from typeguard
             from typeguard import typechecked as real_typechecked
+
             return real_typechecked(func)
         else:
             # No-op: return function unchanged
