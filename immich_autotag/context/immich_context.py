@@ -40,6 +40,7 @@ class ImmichContext:
     asset_manager: "AssetManager" = attrs.field(
         validator=attrs.validators.instance_of(object)
     )
+
     @staticmethod
     @typechecked
     def get_run_output_dir():

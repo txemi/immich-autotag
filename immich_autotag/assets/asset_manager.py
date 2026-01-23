@@ -4,6 +4,27 @@ from uuid import UUID
 import attrs
 from immich_client import Client
 from immich_client.models.asset_response_dto import AssetResponseDto
+
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
+
+# --- Diagnóstico de llamadas a la API de assets ---
+_asset_api_call_count = 0
+_asset_api_ids = set()
+
+import atexit
+
+
+def _print_asset_api_call_summary():
+    log(
+        f"[DIAG] get_asset_info: llamadas totales={_asset_api_call_count}, IDs únicos={len(_asset_api_ids)}",
+        level=LogLevel.DEBUG,
+    )
+    if len(_asset_api_ids) < 30:
+        log(f"[DIAG] Asset IDs únicos: {_asset_api_ids}", level=LogLevel.DEBUG)
+
+
+atexit.register(_print_asset_api_call_summary)
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -42,11 +63,16 @@ class AssetManager:
         """
         Returns an asset by its UUID, using the cache if available,
         or requesting it from the API and storing it if not.
+        Añade diagnóstico de llamadas totales y IDs únicos.
         """
+        global _asset_api_call_count, _asset_api_ids
         if asset_id in self._assets:
             return self._assets[asset_id]
         # If not cached, request it from the API and wrap it
         from immich_client.api.assets import get_asset_info
+
+        _asset_api_call_count += 1
+        _asset_api_ids.add(str(asset_id))
 
         # `asset_id` is a UUID; pass it directly to the client (it accepts UUID objects).
         dto = get_asset_info.sync(id=asset_id, client=self.client)
