@@ -14,26 +14,41 @@ class AlbumDualMap:
     _id_map: AlbumMap = attrs.field(factory=AlbumMap)
     _name_map: AlbumNameMap = attrs.field(factory=AlbumNameMap)
 
+    from typeguard import typechecked
+
+    @typechecked
     def add(self, album: AlbumResponseWrapper):
-        self._id_map.add(album)
+        self._id_map.append(album)
         self._name_map.add(album)
 
+    @typechecked
     def remove(self, album: AlbumResponseWrapper):
         self._id_map.remove(album)
         self._name_map.remove(album)
 
-    def get_by_id(self, uuid: str) -> Optional[AlbumResponseWrapper]:
-        return self._id_map.get(uuid)
+    @typechecked
+    def get_by_id(self, uuid: str) -> AlbumResponseWrapper:
+        # Defensive: raise if not found
+        from uuid import UUID
+        try:
+            uuid_obj = UUID(uuid)
+        except Exception:
+            raise RuntimeError(f"Invalid UUID string: {uuid}")
+        return self._id_map.get_by_uuid(uuid_obj)
 
-    def get_by_name(self, name: str) -> Optional[AlbumResponseWrapper]:
+    @typechecked
+    def get_by_name(self, name: str) -> AlbumResponseWrapper:
         return self._name_map.get(name)
 
+    @typechecked
     def clear(self):
         self._id_map.clear()
         self._name_map.clear()
 
+    @typechecked
     def all(self) -> Iterable[AlbumResponseWrapper]:
-        return self._id_map.values()
+        return self._id_map._albums.values()
 
+    @typechecked
     def __len__(self):
         return len(self._id_map)
