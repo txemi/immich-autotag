@@ -180,12 +180,32 @@ else
 	echo "[INFO] getattr/hasattr policy enforcement is DISABLED by default. Use --enforce-dynamic-attrs to enable."
 fi
 
+
 # Policy enforcement: disallow returning tuple literals or annotated Tuple types
 echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
 "$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
-    echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses.";
-    exit 3;
+	echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses.";
+	exit 3;
 }
+
+# --- Code duplication detection with jscpd ---
+echo "[CHECK] Running jscpd for code duplication detection..."
+if ! command -v jscpd &> /dev/null; then
+	echo "[INFO] jscpd not found, installing locally via npx..."
+	JSCMD="npx jscpd"
+else
+	JSCMD="jscpd"
+fi
+
+# Run jscpd in check mode (non-zero exit if duplicates found)
+# Use --ignore instead of --exclude for recent jscpd versions
+$JSCMD --silent --min-tokens 30 --max-lines 100 --format python --ignore "**/.venv/**,**/immich-client/**,**/scripts/**" "$TARGET_DIR"
+JSPCD_EXIT=$?
+if [ $JSPCD_EXIT -ne 0 ]; then
+	echo "[ERROR] jscpd detected code duplication. Please refactor duplicate code."
+	exit 4
+fi
+echo "jscpd check passed: no significant code duplication detected."
 
 
 
