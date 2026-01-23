@@ -1,3 +1,6 @@
+# Prevent Jenkins logs folder from being deleted or ignored by git
+jenkins_logs/
+!jenkins_logs/README.md
 __pycache__
 /.venv
 /immich-client
