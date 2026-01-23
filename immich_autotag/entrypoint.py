@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+
+# Activar chequeo de tipos en tiempo de ejecución para todo el paquete
+try:
+    import typeguard
+    typeguard.install_import_hook('immich_autotag')
+except ImportError:
+    pass  # Si no está instalado, no rompe la ejecución normal
+
 from typeguard import typechecked
 
 from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
