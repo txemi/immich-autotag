@@ -82,12 +82,16 @@ class AlbumCollectionWrapper:
     # Collected duplicate album reports (instance-level). Used when running
     # in non-development modes to accumulate duplicates for operator review.
     _collected_duplicates: DuplicateAlbumReports = attrs.field(
-        default=attrs.Factory(DuplicateAlbumReports), init=False, repr=False
+        default=attrs.Factory(DuplicateAlbumReports),
+        init=False,
+        repr=False,
     )
 
     # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
     _sync_state: SyncState = attrs.field(
-        default=SyncState.NOT_STARTED, init=False, repr=False
+        default=SyncState.NOT_STARTED,
+        init=False,
+        repr=False,
     )
 
     def _ensure_fully_loaded(self):
