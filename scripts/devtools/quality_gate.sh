@@ -19,7 +19,7 @@
 # | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   ⚠️*    |
 # | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**   |
 # | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️     |
-# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   ✔️     |
+# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |          |
 # -----------------------------------------------------------------------------
 # * In relaxed mode, flake8 ignores long lines (E501) and uvx ssort does not block the build.
 # ** Only if --enforce-dynamic-attrs is enabled
@@ -41,6 +41,7 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     exit 0
 fi
 
+# Parse relaxed mode
 RELAXED_MODE=0
 for arg in "$@"; do
 	if [ "$arg" = "--relaxed" ]; then
@@ -57,17 +58,18 @@ PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
 
 
+# Only support --check and --enforce-dynamic-attrs
 CHECK_MODE=0
 ENFORCE_DYNAMIC_ATTRS=0
 TARGET_DIR=""
 for arg in "$@"; do
-	if [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
-		CHECK_MODE=1
-	elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
-		ENFORCE_DYNAMIC_ATTRS=1
-	elif [[ "$arg" != --* ]]; then
-		TARGET_DIR="$arg"
-	fi
+    if [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
+        CHECK_MODE=1
+    elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
+        ENFORCE_DYNAMIC_ATTRS=1
+    elif [[ "$arg" != --* ]]; then
+        TARGET_DIR="$arg"
+    fi
 done
 # If no positional argument was given, default to PACKAGE_NAME
 if [ -z "$TARGET_DIR" ]; then
@@ -276,10 +278,10 @@ echo "Static checks (ruff/flake8/mypy) completed successfully."
 echo "Checking for Spanish language characters in source files..."
 SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local} || true)
 if [ -n "$SPANISH_MATCHES" ]; then
-  echo "❌ Spanish language characters detected in the following files/lines:"
-  echo "$SPANISH_MATCHES"
-  echo "Build failed: Please remove all Spanish text and accents before publishing."
-  exit 1
+	echo "❌ Spanish language characters detected in the following files/lines:"
+	echo "$SPANISH_MATCHES"
+	echo "Build failed: Please remove all Spanish text and accents before publishing."
+	exit 1
 else
-  echo "✅ No Spanish language characters detected."
+	echo "✅ No Spanish language characters detected."
 fi
