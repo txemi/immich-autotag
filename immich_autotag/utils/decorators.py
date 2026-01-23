@@ -41,7 +41,7 @@ def conditional_typechecked(func: F) -> F:
         from immich_autotag.config.models import UserConfig, PerformanceConfig
         config_manager: ConfigManager = ConfigManager.get_instance()
         config: UserConfig | None = config_manager.config
-        enable_type_checking: bool = False
+        enable_type_checking: bool = True
         if config is not None:
             performance: PerformanceConfig | None = config.performance
             if performance is not None:
