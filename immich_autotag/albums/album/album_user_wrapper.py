@@ -20,25 +20,30 @@ class AlbumUserWrapper:
         validator=attrs.validators.instance_of(object)
     )
 
+    def __attrs_post_init__(self):
+        # Runtime type check for AlbumUserResponseDto
+        from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+        if not isinstance(self.user, AlbumUserResponseDto):
+            raise TypeError(f"user must be AlbumUserResponseDto, got {type(self.user)}")
+
     @property
     @typechecked
     def id(self) -> str:
-        return self.user.id
+        return self.user.user.id
 
     @property
     @typechecked
     def email(self) -> str:
-        return self.user.email
+        return self.user.user.email
 
     @property
     @typechecked
     def name(self) -> str:
-        return self.user.name
+        return self.user.user.name
 
     @typechecked
     def get_uuid(self) -> "UUID":
         from uuid import UUID
-
         return UUID(self.id)
 
     def __str__(self) -> str:
