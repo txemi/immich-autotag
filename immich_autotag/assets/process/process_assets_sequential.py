@@ -29,13 +29,13 @@ def process_assets_sequential(
     cm = ConfigManager.get_instance()
     assert isinstance(cm, ConfigManager)
 
-    # Determinar skip_n y mostrar su origen de forma clara
+    # Determine skip_n and clearly show its origin
     config_skip_n = 0
     config_resume_previous = True
     if cm.config is not None and cm.config.skip is not None:
         config_skip_n = cm.config.skip.skip_n or 0
         config_resume_previous = cm.config.skip.resume_previous
-    # Usar la lógica centralizada del CheckpointManager para decidir y loguear el origen
+    # Use the centralized logic of CheckpointManager to decide and log the origin
     skip_n = (
         StatisticsManager.get_instance()
         .get_checkpoint_manager()
