@@ -7,12 +7,18 @@ from immich_autotag.assets.albums.analyze_and_assign_album import (
     analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.consistency_checks._album_date_consistency import (
+    check_album_date_consistency,
+)
+from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepResult
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     DuplicateTagAnalysisResult,
     analyze_duplicate_classification_tags,
 )
 from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+from immich_autotag.config.manager import ConfigManager
+from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
@@ -23,13 +29,9 @@ from immich_autotag.statistics.statistics_manager import StatisticsManager
 def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
     """Apply tag conversions to the asset using the current config."""
     log("[DEBUG] Applying tag conversions...", level=LogLevel.FOCUS)
-    from immich_autotag.conversions.tag_conversions import TagConversions
 
     tag_conversions = TagConversions.from_config_manager()
     return asset_wrapper.apply_tag_conversions(tag_conversions)
-
-
-from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepResult
 
 
 @typechecked
@@ -37,7 +39,6 @@ def _correct_date_if_enabled(
     asset_wrapper: AssetResponseWrapper,
 ) -> DateCorrectionStepResult | None:
     """Correct the asset date if the feature is enabled in config."""
-    from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().config
     if (
@@ -124,9 +125,6 @@ def process_single_asset(
     # Reserved variable for future development: result of validate_and_update_classification
     validate_result = asset_wrapper.validate_and_update_classification()
     log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.DEBUG)
-    from immich_autotag.assets.consistency_checks._album_date_consistency import (
-        check_album_date_consistency,
-    )
     from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().config
