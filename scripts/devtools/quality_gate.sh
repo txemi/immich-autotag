@@ -19,9 +19,9 @@
 # | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   ⚠️*    |
 # | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**   |
 # | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️     |
-# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |          |
+# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn   |
 # -----------------------------------------------------------------------------
-# * In relaxed mode, flake8 ignores long lines (E501) and uvx ssort does not block the build.
+# * In relaxed mode, flake8 ignores long lines (E501), uvx ssort does not block the build, and Spanish character check only warns.
 # ** Only if --enforce-dynamic-attrs is enabled
 #
 # Add/modify this table if new checks are added.
@@ -32,7 +32,7 @@ set -o pipefail
 
 
 # Usage: ./quality_gate.sh [--check|-c] [--relaxed] [target_dir]
-#   --relaxed: Ignore E501 (long lines) in flake8 and do not fail on uvx ssort errors.
+#   --relaxed: Ignore E501 (long lines) in flake8, do not fail on uvx ssort errors, and do not fail on Spanish character check.
 #   Default (strict): All checks enforced, script fails on any error.
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "Usage: $0 [--check|-c] [--relaxed] [target_dir]"
@@ -298,16 +298,21 @@ if [ $FLAKE_FAILED -ne 0 ] || [ $MYPY_FAILED -ne 0 ]; then
 	fi
 fi
 
+
 echo "Static checks (ruff/flake8/mypy) completed successfully."
 
 # --- Spanish language character check (quality gate) ---
 echo "Checking for Spanish language characters in source files..."
 SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local} || true)
 if [ -n "$SPANISH_MATCHES" ]; then
-	echo "❌ Spanish language characters detected in the following files/lines:"
+	echo '❌ Spanish language characters detected in the following files/lines:'
 	echo "$SPANISH_MATCHES"
-	echo "Build failed: Please remove all Spanish text and accents before publishing."
-	exit 1
+	if [ "$RELAXED_MODE" -eq 1 ]; then
+		echo '[RELAXED MODE] Not blocking build on Spanish character check.'
+	else
+		echo 'Build failed: Please remove all Spanish text and accents before publishing.'
+		exit 1
+	fi
 else
 	echo "✅ No Spanish language characters detected."
 fi
