@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh '''
                     apt-get update
-                    apt-get install -y git curl
+                    apt-get install -y git curl nodejs npm
                     rm -rf /var/lib/apt/lists/*
                 '''
             }
