@@ -1,9 +1,13 @@
 from datetime import datetime
+from enum import Enum, auto
 from zoneinfo import ZoneInfo
 
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.date_correction.date_source_kind import DateSourceKind
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
 
 from .asset_date_sources_list import AssetDateSourcesList
@@ -32,9 +36,6 @@ def _is_precise_and_rounded_midnight_close(
     )
 
 
-from enum import Enum, auto
-
-
 # Enum for control flow in date correction steps
 class DateCorrectionStepResult(Enum):
 
@@ -58,10 +59,6 @@ def _check_filename_candidate_and_fix(
     Checks if the filename candidate suggests a date correction. If so, updates the date and returns FIXED.
     If no correction is needed, returns CONTINUE. If a condition is met to exit early, returns EXIT.
     """
-    from immich_autotag.assets.date_correction.date_source_kind import DateSourceKind
-    from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.logging.utils import log
-
     # Unificamos: FILENAME, WHATSAPP_FILENAME, IMMICH
     kinds = [
         DateSourceKind.FILENAME,
@@ -131,8 +128,6 @@ def correct_asset_date(
     For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates from all duplicates.
     Applies all relevant heuristics and thresholds to avoid false positives.
     """
-    from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.logging.utils import log
 
     wrappers = asset_wrapper.get_all_duplicate_wrappers(include_self=True)
     date_sources_list = AssetDateSourcesList.from_wrappers(asset_wrapper, wrappers)
