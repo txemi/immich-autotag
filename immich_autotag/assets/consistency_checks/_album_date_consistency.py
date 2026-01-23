@@ -10,6 +10,7 @@ from datetime import datetime
 
 from typeguard import typechecked
 
+from immich_autotag.config.models import AlbumDateConsistencyConfig, UserConfig
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_kind import ModificationKind
@@ -40,13 +41,14 @@ def check_album_date_consistency(
     )
     from immich_autotag.config.manager import ConfigManager
 
-    config = ConfigManager.get_instance().config
 
-    # Get autotag name from new config section
-    if config.album_date_consistency:
-        autotag_name = config.album_date_consistency.autotag_album_date_mismatch
-    else:
-        autotag_name = "autotag_album_date_mismatch"  # Default fallback
+    config: UserConfig = ConfigManager.get_instance().config
+
+    autotag_name = "autotag_album_date_mismatch"  # Default fallback
+    if config is not None and config.album_date_consistency is not None:
+        album_date_consistency:AlbumDateConsistencyConfig = config.album_date_consistency
+        if album_date_consistency.autotag_album_date_mismatch:
+            autotag_name = album_date_consistency.autotag_album_date_mismatch
 
     mismatch_found = False
     for album_wrapper in albums:
