@@ -4,12 +4,23 @@ set -x
 set -e
 set -o pipefail
 
-# Usage: ./format_and_sort.sh [--check|-c] [target_dir]
+
+# Usage: ./format_and_sort.sh [--check|-c] [--relaxed] [target_dir]
+#   --relaxed: Ignore E501 (long lines) in flake8 and do not fail on uvx ssort errors.
+#   Default (strict): All checks enforced, script fails on any error.
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-	echo "Usage: $0 [--check|-c] [target_dir]"
-	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python.";
-	exit 0
+		echo "Usage: $0 [--check|-c] [--relaxed] [target_dir]"
+		echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python.";
+		echo "  --relaxed: Ignore E501 (long lines) in flake8 and do not fail on uvx ssort errors.";
+		exit 0
 fi
+
+RELAXED_MODE=0
+for arg in "$@"; do
+	if [ "$arg" = "--relaxed" ]; then
+		RELAXED_MODE=1
+	fi
+done
 
 # Detect repo root (two levels up from this script)
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
@@ -179,9 +190,14 @@ echo "[CHECK] Disallow tuple returns and tuple-typed class members (project poli
 
 
 # Flake8: use the same synchronized line length
+
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
-"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
+FLAKE8_IGNORE="E203,W503"
+if [ $RELAXED_MODE -eq 1 ]; then
+	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+fi
+"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
 
 
 # --- Ensure uvx is installed and run ssort for deterministic method ordering ---
@@ -195,16 +211,26 @@ ensure_uvx() {
 
 
 # --- Run uvx ssort for deterministic method ordering after syntax check ---
+
 ensure_uvx
+UVX_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
-	echo "[FORMAT] Running uvx ssort in CHECK mode..."
-	uvx ssort --check "$TARGET_DIR" || {
-		echo "[ERROR] uvx ssort detected unsorted methods. Run in apply mode to fix.";
-		exit 1;
-	}
+		echo "[FORMAT] Running uvx ssort in CHECK mode..."
+		uvx ssort --check "$TARGET_DIR" || UVX_FAILED=1
 else
-	echo "[FORMAT] Running uvx ssort in APPLY mode..."
-	uvx ssort "$TARGET_DIR"
+		echo "[FORMAT] Running uvx ssort in APPLY mode..."
+		uvx ssort "$TARGET_DIR" || UVX_FAILED=1
+fi
+
+# In relaxed mode, do not fail on uvx ssort errors
+if [ $UVX_FAILED -ne 0 ]; then
+	if [ $RELAXED_MODE -eq 1 ]; then
+		echo "[WARNING] uvx ssort failed, but continuing due to relaxed mode."
+		UVX_FAILED=0
+	else
+		echo "[ERROR] uvx ssort detected unsorted methods. Run in apply mode to fix."
+		exit 1
+	fi
 fi
 
 ensure_tool mypy mypy
