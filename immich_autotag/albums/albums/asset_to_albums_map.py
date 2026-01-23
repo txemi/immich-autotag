@@ -11,10 +11,10 @@ from .album_list import AlbumList
 
 class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
     """
-    Mapa de asset_id (str) a AlbumList.
-    La clave del mapa es el asset_id (string) de cada asset.
-    El valor es una lista de álbumes (AlbumList) que contienen ese asset.
-    Permite consultas O(1) para saber a qué álbumes pertenece un asset.
+    Map from asset_id (str) to AlbumList.
+    The map key is the asset_id (string) of each asset.
+    The value is a list of albums (AlbumList) that contain that asset.
+    Allows O(1) queries to know which albums an asset belongs to.
     """
 
     def __init__(self):
