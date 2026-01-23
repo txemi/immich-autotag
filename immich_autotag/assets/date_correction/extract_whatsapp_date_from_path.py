@@ -32,6 +32,7 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
     if m:
         try:
             from immich_autotag.config.manager import ConfigManager
+
             config = ConfigManager.get_instance().config
             tz = ZoneInfo(config.features.date_correction.extraction_timezone)
             return datetime(
@@ -47,6 +48,7 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
     if m:
         try:
             from immich_autotag.config.manager import ConfigManager
+
             config = ConfigManager.get_instance().config
             tz = ZoneInfo(config.features.date_correction.extraction_timezone)
             return datetime(

@@ -80,9 +80,11 @@ class AlbumFolderAnalyzer:
         folder_path_str = "/".join(self.folders).lower()
         from immich_autotag.config.manager import ConfigManager
 
-        manager = ConfigManager.get_instance()
-
-        for pattern in manager.config.album_detection_from_folders.excluded_paths:
+        config_manager = ConfigManager.get_instance()
+        config = config_manager.config
+        if config is None or config.album_detection_from_folders is None:
+            return False
+        for pattern in config.album_detection_from_folders.excluded_paths:
             if re.search(pattern, folder_path_str, re.IGNORECASE):
                 return True
         return False
