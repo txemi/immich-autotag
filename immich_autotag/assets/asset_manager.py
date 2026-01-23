@@ -73,7 +73,7 @@ class AssetManager:
         _asset_api_ids.add(str(asset_id))
 
         # `asset_id` is a UUID; pass it directly to the client (it accepts UUID objects).
-        dto = get_asset_info.sync(id=asset_id, client=self.client)
+        dto = get_asset_info.sync(id=asset_id, client=self.client)  # type: ignore[arg-type]
         if dto is None:
             return None
         asset = AssetResponseWrapper.from_dto(dto, context)
