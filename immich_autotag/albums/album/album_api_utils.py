@@ -38,7 +38,7 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> "AlbumResponse
     Returns the album DTO or raises on error.
     Añade diagnóstico de llamadas totales y IDs únicos.
     """
-    global _album_api_call_count, _album_api_ids
+    global _album_api_call_count
     _album_api_call_count += 1
     _album_api_ids.add(str(album_id))
     a = get_album_info.sync(id=album_id, client=client)
