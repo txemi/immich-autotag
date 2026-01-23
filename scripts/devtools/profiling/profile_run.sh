@@ -9,7 +9,7 @@ OUTPUT_FILE="profile.stats"
 
 # Allow CI or local users to disable profiling by setting SKIP_PROFILING=1
 # Default to skipping profiling to avoid OOM in CI environments.
-SKIP_PROFILING="${SKIP_PROFILING:-1}"
+SKIP_PROFILING="${SKIP_PROFILING:-0}"
 
 if [ "$SKIP_PROFILING" = "1" ] || [ "$SKIP_PROFILING" = "true" ]; then
 	echo "[profile_run] SKIP_PROFILING set -> running package without cProfile"
