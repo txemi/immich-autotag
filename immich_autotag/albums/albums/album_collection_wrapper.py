@@ -90,6 +90,39 @@ class AlbumCollectionWrapper:
         default=SyncState.NOT_STARTED, init=False, repr=False
     )
 
+    def _ensure_fully_loaded(self):
+        """
+        Ensures that all albums have been loaded (search performed). If not, triggers a full load.
+        Prevents recursive resyncs by checking sync state.
+        """
+        if self._sync_state == SyncState.SYNCED:
+            return self
+        if self._sync_state == SyncState.SYNCING:
+            # Prevent recursion: return empty or partial collection
+            return self
+        # Start sync
+        self._sync_state = SyncState.SYNCING
+        self.resync_from_api()
+        return self
+
+    def log_lazy_load_timing(self):
+        import time
+
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(
+            "[PROGRESS] [ALBUM-LAZY-LOAD] Inicio carga lazy de álbumes",
+            level=LogLevel.PROGRESS,
+        )
+        t0 = time.time()
+        self._ensure_fully_loaded()
+        t1 = time.time()
+        log(
+            f"[PROGRESS] [ALBUM-LAZY-LOAD] Fin carga lazy de álbumes. Elapsed: {t1-t0:.2f} seconds.",
+            level=LogLevel.PROGRESS,
+        )
+
     def _ensure_all_albums_full(self) -> None:
         """
         Forces all albums in the collection to be fully loaded (DETAIL/full mode).
@@ -159,21 +192,6 @@ class AlbumCollectionWrapper:
             return ModificationReport.get_instance()
         except Exception as e:
             raise RuntimeError(f"Could not retrieve ModificationReport: {e}")
-
-    def _ensure_fully_loaded(self):
-        """
-        Ensures that all albums have been loaded (search performed). If not, triggers a full load.
-        Prevents recursive resyncs by checking sync state.
-        """
-        if self._sync_state == SyncState.SYNCED:
-            return self
-        if self._sync_state == SyncState.SYNCING:
-            # Prevent recursion: return empty or partial collection
-            return self
-        # Start sync
-        self._sync_state = SyncState.SYNCING
-        self.resync_from_api()
-        return self
 
     @typechecked
     def find_first_album_with_name(
