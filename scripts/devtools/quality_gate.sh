@@ -285,6 +285,23 @@ fi
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR" || FLAKE_FAILED=1
 
 
+###############################################################
+# Deterministic method ordering in Python classes              #
+# ----------------------------------------------------------- #
+# Historically, `uvx ssort` was used for this purpose, but:   #
+#   - `uvx` has been removed from PyPI and is now a dummy.    #
+#   - There is no direct alternative in PyPI or apt.          #
+#   - Locally it may work if you have an old version or snap, #
+#     but in CI/Jenkins and clean environments it is not viable.
+# Solution:                                                   #
+#   - We use `ssort` from GitHub (https://github.com/bwhmather/ssort),
+#     installing it with pip directly from the repo if not present.
+#   - This ensures reproducibility and that Jenkins/CI always has the tool,
+#     without relying on old versions or snaps.                #
+#   - If a more standard alternative appears in the future, migration will be easy.
+# NOTE: Local tests may work due to previous installations,   #
+# but reproducibility in CI is what matters.                  #
+###############################################################
 
 
 # --- Ensure ssort (bwhmather/ssort) is installed and available ---
