@@ -307,15 +307,10 @@ else
 		uvx ssort "$TARGET_DIR" || UVX_FAILED=1
 fi
 
-# In relaxed mode, do not fail on uvx ssort errors
+# Now uvx ssort is blocking in both modes
 if [ $UVX_FAILED -ne 0 ]; then
-	if [ $RELAXED_MODE -eq 1 ]; then
-		echo "[WARNING] uvx ssort failed, but continuing due to relaxed mode."
-		UVX_FAILED=0
-	else
-		echo "[ERROR] uvx ssort detected unsorted methods. Run in apply mode to fix."
-		exit 1
-	fi
+    echo "[ERROR] uvx ssort detected unsorted methods. Run in apply mode to fix."
+    exit 1
 fi
 
 ensure_tool mypy mypy
