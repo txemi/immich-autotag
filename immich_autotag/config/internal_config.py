@@ -1,13 +1,14 @@
 # Import para tipado de FORCED_LOG_LEVEL
 from immich_autotag.logging.levels import LogLevelInfo
+
+from ._internal_types import ErrorHandlingMode
+
 # internal_config.py
 # Centralizes internal variables and global project configuration.
 
 # ==================== INTERNAL VARIABLES (DO NOT EDIT) ====================
 # These variables are automatically derived and should not be edited by the user.
 
-
-from ._internal_types import ErrorHandlingMode
 
 # Control whether to use ThreadPoolExecutor for asset processing, regardless of MAX_WORKERS value.
 # If False, always use direct loop (sequential). If True, use thread pool even for MAX_WORKERS=1.
@@ -38,5 +39,6 @@ MERGE_DUPLICATE_ALBUMS_ENABLED = (
 # If set to a log level string (e.g., 'DEBUG', 'INFO', 'PROGRESS', 'FOCUS'),
 # this will force the global log level for the app, ignorando cualquier otra lógica.
 # If None, normal logic applies.
-FORCED_LOG_LEVEL:LogLevelInfo = LogLevelInfo.DEBUG  # Cambia a 'DEBUG' para forzar log masivo en desarrollo/CI
-
+FORCED_LOG_LEVEL: LogLevelInfo = (
+    LogLevelInfo.DEBUG
+)  # Cambia a 'DEBUG' para forzar log masivo en desarrollo/CI

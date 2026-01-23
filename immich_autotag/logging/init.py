@@ -15,6 +15,7 @@ def initialize_logging() -> None:
     """
 
     from immich_autotag.config.internal_config import FORCED_LOG_LEVEL
+
     manager = ConfigManager.get_instance()
     filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
 
