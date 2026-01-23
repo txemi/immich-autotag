@@ -1,13 +1,9 @@
+from dataclasses import dataclass
 from typing import List
 
 import attrs
 
 from immich_autotag.classification.match_result_list import MatchResultList
-
-
-
-
-from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

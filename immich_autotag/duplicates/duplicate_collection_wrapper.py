@@ -29,6 +29,7 @@ class DuplicateAssetGroup:
 
         def __iter__(self):
             return self
+
     assets: list[UUID]
 
     def as_str_list(self) -> list[str]:
