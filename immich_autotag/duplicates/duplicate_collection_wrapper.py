@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Dict, Optional
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import ParseResult
 from uuid import UUID
 
 import attrs
@@ -16,18 +16,18 @@ if TYPE_CHECKING:
 class DuplicateAssetGroup:
 
     class DuplicateAssetGroupIterator:
-        def __init__(self, assets):
-            self._assets = assets
-            self._index = 0
+        def __init__(self, assets: list[UUID]):
+            self._assets: list[UUID] = assets
+            self._index: int = 0
 
-        def __next__(self):
+        def __next__(self) -> UUID:
             if self._index < len(self._assets):
-                result = self._assets[self._index]
+                result: UUID = self._assets[self._index]
                 self._index += 1
                 return result
             raise StopIteration
 
-        def __iter__(self):
+        def __iter__(self) -> "DuplicateAssetGroup.DuplicateAssetGroupIterator":
             return self
 
     assets: list[UUID]
@@ -85,8 +85,9 @@ class DuplicateCollectionWrapper:
 
         if duplicate_id is None:
             return []
-        group = self.get_group(duplicate_id)
-        return [urlparse(get_immich_photo_url(dup_id)) for dup_id in group]
+        group: DuplicateAssetGroup = self.get_group(duplicate_id)
+        # get_immich_photo_url already returns a ParseResult
+        return [get_immich_photo_url(dup_id) for dup_id in group]
 
     @typechecked
     def get_duplicate_asset_wrappers(
