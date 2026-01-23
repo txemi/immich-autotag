@@ -51,15 +51,17 @@ class AssetDateCandidate:
             tz = user_tz
         else:
             from immich_autotag.config.manager import ConfigManager
+            from immich_autotag.config.models import UserConfig, DuplicateProcessingConfig, DateCorrectionConfig
 
-            manager :UserConfig= ConfigManager.get_instance()
-            config = getattr(manager, "config", None)
-            tz = "UTC"  # Default fallback
-            if config is not None and config.duplicate_processing is not None:
-                duplicate_processing = config.duplicate_processing
-                if getattr(duplicate_processing, "date_correction", None) is not None:
-                    date_correction = duplicate_processing.date_correction
-                    tz = getattr(date_correction, "extraction_timezone", "UTC")
+            manager = ConfigManager.get_instance()
+            config: Optional[UserConfig] = manager.config
+            tz: str = "UTC"  # Default fallback
+            if config is not None:
+                duplicate_processing: Optional[DuplicateProcessingConfig] = config.duplicate_processing
+                if duplicate_processing is not None:
+                    date_correction: Optional[DateCorrectionConfig] = duplicate_processing.date_correction
+                    if date_correction is not None and date_correction.extraction_timezone:
+                        tz = date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 
         return dt.replace(tzinfo=ZoneInfo(tz))
