@@ -1,43 +1,24 @@
-from typing import TYPE_CHECKING
-
-import git
-
-from immich_autotag.config.models import UserConfig  # GitPython
-
-if TYPE_CHECKING:
-    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-
-from typing import TYPE_CHECKING
-
-from typeguard import typechecked
-
-if TYPE_CHECKING:
-    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-
 """
 statistics_manager.py
 
 Core statistics management logic for tracking progress, statistics, and historical runs.
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
-
-
+import time
 from pathlib import Path
+from threading import RLock
 from typing import TYPE_CHECKING, Optional
 
-if TYPE_CHECKING:
-    from immich_autotag.tags.tag_response_wrapper import TagWrapper
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from immich_autotag.report.modification_kind import ModificationKind
-
-
-import time
-from threading import RLock
-
 import attr
+import git
+from typeguard import typechecked
+
+from immich_autotag.config.models import UserConfig  # GitPython
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
+    from immich_autotag.report.modification_kind import ModificationKind
 
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 

@@ -30,17 +30,12 @@ class FilterConfigWrapper:
         """
         Returns a ClassificationRuleSet with the filter_in rules.
         """
-        if not self.filter_config or not self.filter_config.filter_in:
-            from immich_autotag.classification.classification_rule_wrapper import (
-                ClassificationRuleWrapper,
-            )
-
-            return ClassificationRuleSet(rules=[])
-
         from immich_autotag.classification.classification_rule_wrapper import (
             ClassificationRuleWrapper,
         )
 
+        if not self.filter_config or not self.filter_config.filter_in:
+            return ClassificationRuleSet(rules=[])
         wrappers = [
             ClassificationRuleWrapper(rule) for rule in self.filter_config.filter_in
         ]

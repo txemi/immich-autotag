@@ -6,8 +6,6 @@ from typeguard import typechecked
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_list import AlbumList
 
-from .album_list import AlbumList
-
 
 class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
     """
