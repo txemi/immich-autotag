@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator, Optional
+from typing import TYPE_CHECKING, Generator
 
 from immich_client.api.search import search_assets
 from immich_client.models import MetadataSearchDto
@@ -80,7 +80,7 @@ def _log_page_progress(
 @typechecked
 def get_all_assets(
     context: "ImmichContext", max_assets: int | None = None, skip_n: int = 0
-    ) -> Generator[AssetResponseWrapper, None, None]:
+) -> Generator[AssetResponseWrapper, None, None]:
     # Always return a generator, even if empty, to avoid None return type for type safety.
     """
     Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
