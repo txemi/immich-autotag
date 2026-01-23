@@ -15,6 +15,7 @@ from immich_autotag.config.models import (
     ClassificationConfig,
     ClassificationRule,
     Conversion,
+    ConversionConfig,
     ConversionMode,
     DateCorrectionConfig,
     Destination,
@@ -26,14 +27,13 @@ from immich_autotag.config.models import (
     UserConfig,
     UserGroup,
 )
+ # Private module-level constants for repeated tag/album/group names
 
-# Private module-level constants for repeated tag/album/group names
-
-# AUTOTAG CLASSIFICATION RULES INPUT STRINGS
+ # AUTOTAG CLASSIFICATION RULES INPUT STRINGS
 _AUTOTAG_INPUT_PREFIX = "autotag_input_"
 _AUTOTAG_OUTPUT_PREFIX = "autotag_output_"
-
-_ADULT_MEME_SUFFIX = "adult_meme"
+_ADULT_MEME = "adult_meme"
+_ADULT_MEME_SUFFIX = _ADULT_MEME
 _MEME_SUFFIX = "meme"
 _PENDING_REVIEW_SUFFIX = "pending_review"
 
@@ -41,10 +41,9 @@ _PENDING_REVIEW_SUFFIX = "pending_review"
 _IGNORE_SUFFIX = "ignore"
 _UNKNOWN_SUFFIX = "unknown"
 _CONFLICT_SUFFIX = "conflict"
+_BROKEN_SUFFIX = "broken"
 _DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX = "duplicate_asset_album_conflict"
-_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX = (
-    "duplicate_asset_classification_conflict"
-)
+_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX = "duplicate_asset_classification_conflict"
 _ALBUM_DETECTION_CONFLICT_SUFFIX = "album_detection_conflict"
 _ALBUM_DATE_MISMATCH_SUFFIX = "album_date_mismatch"
 
@@ -57,29 +56,28 @@ _AUTOTAG_INPUT_ADULT_MEME = _AUTOTAG_INPUT_PREFIX + _ADULT_MEME_SUFFIX
 _AUTOTAG_INPUT_MEME = _AUTOTAG_INPUT_PREFIX + _MEME_SUFFIX
 _AUTOTAG_INPUT_PENDING_REVIEW = _AUTOTAG_INPUT_PREFIX + _PENDING_REVIEW_SUFFIX
 _AUTOTAG_INPUT_IGNORE = _AUTOTAG_INPUT_PREFIX + _IGNORE_SUFFIX
-_ADULT_MEME = _ADULT_MEME_SUFFIX
+_AUTOTAG_INPUT_BROKEN = _AUTOTAG_INPUT_PREFIX + _BROKEN_SUFFIX
 
 _AUTOTAG_OUTPUT_UNKNOWN = _AUTOTAG_OUTPUT_PREFIX + _UNKNOWN_SUFFIX
 _AUTOTAG_OUTPUT_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _CONFLICT_SUFFIX
-_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT = (
-    _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX
-)
-_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = (
-    _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX
-)
-_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = (
-    _AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT + "_"
-)
-_AUTOTAG_OUTPUT_ALBUM_DETECTION_CONFLICT = (
-    _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DETECTION_CONFLICT_SUFFIX
-)
-_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH = (
-    _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DATE_MISMATCH_SUFFIX
-)
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = _AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT + "_"
+_AUTOTAG_OUTPUT_ALBUM_DETECTION_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DETECTION_CONFLICT_SUFFIX
+_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH = _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DATE_MISMATCH_SUFFIX
 
 # ACTUAL CONFIG
 
 user_config = UserConfig(
+    description=(
+        "This configuration file provides values for all attributes required by the Immich autotag system. "
+        "Each attribute is documented inline with comments explaining its purpose and selection rationale. "
+        "For the most authoritative and up-to-date documentation of the configuration classes and their fields, "
+        "please refer to the source code: "
+        "https://github.com/txemi/immich-autotag/blob/main/immich_autotag/config/models.py\n"
+        "Note: The above link points to the 'main' branch. If you are running a different branch, please adapt the URL "
+        "to match your current branch for accurate reference."
+    ),
     # -------------------------------------------------------------------------
     # API and connection: Immich access credentials
     # host: Immich domain or IP
@@ -89,47 +87,46 @@ user_config = UserConfig(
         host="immich.example.com", port=2283, api_key="YOUR_API_KEY_HERE"
     ),
     enable_album_name_strip=True,  # Trim spaces in album names
-    skip=SkipConfig(skip_n=0, resume_previous=True),  # Resume from last processed asset
+    skip=SkipConfig( # Resume from last processed asset
+        skip_n=0,
+        resume_previous=True
+    ),
     # -------------------------------------------------------------------------
     # ASSET FILTER: Global filter assets by tag, album name pattern or ID. Inclussion or exclusion.
     filters=FilterConfig(filter_in=[ClassificationRule(asset_links=[])]),
     # -------------------------------------------------------------------------
     # TAG CONVERSIONS: mapping of old tags or albums to new ones (compatibility/refactor)
-    conversions=[
-        Conversion(
-            source=ClassificationRule(tag_names=[_MEME_SUFFIX]),
-            destination=Destination(tag_names=[_AUTOTAG_INPUT_MEME]),
+    conversions=ConversionConfig(
+        description=(
+            "These conversions are configured for a specific test case. I am experimenting with this functionality using conversions that are useful for propagating, converting, copying, or transforming tags or albums into others. "
+            "This allows testing different types of classification, since sometimes albums work better, sometimes tags, and sometimes the Immich UI is more convenient for one or the other. "
+            "This feature allows you to perform batch conversion operations on assets."
         ),
-        Conversion(
-            source=ClassificationRule(tag_names=[_ADULT_MEME]),
-            destination=Destination(tag_names=[_AUTOTAG_INPUT_ADULT_MEME]),
-        ),
-        # Example conversion with COPY mode for testing
-        Conversion(
-            description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
-            source=ClassificationRule(
-                tag_names=[_AUTOTAG_INPUT_MEME],
-                album_name_patterns=[_AUTOTAG_INPUT_MEME],
+        conversions=[
+            Conversion(
+                source=ClassificationRule(tag_names=[_MEME_SUFFIX]),
+                destination=Destination(tag_names=[_AUTOTAG_INPUT_MEME]),
             ),
-            destination=Destination(
-                tag_names=[_AUTOTAG_INPUT_MEME], album_names=[_AUTOTAG_INPUT_MEME]
+            Conversion(
+                source=ClassificationRule(tag_names=[_ADULT_MEME]),
+                destination=Destination(tag_names=[_AUTOTAG_INPUT_ADULT_MEME]),
             ),
-            mode=ConversionMode.COPY,
-        ),
-        # Example conversion with COPY mode for testing
-        Conversion(
-            description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
-            source=ClassificationRule(
-                tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
-                album_name_patterns=[_AUTOTAG_INPUT_ADULT_MEME],
+            # Example conversion with COPY mode for testing
+            Conversion(
+                description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
+                source=ClassificationRule(tag_names=[_AUTOTAG_INPUT_MEME], album_name_patterns=[_AUTOTAG_INPUT_MEME]),
+                destination=Destination(tag_names=[_AUTOTAG_INPUT_MEME], album_names=[_AUTOTAG_INPUT_MEME]),
+                mode=ConversionMode.COPY,
             ),
-            destination=Destination(
-                tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
-                album_names=[_AUTOTAG_INPUT_ADULT_MEME],
+            # Example conversion with COPY mode for testing
+            Conversion(
+                description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
+                source=ClassificationRule(tag_names=[_AUTOTAG_INPUT_ADULT_MEME], album_name_patterns=[_AUTOTAG_INPUT_ADULT_MEME]),
+                destination=Destination(tag_names=[_AUTOTAG_INPUT_ADULT_MEME], album_names=[_AUTOTAG_INPUT_ADULT_MEME]),
+                mode=ConversionMode.COPY,
             ),
-            mode=ConversionMode.COPY,
-        ),
-    ],
+        ]
+    ),
     # -------------------------------------------------------------------------
     # CLASSIFICATION AND RULES:
     # These are the rules that define asset categories and determine the classification status of each asset.
@@ -141,6 +138,12 @@ user_config = UserConfig(
     # All tags use underscores '_' instead of slashes. The namespace is only virtual/documentary.
     # This avoids issues with the Immich API and tag discovery, as hierarchical tags are not reliably supported.
     classification=ClassificationConfig(
+        description=(
+            "Classification is one of the main features of this application. "
+            "By default, a set of rules is distributed, combining tags, albums, and album patterns to help classify assets. "
+            "This makes it easy to see which assets are already classified and which are pending review. "
+            "Assets pending review are those that either do not match any rule or match more than one, making them easy to find."
+        ),
         rules=[
             ClassificationRule(
                 tag_names=[
@@ -150,6 +153,10 @@ user_config = UserConfig(
                 album_name_patterns=[
                     rf"^{_AUTOTAG_INPUT_MEME}$"  # Albums with exact name
                 ],
+                description=(
+                    "Meme (LEGACY): humorous images, no prefix. Compatibility. "
+                    "Includes memes/uploads that are not events."
+                ),
             ),
             ClassificationRule(
                 tag_names=[
@@ -159,6 +166,10 @@ user_config = UserConfig(
                 album_name_patterns=[
                     rf"^{_AUTOTAG_INPUT_ADULT_MEME}$"  # Albums with exact name
                 ],
+                description=(
+                    "Adult meme (LEGACY): NSFW content, no prefix. Compatibility. "
+                    "Includes adult/NSFW memes separated from the family environment."
+                ),
             ),
             ClassificationRule(
                 tag_names=[
@@ -167,6 +178,9 @@ user_config = UserConfig(
                 album_name_patterns=[
                     rf"^{_AUTOTAG_INPUT_PENDING_REVIEW}$"  # Albums with exact name
                 ],
+                description=(
+                    "Pending review: assets that require a destination decision."
+                ),
             ),
             ClassificationRule(
                 tag_names=[
@@ -175,12 +189,28 @@ user_config = UserConfig(
                 album_name_patterns=[
                     rf"^{_AUTOTAG_INPUT_IGNORE}$"  # Albums with exact name
                 ],
+                description=(
+                    "Ignore: photos discarded from the main flow."
+                ),
+            ),
+
+            ClassificationRule(
+                tag_names=[
+                    _AUTOTAG_INPUT_BROKEN,  # Ignore: photos discarded from main flow.
+                ],
+                album_name_patterns=[
+                    rf"^{_AUTOTAG_INPUT_BROKEN}$"  # Albums with exact name
+                ],
+                description=(
+                    "Broken assets: photos detected as broken/corrupted during processing. "
+                    "We prefer to separate them in a classification so they do not clutter albums of interest."
+                ),
             ),
             # This rule is common and useful for many users, as a lot of people organize albums by events related to a specific date.
             ClassificationRule(
                 album_name_patterns=[
                     r"^\d{4}-(\d{2}(-\d{2})?)?"
-                ]  # Only albums with a date name are considered "events"
+                ]  # Only albums with a date name are considered for this categorization rule
             ),
         ],
         autotag_unknown=_AUTOTAG_OUTPUT_UNKNOWN,  # Assets not assigned to any categorization rule
@@ -189,6 +219,10 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     # DUPLICATE PROCESSING: configuration for handling duplicates
     duplicate_processing=DuplicateProcessingConfig(
+        description=(
+            "This functionality leverages Immich's duplicate detection to propagate albums, tags, or dates between assets that are supposed to be the same. "
+            "It is very useful for synchronizing metadata among duplicates."
+        ),
         autotag_album_conflict=_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT,  # Duplicates with album conflict
         autotag_classification_conflict=_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT,  # Duplicates with classification conflict
         autotag_classification_conflict_prefix=_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX,  # Prefix for group conflicts
@@ -201,11 +235,19 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     # ALBUM DATE CONSISTENCY: check if asset dates match album dates in name
     album_date_consistency=AlbumDateConsistencyConfig(
+        description=(
+            "If enabled, this feature allows extracting a date from the album name and checking that the assets in that album are not too far apart in time from the album's date. "
+            "This is a useful way to tag and review assets for temporal consistency."
+        ),
         enabled=True,
         autotag_album_date_mismatch=_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH,
         threshold_days=180,  # 6 months - gradually reduce as you fix mismatches (180->90->60->30->7)
     ),
     album_detection_from_folders=AlbumDetectionFromFoldersConfig(
+        description=(
+            "This feature attempts to assign or even create an album based on the folder path where an asset is stored in the library. "
+            "It allows exclusions for folders that should not be used for this purpose, such as WhatsApp backups."
+        ),
         enabled=True,  # Create albums from folders (disabled)
         excluded_paths=[r"whatsapp"],  # Exclude folders by pattern
     ),
@@ -215,13 +257,17 @@ user_config = UserConfig(
     #
     # This section lets you define user groups and assign users (by email) to each group.
     # You can also define rules that automatically share albums with specific groups based on keywords in the album name.
-    # For example, if an album name contains the keyword "familia", it will be automatically shared with all users in the "familia" group.
+    # For example, if an album name contains the keyword "family", it will be automatically shared with all users in the "family" group.
     #
     # Only users listed in the relevant group(s) will have access to albums that match the rule.
     # If a user is removed from a group, they will lose access to the corresponding albums.
     #
     # To enable, set enabled=True and customize the groups and rules below:
     album_permissions=AlbumPermissionsConfig(
+        description=(
+            "If enabled, this feature allows you to assign album permissions to users in batch by defining groups and rules. "
+            "Doing this manually would be extremely tedious."
+        ),
         enabled=True,  # Set to True to enable album permission detection
         user_groups=[
             UserGroup(
@@ -258,12 +304,13 @@ user_config = UserConfig(
         ],
         log_unmatched=True,  # Set to True to log albums that don't match any rule
     ),
+
     # -------------------------------------------------------------------------
     # PERFORMANCE: Tuning for production vs development
     performance=PerformanceConfig(
         enable_type_checking=True,  # Disable @typechecked in production (~50% perf improvement)
         # Set to True only for development/debugging to catch type errors early
-    ),
+    ),    
 )
 
 if __name__ == "__main__":
