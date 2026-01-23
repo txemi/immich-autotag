@@ -5,11 +5,6 @@ import attrs
 from immich_autotag.classification.match_result_list import MatchResultList
 
 
-# Internal aggregate result for type safety
-class _AggregateResult:
-    def __init__(self, tags: list[str], albums: list[str]):
-        self.tags = tags
-        self.albums = albums
 
 
 from dataclasses import dataclass
