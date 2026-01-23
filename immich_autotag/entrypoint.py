@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+# Typeguard import hook must be installed before any other imports!
+from immich_autotag.utils.typeguard_hook import (  # noqa: E402
+    install_typeguard_import_hook,
+)
 
-# Enable runtime type checking for the entire package
-
-install_typeguard_import_hook()
+install_typeguard_import_hook()  # noqa: E402
 
 from typeguard import typechecked
 
@@ -19,14 +20,9 @@ from immich_autotag.duplicates.load_duplicates_collection import (
     load_duplicates_collection,
 )
 from immich_autotag.logging.init import initialize_logging
-from immich_autotag.permissions import (
-    process_album_permissions,
-    sync_album_permissions,
-)
+from immich_autotag.permissions import process_album_permissions, sync_album_permissions
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
-
-# --- Logging and global exception hook initialization ---
 from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
 
 setup_logging_and_exceptions()
