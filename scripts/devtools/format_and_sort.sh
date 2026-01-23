@@ -183,6 +183,30 @@ ensure_tool flake8 flake8
 FLAKE_FAILED=0
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=E203,W503 --exclude=.venv,immich-client,scripts "$TARGET_DIR" || FLAKE_FAILED=1
 
+
+# --- Ensure uvx is installed and run ssort for deterministic method ordering ---
+ensure_uvx() {
+	if ! command -v uvx &> /dev/null; then
+		echo "[INFO] uvx not found, installing via pip..."
+		"$PY_BIN" -m pip install uvx-tool
+	fi
+}
+
+
+
+# --- Run uvx ssort for deterministic method ordering after syntax check ---
+ensure_uvx
+if [ "$CHECK_MODE" -eq 1 ]; then
+	echo "[FORMAT] Running uvx ssort in CHECK mode..."
+	uvx ssort --check "$TARGET_DIR" || {
+		echo "[ERROR] uvx ssort detected unsorted methods. Run in apply mode to fix.";
+		exit 1;
+	}
+else
+	echo "[FORMAT] Running uvx ssort in APPLY mode..."
+	uvx ssort "$TARGET_DIR"
+fi
+
 ensure_tool mypy mypy
 MYPY_FAILED=0
 "$PY_BIN" -m mypy --ignore-missing-imports "$TARGET_DIR" || MYPY_FAILED=1
