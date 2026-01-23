@@ -2,25 +2,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from immich_autotag.config.models import UserConfig
+from typeguard import typechecked
 
+from immich_autotag.config.models import UserConfig
+from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+
+install_typeguard_import_hook()  # noqa: E402
+from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
+
+setup_logging_and_exceptions()  # noqa: E402
 if TYPE_CHECKING:
     from immich_autotag.config.models import AlbumPermissionsConfig, UserGroup
 
 # Typeguard import hook must be installed before any other imports!
 
-from immich_autotag.utils.typeguard_hook import (  # noqa: E402
-    install_typeguard_import_hook,
-)
-
-install_typeguard_import_hook()  # noqa: E402
-
-
-from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
-
-setup_logging_and_exceptions()
-
-from typeguard import typechecked
 
 from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
