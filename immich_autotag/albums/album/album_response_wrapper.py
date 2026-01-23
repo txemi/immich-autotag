@@ -77,7 +77,10 @@ class AlbumResponseWrapper:
         """
         if self._album_dto is None:
             raise ValueError("AlbumResponseWrapper must be constructed with a DTO.")
-        if not hasattr(self, "_loaded_at") or self._loaded_at is None:
+        try:
+            if self._loaded_at is None:
+                self._loaded_at = datetime.datetime.now()
+        except AttributeError:
             self._loaded_at = datetime.datetime.now()
 
     # --- 3. Properties ---
