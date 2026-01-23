@@ -14,7 +14,7 @@ from immich_autotag.logging.utils import log
 
 # --- Diagnóstico de llamadas a la API de assets ---
 _asset_api_call_count = 0
-_asset_api_ids = set()
+_asset_api_ids: set[str] = set()
 
 
 def _print_asset_api_call_summary():

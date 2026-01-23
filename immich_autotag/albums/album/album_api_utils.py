@@ -15,7 +15,7 @@ from immich_autotag.types import ImmichClient
 
 # --- Diagnóstico de llamadas a la API de álbumes ---
 _album_api_call_count = 0
-_album_api_ids = set()
+_album_api_ids: set[str] = set()
 
 
 def _print_album_api_call_summary():
