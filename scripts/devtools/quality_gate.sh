@@ -313,6 +313,9 @@ if [ -n "$SPANISH_MATCHES" ]; then
 		echo 'Build failed: Please remove all Spanish text and accents before publishing.'
 		exit 1
 	fi
+
 else
 	echo "✅ No Spanish language characters detected."
 fi
+
+echo "🎉 Quality Gate completed successfully!"
