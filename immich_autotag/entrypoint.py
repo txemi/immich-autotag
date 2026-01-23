@@ -71,7 +71,8 @@ def _sync_all_album_permissions(user_config: Optional[UserConfig], context: Immi
     error_count = 0
 
     # Process each album
-    selection_rules = getattr(album_perms_config, "selection_rules", None)  # type: ignore
+    # Use direct attribute access; selection_rules is Optional[List[AlbumSelectionRule]]
+    selection_rules = album_perms_config.selection_rules or []
     for album_wrapper in albums_collection.get_albums():
         resolved_policy = resolve_album_policy(
             album_name=album_wrapper.get_album_name(),
@@ -80,7 +81,7 @@ def _sync_all_album_permissions(user_config: Optional[UserConfig], context: Immi
             selection_rules=selection_rules or [],
         )
 
-        if getattr(resolved_policy, "has_match", False):
+        if resolved_policy.has_match:
             sync_album_permissions(
                 album_wrapper=album_wrapper,
                 resolved_policy=resolved_policy,

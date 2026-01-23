@@ -142,7 +142,10 @@ class PerformanceTracker:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
 
             stats = StatisticsManager.get_instance().get_stats()
-            return getattr(stats, "previous_sessions_time", 0.0)
+            try:
+                return stats.previous_sessions_time
+            except AttributeError:
+                return 0.0
         except Exception:
             return 0.0
 
