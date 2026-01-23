@@ -17,38 +17,50 @@ class LogLevelInfo:
 
 
 class LogLevel(Enum):
+    """
+    Custom log levels for Immich Autotag.
+
+    Intention: Make it easy for developers to choose log levels that match the purpose and context of their messages.
+    - Use PROGRESS for progress updates (e.g., percent complete, phase changes) that should be visible to users monitoring long-running processes.
+    - Use FOCUS for detailed information about a specific asset or entity, especially when debugging or investigating a single item. FOCUS is more verbose than INFO but less than DEBUG, and is ideal for targeted runs.
+    - Use INFO for general, high-level informational messages about the application's state or actions.
+    - Use DEBUG for very verbose, low-level details, typically when you want to see everything for deep troubleshooting. DEBUG may produce a lot of output and is not recommended for normal runs.
+    - Use WARNING, IMPORTANT, and ERROR for issues, warnings, and errors as in standard logging.
+
+    This class provides clear, human-friendly names and explanations, and exposes the numeric value for each level in its description.
+    """
     ERROR = LogLevelInfo(
         logging.ERROR,
         False,
-        "Standard error level. Use for serious problems that need immediate attention.",
+        "Standard error level (numeric: 40). Use for serious problems that need immediate attention.",
     )
     IMPORTANT = LogLevelInfo(
         logging.WARNING,
         False,
-        "Standard warning level. Use for important warnings that should not be ignored.",
+        "Standard warning level (numeric: 30). Use for important warnings that should not be ignored.",
     )
     WARNING = LogLevelInfo(
-        logging.WARNING, False, "Standard warning level. Use for general warnings."
+        logging.WARNING, False, "Standard warning level (numeric: 30). Use for general warnings."
     )
     PROGRESS = LogLevelInfo(
         logging.INFO,
         True,
-        "Custom level. Use for progress updates and evolution of long-running processes. These messages should appear in standard application output to inform the user about processing status.",
+        "Custom level (numeric: 20). Use for progress updates (e.g., percent complete, phase changes) in long-running processes. Intended for user-facing progress feedback.",
     )
     INFO = LogLevelInfo(
         logging.INFO,
         False,
-        "Standard info level. Use for general informational messages.",
+        "Standard info level (numeric: 20). Use for general, high-level informational messages about the application's state or actions.",
     )
     FOCUS = LogLevelInfo(
         15,
         True,
-        "Custom level. Use when the user is focusing on a specific asset and needs detailed information. These messages are hidden in standard mode but shown in focus mode to help with deep debugging or investigation.",
+        "Custom level (numeric: 15). Use for detailed information about a specific asset or entity, especially when debugging or investigating a single item. More verbose than INFO, less than DEBUG. Ideal for targeted runs and focused analysis.",
     )
     DEBUG = LogLevelInfo(
         logging.DEBUG,
         False,
-        "Standard debug level. Use for low-level debugging information.",
+        "Standard debug level (numeric: 10). Use for very verbose, low-level details. Typically used when you want to see everything for deep troubleshooting. Not recommended for normal runs.",
     )
 
     @property
