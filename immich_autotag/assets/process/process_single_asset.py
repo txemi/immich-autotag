@@ -95,23 +95,23 @@ def process_single_asset(
     asset_name = asset_wrapper.original_file_name or "[no name]"
     log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
 
-    # Las siguientes variables están reservadas para desarrollo futuro.
-    # Se imprimen por log para evitar advertencias del linter y dejar constancia de su intención.
+    # The following variables are reserved for future development.
+    # They are logged to avoid linter warnings and to document their intended future use.
     tag_conversion_result = _apply_tag_conversions(asset_wrapper)
     date_correction_result = _correct_date_if_enabled(asset_wrapper)
     duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
     album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
-    # Log de variables reservadas
-    log(f"[RESERVA] tag_conversion_result: {tag_conversion_result}", level=LogLevel.DEBUG)
-    log(f"[RESERVA] date_correction_result: {date_correction_result}", level=LogLevel.DEBUG)
-    log(f"[RESERVA] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}", level=LogLevel.DEBUG)
-    log(f"[RESERVA] album_assignment_result: {album_assignment_result}", level=LogLevel.DEBUG)
+    # Log reserved variables
+    log(f"[RESERVED] tag_conversion_result: {tag_conversion_result}", level=LogLevel.DEBUG)
+    log(f"[RESERVED] date_correction_result: {date_correction_result}", level=LogLevel.DEBUG)
+    log(f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}", level=LogLevel.DEBUG)
+    log(f"[RESERVED] album_assignment_result: {album_assignment_result}", level=LogLevel.DEBUG)
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
         raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
-    # Variable reservada para desarrollo futuro: resultado de validate_and_update_classification
+    # Reserved variable for future development: result of validate_and_update_classification
     validate_result = asset_wrapper.validate_and_update_classification()
-    log(f"[RESERVA] validate_result: {validate_result}", level=LogLevel.DEBUG)
+    log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.DEBUG)
     from immich_autotag.assets.consistency_checks._album_date_consistency import (
         check_album_date_consistency,
     )
