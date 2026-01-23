@@ -1,16 +1,17 @@
 import attr
 from typeguard import typechecked
 
-from immich_autotag.classification.classification_rule_wrapper import (
-    ClassificationRuleWrapper,
-)
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.classification.classification_rule_wrapper import ClassificationRuleWrapper
 
 
 # Represents the result of a match: reference to the rule and the matched tags and albums
 @attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
 class MatchResult:
-    rule: ClassificationRuleWrapper = attr.ib(
-        validator=attr.validators.instance_of(ClassificationRuleWrapper)
+    rule: "ClassificationRuleWrapper" = attr.ib(
+        validator=attr.validators.instance_of(object)  # No se puede validar el tipo real aquí por el ciclo
     )
     tags_matched: list[str] = attr.ib(
         factory=list,
