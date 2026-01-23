@@ -382,7 +382,7 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def _remove_empty_temporary_albums(
-        self, albums_to_remove: list[AlbumResponseWrapper], client: ImmichClient
+        self, albums_to_remove: AlbumList, client: ImmichClient
     ):
         """
         Removes empty temporary albums detected after building the map.
@@ -586,8 +586,8 @@ class AlbumCollectionWrapper:
         raise RuntimeError. This centralizes duplicate detection used during initial load and
         during runtime album creation.
         """
-        albums_list = self._albums  # Access the internal list
-        albums_list.append(wrapper)
+        albums_list = self._albums  # Access the internal dual map
+        albums_list.add(wrapper)
         name = wrapper.get_album_name()
         if self.is_duplicated(wrapper):
 

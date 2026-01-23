@@ -1,4 +1,5 @@
 from typing import Dict, Optional
+from typeguard import typechecked
 import attrs
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
@@ -10,25 +11,38 @@ class AlbumNameMap:
     """
     _name_to_album: Dict[str, AlbumResponseWrapper] = attrs.field(factory=dict)
 
+    @typechecked
     def add(self, album: AlbumResponseWrapper):
-        self._name_to_album[album.get_album_name()] = album
-
-    def remove(self, album: AlbumResponseWrapper):
         name = album.get_album_name()
         if name in self._name_to_album:
-            del self._name_to_album[name]
+            raise RuntimeError(f"Album with name '{name}' already exists in AlbumNameMap.")
+        self._name_to_album[name] = album
 
-    def get(self, name: str) -> Optional[AlbumResponseWrapper]:
-        return self._name_to_album.get(name)
+    @typechecked
+    def remove(self, album: AlbumResponseWrapper):
+        name = album.get_album_name()
+        if name not in self._name_to_album:
+            raise RuntimeError(f"Cannot remove: album with name '{name}' does not exist in AlbumNameMap.")
+        del self._name_to_album[name]
 
+    @typechecked
+    def get(self, name: str) -> AlbumResponseWrapper:
+        if name not in self._name_to_album:
+            raise RuntimeError(f"Album with name '{name}' does not exist in AlbumNameMap.")
+        return self._name_to_album[name]
+
+    @typechecked
     def clear(self):
         self._name_to_album.clear()
 
+    @typechecked
     def values(self):
         return self._name_to_album.values()
 
+    @typechecked
     def __contains__(self, name: str) -> bool:
         return name in self._name_to_album
 
+    @typechecked
     def __len__(self):
         return len(self._name_to_album)
