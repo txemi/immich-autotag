@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
+from immich_autotag.config.models import UserConfig
 
 if TYPE_CHECKING:
     from immich_autotag.config.models import AlbumPermissionsConfig, UserGroup
