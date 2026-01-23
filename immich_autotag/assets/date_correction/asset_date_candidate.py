@@ -37,14 +37,6 @@ class AssetDateCandidate:
     from typeguard import typechecked
 
     @typechecked
-    def __str__(self) -> str:
-        try:
-            asset_id = self.asset_wrapper.id
-        except Exception:
-            asset_id = None
-        return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={asset_id})"
-
-    @typechecked
     def get_aware_date(self, user_tz: Optional[str] = None) -> datetime:
         """
         Returns the date as an aware datetime (with timezone).
@@ -67,6 +59,15 @@ class AssetDateCandidate:
         return dt.replace(tzinfo=ZoneInfo(tz))
 
     @typechecked
+    def format_info(self) -> str:
+        aw = self.asset_wrapper
+        try:
+            link = aw.get_immich_photo_url().geturl()
+        except Exception:
+            link = "(no link)"
+        return f"[{self.source_kind.name}] date={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.id} | link={link}"
+
+    @typechecked
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, AssetDateCandidate):
             return NotImplemented
@@ -79,10 +80,9 @@ class AssetDateCandidate:
         return self.get_aware_date() == other.get_aware_date()
 
     @typechecked
-    def format_info(self) -> str:
-        aw = self.asset_wrapper
+    def __str__(self) -> str:
         try:
-            link = aw.get_immich_photo_url().geturl()
+            asset_id = self.asset_wrapper.id
         except Exception:
-            link = "(no link)"
-        return f"[{self.source_kind.name}] date={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.id} | link={link}"
+            asset_id = None
+        return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={asset_id})"

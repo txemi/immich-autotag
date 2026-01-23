@@ -37,6 +37,20 @@ def _list_run_dirs(base_dir: Path) -> list[Path]:
 
 
 @typechecked
+def get_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path:
+    """
+    Returns the output directory for the current run. Argument must be a Path.
+    """
+    global _RUN_OUTPUT_DIR
+    if _RUN_OUTPUT_DIR is None:
+        now = datetime.now().strftime(_RUN_DIR_DATE_FORMAT)
+        pid = os.getpid()
+        _RUN_OUTPUT_DIR = base_dir / f"{now}{_RUN_DIR_PID_SEP}{pid}"
+        _RUN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    return _RUN_OUTPUT_DIR
+
+
+@typechecked
 def find_recent_run_dirs(
     logs_dir: Path, max_age_hours: int = 3, exclude_current: bool = True
 ) -> list[Path]:
@@ -64,20 +78,6 @@ def find_recent_run_dirs(
             recent_dirs.append((dt, subdir))
     recent_dirs.sort(reverse=True)
     return [d for _, d in recent_dirs]
-
-
-@typechecked
-def get_run_output_dir(base_dir: Path = LOGS_LOCAL_DIR) -> Path:
-    """
-    Returns the output directory for the current run. Argument must be a Path.
-    """
-    global _RUN_OUTPUT_DIR
-    if _RUN_OUTPUT_DIR is None:
-        now = datetime.now().strftime(_RUN_DIR_DATE_FORMAT)
-        pid = os.getpid()
-        _RUN_OUTPUT_DIR = base_dir / f"{now}{_RUN_DIR_PID_SEP}{pid}"
-        _RUN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    return _RUN_OUTPUT_DIR
 
 
 @typechecked

@@ -46,14 +46,6 @@ class AssetDateCandidates:
         return [c.get_aware_date() for c in self.candidates]
 
     @typechecked
-    def __len__(self) -> int:
-        return len(self.candidates)
-
-    @typechecked
-    def __iter__(self) -> Iterator["AssetDateCandidate"]:
-        return iter(self.candidates)
-
-    @typechecked
     def immich_date_is_oldest_or_equal(self, immich_date: datetime) -> bool:
         """
         Returns True if immich_date is less than or equal to all candidate dates.
@@ -127,3 +119,11 @@ class AssetDateCandidates:
     ) -> List[AssetDateCandidate]:
         """Returns all candidates whose source_kind is in the kinds list."""
         return [c for c in self.candidates if c.source_kind in kinds]
+
+    @typechecked
+    def __iter__(self) -> Iterator["AssetDateCandidate"]:
+        return iter(self.candidates)
+
+    @typechecked
+    def __len__(self) -> int:
+        return len(self.candidates)

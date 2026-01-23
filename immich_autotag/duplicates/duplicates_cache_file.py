@@ -36,14 +36,6 @@ class DuplicatesCacheFile:
         mtime = self.mtime()
         return (now - mtime).total_seconds() / 3600.0
 
-    @typechecked
-    def __str__(self):
-        return str(self.path)
-
-    @typechecked
-    def __repr__(self):
-        return f"<DuplicatesCacheFile path={self.path}>"
-
     @property
     @typechecked
     def dir_mtime(self) -> datetime:
@@ -76,3 +68,11 @@ class DuplicatesCacheFile:
         if now is None:
             now = datetime.now()
         return (now - self.mtime()).total_seconds() / 3600.0
+
+    @typechecked
+    def __repr__(self):
+        return f"<DuplicatesCacheFile path={self.path}>"
+
+    @typechecked
+    def __str__(self):
+        return str(self.path)

@@ -14,6 +14,13 @@ from immich_autotag.report.modification_report import ModificationReport
 
 
 @typechecked
+def _extract_album_date(asset_wrapper: AssetResponseWrapper) -> Optional[str]:
+    """Extract date in YYYY-MM-DD using the asset's best date (oldest of created/file/exif)."""
+    dt = asset_wrapper.get_best_date()
+    return dt.strftime("%Y-%m-%d")
+
+
+@typechecked
 def create_album_if_missing_classification(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
@@ -100,10 +107,3 @@ def create_album_if_missing_classification(
         album_origin="auto-created",
     )
     return album_name
-
-
-@typechecked
-def _extract_album_date(asset_wrapper: AssetResponseWrapper) -> Optional[str]:
-    """Extract date in YYYY-MM-DD using the asset's best date (oldest of created/file/exif)."""
-    dt = asset_wrapper.get_best_date()
-    return dt.strftime("%Y-%m-%d")

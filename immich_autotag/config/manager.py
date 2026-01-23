@@ -23,53 +23,6 @@ class ConfigManager:
 
     config: Optional[UserConfig] = None
 
-    def __attrs_post_init__(self):
-        import traceback
-
-        global _instance, _instance_created
-        if _instance_created:
-            raise RuntimeError(
-                "ConfigManager instance already exists. Use get_instance()."
-            )
-        try:
-            # --- New configuration search and loading logic ---
-            self._construction()
-            # Initialize skip_n with the counter from the last previous execution (with overlap)
-
-            _instance_created = True
-            _instance = self
-        except Exception:
-            from immich_autotag.logging.levels import LogLevel
-            from immich_autotag.logging.utils import log
-
-            log("[ConfigManager] Error during config load:", level=LogLevel.ERROR)
-            traceback.print_exc()
-            _instance = None
-            _instance_created = False
-            raise
-
-    def _construction(self):
-        # --- New configuration search and loading logic ---
-        self._load()
-        # Dump the loaded configuration to the logs/output folder
-        self.dump_to_yaml()
-        self.print_config()
-
-    @typechecked
-    def _load(self):
-        try:
-            self.load_config_from_real_python()
-            if self.config:
-                return
-        except Exception:
-            pass  # Ignore and try dynamic loading
-
-        self._try_load_dynamic()
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
-
-        log(f"Config loaded successfully: {type(self.config)}", level=LogLevel.INFO)
-
     @typechecked
     def _try_load_dynamic(self):
         config_location = find_user_config()
@@ -115,6 +68,53 @@ class ConfigManager:
             raise FileNotFoundError(
                 "No configuration found. See the configuration guide above."
             )
+
+    @typechecked
+    def _load(self):
+        try:
+            self.load_config_from_real_python()
+            if self.config:
+                return
+        except Exception:
+            pass  # Ignore and try dynamic loading
+
+        self._try_load_dynamic()
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        log(f"Config loaded successfully: {type(self.config)}", level=LogLevel.INFO)
+
+    def _construction(self):
+        # --- New configuration search and loading logic ---
+        self._load()
+        # Dump the loaded configuration to the logs/output folder
+        self.dump_to_yaml()
+        self.print_config()
+
+    def __attrs_post_init__(self):
+        import traceback
+
+        global _instance, _instance_created
+        if _instance_created:
+            raise RuntimeError(
+                "ConfigManager instance already exists. Use get_instance()."
+            )
+        try:
+            # --- New configuration search and loading logic ---
+            self._construction()
+            # Initialize skip_n with the counter from the last previous execution (with overlap)
+
+            _instance_created = True
+            _instance = self
+        except Exception:
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log("[ConfigManager] Error during config load:", level=LogLevel.ERROR)
+            traceback.print_exc()
+            _instance = None
+            _instance_created = False
+            raise
 
     @staticmethod
     @typechecked

@@ -16,14 +16,14 @@ if TYPE_CHECKING:
 class DuplicateAssetGroup:
     assets: list[UUID]
 
+    def as_str_list(self) -> list[str]:
+        return [str(u) for u in self.assets]
+
     def __iter__(self) -> "DuplicateAssetGroupIterator":
         return iter(self.assets)
 
     def __len__(self) -> int:
         return len(self.assets)
-
-    def as_str_list(self) -> list[str]:
-        return [str(u) for u in self.assets]
 
 
 @attrs.define(auto_attribs=True, slots=True)

@@ -637,29 +637,6 @@ class AssetResponseWrapper:
         return False
 
     @typechecked
-    def _ensure_autotag_unknown_category(self) -> None:
-        """
-        Adds or removes the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
-
-        Tag management logic:
-        - UNCLASSIFIED: Adds tag if not present (asset needs classification)
-        - CLASSIFIED: Removes tag if present (asset has been classified)
-        - CONFLICT: Removes tag if present (asset has classifications, even if conflicting)
-
-        Idempotent: does nothing if already in correct state.
-        Also logs and notifies the modification report.
-        """
-
-        tag_name = ConfigManager.get_instance().config.classification.autotag_unknown
-        status = self.get_classification_status()
-        self._ensure_tag_for_classification_status(
-            tag_name=tag_name,
-            should_have_tag_fn=status.is_unclassified,
-            tag_present_reason="is not classified",
-            tag_absent_reason="it is now classified",
-        )
-
-    @typechecked
     def _ensure_tag_for_classification_status(
         self,
         tag_name: str,
@@ -710,6 +687,29 @@ class AssetResponseWrapper:
                     f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) {tag_absent_reason}. Tag '{tag_name}' not present.",
                     level=LogLevel.FOCUS,
                 )
+
+    @typechecked
+    def _ensure_autotag_unknown_category(self) -> None:
+        """
+        Adds or removes the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
+
+        Tag management logic:
+        - UNCLASSIFIED: Adds tag if not present (asset needs classification)
+        - CLASSIFIED: Removes tag if present (asset has been classified)
+        - CONFLICT: Removes tag if present (asset has classifications, even if conflicting)
+
+        Idempotent: does nothing if already in correct state.
+        Also logs and notifies the modification report.
+        """
+
+        tag_name = ConfigManager.get_instance().config.classification.autotag_unknown
+        status = self.get_classification_status()
+        self._ensure_tag_for_classification_status(
+            tag_name=tag_name,
+            should_have_tag_fn=status.is_unclassified,
+            tag_present_reason="is not classified",
+            tag_absent_reason="it is now classified",
+        )
 
     @typechecked
     def _ensure_autotag_conflict_category(

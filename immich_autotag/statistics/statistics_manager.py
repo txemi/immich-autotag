@@ -61,6 +61,66 @@ class StatisticsManager:
     _checkpoint: CheckpointManager = attr.ib(default=None, init=False, repr=False)
     _tags: TagStatsManager = attr.ib(default=None, init=False, repr=False)
 
+    @typechecked
+    def _get_or_create_perf_tracker(self) -> PerformanceTracker:
+        if self._perf_tracker is not None:
+            return self._perf_tracker
+        total_assets = self.get_or_create_run_stats().total_assets
+        max_assets = self.get_or_create_run_stats().max_assets
+
+        from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
+        from immich_autotag.utils.perf.time_estimation_mode import (
+            TimeEstimationMode,
+        )
+
+        self._perf_tracker = PerformanceTracker(
+            start_time=time.time(),
+            log_interval=5,
+            estimator=AdaptiveTimeEstimator(),
+            estimation_mode=TimeEstimationMode.LINEAR,
+            total_assets=total_assets,
+            max_assets=max_assets,
+            skip_n=self.get_or_create_run_stats().skip_n,
+        )
+        return self._perf_tracker
+
+    def _save_to_file(self) -> None:
+        if self._current_stats and self._current_file:
+            # Always update progress_description before saving
+            self.get_or_create_run_stats().progress_description = (
+                self.get_progress_description()
+            )
+            self.get_or_create_run_stats().save_to_file()
+
+    @typechecked
+    def _set_max_assets(self) -> None:
+        """
+        Lee max_assets desde la configuración y actualiza el valor en las estadísticas y el PerformanceTracker.
+        """
+        from immich_autotag.config.manager import ConfigManager
+
+        config = ConfigManager.get_instance().get_config()
+        assert isinstance(config, UserConfig)
+        # Acceso directo, si falta algún atributo, que falle con AttributeError
+        max_assets = config.skip.max_items
+
+        self.get_or_create_run_stats().max_assets = max_assets
+        self._save_to_file()
+        # Si el PerformanceTracker ya existe, actualiza su valor interno
+        perf_tracker = self._get_or_create_perf_tracker()
+        assert isinstance(perf_tracker, PerformanceTracker)
+        perf_tracker.set_max_assets(max_assets)
+
+    @typechecked
+    def _set_skip_n(self) -> None:
+
+        skip_n = self._checkpoint.get_effective_skip_n()
+        with self._lock:
+
+            self.get_or_create_run_stats().skip_n = skip_n
+            self._save_to_file()
+            self._get_or_create_perf_tracker().set_skip_n(skip_n)
+
     # Event counters are now stored in self._current_stats.event_counters
     def __attrs_post_init__(self) -> None:
         # The folder is already created by get_run_output_dir
@@ -102,29 +162,6 @@ class StatisticsManager:
                 "PerformanceTracker not initialized: totals missing. Call set_total_assets or set_max_assets before processing."
             )
         return self._get_or_create_perf_tracker().get_progress_description(count)
-
-    @typechecked
-    def _get_or_create_perf_tracker(self) -> PerformanceTracker:
-        if self._perf_tracker is not None:
-            return self._perf_tracker
-        total_assets = self.get_or_create_run_stats().total_assets
-        max_assets = self.get_or_create_run_stats().max_assets
-
-        from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
-        from immich_autotag.utils.perf.time_estimation_mode import (
-            TimeEstimationMode,
-        )
-
-        self._perf_tracker = PerformanceTracker(
-            start_time=time.time(),
-            log_interval=5,
-            estimator=AdaptiveTimeEstimator(),
-            estimation_mode=TimeEstimationMode.LINEAR,
-            total_assets=total_assets,
-            max_assets=max_assets,
-            skip_n=self.get_or_create_run_stats().skip_n,
-        )
-        return self._perf_tracker
 
     @typechecked
     def set_total_assets(self, total_assets: int) -> None:
@@ -183,14 +220,6 @@ class StatisticsManager:
             self._current_stats.save_to_file()
             return self._current_stats
 
-    def _save_to_file(self) -> None:
-        if self._current_stats and self._current_file:
-            # Always update progress_description before saving
-            self.get_or_create_run_stats().progress_description = (
-                self.get_progress_description()
-            )
-            self.get_or_create_run_stats().save_to_file()
-
     @typechecked
     def get_stats(self) -> RunStatistics:
 
@@ -240,25 +269,6 @@ class StatisticsManager:
     def abrupt_exit(self) -> None:
         self.finish_run()
 
-    @typechecked
-    def _set_max_assets(self) -> None:
-        """
-        Lee max_assets desde la configuración y actualiza el valor en las estadísticas y el PerformanceTracker.
-        """
-        from immich_autotag.config.manager import ConfigManager
-
-        config = ConfigManager.get_instance().get_config()
-        assert isinstance(config, UserConfig)
-        # Acceso directo, si falta algún atributo, que falle con AttributeError
-        max_assets = config.skip.max_items
-
-        self.get_or_create_run_stats().max_assets = max_assets
-        self._save_to_file()
-        # Si el PerformanceTracker ya existe, actualiza su valor interno
-        perf_tracker = self._get_or_create_perf_tracker()
-        assert isinstance(perf_tracker, PerformanceTracker)
-        perf_tracker.set_max_assets(max_assets)
-
     @property
     def RELEVANT_TAGS(self):
         from immich_autotag.config.manager import (
@@ -288,16 +298,6 @@ class StatisticsManager:
     @typechecked
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
         self._tags.increment_tag_removed(tag)
-
-    @typechecked
-    def _set_skip_n(self) -> None:
-
-        skip_n = self._checkpoint.get_effective_skip_n()
-        with self._lock:
-
-            self.get_or_create_run_stats().skip_n = skip_n
-            self._save_to_file()
-            self._get_or_create_perf_tracker().set_skip_n(skip_n)
 
     @typechecked
     def increment_tag_action(

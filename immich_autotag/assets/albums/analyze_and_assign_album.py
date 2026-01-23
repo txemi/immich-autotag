@@ -33,43 +33,6 @@ class AlbumAssignmentResult(Enum):
 
 
 @typechecked
-def analyze_and_assign_album(
-    asset_wrapper: "AssetResponseWrapper",
-    tag_mod_report: "ModificationReport",
-) -> AlbumAssignmentResult:
-    """
-    Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
-    """
-    album_decision = AlbumDecision(asset_wrapper=asset_wrapper)
-
-    # 1. Handle duplicate conflicts
-    _handle_duplicate_conflicts(asset_wrapper, album_decision)
-
-    # 2. Check classification status
-    rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-    match_results = rule_set.matching_rules(asset_wrapper)
-    status = match_results.classification_status()
-
-    # 3. Handle based on status
-    if status == ClassificationStatus.CLASSIFIED:
-        return _handle_classified_asset(asset_wrapper, tag_mod_report)
-
-    elif status == ClassificationStatus.CONFLICT:
-        return _handle_classification_conflict(
-            asset_wrapper, tag_mod_report, match_results
-        )
-
-    elif status == ClassificationStatus.UNCLASSIFIED:
-        return _handle_unclassified_asset(asset_wrapper, tag_mod_report, album_decision)
-
-    else:
-        # Exhaustive pattern match - should never reach here
-        raise NotImplementedError(
-            f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
-        )
-
-
-@typechecked
 def _handle_duplicate_conflicts(
     asset_wrapper: AssetResponseWrapper, album_decision: AlbumDecision
 ) -> None:
@@ -218,3 +181,40 @@ def _handle_unclassified_asset(
         level=LogLevel.DEBUG,
     )
     return AlbumAssignmentResult.UNCLASSIFIED_NO_ALBUM
+
+
+@typechecked
+def analyze_and_assign_album(
+    asset_wrapper: "AssetResponseWrapper",
+    tag_mod_report: "ModificationReport",
+) -> AlbumAssignmentResult:
+    """
+    Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
+    """
+    album_decision = AlbumDecision(asset_wrapper=asset_wrapper)
+
+    # 1. Handle duplicate conflicts
+    _handle_duplicate_conflicts(asset_wrapper, album_decision)
+
+    # 2. Check classification status
+    rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+    match_results = rule_set.matching_rules(asset_wrapper)
+    status = match_results.classification_status()
+
+    # 3. Handle based on status
+    if status == ClassificationStatus.CLASSIFIED:
+        return _handle_classified_asset(asset_wrapper, tag_mod_report)
+
+    elif status == ClassificationStatus.CONFLICT:
+        return _handle_classification_conflict(
+            asset_wrapper, tag_mod_report, match_results
+        )
+
+    elif status == ClassificationStatus.UNCLASSIFIED:
+        return _handle_unclassified_asset(asset_wrapper, tag_mod_report, album_decision)
+
+    else:
+        # Exhaustive pattern match - should never reach here
+        raise NotImplementedError(
+            f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
+        )

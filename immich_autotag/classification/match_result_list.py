@@ -21,14 +21,6 @@ class MatchResultList:
     )
 
     @typechecked
-    def __len__(self) -> int:
-        return len(self.matches)
-
-    @typechecked
-    def __getitem__(self, idx: int) -> MatchResult:
-        return self.matches[idx]
-
-    @typechecked
     def tags(self) -> list[str]:
         tags = []
         for m in self.matches:
@@ -72,3 +64,11 @@ class MatchResultList:
         )
 
         return ClassificationStatus.from_match_results(self)
+
+    @typechecked
+    def __getitem__(self, idx: int) -> MatchResult:
+        return self.matches[idx]
+
+    @typechecked
+    def __len__(self) -> int:
+        return len(self.matches)

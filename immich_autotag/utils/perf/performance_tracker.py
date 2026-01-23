@@ -80,6 +80,10 @@ class PerformanceTracker:
         self._total_assets = value
 
     @typechecked
+    def _printable_value_skip_n(self) -> int:
+        return self._skip_n or 0
+
+    @typechecked
     def _calc_total_to_process(self) -> Optional[int]:
         """
         Returns the number of assets to process, using the minimum of max_assets and (total_assets - skip_n) if both are set.
@@ -103,10 +107,14 @@ class PerformanceTracker:
             self._last_log_time = now
 
     @typechecked
-    def print_progress(self, count: int, elapsed: Optional[float] = None):
-        if elapsed is None:
-            elapsed = time.time() - self._start_time
-        print("[PERF] " + self._format_perf_progress(count, elapsed))
+    def _printable_value_avg(self, count: int, elapsed: float) -> float:
+        return elapsed / count if count else 0
+
+    @typechecked
+    def _printable_value_abs_total(self) -> Optional[int]:
+        if self._total_assets and self._total_assets > 0:
+            return self._total_assets
+        return None
 
     @typechecked
     def _printable_value__get_abs_total_and_avg(
@@ -118,27 +126,15 @@ class PerformanceTracker:
         return AbsTotalAndAvg(abs_total=abs_total, avg=avg)
 
     @typechecked
+    def _printable_value_total_to_process(self) -> Optional[int]:
+        return self._calc_total_to_process()
+
+    @typechecked
     def _printable_value__get_remaining(self, count: int) -> Optional[int]:
         total_to_process = self._printable_value_total_to_process()
         if total_to_process is not None:
             return total_to_process - count
         return None
-
-    @typechecked
-    def _printable_value_avg(self, count: int, elapsed: float) -> float:
-        return elapsed / count if count else 0
-
-    @typechecked
-    def _printable_value_total_to_process(self) -> Optional[int]:
-        return self._calc_total_to_process()
-
-    @typechecked
-    def _printable_value_skip_n(self) -> int:
-        return self._skip_n or 0
-
-    @typechecked
-    def _printable_value_total_assets(self) -> Optional[int]:
-        return self._total_assets
 
     @typechecked
     def _printable_value_previous_sessions_time(self) -> float:
@@ -153,12 +149,6 @@ class PerformanceTracker:
     @typechecked
     def _printable_value_abs_count(self, count: int) -> int:
         return count + self._printable_value_skip_n()
-
-    @typechecked
-    def _printable_value_abs_total(self) -> Optional[int]:
-        if self._total_assets and self._total_assets > 0:
-            return self._total_assets
-        return None
 
     @typechecked
     def _printable_value_estimation_mode(self) -> TimeEstimationMode:
@@ -181,27 +171,6 @@ class PerformanceTracker:
             estimator=estimator,
             estimation_mode=estimation_mode,
         )
-
-    @typechecked
-    def _printable_value_est_total_session(
-        self, count: int, elapsed: float
-    ) -> Optional[float]:
-        avg_and_totals = self._printable_value__get_avg_and_totals(count, elapsed)
-        avg = avg_and_totals.avg
-        total_to_process = avg_and_totals.total_to_process
-        estimator = avg_and_totals.estimator
-        estimation_mode = avg_and_totals.estimation_mode
-        if total_to_process and count > 0:
-            if (
-                estimation_mode == TimeEstimationMode.EWMA
-                and estimator is not None
-                and estimator.get_estimated_time_per_asset() > 0
-            ):
-                ewma = estimator.get_estimated_time_per_asset()
-                return ewma * total_to_process
-            else:
-                return avg * total_to_process
-        return None
 
     @typechecked
     def _printable_value_est_remaining_session(
@@ -234,17 +203,6 @@ class PerformanceTracker:
         avg = abs_total_and_avg.avg
         if abs_total and count > 0:
             return avg * abs_total
-        return None
-
-    @typechecked
-    def _printable_value_est_remaining_all(
-        self, count: int, elapsed: float, previous_sessions_time: float
-    ) -> Optional[float]:
-        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(count, elapsed)
-        abs_total = abs_total_and_avg.abs_total
-        avg = abs_total_and_avg.avg
-        if abs_total and count > 0:
-            return avg * abs_total - (previous_sessions_time + elapsed)
         return None
 
     @typechecked
@@ -315,6 +273,48 @@ class PerformanceTracker:
         msg += f" Average: {avg:.3f} s"
 
         return msg
+
+    @typechecked
+    def print_progress(self, count: int, elapsed: Optional[float] = None):
+        if elapsed is None:
+            elapsed = time.time() - self._start_time
+        print("[PERF] " + self._format_perf_progress(count, elapsed))
+
+    @typechecked
+    def _printable_value_total_assets(self) -> Optional[int]:
+        return self._total_assets
+
+    @typechecked
+    def _printable_value_est_total_session(
+        self, count: int, elapsed: float
+    ) -> Optional[float]:
+        avg_and_totals = self._printable_value__get_avg_and_totals(count, elapsed)
+        avg = avg_and_totals.avg
+        total_to_process = avg_and_totals.total_to_process
+        estimator = avg_and_totals.estimator
+        estimation_mode = avg_and_totals.estimation_mode
+        if total_to_process and count > 0:
+            if (
+                estimation_mode == TimeEstimationMode.EWMA
+                and estimator is not None
+                and estimator.get_estimated_time_per_asset() > 0
+            ):
+                ewma = estimator.get_estimated_time_per_asset()
+                return ewma * total_to_process
+            else:
+                return avg * total_to_process
+        return None
+
+    @typechecked
+    def _printable_value_est_remaining_all(
+        self, count: int, elapsed: float, previous_sessions_time: float
+    ) -> Optional[float]:
+        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(count, elapsed)
+        abs_total = abs_total_and_avg.abs_total
+        avg = abs_total_and_avg.avg
+        if abs_total and count > 0:
+            return avg * abs_total - (previous_sessions_time + elapsed)
+        return None
 
     @typechecked
     def get_progress_description(self, count: int) -> str:

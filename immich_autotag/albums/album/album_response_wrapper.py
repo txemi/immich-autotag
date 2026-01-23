@@ -80,26 +80,6 @@ class AlbumResponseWrapper:
         if not hasattr(self, "_loaded_at") or self._loaded_at is None:
             self._loaded_at = datetime.datetime.now()
 
-    def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
-        """Equality based on album id when possible."""
-        if not isinstance(other, AlbumResponseWrapper):
-            return False
-        try:
-            return self.get_album_id() == other.get_album_id()
-        except Exception:
-            return False
-
-    def __hash__(self) -> int:  # pragma: no cover - trivial
-        """Hash by album id when available; fallback to object id.
-
-        This allows storing wrappers in sets while reasoning by identity via
-        the album id (which is stable and unique per album).
-        """
-        try:
-            return hash(self.get_album_id())
-        except Exception:
-            return object.__hash__(self)
-
     # --- 3. Propiedades ---
     @property
     @typechecked
@@ -191,6 +171,32 @@ class AlbumResponseWrapper:
         collection = AlbumCollectionWrapper.get_instance()
         return collection.is_duplicated(self)
 
+    @conditional_typechecked
+    def _ensure_full_album_loaded(self, client: ImmichClient) -> AlbumResponseWrapper:
+        if self._load_source == AlbumLoadSource.DETAIL:
+            return self
+        self.reload_from_api(client)
+        return self
+
+    @conditional_typechecked
+    def _get_album_full_or_load(self) -> AlbumResponseDto:
+        from immich_autotag.context.immich_context import ImmichContext
+
+        client = ImmichContext.get_default_client()
+        self._ensure_full_album_loaded(client)
+        if self._load_source != AlbumLoadSource.DETAIL:
+            self._ensure_full_album_loaded(client)
+            raise RuntimeError()
+        return self._album_dto
+
+    # --- 9. Métodos Privados - Lógica Interna ---
+    def _active_dto(self) -> AlbumResponseDto:
+        """
+        Returns the current DTO, ensuring it's full if we need detailed info
+        (like album_users or assets).
+        """
+        return self._get_album_full_or_load()
+
     @typechecked
     def get_album_users(self) -> "AlbumUserList":
         """
@@ -210,6 +216,22 @@ class AlbumResponseWrapper:
         from uuid import UUID
 
         return UUID(self._album_dto.owner_id)
+
+    @typechecked
+    def _get_or_build_asset_ids_cache(self) -> set[UUID]:
+        """
+        Devuelve el set de asset IDs como UUID, construyendo la caché si no existe.
+        Si el álbum no está en modo DETAIL/full, garantiza modo full usando ensure_full().
+        """
+        from uuid import UUID
+
+        self.ensure_full()
+
+        if self._asset_ids_cache is not None:
+            return self._asset_ids_cache
+        assets = self._album_dto.assets
+        self._asset_ids_cache = set(UUID(a.id) for a in assets)
+        return self._asset_ids_cache
 
     # --- 6. Métodos Públicos - Gestión de Assets ---
     def get_asset_ids(self) -> set[UUID]:
@@ -260,231 +282,6 @@ class AlbumResponseWrapper:
             return True
         return len(assets) == 0
 
-    # --- 7. Métodos Públicos - Ciclo de Vida y Estado ---
-    @conditional_typechecked
-    def reload_from_api(self, client: ImmichClient) -> None:
-        """Reloads the album DTO from the API and clears the cache."""
-        from immich_client import errors as immich_errors
-
-        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
-        from immich_autotag.albums.albums.album_api_exception_info import (
-            AlbumApiExceptionInfo,
-        )
-
-        album_dto = None
-        try:
-            album_dto = get_album_info_by_id(self.get_album_uuid_no_cache(), client)
-        except immich_errors.UnexpectedStatus as exc:
-            api_exc = AlbumApiExceptionInfo(exc)
-            partial = self._build_partial_repr()
-            if api_exc.is_status(400):
-                self._handle_recoverable_400(api_exc, partial)
-                return
-            self._log_and_raise_fatal_error(api_exc, partial)
-        if album_dto is None:
-            raise RuntimeError(
-                f"get_album_info.sync returned None for album id="
-                f"{self.get_album_uuid_no_cache()}"
-            )
-        else:
-            self._set_album_full(album_dto)
-            self.invalidate_cache()
-
-    @typechecked
-    def merge_from_dto(
-        self, dto: AlbumResponseDto, load_source: AlbumLoadSource
-    ) -> None:
-        """
-        Unifies DTO update logic. Updates the wrapper with the new DTO and load_source if:
-        - The new load_source is DETAIL (always update to full)
-        - The current load_source is SEARCH (allow update from SEARCH to SEARCH or DETAIL)
-        - Ensures loaded_at is monotonic (never decreases)
-        - Updates asset ID cache as UUIDs
-        If the current is DETAIL and the new is SEARCH, ignores the update.
-        """
-        should_update = False
-        if load_source == AlbumLoadSource.DETAIL:
-            should_update = True
-        elif self._load_source == AlbumLoadSource.SEARCH:
-            should_update = True
-        if should_update:
-            self._update_from_dto(dto, load_source)
-
-    @typechecked
-    def ensure_full(self) -> None:
-        # If the album has been explicitly marked unavailable, fail fast so
-        # callers become aware and can handle the condition. Do not silently
-        # continue as that hides real problems.
-        if self._unavailable:
-            raise RuntimeError(
-                "Album is marked unavailable; cannot ensure full DTO for this album"
-            )
-
-        if not self._is_full():
-            self.reload_from_api(self.get_default_client())
-
-    @typechecked
-    def has_loaded_assets(self) -> bool:
-        """
-        Returns True si los assets del álbum están cargados (full/DETAIL),
-        False si no (SEARCH/partial).
-        No provoca carga ni acceso a la red.
-        """
-        return self._is_full()
-
-    @typechecked
-    def is_deleted(self) -> bool:
-        """
-        Returns True if the album has been logically deleted (i.e., _deleted_at is set).
-        """
-        return self._deleted_at is not None
-
-    @typechecked
-    def mark_deleted(self) -> None:
-        """
-        Public method to logically mark this album as deleted.
-        """
-        self._mark_deleted()
-
-    @typechecked
-    def invalidate_cache(self) -> None:
-        self._asset_ids_cache = None
-
-    @typechecked
-    def should_mark_unavailable(
-        self, threshold: int | None = None, window_seconds: int | None = None
-    ) -> bool:
-        try:
-            from immich_autotag.config.internal_config import ALBUM_ERROR_THRESHOLD
-
-            th = int(threshold) if threshold is not None else int(ALBUM_ERROR_THRESHOLD)
-            return self._error_history.count_in_window(window_seconds) >= th
-        except Exception:
-            return False
-
-    # --- 8. Métodos Públicos - Acciones de Modificación ---
-    @conditional_typechecked
-    def add_asset(
-        self,
-        asset_wrapper: "AssetResponseWrapper",
-        client: ImmichClient,
-        tag_mod_report: "ModificationReport",
-    ) -> None:
-        """
-        Adds an asset to the album. If the asset is already present,
-        raises AssetAlreadyInAlbumError.
-        """
-        # 1. Validation
-        self._validate_before_add(asset_wrapper)
-
-        # 2. Execution
-        result = self._execute_add_asset_api(asset_wrapper, client)
-
-        # 3. Handle result
-        item = self._find_asset_result_in_response(result, asset_wrapper.id_as_uuid)
-        if item:
-            if not item.success:
-                self._handle_add_asset_error(
-                    item, asset_wrapper, client, tag_mod_report
-                )
-        else:
-            raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in add_assets_to_album response."
-            )
-
-        # 4. Reporting
-        self._report_addition_to_modification_report(asset_wrapper, tag_mod_report)
-
-        # 5. Consistency Verification
-        self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
-
-    @conditional_typechecked
-    def remove_asset(
-        self,
-        asset_wrapper: "AssetResponseWrapper",
-        client: ImmichClient,
-        tag_mod_report: "ModificationReport",
-    ) -> None:
-        """
-        Removes the asset from the album using the API and validates the result.
-
-        Safe to call even if asset is not in album (idempotent operation).
-        Raises exception only if the removal fails unexpectedly.
-        """
-        # 1. Validation
-        if not self._validate_before_remove(asset_wrapper):
-            return
-
-        # 2. Execution
-        result = self._execute_remove_asset_api(asset_wrapper, client)
-
-        # 3. Handle result
-        item = self._find_asset_result_in_response(result, str(asset_wrapper.id))
-        if item:
-            if not item.success:
-                self._handle_remove_asset_error(item, asset_wrapper)
-        else:
-            self._handle_missing_remove_response(asset_wrapper)
-            return
-
-        # 4. Success Log
-        log(
-            (
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album "
-                f"{self.get_album_id()} ('{self.get_album_name()}')."
-            ),
-            level=LogLevel.FOCUS,
-        )
-
-        # 5. Reporting
-        self._report_removal_to_modification_report(asset_wrapper, tag_mod_report)
-
-        # 6. Consistency Verification
-        self._verify_asset_removed_from_album_with_retry(
-            asset_wrapper, client, max_retries=3
-        )
-
-    @conditional_typechecked
-    def trim_name_if_needed(
-        self,
-        client: ImmichClient,
-        tag_mod_report: "ModificationReport",
-    ) -> None:
-        album_name = self.get_album_name()
-        if album_name.startswith(" "):
-            cleaned_name = album_name.strip()
-            from immich_client.api.albums import update_album_info
-            from immich_client.models.update_album_dto import UpdateAlbumDto
-
-            update_body = UpdateAlbumDto(album_name=cleaned_name)
-            from uuid import UUID
-
-            update_album_info.sync(
-                id=UUID(self.get_album_id()),
-                client=client,
-                body=update_body,
-            )
-            from immich_autotag.report.modification_kind import ModificationKind
-
-            tag_mod_report.add_album_modification(
-                kind=ModificationKind.RENAME_ALBUM,
-                album=self,
-                old_value=album_name,
-                new_value=cleaned_name,
-            )
-            log(
-                f"Album '{album_name}' renamed to '{cleaned_name}'",
-                level=LogLevel.FOCUS,
-            )
-
-    # --- 9. Métodos Privados - Lógica Interna ---
-    def _active_dto(self) -> AlbumResponseDto:
-        """
-        Returns the current DTO, ensuring it's full if we need detailed info
-        (like album_users or assets).
-        """
-        return self._get_album_full_or_load()
-
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> None:
@@ -502,190 +299,8 @@ class AlbumResponseWrapper:
         self.invalidate_cache()
 
     @typechecked
-    def _get_or_build_asset_ids_cache(self) -> set[UUID]:
-        """
-        Devuelve el set de asset IDs como UUID, construyendo la caché si no existe.
-        Si el álbum no está en modo DETAIL/full, garantiza modo full usando ensure_full().
-        """
-        from uuid import UUID
-
-        self.ensure_full()
-
-        if self._asset_ids_cache is not None:
-            return self._asset_ids_cache
-        assets = self._album_dto.assets
-        self._asset_ids_cache = set(UUID(a.id) for a in assets)
-        return self._asset_ids_cache
-
-    def _is_full(self) -> bool:
-        """
-        Returns True if the album was loaded from DETAIL (full),
-        False if from SEARCH (partial).
-        Raises if _load_source is not recognized (defensive programming).
-        """
-        if self._load_source == AlbumLoadSource.DETAIL:
-            return True
-        elif self._load_source == AlbumLoadSource.SEARCH:
-            return False
-        else:
-            raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
-
-    @typechecked
-    def _get_full(self) -> AlbumResponseDto:
-        return self._get_album_full_or_load()
-
-    @typechecked
     def _set_album_full(self, value: AlbumResponseDto) -> None:
         self._update_from_dto(value, AlbumLoadSource.DETAIL)
-
-    @conditional_typechecked
-    def _get_album_full_or_load(self) -> AlbumResponseDto:
-        from immich_autotag.context.immich_context import ImmichContext
-
-        client = ImmichContext.get_default_client()
-        self._ensure_full_album_loaded(client)
-        if self._load_source != AlbumLoadSource.DETAIL:
-            self._ensure_full_album_loaded(client)
-            raise RuntimeError()
-        return self._album_dto
-
-    @conditional_typechecked
-    def _ensure_full_album_loaded(self, client: ImmichClient) -> AlbumResponseWrapper:
-        if self._load_source == AlbumLoadSource.DETAIL:
-            return self
-        self.reload_from_api(client)
-        return self
-
-    @typechecked
-    def _validate_before_add(self, asset_wrapper: "AssetResponseWrapper") -> None:
-        """Validates if an asset can be added to the album."""
-        if self.has_asset_wrapper(asset_wrapper):
-            raise AssetAlreadyInAlbumError(
-                f"Asset {asset_wrapper.id} is already in album {self.get_album_id()}"
-            )
-
-    @typechecked
-    def _execute_add_asset_api(
-        self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
-    ) -> list[BulkIdResponseDto]:
-        """Executes the API call to add an asset to the album."""
-        from immich_client.api.albums import add_assets_to_album
-        from immich_client.models.bulk_ids_dto import BulkIdsDto
-
-        result = add_assets_to_album.sync(
-            id=self.get_album_uuid_no_cache(),
-            client=client,
-            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
-        )
-
-        if not isinstance(result, list):
-            raise RuntimeError(
-                f"add_assets_to_album did not return a list, got {type(result)}"
-            )
-        return result
-
-    @typechecked
-    def _report_addition_to_modification_report(
-        self,
-        asset_wrapper: "AssetResponseWrapper",
-        tag_mod_report: "ModificationReport",
-    ) -> None:
-        """Records the asset addition in the modification report."""
-        from immich_autotag.report.modification_kind import ModificationKind
-
-        tag_mod_report.add_assignment_modification(
-            kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
-            asset_wrapper=asset_wrapper,
-            album=self,
-        )
-
-    @typechecked
-    def _validate_before_remove(self, asset_wrapper: "AssetResponseWrapper") -> bool:
-        """Validates if an asset removal is allowed and necessary."""
-        self._ensure_removal_allowed()
-
-        if not self.has_asset_wrapper(asset_wrapper):
-            log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album "
-                f"{self.get_album_id()}, skipping removal.",
-                level=LogLevel.DEBUG,
-            )
-            return False
-        return True
-
-    @typechecked
-    def _execute_remove_asset_api(
-        self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
-    ) -> list[BulkIdResponseDto]:
-        """Executes the API call to remove an asset from the album."""
-        from immich_client.api.albums import remove_asset_from_album
-        from immich_client.models.bulk_ids_dto import BulkIdsDto
-
-        result = remove_asset_from_album.sync(
-            id=self.get_album_uuid_no_cache(),
-            client=client,
-            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
-        )
-
-        if not isinstance(result, list):
-            raise RuntimeError(
-                f"remove_assets_from_album did not return a list, got {type(result)}"
-            )
-        return result
-
-    @typechecked
-    def _handle_missing_remove_response(
-        self, asset_wrapper: "AssetResponseWrapper"
-    ) -> None:
-        """Handles the case where the asset is not found in the removal response."""
-        log(
-            (
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in "
-                f"remove_assets_from_album response for album "
-                f"{self.get_album_id()}. Treating as already removed."
-            ),
-            level=LogLevel.WARNING,
-        )
-        from immich_autotag.config._internal_types import ErrorHandlingMode
-        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-
-        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
-            raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in removal response for album {self.get_album_id()}."
-            )
-
-    @typechecked
-    def _report_removal_to_modification_report(
-        self,
-        asset_wrapper: "AssetResponseWrapper",
-        tag_mod_report: "ModificationReport",
-    ) -> None:
-        """Records the asset removal in the modification report."""
-        if tag_mod_report:
-            from immich_autotag.report.modification_kind import ModificationKind
-
-            tag_mod_report.add_assignment_modification(
-                kind=ModificationKind.REMOVE_ASSET_FROM_ALBUM,
-                asset_wrapper=asset_wrapper,
-                album=self,
-            )
-
-    @typechecked
-    def _mark_deleted(self) -> None:
-        """
-        Logically mark this album as deleted by setting _deleted_at to now.
-        """
-        if self._deleted_at is None:
-            self._deleted_at = datetime.datetime.now()
-
-    @typechecked
-    def _ensure_removal_allowed(self) -> None:
-        """Enforces safety rules for asset removal."""
-        if not (self.is_temporary_album() or self.is_duplicate_album()):
-            raise RuntimeError(
-                f"Refusing to remove asset from album '{self.get_album_name()}' "
-                f"(id={self.get_album_id()}): not a temporary or duplicate album."
-            )
 
     # --- 10. Métodos Privados - Gestión de Errores y Verificación ---
     @typechecked
@@ -770,6 +385,172 @@ class AlbumResponseWrapper:
         )
         raise api_exc.exc
 
+    # --- 7. Métodos Públicos - Ciclo de Vida y Estado ---
+    @conditional_typechecked
+    def reload_from_api(self, client: ImmichClient) -> None:
+        """Reloads the album DTO from the API and clears the cache."""
+        from immich_client import errors as immich_errors
+
+        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
+        from immich_autotag.albums.albums.album_api_exception_info import (
+            AlbumApiExceptionInfo,
+        )
+
+        album_dto = None
+        try:
+            album_dto = get_album_info_by_id(self.get_album_uuid_no_cache(), client)
+        except immich_errors.UnexpectedStatus as exc:
+            api_exc = AlbumApiExceptionInfo(exc)
+            partial = self._build_partial_repr()
+            if api_exc.is_status(400):
+                self._handle_recoverable_400(api_exc, partial)
+                return
+            self._log_and_raise_fatal_error(api_exc, partial)
+        if album_dto is None:
+            raise RuntimeError(
+                f"get_album_info.sync returned None for album id="
+                f"{self.get_album_uuid_no_cache()}"
+            )
+        else:
+            self._set_album_full(album_dto)
+            self.invalidate_cache()
+
+    @typechecked
+    def merge_from_dto(
+        self, dto: AlbumResponseDto, load_source: AlbumLoadSource
+    ) -> None:
+        """
+        Unifies DTO update logic. Updates the wrapper with the new DTO and load_source if:
+        - The new load_source is DETAIL (always update to full)
+        - The current load_source is SEARCH (allow update from SEARCH to SEARCH or DETAIL)
+        - Ensures loaded_at is monotonic (never decreases)
+        - Updates asset ID cache as UUIDs
+        If the current is DETAIL and the new is SEARCH, ignores the update.
+        """
+        should_update = False
+        if load_source == AlbumLoadSource.DETAIL:
+            should_update = True
+        elif self._load_source == AlbumLoadSource.SEARCH:
+            should_update = True
+        if should_update:
+            self._update_from_dto(dto, load_source)
+
+    def _is_full(self) -> bool:
+        """
+        Returns True if the album was loaded from DETAIL (full),
+        False if from SEARCH (partial).
+        Raises if _load_source is not recognized (defensive programming).
+        """
+        if self._load_source == AlbumLoadSource.DETAIL:
+            return True
+        elif self._load_source == AlbumLoadSource.SEARCH:
+            return False
+        else:
+            raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
+
+    @typechecked
+    def ensure_full(self) -> None:
+        # If the album has been explicitly marked unavailable, fail fast so
+        # callers become aware and can handle the condition. Do not silently
+        # continue as that hides real problems.
+        if self._unavailable:
+            raise RuntimeError(
+                "Album is marked unavailable; cannot ensure full DTO for this album"
+            )
+
+        if not self._is_full():
+            self.reload_from_api(self.get_default_client())
+
+    @typechecked
+    def has_loaded_assets(self) -> bool:
+        """
+        Returns True si los assets del álbum están cargados (full/DETAIL),
+        False si no (SEARCH/partial).
+        No provoca carga ni acceso a la red.
+        """
+        return self._is_full()
+
+    @typechecked
+    def is_deleted(self) -> bool:
+        """
+        Returns True if the album has been logically deleted (i.e., _deleted_at is set).
+        """
+        return self._deleted_at is not None
+
+    @typechecked
+    def _mark_deleted(self) -> None:
+        """
+        Logically mark this album as deleted by setting _deleted_at to now.
+        """
+        if self._deleted_at is None:
+            self._deleted_at = datetime.datetime.now()
+
+    @typechecked
+    def mark_deleted(self) -> None:
+        """
+        Public method to logically mark this album as deleted.
+        """
+        self._mark_deleted()
+
+    @typechecked
+    def invalidate_cache(self) -> None:
+        self._asset_ids_cache = None
+
+    @typechecked
+    def should_mark_unavailable(
+        self, threshold: int | None = None, window_seconds: int | None = None
+    ) -> bool:
+        try:
+            from immich_autotag.config.internal_config import ALBUM_ERROR_THRESHOLD
+
+            th = int(threshold) if threshold is not None else int(ALBUM_ERROR_THRESHOLD)
+            return self._error_history.count_in_window(window_seconds) >= th
+        except Exception:
+            return False
+
+    @typechecked
+    def _validate_before_add(self, asset_wrapper: "AssetResponseWrapper") -> None:
+        """Validates if an asset can be added to the album."""
+        if self.has_asset_wrapper(asset_wrapper):
+            raise AssetAlreadyInAlbumError(
+                f"Asset {asset_wrapper.id} is already in album {self.get_album_id()}"
+            )
+
+    @typechecked
+    def _execute_add_asset_api(
+        self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
+    ) -> list[BulkIdResponseDto]:
+        """Executes the API call to add an asset to the album."""
+        from immich_client.api.albums import add_assets_to_album
+        from immich_client.models.bulk_ids_dto import BulkIdsDto
+
+        result = add_assets_to_album.sync(
+            id=self.get_album_uuid_no_cache(),
+            client=client,
+            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
+        )
+
+        if not isinstance(result, list):
+            raise RuntimeError(
+                f"add_assets_to_album did not return a list, got {type(result)}"
+            )
+        return result
+
+    @typechecked
+    def _report_addition_to_modification_report(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        tag_mod_report: "ModificationReport",
+    ) -> None:
+        """Records the asset addition in the modification report."""
+        from immich_autotag.report.modification_kind import ModificationKind
+
+        tag_mod_report.add_assignment_modification(
+            kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
+            asset_wrapper=asset_wrapper,
+            album=self,
+        )
+
     def _handle_add_asset_error(
         self,
         item: object,
@@ -836,6 +617,194 @@ class AlbumResponseWrapper:
                 )
             )
 
+    @conditional_typechecked
+    def _verify_asset_in_album_with_retry(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        client: ImmichClient,
+        max_retries: int = 3,
+    ) -> None:
+        """
+        Verifies that an asset appears in the album after adding it,
+        with retry logic for eventual consistency.
+        Uses exponential backoff to handle API delays.
+        """
+        import time
+
+        for attempt in range(max_retries):
+            self.reload_from_api(client)
+            if self.has_asset_wrapper(asset_wrapper):
+                return  # Success - asset is in album
+
+            if attempt < max_retries - 1:
+                # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
+                wait_time = 0.1 * (2**attempt)
+                time.sleep(wait_time)
+            else:
+                log(
+                    (
+                        f"After {max_retries} retries, asset {asset_wrapper.id} "
+                        f"does NOT appear in album {self.get_album_id()}. "
+                        f"This may be an eventual consistency or "
+                        f"API issue."
+                    ),
+                    level=LogLevel.WARNING,
+                )
+
+    # --- 8. Métodos Públicos - Acciones de Modificación ---
+    @conditional_typechecked
+    def add_asset(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        client: ImmichClient,
+        tag_mod_report: "ModificationReport",
+    ) -> None:
+        """
+        Adds an asset to the album. If the asset is already present,
+        raises AssetAlreadyInAlbumError.
+        """
+        # 1. Validation
+        self._validate_before_add(asset_wrapper)
+
+        # 2. Execution
+        result = self._execute_add_asset_api(asset_wrapper, client)
+
+        # 3. Handle result
+        item = self._find_asset_result_in_response(result, asset_wrapper.id_as_uuid)
+        if item:
+            if not item.success:
+                self._handle_add_asset_error(
+                    item, asset_wrapper, client, tag_mod_report
+                )
+        else:
+            raise RuntimeError(
+                f"Asset {asset_wrapper.id} not found in add_assets_to_album response."
+            )
+
+        # 4. Reporting
+        self._report_addition_to_modification_report(asset_wrapper, tag_mod_report)
+
+        # 5. Consistency Verification
+        self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
+
+    @typechecked
+    def _ensure_removal_allowed(self) -> None:
+        """Enforces safety rules for asset removal."""
+        if not (self.is_temporary_album() or self.is_duplicate_album()):
+            raise RuntimeError(
+                f"Refusing to remove asset from album '{self.get_album_name()}' "
+                f"(id={self.get_album_id()}): not a temporary or duplicate album."
+            )
+
+    @typechecked
+    def _validate_before_remove(self, asset_wrapper: "AssetResponseWrapper") -> bool:
+        """Validates if an asset removal is allowed and necessary."""
+        self._ensure_removal_allowed()
+
+        if not self.has_asset_wrapper(asset_wrapper):
+            log(
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album "
+                f"{self.get_album_id()}, skipping removal.",
+                level=LogLevel.DEBUG,
+            )
+            return False
+        return True
+
+    @typechecked
+    def _execute_remove_asset_api(
+        self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
+    ) -> list[BulkIdResponseDto]:
+        """Executes the API call to remove an asset from the album."""
+        from immich_client.api.albums import remove_asset_from_album
+        from immich_client.models.bulk_ids_dto import BulkIdsDto
+
+        result = remove_asset_from_album.sync(
+            id=self.get_album_uuid_no_cache(),
+            client=client,
+            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
+        )
+
+        if not isinstance(result, list):
+            raise RuntimeError(
+                f"remove_assets_from_album did not return a list, got {type(result)}"
+            )
+        return result
+
+    @typechecked
+    def _handle_missing_remove_response(
+        self, asset_wrapper: "AssetResponseWrapper"
+    ) -> None:
+        """Handles the case where the asset is not found in the removal response."""
+        log(
+            (
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in "
+                f"remove_assets_from_album response for album "
+                f"{self.get_album_id()}. Treating as already removed."
+            ),
+            level=LogLevel.WARNING,
+        )
+        from immich_autotag.config._internal_types import ErrorHandlingMode
+        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+
+        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+            raise RuntimeError(
+                f"Asset {asset_wrapper.id} not found in removal response for album {self.get_album_id()}."
+            )
+
+    @typechecked
+    def _report_removal_to_modification_report(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        tag_mod_report: "ModificationReport",
+    ) -> None:
+        """Records the asset removal in the modification report."""
+        if tag_mod_report:
+            from immich_autotag.report.modification_kind import ModificationKind
+
+            tag_mod_report.add_assignment_modification(
+                kind=ModificationKind.REMOVE_ASSET_FROM_ALBUM,
+                asset_wrapper=asset_wrapper,
+                album=self,
+            )
+
+    def _handle_album_not_found_during_removal(
+        self, error_msg: str | None, asset_url: str, album_url: str
+    ) -> None:
+        """Handles the case where the album is missing during an asset removal."""
+        try:
+            from immich_autotag.albums.albums.album_collection_wrapper import (
+                AlbumCollectionWrapper,
+            )
+
+            collection = AlbumCollectionWrapper.get_instance()
+            collection.remove_album_local(self)
+            log(
+                (
+                    f"[ALBUM REMOVAL] Album {self.get_album_id()} "
+                    f"('{self.get_album_name()}') removed from collection due to "
+                    f"not_found error during asset removal."
+                ),
+                level=LogLevel.FOCUS,
+            )
+        except Exception as e:
+            log(
+                (
+                    f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} "
+                    f"from collection after not_found: {e}"
+                ),
+                level=LogLevel.WARNING,
+            )
+
+        log(
+            (
+                f"[ALBUM REMOVAL] Asset could not be removed because album "
+                f"{self.get_album_id()} was not found (HTTP 404): {error_msg}\n"
+                f"Asset link: {asset_url}\n"
+                f"Album link: {album_url}"
+            ),
+            level=LogLevel.WARNING,
+        )
+
     def _handle_remove_asset_error(
         self, item: object, asset_wrapper: "AssetResponseWrapper"
     ) -> None:
@@ -890,78 +859,6 @@ class AlbumResponseWrapper:
             )
         )
 
-    def _handle_album_not_found_during_removal(
-        self, error_msg: str | None, asset_url: str, album_url: str
-    ) -> None:
-        """Handles the case where the album is missing during an asset removal."""
-        try:
-            from immich_autotag.albums.albums.album_collection_wrapper import (
-                AlbumCollectionWrapper,
-            )
-
-            collection = AlbumCollectionWrapper.get_instance()
-            collection.remove_album_local(self)
-            log(
-                (
-                    f"[ALBUM REMOVAL] Album {self.get_album_id()} "
-                    f"('{self.get_album_name()}') removed from collection due to "
-                    f"not_found error during asset removal."
-                ),
-                level=LogLevel.FOCUS,
-            )
-        except Exception as e:
-            log(
-                (
-                    f"[ALBUM REMOVAL] Failed to remove album {self.get_album_id()} "
-                    f"from collection after not_found: {e}"
-                ),
-                level=LogLevel.WARNING,
-            )
-
-        log(
-            (
-                f"[ALBUM REMOVAL] Asset could not be removed because album "
-                f"{self.get_album_id()} was not found (HTTP 404): {error_msg}\n"
-                f"Asset link: {asset_url}\n"
-                f"Album link: {album_url}"
-            ),
-            level=LogLevel.WARNING,
-        )
-
-    @conditional_typechecked
-    def _verify_asset_in_album_with_retry(
-        self,
-        asset_wrapper: "AssetResponseWrapper",
-        client: ImmichClient,
-        max_retries: int = 3,
-    ) -> None:
-        """
-        Verifies that an asset appears in the album after adding it,
-        with retry logic for eventual consistency.
-        Uses exponential backoff to handle API delays.
-        """
-        import time
-
-        for attempt in range(max_retries):
-            self.reload_from_api(client)
-            if self.has_asset_wrapper(asset_wrapper):
-                return  # Success - asset is in album
-
-            if attempt < max_retries - 1:
-                # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
-                wait_time = 0.1 * (2**attempt)
-                time.sleep(wait_time)
-            else:
-                log(
-                    (
-                        f"After {max_retries} retries, asset {asset_wrapper.id} "
-                        f"does NOT appear in album {self.get_album_id()}. "
-                        f"This may be an eventual consistency or "
-                        f"API issue."
-                    ),
-                    level=LogLevel.WARNING,
-                )
-
     @conditional_typechecked
     def _verify_asset_removed_from_album_with_retry(
         self,
@@ -995,6 +892,89 @@ class AlbumResponseWrapper:
                     level=LogLevel.WARNING,
                 )
 
+    @conditional_typechecked
+    def remove_asset(
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        client: ImmichClient,
+        tag_mod_report: "ModificationReport",
+    ) -> None:
+        """
+        Removes the asset from the album using the API and validates the result.
+
+        Safe to call even if asset is not in album (idempotent operation).
+        Raises exception only if the removal fails unexpectedly.
+        """
+        # 1. Validation
+        if not self._validate_before_remove(asset_wrapper):
+            return
+
+        # 2. Execution
+        result = self._execute_remove_asset_api(asset_wrapper, client)
+
+        # 3. Handle result
+        item = self._find_asset_result_in_response(result, str(asset_wrapper.id))
+        if item:
+            if not item.success:
+                self._handle_remove_asset_error(item, asset_wrapper)
+        else:
+            self._handle_missing_remove_response(asset_wrapper)
+            return
+
+        # 4. Success Log
+        log(
+            (
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album "
+                f"{self.get_album_id()} ('{self.get_album_name()}')."
+            ),
+            level=LogLevel.FOCUS,
+        )
+
+        # 5. Reporting
+        self._report_removal_to_modification_report(asset_wrapper, tag_mod_report)
+
+        # 6. Consistency Verification
+        self._verify_asset_removed_from_album_with_retry(
+            asset_wrapper, client, max_retries=3
+        )
+
+    @conditional_typechecked
+    def trim_name_if_needed(
+        self,
+        client: ImmichClient,
+        tag_mod_report: "ModificationReport",
+    ) -> None:
+        album_name = self.get_album_name()
+        if album_name.startswith(" "):
+            cleaned_name = album_name.strip()
+            from immich_client.api.albums import update_album_info
+            from immich_client.models.update_album_dto import UpdateAlbumDto
+
+            update_body = UpdateAlbumDto(album_name=cleaned_name)
+            from uuid import UUID
+
+            update_album_info.sync(
+                id=UUID(self.get_album_id()),
+                client=client,
+                body=update_body,
+            )
+            from immich_autotag.report.modification_kind import ModificationKind
+
+            tag_mod_report.add_album_modification(
+                kind=ModificationKind.RENAME_ALBUM,
+                album=self,
+                old_value=album_name,
+                new_value=cleaned_name,
+            )
+            log(
+                f"Album '{album_name}' renamed to '{cleaned_name}'",
+                level=LogLevel.FOCUS,
+            )
+
+    @typechecked
+    def _get_full(self) -> AlbumResponseDto:
+        return self._get_album_full_or_load()
+
     @classmethod
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
@@ -1005,3 +985,23 @@ class AlbumResponseWrapper:
         obj = cls(album_dto=dto)
         object.__setattr__(obj, "_load_source", AlbumLoadSource.SEARCH)
         return obj
+
+    def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
+        """Equality based on album id when possible."""
+        if not isinstance(other, AlbumResponseWrapper):
+            return False
+        try:
+            return self.get_album_id() == other.get_album_id()
+        except Exception:
+            return False
+
+    def __hash__(self) -> int:  # pragma: no cover - trivial
+        """Hash by album id when available; fallback to object id.
+
+        This allows storing wrappers in sets while reasoning by identity via
+        the album id (which is stable and unique per album).
+        """
+        try:
+            return hash(self.get_album_id())
+        except Exception:
+            return object.__hash__(self)

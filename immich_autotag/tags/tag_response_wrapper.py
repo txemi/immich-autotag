@@ -19,14 +19,6 @@ class TagWrapper:
     def name(self) -> str:
         return self.tag.name
 
-    def __str__(self) -> str:
-        return f"TagWrapper(id={self.id}, name={self.name})"
-
-    def __eq__(self, other) -> bool:
-        if isinstance(other, TagWrapper):
-            return self.id == other.id
-        return False
-
     def to_dto(self) -> TagResponseDto:
         return self.tag
 
@@ -36,3 +28,11 @@ class TagWrapper:
         Returns the tag name in a robust and encapsulated manner.
         """
         return self.name
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, TagWrapper):
+            return self.id == other.id
+        return False
+
+    def __str__(self) -> str:
+        return f"TagWrapper(id={self.id}, name={self.name})"

@@ -355,6 +355,12 @@ class ModificationReport:
         )
 
     @typechecked
+    def _format_modification_entry(self, entry: ModificationEntry) -> str:
+        # Serialize first and delegate formatting to the serializable class
+        serializable = entry.to_serializable()
+        return serializable.to_log_string()
+
+    @typechecked
     def flush(self) -> None:
         """Flushes the report to file (append), thread-safe."""
         if not self.modifications or self._since_last_flush == 0:
@@ -420,9 +426,3 @@ class ModificationReport:
             # The album URL must be obtainable; do not swallow exceptions here.
             return album_wrapper.get_immich_album_url()
         return None
-
-    @typechecked
-    def _format_modification_entry(self, entry: ModificationEntry) -> str:
-        # Serialize first and delegate formatting to the serializable class
-        serializable = entry.to_serializable()
-        return serializable.to_log_string()

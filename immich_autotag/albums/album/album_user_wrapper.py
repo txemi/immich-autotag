@@ -35,11 +35,11 @@ class AlbumUserWrapper:
     def name(self) -> str:
         return self.user.name
 
-    def __str__(self) -> str:
-        return self.name or self.email or self.id or "<unknown user>"
-
     @typechecked
     def get_uuid(self) -> "UUID":
         from uuid import UUID
 
         return UUID(self.id)
+
+    def __str__(self) -> str:
+        return self.name or self.email or self.id or "<unknown user>"

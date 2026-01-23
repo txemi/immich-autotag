@@ -29,14 +29,6 @@ class ClassificationRuleSet:
     rules: List[ClassificationRuleWrapper]
 
     @typechecked
-    def __len__(self) -> int:
-        return len(self.rules)
-
-    @typechecked
-    def __getitem__(self, idx: int) -> ClassificationRuleWrapper:
-        return self.rules[idx]
-
-    @typechecked
     def as_dicts(self) -> List[Dict[str, object]]:
         """Return the rules as a list of dicts (for debugging/logging)."""
         return [wrapper.rule.model_dump() for wrapper in self.rules]
@@ -161,3 +153,11 @@ class ClassificationRuleSet:
             f"[INFO] Filtered mode: Only processing {len(wrappers)} asset(s) from filter rules."
         )
         return wrappers
+
+    @typechecked
+    def __getitem__(self, idx: int) -> ClassificationRuleWrapper:
+        return self.rules[idx]
+
+    @typechecked
+    def __len__(self) -> int:
+        return len(self.rules)

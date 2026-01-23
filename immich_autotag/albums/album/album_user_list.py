@@ -20,18 +20,6 @@ class AlbumUserList:
     _users: list["AlbumUserWrapper"] = attrs.field(factory=list)
 
     @typechecked
-    def __iter__(self) -> Iterator["AlbumUserWrapper"]:
-        return iter(self._users)
-
-    @typechecked
-    def __len__(self) -> int:
-        return len(self._users)
-
-    @typechecked
-    def __getitem__(self, idx: int) -> "AlbumUserWrapper":
-        return self._users[idx]
-
-    @typechecked
     def append(self, user: "AlbumUserWrapper") -> None:
         if not hasattr(user, "id"):
             raise TypeError("Only AlbumUserWrapper instances can be added.")
@@ -52,3 +40,15 @@ class AlbumUserList:
     @typechecked
     def names(self) -> list[str]:
         return [u.name for u in self._users]
+
+    @typechecked
+    def __getitem__(self, idx: int) -> "AlbumUserWrapper":
+        return self._users[idx]
+
+    @typechecked
+    def __iter__(self) -> Iterator["AlbumUserWrapper"]:
+        return iter(self._users)
+
+    @typechecked
+    def __len__(self) -> int:
+        return len(self._users)

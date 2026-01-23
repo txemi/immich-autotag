@@ -41,14 +41,6 @@ class AssetDateSourcesList:
     def extend(self, candidate_sets: list[AssetDateCandidates]) -> None:
         self.date_candidates_per_duplicate.extend(candidate_sets)
 
-    @typechecked
-    def __len__(self) -> int:
-        return len(self.date_candidates_per_duplicate)
-
-    @typechecked
-    def __iter__(self):
-        return iter(self.date_candidates_per_duplicate)
-
     @staticmethod
     @typechecked
     def from_wrappers(
@@ -136,3 +128,11 @@ class AssetDateSourcesList:
         for candidate_set in self.date_candidates_per_duplicate:
             result.extend(candidate_set.candidates_by_kinds(kinds))
         return result
+
+    @typechecked
+    def __iter__(self):
+        return iter(self.date_candidates_per_duplicate)
+
+    @typechecked
+    def __len__(self) -> int:
+        return len(self.date_candidates_per_duplicate)

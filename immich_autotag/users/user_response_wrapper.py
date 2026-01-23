@@ -61,10 +61,6 @@ class UserResponseWrapper:
         """Devuelve el UUID del usuario (objeto UUID, no string)."""
         return UUID(self.id)
 
-    @typechecked
-    def __str__(self) -> str:
-        return self.name or self.id or "<unknown user>"
-
     @classmethod
     @typechecked
     def from_context(cls, context: "ImmichContext") -> "UserResponseWrapper":
@@ -83,3 +79,7 @@ class UserResponseWrapper:
     @typechecked
     def get_uuid(self) -> UUID:
         return UUID(self.id)
+
+    @typechecked
+    def __str__(self) -> str:
+        return self.name or self.id or "<unknown user>"

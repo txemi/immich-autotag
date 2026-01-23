@@ -41,17 +41,17 @@ class DuplicateAlbumReports:
     def append(self, item: DuplicateAlbumReport) -> None:
         self.items.append(item)
 
-    def __iter__(self) -> Iterator[DuplicateAlbumReport]:
-        return iter(self.items)
-
-    def __len__(self) -> int:
-        return len(self.items)
-
-    def __getitem__(self, idx) -> DuplicateAlbumReport:
-        return self.items[idx]
-
     def to_list(self) -> List[DuplicateAlbumReport]:
         return list(self.items)
 
     def clear(self) -> None:
         self.items.clear()
+
+    def __getitem__(self, idx) -> DuplicateAlbumReport:
+        return self.items[idx]
+
+    def __iter__(self) -> Iterator[DuplicateAlbumReport]:
+        return iter(self.items)
+
+    def __len__(self) -> int:
+        return len(self.items)

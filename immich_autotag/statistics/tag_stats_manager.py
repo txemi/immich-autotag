@@ -69,32 +69,6 @@ class TagStatsManager:
             self.stats_manager._save_to_file()
 
     @typechecked
-    def increment_tag_action(
-        self,
-        tag: "TagWrapper",
-        kind: "ModificationKind",
-        album: "AlbumResponseWrapper | None",
-    ) -> None:
-        from immich_autotag.report.modification_kind import ModificationKind
-
-        if kind == ModificationKind.ADD_TAG_TO_ASSET:
-            self.increment_tag_added(tag)
-        elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
-            self.increment_tag_removed(tag)
-        elif kind == ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED:
-            self._increment_tag_error(tag)
-        elif kind == ModificationKind.UPDATE_ASSET_DATE:
-            self._increment_asset_date_update()
-        elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
-            self._increment_album_assignment(album)
-        elif kind == ModificationKind.ALBUM_DATE_MISMATCH:
-            self._increment_album_date_mismatch()
-        else:
-            raise NotImplementedError(
-                f"increment_tag_action not implemented for ModificationKind: {kind}"
-            )
-
-    @typechecked
     def _increment_album_date_mismatch(self) -> None:
         stats = self.stats_manager.get_stats()
         try:
@@ -139,4 +113,30 @@ class TagStatsManager:
         else:
             raise RuntimeError(
                 "AlbumResponseWrapper is required to count ASSIGN_ASSET_TO_ALBUM"
+            )
+
+    @typechecked
+    def increment_tag_action(
+        self,
+        tag: "TagWrapper",
+        kind: "ModificationKind",
+        album: "AlbumResponseWrapper | None",
+    ) -> None:
+        from immich_autotag.report.modification_kind import ModificationKind
+
+        if kind == ModificationKind.ADD_TAG_TO_ASSET:
+            self.increment_tag_added(tag)
+        elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
+            self.increment_tag_removed(tag)
+        elif kind == ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED:
+            self._increment_tag_error(tag)
+        elif kind == ModificationKind.UPDATE_ASSET_DATE:
+            self._increment_asset_date_update()
+        elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
+            self._increment_album_assignment(album)
+        elif kind == ModificationKind.ALBUM_DATE_MISMATCH:
+            self._increment_album_date_mismatch()
+        else:
+            raise NotImplementedError(
+                f"increment_tag_action not implemented for ModificationKind: {kind}"
             )
