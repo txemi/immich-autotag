@@ -1,54 +1,10 @@
-
 from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from urllib.parse import ParseResult
 from uuid import UUID
-import attrs
-from immich_client.models.asset_response_dto import AssetResponseDto
-from immich_client.models.update_asset_dto import UpdateAssetDto
-from typeguard import typechecked
-from immich_autotag.conversions.tag_conversions import TagConversions
-from immich_autotag.logging.levels import LogLevel
-from immich_autotag.logging.utils import log
-from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
-from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-from immich_autotag.albums.folder_analysis.album_folder_analyzer import AlbumFolderAnalyzer
-from immich_autotag.classification.classification_status import ClassificationStatus
-from immich_autotag.classification.match_classification_result import MatchClassificationResult
-from immich_autotag.config.manager import ConfigManager
-from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-
-@dataclass(frozen=True)
-class ClassificationUpdateResult:
-    has_tags: bool
-    has_albums: bool
-
-
-from immich_autotag.conversions.tag_conversions import TagConversions
-from immich_autotag.logging.levels import LogLevel
-from immich_autotag.logging.utils import log
-from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
-from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-
-
-# Exception for date integrity
-class DateIntegrityError(Exception):
-    pass
-
-
-from typing import TYPE_CHECKING
-from urllib.parse import ParseResult
-from uuid import UUID
-
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
@@ -64,7 +20,30 @@ from immich_autotag.classification.match_classification_result import (
 )
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.conversions.tag_conversions import TagConversions
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+
+@dataclass(frozen=True)
+class ClassificationUpdateResult:
+    has_tags: bool
+    has_albums: bool
+
+
+# Exception for date integrity
+class DateIntegrityError(Exception):
+    pass
+
+
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
