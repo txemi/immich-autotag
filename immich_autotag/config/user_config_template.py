@@ -27,9 +27,10 @@ from immich_autotag.config.models import (
     UserConfig,
     UserGroup,
 )
- # Private module-level constants for repeated tag/album/group names
 
- # AUTOTAG CLASSIFICATION RULES INPUT STRINGS
+# Private module-level constants for repeated tag/album/group names
+
+# AUTOTAG CLASSIFICATION RULES INPUT STRINGS
 _AUTOTAG_INPUT_PREFIX = "autotag_input_"
 _AUTOTAG_OUTPUT_PREFIX = "autotag_output_"
 _ADULT_MEME = "adult_meme"
@@ -43,7 +44,9 @@ _UNKNOWN_SUFFIX = "unknown"
 _CONFLICT_SUFFIX = "conflict"
 _BROKEN_SUFFIX = "broken"
 _DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX = "duplicate_asset_album_conflict"
-_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX = "duplicate_asset_classification_conflict"
+_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX = (
+    "duplicate_asset_classification_conflict"
+)
 _ALBUM_DETECTION_CONFLICT_SUFFIX = "album_detection_conflict"
 _ALBUM_DATE_MISMATCH_SUFFIX = "album_date_mismatch"
 
@@ -60,11 +63,21 @@ _AUTOTAG_INPUT_BROKEN = _AUTOTAG_INPUT_PREFIX + _BROKEN_SUFFIX
 
 _AUTOTAG_OUTPUT_UNKNOWN = _AUTOTAG_OUTPUT_PREFIX + _UNKNOWN_SUFFIX
 _AUTOTAG_OUTPUT_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _CONFLICT_SUFFIX
-_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX
-_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX
-_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = _AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT + "_"
-_AUTOTAG_OUTPUT_ALBUM_DETECTION_CONFLICT = _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DETECTION_CONFLICT_SUFFIX
-_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH = _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DATE_MISMATCH_SUFFIX
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT = (
+    _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_ALBUM_CONFLICT_SUFFIX
+)
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT = (
+    _AUTOTAG_OUTPUT_PREFIX + _DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_SUFFIX
+)
+_AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT_PREFIX = (
+    _AUTOTAG_OUTPUT_DUPLICATE_ASSET_CLASSIFICATION_CONFLICT + "_"
+)
+_AUTOTAG_OUTPUT_ALBUM_DETECTION_CONFLICT = (
+    _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DETECTION_CONFLICT_SUFFIX
+)
+_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH = (
+    _AUTOTAG_OUTPUT_PREFIX + _ALBUM_DATE_MISMATCH_SUFFIX
+)
 
 # ACTUAL CONFIG
 
@@ -87,10 +100,7 @@ user_config = UserConfig(
         host="immich.example.com", port=2283, api_key="YOUR_API_KEY_HERE"
     ),
     enable_album_name_strip=True,  # Trim spaces in album names
-    skip=SkipConfig( # Resume from last processed asset
-        skip_n=0,
-        resume_previous=True
-    ),
+    skip=SkipConfig(skip_n=0, resume_previous=True),  # Resume from last processed asset
     # -------------------------------------------------------------------------
     # ASSET FILTER: Global filter assets by tag, album name pattern or ID. Inclussion or exclusion.
     filters=FilterConfig(filter_in=[ClassificationRule(asset_links=[])]),
@@ -114,18 +124,29 @@ user_config = UserConfig(
             # Example conversion with COPY mode for testing
             Conversion(
                 description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
-                source=ClassificationRule(tag_names=[_AUTOTAG_INPUT_MEME], album_name_patterns=[_AUTOTAG_INPUT_MEME]),
-                destination=Destination(tag_names=[_AUTOTAG_INPUT_MEME], album_names=[_AUTOTAG_INPUT_MEME]),
+                source=ClassificationRule(
+                    tag_names=[_AUTOTAG_INPUT_MEME],
+                    album_name_patterns=[_AUTOTAG_INPUT_MEME],
+                ),
+                destination=Destination(
+                    tag_names=[_AUTOTAG_INPUT_MEME], album_names=[_AUTOTAG_INPUT_MEME]
+                ),
                 mode=ConversionMode.COPY,
             ),
             # Example conversion with COPY mode for testing
             Conversion(
                 description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
-                source=ClassificationRule(tag_names=[_AUTOTAG_INPUT_ADULT_MEME], album_name_patterns=[_AUTOTAG_INPUT_ADULT_MEME]),
-                destination=Destination(tag_names=[_AUTOTAG_INPUT_ADULT_MEME], album_names=[_AUTOTAG_INPUT_ADULT_MEME]),
+                source=ClassificationRule(
+                    tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
+                    album_name_patterns=[_AUTOTAG_INPUT_ADULT_MEME],
+                ),
+                destination=Destination(
+                    tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
+                    album_names=[_AUTOTAG_INPUT_ADULT_MEME],
+                ),
                 mode=ConversionMode.COPY,
             ),
-        ]
+        ],
     ),
     # -------------------------------------------------------------------------
     # CLASSIFICATION AND RULES:
@@ -189,11 +210,8 @@ user_config = UserConfig(
                 album_name_patterns=[
                     rf"^{_AUTOTAG_INPUT_IGNORE}$"  # Albums with exact name
                 ],
-                description=(
-                    "Ignore: photos discarded from the main flow."
-                ),
+                description=("Ignore: photos discarded from the main flow."),
             ),
-
             ClassificationRule(
                 tag_names=[
                     _AUTOTAG_INPUT_BROKEN,  # Ignore: photos discarded from main flow.
@@ -304,13 +322,12 @@ user_config = UserConfig(
         ],
         log_unmatched=True,  # Set to True to log albums that don't match any rule
     ),
-
     # -------------------------------------------------------------------------
     # PERFORMANCE: Tuning for production vs development
     performance=PerformanceConfig(
         enable_type_checking=True,  # Disable @typechecked in production (~50% perf improvement)
         # Set to True only for development/debugging to catch type errors early
-    ),    
+    ),
 )
 
 if __name__ == "__main__":
