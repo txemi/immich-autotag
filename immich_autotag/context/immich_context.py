@@ -40,6 +40,16 @@ class ImmichContext:
     asset_manager: "AssetManager" = attrs.field(
         validator=attrs.validators.instance_of(object)
     )
+    @staticmethod
+    @typechecked
+    def get_run_output_dir():
+        """
+        Returns the output directory for the current run (logs_local/<timestamp>_PID<pid>),
+        using the same logic as utils.run_output_dir.get_run_output_dir().
+        """
+        from immich_autotag.utils.run_output_dir import get_run_output_dir
+
+        return get_run_output_dir()
 
     def __attrs_post_init__(self):
         global _instance, _instance_created
