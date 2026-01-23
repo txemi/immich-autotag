@@ -103,10 +103,22 @@ def process_single_asset(
     tag_mod_report = ModificationReport.get_instance()
     album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     # Log reserved variables
-    log(f"[RESERVED] tag_conversion_result: {tag_conversion_result}", level=LogLevel.DEBUG)
-    log(f"[RESERVED] date_correction_result: {date_correction_result}", level=LogLevel.DEBUG)
-    log(f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}", level=LogLevel.DEBUG)
-    log(f"[RESERVED] album_assignment_result: {album_assignment_result}", level=LogLevel.DEBUG)
+    log(
+        f"[RESERVED] tag_conversion_result: {tag_conversion_result}",
+        level=LogLevel.DEBUG,
+    )
+    log(
+        f"[RESERVED] date_correction_result: {date_correction_result}",
+        level=LogLevel.DEBUG,
+    )
+    log(
+        f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}",
+        level=LogLevel.DEBUG,
+    )
+    log(
+        f"[RESERVED] album_assignment_result: {album_assignment_result}",
+        level=LogLevel.DEBUG,
+    )
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
         raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
     # Reserved variable for future development: result of validate_and_update_classification

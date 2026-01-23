@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import time
-
 from typeguard import typechecked
 
 from immich_autotag.assets.process.process_single_asset import process_single_asset
