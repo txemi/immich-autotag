@@ -2,11 +2,8 @@ from __future__ import annotations
 
 
 # Activar chequeo de tipos en tiempo de ejecución para todo el paquete
-try:
-    import typeguard
-    typeguard.install_import_hook('immich_autotag')
-except ImportError:
-    pass  # Si no está instalado, no rompe la ejecución normal
+from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+install_typeguard_import_hook()
 
 from typeguard import typechecked
 
@@ -28,15 +25,9 @@ from immich_autotag.permissions import (
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
 
-# --- DUPLICATE STDOUT/STDERR TO LOG FILE (tee4py) ---
-from immich_autotag.utils.tee_logging import setup_tee_logging
-
-setup_tee_logging()
-
-# --- Register global exception hook to log time of uncaught exceptions (without changing default behavior) ---
-from immich_autotag.utils.exception_hook import setup_exception_hook
-
-setup_exception_hook()
+# --- Inicialización de logging y exception hook global ---
+from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
+setup_logging_and_exceptions()
 
 
 def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  # type: ignore
