@@ -1,5 +1,5 @@
 # Dockerfile (cron variant)
-# Ejecuta Immich AutoTag periódicamente usando cron
+# Runs Immich AutoTag periodically using cron
 
 FROM python:3.11-slim
 
@@ -22,7 +22,7 @@ COPY docker/crontab.template /crontab.template
 RUN chmod +x /cron-entrypoint.sh
 
 
-# Añadir ~/.local/bin al PATH
+# Add ~/.local/bin to PATH
 ENV PATH="/root/.local/bin:$PATH"
 
 ENTRYPOINT ["/cron-entrypoint.sh"]

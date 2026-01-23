@@ -1,14 +1,14 @@
 """
 typeguard_hook.py
 
-Utilidad para instalar el import hook de typeguard de forma segura y reutilizable.
+Utility to install the typeguard import hook in a safe and reusable way.
 """
 
 
 def install_typeguard_import_hook(package_name: str = "immich_autotag"):
     """
-    Instala el import hook de typeguard para el paquete indicado.
-    Si typeguard no está instalado, no hace nada.
+    Installs the typeguard import hook for the given package.
+    If typeguard is not installed, does nothing.
     """
     try:
         import typeguard

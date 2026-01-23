@@ -27,7 +27,7 @@ dependencies = [
 	"pandas>=1.3.0",
 	"pyyaml",
 	"pydantic",
-	# Dependencias explícitas para immich_client
+	# Explicit dependencies for immich_client
 	"certifi",
 	"idna",
 	"typing_extensions",

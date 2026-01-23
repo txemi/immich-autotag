@@ -466,9 +466,9 @@ class AlbumResponseWrapper:
     @typechecked
     def has_loaded_assets(self) -> bool:
         """
-        Returns True si los assets del álbum están cargados (full/DETAIL),
-        False si no (SEARCH/partial).
-        No provoca carga ni acceso a la red.
+        Returns True if the album's assets are loaded (full/DETAIL),
+        False if not (SEARCH/partial).
+        Does not trigger loading or network access.
         """
         return self._is_full()
 

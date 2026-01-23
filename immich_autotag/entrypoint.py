@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-# Activar chequeo de tipos en tiempo de ejecución para todo el paquete
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+
+# Enable runtime type checking for the entire package
 
 install_typeguard_import_hook()
 

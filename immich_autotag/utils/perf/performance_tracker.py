@@ -71,7 +71,7 @@ class PerformanceTracker:
     @typechecked
     def set_skip_n(self, value: int) -> None:
         """
-        Setter público para actualizar skip_n de forma controlada.
+        Public setter to update skip_n in a controlled way.
         """
         self._skip_n = value
 
@@ -328,6 +328,6 @@ class PerformanceTracker:
 
     def set_max_assets(self, value: int | None) -> None:
         """
-        Setter público para actualizar max_assets de forma controlada. Permite None para desactivar el límite.
+        Public setter to update max_assets in a controlled way. Allows None to disable the limit.
         """
         self._max_assets = value

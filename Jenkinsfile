@@ -83,7 +83,7 @@ pipeline {
         }
         failure {
             echo "❌ Pipeline FAILED - Check logs above"
-            // Puedes añadir notificación aquí si quieres
+            // You can add notification here if you want
         }
     }
 }
