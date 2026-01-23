@@ -14,13 +14,28 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAssetGroup:
+
+    class DuplicateAssetGroupIterator:
+        def __init__(self, assets):
+            self._assets = assets
+            self._index = 0
+
+        def __next__(self):
+            if self._index < len(self._assets):
+                result = self._assets[self._index]
+                self._index += 1
+                return result
+            raise StopIteration
+
+        def __iter__(self):
+            return self
     assets: list[UUID]
 
     def as_str_list(self) -> list[str]:
         return [str(u) for u in self.assets]
 
-    def __iter__(self) -> "DuplicateAssetGroupIterator":
-        return iter(self.assets)
+    def __iter__(self) -> "DuplicateAssetGroup.DuplicateAssetGroupIterator":
+        return DuplicateAssetGroup.DuplicateAssetGroupIterator(self.assets)
 
     def __len__(self) -> int:
         return len(self.assets)
