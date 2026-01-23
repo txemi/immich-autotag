@@ -14,15 +14,16 @@
 # | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️     |
 # | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️     |
 # | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️     |
-# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️*    |
-# | mypy (type check)                 | Type checking                               |   ✔️     |   ✔️     |
-# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   ⚠️*    |
+# | flake8 (style)                    | Style linter                                |   ✔️     |   Warn*  |
+# | mypy (type check)                 | Type checking                               |   ✔️     |   Warn   |
+# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   Warn*  |
 # | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**   |
 # | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️     |
+# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️     |
 # | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn   |
 # -----------------------------------------------------------------------------
-# * In relaxed mode, flake8 ignores long lines (E501), uvx ssort does not block the build, and Spanish character check only warns.
-# ** Only if --enforce-dynamic-attrs is enabled
+# * En modo relajado, flake8 ignora E501, uvx ssort y flake8/mypy solo avisan, no bloquean el build.
+# ** Solo si se usa --enforce-dynamic-attrs
 #
 # Add/modify this table if new checks are added.
 # ============================================================================
