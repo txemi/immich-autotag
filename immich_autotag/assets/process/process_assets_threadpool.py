@@ -23,18 +23,14 @@ def process_assets_threadpool(
         "[CHECKPOINT] Checkpoint/resume is only supported in sequential mode. Disable USE_THREADPOOL for this feature.",
         level=LogLevel.PROGRESS,
     )
-    LOG_INTERVAL = 5  # seconds
     stats = StatisticsManager.get_instance().get_stats()
-    total_to_process = stats.get_total_to_process()
     max_assets = stats.max_assets
-    start_time = stats.started_at.timestamp() if stats.started_at else time.time()
     count = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = []
         for asset_wrapper in context.asset_manager.iter_assets(
             context, max_assets=max_assets
         ):
-            t0 = time.time()
             future = executor.submit(process_single_asset, asset_wrapper)
             futures.append(future)
             count += 1

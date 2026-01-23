@@ -75,9 +75,6 @@ def _check_filename_candidate_and_fix(
 
     # Use 1.1 days as threshold
     candidate_date = best_candidate.get_aware_date()
-    immich_time_is_midnight = (
-        immich_date.hour == 0 and immich_date.minute == 0 and immich_date.second == 0
-    )
     candidate_has_time = (
         candidate_date.hour != 0
         or candidate_date.minute != 0

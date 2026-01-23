@@ -1,16 +1,13 @@
 from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 from urllib.parse import ParseResult
 from uuid import UUID
-
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
 from typeguard import typechecked
-
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
@@ -42,11 +39,6 @@ class ClassificationUpdateResult:
 class DateIntegrityError(Exception):
     pass
 
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 @attrs.define(auto_attribs=True, slots=True)

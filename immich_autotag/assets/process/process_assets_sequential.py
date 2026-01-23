@@ -52,7 +52,6 @@ def process_assets_sequential(
         ):
             asset_id = asset_wrapper.id
             log_debug(f"[BUG] Processing asset: {asset_id}")
-            t0 = time.time()
 
             try:
                 process_single_asset(asset_wrapper)
