@@ -11,7 +11,8 @@ from typeguard import typechecked
 
 class Tee:
     def __init__(self, filename: str, mode: str = "a"):
-        # Open the file with buffering=1 (line buffered) to ensure real-time logging
+        # Open the file with buffering=1 (line buffered)
+        # to ensure real-time logging
         self.file = open(filename, mode, buffering=1, encoding="utf-8")
         self.stdout = sys.stdout
         self.stderr = sys.stderr
@@ -24,7 +25,8 @@ class Tee:
 
     def write(self, data):
         # Filter out extremely large DTO reprs that flood the logs.
-        # If a known DTO pattern appears in the output, replace it with a short placeholder.
+        # If a known DTO pattern appears in the output,
+        # replace it with a short placeholder.
         try:
             if isinstance(data, str) and data:
                 banned_markers = (
@@ -37,7 +39,8 @@ class Tee:
                     if marker in data:
                         # Replace the large representation with a concise marker.
                         data = data.replace(marker, "[DTO_TRUNCATED:(")
-                        # Additionally, if the line is extremely long, truncate it to a safe size
+                        # Additionally, if the line is extremely long,
+                        # truncate it to a safe size
                         MAX_LEN = 1000
                         if len(data) > MAX_LEN:
                             data = data[:MAX_LEN] + "... [TRUNCATED]\n"

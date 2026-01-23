@@ -234,7 +234,8 @@ class PerformanceTracker:
         # est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)  # Unused
 
         log_debug(
-            f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
+            f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, "
+            f"abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
         )
         msg = f"Processed:{count}"
         if total_to_process:

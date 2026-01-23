@@ -16,13 +16,19 @@ _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
 # --- Reusable private functions for execution folders ---
 @typechecked
 def _is_run_dir(subdir: Path) -> bool:
-    """Returns True if the subfolder is an execution folder (contains _RUN_DIR_PID_MARK in the name)."""
+    """
+    Returns True if the subfolder is an execution folder
+    (contains _RUN_DIR_PID_MARK in the name).
+    """
     return subdir.is_dir() and _RUN_DIR_PID_MARK in subdir.name
 
 
 @typechecked
 def _extract_datetime_from_run_dir(subdir: Path) -> datetime | None:
-    """Extracts the date from the execution folder (YYYYMMDD_HHMMSS before _RUN_DIR_PID_SEP)."""
+    """
+    Extracts the date from the execution folder
+    (YYYYMMDD_HHMMSS before _RUN_DIR_PID_SEP).
+    """
     try:
         dt_str = subdir.name.split(_RUN_DIR_PID_SEP)[0]
         return datetime.strptime(dt_str, _RUN_DIR_DATE_FORMAT)

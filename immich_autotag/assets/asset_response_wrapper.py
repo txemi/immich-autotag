@@ -902,10 +902,6 @@ class AssetResponseWrapper:
         url = get_immich_photo_url(self.uuid)
         return url
 
-    @property
-    def uuid(self) -> UUID:
-        return UUID(self.asset.id)
-
     def get_uuid(self) -> UUID:
         return UUID(self.asset.id)
 
