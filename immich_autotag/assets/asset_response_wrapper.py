@@ -1,8 +1,29 @@
-from __future__ import annotations
 
+from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, TYPE_CHECKING
+from urllib.parse import ParseResult
+from uuid import UUID
+import attrs
+from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.update_asset_dto import UpdateAssetDto
+from typeguard import typechecked
+from immich_autotag.conversions.tag_conversions import TagConversions
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+from immich_autotag.albums.folder_analysis.album_folder_analyzer import AlbumFolderAnalyzer
+from immich_autotag.classification.classification_status import ClassificationStatus
+from immich_autotag.classification.match_classification_result import MatchClassificationResult
+from immich_autotag.config.manager import ConfigManager
+from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -27,6 +48,7 @@ class DateIntegrityError(Exception):
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
+
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
@@ -158,7 +180,7 @@ class AssetResponseWrapper:
 
         tag_mod_report = ModificationReport.get_instance()
         user_wrapper = UserResponseWrapper.from_context(self.context)
-        asset_url = self.get_immich_photo_url().geturl()
+        # asset_url = self.get_immich_photo_url().geturl()  # Unused variable removed
 
         tag_mod_report.add_modification(
             kind=ModificationKind.UPDATE_ASSET_DATE,
@@ -502,7 +524,7 @@ class AssetResponseWrapper:
         """
         Returns the names of the albums this asset belongs to.
         """
-        return self.context.albums_collection.album_names_for_asset(self.asset)
+        return self.context.albums_collection.album_names_for_asset(self)
 
     @typechecked
     def get_tag_names(self) -> list[str]:
@@ -914,11 +936,7 @@ class AssetResponseWrapper:
     def get_uuid(self) -> UUID:
         return UUID(self.asset.id)
 
-    def get_album_names(self) -> list[str]:
-        """
-        Returns the names of the albums this asset belongs to.
-        """
-        return self.context.albums_collection.album_names_for_asset(self)
+    # Eliminado método duplicado get_album_names (F811)
 
     @typechecked
     def get_duplicate_wrappers(self) -> list["AssetResponseWrapper"]:
