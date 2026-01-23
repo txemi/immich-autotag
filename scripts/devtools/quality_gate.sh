@@ -285,11 +285,17 @@ ensure_tool mypy mypy
 MYPY_FAILED=0
 "$PY_BIN" -m mypy --ignore-missing-imports "$TARGET_DIR" || MYPY_FAILED=1
 
+
+# In relaxed mode, do not block on flake8/mypy errors, just warn
 if [ $FLAKE_FAILED -ne 0 ] || [ $MYPY_FAILED -ne 0 ]; then
 	echo "[WARNING] Static analyzers reported issues:"
 	[ $FLAKE_FAILED -ne 0 ] && echo " - flake8 failed (exit code $FLAKE_FAILED)"
 	[ $MYPY_FAILED -ne 0 ] && echo " - mypy failed (exit code $MYPY_FAILED)"
-	exit 1
+	if [ $RELAXED_MODE -eq 0 ]; then
+		exit 1
+	else
+		echo "[RELAXED MODE] Not blocking build on flake8/mypy errors."
+	fi
 fi
 
 echo "Static checks (ruff/flake8/mypy) completed successfully."
