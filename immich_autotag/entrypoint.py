@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-
 # Activar chequeo de tipos en tiempo de ejecución para todo el paquete
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+
 install_typeguard_import_hook()
 
 from typeguard import typechecked
@@ -27,6 +27,7 @@ from immich_autotag.types import ImmichClient
 
 # --- Inicialización de logging y exception hook global ---
 from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
+
 setup_logging_and_exceptions()
 
 
