@@ -80,9 +80,8 @@ def _log_page_progress(
 @typechecked
 def get_all_assets(
     context: "ImmichContext", max_assets: int | None = None, skip_n: int = 0
-) -> Optional[Generator[AssetResponseWrapper, None, None]]:
-    # NOTE: Python's typeguard doesn't support empty generators well, so we allow Optional in the return.
-    # If there are no assets, the function may return None and not an empty generator.
+    ) -> Generator[AssetResponseWrapper, None, None]:
+    # Always return a generator, even if empty, to avoid None return type for type safety.
     """
     Generator that produces AssetResponseWrapper one by one as they are obtained from the API.
     Skips the first `skip_n` assets efficiently (without fetching their full info).
@@ -98,6 +97,9 @@ def get_all_assets(
     log("Starting get_all_assets generator...", level=LogLevel.PROGRESS)
     first_page = True
     skip_applied = False
+
+    # If there are no assets, yield nothing (empty generator)
+    # This ensures the function always returns a generator, never None.
     while True:
         response = _fetch_assets_page(context, page)
         if response.status_code != 200:
