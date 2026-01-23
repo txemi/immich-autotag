@@ -209,6 +209,7 @@ class AssetResponseWrapper:
         """
 
         from typing import Iterator
+
         def get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
             yield asset__.created_at
             yield asset__.file_created_at
