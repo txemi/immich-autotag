@@ -8,19 +8,19 @@
 #
 # Checks and Modes Table
 # -----------------------------------------------------------------------------
-# | Check                            | Description                                 | Strict   | Relaxed  |
-# |-----------------------------------|---------------------------------------------|----------|----------|
-# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️     |
-# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️     |
-# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️     |
-# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️     |
-# | flake8 (style)                    | Style linter                                |   ✔️     |   Warn*  |
-# | mypy (type check)                 | Type checking                               |   ✔️     |   Warn   |
-# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   Warn*  |
-# | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**   |
-# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️     |
-# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️     |
-# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn   |
+# | Check                            | Description                                 | Strict   | Relaxed (CI) |
+# |-----------------------------------|---------------------------------------------|----------|--------------|
+# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |
+# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |
+# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |
+# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |
+# | flake8 (style)                    | Style linter                                |   ✔️     |   Warn*      |
+# | mypy (type check)                 | Type checking                               |   ✔️     |   Warn       |
+# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   Warn*      |
+# | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**       |
+# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |
+# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |
+# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |
 # -----------------------------------------------------------------------------
 # * En modo relajado, flake8 ignora E501, uvx ssort y flake8/mypy solo avisan, no bloquean el build.
 # ** Solo si se usa --enforce-dynamic-attrs
@@ -34,10 +34,10 @@
 # | Priority | Check      | Reason/Estimated cost                      | Status             |
 # |----------|------------|--------------------------------------------|--------------------|
 # | 1        | black      | Already enforced as blocker                | ✅ Already blocker |
-# | 2        | isort      | Very low cost, just sort imports           | Pending            |
-# | 3        | ruff       | Low cost, highly configurable              | Pending            |
+# | 2        | isort      | Already enforced as blocker                | ✅ Already blocker |
+# | 3        | ruff       | Already enforced as blocker                | ✅ Already blocker |
 # | 4        | flake8     | Medium cost, depends on rules              | Pending            |
-# | 5        | jscpd      | Variable cost, depends on duplication      | Pending            |
+# | 5        | jscpd      | Already enforced as blocker                | ✅ Already blocker |
 # | 6        | uvx ssort  | Low-medium cost, depends on method order   | Pending            |
 # | 7        | mypy       | High cost, requires typing                 | Pending            |
 # ------------------------------------------------------------------------------
@@ -49,16 +49,16 @@
 # |----------|--------|----------------------------------------------|--------------------|
 # | 1        | mypy   | Maximum robustness, detects real errors      | Pending            |
 # | 2        | flake8 | Medium robustness, helps with style/errors   | Pending            |
-# | 3        | ruff   | Similar to flake8, configurable              | Pending            |
+# | 3        | ruff   | Already enforced as blocker                  | ✅ Already blocker |
 # | 4        | black  | Already enforced as blocker                  | ✅ Already blocker |
-# | 5        | isort  | Import order, little impact on robustness    | Pending            |
+# | 5        | isort  | Already enforced as blocker                  | ✅ Already blocker |
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
 # Recommended plan to harden the Quality Gate (in order of priority):
 # 1. (Done) Black is already enforced as a blocker.
-# 2. Activate isort as a blocker (minimal cost, maximum ease).
-# 3. Activate ruff as a blocker (low effort, configurable).
+# 2. (Done) Isort is already enforced as a blocker.
+# 3. (Done) Ruff is already enforced as a blocker.
 # 4. Activate flake8 as a blocker (medium cost, adds style/error robustness).
 # 5. Activate mypy as a blocker (high cost, maximum robustness, requires typing everywhere).
 #
