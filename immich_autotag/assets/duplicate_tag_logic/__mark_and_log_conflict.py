@@ -24,10 +24,14 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
         + "\n".join(details)
     )
     log(msg, level=LogLevel.FOCUS)
-    from immich_autotag.config.models import UserConfig, DuplicateProcessingConfig
+    from immich_autotag.config.models import DuplicateProcessingConfig, UserConfig
+
     config: UserConfig | None = ConfigManager.get_instance().config
     if config is None or config.duplicate_processing is None:
-        log("[DUPLICATE TAGS][CONFLICT] Config or duplicate_processing missing, cannot tag conflict.", level=LogLevel.ERROR)
+        log(
+            "[DUPLICATE TAGS][CONFLICT] Config or duplicate_processing missing, cannot tag conflict.",
+            level=LogLevel.ERROR,
+        )
         return
     duplicate_processing: DuplicateProcessingConfig = config.duplicate_processing
     group_tag = f"{duplicate_processing.autotag_classification_conflict_prefix}{asset_wrapper.duplicate_id_as_uuid}"

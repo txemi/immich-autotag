@@ -4,7 +4,6 @@ from typing import Optional
 import attrs
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.config.models import UserConfig
 
 from .date_source_kind import DateSourceKind
 
@@ -51,16 +50,27 @@ class AssetDateCandidate:
             tz = user_tz
         else:
             from immich_autotag.config.manager import ConfigManager
-            from immich_autotag.config.models import UserConfig, DuplicateProcessingConfig, DateCorrectionConfig
+            from immich_autotag.config.models import (
+                DateCorrectionConfig,
+                DuplicateProcessingConfig,
+                UserConfig,
+            )
 
             manager = ConfigManager.get_instance()
             config: Optional[UserConfig] = manager.config
             tz: str = "UTC"  # Default fallback
             if config is not None:
-                duplicate_processing: Optional[DuplicateProcessingConfig] = config.duplicate_processing
+                duplicate_processing: Optional[DuplicateProcessingConfig] = (
+                    config.duplicate_processing
+                )
                 if duplicate_processing is not None:
-                    date_correction: Optional[DateCorrectionConfig] = duplicate_processing.date_correction
-                    if date_correction is not None and date_correction.extraction_timezone:
+                    date_correction: Optional[DateCorrectionConfig] = (
+                        duplicate_processing.date_correction
+                    )
+                    if (
+                        date_correction is not None
+                        and date_correction.extraction_timezone
+                    ):
                         tz = date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 
