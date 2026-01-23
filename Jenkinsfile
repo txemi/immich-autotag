@@ -47,6 +47,18 @@ pipeline {
             }
         }
         
+        stage('Quality Gate') {
+            steps {
+                script {
+                    echo "Running Quality Gate (strict mode)..."
+                    sh '''
+                        chmod +x scripts/devtools/quality_gate.sh
+                        bash scripts/devtools/quality_gate.sh --check
+                    '''
+                }
+            }
+        }
+
         stage('Run Application') {
             steps {
                 script {
