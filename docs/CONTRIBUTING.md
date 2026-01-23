@@ -8,77 +8,17 @@ Thank you for your interest in contributing to Immich AutoTag! This project is d
 
 
 
-## 1.2. Style rules for humans and language models
+## 1.2. Coding Style Reference
 
-### 1.2.1. Attribute access in typed classes
+All contributors must follow the project's coding style guide for attribute access, type safety, and model conventions.
 
-- **Do NOT use `getattr` or `hasattr` to access known attributes in models, dataclasses, or classes with `__slots__`.**
-- Always access attributes directly (`obj.attribute`).
-- Rationale: direct access is safer, more predictable, and works better with static analysis and refactoring tools. Introspection (`getattr`, `hasattr`) is only allowed for truly dynamic cases (e.g., migrations, generic serialization, or frameworks that explicitly require it).
-- This rule applies to both humans and language models/AI. Code should be as predictable and robust as in Java or other statically typed languages.
+**Key rule:** Never use dynamic attribute access functions (`getattr`, `setattr`, `hasattr`) for known fields. Always use explicit attribute access and type hints.
 
-Incorrect example:
+For full details, examples, and rationale, see:
 
-```python
-value = getattr(user, 'name', None)  # ❌ Not allowed if 'name' is a declared attribute
-```
+- [docs/dev/style.md](./dev/style.md) — Coding Style Guide (explicit attribute access, type safety, model conventions)
 
-Correct example:
-
-```python
-value = user.name  # ✅ Always preferred
-```
-
-If in doubt, ask before using introspection.
-
-### 1.2.2. Models and class types (project conventions)
-
-- **Do NOT use Python `@dataclass` for new models or DTOs in this project.**
-- **Use `pydantic` models** (e.g. `pydantic.BaseModel`) for classes that are serialized, used as DTOs, or exchanged with external services (HTTP APIs, clients). Pydantic gives explicit validation, parsing, and consistent serialization behavior.
-- **Use `attrs`** (`attrs.define` / `attrs.dataclass` style) for internal/domain classes that contain logic, mutability rules, or non-trivial behaviour and are not intended primarily for direct serialization. `attrs` provides concise declarations and good runtime performance while integrating well with existing code patterns.
-
-Rationale:
-- `pydantic` → best for serialization & validation (external-facing contracts).
-- `attrs` → best for internal domain objects with behaviour.
-- `dataclasses` are intentionally avoided to keep a single, explicit approach for serializable models (`pydantic`) and for logic/domain classes (`attrs`). This helps static analysis, consistent validation, and predictable serialization across the codebase.
-
-Examples:
-
-Correct (serializable DTO):
-
-```py
-from pydantic import BaseModel
-
-class AssetDto(BaseModel):
-	id: str
-	filename: str
-
-```
-
-Correct (internal/domain class):
-
-```py
-import attrs
-
-@attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
-class Album:
-	id: str = attrs.field(validator=attrs.validators.instance_of(str))
-	name: str = attrs.field(validator=attrs.validators.instance_of(str))
-
-	def rename(self, new_name: str) -> None:
-		self.name = new_name
-```
-
-Incorrect:
-
-```py
-from dataclasses import dataclass
-
-@dataclass
-class Model:
-	id: str
-	name: str
-```
+If in doubt, ask before using introspection or dynamic access.
 
 If you need to interoperate between `attrs` classes and `pydantic` (e.g., an internal class that must be serialized), convert explicitly in a well-tested adapter layer and prefer `pydantic` for the external contract.
 
