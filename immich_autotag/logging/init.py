@@ -21,11 +21,14 @@ def initialize_logging() -> None:
 
     # --- Lógica de forzado de log para desarrollo/CI ---
     if FORCED_LOG_LEVEL is not None:
-        forced: LogLevelInfo = FORCED_LOG_LEVEL
-        setup_logging(level=forced.level_value)
+        # FORCED_LOG_LEVEL siempre es LogLevelInfo (vuestro enum)
+        # Convertir a LogLevel si es necesario
+        # Usar directamente los atributos del objeto LogLevelInfo
+        forced_info = FORCED_LOG_LEVEL
+        setup_logging(level=forced_info.level_value)
         log(
-            f"[LOG] Logging system initialized: FORCED_LOG_LEVEL={forced.name}",
-            level=forced,
+            f"[LOG] Logging system initialized: FORCED_LOG_LEVEL={forced_info.name}",
+            level=forced_info.level_value,
         )
     elif filter_wrapper.is_focused():
         setup_logging(level=LogLevel.FOCUS)
