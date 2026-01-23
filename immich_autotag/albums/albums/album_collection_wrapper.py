@@ -65,7 +65,9 @@ class AlbumCollectionWrapper:
     _asset_to_albums_map: AssetToAlbumsMap | None = attrs.field(
         init=False,
         default=None,
-        validator=attrs.validators.optional(attrs.validators.instance_of(AssetToAlbumsMap)),
+        validator=attrs.validators.optional(
+            attrs.validators.instance_of(AssetToAlbumsMap)
+        ),
     )
     _unavailable: UnavailableAlbums = attrs.field(
         init=False, factory=UnavailableAlbums, repr=False
@@ -144,7 +146,7 @@ class AlbumCollectionWrapper:
         """
         Returns an AlbumList of only non-deleted albums.
         """
-        all_allbums=self._ensure_fully_loaded()._albums
+        all_allbums = self._ensure_fully_loaded()._albums
         return AlbumList([a for a in all_allbums if not a.is_deleted()])
 
     @typechecked
@@ -152,7 +154,7 @@ class AlbumCollectionWrapper:
         """Rebuilds the asset-to-albums map from scratch."""
 
         self._asset_to_albums_map = self._asset_to_albums_map_build()
-    
+
     @typechecked
     def _remove_album_from_local_collection(
         self, album_wrapper: AlbumResponseWrapper
@@ -327,7 +329,7 @@ class AlbumCollectionWrapper:
         from immich_autotag.context.immich_context import ImmichContext
 
         client = ImmichContext.get_default_client()
-        albums=self.get_albums()
+        albums = self.get_albums()
         total = len(albums)
         for idx, album_wrapper in enumerate(albums, 1):
             # Ensures the album is in full mode (assets loaded)

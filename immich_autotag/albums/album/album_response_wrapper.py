@@ -253,7 +253,9 @@ class AlbumResponseWrapper:
         Returns True if the album has no assets, False otherwise.
         Optimizado: no fuerza recarga ni construcción de caché si no es necesario.
         """
-        assets = self._ensure_full_album_loaded(self.get_default_client())._album_dto.assets
+        assets = self._ensure_full_album_loaded(
+            self.get_default_client()
+        )._album_dto.assets
         if assets is None:
             return True
         return len(assets) == 0
@@ -548,7 +550,7 @@ class AlbumResponseWrapper:
         return self._album_dto
 
     @conditional_typechecked
-    def _ensure_full_album_loaded(self, client: ImmichClient) -> AlbumResponseWrapper   :
+    def _ensure_full_album_loaded(self, client: ImmichClient) -> AlbumResponseWrapper:
         if self._load_source == AlbumLoadSource.DETAIL:
             return self
         self.reload_from_api(client)
