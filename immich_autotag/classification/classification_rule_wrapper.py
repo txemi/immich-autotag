@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
+from uuid import UUID
 
+from immich_autotag.classification.match_result import MatchResult
 from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 
