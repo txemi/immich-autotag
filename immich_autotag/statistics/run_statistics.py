@@ -123,10 +123,9 @@ class RunStatistics(BaseModel):
 
     @classmethod
     def from_yaml(cls, path: Path) -> "RunStatistics":
-        if not isinstance(path, Path):
-            raise TypeError(
-                f"from_yaml only accepts a Path object as input. Expected file: {RUN_STATISTICS_FILENAME}"
-            )
+        # Explicit runtime type check for safety (see discussion)
+        if not isinstance(path, Path):  # noqa: PLC2801
+            raise TypeError(f"Expected Path, got {type(path).__name__}")
         if not path.exists():
             raise FileNotFoundError(
                 f"File not found: {path} (expected {RUN_STATISTICS_FILENAME})"
