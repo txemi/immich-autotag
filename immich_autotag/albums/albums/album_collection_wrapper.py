@@ -10,7 +10,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_list import AlbumList
-from immich_autotag.albums.albums.album_map import AlbumMap
+from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
@@ -62,10 +62,10 @@ class AlbumCollectionWrapper:
     Only one instance of this class is allowed (singleton pattern).
     """
 
-    _albums: AlbumMap = attrs.field(
+    _albums: AlbumDualMap = attrs.field(
         init=False,
-        factory=AlbumMap,
-        validator=attrs.validators.instance_of(AlbumMap),
+        factory=AlbumDualMap,
+        validator=attrs.validators.instance_of(AlbumDualMap),
     )
     _asset_to_albums_map: AssetToAlbumsMap | None = attrs.field(
         init=False,
@@ -139,18 +139,15 @@ class AlbumCollectionWrapper:
         """
         Returns the first non-deleted album with the given name, or None if not found.
         """
-        for album in self.get_albums():
-            if album.get_album_name() == album_name:
-                return album
-        return None
+        return self._ensure_fully_loaded()._albums.get_by_name(album_name)
 
     @typechecked
     def get_albums(self) -> AlbumList:
         """
         Returns an AlbumList of only non-deleted albums.
         """
-        all_allbums=self._ensure_fully_loaded()._albums
-        return AlbumList([a for a in all_allbums if not a.is_deleted()])
+        all_albums = self._ensure_fully_loaded()._albums.all()
+        return AlbumList([a for a in all_albums if not a.is_deleted()])
 
     @typechecked
     def _rebuild_asset_to_albums_map(self) -> None:
@@ -166,7 +163,7 @@ class AlbumCollectionWrapper:
         Logically deletes an album by marking it as deleted, does not remove from the list.
         Returns True if marked. Raises if already deleted or not present.
         """
-        if album_wrapper not in self._albums:
+        if self._ensure_fully_loaded()._albums.get_by_id(album_wrapper.get_album_id()) is None:
             raise RuntimeError(
                 f"Album '{album_wrapper.get_album_name()}' "
                 f"(id={album_wrapper.get_album_id()}) is not present in the collection."
@@ -178,6 +175,7 @@ class AlbumCollectionWrapper:
             )
         album_wrapper.mark_deleted()
         self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
+        self._albums.remove(album_wrapper)
         return True
 
     @typechecked
@@ -655,7 +653,7 @@ class AlbumCollectionWrapper:
                 f"(id={existing.get_album_id()})."
             )
         # Append to collection and update maps
-        self._albums.append(wrapper)
+        self._albums.add(wrapper)
         # Optionally update asset-to-albums map or other structures here if needed
         return wrapper
 
