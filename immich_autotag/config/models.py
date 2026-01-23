@@ -1,11 +1,13 @@
+from enum import Enum
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
+
 """
 models.py
 
 Pydantic models for the new structured configuration (experimental).
 """
-
-from enum import Enum
-from typing import List, Optional
 
 
 # Enum for conversion mode
@@ -13,9 +15,6 @@ from typing import List, Optional
 class ConversionMode(str, Enum):
     MOVE = "move"  # MOVE: When the conversion is applied, the destination values replace the source values. That is, the source tags and albums are removed and the destination ones are assigned. (Classic "convert" or "move" behavior)
     COPY = "copy"  # COPY: When the conversion is applied, the destination values are added, but the source values are kept. That is, the destination tags and albums are added without removing the source ones. ("Copy"-type behavior)
-
-
-from pydantic import BaseModel, Field
 
 
 class ServerConfig(BaseModel):
