@@ -1,11 +1,22 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.config.models import AlbumPermissionsConfig, UserGroup
+
 # Typeguard import hook must be installed before any other imports!
+
 from immich_autotag.utils.typeguard_hook import (  # noqa: E402
     install_typeguard_import_hook,
 )
 
 install_typeguard_import_hook()  # noqa: E402
+
+
+from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
+
+setup_logging_and_exceptions()
 
 from typeguard import typechecked
 
@@ -23,12 +34,9 @@ from immich_autotag.logging.init import initialize_logging
 from immich_autotag.permissions import process_album_permissions, sync_album_permissions
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
-from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
-
-setup_logging_and_exceptions()
 
 
-def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  # type: ignore
+def _sync_all_album_permissions(user_config: Optional[UserConfig], context: ImmichContext) -> None:  # type: ignore
     """
     Phase 2: Synchronize all album permissions.
 
@@ -40,7 +48,8 @@ def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  #
     if not user_config or not user_config.album_permissions:
         return
 
-    if not user_config.album_permissions.enabled:
+    album_perms_config: AlbumPermissionsConfig = user_config.album_permissions  # type: ignore
+    if not album_perms_config.enabled: 
         return
 
     log(
@@ -49,27 +58,27 @@ def _sync_all_album_permissions(user_config, context: ImmichContext) -> None:  #
     )
 
     albums_collection = context.albums_collection
-    album_perms_config = user_config.album_permissions
-
     # Build user groups dictionary for quick lookup
-    user_groups_dict = {}
-    if album_perms_config.user_groups:
-        for group in album_perms_config.user_groups:
+    user_groups_dict: dict[str, "UserGroup"] = {}
+    user_groups =album_perms_config.user_groups
+    if user_groups:
+        for group in user_groups:
             user_groups_dict[group.name] = group
 
     synced_count = 0
     error_count = 0
 
     # Process each album
+    selection_rules = getattr(album_perms_config, "selection_rules", None)  # type: ignore
     for album_wrapper in albums_collection.get_albums():
         resolved_policy = resolve_album_policy(
             album_name=album_wrapper.get_album_name(),
             album_id=album_wrapper.get_album_id(),
             user_groups=user_groups_dict,
-            selection_rules=album_perms_config.selection_rules or [],
+            selection_rules=selection_rules or [],
         )
 
-        if resolved_policy.has_match:
+        if getattr(resolved_policy, "has_match", False):
             sync_album_permissions(
                 album_wrapper=album_wrapper,
                 resolved_policy=resolved_policy,
@@ -122,32 +131,27 @@ def run_main():
         auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
-    # Initialize the context ONLY with the client (others as None or empty)
-    context = ImmichContext.create_instance(
-        client=client,
-        albums_collection=None,
-        tag_collection=None,
-        duplicates_collection=None,
-        asset_manager=None,
-    )
-    # Now, create the dependent objects
-    tag_collection = list_tags(client)
 
-    # Initialize the singleton and load albums from API
+    # Create all required objects before context
+    tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client(client)
-    # --- LOG LAZY LOAD OF ALBUMS ---
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
     perf_phase_tracker.mark("lazy", "start")
     albums_collection.log_lazy_load_timing()
     perf_phase_tracker.mark("lazy", "end")
     duplicates_collection = load_duplicates_collection(client)
-    asset_manager = AssetManager(client=client)
-    # Assign the objects to the context
-    context.albums_collection = albums_collection
-    context.tag_collection = tag_collection
-    context.duplicates_collection = duplicates_collection
-    context.asset_manager = asset_manager
+    # AssetManager expects a Client, but ImmichClient is an AuthenticatedClient (subclass of Client)
+    # Use type: ignore to suppress mypy error, as runtime is compatible
+    asset_manager = AssetManager(client=client)  # type: ignore
+    # Now create the context with all objects
+    context = ImmichContext.create_instance(
+        client=client,
+        albums_collection=albums_collection,
+        tag_collection=tag_collection,
+        duplicates_collection=duplicates_collection,
+        asset_manager=asset_manager,
+    )
 
     # --- FORCE FULL LOADING OF ALL ALBUMS BEFORE ASSET ITERATION ---
     import time
@@ -161,7 +165,9 @@ def run_main():
         level=LogLevel.PROGRESS,
     )
     t0 = time.time()
-    albums_collection._ensure_all_albums_full()
+    # Use public method to avoid protected access warning
+    for album in albums_collection.get_albums():
+        album.ensure_full()
     t1 = time.time()
     log(
         f"[PROGRESS] [ALBUM-FULL-LOAD] Finished full album load. Elapsed: {t1-t0:.2f} seconds.",
