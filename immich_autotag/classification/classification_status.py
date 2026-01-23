@@ -19,8 +19,10 @@ if TYPE_CHECKING:
 class ClassificationStatus(Enum):
     """Represents the classification state of an asset based on matched rules."""
 
-    CLASSIFIED = "classified"      # Asset matched exactly one classification rule.
-    CONFLICT = "conflict"          # Asset matched multiple classification rules (conflict situation).
+    CLASSIFIED = "classified"  # Asset matched exactly one classification rule.
+    CONFLICT = (
+        "conflict"  # Asset matched multiple classification rules (conflict situation).
+    )
     UNCLASSIFIED = "unclassified"  # Asset matched no classification rules.
 
     @typechecked
