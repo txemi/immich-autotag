@@ -16,8 +16,10 @@ class AlbumMap:
     _albums: dict[UUID, AlbumResponseWrapper] = attrs.field(factory=dict)
 
     @typechecked
-    def get_by_uuid(self, uuid: UUID) -> AlbumResponseWrapper | None:
-        return self._albums.get(uuid)
+    def get_by_uuid(self, uuid: UUID) -> AlbumResponseWrapper:
+        if uuid not in self._albums:
+            raise RuntimeError(f"Album with uuid {uuid} does not exist in AlbumMap")
+        return self._albums[uuid]
 
     @typechecked
     def append(self, album: AlbumResponseWrapper):
@@ -34,9 +36,11 @@ class AlbumMap:
         else:
             raise ValueError(f"Album with uuid {album_id} not found in AlbumMap")
 
+    @typechecked
     def __iter__(self) -> Iterator[AlbumResponseWrapper]:
         return iter(self._albums.values())
 
+    @typechecked
     def __len__(self) -> int:
         return len(self._albums)
 

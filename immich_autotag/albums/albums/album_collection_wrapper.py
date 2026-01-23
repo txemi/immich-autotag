@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Iterable
+from enum import Enum, auto
 from uuid import UUID
 
 import attrs
@@ -9,7 +10,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_list import AlbumList
-from immich_autotag.albums.albums.album_map import AlbumMap
+from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
@@ -39,6 +40,10 @@ from immich_autotag.utils.decorators import conditional_typechecked
 
 _album_collection_singleton: AlbumCollectionWrapper | None = None
 
+class SyncState(Enum):
+    NOT_STARTED = auto()
+    SYNCING = auto()
+    SYNCED = auto()
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
@@ -57,10 +62,10 @@ class AlbumCollectionWrapper:
     Only one instance of this class is allowed (singleton pattern).
     """
 
-    _albums: AlbumMap = attrs.field(
+    _albums: AlbumDualMap = attrs.field(
         init=False,
-        factory=AlbumMap,
-        validator=attrs.validators.instance_of(AlbumMap),
+        factory=AlbumDualMap,
+        validator=attrs.validators.instance_of(AlbumDualMap),
     )
     _asset_to_albums_map: AssetToAlbumsMap | None = attrs.field(
         init=False,
@@ -78,8 +83,8 @@ class AlbumCollectionWrapper:
         default=attrs.Factory(DuplicateAlbumReports), init=False, repr=False
     )
 
-    # Flag to indicate if all albums have been fully loaded (search performed)
-    _fully_loaded: bool = attrs.field(default=False, init=False, repr=False)
+    # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
+    _sync_state: SyncState = attrs.field(default=SyncState.NOT_STARTED, init=False, repr=False)
 
     @typechecked
     def __attrs_post_init__(self) -> None:
@@ -136,10 +141,7 @@ class AlbumCollectionWrapper:
         """
         Returns the first non-deleted album with the given name, or None if not found.
         """
-        for album in self.get_albums():
-            if album.get_album_name() == album_name:
-                return album
-        return None
+        return self._ensure_fully_loaded()._albums.get_by_name(album_name)
 
     @typechecked
     def get_albums(self) -> AlbumList:
@@ -163,7 +165,7 @@ class AlbumCollectionWrapper:
         Logically deletes an album by marking it as deleted, does not remove from the list.
         Returns True if marked. Raises if already deleted or not present.
         """
-        if album_wrapper not in self._albums:
+        if self._ensure_fully_loaded()._albums.get_by_id(album_wrapper.get_album_id()) is None:
             raise RuntimeError(
                 f"Album '{album_wrapper.get_album_name()}' "
                 f"(id={album_wrapper.get_album_id()}) is not present in the collection."
@@ -175,6 +177,7 @@ class AlbumCollectionWrapper:
             )
         album_wrapper.mark_deleted()
         self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
+        self._albums.remove(album_wrapper)
         return True
 
     @typechecked
@@ -381,7 +384,7 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def _remove_empty_temporary_albums(
-        self, albums_to_remove: list[AlbumResponseWrapper], client: ImmichClient
+        self, albums_to_remove: AlbumList, client: ImmichClient
     ):
         """
         Removes empty temporary albums detected after building the map.
@@ -585,8 +588,8 @@ class AlbumCollectionWrapper:
         raise RuntimeError. This centralizes duplicate detection used during initial load and
         during runtime album creation.
         """
-        albums_list = self._albums  # Access the internal list
-        albums_list.append(wrapper)
+        albums_list = self._albums  # Access the internal dual map
+        albums_list.add(wrapper)
         name = wrapper.get_album_name()
         if self.is_duplicated(wrapper):
 
@@ -652,20 +655,22 @@ class AlbumCollectionWrapper:
                 f"(id={existing.get_album_id()})."
             )
         # Append to collection and update maps
-        self._albums.append(wrapper)
+        self._albums.add(wrapper)
         # Optionally update asset-to-albums map or other structures here if needed
         return wrapper
 
     def _ensure_fully_loaded(self):
         """
         Ensures that all albums have been loaded (search performed). If not, triggers a full load.
+        Prevents recursive resyncs by checking sync state.
         """
-        if self._fully_loaded:
-            return
-        # Trigger full load here (implementation depends on how albums are loaded)
-        # For now, we assume a method self._load_all_albums_from_api() exists or similar logic
-
-        # This will fetch and replace the albums in the singleton
+        if self._sync_state == SyncState.SYNCED:
+            return self
+        if self._sync_state == SyncState.SYNCING:
+            # Prevent recursion: return empty or partial collection
+            return self
+        # Start sync
+        self._sync_state = SyncState.SYNCING
         self.resync_from_api()
         return self
 
@@ -892,23 +897,30 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.utils import log
         from immich_autotag.report.modification_report import ModificationReport
 
+        # Set sync state to SYNCING at the start
+        self._sync_state = SyncState.SYNCING
         client = ImmichContext.get_default_client()
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
 
         albums = get_all_albums.sync(client=client)
         if albums is None:
+            self._sync_state = SyncState.NOT_STARTED
             raise RuntimeError("Failed to fetch albums: API returned None")
 
         # Limpiar duplicados previos antes de recargar
         self._collected_duplicates.clear()
 
-        log("[RESYNC] Albums:", level=LogLevel.PROGRESS)
+        log(f"[RESYNC] Starting album resync. Total albums to process: {len(albums)}", level=LogLevel.PROGRESS)
+        # Integrar PerformanceTracker para progreso y tiempo estimado
+        from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
+        tracker = PerformanceTracker(total_assets=len(albums))
+
         if clear_first:
             # Limpiar la colección actual
             self._albums.clear()
         # Reconstruir la colección igual que from_client
-        for album in albums:
+        for idx, album in enumerate(albums, 1):
             wrapper = AlbumResponseWrapper.from_partial_dto(album)
             # Si clear_first, simplemente añadimos; si no, solo añadimos si no existe
             if clear_first or not self.find_first_album_with_name(
@@ -919,8 +931,10 @@ class AlbumCollectionWrapper:
                     client=client,
                     tag_mod_report=tag_mod_report,
                 )
+                # Log de progreso y tiempo estimado
+                tracker.print_progress(idx)
                 log(
-                    f"- {wrapper.get_album_name()} (assets: lazy-loaded)",
+                    f"[{idx}/{len(albums)}] Album '{wrapper.get_album_name()}' reloaded with {len(wrapper.get_asset_ids())} assets.",
                     level=LogLevel.INFO,
                 )
 
@@ -933,8 +947,8 @@ class AlbumCollectionWrapper:
             write_duplicates_summary(self._collected_duplicates)
 
         log(f"[RESYNC] Total albums: {len(self)}", level=LogLevel.INFO)
-        # Marcar como fully loaded
-        self._fully_loaded = True
+        # Marcar como sincronizado
+        self._sync_state = SyncState.SYNCED
 
     @typechecked
     def is_duplicated(self, wrapper: "AlbumResponseWrapper") -> bool:

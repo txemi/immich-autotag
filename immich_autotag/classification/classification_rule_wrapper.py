@@ -64,26 +64,36 @@ class ClassificationRuleWrapper:
         from immich_autotag.classification.match_result import MatchResult
 
         asset_tags = set(asset_wrapper.get_tag_names())
+        print(f"[DEBUG] asset_tags: {asset_tags}")
         album_names = set(asset_wrapper.get_album_names())
+        print(f"[DEBUG] album_names: {album_names}")
 
-        if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-            if not album_names:
-                raise Exception(
-                    "CRAZY_DEBUG mode active - stopping after tag conversions"
-                )
         tags_matched = [tag for tag in asset_tags if self.has_tag(tag)]
+        print(f"[DEBUG] tags_matched: {tags_matched}")
         albums_matched = [album for album in album_names if self.matches_album(album)]
+        print(f"[DEBUG] albums_matched: {albums_matched}")
 
         # Check asset_links (UUIDs)
         asset_link_uuids = self.extract_uuids_from_asset_links()
+        print(f"[DEBUG] asset_link_uuids: {asset_link_uuids}")
         asset_uuid = asset_wrapper.id_as_uuid
+        print(f"[DEBUG] asset_uuid: {asset_uuid}")
         asset_links_matched = []
         if asset_link_uuids and asset_uuid is not None:
             if asset_uuid in asset_link_uuids:
                 asset_links_matched = [str(asset_uuid)]
+        print(f"[DEBUG] asset_links_matched: {asset_links_matched}")
 
+        print(f"[DEBUG] DEFAULT_ERROR_MODE: {DEFAULT_ERROR_MODE}")
+        if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
+
+            raise Exception(
+                "CRAZY_DEBUG mode active - stopping after tag conversions"
+            )
         if not tags_matched and not albums_matched and not asset_links_matched:
+            print("[DEBUG] No matches found, returning None")
             return None
+        print(f"[DEBUG] Returning MatchResult: tags_matched={tags_matched}, albums_matched={albums_matched}, asset_links_matched={asset_links_matched}")
         return MatchResult(
             rule=self,
             tags_matched=tags_matched,
