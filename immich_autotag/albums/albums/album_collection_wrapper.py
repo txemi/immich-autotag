@@ -47,23 +47,6 @@ class SyncState(Enum):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
-    def _ensure_all_albums_full(self) -> None:
-        """
-        Forces all albums in the collection to be fully loaded (DETAIL/full mode).
-        Adds timing logs at PROGRESS level. Internal use only.
-        """
-        from immich_autotag.logging.utils import log
-        from immich_autotag.logging.levels import LogLevel
-        import time
-        log("[PROGRESS] Starting full album loading before asset iteration...", level=LogLevel.PROGRESS)
-        t0 = time.time()
-        for idx, album_wrapper in enumerate(self.get_albums(), 1):
-            try:
-                album_wrapper.ensure_full()
-            except Exception as e:
-                log(f"[WARNING] Failed to fully load album '{album_wrapper.get_album_name()}': {e}", level=LogLevel.WARNING)
-        t1 = time.time()
-        log(f"[PROGRESS] Finished full album loading. Elapsed: {t1-t0:.2f} seconds.", level=LogLevel.PROGRESS)
     """
     Singleton class that manages the collection of all albums in the system.
 
@@ -102,6 +85,24 @@ class AlbumCollectionWrapper:
 
     # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
     _sync_state: SyncState = attrs.field(default=SyncState.NOT_STARTED, init=False, repr=False)
+    def _ensure_all_albums_full(self) -> None:
+        """
+        Forces all albums in the collection to be fully loaded (DETAIL/full mode).
+        Adds timing logs at PROGRESS level. Internal use only.
+        """
+        from immich_autotag.logging.utils import log
+        from immich_autotag.logging.levels import LogLevel
+        import time
+        log("[PROGRESS] Starting full album loading before asset iteration...", level=LogLevel.PROGRESS)
+        t0 = time.time()
+        for idx, album_wrapper in enumerate(self.get_albums(), 1):
+            try:
+                album_wrapper.ensure_full()
+            except Exception as e:
+                log(f"[WARNING] Failed to fully load album '{album_wrapper.get_album_name()}': {e}", level=LogLevel.WARNING)
+        t1 = time.time()
+        log(f"[PROGRESS] Finished full album loading. Elapsed: {t1-t0:.2f} seconds.", level=LogLevel.PROGRESS)
+
 
     @typechecked
     def __attrs_post_init__(self) -> None:
@@ -144,12 +145,20 @@ class AlbumCollectionWrapper:
         except Exception as e:
             raise RuntimeError(f"Could not retrieve ModificationReport: {e}")
 
-    def __len__(self) -> int:
+    def _ensure_fully_loaded(self):
         """
-        Returns the number of albums in the collection (including deleted unless
-        filtered elsewhere).
+        Ensures that all albums have been loaded (search performed). If not, triggers a full load.
+        Prevents recursive resyncs by checking sync state.
         """
-        return len(self._albums)
+        if self._sync_state == SyncState.SYNCED:
+            return self
+        if self._sync_state == SyncState.SYNCING:
+            # Prevent recursion: return empty or partial collection
+            return self
+        # Start sync
+        self._sync_state = SyncState.SYNCING
+        self.resync_from_api()
+        return self
 
     @typechecked
     def find_first_album_with_name(
@@ -167,12 +176,6 @@ class AlbumCollectionWrapper:
         """
         all_allbums = self._ensure_fully_loaded()._albums
         return AlbumList([a for a in all_allbums if not a.is_deleted()])
-
-    @typechecked
-    def _rebuild_asset_to_albums_map(self) -> None:
-        """Rebuilds the asset-to-albums map from scratch."""
-
-        self._asset_to_albums_map = self._asset_to_albums_map_build()
 
     @typechecked
     def _remove_album_from_local_collection(
@@ -198,6 +201,130 @@ class AlbumCollectionWrapper:
         return True
 
     @typechecked
+    def _remove_empty_temporary_albums(
+        self, albums_to_remove: AlbumList, client: ImmichClient
+    ):
+        """
+        Removes empty temporary albums detected after building the map.
+        Raises an exception if any of them is not temporary (integrity).
+        """
+        if not albums_to_remove:
+            return
+        # Integrity check: all must be temporary
+        for album_wrapper in albums_to_remove:
+            if not is_temporary_album(album_wrapper.get_album_name()):
+                raise RuntimeError(
+                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' "
+                    f"(id={album_wrapper.get_album_id()}) is not temporary but was passed to _remove_empty_temporary_albums."
+                )
+
+        tag_mod_report = ModificationReport.get_instance()
+        for album_wrapper in albums_to_remove:
+            try:
+                self.delete_album(
+                    wrapper=album_wrapper,
+                    client=client,
+                    tag_mod_report=tag_mod_report,
+                    reason=(
+                        "Removed automatically after map build because it was empty and temporary"
+                    ),
+                )
+                self._remove_album_from_local_collection(album_wrapper)
+            except Exception as e:
+                album_name = album_wrapper.get_album_name()
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+
+                log(
+                    f"Failed to remove temporary album '{album_name}': {e}",
+                    level=LogLevel.ERROR,
+                )
+                raise
+
+    @typechecked
+    def _detect_empty_temporary_albums(self) -> AlbumList:
+        """
+        Returns an AlbumList of empty temporary albums to be removed after building the map.
+        """
+        albums_to_remove = AlbumList()
+        for album_wrapper in self.get_albums():
+            if album_wrapper.is_empty() and is_temporary_album(
+                album_wrapper.get_album_name()
+            ):
+                albums_to_remove.append(album_wrapper)
+        return albums_to_remove
+
+    @typechecked
+    def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
+        """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
+
+        Before building the map, forces the loading of asset_ids in all albums
+        (lazy loading).
+        """
+        asset_map = AssetToAlbumsMap()
+        assert (
+            len(self._albums) > 0
+        ), "AlbumCollectionWrapper must have at least one album to build asset map."
+        from immich_autotag.context.immich_context import ImmichContext
+
+        client = ImmichContext.get_default_client()
+        albums = self.get_albums()
+        total = len(albums)
+        for idx, album_wrapper in enumerate(albums, 1):
+            # Ensures the album is in full mode (assets loaded)
+            # album_wrapper.ensure_full()
+            if album_wrapper.is_empty():
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+
+                log(
+                    f"Album '{album_wrapper.get_album_name()}' "
+                    f"has no assets after forced reload.",
+                    level=LogLevel.WARNING,
+                )
+                # album_wrapper.reload_from_api(client)
+                if album_wrapper.get_asset_ids():
+                    album_url = album_wrapper.get_immich_album_url().geturl()
+                    raise RuntimeError(
+                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' "
+                        f"(URL: {album_url}) had empty asset_ids after initial load, "
+                        f"but after a redundant reload it now has assets. "
+                        "This suggests a possible synchronization or lazy loading bug. "
+                        "Please review the album loading logic."
+                    )
+                if is_temporary_album(album_wrapper.get_album_name()):
+                    from immich_autotag.logging.levels import LogLevel
+                    from immich_autotag.logging.utils import log
+
+                    log(
+                        f"Temporary album '{album_wrapper.get_album_name()}' "
+                        f"marked for removal after map build.",
+                        level=LogLevel.WARNING,
+                    )
+            else:
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+
+                log(
+                    f"[ALBUM-LOAD][API][{idx}/{total}] Album '{album_wrapper.get_album_name()}' reloaded with "
+                    f"{len(album_wrapper.get_asset_ids())} assets.",
+                    level=LogLevel.INFO,
+                )
+            asset_map.add_album_for_asset_ids(album_wrapper)
+        albums_to_remove = self._detect_empty_temporary_albums()
+
+        # Removes empty temporary albums detected after building the map
+        self._remove_empty_temporary_albums(albums_to_remove, client)
+
+        return asset_map
+
+    @typechecked
+    def _rebuild_asset_to_albums_map(self) -> None:
+        """Rebuilds the asset-to-albums map from scratch."""
+
+        self._asset_to_albums_map = self._asset_to_albums_map_build()
+
+    @typechecked
     def remove_album_local(self, album_wrapper: AlbumResponseWrapper) -> bool:
         """
         Removes an album from the internal collection only (no API call).
@@ -215,6 +342,53 @@ class AlbumCollectionWrapper:
                 level=LogLevel.FOCUS,
             )
         return removed
+
+    # Method moved to UnavailableAlbums: use self._unavailable.write_summary() instead
+
+    @typechecked
+    def _evaluate_global_policy(self) -> None:
+        """Evaluate global unavailable-albums policy and act according to config.
+
+        In DEVELOPMENT mode this may raise to fail-fast. In PRODUCTION it logs and
+        records a summary event.
+        """
+
+        from immich_autotag.config.internal_config import (
+            GLOBAL_UNAVAILABLE_THRESHOLD,
+        )
+        from immich_autotag.report.modification_kind import ModificationKind
+        from immich_autotag.report.modification_report import ModificationReport
+
+        threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
+
+        if not self._unavailable.count >= threshold:
+            return
+
+        # In development: fail fast to surface systemic problems
+        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+            raise RuntimeError(
+                f"Too many albums marked unavailable during run: "
+                f"{self._unavailable.count} >= {threshold}. "
+                f"Failing fast (DEVELOPMENT mode)."
+            )
+
+        # In production: record a summary event and continue
+
+        tag_mod_report = ModificationReport.get_instance()
+        tag_mod_report.add_error_modification(
+            kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
+            error_message=(
+                f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}"
+            ),
+            error_category="GLOBAL_THRESHOLD",
+            extra={
+                "unavailable_count": self._unavailable.count,
+                "threshold": threshold,
+            },
+        )
+        # Write a small summary file for operator inspection
+
+        self._unavailable.write_summary()
 
     @typechecked
     def notify_album_marked_unavailable(
@@ -287,171 +461,6 @@ class AlbumCollectionWrapper:
             self._collected_duplicates, existing_album, incoming_album, context
         )
         return existing_album
-
-    # Method moved to UnavailableAlbums: use self._unavailable.write_summary() instead
-
-    @typechecked
-    def _evaluate_global_policy(self) -> None:
-        """Evaluate global unavailable-albums policy and act according to config.
-
-        In DEVELOPMENT mode this may raise to fail-fast. In PRODUCTION it logs and
-        records a summary event.
-        """
-
-        from immich_autotag.config.internal_config import (
-            GLOBAL_UNAVAILABLE_THRESHOLD,
-        )
-        from immich_autotag.report.modification_kind import ModificationKind
-        from immich_autotag.report.modification_report import ModificationReport
-
-        threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
-
-        if not self._unavailable.count >= threshold:
-            return
-
-        # In development: fail fast to surface systemic problems
-        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
-            raise RuntimeError(
-                f"Too many albums marked unavailable during run: "
-                f"{self._unavailable.count} >= {threshold}. "
-                f"Failing fast (DEVELOPMENT mode)."
-            )
-
-        # In production: record a summary event and continue
-
-        tag_mod_report = ModificationReport.get_instance()
-        tag_mod_report.add_error_modification(
-            kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-            error_message=(
-                f"global unavailable threshold exceeded: {self._unavailable.count} >= {threshold}"
-            ),
-            error_category="GLOBAL_THRESHOLD",
-            extra={
-                "unavailable_count": self._unavailable.count,
-                "threshold": threshold,
-            },
-        )
-        # Write a small summary file for operator inspection
-
-        self._unavailable.write_summary()
-
-    @typechecked
-    def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
-        """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects (O(1) lookup).
-
-        Before building the map, forces the loading of asset_ids in all albums
-        (lazy loading).
-        """
-        asset_map = AssetToAlbumsMap()
-        assert (
-            len(self._albums) > 0
-        ), "AlbumCollectionWrapper must have at least one album to build asset map."
-        from immich_autotag.context.immich_context import ImmichContext
-
-        client = ImmichContext.get_default_client()
-        albums = self.get_albums()
-        total = len(albums)
-        for idx, album_wrapper in enumerate(albums, 1):
-            # Ensures the album is in full mode (assets loaded)
-            # album_wrapper.ensure_full()
-            if album_wrapper.is_empty():
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
-
-                log(
-                    f"Album '{album_wrapper.get_album_name()}' "
-                    f"has no assets after forced reload.",
-                    level=LogLevel.WARNING,
-                )
-                # album_wrapper.reload_from_api(client)
-                if album_wrapper.get_asset_ids():
-                    album_url = album_wrapper.get_immich_album_url().geturl()
-                    raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album '{album_wrapper.get_album_name()}' "
-                        f"(URL: {album_url}) had empty asset_ids after initial load, "
-                        f"but after a redundant reload it now has assets. "
-                        "This suggests a possible synchronization or lazy loading bug. "
-                        "Please review the album loading logic."
-                    )
-                if is_temporary_album(album_wrapper.get_album_name()):
-                    from immich_autotag.logging.levels import LogLevel
-                    from immich_autotag.logging.utils import log
-
-                    log(
-                        f"Temporary album '{album_wrapper.get_album_name()}' "
-                        f"marked for removal after map build.",
-                        level=LogLevel.WARNING,
-                    )
-            else:
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
-
-                log(
-                    f"[ALBUM-LOAD][API][{idx}/{total}] Album '{album_wrapper.get_album_name()}' reloaded with "
-                    f"{len(album_wrapper.get_asset_ids())} assets.",
-                    level=LogLevel.INFO,
-                )
-            asset_map.add_album_for_asset_ids(album_wrapper)
-        albums_to_remove = self._detect_empty_temporary_albums()
-
-        # Removes empty temporary albums detected after building the map
-        self._remove_empty_temporary_albums(albums_to_remove, client)
-
-        return asset_map
-
-    @typechecked
-    def _remove_empty_temporary_albums(
-        self, albums_to_remove: AlbumList, client: ImmichClient
-    ):
-        """
-        Removes empty temporary albums detected after building the map.
-        Raises an exception if any of them is not temporary (integrity).
-        """
-        if not albums_to_remove:
-            return
-        # Integrity check: all must be temporary
-        for album_wrapper in albums_to_remove:
-            if not is_temporary_album(album_wrapper.get_album_name()):
-                raise RuntimeError(
-                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' "
-                    f"(id={album_wrapper.get_album_id()}) is not temporary but was passed to _remove_empty_temporary_albums."
-                )
-
-        tag_mod_report = ModificationReport.get_instance()
-        for album_wrapper in albums_to_remove:
-            try:
-                self.delete_album(
-                    wrapper=album_wrapper,
-                    client=client,
-                    tag_mod_report=tag_mod_report,
-                    reason=(
-                        "Removed automatically after map build because it was empty and temporary"
-                    ),
-                )
-                self._remove_album_from_local_collection(album_wrapper)
-            except Exception as e:
-                album_name = album_wrapper.get_album_name()
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
-
-                log(
-                    f"Failed to remove temporary album '{album_name}': {e}",
-                    level=LogLevel.ERROR,
-                )
-                raise
-
-    @typechecked
-    def _detect_empty_temporary_albums(self) -> AlbumList:
-        """
-        Returns an AlbumList of empty temporary albums to be removed after building the map.
-        """
-        albums_to_remove = AlbumList()
-        for album_wrapper in self.get_albums():
-            if album_wrapper.is_empty() and is_temporary_album(
-                album_wrapper.get_album_name()
-            ):
-                albums_to_remove.append(album_wrapper)
-        return albums_to_remove
 
     @typechecked
     def delete_album(
@@ -675,21 +684,6 @@ class AlbumCollectionWrapper:
         self._albums.add(wrapper)
         # Optionally update asset-to-albums map or other structures here if needed
         return wrapper
-
-    def _ensure_fully_loaded(self):
-        """
-        Ensures that all albums have been loaded (search performed). If not, triggers a full load.
-        Prevents recursive resyncs by checking sync state.
-        """
-        if self._sync_state == SyncState.SYNCED:
-            return self
-        if self._sync_state == SyncState.SYNCING:
-            # Prevent recursion: return empty or partial collection
-            return self
-        # Start sync
-        self._sync_state = SyncState.SYNCING
-        self.resync_from_api()
-        return self
 
     @typechecked
     def get_asset_to_albums_map(self) -> AssetToAlbumsMap:
@@ -985,3 +979,10 @@ class AlbumCollectionWrapper:
         instance = cls()
         instance.resync_from_api()
         return instance
+
+    def __len__(self) -> int:
+        """
+        Returns the number of albums in the collection (including deleted unless
+        filtered elsewhere).
+        """
+        return len(self._albums)
