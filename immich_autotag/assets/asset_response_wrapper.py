@@ -868,7 +868,7 @@ class AssetResponseWrapper:
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
         state = AssetDtoState(dto, dto_type)
-        return cls(_context=context, _state=state)
+        return cls(context=context, state=state)
 
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
