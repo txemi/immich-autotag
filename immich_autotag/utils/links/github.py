@@ -1,8 +1,9 @@
-
 """
 Funciones utilitarias para construir enlaces a la documentación de GitHub según la versión/commit en ejecución.
 """
-from immich_autotag import __git_describe__, __git_commit__
+
+from immich_autotag import __git_commit__, __git_describe__
+
 
 def get_git_ref():
     """
@@ -10,6 +11,7 @@ def get_git_ref():
     Intenta usar __git_describe__, si no existe usa __git_commit__, si no, 'main'.
     """
     return __git_describe__ or __git_commit__ or "main"
+
 
 def github_doc_url(path: str, ref: str = None) -> str:
     """
