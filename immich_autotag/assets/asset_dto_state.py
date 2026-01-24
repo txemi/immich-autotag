@@ -36,4 +36,4 @@ class AssetDtoState:
         self._loaded_at = datetime.now()
 
     def get_tags():
-        return self._dto.tags
+        raise NotImplementedError("get_tags method not implemented yet")
