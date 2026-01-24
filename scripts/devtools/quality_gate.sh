@@ -249,7 +249,6 @@ ensure_tool() {
 # =============================================================================
 # Run ruff first (auto-fix/format where possible)
 
-
 ensure_tool ruff ruff
 if [ "$CHECK_MODE" -eq 1 ]; then
 	"$PY_BIN" -m ruff check --fix "$TARGET_DIR"
@@ -272,7 +271,6 @@ fi
 # - Organizes imports for consistency and readability.
 # =============================================================================
 # Organize imports with isort using the environment Python (isort before black)
-
 
 ensure_tool isort isort
 ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
@@ -298,7 +296,6 @@ fi
 # =============================================================================
 # Format code with Black using the environment Python
 
-
 ensure_tool black black
 BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
 if [ "$CHECK_MODE" -eq 1 ]; then
@@ -315,19 +312,6 @@ if [ $BLACK_EXIT -ne 0 ]; then
 		exit 1
 	fi
 fi
-
-
-# Ahora cada bloque de herramienta es responsable de fallar inmediatamente si hay error.
-
-echo "Formatting and import sorting completed."
-
-# =============================================================================
-# SECTION 5: STATIC ANALYSIS (FLAKE8)
-# -----------------------------------------------------------------------------
-# - flake8: Style and error linting (always blocks).
-# =============================================================================
-# Optional static checks: flake8 (style/errors) and mypy (type checking)
-echo "[CHECK] Running optional static analyzers: flake8, mypy (if available)"
 
 # =============================================================================
 # SECTION 6: POLICY ENFORCEMENT - DYNAMIC ATTRIBUTES
@@ -384,7 +368,6 @@ if [ $JSPCD_EXIT -ne 0 ]; then
 fi
 echo "jscpd check passed: no significant code duplication detected."
 
-
 # =============================================================================
 # SECTION 9A: FLAKE8 (STYLE AND ERROR LINTING)
 # -----------------------------------------------------------------------------
@@ -395,13 +378,13 @@ ensure_tool flake8 flake8
 FLAKE_FAILED=0
 FLAKE8_IGNORE="E203,W503"
 if [ $RELAXED_MODE -eq 1 ]; then
-    FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
-    echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
+	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+	echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 fi
 echo "[INFO] Running flake8 (output below if any):"
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
 if [ $? -ne 0 ]; then
-    FLAKE_FAILED=1
+	FLAKE_FAILED=1
 fi
 # SECTION 10: BLOCKING LOGIC FOR STATIC ANALYSIS
 # - Exits immediately if flake8 fails (always blocks).
@@ -446,27 +429,27 @@ fi
 
 # --- Ensure ssort (bwhmather/ssort) is installed and available ---
 ensure_ssort() {
-    if ! command -v ssort &>/dev/null; then
-        echo "[INFO] ssort not found, installing from GitHub..."
-        "$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
-    fi
+	if ! command -v ssort &>/dev/null; then
+		echo "[INFO] ssort not found, installing from GitHub..."
+		"$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
+	fi
 }
 
 # --- Run ssort for deterministic method ordering after syntax check ---
 ensure_ssort
 SSORT_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
-    echo "[FORMAT] Running ssort in CHECK mode..."
-    ssort --check "$TARGET_DIR" || SSORT_FAILED=1
+	echo "[FORMAT] Running ssort in CHECK mode..."
+	ssort --check "$TARGET_DIR" || SSORT_FAILED=1
 else
-    echo "[FORMAT] Running ssort in APPLY mode..."
-    ssort "$TARGET_DIR" || SSORT_FAILED=1
+	echo "[FORMAT] Running ssort in APPLY mode..."
+	ssort "$TARGET_DIR" || SSORT_FAILED=1
 fi
 
 # Now ssort is blocking in both modes
 if [ $SSORT_FAILED -ne 0 ]; then
-    echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
-    exit 1
+	echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
+	exit 1
 fi
 
 # =============================================================================
@@ -483,14 +466,8 @@ set +e
 MYPY_EXIT_CODE=$?
 set -e
 if [ $MYPY_EXIT_CODE -ne 0 ]; then
-    MYPY_FAILED=1
+	MYPY_FAILED=1
 fi
-
-# In relaxed mode, do not block on flake8/mypy errors, just warn
-
-# --- Enhanced error reporting for flake8 and mypy ---
-
-
 
 echo "Static checks (ruff/flake8/mypy) completed successfully."
 
