@@ -84,8 +84,9 @@ class AlbumDtoState:
         return UUID(self._album_dto.owner_id)
 
     @staticmethod
-    def create(dto: AlbumResponseDto, load_source: AlbumLoadSource) -> "AlbumDtoState":
+    def create(*, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> "AlbumDtoState":
         """
         Crea una nueva instancia de AlbumDtoState de forma segura para evitar problemas con attrs y enums.
+        Los argumentos deben pasarse con nombre (no posicionales).
         """
-        return AlbumDtoState(dto, load_source)
+        return AlbumDtoState(dto=dto, load_source=load_source)
