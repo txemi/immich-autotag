@@ -74,8 +74,8 @@ parse_args_and_globals() {
 		exit 0
 	fi
 
-
-	# Definir como globales
+	# Variables locales para parsing
+	local arg
 
 	CHECK_MODE="APPLY"  # Valores posibles: APPLY, CHECK, DUMMY
 	QUALITY_LEVEL=""  # Valores posibles: DUMMY, STRICT, RELAXED
@@ -146,6 +146,7 @@ check_shfmt() {
 	echo "==============================="
 	echo ""
 
+	local BASH_SCRIPTS
 	# Require shfmt to be installed
 	if ! command -v shfmt >/dev/null 2>&1; then
 		echo "[ERROR] shfmt is not installed. Please install it to pass the quality gate."
@@ -183,15 +184,17 @@ check_shfmt() {
 # Globals set: MAX_LINE_LENGTH
 # =============================================================================
 setup_max_line_length() {
+	local extract_line_length
 	extract_line_length() {
 		grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
 	}
-	MAX_LINE_LENGTH=$(extract_line_length "$REPO_ROOT/pyproject.toml")
-	if [ -z "$MAX_LINE_LENGTH" ]; then
+	local MAX_LINE_LENGTH_LOCAL
+	MAX_LINE_LENGTH_LOCAL=$(extract_line_length "$REPO_ROOT/pyproject.toml")
+	if [ -z "$MAX_LINE_LENGTH_LOCAL" ]; then
 		echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default."
-		MAX_LINE_LENGTH=88
+		MAX_LINE_LENGTH_LOCAL=88
 	fi
-	export MAX_LINE_LENGTH
+	export MAX_LINE_LENGTH="$MAX_LINE_LENGTH_LOCAL"
 }
 
 
@@ -232,6 +235,7 @@ setup_python_env() {
 # Returns: 0 si pasa, 1 si hay errores de sintaxis
 ###############################################################################
 check_python_syntax() {
+	local result
 	echo "Checking for syntax and indentation errors..."
 	echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
 	if ! "$PY_BIN" -m compileall -q "$TARGET_DIR"; then
@@ -254,8 +258,8 @@ check_python_syntax() {
 # Returns: nada, pero instala el paquete si es necesario
 ###############################################################################
 ensure_tool() {
-	tool_import_check="$1"
-	tool_pkg="$2"
+	local tool_import_check="$1"
+	local tool_pkg="$2"
 	if ! "$PY_BIN" -c "import ${tool_import_check}" 2>/dev/null; then
 		echo "Installing ${tool_pkg} into environment ($PY_BIN)..."
 		"$PY_BIN" -m pip install "${tool_pkg}"
@@ -270,6 +274,7 @@ ensure_tool() {
 # Returns: 0 si pasa, 1 si hay problemas de ordenado
 ###############################################################################
 check_isort() {
+	local ISORT_SKIPS ISORT_EXIT
 	ensure_tool isort isort
 	ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
 	if [ "$CHECK_MODE" = "CHECK" ]; then
@@ -336,8 +341,8 @@ ensure_ssort() {
 # Returns: 0 si pasa, 1 si hay métodos desordenados
 ###############################################################################
 check_ssort() {
+	local SSORT_FAILED=0
 	ensure_ssort
-	SSORT_FAILED=0
 	if [ "$CHECK_MODE" -eq 1 ]; then
 		echo "[FORMAT] Running ssort in CHECK mode..."
 		ssort --check "$TARGET_DIR" || SSORT_FAILED=1
@@ -363,8 +368,8 @@ check_ssort() {
 # Returns: 0 si pasa, 1 si hay problemas de estilo
 ###############################################################################
 check_ruff() {
+	local RUFF_IGNORE="" RUFF_EXIT
 	ensure_tool ruff ruff
-	RUFF_IGNORE=""
 	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 		RUFF_IGNORE="--ignore E501"
 		echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
@@ -394,6 +399,7 @@ check_ruff() {
 # Returns: 0 si pasa, 1 si hay problemas de formato
 ###############################################################################
 check_black() {
+	local BLACK_EXCLUDES BLACK_EXIT
 	# Format code with Black using the environment Python
 	ensure_tool black black
 	BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
@@ -423,12 +429,15 @@ check_black() {
 # Returns: 0 si pasa, 1 si se detectan usos prohibidos
 ###############################################################################
 check_no_dynamic_attrs() {
+	local matches
 	# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
 	# Projects following our coding guidelines avoid these calls because they
 	# undermine static typing and hide missing attributes. This check is strict
 	# and is DISABLED by default (enabled only with --enforce-dynamic-attrs).
 	if [ "$ENFORCE_DYNAMIC_ATTRS" -eq 1 ]; then
-		if grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR"; then
+		matches=$(grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR" || true)
+		if [ -n "$matches" ]; then
+			echo "$matches"
 			echo "[ERROR] Forbidden use of getattr(...) or hasattr(...) detected. Our style policy bans dynamic attribute access."
 			echo "Fix occurrences in source (do not rely on getattr/hasattr)."
 			return 1
@@ -448,6 +457,7 @@ check_no_dynamic_attrs() {
 # Returns: 0 si pasa, 1 si se detectan tuplas prohibidas
 ###############################################################################
 check_no_tuples() {
+	local result
 	echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
 	"$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
 		echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses."
@@ -464,6 +474,7 @@ check_no_tuples() {
 # Returns: 0 si pasa, 1 si hay duplicación
 ###############################################################################
 check_jscpd() {
+	local JSCMD JSPCD_EXIT
 	echo "[CHECK] Running jscpd for code duplication detection..."
 	if ! command -v jscpd &>/dev/null; then
 		echo "[INFO] jscpd not found, installing locally via npx..."
@@ -493,8 +504,8 @@ check_jscpd() {
 # Returns: 0 si pasa, 1 si hay errores de estilo
 ###############################################################################
 check_flake8() {
+	local FLAKE_FAILED=0 FLAKE8_IGNORE
 	ensure_tool flake8 flake8
-	FLAKE_FAILED=0
 	FLAKE8_IGNORE="E203,W503"
 	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 		FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
@@ -526,8 +537,8 @@ check_flake8() {
 # Returns: 0 si pasa, 1 si hay errores de tipado
 ###############################################################################
 check_mypy() {
+	local MYPY_FAILED=0 MYPY_OUTPUT MYPY_EXIT_CODE MYPY_ERROR_COUNT MYPY_FILES_COUNT
 	ensure_tool mypy mypy
-	MYPY_FAILED=0
 	echo "[INFO] Running mypy (output below if any):"
 	set +e
 	MYPY_OUTPUT=$($PY_BIN -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1)
@@ -558,6 +569,7 @@ check_mypy() {
 # Returns: 0 si pasa, 1 si se detectan caracteres prohibidos
 ###############################################################################
 check_no_spanish_chars() {
+	local SPANISH_MATCHES
 	echo "Checking for Spanish language characters in source files..."
 	SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
 	if [ -n "$SPANISH_MATCHES" ]; then
