@@ -1,3 +1,4 @@
+from immich_autotag.config.models import UserConfig
 # extract_whatsapp_date_from_path.py
 # Function: extract_whatsapp_date_from_path
 import re
@@ -6,8 +7,6 @@ from typing import Optional
 from zoneinfo import ZoneInfo
 
 from typeguard import typechecked
-
-from immich_autotag.config.models import UserConfig
 
 
 @typechecked
@@ -35,8 +34,8 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
         try:
             from immich_autotag.config.manager import ConfigManager
 
-            config: UserConfig = ConfigManager.get_instance().config
-            if config is not None and config.date_correction is not None:
+            config: UserConfig = ConfigManager.get_instance().config  # type: ignore
+            if config.date_correction is not None:
                 tz = ZoneInfo(config.date_correction.extraction_timezone)
                 return datetime(
                     int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
@@ -54,8 +53,8 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
         try:
             from immich_autotag.config.manager import ConfigManager
 
-            config = ConfigManager.get_instance().config
-            if config is not None and config.date_correction is not None:
+            config: UserConfig = ConfigManager.get_instance().config  # type: ignore
+            if config.date_correction is not None:
                 tz = ZoneInfo(config.date_correction.extraction_timezone)
                 return datetime(
                     int(m.group(1)),
