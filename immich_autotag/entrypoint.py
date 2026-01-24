@@ -141,6 +141,7 @@ def run_main():
     )
     # Registrar el singleton del cliente
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
     ImmichClientWrapper.create_default_instance(client)
 
     # Create all required objects before context
