@@ -13,7 +13,7 @@ def get_git_ref():
     return __git_describe__ or __git_commit__ or "main"
 
 
-def github_doc_url(path: str, ref: str = None) -> str:
+def github_doc_url(path: str, ref: str | None = None) -> str:
     """
     Construye un enlace a la documentación en GitHub usando la referencia git actual.
     path: ruta relativa dentro del repo (por ejemplo, 'immich_autotag/config/models.py')
