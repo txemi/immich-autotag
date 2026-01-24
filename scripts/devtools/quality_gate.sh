@@ -245,22 +245,32 @@ ensure_tool() {
 # =============================================================================
 # Organize imports with isort using the environment Python (isort before black)
 
-ensure_tool isort isort
-ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
-if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
-	ISORT_EXIT=$?
-else
-	"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
-	ISORT_EXIT=$?
-fi
-if [ $ISORT_EXIT -ne 0 ]; then
-	echo "[WARNING] isort reported issues."
+
+# =====================
+# Function: check_isort
+# =====================
+check_isort() {
+	ensure_tool isort isort
+	ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
 	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
-		exit 1
+		"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
+		ISORT_EXIT=$?
+	else
+		"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
+		ISORT_EXIT=$?
 	fi
-fi
+	if [ $ISORT_EXIT -ne 0 ]; then
+		echo "[WARNING] isort reported issues."
+		if [ "$CHECK_MODE" -eq 1 ]; then
+			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
+			return 1
+		fi
+	fi
+	return 0
+}
+
+# Call the third check
+check_isort || exit 1
 
 # =============================================================================
 # SECTION 9B: SSORT (DETERMINISTIC METHOD ORDERING)
