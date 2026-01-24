@@ -68,6 +68,12 @@ set -e
 set -o pipefail
 
 
+# =============================================================================
+# SECTION 0: COMMAND LINE ARGUMENT PARSING
+# -----------------------------------------------------------------------------
+# - Handles --help, --strict, --check, --enforce-dynamic-attrs, and target_dir.
+# - Sets RELAXED_MODE, CHECK_MODE, ENFORCE_DYNAMIC_ATTRS, TARGET_DIR variables.
+# =============================================================================
 # Usage: ./quality_gate.sh [--check|-c] [--strict] [target_dir]
 #   --strict: Enforce all checks strictly, fail on any error.
 #   Default (relaxed): Ignores E501 in flake8, does not fail on uvx ssort or Spanish character check, and only warns on flake8/mypy errors.
@@ -122,6 +128,11 @@ fi
 
 
 
+# =============================================================================
+# SECTION A: SYNCHRONIZED CONFIGURATION EXTRACTION
+# -----------------------------------------------------------------------------
+# - Extracts line length and config values from pyproject.toml for all tools.  #
+# =============================================================================
 # ---- Synchronized line length ----
 # Screen line length is extracted from pyproject.toml so that all tools use the same source of truth.
 extract_line_length() {
@@ -140,9 +151,17 @@ if [ -z "$MAX_LINE_LENGTH" ]; then
 	MAX_LINE_LENGTH=88
 fi
 
-# Robust exclusions to avoid formatting .venv, jenkins_logs and other external directories
 BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
 ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
+
+# =============================================================================
+# SECTION B: VIRTUAL ENVIRONMENT ACTIVATION & PYTHON SETUP
+# -----------------------------------------------------------------------------
+# - Activates .venv if present, otherwise falls back to system python.         #
+# - Ensures all required tools are available in the environment.               #
+# =============================================================================
+# Robust exclusions to avoid formatting .venv, jenkins_logs and other external directories
+
 
 # Activate project virtual environment robustly
 VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
@@ -161,6 +180,11 @@ else
 fi
 
 
+# =============================================================================
+# SECTION 1: SYNTAX AND INDENTATION CHECKS
+# -----------------------------------------------------------------------------
+# - Byte-compiles all Python files to catch syntax/import errors early.
+# =============================================================================
 # Syntax and indentation check on all .py files in the package
 echo "Checking for syntax and indentation errors..."
 echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
@@ -187,6 +211,11 @@ ensure_tool ruff ruff
 ensure_tool black black
 ensure_tool isort isort
 
+# =============================================================================
+# SECTION 2: RUFF (LINT/AUTO-FIX)
+# -----------------------------------------------------------------------------
+# - Runs ruff to lint and auto-fix code style issues.
+# =============================================================================
 # Run ruff first (auto-fix/format where possible)
 RUF_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
@@ -195,6 +224,11 @@ else
 	"$PY_BIN" -m ruff check --fix "$TARGET_DIR" || RUF_FAILED=1
 fi
 
+# =============================================================================
+# SECTION 3: ISORT (IMPORT SORTING)
+# -----------------------------------------------------------------------------
+# - Organizes imports for consistency and readability.
+# =============================================================================
 # Organize imports with isort using the environment Python (isort before black)
 ISORT_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
@@ -203,6 +237,11 @@ else
 	"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR" || ISORT_FAILED=1
 fi
 
+# =============================================================================
+# SECTION 4: BLACK (CODE FORMATTER)
+# -----------------------------------------------------------------------------
+# - Formats code to ensure consistent style.
+# =============================================================================
 # Format code with Black using the environment Python
 BLACK_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
@@ -228,9 +267,19 @@ fi
 
 echo "Formatting and import sorting completed."
 
+# =============================================================================
+# SECTION 5: STATIC ANALYSIS (FLAKE8)
+# -----------------------------------------------------------------------------
+# - flake8: Style and error linting (always blocks).
+# =============================================================================
 # Optional static checks: flake8 (style/errors) and mypy (type checking)
 echo "[CHECK] Running optional static analyzers: flake8, mypy (if available)"
 
+# =============================================================================
+# SECTION 6: POLICY ENFORCEMENT - DYNAMIC ATTRIBUTES
+# -----------------------------------------------------------------------------
+# - Optionally forbids use of getattr()/hasattr() for static typing safety.
+# =============================================================================
 # Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
 # Projects following our coding guidelines avoid these calls because they
 # undermine static typing and hide missing attributes. This check is strict
@@ -246,6 +295,11 @@ else
 fi
 
 
+# =============================================================================
+# SECTION 7: POLICY ENFORCEMENT - TUPLE USAGE
+# -----------------------------------------------------------------------------
+# - Forbids tuple returns and tuple-typed class members (project policy).
+# =============================================================================
 # Policy enforcement: disallow returning tuple literals or annotated Tuple types
 echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
 "$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
@@ -253,6 +307,11 @@ echo "[CHECK] Disallow tuple returns and tuple-typed class members (project poli
 	exit 3;
 }
 
+# =============================================================================
+# SECTION 8: CODE DUPLICATION DETECTION (JSCPD)
+# -----------------------------------------------------------------------------
+# - Detects code duplication using jscpd.
+# =============================================================================
 # --- Code duplication detection with jscpd ---
 echo "[CHECK] Running jscpd for code duplication detection..."
 if ! command -v jscpd &> /dev/null; then
@@ -275,6 +334,13 @@ echo "jscpd check passed: no significant code duplication detected."
 
 
 
+# =============================================================================
+# SECTION 9: STATIC ANALYSIS (FLAKE8, SSORT, MYPY)
+# -----------------------------------------------------------------------------
+# - flake8: Style and error linting (always blocks).
+# - ssort: Ensures deterministic method ordering in Python classes.
+# - mypy: Type checking (blocks only in strict mode).
+# =============================================================================
 # Flake8: use the same synchronized line length, print output directly, capture exit code
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
@@ -361,6 +427,12 @@ fi
 
 
 
+# =============================================================================
+# SECTION 10: BLOCKING LOGIC FOR STATIC ANALYSIS
+# -----------------------------------------------------------------------------
+# - Exits immediately if flake8 fails (always blocks).
+# - Exits if mypy fails (only in strict mode).
+# =============================================================================
 # --- SIMPLIFIED QUALITY GATE: LINEAR, FAIL-FAST, MODE-AWARE ---
 # Flake8: always blocks (with config depending on mode)
 if [ $FLAKE_FAILED -ne 0 ]; then
@@ -380,6 +452,11 @@ fi
 
 echo "Static checks (ruff/flake8/mypy) completed successfully."
 
+# =============================================================================
+# SECTION 11: SPANISH LANGUAGE CHARACTER CHECK
+# -----------------------------------------------------------------------------
+# - Forbids Spanish text/accents in code (blocks only in strict mode).
+# =============================================================================
 # --- Spanish language character check (quality gate) ---
 echo "Checking for Spanish language characters in source files..."
 SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
