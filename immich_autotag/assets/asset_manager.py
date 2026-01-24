@@ -4,9 +4,9 @@ from uuid import UUID
 
 import attrs
 from immich_client import Client
-from immich_client.models.asset_response_dto import AssetResponseDto
 from typeguard import typechecked
 
+from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.get_all_assets import get_all_assets
 from immich_autotag.logging.levels import LogLevel
@@ -77,9 +77,7 @@ class AssetManager:
         # `asset_id` is a UUID; pass it directly to the client (it accepts UUID objects).
         dto = proxy_get_asset_info(asset_id, self.client)
         if dto is None:
-            raise RuntimeError(
-                f"get_asset_info returned None for asset id={asset_id}"
-            )
+            raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
         asset = AssetResponseWrapper.from_dto(dto, context)
         self._assets[asset_id] = asset
         return asset
