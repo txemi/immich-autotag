@@ -14,7 +14,6 @@ from typeguard import typechecked
 
 from immich_autotag.types import ImmichClient
 
-
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
     from immich_autotag.context.immich_context import ImmichContext
@@ -107,14 +106,11 @@ class AlbumResponseWrapper:
 
     # --- 5. Public Methods - Metadata and Identification ---
 
-
     @typechecked
     def get_album_uuid(self) -> "UUID":
         from uuid import UUID
 
         return UUID(self._state.get_album_id())
-
-
 
     @typechecked
     def get_album_name(self) -> str:
@@ -158,26 +154,20 @@ class AlbumResponseWrapper:
         self.reload_from_api(client)
         return self
 
-
-
-
     @typechecked
     def get_album_users(self) -> "AlbumUserList":
         """
         Returns an AlbumUserList encapsulating all users in the album (album_users).
         This provides a robust, consistent interface for album user access.
         """
-        from immich_autotag.albums.album.album_user_list import AlbumUserList
-        from immich_autotag.albums.album.album_user_wrapper import AlbumUserWrapper
-        return self._state.get_album_users()
 
+        return self._state.get_album_users()
 
     @typechecked
     def get_owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
-        from uuid import UUID
-        return self._state.get_owner_uuid()
 
+        return self._state.get_owner_uuid()
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:

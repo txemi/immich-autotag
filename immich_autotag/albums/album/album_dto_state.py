@@ -1,9 +1,10 @@
-
 import datetime
 import enum
 from uuid import UUID
+
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
+
 
 class AlbumLoadSource(enum.Enum):
     """
@@ -11,8 +12,10 @@ class AlbumLoadSource(enum.Enum):
     SEARCH: Loaded from album list/search API (partial/summary info).
     DETAIL: Loaded from album detail API (full info).
     """
+
     SEARCH = "search"
     DETAIL = "detail"
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumDtoState:
@@ -27,9 +30,17 @@ class AlbumDtoState:
     El DTO no se expone directamente. El acceso debe hacerse mediante métodos públicos
     que devuelven solo la información necesaria.
     """
-    _dto: AlbumResponseDto = attrs.field(validator=attrs.validators.instance_of(AlbumResponseDto))
-    _load_source: AlbumLoadSource = attrs.field(validator=attrs.validators.instance_of(AlbumLoadSource))
-    _loaded_at: datetime.datetime = attrs.field(factory=datetime.datetime.now, validator=attrs.validators.instance_of(datetime.datetime))
+
+    _dto: AlbumResponseDto = attrs.field(
+        validator=attrs.validators.instance_of(AlbumResponseDto)
+    )
+    _load_source: AlbumLoadSource = attrs.field(
+        validator=attrs.validators.instance_of(AlbumLoadSource)
+    )
+    _loaded_at: datetime.datetime = attrs.field(
+        factory=datetime.datetime.now,
+        validator=attrs.validators.instance_of(datetime.datetime),
+    )
 
     def __attrs_post_init__(self):
         if self._dto is None:
@@ -64,8 +75,10 @@ class AlbumDtoState:
         self._dto = dto
         self._load_source = load_source
         self._loaded_at = now
+
     def get_album_users(self) -> "AlbumUserList":
         users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
         return AlbumUserList(users)
+
     def get_owner_uuid(self) -> "UUID":
         return UUID(self._album_dto.owner_id)
