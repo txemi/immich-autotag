@@ -585,4 +585,4 @@ main() {
 
 
 # Entrypoint
-main
+main "$@"
