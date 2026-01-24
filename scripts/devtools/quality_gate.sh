@@ -75,24 +75,18 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
 fi
 
 
-# Parse modes: default is dummy
-DUMMY_MODE=1
-RELAXED_MODE=0
-STRICT_MODE=0
+# Parse modes: default is DUMMY
+MODE="DUMMY"  # Possible values: DUMMY, STRICT, RELAXED
 CHECK_MODE=0
 ENFORCE_DYNAMIC_ATTRS=0
 TARGET_DIR=""
 for arg in "$@"; do
 	if [ "$arg" = "--strict" ]; then
-		STRICT_MODE=1
-		DUMMY_MODE=0
+		MODE="STRICT"
 	elif [ "$arg" = "--relaxed" ]; then
-		RELAXED_MODE=1
-		DUMMY_MODE=0
+		MODE="RELAXED"
 	elif [ "$arg" = "--dummy" ]; then
-		DUMMY_MODE=1
-		RELAXED_MODE=0
-		STRICT_MODE=0
+		MODE="DUMMY"
 	elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
 		CHECK_MODE=1
 	elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
@@ -106,15 +100,19 @@ if [ -z "$TARGET_DIR" ]; then
 	TARGET_DIR="$PACKAGE_NAME"
 fi
 
-if [ "$DUMMY_MODE" -eq 1 ]; then
+if [ "$MODE" = "DUMMY" ]; then
 	echo "[MODE] Running in DUMMY mode (no checks will be performed, always succeeds)."
 	exit 0
+elif [ "$MODE" = "STRICT" ]; then
+	echo "[MODE] Running in STRICT mode (all checks enforced, fail on any error)."
+elif [ "$MODE" = "RELAXED" ]; then
+	echo "[MODE] Running in RELAXED mode (some checks are warnings only)."
 fi
 
 if [ "$CHECK_MODE" -eq 1 ]; then
-	echo "[MODE] Running in CHECK mode (no files will be modified)."
+	echo "[CHECK] Running in CHECK mode (no files will be modified)."
 else
-	echo "[MODE] Running in APPLY mode (formatters may modify files)."
+	echo "[CHECK] Running in APPLY mode (formatters may modify files)."
 fi
 
 ###############################################################################
