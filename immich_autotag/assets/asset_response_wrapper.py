@@ -16,6 +16,7 @@ from typeguard import typechecked
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
+from immich_autotag.assets.asset_dto_state import AssetDtoState
 from immich_autotag.classification.classification_status import ClassificationStatus
 from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
@@ -48,14 +49,12 @@ class DateIntegrityError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
-
-    asset_partial: AssetResponseDto = attrs.field(
-        validator=attrs.validators.instance_of(AssetResponseDto)
-    )
     context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(ImmichContext)
     )
-    _asset_full: AssetResponseDto | None = attrs.field(default=None, init=False)
+    _state: AssetDtoState = attrs.field()
+
+    # NOTA: El resto de métodos seguirán usando self._state. No se reordena nada ni se cambia la lógica aún.
 
     def __attrs_post_init__(self) -> None:
         # Avoid direct reference to ImmichContext to prevent NameError/circular import
