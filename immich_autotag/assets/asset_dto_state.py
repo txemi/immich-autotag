@@ -1,10 +1,12 @@
 import enum
-from datetime import datetime
 from typing import Iterator
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.tag_response_dto import TagResponseDto
+
+from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+from immich_autotag.api.immich_proxy.tags import TagResponseDto
 
 
 class AssetDtoType(enum.Enum):

@@ -41,14 +41,13 @@ class TagCollectionWrapper:
         tag = self.find_by_name(name)
         if tag is not None:
             return tag
-        from immich_client.api.tags import create_tag
-        from immich_client.errors import UnexpectedStatus
-        from immich_client.models.tag_create_dto import TagCreateDto
+        from immich_autotag.api.immich_proxy.tags import (
+            UnexpectedStatus,
+            proxy_create_tag,
+        )
 
-        tag_create = TagCreateDto(name=name)
         try:
-            new_tag_dto = create_tag.sync(client=client, body=tag_create)
-            # Defensive: ensure new_tag_dto is not None (API should always return a TagResponseDto)
+            new_tag_dto = proxy_create_tag(client=client, name=name)
             if new_tag_dto is None:
                 raise ValueError("API returned None for new tag creation")
             new_tag = TagWrapper(new_tag_dto)
@@ -56,13 +55,10 @@ class TagCollectionWrapper:
             return new_tag
         except UnexpectedStatus as e:
             if e.status_code == 400 and "already exists" in str(e):
-                # Cache is out of sync - tag exists on server but not in our cache
-                # Refresh from API to get the actual tag
                 self._sync_from_api(client)
                 tag = self.find_by_name(name)
                 if tag is not None:
                     return tag
-            # If it's a different error, re-raise
             raise
 
     @staticmethod
@@ -71,9 +67,9 @@ class TagCollectionWrapper:
         """
         Builds a TagCollectionWrapper instance by fetching tags from the Immich API.
         """
-        from immich_client.api.tags import get_all_tags
+        from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
 
-        tags_dto = get_all_tags.sync(client=client)
+        tags_dto = proxy_get_all_tags(client=client)
         if tags_dto is None:
             tags_dto = []
         tags = [TagWrapper(tag) for tag in tags_dto]

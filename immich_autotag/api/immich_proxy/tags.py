@@ -1,3 +1,19 @@
+from immich_client.api.tags import create_tag as _create_tag
+from immich_client.api.tags import get_all_tags as _get_all_tags
+from immich_client.models.tag_create_dto import TagCreateDto
+
+
+def proxy_create_tag(*, client, name: str):
+    """Proxy for create_tag.sync with explicit keyword arguments."""
+    tag_create = TagCreateDto(name=name)
+    return _create_tag.sync(client=client, body=tag_create)
+
+
+def proxy_get_all_tags(*, client):
+    """Proxy for get_all_tags.sync with explicit keyword arguments."""
+    return _get_all_tags.sync(client=client)
+
+
 from typing import List
 from uuid import UUID
 
