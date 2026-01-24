@@ -66,3 +66,17 @@ This analysis and actions are independent from the previous sub-task (Groovy Scr
 - Install and test Workspace Cleanup Plugin and/or Artifact Cleanup Plugin if more cleanup is required.
 - Periodically review disk usage and adjust policies as needed.
 - Document any further changes in this sub-task.
+
+---
+
+## Note on Jenkins Agents (Nodes/Slaves)
+
+### Do agents require special treatment for cleanup?
+
+- **No special action is needed**: Jenkins' standard build retention and workspace cleanup mechanisms (including plugins and `cleanWs()`) work the same way on agents as on the master.
+- **Builds, workspaces, and artifacts are stored on the agent** where the job runs. When a build is deleted or a workspace is cleaned, the files are removed from the agent.
+- **If you use ephemeral agents** (e.g., Docker, cloud VMs), their files are deleted when the agent is destroyed.
+- **If you use persistent agents**, monitor disk usage and ensure cleanup policies are in place. You can also manually wipe out a workspace from the Jenkins UI (Node > Workspace > Wipe Out Workspace).
+- **Best practice:** Always configure automatic cleanup (build retention, workspace cleanup) in your pipelines to avoid disk space issues on agents.
+
+No special configuration is required for agents beyond what is already described in this document.
