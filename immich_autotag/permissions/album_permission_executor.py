@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List
 from uuid import UUID
 
-from immich_client.api.albums import add_users_to_album as immich_add_users_to_album
 from immich_client.api.albums import (
     remove_user_from_album as immich_remove_user_from_album,
 )
@@ -22,6 +21,7 @@ from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
+from immich_autotag.api.immich_proxy.albums import proxy_add_users_to_album
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
@@ -129,9 +129,9 @@ def _get_current_members(
 
 @typechecked
 def add_members_to_album(
-    album_id: str,
+    album_id: UUID,
     album_name: str,
-    user_ids: List[str],
+    user_ids: List[UUID],
     access_level: str,
     context: ImmichContext,
 ) -> None:
@@ -169,10 +169,10 @@ def add_members_to_album(
 
     # Call API
     client = context.client
-    response = immich_add_users_to_album.sync(
-        id=UUID(album_id),
-        body=add_users_dto,
+    response = proxy_add_users_to_album(
+        album_id=UUID(album_id),
         client=client,
+        body=add_users_dto,
     )
 
     if response is not None:
