@@ -117,7 +117,12 @@ fi
 
 
 # =====================
+###############################################################################
 # Function: check_shfmt
+# Description: Verifica y formatea scripts Bash usando shfmt.
+# Globals: CHECK_MODE
+# Returns: 0 si pasa, 1 si hay errores de formato o falta shfmt
+###############################################################################
 # =====================
 check_shfmt() {
 	echo ""
@@ -199,14 +204,13 @@ else
 	fi
 fi
 
-# =============================================================================
-# SECTION 1: SYNTAX AND INDENTATION CHECKS
-# -----------------------------------------------------------------------------
-# - Byte-compiles all Python files to catch syntax/import errors early.
-# =============================================================================
 
-# =====================
+###############################################################################
 # Function: check_python_syntax
+# Description: Compila los archivos Python para detectar errores de sintaxis.
+# Globals: PY_BIN, TARGET_DIR
+# Returns: 0 si pasa, 1 si hay errores de sintaxis
+###############################################################################
 # =====================
 check_python_syntax() {
 	echo "Checking for syntax and indentation errors..."
@@ -238,16 +242,13 @@ ensure_tool() {
 	fi
 }
 
-# =============================================================================
-# SECTION 3: ISORT (IMPORT SORTING)
-# -----------------------------------------------------------------------------
-# - Organizes imports for consistency and readability.
-# =============================================================================
-# Organize imports with isort using the environment Python (isort before black)
 
-
-# =====================
+###############################################################################
 # Function: check_isort
+# Description: Ordena los imports de Python usando isort.
+# Globals: CHECK_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
+# Returns: 0 si pasa, 1 si hay problemas de ordenado
+###############################################################################
 # =====================
 check_isort() {
 	ensure_tool isort isort
@@ -305,7 +306,12 @@ ensure_ssort() {
 
 
 # =====================
+###############################################################################
 # Function: check_ssort
+# Description: Ordena métodos de clases Python de forma determinista usando ssort.
+# Globals: CHECK_MODE, TARGET_DIR
+# Returns: 0 si pasa, 1 si hay métodos desordenados
+###############################################################################
 # =====================
 check_ssort() {
 	ensure_ssort
@@ -327,16 +333,15 @@ check_ssort() {
 
 check_ssort || exit 1
 
-# =============================================================================
-# SECTION 2: RUFF (LINT/AUTO-FIX)
-# -----------------------------------------------------------------------------
-# - Runs ruff to lint and auto-fix code style issues.
-# =============================================================================
-# Run ruff first (auto-fix/format where possible)
 
 
 # =====================
+###############################################################################
 # Function: check_ruff
+# Description: Lint y auto-fix de estilo Python usando ruff.
+# Globals: CHECK_MODE, RELAXED_MODE, PY_BIN, TARGET_DIR
+# Returns: 0 si pasa, 1 si hay problemas de estilo
+###############################################################################
 # =====================
 check_ruff() {
 	ensure_tool ruff ruff
@@ -362,14 +367,14 @@ check_ruff() {
 	return 0
 }
 
-# Call the fourth check
 
-# =============================================================================
-# SECTION 4: BLACK (CODE FORMATTER) - MODULARIZED
-# -----------------------------------------------------------------------------
-# - Formats code to ensure consistent style.
-# =============================================================================
 check_black() {
+###############################################################################
+# Function: check_black
+# Description: Formatea código Python usando Black.
+# Globals: CHECK_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
+# Returns: 0 si pasa, 1 si hay problemas de formato
+###############################################################################
 	# Format code with Black using the environment Python
 	ensure_tool black black
 	BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
@@ -392,14 +397,13 @@ check_black() {
 
 check_black || exit 1
 
-# =============================================================================
-# SECTION 6: POLICY ENFORCEMENT - DYNAMIC ATTRIBUTES
-# -----------------------------------------------------------------------------
-# - Optionally forbids use of getattr()/hasattr() for static typing safety.
-# =============================================================================
 
-# =====================
+###############################################################################
 # Function: check_no_dynamic_attrs
+# Description: Prohíbe el uso de getattr/hasattr para seguridad de tipado estático.
+# Globals: ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
+# Returns: 0 si pasa, 1 si se detectan usos prohibidos
+###############################################################################
 # =====================
 check_no_dynamic_attrs() {
 	# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
@@ -420,14 +424,14 @@ check_no_dynamic_attrs() {
 
 check_no_dynamic_attrs || exit 2
 
-# =============================================================================
-# SECTION 7: POLICY ENFORCEMENT - TUPLE USAGE
-# -----------------------------------------------------------------------------
-# - Forbids tuple returns and tuple-typed class members (project policy).
-# =============================================================================
 
 # =====================
+###############################################################################
 # Function: check_no_tuples
+# Description: Prohíbe el uso de tuplas como retorno o atributos de clase.
+# Globals: PY_BIN, REPO_ROOT, TARGET_DIR
+# Returns: 0 si pasa, 1 si se detectan tuplas prohibidas
+###############################################################################
 # =====================
 check_no_tuples() {
 	echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
@@ -440,14 +444,14 @@ check_no_tuples() {
 
 check_no_tuples || exit 3
 
-# =============================================================================
-# SECTION 8: CODE DUPLICATION DETECTION (JSCPD)
-# -----------------------------------------------------------------------------
-# - Detects code duplication using jscpd.
-# =============================================================================
 
 # =====================
+###############################################################################
 # Function: check_jscpd
+# Description: Detecta duplicación de código usando jscpd.
+# Globals: TARGET_DIR
+# Returns: 0 si pasa, 1 si hay duplicación
+###############################################################################
 # =====================
 check_jscpd() {
 	echo "[CHECK] Running jscpd for code duplication detection..."
@@ -471,14 +475,14 @@ check_jscpd() {
 
 check_jscpd || exit 1
 
-# =============================================================================
-# SECTION 9A: FLAKE8 (STYLE AND ERROR LINTING)
-# -----------------------------------------------------------------------------
-# - flake8: Style and error linting (always blocks).
-# =============================================================================
 
 # =====================
+###############################################################################
 # Function: check_flake8
+# Description: Lint de estilo y errores Python usando flake8.
+# Globals: RELAXED_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
+# Returns: 0 si pasa, 1 si hay errores de estilo
+###############################################################################
 # =====================
 check_flake8() {
 	ensure_tool flake8 flake8
@@ -507,14 +511,14 @@ check_flake8() {
 
 check_flake8 || exit 1
 
-# =============================================================================
-# SECTION 9C: MYPY (TYPE CHECKING)
-# -----------------------------------------------------------------------------
-# - mypy: Type checking (always blocks in all modes).
-# =============================================================================
 
 # =====================
+###############################################################################
 # Function: check_mypy
+# Description: Chequeo de tipos estáticos usando mypy.
+# Globals: PY_BIN, TARGET_DIR
+# Returns: 0 si pasa, 1 si hay errores de tipado
+###############################################################################
 # =====================
 check_mypy() {
 	ensure_tool mypy mypy
@@ -543,15 +547,14 @@ check_mypy() {
 
 check_mypy || exit 1
 
-# =============================================================================
-# SECTION 11: SPANISH LANGUAGE CHARACTER CHECK
-# -----------------------------------------------------------------------------
-# - Forbids Spanish text/accents in code (blocks only in strict mode).
-# =============================================================================
-
 
 # =====================
+###############################################################################
 # Function: check_no_spanish_chars
+# Description: Prohíbe caracteres españoles/acento en el código fuente.
+# Globals: RELAXED_MODE
+# Returns: 0 si pasa, 1 si se detectan caracteres prohibidos
+###############################################################################
 # =====================
 check_no_spanish_chars() {
 	echo "Checking for Spanish language characters in source files..."
