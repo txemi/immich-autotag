@@ -41,6 +41,18 @@
 # - Defines SCRIPT_DIR, REPO_ROOT, PACKAGE_NAME.
 # - This must be done before any path-dependent logic or argument parsing.
 # =============================================================================
+
+#
+# CHECK_MODE: Controla si los formateadores y linters solo comprueban o también modifican archivos.
+#   - "APPLY": Aplica cambios (modo por defecto, los formateadores pueden modificar archivos).
+#   - "CHECK": Solo comprueba, no modifica archivos (modo "--check").
+# QUALITY_LEVEL: Controla el nivel de exigencia del quality gate (DUMMY, STRICT, RELAXED).
+#
+# Uso: ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
+#   --dummy: Dummy mode (default). Does nothing and always succeeds.
+#   --strict: Enforce all checks strictly, fail on any error.
+#   Default is dummy mode unless --strict or --relaxed is specified.
+
 set -x
 set -e
 set -o pipefail
@@ -56,26 +68,18 @@ PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
 
 
-# =============================================================================
-# SECTION 0: COMMAND LINE ARGUMENT PARSING
-# -----------------------------------------------------------------------------
-# - Handles --help, --strict, --check, --enforce-dynamic-attrs, and target_dir.
-# - Sets RELAXED_MODE, CHECK_MODE, ENFORCE_DYNAMIC_ATTRS, TARGET_DIR variables.
-# =============================================================================
-#
-# CHECK_MODE: Controla si los formateadores y linters solo comprueban o también modifican archivos.
-#   - "APPLY": Aplica cambios (modo por defecto, los formateadores pueden modificar archivos).
-#   - "CHECK": Solo comprueba, no modifica archivos (modo "--check").
-# QUALITY_LEVEL: Controla el nivel de exigencia del quality gate (DUMMY, STRICT, RELAXED).
-#
-# Uso: ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
-#   --dummy: Dummy mode (default). Does nothing and always succeeds.
-#   --strict: Enforce all checks strictly, fail on any error.
-#   Default is dummy mode unless --strict or --relaxed is specified.
 
 
+
+
+###############################################################################
+# Function: parse_args_and_globals
+# Description: Interpreta argumentos de línea de comandos y define variables globales.
+# Globals set: QUALITY_LEVEL, CHECK_MODE, ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
+# Usage: parse_args_and_globals "$@"
+# Returns: Exporta variables globales y puede terminar el script en modo ayuda o dummy
+###############################################################################
 parse_args_and_globals() {
-	# CRIT: parse_args_and_globals | Interpreta argumentos y define variables globales | $@ | Variables globales configuradas | Puede terminar el script
 	if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
 		echo "Usage: $0 [--check|-c] [--strict] [--dummy] [target_dir]"
 		echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
