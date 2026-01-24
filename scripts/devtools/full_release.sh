@@ -29,8 +29,8 @@ set -euo pipefail
 set -x
 
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 <new_version>"
-  exit 1
+	echo "Usage: $0 <new_version>"
+	exit 1
 fi
 
 NEW_VERSION="$1"
@@ -42,7 +42,6 @@ cd "$PROJECT_ROOT"
 
 # 1. Run the release script (bumps version, commits, tags, updates version.py, pushes)
 bash "$PROJECT_ROOT/scripts/devtools/release.sh" "$NEW_VERSION"
-
 
 # 2. Ensure virtual environment and dependencies are ready
 bash "$PROJECT_ROOT/setup_venv.sh"

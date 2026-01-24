@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # Script to run a single execution of Immich AutoTag, with optional environment setup
 #
@@ -8,7 +7,7 @@
 # when explicitly requested with --setup. This avoids unexpected failures due to breaking changes
 # in the generated client code or dependencies.
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # If --setup is passed as an argument, run setup_venv.sh

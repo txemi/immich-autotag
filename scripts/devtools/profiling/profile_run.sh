@@ -5,7 +5,6 @@
 
 set -euo pipefail
 
-
 # Añadir timestamp al nombre del fichero de estadísticas para que sea único por ejecución
 TS=$(date -u +"%Y%m%dT%H%M%SZ")
 OUTPUT_FILE="profile_${TS}.stats"
@@ -58,9 +57,8 @@ METAFILE="$LATEST_DIR/metadata.txt"
 TS_HUMAN=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 GIT_BRANCH="${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)}"
-echo "timestamp: $TS_HUMAN" > "$METAFILE"
-echo "profile_path: $ART_DIR/$OUTPUT_FILE" >> "$METAFILE"
-echo "git_sha: $GIT_SHA" >> "$METAFILE"
-echo "git_branch: $GIT_BRANCH" >> "$METAFILE"
+echo "timestamp: $TS_HUMAN" >"$METAFILE"
+echo "profile_path: $ART_DIR/$OUTPUT_FILE" >>"$METAFILE"
+echo "git_sha: $GIT_SHA" >>"$METAFILE"
+echo "git_branch: $GIT_BRANCH" >>"$METAFILE"
 echo "[profile_run] Latest copy and metadata written to $LATEST_DIR"
-

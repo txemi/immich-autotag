@@ -64,8 +64,6 @@
 #
 # When the main checks table is updated, also update these tables and the plan if needed.
 
-
-
 # =============================================================================
 # SECTION ROOT: REPO ROOT DETECTION & DIRECTORY SETUP
 # -----------------------------------------------------------------------------
@@ -76,7 +74,10 @@
 set -x
 set -e
 set -o pipefail
-SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
+SCRIPT_DIR="$(
+	cd -- "$(dirname "$0")" >/dev/null 2>&1
+	pwd -P
+)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
@@ -92,8 +93,8 @@ cd "$REPO_ROOT"
 #   Default (relaxed): Ignores E501 in flake8, does not fail on uvx ssort or Spanish character check, and only warns on flake8/mypy errors.
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
 	echo "Usage: $0 [--check|-c] [--strict] [target_dir]"
-	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python.";
-	echo "  --strict: Enforce all checks strictly, fail on any error.";
+	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
+	echo "  --strict: Enforce all checks strictly, fail on any error."
 	exit 0
 fi
 
@@ -105,21 +106,18 @@ for arg in "$@"; do
 	fi
 done
 
-
-
-
 # Only support --check and --enforce-dynamic-attrs
 CHECK_MODE=0
 ENFORCE_DYNAMIC_ATTRS=0
 TARGET_DIR=""
 for arg in "$@"; do
-    if [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
-        CHECK_MODE=1
-    elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
-        ENFORCE_DYNAMIC_ATTRS=1
-    elif [[ "$arg" != --* ]]; then
-        TARGET_DIR="$arg"
-    fi
+	if [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
+		CHECK_MODE=1
+	elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
+		ENFORCE_DYNAMIC_ATTRS=1
+	elif [[ "$arg" != --* ]]; then
+		TARGET_DIR="$arg"
+	fi
 done
 # If no positional argument was given, default to PACKAGE_NAME
 if [ -z "$TARGET_DIR" ]; then
@@ -132,7 +130,6 @@ else
 	echo "[MODE] Running in APPLY mode (formatters may modify files)."
 fi
 
-
 ###############################################################################
 # SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)
 # -----------------------------------------------------------------------------
@@ -140,9 +137,11 @@ fi
 # - Falla el quality gate si no está o si hay problemas de formato.
 ###############################################################################
 
-echo ""; echo "==============================="
+echo ""
+echo "==============================="
 echo "SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)"
-echo "==============================="; echo ""
+echo "==============================="
+echo ""
 
 # Exigir que shfmt esté instalado
 if ! command -v shfmt >/dev/null 2>&1; then
@@ -154,12 +153,16 @@ fi
 # Buscar scripts bash relevantes (ajusta el patrón si es necesario)
 BASH_SCRIPTS=$(find scripts -type f -name "*.sh")
 
-# Ejecutar shfmt en modo chequeo
-if ! shfmt -d $BASH_SCRIPTS; then
-	echo "[ERROR] Hay problemas de formato en los scripts Bash. Ejecuta 'shfmt -w scripts/' para corregirlos."
-	exit 1
+# Ejecutar shfmt según el modo
+if [ "$CHECK_MODE" -eq 1 ]; then
+	if ! shfmt -d $BASH_SCRIPTS; then
+		echo "[ERROR] Hay problemas de formato en los scripts Bash. Ejecuta 'shfmt -w scripts/' para corregirlos."
+		exit 1
+	fi
+else
+	echo "[INFO] Aplicando formato automático a scripts Bash con shfmt..."
+	shfmt -w $BASH_SCRIPTS
 fi
-
 
 # =============================================================================
 # SECTION A: SYNCHRONIZED CONFIGURATION EXTRACTION
@@ -192,7 +195,6 @@ fi
 # =============================================================================
 # Robust exclusions to avoid formatting .venv, jenkins_logs and other external directories
 
-
 # Activate project virtual environment robustly
 VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
 PY_BIN=""
@@ -204,11 +206,10 @@ else
 	echo "[WARN] .venv not found at $REPO_ROOT/.venv — falling back to system python (this may install tools globally)."
 	PY_BIN="$(command -v python3 || command -v python)"
 	if [ -z "$PY_BIN" ]; then
-		echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3.";
+		echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3."
 		exit 1
 	fi
 fi
-
 
 # =============================================================================
 # SECTION 1: SYNTAX AND INDENTATION CHECKS
@@ -218,7 +219,7 @@ fi
 # Syntax and indentation check on all .py files in the package
 echo "Checking for syntax and indentation errors..."
 echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
-if ! "$PY_BIN" -m compileall -q "$TARGET_DIR" ; then
+if ! "$PY_BIN" -m compileall -q "$TARGET_DIR"; then
 	echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
 	exit 1
 fi
@@ -240,7 +241,6 @@ ensure_tool() {
 		"$PY_BIN" -m pip install "${tool_pkg}"
 	fi
 }
-
 
 # =============================================================================
 # SECTION 2: RUFF (LINT/AUTO-FIX)
@@ -292,9 +292,9 @@ else
 fi
 
 TOOL_FAILURES=0
-if [ $RUF_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES+1)); fi
-if [ $ISORT_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES+1)); fi
-if [ $BLACK_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES+1)); fi
+if [ $RUF_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES + 1)); fi
+if [ $ISORT_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES + 1)); fi
+if [ $BLACK_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES + 1)); fi
 
 if [ $TOOL_FAILURES -ne 0 ]; then
 	echo "[WARNING] One or more formatting tools reported issues. Details:"
@@ -335,7 +335,6 @@ else
 	echo "[INFO] getattr/hasattr policy enforcement is DISABLED by default. Use --enforce-dynamic-attrs to enable."
 fi
 
-
 # =============================================================================
 # SECTION 7: POLICY ENFORCEMENT - TUPLE USAGE
 # -----------------------------------------------------------------------------
@@ -344,8 +343,8 @@ fi
 # Policy enforcement: disallow returning tuple literals or annotated Tuple types
 echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
 "$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
-	echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses.";
-	exit 3;
+	echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses."
+	exit 3
 }
 
 # =============================================================================
@@ -355,7 +354,7 @@ echo "[CHECK] Disallow tuple returns and tuple-typed class members (project poli
 # =============================================================================
 # --- Code duplication detection with jscpd ---
 echo "[CHECK] Running jscpd for code duplication detection..."
-if ! command -v jscpd &> /dev/null; then
+if ! command -v jscpd &>/dev/null; then
 	echo "[INFO] jscpd not found, installing locally via npx..."
 	JSCMD="npx jscpd"
 else
@@ -372,9 +371,6 @@ if [ $JSPCD_EXIT -ne 0 ]; then
 fi
 echo "jscpd check passed: no significant code duplication detected."
 
-
-
-
 # =============================================================================
 # SECTION 9: STATIC ANALYSIS (FLAKE8, SSORT, MYPY)
 # -----------------------------------------------------------------------------
@@ -387,15 +383,14 @@ ensure_tool flake8 flake8
 FLAKE_FAILED=0
 FLAKE8_IGNORE="E203,W503"
 if [ $RELAXED_MODE -eq 1 ]; then
-    FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
-    echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
+	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+	echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 fi
 echo "[INFO] Running flake8 (output below if any):"
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
 if [ $? -ne 0 ]; then
-    FLAKE_FAILED=1
+	FLAKE_FAILED=1
 fi
-
 
 ###############################################################
 # Deterministic method ordering in Python classes              #
@@ -415,18 +410,13 @@ fi
 # but reproducibility in CI is what matters.                  #
 ###############################################################
 
-
 # --- Ensure ssort (bwhmather/ssort) is installed and available ---
 ensure_ssort() {
-	if ! command -v ssort &> /dev/null; then
+	if ! command -v ssort &>/dev/null; then
 		echo "[INFO] ssort not found, installing from GitHub..."
 		"$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
 	fi
 }
-
-
-
-
 
 # --- Run ssort for deterministic method ordering after syntax check ---
 
@@ -442,11 +432,9 @@ fi
 
 # Now ssort is blocking in both modes
 if [ $SSORT_FAILED -ne 0 ]; then
-    echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
-    exit 1
+	echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
+	exit 1
 fi
-
-
 
 # mypy: print output directly, capture exit code
 ensure_tool mypy mypy
@@ -457,16 +445,12 @@ set +e
 MYPY_EXIT_CODE=$?
 set -e
 if [ $MYPY_EXIT_CODE -ne 0 ]; then
-    MYPY_FAILED=1
+	MYPY_FAILED=1
 fi
-
 
 # In relaxed mode, do not block on flake8/mypy errors, just warn
 
 # --- Enhanced error reporting for flake8 and mypy ---
-
-
-
 
 # =============================================================================
 # SECTION 10: BLOCKING LOGIC FOR STATIC ANALYSIS
@@ -489,7 +473,6 @@ if [ $MYPY_FAILED -ne 0 ]; then
 		exit 1
 	fi
 fi
-
 
 echo "Static checks (ruff/flake8/mypy) completed successfully."
 

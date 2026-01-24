@@ -8,8 +8,8 @@ VERSION=$(grep '^version' "$PYPROJECT_TOML" | head -1 | cut -d'=' -f2 | tr -d ' 
 GIT_COMMIT=$(git -C "$PROJECT_ROOT" rev-parse --short HEAD)
 GIT_DESCRIBE=$(git -C "$PROJECT_ROOT" describe --tags --always --long --dirty)
 VERSION_FILE="$PROJECT_ROOT/immich_autotag/version.py"
-echo "# This file is automatically updated in the build/distribution process" > "$VERSION_FILE"
-echo "__version__ = \"$VERSION\"" >> "$VERSION_FILE"
-echo "__git_commit__ = \"$GIT_COMMIT\"" >> "$VERSION_FILE"
-echo "__git_describe__ = \"$GIT_DESCRIBE\"" >> "$VERSION_FILE"
+echo "# This file is automatically updated in the build/distribution process" >"$VERSION_FILE"
+echo "__version__ = \"$VERSION\"" >>"$VERSION_FILE"
+echo "__git_commit__ = \"$GIT_COMMIT\"" >>"$VERSION_FILE"
+echo "__git_describe__ = \"$GIT_DESCRIBE\"" >>"$VERSION_FILE"
 echo "Updated $VERSION_FILE: version=$VERSION, commit=$GIT_COMMIT, describe=$GIT_DESCRIBE"

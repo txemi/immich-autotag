@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # Robust script to start the autotag-cron service with Docker Compose from any directory
 set -e

@@ -10,13 +10,13 @@ CONFIG_DIR="$HOME/.config/immich_autotag"
 
 # Remove any previous test container
 if docker ps -a --format '{{.Names}}' | grep -Eq '^autotag-cron-test$'; then
-  docker rm -f autotag-cron-test
+	docker rm -f autotag-cron-test
 fi
 
 docker run -d --name autotag-cron-test \
-  -e CRON_SCHEDULE="$CRON_SCHEDULE" \
-  -v "$CONFIG_DIR:/root/.config/immich_autotag" \
-  txemi/immich-autotag:cron
+	-e CRON_SCHEDULE="$CRON_SCHEDULE" \
+	-v "$CONFIG_DIR:/root/.config/immich_autotag" \
+	txemi/immich-autotag:cron
 
 echo "Container 'autotag-cron-test' started."
 echo "To see logs: docker exec -it autotag-cron-test tail -f /var/log/cron.log"

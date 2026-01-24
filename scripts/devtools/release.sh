@@ -26,8 +26,8 @@
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 <new_version>"
-  exit 1
+	echo "Usage: $0 <new_version>"
+	exit 1
 fi
 
 NEW_VERSION="$1"

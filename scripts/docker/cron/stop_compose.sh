@@ -10,8 +10,8 @@ PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../../..")"
 cd "$PROJECT_ROOT"
 
 if [ ! -f docker-compose.yml ]; then
-  echo "[ERROR] docker-compose.yml not found in $PROJECT_ROOT."
-  exit 1
+	echo "[ERROR] docker-compose.yml not found in $PROJECT_ROOT."
+	exit 1
 fi
 
 echo "[INFO] Stopping all Docker Compose services for immich-autotag..."
