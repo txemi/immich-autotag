@@ -32,7 +32,7 @@ from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
+from immich_autotag.utils.url_helpers import get_immich_photo_url
 
 if TYPE_CHECKING:
     from pathlib import Path

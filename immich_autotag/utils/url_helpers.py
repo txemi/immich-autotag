@@ -22,3 +22,14 @@ def get_immich_photo_url(asset_id: uuid.UUID) -> ParseResult:
         f"{IMMICH_PHOTO_PATH_TEMPLATE.format(id=asset_id_str)}"
     )
     return urlparse(url)
+
+
+@typechecked
+def get_immich_album_url(album_id: uuid.UUID) -> ParseResult:
+    """
+    Returns the Immich web URL for an album given its id (UUID) as ParseResult.
+    """
+    if not isinstance(album_id, uuid.UUID):
+        raise TypeError(f"album_id must be uuid.UUID, not {type(album_id)}")
+    url = f"{get_immich_web_base_url()}/albums/{str(album_id)}"
+    return urlparse(url)

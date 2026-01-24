@@ -142,12 +142,9 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
-        from urllib.parse import urlparse
+        from immich_autotag.utils.url_helpers import get_immich_album_url
 
-        from immich_autotag.config.host_config import get_immich_web_base_url
-
-        url = f"{get_immich_web_base_url()}/albums/{self.get_album_id()}"
-        return urlparse(url)
+        return get_immich_album_url(self.get_album_uuid())
 
     @typechecked
     def is_temporary_album(self) -> bool:
