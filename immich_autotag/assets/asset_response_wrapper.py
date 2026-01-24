@@ -193,7 +193,6 @@ class AssetResponseWrapper:
         Chooses the oldest and raises an exception if any is earlier than the chosen one.
         """
 
-
         date_candidates = self._state.get_dates()
         if not date_candidates:
             raise ValueError("Could not determine any date for the asset.")
