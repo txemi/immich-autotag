@@ -53,17 +53,12 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
 
-
-
-
-
-
 ###############################################################################
 # Function: parse_args_and_globals
-# Description: Interpreta argumentos de línea de comandos y define variables globales.
+# Description: Parses command-line arguments and defines global variables.
 # Globals set: QUALITY_LEVEL, CHECK_MODE, ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
 # Usage: parse_args_and_globals "$@"
-# Returns: Exporta variables globales y puede terminar el script en modo ayuda o dummy
+# Returns: Exports global variables and may terminate the script in help or dummy mode
 ###############################################################################
 parse_args_and_globals() {
 	if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
@@ -74,11 +69,11 @@ parse_args_and_globals() {
 		exit 0
 	fi
 
-	# Variables locales para parsing
+	# Local variables for parsing
 	local arg
 
-	CHECK_MODE="APPLY"  # Valores posibles: APPLY, CHECK, DUMMY
-	QUALITY_LEVEL=""  # Valores posibles: DUMMY, STRICT, RELAXED
+	CHECK_MODE="APPLY" # Possible values: APPLY, CHECK, DUMMY
+	QUALITY_LEVEL=""   # Possible values: DUMMY, STRICT, RELAXED
 	ENFORCE_DYNAMIC_ATTRS=0
 	TARGET_DIR=""
 	for arg in "$@"; do
@@ -98,7 +93,7 @@ parse_args_and_globals() {
 			TARGET_DIR="$arg"
 		fi
 	done
-	# Si el usuario no ha forzado QUALITY_LEVEL, lo inferimos de CHECK_MODE
+	# If the user did not force QUALITY_LEVEL, infer it from CHECK_MODE
 	if [ -z "$QUALITY_LEVEL" ]; then
 		if [ "$CHECK_MODE" = "APPLY" ]; then
 			QUALITY_LEVEL="STRICT"
@@ -131,13 +126,11 @@ parse_args_and_globals() {
 	fi
 }
 
-
-
 ###############################################################################
 # Function: check_shfmt
-# Description: Verifica y formatea scripts Bash usando shfmt.
+# Description: Checks and formats Bash scripts using shfmt.
 # Globals: CHECK_MODE
-# Returns: 0 si pasa, 1 si hay errores de formato o falta shfmt
+# Returns: 0 if passes, 1 if formatting errors or shfmt missing
 ###############################################################################
 check_shfmt() {
 	echo ""
@@ -170,19 +163,11 @@ check_shfmt() {
 	return 0
 }
 
-# Call the first check
-
-# =============================================================================
-# SECTION A: SYNCHRONIZED CONFIGURATION EXTRACTION
-# -----------------------------------------------------------------------------
-# - Extracts line length and config values from pyproject.toml for all tools.  #
-# =============================================================================
-
-# =============================================================================
+###############################################################################
 # Function: setup_max_line_length
-# Description: Extrae el valor de line-length de pyproject.toml y lo exporta como MAX_LINE_LENGTH.
+# Description: Extracts the line-length value from pyproject.toml and exports it as MAX_LINE_LENGTH.
 # Globals set: MAX_LINE_LENGTH
-# =============================================================================
+###############################################################################
 setup_max_line_length() {
 	local extract_line_length
 	extract_line_length() {
@@ -197,17 +182,12 @@ setup_max_line_length() {
 	export MAX_LINE_LENGTH="$max_line_length_local"
 }
 
-
-
-
-
-
-# =============================================================================
+###############################################################################
 # Function: setup_python_env
-# Description: Activa el entorno virtual del proyecto o usa el Python del sistema.
+# Description: Activates the project virtual environment or uses system Python.
 # Globals set: PY_BIN
-# Returns: nada, pero exporta PY_BIN o termina el script si no hay Python disponible
-# =============================================================================
+# Returns: nothing, but exports PY_BIN or exits if no Python is available
+###############################################################################
 setup_python_env() {
 	VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
 	if [ -f "$VENV_ACTIVATE" ]; then
@@ -225,14 +205,11 @@ setup_python_env() {
 	export PY_BIN
 }
 
-
-
-
 ###############################################################################
 # Function: check_python_syntax
-# Description: Compila los archivos Python para detectar errores de sintaxis.
+# Description: Compiles Python files to detect syntax errors.
 # Globals: PY_BIN, TARGET_DIR
-# Returns: 0 si pasa, 1 si hay errores de sintaxis
+# Returns: 0 if passes, 1 if syntax errors
 ###############################################################################
 check_python_syntax() {
 	local result
@@ -249,13 +226,12 @@ check_python_syntax() {
 
 # Call the second check
 
-
 ###############################################################################
 # Function: ensure_tool
-# Description: Instala una herramienta de Python en el entorno actual si falta.
+# Description: Installs a Python tool in the current environment if missing.
 # Globals: PY_BIN
 # Usage: ensure_tool <import_name> <package_name>
-# Returns: nada, pero instala el paquete si es necesario
+# Returns: nothing, but installs the package if needed
 ###############################################################################
 ensure_tool() {
 	local tool_import_check="$1"
@@ -266,12 +242,11 @@ ensure_tool() {
 	fi
 }
 
-
 ###############################################################################
 # Function: check_isort
-# Description: Ordena los imports de Python usando isort.
+# Description: Sorts Python imports using isort.
 # Globals: CHECK_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
-# Returns: 0 si pasa, 1 si hay problemas de ordenado
+# Returns: 0 if passes, 1 if sorting issues
 ###############################################################################
 check_isort() {
 	local isort_skips isort_exit
@@ -294,37 +269,33 @@ check_isort() {
 	return 0
 }
 
-
-# =============================================================================
+###############################################################################
 # SECTION 9B: SSORT (DETERMINISTIC METHOD ORDERING)
 # -----------------------------------------------------------------------------
 # - ssort: Ensures deterministic method ordering in Python classes.
-# =============================================================================
-###############################################################
-# Deterministic method ordering in Python classes              #
-# ----------------------------------------------------------- #
-# Historically, `uvx ssort` was used for this purpose, but:   #
-#   - `uvx` has been removed from PyPI and is now a dummy.    #
-#   - There is no direct alternative in PyPI or apt.          #
-#   - Locally it may work if you have an old version or snap, #
+# -----------------------------------------------------------------------------
+# Deterministic method ordering in Python classes
+# -----------------------------------------------------------
+# Historically, `uvx ssort` was used for this purpose, but:
+#   - `uvx` has been removed from PyPI and is now a dummy.
+#   - There is no direct alternative in PyPI or apt.
+#   - Locally it may work if you have an old version or snap,
 #     but in CI/Jenkins and clean environments it is not viable.
-# Solution:                                                   #
+# Solution:
 #   - We use `ssort` from GitHub (https://github.com/bwhmather/ssort),
 #     installing it with pip directly from the repo if not present.
 #   - This ensures reproducibility and that Jenkins/CI always has the tool,
-#     without relying on old versions or snaps.                #
+#     without relying on old versions or snaps.
 #   - If a more standard alternative appears in the future, migration will be easy.
-# NOTE: Local tests may work due to previous installations,   #
-# but reproducibility in CI is what matters.                  #
-###############################################################
-
-
+# NOTE: Local tests may work due to previous installations,
+# but reproducibility in CI is what matters.
+###############################################################################
 
 ###############################################################################
 # Function: ensure_ssort
-# Description: Instala ssort desde GitHub si no está disponible en el entorno.
+# Description: Installs ssort from GitHub if not available in the environment.
 # Globals: PY_BIN
-# Returns: nada, pero instala ssort si es necesario
+# Returns: nothing, but installs ssort if needed
 ###############################################################################
 ensure_ssort() {
 	if ! command -v ssort &>/dev/null; then
@@ -333,12 +304,11 @@ ensure_ssort() {
 	fi
 }
 
-
 ###############################################################################
 # Function: check_ssort
-# Description: Ordena métodos de clases Python de forma determinista usando ssort.
+# Description: Sorts Python class methods deterministically using ssort.
 # Globals: CHECK_MODE, TARGET_DIR
-# Returns: 0 si pasa, 1 si hay métodos desordenados
+# Returns: 0 if passes, 1 if unsorted methods
 ###############################################################################
 check_ssort() {
 	local ssort_failed=0
@@ -358,14 +328,11 @@ check_ssort() {
 	return 0
 }
 
-
-
-
 ###############################################################################
 # Function: check_ruff
-# Description: Lint y auto-fix de estilo Python usando ruff.
+# Description: Lint and auto-fix Python style using ruff.
 # Globals: CHECK_MODE, RELAXED_MODE, PY_BIN, TARGET_DIR
-# Returns: 0 si pasa, 1 si hay problemas de estilo
+# Returns: 0 if passes, 1 if style issues
 ###############################################################################
 check_ruff() {
 	local ruff_ignore="" ruff_exit
@@ -391,12 +358,11 @@ check_ruff() {
 	return 0
 }
 
-
 ###############################################################################
 # Function: check_black
-# Description: Formatea código Python usando Black.
+# Description: Formats Python code using Black.
 # Globals: CHECK_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
-# Returns: 0 si pasa, 1 si hay problemas de formato
+# Returns: 0 if passes, 1 if formatting issues
 ###############################################################################
 check_black() {
 	local black_excludes black_exit
@@ -420,13 +386,11 @@ check_black() {
 	return 0
 }
 
-
-
 ###############################################################################
 # Function: check_no_dynamic_attrs
-# Description: Prohíbe el uso de getattr/hasattr para seguridad de tipado estático.
+# Description: Forbids the use of getattr/hasattr for static typing safety.
 # Globals: ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
-# Returns: 0 si pasa, 1 si se detectan usos prohibidos
+# Returns: 0 if passes, 1 if forbidden uses detected
 ###############################################################################
 check_no_dynamic_attrs() {
 	local matches
@@ -448,13 +412,11 @@ check_no_dynamic_attrs() {
 	return 0
 }
 
-
-
 ###############################################################################
 # Function: check_no_tuples
-# Description: Prohíbe el uso de tuplas como retorno o atributos de clase.
+# Description: Forbids the use of tuples as return values or class attributes.
 # Globals: PY_BIN, REPO_ROOT, TARGET_DIR
-# Returns: 0 si pasa, 1 si se detectan tuplas prohibidas
+# Returns: 0 if passes, 1 if forbidden tuples detected
 ###############################################################################
 check_no_tuples() {
 	local result
@@ -466,12 +428,11 @@ check_no_tuples() {
 	return 0
 }
 
-
 ###############################################################################
 # Function: check_jscpd
-# Description: Detecta duplicación de código usando jscpd.
+# Description: Detects code duplication using jscpd.
 # Globals: TARGET_DIR
-# Returns: 0 si pasa, 1 si hay duplicación
+# Returns: 0 if passes, 1 if duplication found
 ###############################################################################
 check_jscpd() {
 	local jscmd jscpd_exit
@@ -494,14 +455,11 @@ check_jscpd() {
 	return 0
 }
 
-
-
-
 ###############################################################################
 # Function: check_flake8
-# Description: Lint de estilo y errores Python usando flake8.
+# Description: Lint for Python style and errors using flake8.
 # Globals: RELAXED_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
-# Returns: 0 si pasa, 1 si hay errores de estilo
+# Returns: 0 if passes, 1 if style errors
 ###############################################################################
 check_flake8() {
 	local flake_failed=0 flake8_ignore
@@ -528,13 +486,11 @@ check_flake8() {
 	return 0
 }
 
-
-
 ###############################################################################
 # Function: check_mypy
-# Description: Chequeo de tipos estáticos usando mypy.
+# Description: Static type checking using mypy.
 # Globals: PY_BIN, TARGET_DIR
-# Returns: 0 si pasa, 1 si hay errores de tipado
+# Returns: 0 if passes, 1 if type errors
 ###############################################################################
 check_mypy() {
 	local mypy_failed=0 mypy_output mypy_exit_code mypy_error_count mypy_files_count
@@ -561,12 +517,11 @@ check_mypy() {
 	return 0
 }
 
-
 ###############################################################################
 # Function: check_no_spanish_chars
-# Description: Prohíbe caracteres españoles/acento en el código fuente.
+# Description: Forbids Spanish/accented characters in source code.
 # Globals: RELAXED_MODE
-# Returns: 0 si pasa, 1 si se detectan caracteres prohibidos
+# Returns: 0 if passes, 1 if forbidden characters detected
 ###############################################################################
 check_no_spanish_chars() {
 	local spanish_matches
@@ -588,16 +543,11 @@ check_no_spanish_chars() {
 	return 0
 }
 
-
-
-
-
-
-# =============================================================================
+###############################################################################
 # Function: setup_environment
-# Description: Inicializa entorno Python y longitud de línea máxima.
-# Llama a setup_max_line_length y setup_python_env.
-# =============================================================================
+# Description: Initializes Python environment and max line length.
+# Calls setup_max_line_length and setup_python_env.
+###############################################################################
 setup_environment() {
 	setup_max_line_length
 	setup_python_env
@@ -608,57 +558,56 @@ main() {
 	parse_args_and_globals "$@"
 	setup_environment
 
-
 	# ----------------------------------------------------------------------
-	# ORDEN DE LOS CHECKS: CRITERIO Y JUSTIFICACIÓN
+	# ORDER OF CHECKS: CRITERIA AND RATIONALE
 	# ----------------------------------------------------------------------
-	# El orden de ejecución de los módulos de calidad sigue estos principios:
-	# 1. Formateadores/auto-fixers primero (shfmt, isort, black, ruff):
-	#    - Así, en modo APPLY, se maximizan los auto-arreglos antes de los linters.
-	#    - En modo CHECK, fallan rápido si hay problemas triviales de formato.
-	# 2. Checks rápidos y deterministas después (sintaxis Python):
-	#    - Detectan errores básicos de ejecución lo antes posible.
-	# 3. Checks de política interna (no dynamic attrs, no tuples, no Spanish chars):
-	#    - Son reglas de estilo/seguridad propias del proyecto.
-	# 4. Checks pesados o informativos al final (jscpd, flake8, mypy):
-	#    - Son costosos o dan información útil solo si el código ya está limpio.
+	# The execution order of quality modules follows these principles:
+	# 1. Auto-fixers/formatters first (shfmt, isort, black, ruff):
+	#    - In APPLY mode, maximize auto-fixes before linters.
+	#    - In CHECK mode, fail fast on trivial formatting issues.
+	# 2. Fast and deterministic checks next (Python syntax):
+	#    - Detect basic execution errors as early as possible.
+	# 3. Internal policy checks (no dynamic attrs, no tuples, no Spanish chars):
+	#    - Project-specific style/security rules.
+	# 4. Heavy or informative checks at the end (jscpd, flake8, mypy):
+	#    - Costly or only useful if the code is already clean.
 	#
-	# Este orden busca equilibrar velocidad de feedback, utilidad de los auto-fixers
-	# y eficiencia de recursos en CI. Así, los errores triviales se detectan/priorizan
-	# primero y los análisis costosos solo se ejecutan si el código ya es razonable.
+	# This order aims to balance feedback speed, usefulness of auto-fixers,
+	# and CI resource efficiency. Trivial errors are detected/prioritized first,
+	# and expensive analyses are only run if the code is already reasonable.
 	# ----------------------------------------------------------------------
 
 	local error_found=0
 
 	if [ "$CHECK_MODE" = "CHECK" ]; then
-		# 1. Auto-fixers y formateadores
+		# 1. Auto-fixers and formatters
 		check_shfmt || exit 1
 		check_isort || exit 1
 		check_black || exit 1
 		check_ruff || exit 1
-		# 2. Checks rápidos/deterministas
+		# 2. Fast/deterministic checks
 		check_python_syntax || exit 1
-		# 3. Checks de política interna
+		# 3. Internal policy checks
 		check_no_dynamic_attrs || exit 2
 		check_no_tuples || exit 3
 		check_no_spanish_chars || exit 5
-		# 4. Checks pesados/informativos
+		# 4. Heavy/informative checks
 		check_jscpd || exit 1
 		check_flake8 || exit 1
 		check_mypy || exit 1
 	else
-		# 1. Auto-fixers y formateadores
+		# 1. Auto-fixers and formatters
 		check_shfmt || error_found=1
 		check_isort || error_found=1
 		check_black || error_found=1
 		check_ruff || error_found=1
-		# 2. Checks rápidos/deterministas
+		# 2. Fast/deterministic checks
 		check_python_syntax || error_found=1
-		# 3. Checks de política interna
+		# 3. Internal policy checks
 		check_no_dynamic_attrs || error_found=2
 		check_no_tuples || error_found=3
 		check_no_spanish_chars || error_found=5
-		# 4. Checks pesados/informativos
+		# 4. Heavy/informative checks
 		check_jscpd || error_found=1
 		check_flake8 || error_found=1
 		check_mypy || error_found=1
@@ -670,7 +619,6 @@ main() {
 
 	echo "🎉 Quality Gate completed successfully!"
 }
-
 
 # Entrypoint
 main "$@"
