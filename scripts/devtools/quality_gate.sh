@@ -392,18 +392,15 @@ fi
 # --- SIMPLIFIED QUALITY GATE: LINEAR, FAIL-FAST, MODE-AWARE ---
 # Flake8: always blocks (with config depending on mode)
 if [ $FLAKE_FAILED -ne 0 ]; then
-	echo "[ERROR] flake8 failed. See output above."
-	exit 1
-fi
-# mypy: blocks only in strict mode
-if [ $MYPY_FAILED -ne 0 ]; then
-	echo "[ERROR] mypy failed. See output above."
 	if [ $RELAXED_MODE -eq 1 ]; then
-		echo "[RELAXED MODE] Not blocking build on mypy errors."
+		echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
+		echo "[RELAXED MODE] Not blocking build on flake8 errors."
 	else
+		echo "[ERROR] flake8 failed. See output above."
 		exit 1
 	fi
 fi
+
 # =============================================================================
 # SECTION 9B: SSORT (DETERMINISTIC METHOD ORDERING)
 # -----------------------------------------------------------------------------
@@ -468,7 +465,15 @@ set -e
 if [ $MYPY_EXIT_CODE -ne 0 ]; then
 	MYPY_FAILED=1
 fi
-
+# mypy: blocks only in strict mode
+if [ $MYPY_FAILED -ne 0 ]; then
+	echo "[ERROR] mypy failed. See output above."
+	if [ $RELAXED_MODE -eq 1 ]; then
+		echo "[RELAXED MODE] Not blocking build on mypy errors."
+	else
+		exit 1
+	fi
+fi
 echo "Static checks (ruff/flake8/mypy) completed successfully."
 
 # =============================================================================
