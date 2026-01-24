@@ -1,3 +1,4 @@
+# --- AlbumDtoState: encapsulates DTO, load source, and loaded_at timestamp ---
 from __future__ import annotations
 
 import datetime
@@ -12,6 +13,7 @@ from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
 from immich_autotag.types import ImmichClient
+
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
@@ -52,16 +54,12 @@ class AlbumLoadSource(enum.Enum):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
     # --- 1. Fields ---
-    _album_dto: AlbumResponseDto = attrs.field(kw_only=True)
+    _state: AlbumDtoState = attrs.field(kw_only=True)
+    _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
+
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
     _unavailable: bool = attrs.field(default=False, init=False)
-    _loaded_at: datetime.datetime = attrs.field(
-        factory=datetime.datetime.now, init=False
-    )
-    _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
-    _load_source: AlbumLoadSource = attrs.field(
-        default=AlbumLoadSource.SEARCH, init=True
-    )
+
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
 
     _error_history: AlbumErrorHistory = attrs.field(
@@ -72,16 +70,7 @@ class AlbumResponseWrapper:
 
     # --- 2. Special Methods ---
     def __attrs_post_init__(self) -> None:
-        """
-        Ensure the wrapper has a DTO and set _loaded_at to now if not already set.
-        """
-        if self._album_dto is None:
-            raise ValueError("AlbumResponseWrapper must be constructed with a DTO.")
-        try:
-            if self._loaded_at is None:
-                self._loaded_at = datetime.datetime.now()
-        except AttributeError:
-            self._loaded_at = datetime.datetime.now()
+        pass
 
     # --- 3. Properties ---
     @property
@@ -117,28 +106,19 @@ class AlbumResponseWrapper:
         return None
 
     # --- 5. Public Methods - Metadata and Identification ---
-    @typechecked
-    def get_album_id(self) -> str:
-        return self._album_dto.id
+
 
     @typechecked
     def get_album_uuid(self) -> "UUID":
         from uuid import UUID
 
-        return UUID(self.get_album_id())
+        return UUID(self._state.get_album_id())
 
-    @typechecked
-    def get_album_uuid_no_cache(self) -> "UUID":
-        """Return the album UUID without using any cache (always computed).
 
-        This method intentionally avoids relying on any cached value and
-        computes the UUID from the current album id on each call.
-        """
-        return UUID(self.get_album_id())
 
     @typechecked
     def get_album_name(self) -> str:
-        return self._album_dto.album_name
+        return self._state.get_album_name()
 
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
@@ -173,30 +153,13 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> AlbumResponseWrapper:
-        if self._load_source == AlbumLoadSource.DETAIL:
+        if self._state.get_load_source() == AlbumLoadSource.DETAIL:
             return self
         self.reload_from_api(client)
         return self
 
-    @conditional_typechecked
-    def _get_album_full_or_load(self) -> AlbumResponseDto:
 
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-        client = ImmichClientWrapper.get_default_instance()
-        self._ensure_full_album_loaded(client)
-        if self._load_source != AlbumLoadSource.DETAIL:
-            self._ensure_full_album_loaded(client)
-            raise RuntimeError()
-        return self._album_dto
-
-    # --- 9. Private Methods - Internal Logic ---
-    def _active_dto(self) -> AlbumResponseDto:
-        """
-        Returns the current DTO, ensuring it's full if we need detailed info
-        (like album_users or assets).
-        """
-        return self._get_album_full_or_load()
 
     @typechecked
     def get_album_users(self) -> "AlbumUserList":
@@ -206,17 +169,15 @@ class AlbumResponseWrapper:
         """
         from immich_autotag.albums.album.album_user_list import AlbumUserList
         from immich_autotag.albums.album.album_user_wrapper import AlbumUserWrapper
+        return self._state.get_album_users()
 
-        dto = self._active_dto()
-        users = [AlbumUserWrapper(user=u) for u in dto.album_users]
-        return AlbumUserList(users)
 
     @typechecked
     def get_owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
         from uuid import UUID
+        return self._state.get_owner_uuid()
 
-        return UUID(self._album_dto.owner_id)
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
@@ -286,18 +247,7 @@ class AlbumResponseWrapper:
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> None:
-        """
-        Centralizes the logic for updating DTO, load_source, loaded_at, and
-        asset_ids_cache.
-        """
-        now = datetime.datetime.now()
-        if self._loaded_at and now < self._loaded_at:
-            raise RuntimeError(
-                "New loaded_at timestamp is earlier than previous loaded_at."
-            )
-        self._album_dto = dto
-        self._load_source = load_source
-        self._loaded_at = now
+        self._state.update(dto, load_source)
         self.invalidate_cache()
 
     @typechecked
@@ -439,38 +389,24 @@ class AlbumResponseWrapper:
             self._update_from_dto(dto, load_source)
 
     def _is_full(self) -> bool:
-        """
-        Returns True if the album was loaded from DETAIL (full),
-        False if from SEARCH (partial).
-        Raises if _load_source is not recognized (defensive programming).
-        """
-        if self._load_source == AlbumLoadSource.DETAIL:
+        if self._state.load_source == AlbumLoadSource.DETAIL:
             return True
-        elif self._load_source == AlbumLoadSource.SEARCH:
+        elif self._state.load_source == AlbumLoadSource.SEARCH:
             return False
         else:
-            raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
+            raise RuntimeError(f"Unknown AlbumLoadSource: {self._state.load_source!r}")
 
     @typechecked
     def ensure_full(self) -> None:
-        # If the album has been explicitly marked unavailable, fail fast so
-        # callers become aware and can handle the condition. Do not silently
-        # continue as that hides real problems.
         if self._unavailable:
             raise RuntimeError(
                 "Album is marked unavailable; cannot ensure full DTO for this album"
             )
-
         if not self._is_full():
             self.reload_from_api(self.get_default_client())
 
     @typechecked
     def has_loaded_assets(self) -> bool:
-        """
-        Returns True if the album's assets are loaded (full/DETAIL),
-        False if not (SEARCH/partial).
-        Does not trigger loading or network access.
-        """
         return self._is_full()
 
     @typechecked
@@ -979,13 +915,8 @@ class AlbumResponseWrapper:
     @classmethod
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
-        """
-        Construct an AlbumResponseWrapper from a partial AlbumResponseDto (SEARCH result).
-        Sets load_source to SEARCH.
-        """
-        obj = cls(album_dto=dto)
-        object.__setattr__(obj, "_load_source", AlbumLoadSource.SEARCH)
-        return obj
+        state = _AlbumDtoState(dto, AlbumLoadSource.SEARCH)
+        return cls(state=state)
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible."""
