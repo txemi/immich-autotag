@@ -66,7 +66,7 @@ cd "$REPO_ROOT"
 # CHECK_MODE: Controla si los formateadores y linters solo comprueban o también modifican archivos.
 #   - "APPLY": Aplica cambios (modo por defecto, los formateadores pueden modificar archivos).
 #   - "CHECK": Solo comprueba, no modifica archivos (modo "--check").
-# MODE: Controla el modo general del quality gate (DUMMY, STRICT, RELAXED).
+# QUALITY_LEVEL: Controla el nivel de exigencia del quality gate (DUMMY, STRICT, RELAXED).
 #
 # Uso: ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
 #   --dummy: Dummy mode (default). Does nothing and always succeeds.
@@ -84,18 +84,19 @@ parse_args_and_globals() {
 		exit 0
 	fi
 
+
 	# Definir como globales
-	MODE="DUMMY"  # Possible values: DUMMY, STRICT, RELAXED
+	QUALITY_LEVEL=""  # Valores posibles: DUMMY, STRICT, RELAXED
 	CHECK_MODE="APPLY"  # Valores posibles: APPLY, CHECK
 	ENFORCE_DYNAMIC_ATTRS=0
 	TARGET_DIR=""
 	for arg in "$@"; do
 		if [ "$arg" = "--strict" ]; then
-			MODE="STRICT"
+			QUALITY_LEVEL="STRICT"
 		elif [ "$arg" = "--relaxed" ]; then
-			MODE="RELAXED"
+			QUALITY_LEVEL="RELAXED"
 		elif [ "$arg" = "--dummy" ]; then
-			MODE="DUMMY"
+			QUALITY_LEVEL="DUMMY"
 		elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
 			CHECK_MODE="CHECK"
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
@@ -104,20 +105,30 @@ parse_args_and_globals() {
 			TARGET_DIR="$arg"
 		fi
 	done
+	# Si el usuario no ha forzado QUALITY_LEVEL, lo inferimos de CHECK_MODE
+	if [ -z "$QUALITY_LEVEL" ]; then
+		if [ "$CHECK_MODE" = "APPLY" ]; then
+			QUALITY_LEVEL="STRICT"
+		elif [ "$CHECK_MODE" = "CHECK" ]; then
+			QUALITY_LEVEL="RELAXED"
+		else
+			QUALITY_LEVEL="DUMMY"
+		fi
+	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
 		TARGET_DIR="$PACKAGE_NAME"
 	fi
 
-	export MODE CHECK_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
+	export QUALITY_LEVEL CHECK_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
 
-	if [ "$MODE" = "DUMMY" ]; then
-		echo "[MODE] Running in DUMMY mode (no checks will be performed, always succeeds)."
+	if [ "$QUALITY_LEVEL" = "DUMMY" ]; then
+		echo "[QUALITY_LEVEL] Running in DUMMY mode (no checks will be performed, always succeeds)."
 		exit 0
-	elif [ "$MODE" = "STRICT" ]; then
-		echo "[MODE] Running in STRICT mode (all checks enforced, fail on any error)."
-	elif [ "$MODE" = "RELAXED" ]; then
-		echo "[MODE] Running in RELAXED mode (some checks are warnings only)."
+	elif [ "$QUALITY_LEVEL" = "STRICT" ]; then
+		echo "[QUALITY_LEVEL] Running in STRICT mode (all checks enforced, fail on any error)."
+	elif [ "$QUALITY_LEVEL" = "RELAXED" ]; then
+		echo "[QUALITY_LEVEL] Running in RELAXED mode (some checks are warnings only)."
 	fi
 
 	if [ "$CHECK_MODE" = "CHECK" ]; then
@@ -350,7 +361,7 @@ check_ssort() {
 check_ruff() {
 	ensure_tool ruff ruff
 	RUFF_IGNORE=""
-	if [ "$MODE" = "RELAXED" ]; then
+	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 		RUFF_IGNORE="--ignore E501"
 		echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	fi
@@ -484,7 +495,7 @@ check_flake8() {
 	ensure_tool flake8 flake8
 	FLAKE_FAILED=0
 	FLAKE8_IGNORE="E203,W503"
-	if [ "$MODE" = "RELAXED" ]; then
+	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 		FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
 		echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 	fi
@@ -494,7 +505,7 @@ check_flake8() {
 		FLAKE_FAILED=1
 	fi
 	if [ $FLAKE_FAILED -ne 0 ]; then
-		if [ "$MODE" = "RELAXED" ]; then
+		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 			echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
 			echo "[RELAXED MODE] Not blocking build on flake8 errors."
 		else
@@ -552,7 +563,7 @@ check_no_spanish_chars() {
 		echo '❌ Spanish language characters detected in the following files/lines:'
 		echo "$SPANISH_MATCHES"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
-		if [ "$MODE" = "RELAXED" ]; then
+		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 			echo '[RELAXED MODE] Not blocking build on Spanish character check.'
 		else
 			echo 'Build failed: Please remove all Spanish text and accents before publishing.'
