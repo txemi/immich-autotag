@@ -58,6 +58,7 @@ class AssetResponseWrapper:
     def __attrs_post_init__(self) -> None:
         # Use isinstance for type validation, which is more robust and preferred
         # ImmichContext type is enforced by attrs and type hints; no runtime check needed
+        pass
 
     def get_context(self) -> "ImmichContext":
         """Read-only access to the context. No external modification allowed."""
