@@ -21,9 +21,6 @@ class AssetDtoState:
     _type: AssetDtoType
     _loaded_at: datetime = attrs.field(factory=datetime.now)
 
-    @property
-    def dto(self) -> AssetResponseDto:
-        return self._dto
 
     @property
     def type(self) -> AssetDtoType:
@@ -37,3 +34,6 @@ class AssetDtoState:
         self._dto = dto
         self._type = type_
         self._loaded_at = datetime.now()
+
+    def get_tags():
+        return self._dto.tags
