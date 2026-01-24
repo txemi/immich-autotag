@@ -204,16 +204,24 @@ fi
 # -----------------------------------------------------------------------------
 # - Byte-compiles all Python files to catch syntax/import errors early.
 # =============================================================================
-# Syntax and indentation check on all .py files in the package
-echo "Checking for syntax and indentation errors..."
-echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
-if ! "$PY_BIN" -m compileall -q "$TARGET_DIR"; then
-	echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
-	exit 1
-fi
 
-# Fallback check per-file (keeps original behavior for precise messages)
-find "$TARGET_DIR" -name "*.py" -exec "$PY_BIN" -m py_compile {} +
+# =====================
+# Function: check_python_syntax
+# =====================
+check_python_syntax() {
+	echo "Checking for syntax and indentation errors..."
+	echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
+	if ! "$PY_BIN" -m compileall -q "$TARGET_DIR"; then
+		echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
+		return 1
+	fi
+	# Fallback check per-file (keeps original behavior for precise messages)
+	find "$TARGET_DIR" -name "*.py" -exec "$PY_BIN" -m py_compile {} +
+	return 0
+}
+
+# Call the second check
+check_python_syntax || exit 1
 
 # =============================================================================
 # UTILITY FUNCTIONS (USED IN MULTIPLE SECTIONS)
