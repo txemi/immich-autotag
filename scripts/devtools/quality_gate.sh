@@ -55,13 +55,20 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
 
+
 # =============================================================================
 # SECTION 0: COMMAND LINE ARGUMENT PARSING
 # -----------------------------------------------------------------------------
 # - Handles --help, --strict, --check, --enforce-dynamic-attrs, and target_dir.
 # - Sets RELAXED_MODE, CHECK_MODE, ENFORCE_DYNAMIC_ATTRS, TARGET_DIR variables.
 # =============================================================================
- # Usage: ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
+#
+# CHECK_MODE: Controla si los formateadores y linters solo comprueban o también modifican archivos.
+#   - "APPLY": Aplica cambios (modo por defecto, los formateadores pueden modificar archivos).
+#   - "CHECK": Solo comprueba, no modifica archivos (modo "--check").
+# MODE: Controla el modo general del quality gate (DUMMY, STRICT, RELAXED).
+#
+# Uso: ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
 #   --dummy: Dummy mode (default). Does nothing and always succeeds.
 #   --strict: Enforce all checks strictly, fail on any error.
 #   Default is dummy mode unless --strict or --relaxed is specified.
@@ -79,8 +86,7 @@ parse_args_and_globals() {
 
 	# Definir como globales
 	MODE="DUMMY"  # Possible values: DUMMY, STRICT, RELAXED
-	CHECK_MODE=0
-	RELAXED_MODE=0
+	CHECK_MODE="APPLY"  # Valores posibles: APPLY, CHECK
 	ENFORCE_DYNAMIC_ATTRS=0
 	TARGET_DIR=""
 	for arg in "$@"; do
@@ -88,11 +94,10 @@ parse_args_and_globals() {
 			MODE="STRICT"
 		elif [ "$arg" = "--relaxed" ]; then
 			MODE="RELAXED"
-			RELAXED_MODE=1
 		elif [ "$arg" = "--dummy" ]; then
 			MODE="DUMMY"
 		elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
-			CHECK_MODE=1
+			CHECK_MODE="CHECK"
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 			ENFORCE_DYNAMIC_ATTRS=1
 		elif [[ "$arg" != --* ]]; then
@@ -104,7 +109,7 @@ parse_args_and_globals() {
 		TARGET_DIR="$PACKAGE_NAME"
 	fi
 
-	export MODE CHECK_MODE RELAXED_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
+	export MODE CHECK_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
 
 	if [ "$MODE" = "DUMMY" ]; then
 		echo "[MODE] Running in DUMMY mode (no checks will be performed, always succeeds)."
@@ -115,7 +120,7 @@ parse_args_and_globals() {
 		echo "[MODE] Running in RELAXED mode (some checks are warnings only)."
 	fi
 
-	if [ "$CHECK_MODE" -eq 1 ]; then
+	if [ "$CHECK_MODE" = "CHECK" ]; then
 		echo "[CHECK] Running in CHECK mode (no files will be modified)."
 	else
 		echo "[CHECK] Running in APPLY mode (formatters may modify files)."
@@ -148,7 +153,7 @@ check_shfmt() {
 	BASH_SCRIPTS=$(find scripts -type f -name "*.sh")
 
 	# Run shfmt according to mode
-	if [ "$CHECK_MODE" -eq 1 ]; then
+	if [ "$CHECK_MODE" = "CHECK" ]; then
 		if ! shfmt -d $BASH_SCRIPTS; then
 			echo "[ERROR] There are formatting issues in Bash scripts. Run 'shfmt -w scripts/' to fix them."
 			return 1
@@ -255,7 +260,7 @@ ensure_tool() {
 check_isort() {
 	ensure_tool isort isort
 	ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
-	if [ "$CHECK_MODE" -eq 1 ]; then
+	if [ "$CHECK_MODE" = "CHECK" ]; then
 		"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
 		ISORT_EXIT=$?
 	else
@@ -345,11 +350,11 @@ check_ssort() {
 check_ruff() {
 	ensure_tool ruff ruff
 	RUFF_IGNORE=""
-	if [ $RELAXED_MODE -eq 1 ]; then
+	if [ "$MODE" = "RELAXED" ]; then
 		RUFF_IGNORE="--ignore E501"
 		echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	fi
-	if [ "$CHECK_MODE" -eq 1 ]; then
+	if [ "$CHECK_MODE" = "CHECK" ]; then
 		"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
 		RUFF_EXIT=$?
 	else
@@ -377,7 +382,7 @@ check_black() {
 	# Format code with Black using the environment Python
 	ensure_tool black black
 	BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
-	if [ "$CHECK_MODE" -eq 1 ]; then
+	if [ "$CHECK_MODE" = "CHECK" ]; then
 		"$PY_BIN" -m black --check $BLACK_EXCLUDES "$TARGET_DIR"
 		BLACK_EXIT=$?
 	else
@@ -386,7 +391,7 @@ check_black() {
 	fi
 	if [ $BLACK_EXIT -ne 0 ]; then
 		echo "[WARNING] black reported issues."
-		if [ "$CHECK_MODE" -eq 1 ]; then
+		if [ "$CHECK_MODE" = "CHECK" ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 			return 1
 		fi
@@ -479,7 +484,7 @@ check_flake8() {
 	ensure_tool flake8 flake8
 	FLAKE_FAILED=0
 	FLAKE8_IGNORE="E203,W503"
-	if [ $RELAXED_MODE -eq 1 ]; then
+	if [ "$MODE" = "RELAXED" ]; then
 		FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
 		echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 	fi
@@ -489,7 +494,7 @@ check_flake8() {
 		FLAKE_FAILED=1
 	fi
 	if [ $FLAKE_FAILED -ne 0 ]; then
-		if [ $RELAXED_MODE -eq 1 ]; then
+		if [ "$MODE" = "RELAXED" ]; then
 			echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
 			echo "[RELAXED MODE] Not blocking build on flake8 errors."
 		else
@@ -547,7 +552,7 @@ check_no_spanish_chars() {
 		echo '❌ Spanish language characters detected in the following files/lines:'
 		echo "$SPANISH_MATCHES"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
-		if [ "$RELAXED_MODE" -eq 1 ]; then
+		if [ "$MODE" = "RELAXED" ]; then
 			echo '[RELAXED MODE] Not blocking build on Spanish character check.'
 		else
 			echo 'Build failed: Please remove all Spanish text and accents before publishing.'
