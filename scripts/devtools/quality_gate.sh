@@ -204,16 +204,9 @@ setup_max_line_length() {
 	export MAX_LINE_LENGTH
 }
 
-# Inicializar longitud de línea máxima
-setup_max_line_length
 
-# =============================================================================
-# SECTION B: VIRTUAL ENVIRONMENT ACTIVATION & PYTHON SETUP
-# -----------------------------------------------------------------------------
-# - Activates .venv if present, otherwise falls back to system python.         #
-# - Ensures all required tools are available in the environment.               #
-# =============================================================================
-# Robust exclusions to avoid formatting .venv, jenkins_logs and other external directories
+
+
 
 
 # =============================================================================
@@ -239,8 +232,7 @@ setup_python_env() {
 	export PY_BIN
 }
 
-# Activar entorno Python
-setup_python_env
+
 
 
 ###############################################################################
@@ -331,7 +323,6 @@ check_isort() {
 # but reproducibility in CI is what matters.                  #
 ###############################################################
 
-###############################################################
 
 
 ###############################################################################
@@ -348,7 +339,6 @@ ensure_ssort() {
 }
 
 
-# =====================
 ###############################################################################
 # Function: check_ssort
 # Description: Ordena métodos de clases Python de forma determinista usando ssort.
@@ -376,7 +366,6 @@ check_ssort() {
 
 
 
-# =====================
 ###############################################################################
 # Function: check_ruff
 # Description: Lint y auto-fix de estilo Python usando ruff.
@@ -462,7 +451,6 @@ check_no_dynamic_attrs() {
 
 
 
-# =====================
 ###############################################################################
 # Function: check_no_tuples
 # Description: Prohíbe el uso de tuplas como retorno o atributos de clase.
@@ -479,8 +467,6 @@ check_no_tuples() {
 }
 
 
-
-# =====================
 ###############################################################################
 # Function: check_jscpd
 # Description: Detecta duplicación de código usando jscpd.
