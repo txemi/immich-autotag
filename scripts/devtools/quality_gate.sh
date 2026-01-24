@@ -97,7 +97,6 @@ else
 	echo "[MODE] Running in APPLY mode (formatters may modify files)."
 fi
 
-
 ###############################################################################
 # SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)
 # -----------------------------------------------------------------------------
@@ -110,7 +109,6 @@ echo "==============================="
 echo "SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)"
 echo "==============================="
 echo ""
-
 
 # Require shfmt to be installed
 if ! command -v shfmt >/dev/null 2>&1; then
