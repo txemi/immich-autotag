@@ -66,19 +66,19 @@ class AssetResponseWrapper:
     def _ensure_full_asset_loaded(self) -> AssetDtoState:
         """Lazy-load the full asset data if not already loaded.
 
-        Fetches the complete asset including tags via get_asset_info API call.
+        Fetches the complete asset including tags via the Immich API proxy.
         Result is cached in _asset_full for subsequent accesses.
         """
         if self._state.type == AssetDtoType.FULL:
             return self._state
 
-        from immich_client.api.assets import get_asset_info
-
+        from immich_autotag.api.immich_proxy.assets import (
+            get_asset_info as proxy_get_asset_info,
+        )
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        # Already loaded
-        asset_full = get_asset_info.sync(
-            id=self.id_as_uuid, client=self.get_context().client
+        asset_full = proxy_get_asset_info(
+            asset_id=self.id_as_uuid, client=self.get_context().client
         )
         if asset_full is None:
             raise RuntimeError(
@@ -109,7 +109,9 @@ class AssetResponseWrapper:
         Updates the main date (created_at) of the asset using the Immich API.
         If tag_mod_report is provided, logs the modification.
         """
-        from immich_client.api.assets import update_asset
+        from immich_autotag.api.immich_proxy.assets import (
+            update_asset as proxy_update_asset,
+        )
 
         old_date = self._state.dto.created_at
         # Ensure the date is timezone-aware in UTC
@@ -150,8 +152,10 @@ class AssetResponseWrapper:
             user=user_wrapper,
             extra={"pre_update": True},
         )
-        response = update_asset.sync(
-            id=self.id_as_uuid, client=self.get_context().client, body=dto
+        response = proxy_update_asset(
+            asset_id=self.id_as_uuid,
+            client=self.get_context().client,
+            body=dto,
         )
         # Fail-fast: check response type and status directly, no dynamic attribute access
         # If the API returns a response object with status_code, check it; otherwise, assume success if no exception was raised
@@ -253,10 +257,9 @@ class AssetResponseWrapper:
         Raises if any remain.
         Uses TagWrapper from the tag collection for all reporting.
         """
-        from immich_client.api.tags import untag_assets
-        from immich_client.models.bulk_ids_dto import BulkIdsDto
         from immich_client.types import Unset
 
+        from immich_autotag.api.immich_proxy.tags import proxy_untag_assets
         from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 
         tags: list[TagResponseDto] | Unset = self.tags
@@ -290,10 +293,10 @@ class AssetResponseWrapper:
         removed_any = False
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
-            response = untag_assets.sync(
-                id=UUID(tag.id),
+            response = proxy_untag_assets(
+                tag_id=UUID(tag.id),
                 client=self.get_context().client,
-                body=BulkIdsDto(ids=[self.id_as_uuid]),
+                asset_ids=[self.id_as_uuid],
             )
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -327,9 +330,7 @@ class AssetResponseWrapper:
         Adds a tag to the asset by name using the Immich API if it doesn't have it already.
         Returns True if added, raises exception if it already had it or if the tag doesn't exist.
         """
-        from immich_client.api.tags import tag_assets
-        from immich_client.models.bulk_ids_dto import BulkIdsDto
-
+        from immich_autotag.api.immich_proxy.tags import proxy_tag_assets
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
@@ -409,13 +410,13 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         try:
-            response = tag_assets.sync(
-                id=UUID(tag.id),
+            response = proxy_tag_assets(
+                tag_id=UUID(tag.id),
                 client=self.get_context().client,
-                body=BulkIdsDto(ids=[self.id_as_uuid]),
+                asset_ids=[self.id_as_uuid],
             )
         except Exception as e:
-            error_msg = f"[ERROR] Exception during tag_assets.sync: {e}"
+            error_msg = f"[ERROR] Exception during proxy_tag_assets: {e}"
             log(error_msg, level=LogLevel.ERROR)
             if tag_mod_report:
                 from immich_autotag.report.modification_kind import ModificationKind
@@ -428,7 +429,7 @@ class AssetResponseWrapper:
                     extra={"error": error_msg},
                 )
             return False
-        log(f"[DEBUG] Response tag_assets: {response}", level=LogLevel.DEBUG)
+        log(f"[DEBUG] Response proxy_tag_assets: {response}", level=LogLevel.DEBUG)
         # OPTIMIZATION: Trust tag_assets API response instead of reloading asset.
         # The API call should atomically apply tags and succeed or fail accordingly.
         # Removed: get_asset_info.sync() reload that added HTTP request per tag addition
