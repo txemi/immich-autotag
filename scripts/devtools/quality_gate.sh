@@ -249,12 +249,21 @@ ensure_tool() {
 # =============================================================================
 # Run ruff first (auto-fix/format where possible)
 
+
 ensure_tool ruff ruff
-RUF_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m ruff check --fix "$TARGET_DIR" || RUF_FAILED=1
+	"$PY_BIN" -m ruff check --fix "$TARGET_DIR"
+	RUFF_EXIT=$?
 else
-	"$PY_BIN" -m ruff check --fix "$TARGET_DIR" || RUF_FAILED=1
+	"$PY_BIN" -m ruff check --fix "$TARGET_DIR"
+	RUFF_EXIT=$?
+fi
+if [ $RUFF_EXIT -ne 0 ]; then
+	echo "[WARNING] ruff reported/fixed issues."
+	if [ "$CHECK_MODE" -eq 1 ]; then
+		echo "Run in apply mode to let the script attempt to fix formatting problems or run el comando localmente para ver los diffs."
+		exit 1
+	fi
 fi
 
 # =============================================================================
@@ -264,14 +273,22 @@ fi
 # =============================================================================
 # Organize imports with isort using the environment Python (isort before black)
 
+
 ensure_tool isort isort
 ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
-
-ISORT_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR" || ISORT_FAILED=1
+	"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
+	ISORT_EXIT=$?
 else
-	"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR" || ISORT_FAILED=1
+	"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
+	ISORT_EXIT=$?
+fi
+if [ $ISORT_EXIT -ne 0 ]; then
+	echo "[WARNING] isort reported issues."
+	if [ "$CHECK_MODE" -eq 1 ]; then
+		echo "Run in apply mode to let the script attempt to fix formatting problems or run el comando localmente para ver los diffs."
+		exit 1
+	fi
 fi
 
 # =============================================================================
@@ -281,30 +298,26 @@ fi
 # =============================================================================
 # Format code with Black using the environment Python
 
+
 ensure_tool black black
 BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
-
-BLACK_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m black --check $BLACK_EXCLUDES "$TARGET_DIR" || BLACK_FAILED=1
+	"$PY_BIN" -m black --check $BLACK_EXCLUDES "$TARGET_DIR"
+	BLACK_EXIT=$?
 else
-	"$PY_BIN" -m black $BLACK_EXCLUDES "$TARGET_DIR" || BLACK_FAILED=1
+	"$PY_BIN" -m black $BLACK_EXCLUDES "$TARGET_DIR"
+	BLACK_EXIT=$?
 fi
-
-TOOL_FAILURES=0
-if [ $RUF_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES + 1)); fi
-if [ $ISORT_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES + 1)); fi
-if [ $BLACK_FAILED -ne 0 ]; then TOOL_FAILURES=$((TOOL_FAILURES + 1)); fi
-
-if [ $TOOL_FAILURES -ne 0 ]; then
-	echo "[WARNING] One or more formatting tools reported issues. Details:"
-	[ $RUF_FAILED -ne 0 ] && echo " - ruff reported/fixed issues (exit code $RUF_FAILED)."
-	[ $ISORT_FAILED -ne 0 ] && echo " - isort reported issues (exit code $ISORT_FAILED)."
-	[ $BLACK_FAILED -ne 0 ] && echo " - black reported issues (exit code $BLACK_FAILED)."
+if [ $BLACK_EXIT -ne 0 ]; then
+	echo "[WARNING] black reported issues."
 	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run the commands locally to inspect diffs."
+		echo "Run in apply mode to let the script attempt to fix formatting problems or run el comando localmente para ver los diffs."
+		exit 1
 	fi
 fi
+
+
+# Ahora cada bloque de herramienta es responsable de fallar inmediatamente si hay error.
 
 echo "Formatting and import sorting completed."
 
