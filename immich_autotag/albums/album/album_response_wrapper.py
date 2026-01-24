@@ -906,7 +906,7 @@ class AlbumResponseWrapper:
     @classmethod
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
-        state = AlbumDtoState.create(dto, AlbumLoadSource.SEARCH)
+        state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         return cls(state=state)
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
