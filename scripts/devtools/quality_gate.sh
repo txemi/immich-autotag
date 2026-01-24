@@ -357,31 +357,34 @@ check_ruff() {
 }
 
 # Call the fourth check
-check_ruff || exit 1
 
 # =============================================================================
-# SECTION 4: BLACK (CODE FORMATTER)
+# SECTION 4: BLACK (CODE FORMATTER) - MODULARIZED
 # -----------------------------------------------------------------------------
 # - Formats code to ensure consistent style.
 # =============================================================================
-# Format code with Black using the environment Python
-
-ensure_tool black black
-BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
-if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m black --check $BLACK_EXCLUDES "$TARGET_DIR"
-	BLACK_EXIT=$?
-else
-	"$PY_BIN" -m black $BLACK_EXCLUDES "$TARGET_DIR"
-	BLACK_EXIT=$?
-fi
-if [ $BLACK_EXIT -ne 0 ]; then
-	echo "[WARNING] black reported issues."
+check_black() {
+	# Format code with Black using the environment Python
+	ensure_tool black black
+	BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
 	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
-		exit 1
+		"$PY_BIN" -m black --check $BLACK_EXCLUDES "$TARGET_DIR"
+		BLACK_EXIT=$?
+	else
+		"$PY_BIN" -m black $BLACK_EXCLUDES "$TARGET_DIR"
+		BLACK_EXIT=$?
 	fi
-fi
+	if [ $BLACK_EXIT -ne 0 ]; then
+		echo "[WARNING] black reported issues."
+		if [ "$CHECK_MODE" -eq 1 ]; then
+			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
+			return 1
+		fi
+	fi
+	return 0
+}
+
+check_black || exit 1
 
 # =============================================================================
 # SECTION 6: POLICY ENFORCEMENT - DYNAMIC ATTRIBUTES
