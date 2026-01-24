@@ -946,7 +946,7 @@ class AlbumCollectionWrapper:
         return None
 
     @typechecked
-    def resync_from_api(self, clear_first: bool = True) -> None:
+    def resync_from_api(self, client: "ImmichClient" = None, clear_first: bool = True) -> None:
         """
         Reloads the album collection from the API, same as from_client but on the current instance.
         - Downloads all albums from the API (initially without assets).
@@ -962,7 +962,9 @@ class AlbumCollectionWrapper:
 
         # Set sync state to SYNCING at the start
         self._sync_state = SyncState.SYNCING
-        client = ImmichContext.get_default_client()
+        if client is None:
+            from immich_autotag.context.immich_context import ImmichContext
+            client = ImmichContext.get_default_client()
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
 
@@ -1033,7 +1035,7 @@ class AlbumCollectionWrapper:
         Returns the singleton instance.
         """
         instance = cls()
-        instance.resync_from_api()
+        instance.resync_from_api(client=client)
         return instance
 
     def __len__(self) -> int:
