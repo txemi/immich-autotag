@@ -41,6 +41,9 @@ class TagCollectionWrapper:
         tag_create = TagCreateDto(name=name)
         try:
             new_tag_dto = create_tag.sync(client=client, body=tag_create)
+            # Defensive: ensure new_tag_dto is not None (API should always return a TagResponseDto)
+            if new_tag_dto is None:
+                raise ValueError("API returned None for new tag creation")
             new_tag = TagWrapper(new_tag_dto)
             self.tags.append(new_tag)
             return new_tag
