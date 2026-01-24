@@ -524,15 +524,13 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
     ) -> list[BulkIdResponseDto]:
         """Executes the API call to add an asset to the album."""
-        from immich_client.api.albums import add_assets_to_album
-        from immich_client.models.bulk_ids_dto import BulkIdsDto
+        from immich_autotag.api.immich_proxy.albums import proxy_add_assets_to_album
 
-        result = add_assets_to_album.sync(
-            id=self.get_album_uuid_no_cache(),
+        result = proxy_add_assets_to_album(
+            album_id=self.get_album_uuid_no_cache(),
             client=client,
-            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
+            asset_ids=[asset_wrapper.id_as_uuid],
         )
-
         if not isinstance(result, list):
             raise RuntimeError(
                 f"add_assets_to_album did not return a list, got {type(result)}"
@@ -718,15 +716,13 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
     ) -> list[BulkIdResponseDto]:
         """Executes the API call to remove an asset from the album."""
-        from immich_client.api.albums import remove_asset_from_album
-        from immich_client.models.bulk_ids_dto import BulkIdsDto
+        from immich_autotag.api.immich_proxy.albums import proxy_remove_asset_from_album
 
-        result = remove_asset_from_album.sync(
-            id=self.get_album_uuid_no_cache(),
+        result = proxy_remove_asset_from_album(
+            album_id=self.get_album_uuid_no_cache(),
             client=client,
-            body=BulkIdsDto(ids=[asset_wrapper.id_as_uuid]),
+            asset_ids=[asset_wrapper.id_as_uuid],
         )
-
         if not isinstance(result, list):
             raise RuntimeError(
                 f"remove_assets_from_album did not return a list, got {type(result)}"
@@ -951,14 +947,15 @@ class AlbumResponseWrapper:
         album_name = self.get_album_name()
         if album_name.startswith(" "):
             cleaned_name = album_name.strip()
-            from immich_client.api.albums import update_album_info
-            from immich_client.models.update_album_dto import UpdateAlbumDto
-
-            update_body = UpdateAlbumDto(album_name=cleaned_name)
             from uuid import UUID
 
-            update_album_info.sync(
-                id=UUID(self.get_album_id()),
+            from immich_client.models.update_album_dto import UpdateAlbumDto
+
+            from immich_autotag.api.immich_proxy.albums import proxy_update_album_info
+
+            update_body = UpdateAlbumDto(album_name=cleaned_name)
+            proxy_update_album_info(
+                album_id=UUID(self.get_album_id()),
                 client=client,
                 body=update_body,
             )

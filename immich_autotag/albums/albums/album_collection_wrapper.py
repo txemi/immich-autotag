@@ -511,10 +511,7 @@ class AlbumCollectionWrapper:
         Returns True if deleted successfully or if it no longer exists.
         """
 
-        from immich_client.api.albums.delete_album import (
-            sync_detailed as delete_album_sync,
-        )
-
+        from immich_autotag.api.immich_proxy.albums import proxy_delete_album
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
@@ -530,7 +527,7 @@ class AlbumCollectionWrapper:
         # Remove locally first to avoid errors if already deleted
         self.remove_album_local_public(wrapper)
         try:
-            delete_album_sync(id=wrapper.get_album_uuid(), client=client)
+            proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
@@ -864,12 +861,12 @@ class AlbumCollectionWrapper:
         """
         Private helper to create an album via the API. Returns the album object. Handles creation, error reporting, and event logging.
         """
-        from immich_client.api.albums import create_album
         from immich_client.models.create_album_dto import CreateAlbumDto
 
+        from immich_autotag.api.immich_proxy.albums import proxy_create_album
         from immich_autotag.report.modification_kind import ModificationKind
 
-        album = create_album.sync(
+        album = proxy_create_album(
             client=client,
             body=CreateAlbumDto(album_name=album_name),
         )
@@ -954,8 +951,7 @@ class AlbumCollectionWrapper:
         - If clear_first is False, merges new albums with existing ones (without deleting current ones).
         - Handles duplicates and logging same as from_client.
         """
-        from immich_client.api.albums import get_all_albums
-
+        from immich_autotag.api.immich_proxy.albums import proxy_get_all_albums
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
         from immich_autotag.report.modification_report import ModificationReport
@@ -969,7 +965,7 @@ class AlbumCollectionWrapper:
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
 
-        albums = get_all_albums.sync(client=client)
+        albums = proxy_get_all_albums(client=client)
         if albums is None:
             self._sync_state = SyncState.NOT_STARTED
             raise RuntimeError("Failed to fetch albums: API returned None")
