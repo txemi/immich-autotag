@@ -12,6 +12,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
+from immich_autotag.albums.album.album_dto_state import AlbumDtoState
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
@@ -905,7 +906,7 @@ class AlbumResponseWrapper:
     @classmethod
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
-        state = _AlbumDtoState(dto, AlbumLoadSource.SEARCH)
+        state = AlbumDtoState(dto, AlbumLoadSource.SEARCH)
         return cls(state=state)
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
