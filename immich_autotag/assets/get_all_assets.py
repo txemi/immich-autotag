@@ -4,11 +4,13 @@ from typing import TYPE_CHECKING, Generator
 
 from immich_client.models.metadata_search_dto import MetadataSearchDto
 from immich_client.models.search_asset_response_dto import SearchAssetResponseDto
-from immich_client.models.search_response_dto import SearchResponseDto
 from immich_client.types import Response
 from typeguard import typechecked
 
-from immich_autotag.api.immich_proxy.search import proxy_search_assets
+from immich_autotag.api.immich_proxy.search import (
+    SearchResponseDto,
+    proxy_search_assets,
+)
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.logging.utils import log_debug
 
