@@ -397,19 +397,28 @@ check_black || exit 1
 # -----------------------------------------------------------------------------
 # - Optionally forbids use of getattr()/hasattr() for static typing safety.
 # =============================================================================
-# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
-# Projects following our coding guidelines avoid these calls because they
-# undermine static typing and hide missing attributes. This check is strict
-# and is DISABLED by default (enabled only with --enforce-dynamic-attrs).
-if [ "$ENFORCE_DYNAMIC_ATTRS" -eq 1 ]; then
-	if grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR"; then
-		echo "[ERROR] Forbidden use of getattr(...) or hasattr(...) detected. Our style policy bans dynamic attribute access."
-		echo "Fix occurrences in source (do not rely on getattr/hasattr)."
-		exit 2
+
+# =====================
+# Function: check_no_dynamic_attrs
+# =====================
+check_no_dynamic_attrs() {
+	# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
+	# Projects following our coding guidelines avoid these calls because they
+	# undermine static typing and hide missing attributes. This check is strict
+	# and is DISABLED by default (enabled only with --enforce-dynamic-attrs).
+	if [ "$ENFORCE_DYNAMIC_ATTRS" -eq 1 ]; then
+		if grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR"; then
+			echo "[ERROR] Forbidden use of getattr(...) or hasattr(...) detected. Our style policy bans dynamic attribute access."
+			echo "Fix occurrences in source (do not rely on getattr/hasattr)."
+			return 1
+		fi
+	else
+		echo "[INFO] getattr/hasattr policy enforcement is DISABLED by default. Use --enforce-dynamic-attrs to enable."
 	fi
-else
-	echo "[INFO] getattr/hasattr policy enforcement is DISABLED by default. Use --enforce-dynamic-attrs to enable."
-fi
+	return 0
+}
+
+check_no_dynamic_attrs || exit 2
 
 # =============================================================================
 # SECTION 7: POLICY ENFORCEMENT - TUPLE USAGE
