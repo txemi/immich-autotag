@@ -116,6 +116,21 @@ else
 fi
 
 
+main() {
+	check_shfmt || exit 1
+	check_python_syntax || exit 1
+	check_isort || exit 1
+	check_ruff || exit 1
+	check_black || exit 1
+	check_ssort || exit 1
+	check_no_dynamic_attrs || exit 2
+	check_no_tuples || exit 3
+	check_jscpd || exit 1
+	check_flake8 || exit 1
+	check_mypy || exit 1
+	check_no_spanish_chars || exit 5
+}
+
 # =====================
 # Function: check_shfmt
 # =====================
@@ -269,8 +284,10 @@ check_isort() {
 	return 0
 }
 
-# Call the third check
-check_isort || exit 1
+
+# Entrypoint
+main
+
 
 # =============================================================================
 # SECTION 9B: SSORT (DETERMINISTIC METHOD ORDERING)
@@ -293,6 +310,8 @@ check_isort || exit 1
 #   - If a more standard alternative appears in the future, migration will be easy.
 # NOTE: Local tests may work due to previous installations,   #
 # but reproducibility in CI is what matters.                  #
+###############################################################
+
 ###############################################################
 
 # --- Ensure ssort (bwhmather/ssort) is installed and available ---
