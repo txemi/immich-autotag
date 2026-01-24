@@ -63,10 +63,23 @@
 # 5. Activate mypy as a blocker (high cost, maximum robustness, requires typing everywhere).
 #
 # When the main checks table is updated, also update these tables and the plan if needed.
+
+
+
+# =============================================================================
+# SECTION ROOT: REPO ROOT DETECTION & DIRECTORY SETUP
+# -----------------------------------------------------------------------------
+# - Detects the root of the repository and moves to it.
+# - Defines SCRIPT_DIR, REPO_ROOT, PACKAGE_NAME.
+# - This must be done before any path-dependent logic or argument parsing.
+# =============================================================================
 set -x
 set -e
 set -o pipefail
-
+SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PACKAGE_NAME="immich_autotag"
+cd "$REPO_ROOT"
 
 # =============================================================================
 # SECTION 0: COMMAND LINE ARGUMENT PARSING
@@ -92,13 +105,7 @@ for arg in "$@"; do
 	fi
 done
 
-# Detect repo root (two levels up from this script)
-SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PACKAGE_NAME="immich_autotag"
 
-# Move to repo root
-cd "$REPO_ROOT"
 
 
 # Only support --check and --enforce-dynamic-attrs
@@ -126,6 +133,32 @@ else
 fi
 
 
+###############################################################################
+# SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)
+# -----------------------------------------------------------------------------
+# - Exige que shfmt esté instalado.
+# - Falla el quality gate si no está o si hay problemas de formato.
+###############################################################################
+
+echo ""; echo "==============================="
+echo "SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)"
+echo "==============================="; echo ""
+
+# Exigir que shfmt esté instalado
+if ! command -v shfmt >/dev/null 2>&1; then
+	echo "[ERROR] shfmt no está instalado. Instálalo para pasar el quality gate."
+	echo "Puedes instalarlo con: sudo apt-get install shfmt  # o equivalente para tu sistema"
+	exit 1
+fi
+
+# Buscar scripts bash relevantes (ajusta el patrón si es necesario)
+BASH_SCRIPTS=$(find scripts -type f -name "*.sh")
+
+# Ejecutar shfmt en modo chequeo
+if ! shfmt -d $BASH_SCRIPTS; then
+	echo "[ERROR] Hay problemas de formato en los scripts Bash. Ejecuta 'shfmt -w scripts/' para corregirlos."
+	exit 1
+fi
 
 
 # =============================================================================
