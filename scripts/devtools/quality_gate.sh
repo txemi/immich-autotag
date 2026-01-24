@@ -184,9 +184,6 @@ if [ -z "$MAX_LINE_LENGTH" ]; then
 	MAX_LINE_LENGTH=88
 fi
 
-BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
-ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
-
 # =============================================================================
 # SECTION B: VIRTUAL ENVIRONMENT ACTIVATION & PYTHON SETUP
 # -----------------------------------------------------------------------------
@@ -229,8 +226,12 @@ fi
 # Fallback check per-file (keeps original behavior for precise messages)
 find "$TARGET_DIR" -name "*.py" -exec "$PY_BIN" -m py_compile {} +
 
-# Install black and isort if not available
-# Ensure development tooling is available (install into venv if present, otherwise warn)
+# =============================================================================
+# UTILITY FUNCTIONS (USED IN MULTIPLE SECTIONS)
+# -----------------------------------------------------------------------------
+# - ensure_tool: Installs a Python tool in the current environment if missing.
+#   Used by several blocks to guarantee required dev tools are present.
+# =============================================================================
 ensure_tool() {
 	tool_import_check="$1"
 	tool_pkg="$2"
@@ -240,9 +241,6 @@ ensure_tool() {
 	fi
 }
 
-ensure_tool ruff ruff
-ensure_tool black black
-ensure_tool isort isort
 
 # =============================================================================
 # SECTION 2: RUFF (LINT/AUTO-FIX)
@@ -250,6 +248,8 @@ ensure_tool isort isort
 # - Runs ruff to lint and auto-fix code style issues.
 # =============================================================================
 # Run ruff first (auto-fix/format where possible)
+
+ensure_tool ruff ruff
 RUF_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
 	"$PY_BIN" -m ruff check --fix "$TARGET_DIR" || RUF_FAILED=1
@@ -263,6 +263,10 @@ fi
 # - Organizes imports for consistency and readability.
 # =============================================================================
 # Organize imports with isort using the environment Python (isort before black)
+
+ensure_tool isort isort
+ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
+
 ISORT_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
 	"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR" || ISORT_FAILED=1
@@ -276,6 +280,10 @@ fi
 # - Formats code to ensure consistent style.
 # =============================================================================
 # Format code with Black using the environment Python
+
+ensure_tool black black
+BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
+
 BLACK_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
 	"$PY_BIN" -m black --check $BLACK_EXCLUDES "$TARGET_DIR" || BLACK_FAILED=1
