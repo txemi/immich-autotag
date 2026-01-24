@@ -12,21 +12,6 @@ from immich_autotag.assets.get_all_assets import get_all_assets
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
-# --- Diagnóstico de llamadas a la API de assets ---
-_asset_api_call_count = 0
-_asset_api_ids: set[str] = set()
-
-
-def _print_asset_api_call_summary():
-    log(
-        f"[DIAG] get_asset_info: llamadas totales={_asset_api_call_count}, IDs únicos={len(_asset_api_ids)}",
-        level=LogLevel.DEBUG,
-    )
-    if len(_asset_api_ids) < 30:
-        log(f"[DIAG] Asset IDs únicos: {_asset_api_ids}", level=LogLevel.DEBUG)
-
-
-atexit.register(_print_asset_api_call_summary)
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
@@ -63,11 +48,8 @@ class AssetManager:
         or requesting it from the API and storing it if not.
         Añade diagnóstico de llamadas totales y IDs únicos.
         """
-        global _asset_api_call_count
         if asset_id in self._assets:
             return self._assets[asset_id]
-        _asset_api_call_count += 1
-        _asset_api_ids.add(str(asset_id))
         asset = AssetResponseWrapper.from_api(asset_id, context)
         self._assets[asset_id] = asset
         return asset
