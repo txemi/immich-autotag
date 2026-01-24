@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import Iterator
 
 import attrs
-from immich_client.models.asset_response_dto import AssetResponseDto
-from immich_client.models.tag_response_dto import TagResponseDto
+
+from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+from immich_autotag.api.immich_proxy.tags import TagResponseDto
 
 
 class AssetDtoType(enum.Enum):
@@ -55,7 +56,7 @@ class AssetDtoState:
             raise NotImplementedError(
                 "has_tag not implemented for PARTIAL AssetDtoType"
             )
-        from immich_client.types import Unset
+        from immich_client.types import Unset  # TODO: Move Unset to proxy if needed
 
         tags = self._dto.tags
         if isinstance(tags, Unset):
