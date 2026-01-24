@@ -29,6 +29,7 @@
 # ============================================================================
 ##
 # ------------------------------------------------------------------------------
+
 # Prioritization table for hardening the Quality Gate (by ease of activation as blockers)
 # ------------------------------------------------------------------------------
 # | Priority | Check      | Reason/Estimated cost                      | Status             |
@@ -74,6 +75,9 @@
 set -x
 set -e
 set -o pipefail
+# Trap for unexpected errors to always print a clear message before exit
+trap 'if [ $? -ne 0 ]; then echo "[FATAL] Quality Gate aborted unexpectedly. Check the output above for details."; fi' EXIT
+
 SCRIPT_DIR="$(
 	cd -- "$(dirname "$0")" >/dev/null 2>&1
 	pwd -P
@@ -100,18 +104,13 @@ fi
 
 # Parse strict mode (default is relaxed)
 RELAXED_MODE=1
-for arg in "$@"; do
-	if [ "$arg" = "--strict" ]; then
-		RELAXED_MODE=0
-	fi
-done
-
-# Only support --check and --enforce-dynamic-attrs
 CHECK_MODE=0
 ENFORCE_DYNAMIC_ATTRS=0
 TARGET_DIR=""
 for arg in "$@"; do
-	if [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
+	if [ "$arg" = "--strict" ]; then
+		RELAXED_MODE=0
+	elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
 		CHECK_MODE=1
 	elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 		ENFORCE_DYNAMIC_ATTRS=1
@@ -446,6 +445,7 @@ fi
 # Now ssort is blocking in both modes
 if [ $SSORT_FAILED -ne 0 ]; then
 	echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
+	echo "[EXIT] Quality Gate failed due to ssort ordering errors."
 	exit 1
 fi
 
@@ -468,6 +468,7 @@ fi
 # mypy: blocks only in strict mode
 if [ $MYPY_FAILED -ne 0 ]; then
 	echo "[ERROR] mypy failed. See output above."
+	echo "[EXIT] Quality Gate failed due to mypy errors."
 	if [ $RELAXED_MODE -eq 1 ]; then
 		echo "[RELAXED MODE] Not blocking build on mypy errors."
 	else
@@ -487,6 +488,7 @@ SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --excl
 if [ -n "$SPANISH_MATCHES" ]; then
 	echo '❌ Spanish language characters detected in the following files/lines:'
 	echo "$SPANISH_MATCHES"
+	echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
 	if [ "$RELAXED_MODE" -eq 1 ]; then
 		echo '[RELAXED MODE] Not blocking build on Spanish character check.'
 	else
