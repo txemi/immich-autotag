@@ -66,56 +66,64 @@ cd "$REPO_ROOT"
 #   --strict: Enforce all checks strictly, fail on any error.
 #   Default is dummy mode unless --strict or --relaxed is specified.
 
-if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-	echo "Usage: $0 [--check|-c] [--strict] [--dummy] [target_dir]"
-	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
-	echo "  --dummy: Dummy mode (default). Does nothing and always succeeds."
-	echo "  --strict: Enforce all checks strictly, fail on any error."
-	exit 0
-fi
 
-
-# Parse modes: default is DUMMY
-MODE="DUMMY"  # Possible values: DUMMY, STRICT, RELAXED
-CHECK_MODE=0
-RELAXED_MODE=0
-ENFORCE_DYNAMIC_ATTRS=0
-TARGET_DIR=""
-for arg in "$@"; do
-	if [ "$arg" = "--strict" ]; then
-		MODE="STRICT"
-	elif [ "$arg" = "--relaxed" ]; then
-		MODE="RELAXED"
-		RELAXED_MODE=1
-	elif [ "$arg" = "--dummy" ]; then
-		MODE="DUMMY"
-	elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
-		CHECK_MODE=1
-	elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
-		ENFORCE_DYNAMIC_ATTRS=1
-	elif [[ "$arg" != --* ]]; then
-		TARGET_DIR="$arg"
+parse_args_and_globals() {
+	# CRIT: parse_args_and_globals | Interpreta argumentos y define variables globales | $@ | Variables globales configuradas | Puede terminar el script
+	if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+		echo "Usage: $0 [--check|-c] [--strict] [--dummy] [target_dir]"
+		echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
+		echo "  --dummy: Dummy mode (default). Does nothing and always succeeds."
+		echo "  --strict: Enforce all checks strictly, fail on any error."
+		exit 0
 	fi
-done
-# If no positional argument was given, default to PACKAGE_NAME
-if [ -z "$TARGET_DIR" ]; then
-	TARGET_DIR="$PACKAGE_NAME"
-fi
 
-if [ "$MODE" = "DUMMY" ]; then
-	echo "[MODE] Running in DUMMY mode (no checks will be performed, always succeeds)."
-	exit 0
-elif [ "$MODE" = "STRICT" ]; then
-	echo "[MODE] Running in STRICT mode (all checks enforced, fail on any error)."
-elif [ "$MODE" = "RELAXED" ]; then
-	echo "[MODE] Running in RELAXED mode (some checks are warnings only)."
-fi
+	# Definir como globales
+	MODE="DUMMY"  # Possible values: DUMMY, STRICT, RELAXED
+	CHECK_MODE=0
+	RELAXED_MODE=0
+	ENFORCE_DYNAMIC_ATTRS=0
+	TARGET_DIR=""
+	for arg in "$@"; do
+		if [ "$arg" = "--strict" ]; then
+			MODE="STRICT"
+		elif [ "$arg" = "--relaxed" ]; then
+			MODE="RELAXED"
+			RELAXED_MODE=1
+		elif [ "$arg" = "--dummy" ]; then
+			MODE="DUMMY"
+		elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
+			CHECK_MODE=1
+		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
+			ENFORCE_DYNAMIC_ATTRS=1
+		elif [[ "$arg" != --* ]]; then
+			TARGET_DIR="$arg"
+		fi
+	done
+	# If no positional argument was given, default to PACKAGE_NAME
+	if [ -z "$TARGET_DIR" ]; then
+		TARGET_DIR="$PACKAGE_NAME"
+	fi
 
-if [ "$CHECK_MODE" -eq 1 ]; then
-	echo "[CHECK] Running in CHECK mode (no files will be modified)."
-else
-	echo "[CHECK] Running in APPLY mode (formatters may modify files)."
-fi
+	export MODE CHECK_MODE RELAXED_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
+
+	if [ "$MODE" = "DUMMY" ]; then
+		echo "[MODE] Running in DUMMY mode (no checks will be performed, always succeeds)."
+		exit 0
+	elif [ "$MODE" = "STRICT" ]; then
+		echo "[MODE] Running in STRICT mode (all checks enforced, fail on any error)."
+	elif [ "$MODE" = "RELAXED" ]; then
+		echo "[MODE] Running in RELAXED mode (some checks are warnings only)."
+	fi
+
+	if [ "$CHECK_MODE" -eq 1 ]; then
+		echo "[CHECK] Running in CHECK mode (no files will be modified)."
+	else
+		echo "[CHECK] Running in APPLY mode (formatters may modify files)."
+	fi
+}
+
+# Llamada a la función de parseo de argumentos y globals
+parse_args_and_globals "$@"
 
 
 ###############################################################################
