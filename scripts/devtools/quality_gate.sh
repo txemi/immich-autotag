@@ -432,7 +432,7 @@ ensure_tool mypy mypy
 MYPY_FAILED=0
 echo "[INFO] Running mypy (output below if any):"
 set +e
-"$PY_BIN" -m mypy --ignore-missing-imports "$TARGET_DIR"
+MYPY_OUTPUT=$($PY_BIN -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1)
 MYPY_EXIT_CODE=$?
 set -e
 if [ $MYPY_EXIT_CODE -ne 0 ]; then
@@ -440,7 +440,11 @@ if [ $MYPY_EXIT_CODE -ne 0 ]; then
 fi
 # mypy: always blocks in all modes
 if [ $MYPY_FAILED -ne 0 ]; then
-	echo "[ERROR] mypy failed. See output above.: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
+	echo "$MYPY_OUTPUT"
+	# Contar errores: líneas que contienen 'error:'
+	MYPY_ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c 'error:')
+	MYPY_FILES_COUNT=$(echo "$MYPY_OUTPUT" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
+	echo "[ERROR] mypy failed. Total errores: $MYPY_ERROR_COUNT en $MYPY_FILES_COUNT archivos."
 	echo "[EXIT] Quality Gate failed due to mypy errors."
 	exit 1
 fi
