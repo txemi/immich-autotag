@@ -97,6 +97,7 @@ class AlbumResponseWrapper:
     @typechecked
     def get_default_client() -> ImmichClient:
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
         return ImmichClientWrapper.get_default_instance()
 
     @staticmethod
@@ -182,9 +183,9 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def _get_album_full_or_load(self) -> AlbumResponseDto:
-        from immich_autotag.context.immich_context import ImmichContext
 
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
         client = ImmichClientWrapper.get_default_instance()
         self._ensure_full_album_loaded(client)
         if self._load_source != AlbumLoadSource.DETAIL:

@@ -97,12 +97,12 @@ def cleanup_unhealthy_album(
     from immich_autotag.albums.albums.album_collection_wrapper import (
         AlbumCollectionWrapper,
     )
-    from immich_autotag.context.immich_context import ImmichContext
     from immich_autotag.report.modification_report import ModificationReport
 
     album_name = album_wrapper.get_album_name()
     collection = AlbumCollectionWrapper.get_instance()
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
     client = ImmichClientWrapper.get_default_instance()
     tag_mod_report = ModificationReport.get_instance()
 

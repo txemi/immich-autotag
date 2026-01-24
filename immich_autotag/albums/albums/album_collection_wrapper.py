@@ -169,6 +169,7 @@ class AlbumCollectionWrapper:
     def get_client() -> ImmichClient:
         """Returns the current ImmichClient from the context singleton."""
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
         return ImmichClientWrapper.get_default_instance()
 
     @staticmethod
@@ -295,9 +296,9 @@ class AlbumCollectionWrapper:
         assert (
             len(self._albums) > 0
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
-        from immich_autotag.context.immich_context import ImmichContext
 
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
         client = ImmichClientWrapper.get_default_instance()
         albums = self.get_albums()
         total = len(albums)
@@ -943,7 +944,9 @@ class AlbumCollectionWrapper:
         return None
 
     @typechecked
-    def resync_from_api(self, client: "ImmichClient" = None, clear_first: bool = True) -> None:
+    def resync_from_api(
+        self, client: "ImmichClient" = None, clear_first: bool = True
+    ) -> None:
         """
         Reloads the album collection from the API, same as from_client but on the current instance.
         - Downloads all albums from the API (initially without assets).
@@ -960,8 +963,8 @@ class AlbumCollectionWrapper:
         # Set sync state to SYNCING at the start
         self._sync_state = SyncState.SYNCING
         if client is None:
-            from immich_autotag.context.immich_context import ImmichContext
             from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
             client = ImmichClientWrapper.get_default_instance()
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
