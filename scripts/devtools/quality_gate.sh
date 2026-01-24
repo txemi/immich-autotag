@@ -1,17 +1,25 @@
 #!/bin/bash
+
 # ============================================================================
 # QUALITY GATE SCRIPT: CHECKS AND EXECUTION MODES
 # ============================================================================
-# This script implements three main modes:
-#   - Dummy mode (default): Does nothing and always succeeds.
-#   - Strict mode (--strict): Fails on any check error.
-#   - Relaxed mode (--relaxed): Allows some non-critical checks to pass.
 #
-
+# Usage:
+#   ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
+#
+# Modes:
+#   --dummy   Dummy mode (default). Does nothing and always succeeds.
+#   --strict  Enforce all checks strictly, fail on any error.
+#   --check   Only check, do not modify files (default is apply/fix mode).
+#   --relaxed Some non-critical checks are warnings only.
+#   --enforce-dynamic-attrs  Enforce ban on getattr/hasattr (advanced).
+#
+# If no [target_dir] is given, defaults to the main package.
+#
 # =====================
-# Quality Gate Checks Table
+# Quality Gate Checks Table (reference)
 # =====================
- # | Check                            | Description                                 | Strict   | Relaxed (CI) | Dummy |
+# | Check                            | Description                                 | Strict   | Relaxed (CI) | Dummy |
 # |-----------------------------------|---------------------------------------------|----------|--------------|-------|
 # | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |       |
 # | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |       |
@@ -27,31 +35,9 @@
 # * In relaxed mode, flake8 ignores E501, and flake8 only warns, does not block the build.
 # ** Only if --enforce-dynamic-attrs is used
 #
-# Add/modify this table if new checks are added.
-#
-# =====================
 # Developer Notes:
 # - To harden the quality gate, consider adding security/static analysis tools (bandit, shellcheck), and enforcing coverage thresholds.
 # - Update the table above if you add or change checks.
-
-# =============================================================================
-# SECTION ROOT: REPO ROOT DETECTION & DIRECTORY SETUP
-# -----------------------------------------------------------------------------
-# - Detects the root of the repository and moves to it.
-# - Defines SCRIPT_DIR, REPO_ROOT, PACKAGE_NAME.
-# - This must be done before any path-dependent logic or argument parsing.
-# =============================================================================
-
-#
-# CHECK_MODE: Controla si los formateadores y linters solo comprueban o también modifican archivos.
-#   - "APPLY": Aplica cambios (modo por defecto, los formateadores pueden modificar archivos).
-#   - "CHECK": Solo comprueba, no modifica archivos (modo "--check").
-# QUALITY_LEVEL: Controla el nivel de exigencia del quality gate (DUMMY, STRICT, RELAXED).
-#
-# Uso: ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
-#   --dummy: Dummy mode (default). Does nothing and always succeeds.
-#   --strict: Enforce all checks strictly, fail on any error.
-#   Default is dummy mode unless --strict or --relaxed is specified.
 
 set -x
 set -e
