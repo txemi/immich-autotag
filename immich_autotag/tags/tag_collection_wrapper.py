@@ -7,7 +7,9 @@ from immich_autotag.types import ImmichClient
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-    tags: list[TagWrapper] = attrs.field(validator=attrs.validators.instance_of(list))
+    tags: list[TagWrapper] = attrs.field(
+        factory=list, validator=attrs.validators.instance_of(list)
+    )
 
     @typechecked
     def _sync_from_api(self, client: ImmichClient) -> None:
