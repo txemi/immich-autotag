@@ -274,20 +274,19 @@ echo "jscpd check passed: no significant code duplication detected."
 
 
 
-# Flake8: use the same synchronized line length
 
+# Flake8: use the same synchronized line length, print output directly, capture exit code
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
 FLAKE8_IGNORE="E203,W503"
-FLAKE8_OUT="/tmp/flake8_output_$$.txt"
 if [ $RELAXED_MODE -eq 1 ]; then
-	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
-	echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
+    FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+    echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 fi
-echo "[INFO] Showing flake8 errors below (if any):"
-"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR" 2>&1 | tee "$FLAKE8_OUT"
-if [ ${PIPESTATUS[0]} -ne 0 ]; then
-	FLAKE_FAILED=1
+echo "[INFO] Running flake8 (output below if any):"
+"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
+if [ $? -ne 0 ]; then
+    FLAKE_FAILED=1
 fi
 
 
@@ -341,16 +340,17 @@ if [ $SSORT_FAILED -ne 0 ]; then
 fi
 
 
+
+# mypy: print output directly, capture exit code
 ensure_tool mypy mypy
 MYPY_FAILED=0
-MYPY_OUT="/tmp/mypy_output_$$.txt"
-echo "[INFO] Showing mypy errors below (if any):"
+echo "[INFO] Running mypy (output below if any):"
 set +e
-"$PY_BIN" -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1 | tee "$MYPY_OUT"
-MYPY_EXIT_CODE=${PIPESTATUS[0]}
+"$PY_BIN" -m mypy --ignore-missing-imports "$TARGET_DIR"
+MYPY_EXIT_CODE=$?
 set -e
 if [ $MYPY_EXIT_CODE -ne 0 ]; then
-	MYPY_FAILED=1
+    MYPY_FAILED=1
 fi
 
 
@@ -361,38 +361,19 @@ fi
 
 
 
-# Flake8 SIEMPRE bloquea, mypy solo bloquea en modo estricto
-if [ $FLAKE_FAILED -ne 0 ] || [ $MYPY_FAILED -ne 0 ]; then
-	echo "[WARNING] Static analyzers reported issues:"
-	TOTAL_ERRS=0
-	if [ $FLAKE_FAILED -ne 0 ]; then
-		FLAKE_ERRS=$(grep -c '^' "$FLAKE8_OUT")
-		TOTAL_ERRS=$((TOTAL_ERRS+FLAKE_ERRS))
-		echo " - flake8 failed ($FLAKE_ERRS errors):"
-		head -20 "$FLAKE8_OUT"
-		[ $FLAKE_ERRS -gt 20 ] && echo "  ... (showing first 20 of $FLAKE_ERRS errors)"
-	fi
-	if [ $MYPY_FAILED -ne 0 ]; then
-		MYPY_ERRS=$(grep -c '^' "$MYPY_OUT")
-		TOTAL_ERRS=$((TOTAL_ERRS+MYPY_ERRS))
-		echo " - mypy failed ($MYPY_ERRS errors):"
-		head -20 "$MYPY_OUT"
-		[ $MYPY_ERRS -gt 20 ] && echo "  ... (showing first 20 of $MYPY_ERRS errors)"
-	fi
-	echo "[SUMMARY] Quality Gate: $TOTAL_ERRS static analysis errors (flake8+mypy)."
-	# Si flake8 falla, siempre bloquea
-	if [ $FLAKE_FAILED -ne 0 ]; then
+# --- SIMPLIFIED QUALITY GATE: LINEAR, FAIL-FAST, MODE-AWARE ---
+# Flake8: always blocks (with config depending on mode)
+if [ $FLAKE_FAILED -ne 0 ]; then
+	echo "[ERROR] flake8 failed. See output above."
+	exit 1
+fi
+# mypy: blocks only in strict mode
+if [ $MYPY_FAILED -ne 0 ]; then
+	echo "[ERROR] mypy failed. See output above."
+	if [ $RELAXED_MODE -eq 1 ]; then
+		echo "[RELAXED MODE] Not blocking build on mypy errors."
+	else
 		exit 1
-	fi
-	# Si solo falla mypy, solo bloquea en modo estricto
-	if [ $MYPY_FAILED -ne 0 ]; then
-		if [ $RELAXED_MODE -eq 1 ]; then
-			echo "[RELAXED MODE] Not blocking build on mypy errors."
-			# exit 0, pero solo si flake8 NO ha fallado
-			exit 0
-		else
-			exit 1
-		fi
 	fi
 fi
 
