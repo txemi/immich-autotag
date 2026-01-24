@@ -36,10 +36,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-@dataclass(frozen=True)
-class ClassificationUpdateResult:
-    has_tags: bool
-    has_albums: bool
 
 
 # Exception for date integrity
