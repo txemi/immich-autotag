@@ -116,21 +116,6 @@ else
 fi
 
 
-main() {
-	check_shfmt || exit 1
-	check_python_syntax || exit 1
-	check_isort || exit 1
-	check_ruff || exit 1
-	check_black || exit 1
-	check_ssort || exit 1
-	check_no_dynamic_attrs || exit 2
-	check_no_tuples || exit 3
-	check_jscpd || exit 1
-	check_flake8 || exit 1
-	check_mypy || exit 1
-	check_no_spanish_chars || exit 5
-}
-
 # =====================
 # Function: check_shfmt
 # =====================
@@ -283,10 +268,6 @@ check_isort() {
 	fi
 	return 0
 }
-
-
-# Entrypoint
-main
 
 
 # =============================================================================
@@ -593,4 +574,27 @@ check_no_spanish_chars() {
 
 check_no_spanish_chars || exit 5
 
-echo "🎉 Quality Gate completed successfully!"
+
+
+
+main() {
+	check_shfmt || exit 1
+	check_python_syntax || exit 1
+	check_isort || exit 1
+	check_ruff || exit 1
+	check_black || exit 1
+	check_ssort || exit 1
+	check_no_dynamic_attrs || exit 2
+	check_no_tuples || exit 3
+	check_jscpd || exit 1
+	check_flake8 || exit 1
+	check_mypy || exit 1
+	check_no_spanish_chars || exit 5
+
+	echo "🎉 Quality Gate completed successfully!"
+}
+
+
+
+# Entrypoint
+main
