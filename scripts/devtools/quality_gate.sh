@@ -8,7 +8,7 @@
 #   ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
 #
 # Modes:
-#   --dummy   Dummy mode (default). Does nothing and always succeeds.
+#   --strict  Enforce all checks strictly, fail on any error.
 #   --strict  Enforce all checks strictly, fail on any error.
 #   --check   Only check, do not modify files (default is apply/fix mode).
 #   --relaxed Some non-critical checks are warnings only.
@@ -21,16 +21,16 @@
 # =====================
 # | Check                            | Description                                 | Strict   | Relaxed (CI) | Dummy |
 # |-----------------------------------|---------------------------------------------|----------|--------------|-------|
-# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |       |
-# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |       |
-# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |       |
-# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |       |
-# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |       |
-# | mypy (type check)                 | Type checking                               |   ✔️     |   ✔️         |       |
-# | uvx ssort (method order)          | Class method ordering                       |   ✔️**   |   ✔️**       |       |
-# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |       |
-# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |       |
-# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |       |
+# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |
+# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |
+# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |
+# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |
+# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |
+# | mypy (type check)                 | Type checking                               |   ✔️     |   ✔️         |
+# | uvx ssort (method order)          | Class method ordering                       |   ✔️**   |   ✔️**       |
+# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |
+# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |
+# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |
 # -----------------------------------------------------------------------------
 # * In relaxed mode, flake8 ignores E501, and flake8 only warns, does not block the build.
 # ** Only if --enforce-dynamic-attrs is used
@@ -58,13 +58,12 @@ cd "$REPO_ROOT"
 # Description: Parses command-line arguments and defines global variables.
 # Globals set: QUALITY_LEVEL, CHECK_MODE, ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
 # Usage: parse_args_and_globals "$@"
-# Returns: Exports global variables and may terminate the script in help or dummy mode
+# Returns: Exports global variables and may terminate the script in help mode
 ###############################################################################
 parse_args_and_globals() {
 	if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-		echo "Usage: $0 [--check|-c] [--strict] [--dummy] [target_dir]"
+		echo "Usage: $0 [--check|-c] [--strict] [target_dir]"
 		echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
-		echo "  --dummy: Dummy mode (default). Does nothing and always succeeds."
 		echo "  --strict: Enforce all checks strictly, fail on any error."
 		exit 0
 	fi
@@ -72,8 +71,8 @@ parse_args_and_globals() {
 	# Local variables for parsing
 	local arg
 
-	CHECK_MODE="APPLY" # Possible values: APPLY, CHECK, DUMMY
-	QUALITY_LEVEL=""   # Possible values: DUMMY, STRICT, RELAXED
+	CHECK_MODE="APPLY" # Possible values: APPLY, CHECK
+	QUALITY_LEVEL=""   # Possible values: STRICT, RELAXED
 	ENFORCE_DYNAMIC_ATTRS=0
 	TARGET_DIR=""
 	for arg in "$@"; do
@@ -81,8 +80,6 @@ parse_args_and_globals() {
 			QUALITY_LEVEL="STRICT"
 		elif [ "$arg" = "--relaxed" ]; then
 			QUALITY_LEVEL="RELAXED"
-		elif [ "$arg" = "--dummy" ]; then
-			CHECK_MODE="DUMMY"
 		elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
 			CHECK_MODE="CHECK"
 		elif [ "$arg" = "--apply" ]; then
@@ -99,8 +96,6 @@ parse_args_and_globals() {
 			QUALITY_LEVEL="STRICT"
 		elif [ "$CHECK_MODE" = "CHECK" ]; then
 			QUALITY_LEVEL="RELAXED"
-		elif [ "$CHECK_MODE" = "DUMMY" ]; then
-			QUALITY_LEVEL="DUMMY"
 		fi
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
@@ -110,10 +105,7 @@ parse_args_and_globals() {
 
 	export QUALITY_LEVEL CHECK_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
 
-	if [ "$CHECK_MODE" = "DUMMY" ] || [ "$QUALITY_LEVEL" = "DUMMY" ]; then
-		echo "[CHECK_MODE] Running in DUMMY mode (no checks will be performed, always succeeds)."
-		exit 0
-	elif [ "$QUALITY_LEVEL" = "STRICT" ]; then
+	if [ "$QUALITY_LEVEL" = "STRICT" ]; then
 		echo "[QUALITY_LEVEL] Running in STRICT mode (all checks enforced, fail on any error)."
 	elif [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 		echo "[QUALITY_LEVEL] Running in RELAXED mode (some checks are warnings only)."
