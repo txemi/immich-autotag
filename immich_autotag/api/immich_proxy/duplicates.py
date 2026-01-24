@@ -1,4 +1,3 @@
-
 from immich_client.api.duplicates import get_asset_duplicates
 from immich_client.client import AuthenticatedClient
 

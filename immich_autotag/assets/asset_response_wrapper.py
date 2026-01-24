@@ -6,15 +6,17 @@ from urllib.parse import ParseResult
 from uuid import UUID
 
 import attrs
-from immich_client.models.asset_response_dto import AssetResponseDto
-from immich_client.models.tag_response_dto import TagResponseDto
-from immich_client.models.update_asset_dto import UpdateAssetDto
+from immich_client.models.update_asset_dto import (
+    UpdateAssetDto,  # TODO: move to proxy if needed
+)
 from immich_client.types import Unset
 from typeguard import typechecked
 
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
+from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+from immich_autotag.api.immich_proxy.tags import TagResponseDto
 from immich_autotag.assets.asset_dto_state import AssetDtoState
 from immich_autotag.assets.classification_update_result import (
     ClassificationUpdateResult,

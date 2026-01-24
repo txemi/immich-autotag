@@ -10,10 +10,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List
 from uuid import UUID
 
-from immich_client.api.albums import (
-    remove_user_from_album as immich_remove_user_from_album,
-)
-from immich_client.api.users import search_users as immich_search_users
 from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_response_dto import AlbumUserResponseDto
