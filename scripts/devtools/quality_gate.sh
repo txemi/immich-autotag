@@ -186,23 +186,26 @@ check_shfmt() {
 # -----------------------------------------------------------------------------
 # - Extracts line length and config values from pyproject.toml for all tools.  #
 # =============================================================================
-# ---- Synchronized line length ----
-# Screen line length is extracted from pyproject.toml so that all tools use the same source of truth.
-extract_line_length() {
-	grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
-}
-# IMPORTANT NOTE ABOUT max-line-length AND FLAKE8:
-# ------------------------------------------------
-# The line-length value is extracted from pyproject.toml and used for Black, isort, ruff, and flake8.
-# However, flake8 does not read pyproject.toml by itself: if you run flake8 manually, it will use the value from .flake8.
-# If you use this script, the value is passed to flake8 as an argument and everything stays in sync.
-# There is only a risk of desynchronization if you edit pyproject.toml and .flake8 separately and run flake8 manually.
 
-MAX_LINE_LENGTH=$(extract_line_length "$REPO_ROOT/pyproject.toml")
-if [ -z "$MAX_LINE_LENGTH" ]; then
-	echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default."
-	MAX_LINE_LENGTH=88
-fi
+# =============================================================================
+# Function: setup_max_line_length
+# Description: Extrae el valor de line-length de pyproject.toml y lo exporta como MAX_LINE_LENGTH.
+# Globals set: MAX_LINE_LENGTH
+# =============================================================================
+setup_max_line_length() {
+	extract_line_length() {
+		grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
+	}
+	MAX_LINE_LENGTH=$(extract_line_length "$REPO_ROOT/pyproject.toml")
+	if [ -z "$MAX_LINE_LENGTH" ]; then
+		echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default."
+		MAX_LINE_LENGTH=88
+	fi
+	export MAX_LINE_LENGTH
+}
+
+# Inicializar longitud de línea máxima
+setup_max_line_length
 
 # =============================================================================
 # SECTION B: VIRTUAL ENVIRONMENT ACTIVATION & PYTHON SETUP
@@ -212,21 +215,32 @@ fi
 # =============================================================================
 # Robust exclusions to avoid formatting .venv, jenkins_logs and other external directories
 
-# Activate project virtual environment robustly
-VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
-PY_BIN=""
-if [ -f "$VENV_ACTIVATE" ]; then
-	# Use project venv when available
-	source "$VENV_ACTIVATE"
-	PY_BIN="$REPO_ROOT/.venv/bin/python"
-else
-	echo "[WARN] .venv not found at $REPO_ROOT/.venv — falling back to system python (this may install tools globally)."
-	PY_BIN="$(command -v python3 || command -v python)"
-	if [ -z "$PY_BIN" ]; then
-		echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3."
-		exit 1
+
+# =============================================================================
+# Function: setup_python_env
+# Description: Activa el entorno virtual del proyecto o usa el Python del sistema.
+# Globals set: PY_BIN
+# Returns: nada, pero exporta PY_BIN o termina el script si no hay Python disponible
+# =============================================================================
+setup_python_env() {
+	VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
+	if [ -f "$VENV_ACTIVATE" ]; then
+		# Use project venv when available
+		source "$VENV_ACTIVATE"
+		PY_BIN="$REPO_ROOT/.venv/bin/python"
+	else
+		echo "[WARN] .venv not found at $REPO_ROOT/.venv — falling back to system python (this may install tools globally)."
+		PY_BIN="$(command -v python3 || command -v python)"
+		if [ -z "$PY_BIN" ]; then
+			echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3."
+			exit 1
+		fi
 	fi
-fi
+	export PY_BIN
+}
+
+# Activar entorno Python
+setup_python_env
 
 
 ###############################################################################
@@ -249,12 +263,14 @@ check_python_syntax() {
 
 # Call the second check
 
-# =============================================================================
-# UTILITY FUNCTIONS (USED IN MULTIPLE SECTIONS)
-# -----------------------------------------------------------------------------
-# - ensure_tool: Installs a Python tool in the current environment if missing.
-#   Used by several blocks to guarantee required dev tools are present.
-# =============================================================================
+
+###############################################################################
+# Function: ensure_tool
+# Description: Instala una herramienta de Python en el entorno actual si falta.
+# Globals: PY_BIN
+# Usage: ensure_tool <import_name> <package_name>
+# Returns: nada, pero instala el paquete si es necesario
+###############################################################################
 ensure_tool() {
 	tool_import_check="$1"
 	tool_pkg="$2"
@@ -317,7 +333,13 @@ check_isort() {
 
 ###############################################################
 
-# --- Ensure ssort (bwhmather/ssort) is installed and available ---
+
+###############################################################################
+# Function: ensure_ssort
+# Description: Instala ssort desde GitHub si no está disponible en el entorno.
+# Globals: PY_BIN
+# Returns: nada, pero instala ssort si es necesario
+###############################################################################
 ensure_ssort() {
 	if ! command -v ssort &>/dev/null; then
 		echo "[INFO] ssort not found, installing from GitHub..."
@@ -582,9 +604,21 @@ check_no_spanish_chars() {
 
 
 
+
+# =============================================================================
+# Function: setup_environment
+# Description: Inicializa entorno Python y longitud de línea máxima.
+# Llama a setup_max_line_length y setup_python_env.
+# =============================================================================
+setup_environment() {
+	setup_max_line_length
+	setup_python_env
+}
+
 main() {
 	# Inicialización de argumentos y variables globales
 	parse_args_and_globals "$@"
+	setup_environment
 	check_shfmt || exit 1
 	check_python_syntax || exit 1
 	check_isort || exit 1
