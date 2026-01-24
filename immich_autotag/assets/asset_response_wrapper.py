@@ -66,32 +66,21 @@ class AssetResponseWrapper:
     def _ensure_full_asset_loaded(self) -> AssetDtoState:
         """Lazy-load the full asset data if not already loaded.
 
-        Fetches the complete asset including tags via the Immich API proxy.
-        Result is cached in _asset_full for subsequent accesses.
+        If not FULL, fetches the complete asset via from_api and updates self._state.
         """
         if self._state.type == AssetDtoType.FULL:
             return self._state
 
-        from immich_autotag.api.immich_proxy.assets import (
-            get_asset_info as proxy_get_asset_info,
-        )
-        from immich_autotag.assets.asset_dto_state import AssetDtoType
-
-        asset_full = proxy_get_asset_info(
-            asset_id=self.id_as_uuid, client=self.get_context().client
-        )
-        if asset_full is None:
-            raise RuntimeError(
-                f"[ERROR] Could not lazy-load asset with id={self._state.dto.id}. get_asset_info returned None."
-            )
-        self._state.update(asset_full, AssetDtoType.FULL)
+        # Centralize API call in from_api
+        refreshed = type(self).from_api(self.id_as_uuid, self.get_context())
+        self._state = refreshed._state
         return self._state
     @classmethod
     def from_dto(
         cls: type["AssetResponseWrapper"],
         dto: AssetResponseDto,
         context: "ImmichContext",
-        dto_type,
+        dto_type:AssetDtoType,
     ) -> "AssetResponseWrapper":
         """
         Creates an AssetResponseWrapper from a DTO and a context.
