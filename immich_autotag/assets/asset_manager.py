@@ -66,19 +66,9 @@ class AssetManager:
         global _asset_api_call_count
         if asset_id in self._assets:
             return self._assets[asset_id]
-        # If not cached, request it from the API and wrap it
-        from immich_autotag.api.immich_proxy.assets import (
-            get_asset_info as proxy_get_asset_info,
-        )
-
         _asset_api_call_count += 1
         _asset_api_ids.add(str(asset_id))
-
-        # `asset_id` is a UUID; pass it directly to the client (it accepts UUID objects).
-        dto = proxy_get_asset_info(asset_id, self.client)
-        if dto is None:
-            raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
-        asset = AssetResponseWrapper.from_dto(dto, context)
+        asset = AssetResponseWrapper.from_api(asset_id, context)
         self._assets[asset_id] = asset
         return asset
 
@@ -92,6 +82,8 @@ class AssetManager:
         asset_uuid = UUID(asset_dto.id)
         if asset_uuid in self._assets:
             return self._assets[asset_uuid]
-        wrapper = AssetResponseWrapper.from_dto(asset_dto, context)
+        from immich_autotag.assets.asset_dto_state import AssetDtoType
+
+        wrapper = AssetResponseWrapper.from_dto(asset_dto, context, AssetDtoType.FULL)
         self._assets[asset_uuid] = wrapper
         return wrapper

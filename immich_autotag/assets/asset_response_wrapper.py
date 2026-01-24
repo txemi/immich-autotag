@@ -47,6 +47,7 @@ class DateIntegrityError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
+
     _context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(ImmichContext)
     )
@@ -86,6 +87,18 @@ class AssetResponseWrapper:
         self._state.update(asset_full, AssetDtoType.FULL)
         return self._state
 
+    @classmethod
+    def from_api(cls, asset_id: UUID, context: "ImmichContext") -> "AssetResponseWrapper":
+        """
+        Fetches the asset from the API and returns a fully constructed AssetResponseWrapper (always FULL).
+        """
+        from immich_autotag.api.immich_proxy.assets import get_asset_info as proxy_get_asset_info
+        from immich_autotag.assets.asset_dto_state import AssetDtoType
+        dto = proxy_get_asset_info(asset_id, context.client)
+        if dto is None:
+            raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
+        return cls.from_dto(dto, context, AssetDtoType.FULL)
+    
     def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
 
@@ -1104,3 +1117,4 @@ class AssetResponseWrapper:
             original_path = None
         lines.append(f"  Path: {original_path}")
         return "\n".join(lines)
+
