@@ -17,20 +17,20 @@
 # | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |
 # | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |
 # | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |
-# | mypy (type check)                 | Type checking                               |   ✔️     |   Warn       |
+# | mypy (type check)                 | Type checking                               |   ✔️     |   ✔️         |
 # | uvx ssort (method order)          | Class method ordering                       |   ✔️**   |   ✔️**       |
 # | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |
 # | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |
 # | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |
 # -----------------------------------------------------------------------------
-# * In relaxed mode, flake8 ignores E501, and flake8/mypy only warn, do not block the build.
+# * In relaxed mode, flake8 ignores E501, and flake8 only warns, does not block the build.
 # ** Only if --enforce-dynamic-attrs is used
 #
 # Add/modify this table if new checks are added.
 #
 # =====================
 # Developer Notes:
-# - To harden the quality gate, consider making mypy blocking in all modes, adding security/static analysis tools (bandit, shellcheck), and enforcing coverage thresholds.
+# - To harden the quality gate, consider adding security/static analysis tools (bandit, shellcheck), and enforcing coverage thresholds.
 # - Update the table above if you add or change checks.
 
 # =============================================================================
@@ -425,7 +425,7 @@ fi
 # =============================================================================
 # SECTION 9C: MYPY (TYPE CHECKING)
 # -----------------------------------------------------------------------------
-# - mypy: Type checking (blocks only in strict mode).
+# - mypy: Type checking (always blocks in all modes).
 # =============================================================================
 # mypy: print output directly, capture exit code
 ensure_tool mypy mypy
@@ -438,15 +438,11 @@ set -e
 if [ $MYPY_EXIT_CODE -ne 0 ]; then
 	MYPY_FAILED=1
 fi
-# mypy: blocks only in strict mode
+# mypy: always blocks in all modes
 if [ $MYPY_FAILED -ne 0 ]; then
 	echo "[ERROR] mypy failed. See output above."
 	echo "[EXIT] Quality Gate failed due to mypy errors."
-	if [ $RELAXED_MODE -eq 1 ]; then
-		echo "[RELAXED MODE] Not blocking build on mypy errors."
-	else
-		exit 1
-	fi
+	exit 1
 fi
 echo "Static checks (ruff/flake8/mypy) completed successfully."
 
