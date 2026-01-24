@@ -43,7 +43,6 @@ class DateIntegrityError(Exception):
     pass
 
 
-
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
     _context: "ImmichContext" = attrs.field(
@@ -64,7 +63,6 @@ class AssetResponseWrapper:
         """Read-only access to the context. No external modification allowed."""
         return self._context
 
-
     def _ensure_full_asset_loaded(self) -> AssetDtoState:
         """Lazy-load the full asset data if not already loaded.
 
@@ -72,11 +70,13 @@ class AssetResponseWrapper:
         Result is cached in _asset_full for subsequent accesses.
         """
         if self._state.type == AssetDtoType.FULL:
-            return  self._state
+            return self._state
 
         from immich_client.api.assets import get_asset_info
+
         from immich_autotag.assets.asset_dto_state import AssetDtoType
- # Already loaded
+
+        # Already loaded
         asset_full = get_asset_info.sync(
             id=self.id_as_uuid, client=self.get_context().client
         )
@@ -87,7 +87,6 @@ class AssetResponseWrapper:
         self._state.update(asset_full, AssetDtoType.FULL)
         return self._state
 
-
     def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
 
@@ -97,7 +96,7 @@ class AssetResponseWrapper:
         Returns:
             list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
         """
-        from immich_client.types import Unset
+
         return self._ensure_full_asset_loaded().get_tags()
 
     @typechecked
@@ -194,11 +193,8 @@ class AssetResponseWrapper:
         Chooses the oldest and raises an exception if any is earlier than the chosen one.
         """
 
-        from typing import Iterator
 
-
-
-        date_candidates =self._state.get_dates()
+        date_candidates = self._state.get_dates()
         if not date_candidates:
             raise ValueError("Could not determine any date for the asset.")
         best_date = min(date_candidates)
@@ -242,7 +238,6 @@ class AssetResponseWrapper:
         Returns True if the asset has the tag with that name (case-insensitive).
         """
         return self._state._get_full().has_tag(tag_name)
-
 
     @typechecked
     def remove_tag_by_name(
@@ -383,7 +378,9 @@ class AssetResponseWrapper:
             )
             return False
         if not self.id:
-            error_msg = f"[ERROR] Asset object is missing id. Asset DTO: {self._state.dto}"
+            error_msg = (
+                f"[ERROR] Asset object is missing id. Asset DTO: {self._state.dto}"
+            )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
@@ -855,7 +852,6 @@ class AssetResponseWrapper:
 
     @property
     def id_as_uuid(self) -> "UUID":
-        from uuid import UUID
 
         return self._state.get_uuid()
 
@@ -870,7 +866,7 @@ class AssetResponseWrapper:
         Creates an AssetResponseWrapper from a DTO and a context.
         Uses AssetDtoState to encapsulate the DTO and its type.
         """
-        from immich_autotag.assets.asset_dto_state import AssetDtoType, AssetDtoState
+        from immich_autotag.assets.asset_dto_state import AssetDtoState
 
         state = AssetDtoState(dto, dto_type)
         return cls(_context=context, _state=state)
