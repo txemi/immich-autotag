@@ -68,7 +68,7 @@ class ImmichContext:
 
     @staticmethod
     @typechecked
-    def get_instance() -> "ImmichContext":
+    def get_default_instance() -> "ImmichContext":
         global _instance
         # Reserved global variable _instance is required for singleton pattern
         if _instance is None:
@@ -84,7 +84,7 @@ class ImmichContext:
 
     @staticmethod
     @typechecked
-    def create_instance(
+    def create_default_instance(
         client: ImmichClient,
         albums_collection: "AlbumCollectionWrapper",
         tag_collection: "TagCollectionWrapper",
@@ -103,7 +103,7 @@ class ImmichContext:
                 "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
             )
             raise RuntimeError(
-                "ImmichContext instance already exists. Use get_instance()."
+                "ImmichContext instance already exists. Use get_default_instance()."
             )
         # Create instance (will call __attrs_post_init__ which sets the singleton)
         instance = ImmichContext(
@@ -121,5 +121,6 @@ class ImmichContext:
     @staticmethod
     def get_default_client():
         """Returns the ImmichClient from the global singleton context."""
-        ctx = ImmichContext.get_instance()
+        ctx = ImmichContext.get_default_instance()
+        return ctx.client
         return ctx.client

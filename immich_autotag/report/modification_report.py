@@ -141,7 +141,7 @@ class ModificationReport:
         if user_instance is None:
             from immich_autotag.context.immich_context import ImmichContext
 
-            context = ImmichContext.get_instance()
+            context = ImmichContext.get_default_instance()
             user_instance = UserResponseWrapper.from_context(context)
 
         # Calculate progress using StatisticsManager (without try/except)

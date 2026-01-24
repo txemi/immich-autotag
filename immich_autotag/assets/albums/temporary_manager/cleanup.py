@@ -59,7 +59,8 @@ def remove_asset_from_autotag_temporary_albums(
         except Exception:
             from immich_autotag.context.immich_context import ImmichContext
 
-            client = ImmichContext.get_default_client()
+            from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+            client = ImmichClientWrapper.get_default_instance()
 
         try:
             # Remove asset from album

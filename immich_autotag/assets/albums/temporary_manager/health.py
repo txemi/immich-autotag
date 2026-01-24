@@ -36,7 +36,7 @@ def is_temporary_album_healthy(
     # We assume context is available via asset_wrapper or globally
     from immich_autotag.context.immich_context import ImmichContext
 
-    context = ImmichContext.get_instance()
+    context = ImmichContext.get_default_instance()
     assets = album_wrapper.wrapped_assets(context)
     if not assets or len(assets) < 2:
         return True
@@ -102,7 +102,8 @@ def cleanup_unhealthy_album(
 
     album_name = album_wrapper.get_album_name()
     collection = AlbumCollectionWrapper.get_instance()
-    client = ImmichContext.get_default_client()
+    from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+    client = ImmichClientWrapper.get_default_instance()
     tag_mod_report = ModificationReport.get_instance()
 
     collection.delete_album(

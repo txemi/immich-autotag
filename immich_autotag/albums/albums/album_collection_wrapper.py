@@ -168,12 +168,8 @@ class AlbumCollectionWrapper:
     @typechecked
     def get_client() -> ImmichClient:
         """Returns the current ImmichClient from the context singleton."""
-        try:
-            from immich_autotag.context.immich_context import ImmichContext
-
-            return ImmichContext.get_default_client()
-        except Exception as e:
-            raise RuntimeError(f"Could not retrieve ImmichClient: {e}")
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        return ImmichClientWrapper.get_default_instance()
 
     @staticmethod
     @typechecked
@@ -301,7 +297,8 @@ class AlbumCollectionWrapper:
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
         from immich_autotag.context.immich_context import ImmichContext
 
-        client = ImmichContext.get_default_client()
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        client = ImmichClientWrapper.get_default_instance()
         albums = self.get_albums()
         total = len(albums)
         for idx, album_wrapper in enumerate(albums, 1):
@@ -914,7 +911,7 @@ class AlbumCollectionWrapper:
         album = self._create_album(album_name, client, tag_mod_report)
 
         # Centralized user access
-        context = ImmichContext.get_instance()
+        context = ImmichContext.get_default_instance()
         user_wrapper: UserResponseWrapper = UserResponseWrapper.from_context(context)
         user_id = user_wrapper.get_uuid()
         wrapper = AlbumResponseWrapper.from_partial_dto(album)
@@ -964,7 +961,8 @@ class AlbumCollectionWrapper:
         self._sync_state = SyncState.SYNCING
         if client is None:
             from immich_autotag.context.immich_context import ImmichContext
-            client = ImmichContext.get_default_client()
+            from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+            client = ImmichClientWrapper.get_default_instance()
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
 

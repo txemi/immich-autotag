@@ -131,6 +131,7 @@ def run_main():
 
     print_welcome_links(manager.config)
     api_key = manager.config.server.api_key
+
     client = ImmichClient(
         base_url=get_immich_base_url(),
         token=api_key,
@@ -138,6 +139,9 @@ def run_main():
         auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
+    # Registrar el singleton del cliente
+    from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+    ImmichClientWrapper.create_default_instance(client)
 
     # Create all required objects before context
     tag_collection = list_tags(client)
@@ -152,7 +156,7 @@ def run_main():
     # Use type: ignore to suppress mypy error, as runtime is compatible
     asset_manager = AssetManager(client=client)  # type: ignore
     # Now create the context with all objects
-    context = ImmichContext.create_instance(
+    context = ImmichContext.create_default_instance(
         client=client,
         albums_collection=albums_collection,
         tag_collection=tag_collection,
