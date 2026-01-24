@@ -6,8 +6,10 @@
 #   - Strict mode (default): Fails on any check error.
 #   - Relaxed mode (--relaxed): Allows some non-critical checks to pass.
 #
-# Checks and Modes Table
-# -----------------------------------------------------------------------------
+
+# =====================
+# Quality Gate Checks Table
+# =====================
 # | Check                            | Description                                 | Strict   | Relaxed (CI) |
 # |-----------------------------------|---------------------------------------------|----------|--------------|
 # | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |
@@ -16,54 +18,20 @@
 # | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |
 # | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |
 # | mypy (type check)                 | Type checking                               |   ✔️     |   Warn       |
-# | uvx ssort (method order)          | Class method ordering                       |   ✔️     |   ✔️         |
-# | getattr/hasattr policy            | Forbids getattr/hasattr (optional)          |   ✔️**   |   ✔️**       |
+# | uvx ssort (method order)          | Class method ordering                       |   ✔️**   |   ✔️**       |
 # | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |
 # | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |
 # | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |
 # -----------------------------------------------------------------------------
-# * En modo relajado, flake8 ignora E501, y flake8/mypy solo avisan, no bloquean el build.
-# ** Solo si se usa --enforce-dynamic-attrs
+# * In relaxed mode, flake8 ignores E501, and flake8/mypy only warn, do not block the build.
+# ** Only if --enforce-dynamic-attrs is used
 #
 # Add/modify this table if new checks are added.
-# ============================================================================
-##
-# ------------------------------------------------------------------------------
-
-# Prioritization table for hardening the Quality Gate (by ease of activation as blockers)
-# ------------------------------------------------------------------------------
-# | Priority | Check      | Reason/Estimated cost                      | Status             |
-# |----------|------------|--------------------------------------------|--------------------|
-# | 1        | black      | Already enforced as blocker                | ✅ Already blocker |
-# | 2        | isort      | Already enforced as blocker                | ✅ Already blocker |
-# | 3        | ruff       | Already enforced as blocker                | ✅ Already blocker |
-# | 4        | flake8     | Medium cost, depends on rules              | ✔️ (bloquea siempre) |
-# | 5        | jscpd      | Already enforced as blocker                | ✅ Already blocker |
-# | 6        | uvx ssort  | Already enforced as blocker                | ✅ Already blocker |
-# | 7        | mypy       | High cost, requires typing                 | Warn (relaxed)     |
-# ------------------------------------------------------------------------------
-
-# ------------------------------------------------------------------------------
-# Prioritization table for robustness (static analysis checks)
-# ------------------------------------------------------------------------------
-# | Priority | Check  | Reason/Robustness provided                   | Status             |
-# |----------|--------|----------------------------------------------|--------------------|
-# | 1        | mypy   | Maximum robustness, detects real errors      | Pending            |
-# | 2        | flake8 | Medium robustness, helps with style/errors   | ✔️ (bloquea siempre) |
-# | 3        | ruff   | Already enforced as blocker                  | ✅ Already blocker |
-# | 4        | black  | Already enforced as blocker                  | ✅ Already blocker |
-# | 5        | isort  | Already enforced as blocker                  | ✅ Already blocker |
-# ------------------------------------------------------------------------------
-
-# ------------------------------------------------------------------------------
-# Recommended plan to harden the Quality Gate (in order of priority):
-# 1. (Done) Black is already enforced as a blocker.
-# 2. (Done) Isort is already enforced as a blocker.
-# 3. (Done) Ruff is already enforced as a blocker.
-# 4. Activate flake8 as a blocker (medium cost, adds style/error robustness).
-# 5. Activate mypy as a blocker (high cost, maximum robustness, requires typing everywhere).
 #
-# When the main checks table is updated, also update these tables and the plan if needed.
+# =====================
+# Developer Notes:
+# - To harden the quality gate, consider making mypy blocking in all modes, adding security/static analysis tools (bandit, shellcheck), and enforcing coverage thresholds.
+# - Update the table above if you add or change checks.
 
 # =============================================================================
 # SECTION ROOT: REPO ROOT DETECTION & DIRECTORY SETUP
