@@ -416,12 +416,20 @@ fi
 # -----------------------------------------------------------------------------
 # - Forbids tuple returns and tuple-typed class members (project policy).
 # =============================================================================
-# Policy enforcement: disallow returning tuple literals or annotated Tuple types
-echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
-"$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
-	echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses."
-	exit 3
+
+# =====================
+# Function: check_no_tuples
+# =====================
+check_no_tuples() {
+	echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
+	"$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
+		echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses."
+		return 1
+	}
+	return 0
 }
+
+check_no_tuples || exit 3
 
 # =============================================================================
 # SECTION 8: CODE DUPLICATION DETECTION (JSCPD)
