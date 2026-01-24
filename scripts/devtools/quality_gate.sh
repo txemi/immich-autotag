@@ -122,8 +122,6 @@ parse_args_and_globals() {
 	fi
 }
 
-# Llamada a la función de parseo de argumentos y globals
-parse_args_and_globals "$@"
 
 
 ###############################################################################
@@ -566,6 +564,8 @@ check_no_spanish_chars() {
 
 
 main() {
+	# Inicialización de argumentos y variables globales
+	parse_args_and_globals "$@"
 	check_shfmt || exit 1
 	check_python_syntax || exit 1
 	check_isort || exit 1
