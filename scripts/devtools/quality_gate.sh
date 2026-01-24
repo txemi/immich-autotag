@@ -87,7 +87,7 @@ parse_args_and_globals() {
 
 	# Definir como globales
 
-	CHECK_MODE="APPLY"  # Valores posibles: APPLY, CHECK
+	CHECK_MODE="APPLY"  # Valores posibles: APPLY, CHECK, DUMMY
 	QUALITY_LEVEL=""  # Valores posibles: DUMMY, STRICT, RELAXED
 	ENFORCE_DYNAMIC_ATTRS=0
 	TARGET_DIR=""
@@ -97,9 +97,11 @@ parse_args_and_globals() {
 		elif [ "$arg" = "--relaxed" ]; then
 			QUALITY_LEVEL="RELAXED"
 		elif [ "$arg" = "--dummy" ]; then
-			QUALITY_LEVEL="DUMMY"
+			CHECK_MODE="DUMMY"
 		elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
 			CHECK_MODE="CHECK"
+		elif [ "$arg" = "--apply" ]; then
+			CHECK_MODE="APPLY"
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 			ENFORCE_DYNAMIC_ATTRS=1
 		elif [[ "$arg" != --* ]]; then
@@ -112,7 +114,7 @@ parse_args_and_globals() {
 			QUALITY_LEVEL="STRICT"
 		elif [ "$CHECK_MODE" = "CHECK" ]; then
 			QUALITY_LEVEL="RELAXED"
-		else
+		elif [ "$CHECK_MODE" = "DUMMY" ]; then
 			QUALITY_LEVEL="DUMMY"
 		fi
 	fi
@@ -123,8 +125,8 @@ parse_args_and_globals() {
 
 	export QUALITY_LEVEL CHECK_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
 
-	if [ "$QUALITY_LEVEL" = "DUMMY" ]; then
-		echo "[QUALITY_LEVEL] Running in DUMMY mode (no checks will be performed, always succeeds)."
+	if [ "$CHECK_MODE" = "DUMMY" ] || [ "$QUALITY_LEVEL" = "DUMMY" ]; then
+		echo "[CHECK_MODE] Running in DUMMY mode (no checks will be performed, always succeeds)."
 		exit 0
 	elif [ "$QUALITY_LEVEL" = "STRICT" ]; then
 		echo "[QUALITY_LEVEL] Running in STRICT mode (all checks enforced, fail on any error)."
@@ -133,9 +135,9 @@ parse_args_and_globals() {
 	fi
 
 	if [ "$CHECK_MODE" = "CHECK" ]; then
-		echo "[CHECK] Running in CHECK mode (no files will be modified)."
-	else
-		echo "[CHECK] Running in APPLY mode (formatters may modify files)."
+		echo "[CHECK_MODE] Running in CHECK mode (no files will be modified)."
+	elif [ "$CHECK_MODE" = "APPLY" ]; then
+		echo "[CHECK_MODE] Running in APPLY mode (formatters may modify files)."
 	fi
 }
 
