@@ -328,26 +328,36 @@ fi
 # =============================================================================
 # Run ruff first (auto-fix/format where possible)
 
-ensure_tool ruff ruff
-RUFF_IGNORE=""
-if [ $RELAXED_MODE -eq 1 ]; then
-	RUFF_IGNORE="--ignore E501"
-	echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
-fi
-if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
-	RUFF_EXIT=$?
-else
-	"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
-	RUFF_EXIT=$?
-fi
-if [ $RUFF_EXIT -ne 0 ]; then
-	echo "[WARNING] ruff reported/fixed issues."
-	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
-		exit 1
+
+# =====================
+# Function: check_ruff
+# =====================
+check_ruff() {
+	ensure_tool ruff ruff
+	RUFF_IGNORE=""
+	if [ $RELAXED_MODE -eq 1 ]; then
+		RUFF_IGNORE="--ignore E501"
+		echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	fi
-fi
+	if [ "$CHECK_MODE" -eq 1 ]; then
+		"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
+		RUFF_EXIT=$?
+	else
+		"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
+		RUFF_EXIT=$?
+	fi
+	if [ $RUFF_EXIT -ne 0 ]; then
+		echo "[WARNING] ruff reported/fixed issues."
+		if [ "$CHECK_MODE" -eq 1 ]; then
+			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
+			return 1
+		fi
+	fi
+	return 0
+}
+
+# Call the fourth check
+check_ruff || exit 1
 
 # =============================================================================
 # SECTION 4: BLACK (CODE FORMATTER)
