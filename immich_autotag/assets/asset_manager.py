@@ -77,9 +77,9 @@ class AssetManager:
         # `asset_id` is a UUID; pass it directly to the client (it accepts UUID objects).
         dto = proxy_get_asset_info(asset_id, self.client)
         if dto is None:
-            return raise RuntimeError(
+            raise RuntimeError(
                 f"get_asset_info returned None for asset id={asset_id}"
-            )   
+            )
         asset = AssetResponseWrapper.from_dto(dto, context)
         self._assets[asset_id] = asset
         return asset
