@@ -1,8 +1,9 @@
 import enum
 from datetime import datetime
+from typing import Iterator
 
 import attrs
-from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.asset_response_dto import AssetResponseDto, TagResponseDto
 
 
 class AssetDtoType(enum.Enum):
@@ -34,21 +35,23 @@ class AssetDtoState:
         self._type = type_
         self._loaded_at = datetime.now()
 
-    def get_tags():
+
+    def get_tags(self):
+        # Placeholder: implement actual tag extraction from self._dto if available
         raise NotImplementedError("get_tags method not implemented yet")
 
-    def get_dates():
-        def get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
+
+    def get_dates(self):
+        def _get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
             yield asset__.created_at
             yield asset__.file_created_at
             yield asset__.file_modified_at
             yield asset__.local_date_time
 
-        date_candidates = list(get_dates(self._dto))
+        date_candidates = list(_get_dates(self._dto))
         return date_candidates
 
     def has_tag(self, tag_name: str) -> bool:
-
         if self._type == AssetDtoType.PARTIAL:
             raise NotImplementedError(
                 "has_tag not implemented for PARTIAL AssetDtoType"
