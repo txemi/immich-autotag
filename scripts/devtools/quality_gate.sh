@@ -115,39 +115,42 @@ else
 	echo "[CHECK] Running in APPLY mode (formatters may modify files)."
 fi
 
-###############################################################################
-# SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)
-# -----------------------------------------------------------------------------
-# - Requires shfmt to be installed.
-# - Fails the quality gate if not installed or if there are formatting issues.
-###############################################################################
 
-echo ""
-echo "==============================="
-echo "SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)"
-echo "==============================="
-echo ""
+# =====================
+# Function: check_shfmt
+# =====================
+check_shfmt() {
+	echo ""
+	echo "==============================="
+	echo "SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)"
+	echo "==============================="
+	echo ""
 
-# Require shfmt to be installed
-if ! command -v shfmt >/dev/null 2>&1; then
-	echo "[ERROR] shfmt is not installed. Please install it to pass the quality gate."
-	echo "You can install it with: sudo apt-get install shfmt  # or equivalent for your system"
-	exit 1
-fi
-
-# Find relevant bash scripts (adjust pattern if needed)
-BASH_SCRIPTS=$(find scripts -type f -name "*.sh")
-
-# Run shfmt according to mode
-if [ "$CHECK_MODE" -eq 1 ]; then
-	if ! shfmt -d $BASH_SCRIPTS; then
-		echo "[ERROR] There are formatting issues in Bash scripts. Run 'shfmt -w scripts/' to fix them."
-		exit 1
+	# Require shfmt to be installed
+	if ! command -v shfmt >/dev/null 2>&1; then
+		echo "[ERROR] shfmt is not installed. Please install it to pass the quality gate."
+		echo "You can install it with: sudo apt-get install shfmt  # or equivalent for your system"
+		return 1
 	fi
-else
-	echo "[INFO] Applying automatic formatting to Bash scripts with shfmt..."
-	shfmt -w $BASH_SCRIPTS
-fi
+
+	# Find relevant bash scripts (adjust pattern if needed)
+	BASH_SCRIPTS=$(find scripts -type f -name "*.sh")
+
+	# Run shfmt according to mode
+	if [ "$CHECK_MODE" -eq 1 ]; then
+		if ! shfmt -d $BASH_SCRIPTS; then
+			echo "[ERROR] There are formatting issues in Bash scripts. Run 'shfmt -w scripts/' to fix them."
+			return 1
+		fi
+	else
+		echo "[INFO] Applying automatic formatting to Bash scripts with shfmt..."
+		shfmt -w $BASH_SCRIPTS
+	fi
+	return 0
+}
+
+# Call the first check
+check_shfmt || exit 1
 
 # =============================================================================
 # SECTION A: SYNCHRONIZED CONFIGURATION EXTRACTION
