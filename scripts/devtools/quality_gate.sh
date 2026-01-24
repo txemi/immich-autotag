@@ -440,7 +440,7 @@ if [ $MYPY_EXIT_CODE -ne 0 ]; then
 fi
 # mypy: always blocks in all modes
 if [ $MYPY_FAILED -ne 0 ]; then
-	echo "[ERROR] mypy failed. See output above."
+	echo "[ERROR] mypy failed. See output above.: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
 	echo "[EXIT] Quality Gate failed due to mypy errors."
 	exit 1
 fi
