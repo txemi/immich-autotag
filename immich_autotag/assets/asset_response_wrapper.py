@@ -207,7 +207,7 @@ class AssetResponseWrapper:
                 raise DateIntegrityError(
                     (
                         f"Integrity broken: found a date ({d}) earlier than the best selected date "
-                        f"({best_date}) for asset {self._state.get_uuid(}"
+                        f"({best_date}) for asset {self._state.get_uuid()}"
                     )
                 )
         return best_date
