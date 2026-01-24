@@ -49,7 +49,7 @@ class DateIntegrityError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
-    context: "ImmichContext" = attrs.field(
+    _context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(ImmichContext)
     )
     _state: AssetDtoState = attrs.field()
@@ -57,11 +57,15 @@ class AssetResponseWrapper:
     # NOTA: El resto de métodos seguirán usando self._state. No se reordena nada ni se cambia la lógica aún.
 
     def __attrs_post_init__(self) -> None:
-        # Avoid direct reference to ImmichContext to prevent NameError/circular import
+        # Use isinstance for type validation, which is more robust and preferred
+        if not isinstance(self.get_context(), ImmichContext):
+            raise TypeError(
+                f"context must be ImmichContext, not {type(self.get_context())}"
+            )
 
-        # TODO: this refactors poorly, do an import, do not check the class name
-        if self.context.__class__.__name__ != "ImmichContext":
-            raise TypeError(f"context must be ImmichContext, not {type(self.context)}")
+    def get_context(self) -> "ImmichContext":
+        """Read-only access to the context. No external modification allowed."""
+        return self._context
 
     @property
     def asset(self) -> AssetResponseDto:
@@ -87,7 +91,7 @@ class AssetResponseWrapper:
         # The immich client expects a UUID for the id parameter. Use the
         # wrapper's UUID accessor to provide a UUID object rather than a raw string.
         self._asset_full = get_asset_info.sync(
-            id=self.id_as_uuid, client=self.context.client
+            id=self.id_as_uuid, client=self.get_context().client
         )
         if self._asset_full is None:
             raise RuntimeError(
@@ -153,7 +157,7 @@ class AssetResponseWrapper:
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
-        user_wrapper = UserResponseWrapper.from_context(self.context)
+        user_wrapper = UserResponseWrapper.from_context(self.get_context())
         # asset_url = self.get_immich_photo_url().geturl()  # Unused variable removed
 
         tag_mod_report.add_modification(
@@ -165,7 +169,7 @@ class AssetResponseWrapper:
             extra={"pre_update": True},
         )
         response = update_asset.sync(
-            id=self.id_as_uuid, client=self.context.client, body=dto
+            id=self.id_as_uuid, client=self.get_context().client, body=dto
         )
         # Fail-fast: check response type and status directly, no dynamic attribute access
         # If the API returns a response object with status_code, check it; otherwise, assume success if no exception was raised
@@ -238,7 +242,7 @@ class AssetResponseWrapper:
         If include_self is True, includes this asset as well.
         """
 
-        context = self.context
+        context = self.get_context()
         duplicate_id = self.duplicate_id_as_uuid
         wrappers = []
         if duplicate_id is not None:
@@ -294,7 +298,7 @@ class AssetResponseWrapper:
         ]
 
         if tags_to_remove:
-            tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
+            tag_wrapper = self.get_context().tag_collection.find_by_name(tag_name)
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -310,16 +314,16 @@ class AssetResponseWrapper:
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
 
         assert isinstance(
-            self.context.tag_collection, TagCollectionWrapper
+            self.get_context().tag_collection, TagCollectionWrapper
         ), "context.tag_collection must be an object"
-        tag_wrapper = self.context.tag_collection.find_by_name(tag_name)
+        tag_wrapper = self.get_context().tag_collection.find_by_name(tag_name)
 
         removed_any = False
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
             response = untag_assets.sync(
                 id=UUID(tag.id),
-                client=self.context.client,
+                client=self.get_context().client,
                 body=BulkIdsDto(ids=[self.id_as_uuid]),
             )
             if is_log_level_enabled(LogLevel.DEBUG):
@@ -362,12 +366,12 @@ class AssetResponseWrapper:
         tag_mod_report = ModificationReport.get_instance()
 
         # Get the UserWrapper in a clean and encapsulated way
-        user_wrapper = UserResponseWrapper.from_context(self.context)
+        user_wrapper = UserResponseWrapper.from_context(self.get_context())
 
-        tag = self.context.tag_collection.find_by_name(tag_name)
+        tag = self.get_context().tag_collection.find_by_name(tag_name)
         if tag is None:
-            tag = self.context.tag_collection.create_tag_if_not_exists(
-                tag_name, self.context.client
+            tag = self.get_context().tag_collection.create_tag_if_not_exists(
+                tag_name, self.get_context().client
             )
         # Check if the asset already has the tag
         if self.has_tag(tag_name):
@@ -436,7 +440,7 @@ class AssetResponseWrapper:
         try:
             response = tag_assets.sync(
                 id=UUID(tag.id),
-                client=self.context.client,
+                client=self.get_context().client,
                 body=BulkIdsDto(ids=[self.id_as_uuid]),
             )
         except Exception as e:
@@ -486,7 +490,7 @@ class AssetResponseWrapper:
         """
         Returns the names of the albums this asset belongs to.
         """
-        return self.context.albums_collection.album_names_for_asset(self)
+        return self.get_context().albums_collection.album_names_for_asset(self)
 
     @typechecked
     def get_tag_names(self) -> list[str]:
@@ -669,7 +673,7 @@ class AssetResponseWrapper:
                     level=LogLevel.FOCUS,
                 )
                 if user is None:
-                    user = UserResponseWrapper.from_context(self.context)
+                    user = UserResponseWrapper.from_context(self.get_context())
                 self.remove_tag_by_name(tag_name, user=user)
             else:
                 log(
@@ -890,7 +894,8 @@ class AssetResponseWrapper:
         Creates an AssetResponseWrapper from a DTO and a context.
         Uses asset_partial to enable lazy-loading of tags on first access.
         """
-        return cls(asset_partial=dto, context=context)
+        state = AssetDtoState(dto)
+        return cls(_context=context, asset_partial=dto, _state=state)
 
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
@@ -938,7 +943,7 @@ class AssetResponseWrapper:
         Returns a list of AssetResponseWrapper objects for all duplicates of this asset (excluding itself).
         """
 
-        context = self.context
+        context = self.get_context()
         duplicate_id = self.duplicate_id_as_uuid
         wrappers = []
         if duplicate_id is not None:
