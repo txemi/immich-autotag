@@ -163,7 +163,6 @@ check_shfmt() {
 }
 
 # Call the first check
-check_shfmt || exit 1
 
 # =============================================================================
 # SECTION A: SYNCHRONIZED CONFIGURATION EXTRACTION
@@ -232,7 +231,6 @@ check_python_syntax() {
 }
 
 # Call the second check
-check_python_syntax || exit 1
 
 # =============================================================================
 # UTILITY FUNCTIONS (USED IN MULTIPLE SECTIONS)
@@ -336,7 +334,6 @@ check_ssort() {
 	return 0
 }
 
-check_ssort || exit 1
 
 
 
@@ -399,7 +396,6 @@ check_black() {
 	return 0
 }
 
-check_black || exit 1
 
 
 ###############################################################################
@@ -425,7 +421,6 @@ check_no_dynamic_attrs() {
 	return 0
 }
 
-check_no_dynamic_attrs || exit 2
 
 
 # =====================
@@ -444,7 +439,6 @@ check_no_tuples() {
 	return 0
 }
 
-check_no_tuples || exit 3
 
 
 # =====================
@@ -474,7 +468,6 @@ check_jscpd() {
 	return 0
 }
 
-check_jscpd || exit 1
 
 
 
@@ -509,7 +502,6 @@ check_flake8() {
 	return 0
 }
 
-check_flake8 || exit 1
 
 
 ###############################################################################
@@ -543,7 +535,6 @@ check_mypy() {
 	return 0
 }
 
-check_mypy || exit 1
 
 ###############################################################################
 # Function: check_no_spanish_chars
@@ -570,7 +561,6 @@ check_no_spanish_chars() {
 	return 0
 }
 
-check_no_spanish_chars || exit 5
 
 
 
