@@ -78,6 +78,7 @@ fi
 # Parse modes: default is DUMMY
 MODE="DUMMY"  # Possible values: DUMMY, STRICT, RELAXED
 CHECK_MODE=0
+RELAXED_MODE=0
 ENFORCE_DYNAMIC_ATTRS=0
 TARGET_DIR=""
 for arg in "$@"; do
@@ -85,6 +86,7 @@ for arg in "$@"; do
 		MODE="STRICT"
 	elif [ "$arg" = "--relaxed" ]; then
 		MODE="RELAXED"
+		RELAXED_MODE=1
 	elif [ "$arg" = "--dummy" ]; then
 		MODE="DUMMY"
 	elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
@@ -116,14 +118,12 @@ else
 fi
 
 
-# =====================
 ###############################################################################
 # Function: check_shfmt
 # Description: Verifica y formatea scripts Bash usando shfmt.
 # Globals: CHECK_MODE
 # Returns: 0 si pasa, 1 si hay errores de formato o falta shfmt
 ###############################################################################
-# =====================
 check_shfmt() {
 	echo ""
 	echo "==============================="
@@ -211,7 +211,6 @@ fi
 # Globals: PY_BIN, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay errores de sintaxis
 ###############################################################################
-# =====================
 check_python_syntax() {
 	echo "Checking for syntax and indentation errors..."
 	echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
@@ -249,7 +248,6 @@ ensure_tool() {
 # Globals: CHECK_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay problemas de ordenado
 ###############################################################################
-# =====================
 check_isort() {
 	ensure_tool isort isort
 	ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
@@ -312,7 +310,6 @@ ensure_ssort() {
 # Globals: CHECK_MODE, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay métodos desordenados
 ###############################################################################
-# =====================
 check_ssort() {
 	ensure_ssort
 	SSORT_FAILED=0
@@ -342,7 +339,6 @@ check_ssort || exit 1
 # Globals: CHECK_MODE, RELAXED_MODE, PY_BIN, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay problemas de estilo
 ###############################################################################
-# =====================
 check_ruff() {
 	ensure_tool ruff ruff
 	RUFF_IGNORE=""
@@ -368,13 +364,13 @@ check_ruff() {
 }
 
 
-check_black() {
 ###############################################################################
 # Function: check_black
 # Description: Formatea código Python usando Black.
 # Globals: CHECK_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay problemas de formato
 ###############################################################################
+check_black() {
 	# Format code with Black using the environment Python
 	ensure_tool black black
 	BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
@@ -404,7 +400,6 @@ check_black || exit 1
 # Globals: ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
 # Returns: 0 si pasa, 1 si se detectan usos prohibidos
 ###############################################################################
-# =====================
 check_no_dynamic_attrs() {
 	# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
 	# Projects following our coding guidelines avoid these calls because they
@@ -432,7 +427,6 @@ check_no_dynamic_attrs || exit 2
 # Globals: PY_BIN, REPO_ROOT, TARGET_DIR
 # Returns: 0 si pasa, 1 si se detectan tuplas prohibidas
 ###############################################################################
-# =====================
 check_no_tuples() {
 	echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
 	"$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
@@ -452,7 +446,6 @@ check_no_tuples || exit 3
 # Globals: TARGET_DIR
 # Returns: 0 si pasa, 1 si hay duplicación
 ###############################################################################
-# =====================
 check_jscpd() {
 	echo "[CHECK] Running jscpd for code duplication detection..."
 	if ! command -v jscpd &>/dev/null; then
@@ -483,7 +476,6 @@ check_jscpd || exit 1
 # Globals: RELAXED_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay errores de estilo
 ###############################################################################
-
 check_flake8() {
 	ensure_tool flake8 flake8
 	FLAKE_FAILED=0
@@ -518,7 +510,6 @@ check_flake8 || exit 1
 # Globals: PY_BIN, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay errores de tipado
 ###############################################################################
-
 check_mypy() {
 	ensure_tool mypy mypy
 	MYPY_FAILED=0
@@ -552,7 +543,6 @@ check_mypy || exit 1
 # Globals: RELAXED_MODE
 # Returns: 0 si pasa, 1 si se detectan caracteres prohibidos
 ###############################################################################
-
 check_no_spanish_chars() {
 	echo "Checking for Spanish language characters in source files..."
 	SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
