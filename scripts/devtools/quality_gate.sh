@@ -553,63 +553,66 @@ setup_environment() {
 	setup_python_env
 }
 
-
 # Run all quality checks in CHECK mode (fail fast on first error)
 run_quality_gate_check_mode() {
-       # 1. Auto-fixers and formatters
-       check_shfmt || exit 1
-       check_isort || exit 1
-       check_black || exit 1
-       check_ruff || exit 1
-       # 2. Fast/deterministic checks
-       check_python_syntax || exit 1
-       # 3. Internal policy checks
-       check_no_dynamic_attrs || exit 2
-       check_no_tuples || exit 3
-       check_no_spanish_chars || exit 5
-       # 4. Heavy/informative checks
-       check_jscpd || exit 1
-       check_flake8 || exit 1
-       check_mypy || exit 1
+	# 1. Auto-fixers and formatters
+	check_shfmt || exit 1
+	check_isort || exit 1
+	check_black || exit 1
+	check_ruff || exit 1
+	# 2. Fast/deterministic checks
+	check_python_syntax || exit 1
+	# 3. Internal policy checks
+	check_no_dynamic_attrs || exit 2
+	check_no_tuples || exit 3
+	check_no_spanish_chars || exit 5
+	# 4. Heavy/informative checks
+	check_jscpd || exit 1
+	check_flake8 || exit 1
+	check_mypy || exit 1
 }
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
 run_quality_gate_apply_mode() {
-       local error_found=0
-       # 1. Auto-fixers and formatters
-       check_shfmt || error_found=1
-       check_isort || error_found=1
-       check_black || error_found=1
-       check_ruff || error_found=1
-       # 2. Fast/deterministic checks
-       check_python_syntax || error_found=1
-       # 3. Internal policy checks
-       check_no_dynamic_attrs || error_found=2
-       check_no_tuples || error_found=3
-       check_no_spanish_chars || error_found=5
-       # 4. Heavy/informative checks
-       check_jscpd || error_found=1
-       check_flake8 || error_found=1
-       check_mypy || error_found=1
-       if [ "$error_found" -ne 0 ]; then
-	       echo "[EXIT] Quality Gate failed (see errors above)."
-	       exit $error_found
-       fi
+	local error_found=0
+	# 1. Auto-fixers and formatters
+	check_shfmt || error_found=1
+	check_isort || error_found=1
+	check_black || error_found=1
+	check_ruff || error_found=1
+	# 2. Fast/deterministic checks
+	check_python_syntax || error_found=1
+	# 3. Internal policy checks
+	check_no_dynamic_attrs || error_found=2
+	check_no_tuples || error_found=3
+	check_no_spanish_chars || error_found=5
+	# 4. Heavy/informative checks
+	check_jscpd || error_found=1
+	check_flake8 || error_found=1
+	check_mypy || error_found=1
+	if [ "$error_found" -ne 0 ]; then
+		echo "[EXIT] Quality Gate failed (see errors above)."
+		# Extra: After APPLY mode fails, run CHECK mode to show a clean summary of remaining issues.
+		# This helps developers see the final actionable errors at the end of the output.
+		CHECK_MODE="CHECK"
+		run_quality_gate_check_mode
+		exit $error_found
+	fi
 }
 
 main() {
-       # Argument and global variable initialization
-       parse_args_and_globals "$@"
-       setup_environment
+	# Argument and global variable initialization
+	parse_args_and_globals "$@"
+	setup_environment
 
-       # See rationale above for check order
-       if [ "$CHECK_MODE" = "CHECK" ]; then
-	       run_quality_gate_check_mode
-       else
-	       run_quality_gate_apply_mode
-       fi
+	# See rationale above for check order
+	if [ "$CHECK_MODE" = "CHECK" ]; then
+		run_quality_gate_check_mode
+	else
+		run_quality_gate_apply_mode
+	fi
 
-       echo "🎉 Quality Gate completed successfully!"
+	echo "🎉 Quality Gate completed successfully!"
 }
 
 # Entrypoint
