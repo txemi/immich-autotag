@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from urllib.parse import ParseResult
@@ -17,6 +16,9 @@ from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
 from immich_autotag.assets.asset_dto_state import AssetDtoState
+from immich_autotag.assets.classification_update_result import (
+    ClassificationUpdateResult,
+)
 from immich_autotag.classification.classification_status import ClassificationStatus
 from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
@@ -34,8 +36,6 @@ from immich_autotag.utils.get_immich_album_url import get_immich_photo_url
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-
 
 
 # Exception for date integrity
@@ -70,6 +70,7 @@ class AssetResponseWrapper:
         Returns:
             - asset_full if loaded (contains full data including tags)
             - asset_partial otherwise (may have tags=UNSET)
+
         """
         return self._asset_full if self._asset_full is not None else self.asset_partial
 
