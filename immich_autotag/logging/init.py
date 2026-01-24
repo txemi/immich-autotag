@@ -4,7 +4,7 @@ from typeguard import typechecked
 
 from immich_autotag.config.filter_wrapper import FilterConfigWrapper
 from immich_autotag.config.manager import ConfigManager
-from immich_autotag.logging.levels import LogLevel, LogLevelInfo
+from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, setup_logging
 
 
