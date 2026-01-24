@@ -9,6 +9,7 @@ from immich_client.api.albums import (
     remove_asset_from_album,
     update_album_info,
 )
+from immich_client.client import AuthenticatedClient
 from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
@@ -16,7 +17,7 @@ from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
 
-def proxy_get_album_info(*, album_id: UUID, client: Client) -> AlbumResponseDto:
+def proxy_get_album_info(*, album_id: UUID, client: AuthenticatedClient) -> AlbumResponseDto:
     return get_album_info.sync(id=album_id, client=client)
 
 
@@ -54,7 +55,7 @@ def proxy_add_users_to_album(
     return add_users_to_album.sync(id=album_id, client=client, body=body)
 
 
-def proxy_get_all_albums(*, client: Client) -> AlbumResponseDto:
+def proxy_get_all_albums(*, client: AuthenticatedClient) -> list[AlbumResponseDto] :
     return get_all_albums.sync(client=client)
 
 
