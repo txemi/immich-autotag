@@ -592,12 +592,35 @@ run_quality_gate_apply_mode() {
 	check_mypy || error_found=1
 	if [ "$error_found" -ne 0 ]; then
 		echo "[EXIT] Quality Gate failed (see errors above)."
-		# Extra: After APPLY mode fails, run CHECK mode to show a clean summary of remaining issues.
-		# This helps developers see the final actionable errors at the end of the output.
-		CHECK_MODE="CHECK"
-		run_quality_gate_check_mode
+		# After APPLY fails, run summary check in priority order (most important errors first)
+		run_quality_gate_check_summary
 		exit $error_found
 	fi
+}
+
+# Summary check: runs most important checks first, fails on first error.
+# This ensures the developer sees the most relevant actionable error at the end.
+run_quality_gate_check_summary() {
+	echo "[SUMMARY] Running prioritized checks to show the most important remaining error."
+	# 1. Type checking (mypy)
+	check_mypy || exit 1
+	# 2. Syntax errors
+	check_python_syntax || exit 1
+	# 3. Ruff (lint/auto-fix)
+	check_ruff || exit 1
+	# 4. Flake8 (style)
+	check_flake8 || exit 1
+	# 5. Policy checks
+	check_no_dynamic_attrs || exit 2
+	check_no_tuples || exit 3
+	# 6. Spanish character check
+	check_no_spanish_chars || exit 5
+	# 7. Code duplication (least urgent)
+	check_jscpd || exit 1
+	# 8. Formatters (least urgent in summary)
+	check_shfmt || exit 1
+	check_isort || exit 1
+	check_black || exit 1
 }
 
 main() {
