@@ -895,7 +895,7 @@ class AssetResponseWrapper:
         Uses asset_partial to enable lazy-loading of tags on first access.
         """
         state = AssetDtoState(dto)
-        return cls(_context=context, asset_partial=dto, _state=state)
+        return cls(context=context, state=state)
 
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
