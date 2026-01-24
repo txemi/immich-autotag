@@ -227,7 +227,7 @@ class AssetResponseWrapper:
         if duplicate_id is not None:
             group = context.duplicates_collection.get_group(duplicate_id)
             for dup_id in group:
-                if not include_self and str(dup_id) == self._state.dto.id:
+                if not include_self and dup_id == self._state.get_uuid():
                     continue
                 dup_asset = context.asset_manager.get_asset(dup_id, context)
                 if dup_asset is not None:
@@ -857,22 +857,21 @@ class AssetResponseWrapper:
     def id_as_uuid(self) -> "UUID":
         from uuid import UUID
 
-        return UUID(self._state.dto.id)
+        return self._state.get_uuid()
 
     @classmethod
     def from_dto(
         cls: type["AssetResponseWrapper"],
         dto: AssetResponseDto,
         context: "ImmichContext",
-        dto_type=None,
+        dto_type,
     ) -> "AssetResponseWrapper":
         """
         Creates an AssetResponseWrapper from a DTO and a context.
         Uses AssetDtoState to encapsulate the DTO and its type.
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoType, AssetDtoState
-        if dto_type is None:
-            dto_type = AssetDtoType.PARTIAL
+
         state = AssetDtoState(dto, dto_type)
         return cls(_context=context, _state=state)
 
@@ -912,7 +911,7 @@ class AssetResponseWrapper:
         return url
 
     def get_uuid(self) -> UUID:
-        return UUID(self._state.dto.id)
+        return UUID(self._state.get_uuid())
 
     # Eliminado método duplicado get_album_names (F811)
 
