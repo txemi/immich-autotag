@@ -384,27 +384,48 @@ if [ $JSPCD_EXIT -ne 0 ]; then
 fi
 echo "jscpd check passed: no significant code duplication detected."
 
+
 # =============================================================================
-# SECTION 9: STATIC ANALYSIS (FLAKE8, SSORT, MYPY)
+# SECTION 9A: FLAKE8 (STYLE AND ERROR LINTING)
 # -----------------------------------------------------------------------------
 # - flake8: Style and error linting (always blocks).
-# - ssort: Ensures deterministic method ordering in Python classes.
-# - mypy: Type checking (blocks only in strict mode).
 # =============================================================================
 # Flake8: use the same synchronized line length, print output directly, capture exit code
 ensure_tool flake8 flake8
 FLAKE_FAILED=0
 FLAKE8_IGNORE="E203,W503"
 if [ $RELAXED_MODE -eq 1 ]; then
-	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
-	echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
+    FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+    echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 fi
 echo "[INFO] Running flake8 (output below if any):"
 "$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
 if [ $? -ne 0 ]; then
-	FLAKE_FAILED=1
+    FLAKE_FAILED=1
 fi
-
+# SECTION 10: BLOCKING LOGIC FOR STATIC ANALYSIS
+# - Exits immediately if flake8 fails (always blocks).
+# - Exits if mypy fails (only in strict mode).
+# --- SIMPLIFIED QUALITY GATE: LINEAR, FAIL-FAST, MODE-AWARE ---
+# Flake8: always blocks (with config depending on mode)
+if [ $FLAKE_FAILED -ne 0 ]; then
+	echo "[ERROR] flake8 failed. See output above."
+	exit 1
+fi
+# mypy: blocks only in strict mode
+if [ $MYPY_FAILED -ne 0 ]; then
+	echo "[ERROR] mypy failed. See output above."
+	if [ $RELAXED_MODE -eq 1 ]; then
+		echo "[RELAXED MODE] Not blocking build on mypy errors."
+	else
+		exit 1
+	fi
+fi
+# =============================================================================
+# SECTION 9B: SSORT (DETERMINISTIC METHOD ORDERING)
+# -----------------------------------------------------------------------------
+# - ssort: Ensures deterministic method ordering in Python classes.
+# =============================================================================
 ###############################################################
 # Deterministic method ordering in Python classes              #
 # ----------------------------------------------------------- #
@@ -425,30 +446,34 @@ fi
 
 # --- Ensure ssort (bwhmather/ssort) is installed and available ---
 ensure_ssort() {
-	if ! command -v ssort &>/dev/null; then
-		echo "[INFO] ssort not found, installing from GitHub..."
-		"$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
-	fi
+    if ! command -v ssort &>/dev/null; then
+        echo "[INFO] ssort not found, installing from GitHub..."
+        "$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
+    fi
 }
 
 # --- Run ssort for deterministic method ordering after syntax check ---
-
 ensure_ssort
 SSORT_FAILED=0
 if [ "$CHECK_MODE" -eq 1 ]; then
-	echo "[FORMAT] Running ssort in CHECK mode..."
-	ssort --check "$TARGET_DIR" || SSORT_FAILED=1
+    echo "[FORMAT] Running ssort in CHECK mode..."
+    ssort --check "$TARGET_DIR" || SSORT_FAILED=1
 else
-	echo "[FORMAT] Running ssort in APPLY mode..."
-	ssort "$TARGET_DIR" || SSORT_FAILED=1
+    echo "[FORMAT] Running ssort in APPLY mode..."
+    ssort "$TARGET_DIR" || SSORT_FAILED=1
 fi
 
 # Now ssort is blocking in both modes
 if [ $SSORT_FAILED -ne 0 ]; then
-	echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
-	exit 1
+    echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
+    exit 1
 fi
 
+# =============================================================================
+# SECTION 9C: MYPY (TYPE CHECKING)
+# -----------------------------------------------------------------------------
+# - mypy: Type checking (blocks only in strict mode).
+# =============================================================================
 # mypy: print output directly, capture exit code
 ensure_tool mypy mypy
 MYPY_FAILED=0
@@ -458,34 +483,14 @@ set +e
 MYPY_EXIT_CODE=$?
 set -e
 if [ $MYPY_EXIT_CODE -ne 0 ]; then
-	MYPY_FAILED=1
+    MYPY_FAILED=1
 fi
 
 # In relaxed mode, do not block on flake8/mypy errors, just warn
 
 # --- Enhanced error reporting for flake8 and mypy ---
 
-# =============================================================================
-# SECTION 10: BLOCKING LOGIC FOR STATIC ANALYSIS
-# -----------------------------------------------------------------------------
-# - Exits immediately if flake8 fails (always blocks).
-# - Exits if mypy fails (only in strict mode).
-# =============================================================================
-# --- SIMPLIFIED QUALITY GATE: LINEAR, FAIL-FAST, MODE-AWARE ---
-# Flake8: always blocks (with config depending on mode)
-if [ $FLAKE_FAILED -ne 0 ]; then
-	echo "[ERROR] flake8 failed. See output above."
-	exit 1
-fi
-# mypy: blocks only in strict mode
-if [ $MYPY_FAILED -ne 0 ]; then
-	echo "[ERROR] mypy failed. See output above."
-	if [ $RELAXED_MODE -eq 1 ]; then
-		echo "[RELAXED MODE] Not blocking build on mypy errors."
-	else
-		exit 1
-	fi
-fi
+
 
 echo "Static checks (ruff/flake8/mypy) completed successfully."
 
