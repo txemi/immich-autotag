@@ -5,10 +5,10 @@ Utility functions for Immich album API calls (singular album).
 import atexit
 from uuid import UUID
 
-from immich_client.api.albums import get_album_info
 from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
+from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.types import ImmichClient
@@ -40,7 +40,7 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> "AlbumResponse
     global _album_api_call_count
     _album_api_call_count += 1
     _album_api_ids.add(str(album_id))
-    a = get_album_info.sync(id=album_id, client=client)
+    a = proxy_get_album_info(album_id=album_id, client=client)
     # Print only the album id and Immich web link, not the full DTO (avoid long lines)
     from immich_autotag.utils.url_helpers import get_immich_album_url
 
