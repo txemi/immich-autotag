@@ -274,17 +274,17 @@ ensure_tool() {
 # Returns: 0 si pasa, 1 si hay problemas de ordenado
 ###############################################################################
 check_isort() {
-	local ISORT_SKIPS ISORT_EXIT
+	local isort_skips isort_exit
 	ensure_tool isort isort
-	ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
+	isort_skips="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
 	if [ "$CHECK_MODE" = "CHECK" ]; then
-		"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
-		ISORT_EXIT=$?
+		"$PY_BIN" -m isort $isort_skips --profile black --check-only "$TARGET_DIR"
+		isort_exit=$?
 	else
-		"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
-		ISORT_EXIT=$?
+		"$PY_BIN" -m isort $isort_skips --profile black "$TARGET_DIR"
+		isort_exit=$?
 	fi
-	if [ $ISORT_EXIT -ne 0 ]; then
+	if [ $isort_exit -ne 0 ]; then
 		echo "[WARNING] isort reported issues."
 		if [ "$CHECK_MODE" -eq 1 ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
@@ -341,16 +341,16 @@ ensure_ssort() {
 # Returns: 0 si pasa, 1 si hay métodos desordenados
 ###############################################################################
 check_ssort() {
-	local SSORT_FAILED=0
+	local ssort_failed=0
 	ensure_ssort
 	if [ "$CHECK_MODE" -eq 1 ]; then
 		echo "[FORMAT] Running ssort in CHECK mode..."
-		ssort --check "$TARGET_DIR" || SSORT_FAILED=1
+		ssort --check "$TARGET_DIR" || ssort_failed=1
 	else
 		echo "[FORMAT] Running ssort in APPLY mode..."
-		ssort "$TARGET_DIR" || SSORT_FAILED=1
+		ssort "$TARGET_DIR" || ssort_failed=1
 	fi
-	if [ $SSORT_FAILED -ne 0 ]; then
+	if [ $ssort_failed -ne 0 ]; then
 		echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
 		echo "[EXIT] Quality Gate failed due to ssort ordering errors."
 		return 1
@@ -368,20 +368,20 @@ check_ssort() {
 # Returns: 0 si pasa, 1 si hay problemas de estilo
 ###############################################################################
 check_ruff() {
-	local RUFF_IGNORE="" RUFF_EXIT
+	local ruff_ignore="" ruff_exit
 	ensure_tool ruff ruff
 	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-		RUFF_IGNORE="--ignore E501"
+		ruff_ignore="--ignore E501"
 		echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	fi
 	if [ "$CHECK_MODE" = "CHECK" ]; then
-		"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
-		RUFF_EXIT=$?
+		"$PY_BIN" -m ruff check --fix $ruff_ignore "$TARGET_DIR"
+		ruff_exit=$?
 	else
-		"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
-		RUFF_EXIT=$?
+		"$PY_BIN" -m ruff check --fix $ruff_ignore "$TARGET_DIR"
+		ruff_exit=$?
 	fi
-	if [ $RUFF_EXIT -ne 0 ]; then
+	if [ $ruff_exit -ne 0 ]; then
 		echo "[WARNING] ruff reported/fixed issues."
 		if [ "$CHECK_MODE" -eq 1 ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
@@ -399,18 +399,18 @@ check_ruff() {
 # Returns: 0 si pasa, 1 si hay problemas de formato
 ###############################################################################
 check_black() {
-	local BLACK_EXCLUDES BLACK_EXIT
+	local black_excludes black_exit
 	# Format code with Black using the environment Python
 	ensure_tool black black
-	BLACK_EXCLUDES="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
+	black_excludes="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
 	if [ "$CHECK_MODE" = "CHECK" ]; then
-		"$PY_BIN" -m black --check $BLACK_EXCLUDES "$TARGET_DIR"
-		BLACK_EXIT=$?
+		"$PY_BIN" -m black --check $black_excludes "$TARGET_DIR"
+		black_exit=$?
 	else
-		"$PY_BIN" -m black $BLACK_EXCLUDES "$TARGET_DIR"
-		BLACK_EXIT=$?
+		"$PY_BIN" -m black $black_excludes "$TARGET_DIR"
+		black_exit=$?
 	fi
-	if [ $BLACK_EXIT -ne 0 ]; then
+	if [ $black_exit -ne 0 ]; then
 		echo "[WARNING] black reported issues."
 		if [ "$CHECK_MODE" = "CHECK" ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
@@ -504,19 +504,19 @@ check_jscpd() {
 # Returns: 0 si pasa, 1 si hay errores de estilo
 ###############################################################################
 check_flake8() {
-	local FLAKE_FAILED=0 FLAKE8_IGNORE
+	local flake_failed=0 flake8_ignore
 	ensure_tool flake8 flake8
-	FLAKE8_IGNORE="E203,W503"
+	flake8_ignore="E203,W503"
 	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-		FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+		flake8_ignore="$flake8_ignore,E501"
 		echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 	fi
 	echo "[INFO] Running flake8 (output below if any):"
-	"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
+	"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
 	if [ $? -ne 0 ]; then
-		FLAKE_FAILED=1
+		flake_failed=1
 	fi
-	if [ $FLAKE_FAILED -ne 0 ]; then
+	if [ $flake_failed -ne 0 ]; then
 		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 			echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
 			echo "[RELAXED MODE] Not blocking build on flake8 errors."
@@ -537,22 +537,22 @@ check_flake8() {
 # Returns: 0 si pasa, 1 si hay errores de tipado
 ###############################################################################
 check_mypy() {
-	local MYPY_FAILED=0 MYPY_OUTPUT MYPY_EXIT_CODE MYPY_ERROR_COUNT MYPY_FILES_COUNT
+	local mypy_failed=0 mypy_output mypy_exit_code mypy_error_count mypy_files_count
 	ensure_tool mypy mypy
 	echo "[INFO] Running mypy (output below if any):"
 	set +e
-	MYPY_OUTPUT=$($PY_BIN -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1)
-	MYPY_EXIT_CODE=$?
+	mypy_output=$($PY_BIN -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1)
+	mypy_exit_code=$?
 	set -e
-	if [ $MYPY_EXIT_CODE -ne 0 ]; then
-		MYPY_FAILED=1
+	if [ $mypy_exit_code -ne 0 ]; then
+		mypy_failed=1
 	fi
-	if [ $MYPY_FAILED -ne 0 ]; then
-		echo "$MYPY_OUTPUT"
+	if [ $mypy_failed -ne 0 ]; then
+		echo "$mypy_output"
 		# Count errors: lines containing 'error:'
-		MYPY_ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c 'error:')
-		MYPY_FILES_COUNT=$(echo "$MYPY_OUTPUT" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
-		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $MYPY_ERROR_COUNT IN $MYPY_FILES_COUNT FILES."
+		mypy_error_count=$(echo "$mypy_output" | grep -c 'error:')
+		mypy_files_count=$(echo "$mypy_output" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
+		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
 		echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
 		echo "[EXIT] Quality Gate failed due to mypy errors."
 		return 1
