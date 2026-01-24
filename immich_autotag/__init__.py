@@ -1,5 +1,5 @@
 # Development version identifier
-from .version import __git_commit__, __version__, __git_describe__
+from .version import __git_commit__, __git_describe__, __version__
 
 # Re-export for package consumers
 __all__ = ["__git_commit__", "__version__", "__git_describe__"]
