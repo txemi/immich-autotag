@@ -43,6 +43,7 @@ class DateIntegrityError(Exception):
     pass
 
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapper:
     _context: "ImmichContext" = attrs.field(
@@ -50,7 +51,7 @@ class AssetResponseWrapper:
     )
     _state: AssetDtoState = attrs.field()
 
-    # NOTA: El resto de métodos seguirán usando self._state. No se reordena nada ni se cambia la lógica aún.
+    # NOTE: The rest of the methods will continue using self._state. No reordering or logic changes yet.
 
     def __attrs_post_init__(self) -> None:
         # Use isinstance for type validation, which is more robust and preferred
@@ -63,41 +64,31 @@ class AssetResponseWrapper:
         """Read-only access to the context. No external modification allowed."""
         return self._context
 
-    @property
-    def asset(self) -> AssetResponseDto:
-        """Returns the most complete version of the asset available.
 
-        Returns:
-            - asset_full if loaded (contains full data including tags)
-            - asset_partial otherwise (may have tags=UNSET)
-
-        """
-        return self._asset_full if self._asset_full is not None else self.asset_partial
-
-    def _ensure_full_asset_loaded(self) -> None:
+    def _ensure_full_asset_loaded(self) -> AssetDtoState:
         """Lazy-load the full asset data if not already loaded.
 
         Fetches the complete asset including tags via get_asset_info API call.
         Result is cached in _asset_full for subsequent accesses.
         """
-        if self._asset_full is not None:
-            return  # Already loaded
+        if self._state.type == AssetDtoType.FULL:
+            return  self._state
 
         from immich_client.api.assets import get_asset_info
-
-        # The immich client expects a UUID for the id parameter. Use the
-        # wrapper's UUID accessor to provide a UUID object rather than a raw string.
-        self._asset_full = get_asset_info.sync(
+        from immich_autotag.assets.asset_dto_state import AssetDtoType
+ # Already loaded
+        asset_full = get_asset_info.sync(
             id=self.id_as_uuid, client=self.get_context().client
         )
-        if self._asset_full is None:
+        if asset_full is None:
             raise RuntimeError(
-                f"[ERROR] Could not lazy-load asset with id={self.asset_partial.id}. "
-                "get_asset_info returned None."
+                f"[ERROR] Could not lazy-load asset with id={self._state.dto.id}. get_asset_info returned None."
             )
+        self._state.update(asset_full, AssetDtoType.FULL)
+        return self._state
 
-    @property
-    def tags(self) -> list[TagResponseDto] | Unset:
+
+    def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
 
         Returns the tags list from the asset. If tags are not yet loaded (UNSET from search_assets),
@@ -107,12 +98,7 @@ class AssetResponseWrapper:
             list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
         """
         from immich_client.types import Unset
-
-        current_tags = self.asset.tags
-        if isinstance(current_tags, Unset):
-            self._ensure_full_asset_loaded()
-            current_tags = self.asset.tags
-        return current_tags
+        return self._ensure_full_asset_loaded().get_tags()
 
     @typechecked
     def update_date(
@@ -126,7 +112,7 @@ class AssetResponseWrapper:
         """
         from immich_client.api.assets import update_asset
 
-        old_date = self.asset.created_at
+        old_date = self._state.dto.created_at
         # Ensure the date is timezone-aware in UTC
         if new_date.tzinfo is None:
             raise ValueError(
@@ -210,13 +196,9 @@ class AssetResponseWrapper:
 
         from typing import Iterator
 
-        def get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
-            yield asset__.created_at
-            yield asset__.file_created_at
-            yield asset__.file_modified_at
-            yield asset__.local_date_time
 
-        date_candidates = list(get_dates(self.asset))
+
+        date_candidates =self._state.get_dates()
         if not date_candidates:
             raise ValueError("Could not determine any date for the asset.")
         best_date = min(date_candidates)
@@ -225,7 +207,7 @@ class AssetResponseWrapper:
                 raise DateIntegrityError(
                     (
                         f"Integrity broken: found a date ({d}) earlier than the best selected date "
-                        f"({best_date}) for asset {self.asset.id}"
+                        f"({best_date}) for asset {self._state.get_uuid(}"
                     )
                 )
         return best_date
@@ -245,7 +227,7 @@ class AssetResponseWrapper:
         if duplicate_id is not None:
             group = context.duplicates_collection.get_group(duplicate_id)
             for dup_id in group:
-                if not include_self and str(dup_id) == self.asset.id:
+                if not include_self and str(dup_id) == self._state.dto.id:
                     continue
                 dup_asset = context.asset_manager.get_asset(dup_id, context)
                 if dup_asset is not None:
@@ -259,12 +241,8 @@ class AssetResponseWrapper:
         """
         Returns True if the asset has the tag with that name (case-insensitive).
         """
-        from immich_client.types import Unset
+        return self._state._get_full().has_tag(tag_name)
 
-        tags: list[TagResponseDto] | Unset = self.tags
-        if isinstance(tags, Unset):
-            return False
-        return any(tag.name and tag.name.lower() == tag_name.lower() for tag in tags)
 
     @typechecked
     def remove_tag_by_name(
@@ -405,7 +383,7 @@ class AssetResponseWrapper:
             )
             return False
         if not self.id:
-            error_msg = f"[ERROR] Asset object is missing id. Asset: {self.asset}"
+            error_msg = f"[ERROR] Asset object is missing id. Asset DTO: {self._state.dto}"
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
@@ -527,25 +505,25 @@ class AssetResponseWrapper:
 
     @property
     def original_file_name(self) -> str:
-        return self.asset.original_file_name
+        return self._state.dto.original_file_name
 
     @property
     def is_favorite(self) -> bool:
-        return self.asset.is_favorite
+        return self._state.dto.is_favorite
 
     @property
     def created_at(self) -> datetime | str | None:
-        return self.asset.created_at
+        return self._state.dto.created_at
 
     @property
     def id(self) -> str:
-        return self.asset.id
+        return self._state.dto.id
 
     @property
     def original_path(self) -> "Path":
         from pathlib import Path
 
-        path = Path(self.asset.original_path)
+        path = Path(self._state.dto.original_path)
 
         return path
 
@@ -558,7 +536,7 @@ class AssetResponseWrapper:
 
         from immich_client.types import Unset
 
-        val = self.asset.duplicate_id
+        val = self._state.dto.duplicate_id
         if val is None or isinstance(val, Unset):
             return None
         try:
@@ -879,20 +857,24 @@ class AssetResponseWrapper:
     def id_as_uuid(self) -> "UUID":
         from uuid import UUID
 
-        return UUID(self.asset.id)
+        return UUID(self._state.dto.id)
 
     @classmethod
     def from_dto(
         cls: type["AssetResponseWrapper"],
         dto: AssetResponseDto,
         context: "ImmichContext",
+        dto_type=None,
     ) -> "AssetResponseWrapper":
         """
         Creates an AssetResponseWrapper from a DTO and a context.
-        Uses asset_partial to enable lazy-loading of tags on first access.
+        Uses AssetDtoState to encapsulate the DTO and its type.
         """
-        state = AssetDtoState(dto)
-        return cls(context=context, state=state)
+        from immich_autotag.assets.asset_dto_state import AssetDtoType, AssetDtoState
+        if dto_type is None:
+            dto_type = AssetDtoType.PARTIAL
+        state = AssetDtoState(dto, dto_type)
+        return cls(_context=context, _state=state)
 
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
@@ -930,7 +912,7 @@ class AssetResponseWrapper:
         return url
 
     def get_uuid(self) -> UUID:
-        return UUID(self.asset.id)
+        return UUID(self._state.dto.id)
 
     # Eliminado método duplicado get_album_names (F811)
 
@@ -946,7 +928,7 @@ class AssetResponseWrapper:
         if duplicate_id is not None:
             group = context.duplicates_collection.get_group(duplicate_id)
             for dup_id in group:
-                if str(dup_id) == self.asset.id:
+                if str(dup_id) == self._state.dto.id:
                     continue
                 dup_asset = context.asset_manager.get_asset(dup_id, context)
                 if dup_asset is not None:
@@ -1104,26 +1086,26 @@ class AssetResponseWrapper:
             link = "(no link)"
         lines.append(f"  Link: {link}")
         try:
-            created_at = self.asset.created_at
+            created_at = self._state.dto.created_at
         except AttributeError:
             created_at = None
         lines.append(f"  created_at: {created_at}")
         try:
-            file_created_at = self.asset.file_created_at
+            file_created_at = self._state.dto.file_created_at
         except AttributeError:
             file_created_at = None
         lines.append(f"  file_created_at: {file_created_at}")
         # exif_created_at is not present in AssetResponseDto
         lines.append("  exif_created_at: (not available)")
         try:
-            updated_at = self.asset.updated_at
+            updated_at = self._state.dto.updated_at
         except AttributeError:
             updated_at = None
         lines.append(f"  updated_at: {updated_at}")
         lines.append(f"  Tags: {self.get_tag_names()}")
         lines.append(f"  Albums: {self.get_album_names()}")
         try:
-            original_path = self.asset.original_path
+            original_path = self._state.dto.original_path
         except AttributeError:
             original_path = None
         lines.append(f"  Path: {original_path}")
