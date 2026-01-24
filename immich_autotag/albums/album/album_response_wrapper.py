@@ -46,9 +46,7 @@ class AssetAlreadyInAlbumError(Exception):
     pass
 
 
-class AlbumLoadSource(enum.Enum):
-    SEARCH = "search"  # Loaded from album list/search API
-    DETAIL = "detail"  # Loaded from album detail API (full)
+
 
 
 @attrs.define(auto_attribs=True, slots=True)
