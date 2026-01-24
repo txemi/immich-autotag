@@ -146,7 +146,7 @@ check_shfmt() {
 	echo "==============================="
 	echo ""
 
-	local BASH_SCRIPTS
+	local bash_scripts
 	# Require shfmt to be installed
 	if ! command -v shfmt >/dev/null 2>&1; then
 		echo "[ERROR] shfmt is not installed. Please install it to pass the quality gate."
@@ -155,17 +155,17 @@ check_shfmt() {
 	fi
 
 	# Find relevant bash scripts (adjust pattern if needed)
-	BASH_SCRIPTS=$(find scripts -type f -name "*.sh")
+	bash_scripts=$(find scripts -type f -name "*.sh")
 
 	# Run shfmt according to mode
 	if [ "$CHECK_MODE" = "CHECK" ]; then
-		if ! shfmt -d $BASH_SCRIPTS; then
+		if ! shfmt -d $bash_scripts; then
 			echo "[ERROR] There are formatting issues in Bash scripts. Run 'shfmt -w scripts/' to fix them."
 			return 1
 		fi
 	else
 		echo "[INFO] Applying automatic formatting to Bash scripts with shfmt..."
-		shfmt -w $BASH_SCRIPTS
+		shfmt -w $bash_scripts
 	fi
 	return 0
 }
@@ -188,13 +188,13 @@ setup_max_line_length() {
 	extract_line_length() {
 		grep -E '^[ \t]*line-length[ \t]*=' "$1" | head -n1 | sed -E 's/.*= *([0-9]+).*/\1/'
 	}
-	local MAX_LINE_LENGTH_LOCAL
-	MAX_LINE_LENGTH_LOCAL=$(extract_line_length "$REPO_ROOT/pyproject.toml")
-	if [ -z "$MAX_LINE_LENGTH_LOCAL" ]; then
+	local max_line_length_local
+	max_line_length_local=$(extract_line_length "$REPO_ROOT/pyproject.toml")
+	if [ -z "$max_line_length_local" ]; then
 		echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default."
-		MAX_LINE_LENGTH_LOCAL=88
+		max_line_length_local=88
 	fi
-	export MAX_LINE_LENGTH="$MAX_LINE_LENGTH_LOCAL"
+	export MAX_LINE_LENGTH="$max_line_length_local"
 }
 
 
@@ -474,19 +474,19 @@ check_no_tuples() {
 # Returns: 0 si pasa, 1 si hay duplicación
 ###############################################################################
 check_jscpd() {
-	local JSCMD JSPCD_EXIT
+	local jscmd jscpd_exit
 	echo "[CHECK] Running jscpd for code duplication detection..."
 	if ! command -v jscpd &>/dev/null; then
 		echo "[INFO] jscpd not found, installing locally via npx..."
-		JSCMD="npx jscpd"
+		jscmd="npx jscpd"
 	else
-		JSCMD="jscpd"
+		jscmd="jscpd"
 	fi
 	# Run jscpd in check mode (non-zero exit if duplicates found)
 	# Use --ignore instead of --exclude for recent jscpd versions
-	$JSCMD --silent --min-tokens 30 --max-lines 100 --format python --ignore "**/.venv/**,**/immich-client/**,**/scripts/**" "$TARGET_DIR"
-	JSPCD_EXIT=$?
-	if [ $JSPCD_EXIT -ne 0 ]; then
+	$jscmd --silent --min-tokens 30 --max-lines 100 --format python --ignore "**/.venv/**,**/immich-client/**,**/scripts/**" "$TARGET_DIR"
+	jscpd_exit=$?
+	if [ $jscpd_exit -ne 0 ]; then
 		echo "[ERROR] jscpd detected code duplication. Please refactor duplicate code."
 		return 1
 	fi
@@ -569,12 +569,12 @@ check_mypy() {
 # Returns: 0 si pasa, 1 si se detectan caracteres prohibidos
 ###############################################################################
 check_no_spanish_chars() {
-	local SPANISH_MATCHES
+	local spanish_matches
 	echo "Checking for Spanish language characters in source files..."
-	SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
-	if [ -n "$SPANISH_MATCHES" ]; then
+	spanish_matches=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
+	if [ -n "$spanish_matches" ]; then
 		echo '❌ Spanish language characters detected in the following files/lines:'
-		echo "$SPANISH_MATCHES"
+		echo "$spanish_matches"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
 		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 			echo '[RELAXED MODE] Not blocking build on Spanish character check.'
