@@ -249,17 +249,22 @@ ensure_tool() {
 # Run ruff first (auto-fix/format where possible)
 
 ensure_tool ruff ruff
+RUFF_IGNORE=""
+if [ $RELAXED_MODE -eq 1 ]; then
+	RUFF_IGNORE="--ignore E501"
+	echo "[RELAXED MODE] Ruff ignorará E501 (longitud de línea) y no bloqueará el build por ello."
+fi
 if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m ruff check --fix "$TARGET_DIR"
+	"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
 	RUFF_EXIT=$?
 else
-	"$PY_BIN" -m ruff check --fix "$TARGET_DIR"
+	"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
 	RUFF_EXIT=$?
 fi
 if [ $RUFF_EXIT -ne 0 ]; then
 	echo "[WARNING] ruff reported/fixed issues."
 	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run el comando localmente para ver los diffs."
+		echo "Run in apply mode to let the script attempt to fix formatting problems o run el comando localmente para ver los diffs."
 		exit 1
 	fi
 fi
