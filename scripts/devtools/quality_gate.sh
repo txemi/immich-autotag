@@ -607,22 +607,44 @@ main() {
 	# Inicialización de argumentos y variables globales
 	parse_args_and_globals "$@"
 	setup_environment
-	check_shfmt || exit 1
-	check_python_syntax || exit 1
-	check_isort || exit 1
-	check_ruff || exit 1
-	check_black || exit 1
-	check_ssort || exit 1
-	check_no_dynamic_attrs || exit 2
-	check_no_tuples || exit 3
-	check_jscpd || exit 1
-	check_flake8 || exit 1
-	check_mypy || exit 1
-	check_no_spanish_chars || exit 5
+
+	# En modo CHECK, salir al primer error. En modo APPLY, ejecutar todo y fallar al final si hubo errores.
+	local error_found=0
+
+	if [ "$CHECK_MODE" = "CHECK" ]; then
+		check_shfmt || exit 1
+		check_python_syntax || exit 1
+		check_isort || exit 1
+		check_ruff || exit 1
+		check_black || exit 1
+		check_ssort || exit 1
+		check_no_dynamic_attrs || exit 2
+		check_no_tuples || exit 3
+		check_jscpd || exit 1
+		check_flake8 || exit 1
+		check_mypy || exit 1
+		check_no_spanish_chars || exit 5
+	else
+		check_shfmt || error_found=1
+		check_python_syntax || error_found=1
+		check_isort || error_found=1
+		check_ruff || error_found=1
+		check_black || error_found=1
+		check_ssort || error_found=1
+		check_no_dynamic_attrs || error_found=2
+		check_no_tuples || error_found=3
+		check_jscpd || error_found=1
+		check_flake8 || error_found=1
+		check_mypy || error_found=1
+		check_no_spanish_chars || error_found=5
+		if [ "$error_found" -ne 0 ]; then
+			echo "[EXIT] Quality Gate failed (see errors above)."
+			exit $error_found
+		fi
+	fi
 
 	echo "🎉 Quality Gate completed successfully!"
 }
-
 
 
 # Entrypoint
