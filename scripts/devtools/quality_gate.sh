@@ -445,6 +445,7 @@ if [ $MYPY_FAILED -ne 0 ]; then
 	MYPY_ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c 'error:')
 	MYPY_FILES_COUNT=$(echo "$MYPY_OUTPUT" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
 	echo "[ERROR] mypy failed. Total errores: $MYPY_ERROR_COUNT en $MYPY_FILES_COUNT archivos."
+	echo "[INFO] Comando ejecutado: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
 	echo "[EXIT] Quality Gate failed due to mypy errors."
 	exit 1
 fi
