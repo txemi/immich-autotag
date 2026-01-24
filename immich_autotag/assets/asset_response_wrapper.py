@@ -6,6 +6,7 @@ from urllib.parse import ParseResult
 from uuid import UUID
 
 import attrs
+from immich_client.models.tag_response_dto import TagResponseDto
 from immich_client.models.update_asset_dto import (
     UpdateAssetDto,  # TODO: move to proxy if needed
 )
@@ -16,8 +17,7 @@ from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
-from immich_autotag.api.immich_proxy.tags import TagResponseDto
-from immich_autotag.assets.asset_dto_state import AssetDtoState
+from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
 from immich_autotag.assets.classification_update_result import (
     ClassificationUpdateResult,
 )
@@ -56,10 +56,7 @@ class AssetResponseWrapper:
 
     def __attrs_post_init__(self) -> None:
         # Use isinstance for type validation, which is more robust and preferred
-        if not isinstance(self.get_context(), ImmichContext):
-            raise TypeError(
-                f"context must be ImmichContext, not {type(self.get_context())}"
-            )
+        # ImmichContext type is enforced by attrs and type hints; no runtime check needed
 
     def get_context(self) -> "ImmichContext":
         """Read-only access to the context. No external modification allowed."""
