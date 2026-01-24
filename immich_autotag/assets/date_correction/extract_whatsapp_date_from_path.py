@@ -36,13 +36,10 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
             from immich_autotag.config.manager import ConfigManager
 
             config: UserConfig = ConfigManager.get_instance().config  # type: ignore
-            if config.date_correction is not None:
-                tz = ZoneInfo(config.date_correction.extraction_timezone)
-                return datetime(
-                    int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
-                )
-            else:
-                return None
+            tz = ZoneInfo(config.date_correction.extraction_timezone)  # type: ignore[attr-defined]
+            return datetime(
+                int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
+            )
         except Exception:
             return None
     # Pattern 2: WhatsApp Image YYYY-MM-DD at HH.MM.SS
@@ -55,19 +52,16 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
             from immich_autotag.config.manager import ConfigManager
 
             config: UserConfig = ConfigManager.get_instance().config  # type: ignore
-            if config.date_correction is not None:
-                tz = ZoneInfo(config.date_correction.extraction_timezone)
-                return datetime(
-                    int(m.group(1)),
-                    int(m.group(2)),
-                    int(m.group(3)),
-                    int(m.group(4)),
-                    int(m.group(5)),
-                    int(m.group(6)),
-                    tzinfo=tz,
-                )
-            else:
-                return None
+            tz = ZoneInfo(config.date_correction.extraction_timezone)  # type: ignore[attr-defined]
+            return datetime(
+                int(m.group(1)),
+                int(m.group(2)),
+                int(m.group(3)),
+                int(m.group(4)),
+                int(m.group(5)),
+                int(m.group(6)),
+                tzinfo=tz,
+            )
         except Exception:
             return None
     return None
