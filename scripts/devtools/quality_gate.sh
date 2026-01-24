@@ -549,21 +549,29 @@ check_mypy || exit 1
 # - Forbids Spanish text/accents in code (blocks only in strict mode).
 # =============================================================================
 
-# --- Spanish language character check (quality gate) ---
-echo "Checking for Spanish language characters in source files..."
-SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
-if [ -n "$SPANISH_MATCHES" ]; then
-	echo '❌ Spanish language characters detected in the following files/lines:'
-	echo "$SPANISH_MATCHES"
-	echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
-	if [ "$RELAXED_MODE" -eq 1 ]; then
-		echo '[RELAXED MODE] Not blocking build on Spanish character check.'
+
+# =====================
+# Function: check_no_spanish_chars
+# =====================
+check_no_spanish_chars() {
+	echo "Checking for Spanish language characters in source files..."
+	SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
+	if [ -n "$SPANISH_MATCHES" ]; then
+		echo '❌ Spanish language characters detected in the following files/lines:'
+		echo "$SPANISH_MATCHES"
+		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
+		if [ "$RELAXED_MODE" -eq 1 ]; then
+			echo '[RELAXED MODE] Not blocking build on Spanish character check.'
+		else
+			echo 'Build failed: Please remove all Spanish text and accents before publishing.'
+			return 1
+		fi
 	else
-		echo 'Build failed: Please remove all Spanish text and accents before publishing.'
-		exit 1
+		echo "✅ No Spanish language characters detected."
 	fi
-else
-	echo "✅ No Spanish language characters detected."
-fi
+	return 0
+}
+
+check_no_spanish_chars || exit 5
 
 echo "🎉 Quality Gate completed successfully!"
