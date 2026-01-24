@@ -97,11 +97,12 @@ else
 	echo "[MODE] Running in APPLY mode (formatters may modify files)."
 fi
 
+
 ###############################################################################
 # SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)
 # -----------------------------------------------------------------------------
-# - Exige que shfmt esté instalado.
-# - Falla el quality gate si no está o si hay problemas de formato.
+# - Requires shfmt to be installed.
+# - Fails the quality gate if not installed or if there are formatting issues.
 ###############################################################################
 
 echo ""
@@ -110,10 +111,11 @@ echo "SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)"
 echo "==============================="
 echo ""
 
-# Exigir que shfmt esté instalado
+
+# Require shfmt to be installed
 if ! command -v shfmt >/dev/null 2>&1; then
-	echo "[ERROR] shfmt no está instalado. Instálalo para pasar el quality gate."
-	echo "Puedes instalarlo con: sudo apt-get install shfmt  # o equivalente para tu sistema"
+	echo "[ERROR] shfmt is not installed. Please install it to pass the quality gate."
+	echo "You can install it with: sudo apt-get install shfmt  # or equivalent for your system"
 	exit 1
 fi
 
@@ -220,7 +222,7 @@ ensure_tool ruff ruff
 RUFF_IGNORE=""
 if [ $RELAXED_MODE -eq 1 ]; then
 	RUFF_IGNORE="--ignore E501"
-	echo "[RELAXED MODE] Ruff ignorará E501 (longitud de línea) y no bloqueará el build por ello."
+	echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 fi
 if [ "$CHECK_MODE" -eq 1 ]; then
 	"$PY_BIN" -m ruff check --fix $RUFF_IGNORE "$TARGET_DIR"
@@ -232,7 +234,7 @@ fi
 if [ $RUFF_EXIT -ne 0 ]; then
 	echo "[WARNING] ruff reported/fixed issues."
 	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems o run el comando localmente para ver los diffs."
+		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 		exit 1
 	fi
 fi
@@ -256,7 +258,7 @@ fi
 if [ $ISORT_EXIT -ne 0 ]; then
 	echo "[WARNING] isort reported issues."
 	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run el comando localmente para ver los diffs."
+		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 		exit 1
 	fi
 fi
@@ -280,7 +282,7 @@ fi
 if [ $BLACK_EXIT -ne 0 ]; then
 	echo "[WARNING] black reported issues."
 	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run el comando localmente para ver los diffs."
+		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 		exit 1
 	fi
 fi
@@ -455,6 +457,7 @@ echo "Static checks (ruff/flake8/mypy) completed successfully."
 # -----------------------------------------------------------------------------
 # - Forbids Spanish text/accents in code (blocks only in strict mode).
 # =============================================================================
+
 # --- Spanish language character check (quality gate) ---
 echo "Checking for Spanish language characters in source files..."
 SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
@@ -468,7 +471,6 @@ if [ -n "$SPANISH_MATCHES" ]; then
 		echo 'Build failed: Please remove all Spanish text and accents before publishing.'
 		exit 1
 	fi
-
 else
 	echo "✅ No Spanish language characters detected."
 fi
