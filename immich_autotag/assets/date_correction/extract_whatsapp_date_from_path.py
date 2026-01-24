@@ -1,4 +1,3 @@
-from immich_autotag.config.models import UserConfig
 # extract_whatsapp_date_from_path.py
 # Function: extract_whatsapp_date_from_path
 import re
@@ -7,6 +6,8 @@ from typing import Optional
 from zoneinfo import ZoneInfo
 
 from typeguard import typechecked
+
+from immich_autotag.config.models import UserConfig
 
 
 @typechecked
