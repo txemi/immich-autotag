@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Quality Gate Script: Checks and Execution Modes
+# QUALITY GATE SCRIPT: CHECKS AND EXECUTION MODES
 # ============================================================================
 # This script implements two main modes:
 #   - Strict mode (default): Fails on any check error.
@@ -117,17 +117,17 @@ if ! command -v shfmt >/dev/null 2>&1; then
 	exit 1
 fi
 
-# Buscar scripts bash relevantes (ajusta el patrón si es necesario)
+# Find relevant bash scripts (adjust pattern if needed)
 BASH_SCRIPTS=$(find scripts -type f -name "*.sh")
 
-# Ejecutar shfmt según el modo
+# Run shfmt according to mode
 if [ "$CHECK_MODE" -eq 1 ]; then
 	if ! shfmt -d $BASH_SCRIPTS; then
-		echo "[ERROR] Hay problemas de formato en los scripts Bash. Ejecuta 'shfmt -w scripts/' para corregirlos."
+		echo "[ERROR] There are formatting issues in Bash scripts. Run 'shfmt -w scripts/' to fix them."
 		exit 1
 	fi
 else
-	echo "[INFO] Aplicando formato automático a scripts Bash con shfmt..."
+	echo "[INFO] Applying automatic formatting to Bash scripts with shfmt..."
 	shfmt -w $BASH_SCRIPTS
 fi
 
@@ -210,6 +210,79 @@ ensure_tool() {
 }
 
 # =============================================================================
+# SECTION 3: ISORT (IMPORT SORTING)
+# -----------------------------------------------------------------------------
+# - Organizes imports for consistency and readability.
+# =============================================================================
+# Organize imports with isort using the environment Python (isort before black)
+
+ensure_tool isort isort
+ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
+if [ "$CHECK_MODE" -eq 1 ]; then
+	"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
+	ISORT_EXIT=$?
+else
+	"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
+	ISORT_EXIT=$?
+fi
+if [ $ISORT_EXIT -ne 0 ]; then
+	echo "[WARNING] isort reported issues."
+	if [ "$CHECK_MODE" -eq 1 ]; then
+		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
+		exit 1
+	fi
+fi
+
+# =============================================================================
+# SECTION 9B: SSORT (DETERMINISTIC METHOD ORDERING)
+# -----------------------------------------------------------------------------
+# - ssort: Ensures deterministic method ordering in Python classes.
+# =============================================================================
+###############################################################
+# Deterministic method ordering in Python classes              #
+# ----------------------------------------------------------- #
+# Historically, `uvx ssort` was used for this purpose, but:   #
+#   - `uvx` has been removed from PyPI and is now a dummy.    #
+#   - There is no direct alternative in PyPI or apt.          #
+#   - Locally it may work if you have an old version or snap, #
+#     but in CI/Jenkins and clean environments it is not viable.
+# Solution:                                                   #
+#   - We use `ssort` from GitHub (https://github.com/bwhmather/ssort),
+#     installing it with pip directly from the repo if not present.
+#   - This ensures reproducibility and that Jenkins/CI always has the tool,
+#     without relying on old versions or snaps.                #
+#   - If a more standard alternative appears in the future, migration will be easy.
+# NOTE: Local tests may work due to previous installations,   #
+# but reproducibility in CI is what matters.                  #
+###############################################################
+
+# --- Ensure ssort (bwhmather/ssort) is installed and available ---
+ensure_ssort() {
+	if ! command -v ssort &>/dev/null; then
+		echo "[INFO] ssort not found, installing from GitHub..."
+		"$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
+	fi
+}
+
+# --- Run ssort for deterministic method ordering after syntax check ---
+ensure_ssort
+SSORT_FAILED=0
+if [ "$CHECK_MODE" -eq 1 ]; then
+	echo "[FORMAT] Running ssort in CHECK mode..."
+	ssort --check "$TARGET_DIR" || SSORT_FAILED=1
+else
+	echo "[FORMAT] Running ssort in APPLY mode..."
+	ssort "$TARGET_DIR" || SSORT_FAILED=1
+fi
+
+# Now ssort is blocking in both modes
+if [ $SSORT_FAILED -ne 0 ]; then
+	echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
+	echo "[EXIT] Quality Gate failed due to ssort ordering errors."
+	exit 1
+fi
+
+# =============================================================================
 # SECTION 2: RUFF (LINT/AUTO-FIX)
 # -----------------------------------------------------------------------------
 # - Runs ruff to lint and auto-fix code style issues.
@@ -231,30 +304,6 @@ else
 fi
 if [ $RUFF_EXIT -ne 0 ]; then
 	echo "[WARNING] ruff reported/fixed issues."
-	if [ "$CHECK_MODE" -eq 1 ]; then
-		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
-		exit 1
-	fi
-fi
-
-# =============================================================================
-# SECTION 3: ISORT (IMPORT SORTING)
-# -----------------------------------------------------------------------------
-# - Organizes imports for consistency and readability.
-# =============================================================================
-# Organize imports with isort using the environment Python (isort before black)
-
-ensure_tool isort isort
-ISORT_SKIPS="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
-if [ "$CHECK_MODE" -eq 1 ]; then
-	"$PY_BIN" -m isort $ISORT_SKIPS --profile black --check-only "$TARGET_DIR"
-	ISORT_EXIT=$?
-else
-	"$PY_BIN" -m isort $ISORT_SKIPS --profile black "$TARGET_DIR"
-	ISORT_EXIT=$?
-fi
-if [ $ISORT_EXIT -ne 0 ]; then
-	echo "[WARNING] isort reported issues."
 	if [ "$CHECK_MODE" -eq 1 ]; then
 		echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 		exit 1
@@ -374,55 +423,6 @@ if [ $FLAKE_FAILED -ne 0 ]; then
 fi
 
 # =============================================================================
-# SECTION 9B: SSORT (DETERMINISTIC METHOD ORDERING)
-# -----------------------------------------------------------------------------
-# - ssort: Ensures deterministic method ordering in Python classes.
-# =============================================================================
-###############################################################
-# Deterministic method ordering in Python classes              #
-# ----------------------------------------------------------- #
-# Historically, `uvx ssort` was used for this purpose, but:   #
-#   - `uvx` has been removed from PyPI and is now a dummy.    #
-#   - There is no direct alternative in PyPI or apt.          #
-#   - Locally it may work if you have an old version or snap, #
-#     but in CI/Jenkins and clean environments it is not viable.
-# Solution:                                                   #
-#   - We use `ssort` from GitHub (https://github.com/bwhmather/ssort),
-#     installing it with pip directly from the repo if not present.
-#   - This ensures reproducibility and that Jenkins/CI always has the tool,
-#     without relying on old versions or snaps.                #
-#   - If a more standard alternative appears in the future, migration will be easy.
-# NOTE: Local tests may work due to previous installations,   #
-# but reproducibility in CI is what matters.                  #
-###############################################################
-
-# --- Ensure ssort (bwhmather/ssort) is installed and available ---
-ensure_ssort() {
-	if ! command -v ssort &>/dev/null; then
-		echo "[INFO] ssort not found, installing from GitHub..."
-		"$PY_BIN" -m pip install git+https://github.com/bwhmather/ssort.git
-	fi
-}
-
-# --- Run ssort for deterministic method ordering after syntax check ---
-ensure_ssort
-SSORT_FAILED=0
-if [ "$CHECK_MODE" -eq 1 ]; then
-	echo "[FORMAT] Running ssort in CHECK mode..."
-	ssort --check "$TARGET_DIR" || SSORT_FAILED=1
-else
-	echo "[FORMAT] Running ssort in APPLY mode..."
-	ssort "$TARGET_DIR" || SSORT_FAILED=1
-fi
-
-# Now ssort is blocking in both modes
-if [ $SSORT_FAILED -ne 0 ]; then
-	echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
-	echo "[EXIT] Quality Gate failed due to ssort ordering errors."
-	exit 1
-fi
-
-# =============================================================================
 # SECTION 9C: MYPY (TYPE CHECKING)
 # -----------------------------------------------------------------------------
 # - mypy: Type checking (always blocks in all modes).
@@ -444,8 +444,8 @@ if [ $MYPY_FAILED -ne 0 ]; then
 	# Contar errores: líneas que contienen 'error:'
 	MYPY_ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c 'error:')
 	MYPY_FILES_COUNT=$(echo "$MYPY_OUTPUT" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
-	echo "[ERROR] mypy failed. Total errores: $MYPY_ERROR_COUNT en $MYPY_FILES_COUNT archivos."
-	echo "[INFO] Comando ejecutado: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
+	echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $MYPY_ERROR_COUNT IN $MYPY_FILES_COUNT FILES."
+	echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
 	echo "[EXIT] Quality Gate failed due to mypy errors."
 	exit 1
 fi
