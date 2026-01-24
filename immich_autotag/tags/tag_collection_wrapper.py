@@ -11,6 +11,11 @@ class TagCollectionWrapper:
         factory=list, validator=attrs.validators.instance_of(list)
     )
 
+    def __attrs_post_init__(self):
+        # Defensive: never allow None for tags
+        if self.tags is None:
+            raise ValueError("tags cannot be None; use an empty list instead")
+
     @typechecked
     def _sync_from_api(self, client: ImmichClient) -> None:
         """
@@ -69,6 +74,8 @@ class TagCollectionWrapper:
         from immich_client.api.tags import get_all_tags
 
         tags_dto = get_all_tags.sync(client=client)
+        if tags_dto is None:
+            tags_dto = []
         tags = [TagWrapper(tag) for tag in tags_dto]
         return TagCollectionWrapper(tags=tags)
 
