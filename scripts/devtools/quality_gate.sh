@@ -86,8 +86,9 @@ parse_args_and_globals() {
 
 
 	# Definir como globales
-	QUALITY_LEVEL=""  # Valores posibles: DUMMY, STRICT, RELAXED
+
 	CHECK_MODE="APPLY"  # Valores posibles: APPLY, CHECK
+	QUALITY_LEVEL=""  # Valores posibles: DUMMY, STRICT, RELAXED
 	ENFORCE_DYNAMIC_ATTRS=0
 	TARGET_DIR=""
 	for arg in "$@"; do
