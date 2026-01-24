@@ -303,23 +303,29 @@ ensure_ssort() {
 	fi
 }
 
-# --- Run ssort for deterministic method ordering after syntax check ---
-ensure_ssort
-SSORT_FAILED=0
-if [ "$CHECK_MODE" -eq 1 ]; then
-	echo "[FORMAT] Running ssort in CHECK mode..."
-	ssort --check "$TARGET_DIR" || SSORT_FAILED=1
-else
-	echo "[FORMAT] Running ssort in APPLY mode..."
-	ssort "$TARGET_DIR" || SSORT_FAILED=1
-fi
 
-# Now ssort is blocking in both modes
-if [ $SSORT_FAILED -ne 0 ]; then
-	echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
-	echo "[EXIT] Quality Gate failed due to ssort ordering errors."
-	exit 1
-fi
+# =====================
+# Function: check_ssort
+# =====================
+check_ssort() {
+	ensure_ssort
+	SSORT_FAILED=0
+	if [ "$CHECK_MODE" -eq 1 ]; then
+		echo "[FORMAT] Running ssort in CHECK mode..."
+		ssort --check "$TARGET_DIR" || SSORT_FAILED=1
+	else
+		echo "[FORMAT] Running ssort in APPLY mode..."
+		ssort "$TARGET_DIR" || SSORT_FAILED=1
+	fi
+	if [ $SSORT_FAILED -ne 0 ]; then
+		echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
+		echo "[EXIT] Quality Gate failed due to ssort ordering errors."
+		return 1
+	fi
+	return 0
+}
+
+check_ssort || exit 1
 
 # =============================================================================
 # SECTION 2: RUFF (LINT/AUTO-FIX)
