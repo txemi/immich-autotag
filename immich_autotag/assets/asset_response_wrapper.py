@@ -76,12 +76,13 @@ class AssetResponseWrapper:
         refreshed = type(self).from_api(self.id_as_uuid, self.get_context())
         self._state = refreshed._state
         return self._state
+
     @classmethod
     def from_dto(
         cls: type["AssetResponseWrapper"],
         dto: AssetResponseDto,
         context: "ImmichContext",
-        dto_type:AssetDtoType,
+        dto_type: AssetDtoType,
     ) -> "AssetResponseWrapper":
         """
         Creates an AssetResponseWrapper from a DTO and a context.
@@ -91,8 +92,11 @@ class AssetResponseWrapper:
 
         state = AssetDtoState(dto, dto_type)
         return cls(context=context, state=state)
+
     @classmethod
-    def from_api(cls, asset_id: UUID, context: "ImmichContext") -> "AssetResponseWrapper":
+    def from_api(
+        cls, asset_id: UUID, context: "ImmichContext"
+    ) -> "AssetResponseWrapper":
         """
         Fetches the asset from the API and returns a fully constructed AssetResponseWrapper (always FULL).
         """
@@ -100,11 +104,12 @@ class AssetResponseWrapper:
             get_asset_info as proxy_get_asset_info,
         )
         from immich_autotag.assets.asset_dto_state import AssetDtoType
+
         dto = proxy_get_asset_info(asset_id, context.client)
         if dto is None:
             raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
         return cls.from_dto(dto, context, AssetDtoType.FULL)
-    
+
     def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
 
@@ -873,8 +878,6 @@ class AssetResponseWrapper:
 
         return self._state.get_uuid()
 
-
-
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
         """
@@ -1109,4 +1112,3 @@ class AssetResponseWrapper:
             original_path = None
         lines.append(f"  Path: {original_path}")
         return "\n".join(lines)
-

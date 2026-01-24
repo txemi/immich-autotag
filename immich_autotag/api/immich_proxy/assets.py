@@ -1,11 +1,12 @@
-
 # --- Diagnóstico de llamadas a la API de assets ---
 import atexit
+
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
 _asset_api_call_count = 0
 _asset_api_ids: set[str] = set()
+
 
 def _print_asset_api_call_summary():
     log(
@@ -14,6 +15,7 @@ def _print_asset_api_call_summary():
     )
     if len(_asset_api_ids) < 30:
         log(f"[DIAG] Asset IDs únicos: {_asset_api_ids}", level=LogLevel.DEBUG)
+
 
 atexit.register(_print_asset_api_call_summary)
 """
