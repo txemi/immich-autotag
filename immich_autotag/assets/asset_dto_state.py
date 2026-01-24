@@ -3,7 +3,10 @@ from datetime import datetime
 from typing import Iterator
 
 import attrs
-from immich_client.models.asset_response_dto import AssetResponseDto, TagResponseDto
+from immich_client.models.asset_response_dto import AssetResponseDto
+from typing import Any
+
+from immich_client.models.tag_response_dto import TagResponseDto
 
 
 class AssetDtoType(enum.Enum):
@@ -57,9 +60,10 @@ class AssetDtoState:
                 "has_tag not implemented for PARTIAL AssetDtoType"
             )
         from immich_client.types import Unset
-
+        tags = self._dto.tags
         if isinstance(tags, Unset):
             raise NotImplementedError("Tags are UNSET; cannot check for tag existence.")
-
-        tags: list[TagResponseDto] | Unset = self.tags
+        # Aseguramos el tipo para el editor y mypy
+        from typing import cast
+        tags = cast(list[TagResponseDto], tags)
         return any(tag.name and tag.name.lower() == tag_name.lower() for tag in tags)
