@@ -56,7 +56,7 @@ def _yield_assets_from_page(
             )
             from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
             state = AssetDtoState(asset, AssetDtoType.PARTIAL)
-            yield AssetResponseWrapper(_context=context, _state=state)
+            yield AssetResponseWrapper(context=context, state=state)
             yielded += 1
         else:
             log_debug(
