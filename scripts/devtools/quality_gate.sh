@@ -495,29 +495,36 @@ check_flake8 || exit 1
 # -----------------------------------------------------------------------------
 # - mypy: Type checking (always blocks in all modes).
 # =============================================================================
-# mypy: print output directly, capture exit code
-ensure_tool mypy mypy
-MYPY_FAILED=0
-echo "[INFO] Running mypy (output below if any):"
-set +e
-MYPY_OUTPUT=$($PY_BIN -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1)
-MYPY_EXIT_CODE=$?
-set -e
-if [ $MYPY_EXIT_CODE -ne 0 ]; then
-	MYPY_FAILED=1
-fi
-# mypy: always blocks in all modes
-if [ $MYPY_FAILED -ne 0 ]; then
-	echo "$MYPY_OUTPUT"
-	# Contar errores: líneas que contienen 'error:'
-	MYPY_ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c 'error:')
-	MYPY_FILES_COUNT=$(echo "$MYPY_OUTPUT" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
-	echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $MYPY_ERROR_COUNT IN $MYPY_FILES_COUNT FILES."
-	echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
-	echo "[EXIT] Quality Gate failed due to mypy errors."
-	exit 1
-fi
-echo "Static checks (ruff/flake8/mypy) completed successfully."
+
+# =====================
+# Function: check_mypy
+# =====================
+check_mypy() {
+	ensure_tool mypy mypy
+	MYPY_FAILED=0
+	echo "[INFO] Running mypy (output below if any):"
+	set +e
+	MYPY_OUTPUT=$($PY_BIN -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1)
+	MYPY_EXIT_CODE=$?
+	set -e
+	if [ $MYPY_EXIT_CODE -ne 0 ]; then
+		MYPY_FAILED=1
+	fi
+	if [ $MYPY_FAILED -ne 0 ]; then
+		echo "$MYPY_OUTPUT"
+		# Count errors: lines containing 'error:'
+		MYPY_ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c 'error:')
+		MYPY_FILES_COUNT=$(echo "$MYPY_OUTPUT" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
+		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $MYPY_ERROR_COUNT IN $MYPY_FILES_COUNT FILES."
+		echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
+		echo "[EXIT] Quality Gate failed due to mypy errors."
+		return 1
+	fi
+	echo "Static checks (ruff/flake8/mypy) completed successfully."
+	return 0
+}
+
+check_mypy || exit 1
 
 # =============================================================================
 # SECTION 11: SPANISH LANGUAGE CHARACTER CHECK
