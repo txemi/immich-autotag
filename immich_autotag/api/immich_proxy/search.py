@@ -1,4 +1,3 @@
-
 from typing import Any
 
 from immich_client import Client
