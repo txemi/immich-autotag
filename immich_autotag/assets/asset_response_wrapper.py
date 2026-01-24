@@ -86,13 +86,29 @@ class AssetResponseWrapper:
             )
         self._state.update(asset_full, AssetDtoType.FULL)
         return self._state
+    @classmethod
+    def from_dto(
+        cls: type["AssetResponseWrapper"],
+        dto: AssetResponseDto,
+        context: "ImmichContext",
+        dto_type,
+    ) -> "AssetResponseWrapper":
+        """
+        Creates an AssetResponseWrapper from a DTO and a context.
+        Uses AssetDtoState to encapsulate the DTO and its type.
+        """
+        from immich_autotag.assets.asset_dto_state import AssetDtoState
 
+        state = AssetDtoState(dto, dto_type)
+        return cls(context=context, state=state)
     @classmethod
     def from_api(cls, asset_id: UUID, context: "ImmichContext") -> "AssetResponseWrapper":
         """
         Fetches the asset from the API and returns a fully constructed AssetResponseWrapper (always FULL).
         """
-        from immich_autotag.api.immich_proxy.assets import get_asset_info as proxy_get_asset_info
+        from immich_autotag.api.immich_proxy.assets import (
+            get_asset_info as proxy_get_asset_info,
+        )
         from immich_autotag.assets.asset_dto_state import AssetDtoType
         dto = proxy_get_asset_info(asset_id, context.client)
         if dto is None:
@@ -867,21 +883,7 @@ class AssetResponseWrapper:
 
         return self._state.get_uuid()
 
-    @classmethod
-    def from_dto(
-        cls: type["AssetResponseWrapper"],
-        dto: AssetResponseDto,
-        context: "ImmichContext",
-        dto_type,
-    ) -> "AssetResponseWrapper":
-        """
-        Creates an AssetResponseWrapper from a DTO and a context.
-        Uses AssetDtoState to encapsulate the DTO and its type.
-        """
-        from immich_autotag.assets.asset_dto_state import AssetDtoState
 
-        state = AssetDtoState(dto, dto_type)
-        return cls(context=context, state=state)
 
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
