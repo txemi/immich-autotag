@@ -43,6 +43,7 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> "AlbumResponse
     a = get_album_info.sync(id=album_id, client=client)
     # Print only the album id and Immich web link, not the full DTO (avoid long lines)
     from immich_autotag.utils.url_helpers import get_immich_album_url
+
     album_url = get_immich_album_url(album_id)
     log_debug(f"Fetched album info for id={album_id}: {album_url}")
     if a is None:
