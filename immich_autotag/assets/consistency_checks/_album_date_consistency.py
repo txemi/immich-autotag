@@ -39,9 +39,10 @@ def check_album_date_consistency(
     albums = asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
         asset_wrapper
     )
+
     from immich_autotag.config.manager import ConfigManager
 
-    config: UserConfig = ConfigManager.get_instance().config
+    config: UserConfig = ConfigManager.get_instance().get_config()
 
     autotag_name = "autotag_album_date_mismatch"  # Default fallback
     if config.album_date_consistency is not None:
