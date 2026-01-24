@@ -37,3 +37,26 @@ class AssetDtoState:
 
     def get_tags():
         raise NotImplementedError("get_tags method not implemented yet")
+    
+    def get_dates():
+        def get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
+            yield asset__.created_at
+            yield asset__.file_created_at
+            yield asset__.file_modified_at
+            yield asset__.local_date_time
+
+
+        date_candidates = list(get_dates(self._dto))
+        return date_candidates
+    
+    def has_tag(self, tag_name: str) -> bool:
+
+        if self._type == AssetDtoType.PARTIAL:
+            raise NotImplementedError("has_tag not implemented for PARTIAL AssetDtoType")
+        from immich_client.types import Unset
+
+        if isinstance(tags, Unset):
+            raise NotImplementedError("Tags are UNSET; cannot check for tag existence.")
+        
+        tags: list[TagResponseDto] | Unset = self.tags
+        return any(tag.name and tag.name.lower() == tag_name.lower() for tag in tags)
