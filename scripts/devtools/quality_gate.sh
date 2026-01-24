@@ -459,33 +459,36 @@ check_jscpd || exit 1
 # -----------------------------------------------------------------------------
 # - flake8: Style and error linting (always blocks).
 # =============================================================================
-# Flake8: use the same synchronized line length, print output directly, capture exit code
-ensure_tool flake8 flake8
-FLAKE_FAILED=0
-FLAKE8_IGNORE="E203,W503"
-if [ $RELAXED_MODE -eq 1 ]; then
-	FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
-	echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
-fi
-echo "[INFO] Running flake8 (output below if any):"
-"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
-if [ $? -ne 0 ]; then
-	FLAKE_FAILED=1
-fi
-# SECTION 10: BLOCKING LOGIC FOR STATIC ANALYSIS
-# - Exits immediately if flake8 fails (always blocks).
-# - Exits if mypy fails (only in strict mode).
-# --- SIMPLIFIED QUALITY GATE: LINEAR, FAIL-FAST, MODE-AWARE ---
-# Flake8: always blocks (with config depending on mode)
-if [ $FLAKE_FAILED -ne 0 ]; then
+
+# =====================
+# Function: check_flake8
+# =====================
+check_flake8() {
+	ensure_tool flake8 flake8
+	FLAKE_FAILED=0
+	FLAKE8_IGNORE="E203,W503"
 	if [ $RELAXED_MODE -eq 1 ]; then
-		echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
-		echo "[RELAXED MODE] Not blocking build on flake8 errors."
-	else
-		echo "[ERROR] flake8 failed. See output above."
-		exit 1
+		FLAKE8_IGNORE="$FLAKE8_IGNORE,E501"
+		echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
 	fi
-fi
+	echo "[INFO] Running flake8 (output below if any):"
+	"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$FLAKE8_IGNORE --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
+	if [ $? -ne 0 ]; then
+		FLAKE_FAILED=1
+	fi
+	if [ $FLAKE_FAILED -ne 0 ]; then
+		if [ $RELAXED_MODE -eq 1 ]; then
+			echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
+			echo "[RELAXED MODE] Not blocking build on flake8 errors."
+		else
+			echo "[ERROR] flake8 failed. See output above."
+			return 1
+		fi
+	fi
+	return 0
+}
+
+check_flake8 || exit 1
 
 # =============================================================================
 # SECTION 9C: MYPY (TYPE CHECKING)
