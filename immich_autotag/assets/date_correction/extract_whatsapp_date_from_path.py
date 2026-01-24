@@ -7,6 +7,8 @@ from zoneinfo import ZoneInfo
 
 from typeguard import typechecked
 
+from immich_autotag.config.models import UserConfig
+
 
 @typechecked
 def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
@@ -33,11 +35,14 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
         try:
             from immich_autotag.config.manager import ConfigManager
 
-            config = ConfigManager.get_instance().config
-            tz = ZoneInfo(config.features.date_correction.extraction_timezone)
-            return datetime(
-                int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
-            )
+            config: UserConfig = ConfigManager.get_instance().config
+            if config is not None and config.date_correction is not None:
+                tz = ZoneInfo(config.date_correction.extraction_timezone)
+                return datetime(
+                    int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
+                )
+            else:
+                return None
         except Exception:
             return None
     # Pattern 2: WhatsApp Image YYYY-MM-DD at HH.MM.SS
@@ -50,16 +55,19 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
             from immich_autotag.config.manager import ConfigManager
 
             config = ConfigManager.get_instance().config
-            tz = ZoneInfo(config.features.date_correction.extraction_timezone)
-            return datetime(
-                int(m.group(1)),
-                int(m.group(2)),
-                int(m.group(3)),
-                int(m.group(4)),
-                int(m.group(5)),
-                int(m.group(6)),
-                tzinfo=tz,
-            )
+            if config is not None and config.date_correction is not None:
+                tz = ZoneInfo(config.date_correction.extraction_timezone)
+                return datetime(
+                    int(m.group(1)),
+                    int(m.group(2)),
+                    int(m.group(3)),
+                    int(m.group(4)),
+                    int(m.group(5)),
+                    int(m.group(6)),
+                    tzinfo=tz,
+                )
+            else:
+                return None
         except Exception:
             return None
     return None
