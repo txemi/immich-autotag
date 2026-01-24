@@ -1,4 +1,8 @@
 pipeline {
+    options {
+        // Conserva solo los 4 últimos builds
+        buildDiscarder(logRotator(numToKeepStr: '4'))
+    }
     agent {
         docker {
             image 'python:3.11-slim'
