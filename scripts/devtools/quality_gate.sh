@@ -476,14 +476,14 @@ check_jscpd() {
 check_jscpd || exit 1
 
 
-# =====================
+
 ###############################################################################
 # Function: check_flake8
 # Description: Lint de estilo y errores Python usando flake8.
 # Globals: RELAXED_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay errores de estilo
 ###############################################################################
-# =====================
+
 check_flake8() {
 	ensure_tool flake8 flake8
 	FLAKE_FAILED=0
@@ -512,14 +512,13 @@ check_flake8() {
 check_flake8 || exit 1
 
 
-# =====================
 ###############################################################################
 # Function: check_mypy
 # Description: Chequeo de tipos estáticos usando mypy.
 # Globals: PY_BIN, TARGET_DIR
 # Returns: 0 si pasa, 1 si hay errores de tipado
 ###############################################################################
-# =====================
+
 check_mypy() {
 	ensure_tool mypy mypy
 	MYPY_FAILED=0
@@ -547,15 +546,13 @@ check_mypy() {
 
 check_mypy || exit 1
 
-
-# =====================
 ###############################################################################
 # Function: check_no_spanish_chars
 # Description: Prohíbe caracteres españoles/acento en el código fuente.
 # Globals: RELAXED_MODE
 # Returns: 0 si pasa, 1 si se detectan caracteres prohibidos
 ###############################################################################
-# =====================
+
 check_no_spanish_chars() {
 	echo "Checking for Spanish language characters in source files..."
 	SPANISH_MATCHES=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
