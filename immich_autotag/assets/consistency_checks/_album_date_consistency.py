@@ -41,7 +41,7 @@ def check_album_date_consistency(
     )
     from immich_autotag.config.manager import ConfigManager
 
-    config : UserConfig= ConfigManager.get_instance().config
+    config: UserConfig = ConfigManager.get_instance().config
 
     autotag_name = "autotag_album_date_mismatch"  # Default fallback
     if config.album_date_consistency is not None:
