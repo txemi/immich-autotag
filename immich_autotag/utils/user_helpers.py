@@ -1,4 +1,3 @@
-
 from immich_client.client import AuthenticatedClient
 from immich_client.models.user_admin_response_dto import UserAdminResponseDto
 from typeguard import typechecked
