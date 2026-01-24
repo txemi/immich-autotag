@@ -11,6 +11,7 @@ from immich_client.api.albums import (
 )
 from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_response_dto import AlbumResponseDto
+from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
