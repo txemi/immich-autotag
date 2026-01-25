@@ -155,3 +155,11 @@ class AssetCacheEntry:
             dto_type=AssetDtoType.FULL,
             max_age_seconds=max_age_seconds,
         )
+
+    def get_tag_names(self) -> list[str]:
+        """
+        Returns the names of the tags associated with this asset, or an empty list if not available.
+        """
+        full = self._ensure_full_asset_loaded(ImmichContext.get_default_instance())
+        state = full._state
+        return state._state.get_tag_names()

@@ -16,6 +16,7 @@ _tag_collection_singleton: "TagCollectionWrapper | None" = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
+
     tags: List["TagWrapper"] = attrs.field(factory=list)
 
     def __attrs_post_init__(self):
@@ -125,3 +126,9 @@ class TagCollectionWrapper:
             return _tag_collection_singleton
         _tag_collection_singleton = cls._from_api()
         return _tag_collection_singleton
+
+    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper":
+        """
+        Devuelve el TagWrapper correspondiente a un TagResponseDto (dto), o None si no existe.
+        """
+        raise NotImplementedError("Método no implementado aún.")
