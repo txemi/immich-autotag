@@ -324,7 +324,7 @@ class PerformanceTracker:
     def get_progress_description(self, count: int) -> str:
         """
         Returns a textual description of current progress, including percentage and
-        time estimation if available.
+        time estimation if available. If called after should_log_progress, updates last_log_time.
         Mirrors the output of print_progress but as a string.
         """
         elapsed = time.time() - self._start_time
@@ -335,3 +335,17 @@ class PerformanceTracker:
         Public setter to update max_assets in a controlled way. Allows None to disable the limit.
         """
         self._max_assets = value
+
+    def should_log_progress(self, count: int) -> bool:
+        """
+        Returns True if a progress log should be emitted for this count, according to the internal log interval logic.
+        Updates internal state if True (so that get_progress_description can be used externally).
+        """
+        now = time.time()
+        if count == 1 or (self._total_assets and count == self._total_assets):
+            self._last_log_time = now
+            return True
+        if now - self._last_log_time >= self._log_interval:
+            self._last_log_time = now
+            return True
+        return False
