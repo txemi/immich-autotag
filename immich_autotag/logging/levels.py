@@ -21,7 +21,7 @@ class LogLevel(Enum):
     Custom log levels for Immich Autotag.
 
     Verbosity order (intention):
-        ERROR > WARNING = IMPORTANT? > PROGRESS = INFO? > ASSET_SUMMARY > FOCUS > DEBUG
+        ERROR > WARNING = IMPORTANT? > PROGRESS = INFO? > ASSET_SUMMARY > FOCUS > DEBUG > TRACE
 
     Intention: Make it easy for developers to choose log levels that match the purpose and context of their messages.
     - Use PROGRESS for progress updates (e.g., percent complete, phase changes) that should be visible to users monitoring long-running processes.
@@ -69,10 +69,16 @@ class LogLevel(Enum):
         True,
         "Custom level (numeric: 15). Use for detailed information about a specific asset or entity, especially when debugging or investigating a single item. More verbose than INFO, less than DEBUG. Ideal for targeted runs and focused analysis.",
     )
+
     DEBUG = LogLevelInfo(
         logging.DEBUG,
         False,
-        "Standard debug level (numeric: 10). Use for very verbose, low-level details. Typically used when you want to see everything for deep troubleshooting. Not recommended for normal runs.",
+        "Standard debug level (numeric: 10). Use for very verbose, low-level details. Typically used when you want to see everything for deep troubleshooting. Not recommended for normal runs. Use TRACE for output that es even more excessive or redundant than DEBUG.",
+    )
+    TRACE = LogLevelInfo(
+        5,
+        True,
+        "Custom level (numeric: 5). Use for ultra-verbose, excessive, or diagnostic-only output that is not useful even for most debugging sessions. Only enable when you need to trace every detail for deep diagnostics or performance tuning.",
     )
 
     @property
