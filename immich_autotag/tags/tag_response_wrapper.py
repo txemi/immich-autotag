@@ -11,28 +11,24 @@ class TagWrapper:
 
     tag: TagResponseDto
 
-    @property
-    def id(self) -> str:
-        return self.tag.id
+    @typechecked
+    def get_id(self) -> "UUID":
+        from uuid import UUID
 
-    @property
-    def name(self) -> str:
+        id_val = self.tag.id
+        return UUID(id_val)
+
+    @typechecked
+    def get_name(self) -> str:
         return self.tag.name
 
     def to_dto(self) -> TagResponseDto:
         return self.tag
 
-    @typechecked
-    def get_name(self) -> str:
-        """
-        Returns the tag name in a robust and encapsulated manner.
-        """
-        return self.name
-
     def __eq__(self, other) -> bool:
         if isinstance(other, TagWrapper):
-            return self.id == other.id
+            return self.get_id() == other.get_id()
         return False
 
     def __str__(self) -> str:
-        return f"TagWrapper(id={self.id}, name={self.name})"
+        return f"TagWrapper(id={self.get_id()}, name={self.get_name()})"

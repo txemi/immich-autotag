@@ -17,14 +17,14 @@ class TagNameMap:
 
     @typechecked
     def add(self, tag: "TagWrapper"):
-        name = tag.name
+        name = tag.get_name()
         if name in self._name_to_tag:
             raise RuntimeError(f"Tag con nombre '{name}' ya existe en TagNameMap.")
         self._name_to_tag[name] = tag
 
     @typechecked
     def remove(self, tag: "TagWrapper"):
-        name = tag.name
+        name = tag.get_name()
         if name not in self._name_to_tag:
             raise RuntimeError(f"No existe tag con nombre '{name}' en TagNameMap.")
         del self._name_to_tag[name]
