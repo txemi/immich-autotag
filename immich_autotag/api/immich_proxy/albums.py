@@ -26,7 +26,6 @@ def proxy_get_album_info(
     """
     cache_data = get_entity_from_cache("albums", str(album_id), use_cache=use_cache)
     if cache_data is not None:
-        from immich_client.models.album_response_dto import AlbumResponseDto
         return AlbumResponseDto.from_dict(cache_data)
     dto = get_album_info.sync(id=album_id, client=client)
     if dto is not None:
