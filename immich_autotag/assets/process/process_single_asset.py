@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+
+from uuid import UUID
 from typeguard import typechecked
 
 from immich_autotag.assets.albums.analyze_and_assign_album import (
@@ -83,7 +85,9 @@ def process_single_asset(
     Thread-safe for report flushing.
     """
 
-    asset_id = asset_wrapper.get_uuid()
+    from typing import Optional
+
+    asset_id: Optional[UUID] = asset_wrapper.get_uuid()
 
     log_debug(f"[BUG] START process_single_asset {asset_id}")
 
@@ -140,11 +144,7 @@ def process_single_asset(
 
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
-    try:
-        asset_id = asset_wrapper.get_uuid()
-    except AttributeError:
-        asset_id = None
     log(
-        f"[DEBUG] [process_single_asset] END asset_id={asset_id}",
+        f"[DEBUG] [process_single_asset] END asset_id={asset_wrapper.get_uuid()}",
         level=LogLevel.FOCUS,
     )

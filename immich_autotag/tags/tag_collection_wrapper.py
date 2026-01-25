@@ -1,19 +1,18 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 
-from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
-
 
 import attrs
 from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
-from immich_autotag.types import ImmichClient
+
 from immich_autotag.tags.tag_dual_map import TagDualMap
+from immich_autotag.types import ImmichClient
 
 _tag_collection_singleton: "TagCollectionWrapper | None" = None
-
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -29,6 +28,7 @@ class TagCollectionWrapper:
             raise RuntimeError(
                 "TagCollectionWrapper singleton already exists. Use TagCollectionWrapper.get_instance()."
             )
+
     def _sync_from_api(self, client: ImmichClient) -> None:
         """
         Refresh tag cache from the API to handle external changes or race conditions.
@@ -101,27 +101,22 @@ class TagCollectionWrapper:
         return wrapper
 
     @typechecked
-
     def find_by_name(self, name: str) -> "TagWrapper | None":
         return self._index.get_by_name(name)
 
     @typechecked
-
     def find_by_id(self, id_: "UUID") -> "TagWrapper | None":
         return self._index.get_by_id(id_)
 
     @typechecked
-
     def __iter__(self):
         return iter(self._index)
 
     @typechecked
-
     def __contains__(self, name: str) -> bool:
         return self.find_by_name(name) is not None
 
     @typechecked
-
     def __len__(self) -> int:
         return len(self._index)
 
