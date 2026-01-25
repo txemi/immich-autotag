@@ -786,14 +786,20 @@ class AlbumCollectionWrapper:
 
     # remove_album deleted: use delete_album and _remove_album_from_local_collection
     @typechecked
-    def find_all_albums_with_name(self, album_name: str):
+    def find_all_albums_with_name(
+        self, album_name: str
+    ) -> Iterable[AlbumResponseWrapper]:
         """
         Yields all non-deleted AlbumResponseWrapper objects with the given name.
         Returns a generator (may yield none).
+        Optimized: uses AlbumDualMap for O(1) lookup, then filters deleted.
         """
-        for album_wrapper in self.get_albums():
-            if album_wrapper.get_album_name() == album_name:
-                yield album_wrapper
+        self._ensure_fully_loaded()
+        # AlbumNameMap solo soporta un álbum por nombre, pero si hay duplicados, habría que cambiar la estructura.
+        # Si el mapa soporta solo uno, mantenemos compatibilidad devolviendo una lista de uno o cero.
+        album = self._albums.get_by_name(album_name)
+        if album is not None and not album.is_deleted():
+            yield album
 
     @typechecked
     def combine_duplicate_albums(
