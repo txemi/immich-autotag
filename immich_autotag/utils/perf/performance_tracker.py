@@ -276,13 +276,14 @@ class PerformanceTracker:
         else:
             msg += " Remaining:?/"
 
-        # Tiempos: ocultar uno si son iguales
+
+        # Tiempos: ocultar uno si son iguales (con tolerancia numérica)
+        elapsed_val = elapsed
+        total_elapsed_val = previous_sessions_time + elapsed
         elapsed_str = self._printable_value_fmt_time(elapsed) + "(Elapsed)"
-        total_elapsed_str = (
-            self._printable_value_fmt_time(previous_sessions_time + elapsed)
-            + "(TotalElapsed)"
-        )
-        if elapsed_str == total_elapsed_str:
+        total_elapsed_str = self._printable_value_fmt_time(total_elapsed_val) + "(TotalElapsed)"
+        tolerance = 0.01  # seconds
+        if abs(elapsed_val - total_elapsed_val) < tolerance:
             msg += elapsed_str
         else:
             msg += elapsed_str + "/" + total_elapsed_str
