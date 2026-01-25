@@ -228,7 +228,7 @@ class AlbumResponseWrapper:
         """
         assets = self._ensure_full_album_loaded(
             self.get_default_client()
-        )._state.is_empty()
+        )._cache_entry.is_empty()
         return assets
     
 
