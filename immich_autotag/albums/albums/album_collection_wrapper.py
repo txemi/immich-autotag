@@ -1010,11 +1010,12 @@ class AlbumCollectionWrapper:
                     tag_mod_report=tag_mod_report,
                 )
                 # Log de progreso y tiempo estimado
-                tracker.print_progress(idx)
-                log(
-                    f"[ALBUM-LOAD][API-BULK][{idx}/{len(albums)}] Album '{wrapper.get_album_name()}' processed after bulk fetch with {len(albums)} assets.",
-                    level=LogLevel.INFO,
-                )
+                if tracker.should_log_progress(idx):
+                    progress_msg = tracker.get_progress_description(idx)
+                    log(
+                        f"[ALBUM-LOAD][API-BULK] {progress_msg} | Album: '{wrapper.get_album_name()}' processed after bulk fetch with {len(albums)} assets.",
+                        level=LogLevel.INFO,
+                    )
 
         tag_mod_report.flush()
         if len(self._collected_duplicates) > 0:
