@@ -6,9 +6,10 @@ from immich_client import Client
 from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
- # Importación eliminada: AssetCacheEntry solo se usa internamente en AssetResponseWrapper
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.get_all_assets import get_all_assets
+
+# Importación eliminada: AssetCacheEntry solo se usa internamente en AssetResponseWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext

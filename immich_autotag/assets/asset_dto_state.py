@@ -19,7 +19,6 @@ class TagsNotLoadedError(Exception):
     pass
 
 
-
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDtoState:
     """
@@ -35,11 +34,23 @@ class AssetDtoState:
         # Comprobación defensiva del tipo de tags según el tipo de DTO
         tags = getattr(self._dto, "tags", None)
         if self._type == AssetDtoType.FULL:
-            if tags is not None and not isinstance(tags, list) and not isinstance(tags, Unset):
-                raise TypeError(f"En modo FULL, tags debe ser una lista o Unset, pero es {type(tags)}")
+            if (
+                tags is not None
+                and not isinstance(tags, list)
+                and not isinstance(tags, Unset)
+            ):
+                raise TypeError(
+                    f"En modo FULL, tags debe ser una lista o Unset, pero es {type(tags)}"
+                )
         elif self._type == AssetDtoType.PARTIAL:
-            if tags is not None and not isinstance(tags, set) and not isinstance(tags, Unset):
-                raise TypeError(f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}")
+            if (
+                tags is not None
+                and not isinstance(tags, set)
+                and not isinstance(tags, Unset)
+            ):
+                raise TypeError(
+                    f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}"
+                )
         # Si se amplían los tipos, añadir más comprobaciones aquí
 
     def get_type(self) -> AssetDtoType:

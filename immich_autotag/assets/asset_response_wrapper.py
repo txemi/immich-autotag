@@ -1077,3 +1077,15 @@ class AssetResponseWrapper:
             original_path = None
         lines.append(f"  Path: {original_path}")
         return "\n".join(lines)
+
+    @classmethod
+    def from_id(
+        cls, asset_id: UUID, context: "ImmichContext"
+    ) -> "AssetResponseWrapper":
+        """
+        Obtiene un AssetResponseWrapper por ID, delegando la lógica de obtención a AssetCacheEntry._from_cache_or_api.
+        """
+        from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
+
+        entry = AssetCacheEntry.from_cache_or_api(asset_id)
+        return cls(context, entry)
