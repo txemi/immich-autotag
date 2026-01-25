@@ -15,22 +15,28 @@ def proxy_tag_assets(
     *, tag_id: UUID, client: ImmichClient, asset_ids: List[UUID]
 ) -> list[BulkIdResponseDto]:
     """Proxy for tag_assets.sync with explicit keyword arguments."""
-    return tag_assets.sync(id=tag_id, client=client, body=BulkIdsDto(ids=asset_ids))
+    result = tag_assets.sync(id=tag_id, client=client, body=BulkIdsDto(ids=asset_ids))
+    if result is None:
+        raise RuntimeError("tag_assets.sync returned None (unexpected)")
+    return result
 
 
 def proxy_untag_assets(
     *, tag_id: UUID, client: ImmichClient, asset_ids: List[UUID]
 ) -> list[BulkIdResponseDto]:
     """Proxy for untag_assets.sync with explicit keyword arguments."""
-    return untag_assets.sync(id=tag_id, client=client, body=BulkIdsDto(ids=asset_ids))
+    result = untag_assets.sync(id=tag_id, client=client, body=BulkIdsDto(ids=asset_ids))
+    if result is None:
+        raise RuntimeError("untag_assets.sync returned None (unexpected)")
+    return result
 
 
-def proxy_create_tag(*, client, name: str):
+def proxy_create_tag(*, client: ImmichClient, name: str):
     """Proxy for create_tag.sync with explicit keyword arguments."""
     tag_create = TagCreateDto(name=name)
     return _create_tag.sync(client=client, body=tag_create)
 
 
-def proxy_get_all_tags(*, client):
+def proxy_get_all_tags(*, client: ImmichClient):
     """Proxy for get_all_tags.sync with explicit keyword arguments."""
     return _get_all_tags.sync(client=client)

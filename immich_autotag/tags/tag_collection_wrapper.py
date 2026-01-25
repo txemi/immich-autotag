@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, List
+
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.tags.tag_response_wrapper import TagWrapper
+if TYPE_CHECKING:
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
+
+
 from immich_autotag.types import ImmichClient
 
 _tag_collection_singleton: "TagCollectionWrapper | None" = None
@@ -11,14 +16,11 @@ _tag_collection_singleton: "TagCollectionWrapper | None" = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-    tags: list[TagWrapper] = attrs.field(
-        factory=list, validator=attrs.validators.instance_of(list)
-    )
+    tags: List["TagWrapper"] = attrs.field(factory=list)
 
     def __attrs_post_init__(self):
-        # Defensive: never allow None for tags
-        if self.tags is None:
-            raise ValueError("tags cannot be None; use an empty list instead")
+        # Ensure TagWrapper is imported at runtime for type checking
+
         global _tag_collection_singleton
         if (
             _tag_collection_singleton is not None
@@ -45,7 +47,7 @@ class TagCollectionWrapper:
         self.tags = refreshed.tags
 
     @typechecked
-    def create_tag_if_not_exists(self, name: str, client) -> TagWrapper:
+    def create_tag_if_not_exists(self, name: str, client: ImmichClient) -> TagWrapper:
         """
         Creates the tag in Immich if it doesn't exist and adds it to the local collection.
         Returns the corresponding TagResponseDto.
@@ -53,10 +55,10 @@ class TagCollectionWrapper:
         tag = self.find_by_name(name)
         if tag is not None:
             return tag
-        from immich_autotag.api.immich_proxy.tags import (
-            UnexpectedStatus,
-            proxy_create_tag,
-        )
+
+        from immich_client import errors as immich_errors
+
+        from immich_autotag.api.immich_proxy.tags import proxy_create_tag
 
         try:
             new_tag_dto = proxy_create_tag(client=client, name=name)
@@ -65,7 +67,7 @@ class TagCollectionWrapper:
             new_tag = TagWrapper(new_tag_dto)
             self.tags.append(new_tag)
             return new_tag
-        except UnexpectedStatus as e:
+        except immich_errors.UnexpectedStatus as e:
             if e.status_code == 400 and "already exists" in str(e):
                 self._sync_from_api(client)
                 tag = self.find_by_name(name)
@@ -81,9 +83,9 @@ class TagCollectionWrapper:
         Uses the client from ImmichContext singleton.
         """
         from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
-        from immich_autotag.context.immich_context import ImmichContext
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-        client = ImmichContext.get_default_client()
+        client = ImmichClientWrapper.get_default_instance()
         tags_dto = proxy_get_all_tags(client=client)
         if tags_dto is None:
             tags_dto = []
