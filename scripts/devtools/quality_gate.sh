@@ -553,8 +553,9 @@ check_mypy() {
 			# Only block for arg-type, call-arg, return-value errors
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|return-value)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
-				echo "[TARGET MODE] Blocking build due to $mypy_block_count critical mypy errors (arg-type, call-arg, return-value)."
-				echo '[EXIT] Quality Gate failed due to critical mypy errors.'
+				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ❌❌❌"
+				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE, CALL-ARG, RETURN-VALUE) DETECTED 🚨"
+				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1
 			else
 				echo '[TARGET MODE] Only non-critical mypy errors found. Not blocking build.'
