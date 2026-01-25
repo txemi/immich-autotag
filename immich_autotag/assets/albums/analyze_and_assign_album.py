@@ -40,7 +40,7 @@ def _handle_duplicate_conflicts(
     Detects album conflicts across duplicate assets and applies the conflict tag logic.
     """
     conflict = album_decision.has_conflict()
-    duplicate_id = asset_wrapper.asset.duplicate_id
+    duplicate_id = asset_wrapper._cache_entry.get_state().dto.duplicate_id
 
     # Handle Unset type from immich_client
     from immich_client.types import Unset
@@ -67,9 +67,9 @@ def _handle_classified_asset(
     )
 
     all_albums = list(
-        asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
-            asset_wrapper
-        )
+        asset_wrapper.get_context()
+        .get_albums_collection()
+        .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
     remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
@@ -81,7 +81,7 @@ def _handle_classified_asset(
     _ = asset_wrapper.validate_and_update_classification()
 
     log(
-        f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.original_file_name}' classified. "
+        f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.get_original_file_name()}' classified. "
         f"Temporary album cleanup and tags updated.",
         level=LogLevel.FOCUS,
     )
@@ -103,9 +103,9 @@ def _handle_classification_conflict(
     )
 
     all_albums = list(
-        asset_wrapper.context.albums_collection.albums_wrappers_for_asset_wrapper(
-            asset_wrapper
-        )
+        asset_wrapper.get_context()
+        .get_albums_collection()
+        .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
     remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
@@ -114,8 +114,8 @@ def _handle_classification_conflict(
     )
 
     num_rules_matched = len(list(match_results.rules()))
-    asset_name = asset_wrapper.original_file_name
-    asset_id = asset_wrapper.id
+    asset_name = asset_wrapper.get_original_file_name()
+    asset_id = asset_wrapper.get_id()
     immich_url = asset_wrapper.get_immich_photo_url().geturl()
 
     log(
@@ -146,7 +146,7 @@ def _handle_unclassified_asset(
     """
     Attempts to assign an album to an unclassified asset via detection or temporary album creation.
     """
-    asset_name = asset_wrapper.original_file_name
+    asset_name = asset_wrapper.get_original_file_name()
 
     # First, try to detect an existing album (from folders or duplicates)
     if album_decision.is_unique():
@@ -158,10 +158,10 @@ def _handle_unclassified_asset(
                 level=LogLevel.FOCUS,
             )
             process_album_detection(
-                asset_wrapper,
-                tag_mod_report,
-                detected_album,
-                album_origin,
+                asset_wrapper=asset_wrapper,
+                tag_mod_report=tag_mod_report,
+                detected_album=detected_album,
+                album_origin=album_origin,
             )
             return AlbumAssignmentResult.ASSIGNED_UNIQUE
 

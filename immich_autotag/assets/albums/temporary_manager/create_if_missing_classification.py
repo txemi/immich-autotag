@@ -101,9 +101,9 @@ def create_album_if_missing_classification(
     )
 
     process_album_detection(
-        asset_wrapper,
-        tag_mod_report,
-        album_name,
+        asset_wrapper=asset_wrapper,
+        tag_mod_report=tag_mod_report,
+        detected_album=album_name,
         album_origin="auto-created",
     )
     return album_name

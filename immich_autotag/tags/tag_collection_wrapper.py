@@ -1,28 +1,26 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
 
-import attrs
-from immich_client.models.tag_response_dto import TagResponseDto
-from typeguard import typechecked
-
+from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 
+import attrs
+from immich_client.models.tag_response_dto import TagResponseDto
+from typeguard import typechecked
 from immich_autotag.types import ImmichClient
+from immich_autotag.tags.tag_dual_map import TagDualMap
 
 _tag_collection_singleton: "TagCollectionWrapper | None" = None
 
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-
-    tags: List["TagWrapper"] = attrs.field(factory=list)
+    _index: TagDualMap = attrs.field(factory=TagDualMap)
 
     def __attrs_post_init__(self):
-        # Ensure TagWrapper is imported at runtime for type checking
-
         global _tag_collection_singleton
         if (
             _tag_collection_singleton is not None
@@ -31,8 +29,6 @@ class TagCollectionWrapper:
             raise RuntimeError(
                 "TagCollectionWrapper singleton already exists. Use TagCollectionWrapper.get_instance()."
             )
-
-    @typechecked
     def _sync_from_api(self, client: ImmichClient) -> None:
         """
         Refresh tag cache from the API to handle external changes or race conditions.
@@ -46,12 +42,14 @@ class TagCollectionWrapper:
         )
 
         refreshed = self.__class__._from_api()
-        self.tags = refreshed.tags
+        self._index.clear()
+        for tag in refreshed._index.values():
+            self._index.add(tag)
 
     @typechecked
     def create_tag_if_not_exists(
         self, *, name: str, client: ImmichClient
-    ) -> TagWrapper:
+    ) -> "TagWrapper":
         """
         Creates the tag in Immich if it doesn't exist and adds it to the local collection.
         Returns the corresponding TagResponseDto.
@@ -69,7 +67,7 @@ class TagCollectionWrapper:
             if new_tag_dto is None:
                 raise ValueError("API returned None for new tag creation")
             new_tag = TagWrapper(new_tag_dto)
-            self.tags.append(new_tag)
+            self._index.add(new_tag)
             return new_tag
         except immich_errors.UnexpectedStatus as e:
             if e.status_code == 400 and "already exists" in str(e):
@@ -96,26 +94,36 @@ class TagCollectionWrapper:
         if tags_dto is None:
             tags_dto = []
         tags = [TagWrapper(tag) for tag in tags_dto]
-        return TagCollectionWrapper(tags=tags)
+        wrapper = TagCollectionWrapper()
+        wrapper._index.clear()
+        for tag in tags:
+            wrapper._index.add(tag)
+        return wrapper
 
     @typechecked
-    def find_by_name(self, name: str) -> TagWrapper | None:
-        for tag in self.tags:
-            if tag.name == name:
-                return tag
-        return None
+
+    def find_by_name(self, name: str) -> "TagWrapper | None":
+        return self._index.get_by_name(name)
 
     @typechecked
+
+    def find_by_id(self, id_: "UUID") -> "TagWrapper | None":
+        return self._index.get_by_id(id_)
+
+    @typechecked
+
     def __iter__(self):
-        return iter(self.tags)
+        return iter(self._index)
 
     @typechecked
+
     def __contains__(self, name: str) -> bool:
-        return any(tag.name == name for tag in self.tags)
+        return self.find_by_name(name) is not None
 
     @typechecked
+
     def __len__(self) -> int:
-        return len(self.tags)
+        return len(self._index)
 
     @classmethod
     def get_instance(cls) -> "TagCollectionWrapper":
@@ -128,8 +136,16 @@ class TagCollectionWrapper:
         _tag_collection_singleton = cls._from_api()
         return _tag_collection_singleton
 
-    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper":
+    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper | None":
         """
         Devuelve el TagWrapper correspondiente a un TagResponseDto (dto), o None si no existe.
         """
-        raise NotImplementedError("Método no implementado aún.")
+        tag = self.find_by_id(getattr(dto, "id", None))
+        if tag is not None:
+            return tag
+        name = getattr(dto, "name", None)
+        if isinstance(name, str):
+            return self.find_by_name(name)
+        raise NotImplementedError(
+            "TagResponseDto no tiene ni id ni name válidos para buscar el TagWrapper."
+        )
