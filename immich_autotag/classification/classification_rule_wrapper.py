@@ -81,7 +81,7 @@ class ClassificationRuleWrapper:
         # Check asset_links (UUIDs)
         asset_link_uuids = self.extract_uuids_from_asset_links()
         print(f"[DEBUG] asset_link_uuids: {asset_link_uuids}")
-        asset_uuid = asset_wrapper.id_as_uuid
+        asset_uuid = asset_wrapper.get_id_as_uuid()
         print(f"[DEBUG] asset_uuid: {asset_uuid}")
         asset_links_matched = []
         if asset_link_uuids and asset_uuid is not None:

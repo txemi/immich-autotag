@@ -21,5 +21,5 @@ def get_duplicate_wrappers_info(
     result: Dict[UUID, AssetResponseWrapper] = {}
     duplicate_wrappers = asset_wrapper.get_duplicate_wrappers()
     for dup_wrapper in duplicate_wrappers:
-        result[dup_wrapper.id_as_uuid] = dup_wrapper
+        result[dup_wrapper.get_id_as_uuid()] = dup_wrapper
     return DuplicateAssetsInfo(result)

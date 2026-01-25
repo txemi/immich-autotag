@@ -1,17 +1,24 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+
 import time
+from typing import TYPE_CHECKING
+
 import attrs
 
-from immich_autotag.utils.api_disk_cache import get_entity_from_cache, save_entity_to_cache
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
+from immich_autotag.utils.api_disk_cache import (
+    get_entity_from_cache,
+    save_entity_to_cache,
+)
 
 if TYPE_CHECKING:
-    from uuid import UUID
+
     from immich_client.models.album_response_dto import AlbumResponseDto
+
 
 class StaleAlbumCacheError(Exception):
     """Raised when a cache entry is stale and cannot be used."""
+
 
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
@@ -20,12 +27,19 @@ class AlbumCacheEntry:
 
     @classmethod
     def from_cache_or_api(
-        cls, album_id: str, fetch_album_func, *, max_age_seconds: int = 3600, use_cache: bool = True
+        cls,
+        album_id: "UUID",
+        fetch_album_func,
+        *,
+        max_age_seconds: int = 3600,
+        use_cache: bool = True,
     ) -> "AlbumCacheEntry":
         """
         Intenta cargar el álbum desde caché. Si está obsoleto o no existe, lo recarga usando fetch_album_func.
         """
-        cache_data = get_entity_from_cache("albums", album_id, use_cache=use_cache)
+        # Always use string representation for cache keys, but require UUID type for album_id
+        album_id_str = str(album_id)
+        cache_data = get_entity_from_cache("albums", album_id_str, use_cache=use_cache)
         if cache_data is not None:
             try:
                 dto = AlbumDtoState.from_dict(cache_data)
@@ -38,7 +52,7 @@ class AlbumCacheEntry:
         album_dto: AlbumResponseDto = fetch_album_func(album_id)
         dto = AlbumDtoState.from_dto(album_dto)
         entry = cls(dto=dto, max_age_seconds=max_age_seconds)
-        save_entity_to_cache("albums", album_id, dto.to_dict())
+        save_entity_to_cache("albums", album_id_str, dto.to_dict())
         return entry
 
     def is_stale(self) -> bool:
@@ -46,5 +60,7 @@ class AlbumCacheEntry:
 
     def get_state(self) -> AlbumDtoState:
         if self.is_stale():
-            raise StaleAlbumCacheError(f"Album cache entry is stale (>{self._max_age_seconds}s)")
+            raise StaleAlbumCacheError(
+                f"Album cache entry is stale (>{self._max_age_seconds}s)"
+            )
         return self._dto
