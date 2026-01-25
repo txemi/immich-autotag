@@ -4,16 +4,19 @@
 # without memory buffers.
 
 
+
 import sys
+from pathlib import Path
 
 from typeguard import typechecked
 
 
 class Tee:
-    def __init__(self, *, filename: str, mode: str = "a"):
-        # Open the file with buffering=1 (line buffered)
-        # to ensure real-time logging
-        self.file = open(filename, mode, buffering=1, encoding="utf-8")
+    def __init__(self, *, filename: 'Path', mode: str = "a"):
+        # Usar pathlib.Path para robustez
+        from pathlib import Path
+        path = Path(filename)
+        self.file = open(path, mode, buffering=1, encoding="utf-8")
         self.stdout = sys.stdout
         self.stderr = sys.stderr
         # Redirect global streams
@@ -79,7 +82,7 @@ def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
 
     log_dir = get_run_output_dir()
     log_path = log_dir / basename
-    Tee(str(log_path), "a")
+    Tee(filename=log_path, mode="a")
     log(
         f"[LOG] Tee logging initialized. Absolute log file path: {log_path.resolve()}",
         level=LogLevel.FOCUS,
