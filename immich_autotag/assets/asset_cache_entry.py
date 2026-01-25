@@ -15,8 +15,6 @@ class StaleAssetCacheError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetCacheEntry:
-
-
     """
     Encapsula el estado cacheado de un asset, con lógica de frescura y recarga.
     Los atributos son privados; acceso solo mediante métodos públicos.
@@ -53,14 +51,16 @@ class AssetCacheEntry:
         """
         from immich_client.models.asset_response_dto import AssetResponseDto
 
-        from immich_autotag.api.immich_proxy.assets import get_asset_info
+        from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.utils.api_disk_cache import (
             get_entity_from_cache,
             save_entity_to_cache,
         )
 
-        cache_data = get_entity_from_cache(ASSET_CACHE_KEY, str(asset_id), use_cache=use_cache)
+        cache_data = get_entity_from_cache(
+            ASSET_CACHE_KEY, str(asset_id), use_cache=use_cache
+        )
         if cache_data is not None:
             try:
                 dto = AssetResponseDto.from_dict(cache_data)
@@ -70,13 +70,14 @@ class AssetCacheEntry:
                 pass  # Si la caché está corrupta, recarga de API
         # Si no está en caché o está corrupto, recarga desde API
         client = ImmichClientWrapper.get_default_instance().get_client()
-        dto = get_asset_info(asset_id, client, use_cache=False)
+        dto = proxy_get_asset_info(asset_id, client, use_cache=False)
         if dto is None:
-            raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
+            raise RuntimeError(
+                f"proxy_get_asset_info returned None for asset id={asset_id}"
+            )
         state = AssetDtoState(dto, AssetDtoType.FULL)
         save_entity_to_cache(ASSET_CACHE_KEY, str(asset_id), dto.to_dict())
         return cls._from_state(state, max_age_seconds=max_age_seconds)
-
 
     @classmethod
     def _from_state(
@@ -100,17 +101,6 @@ class AssetCacheEntry:
             "max_age_seconds": self._max_age_seconds,
         }
 
-    @classmethod
-    def from_cache_dict(cls, data: dict) -> "AssetCacheEntry":
-        """
-        Hidrata una entrada de caché desde un diccionario serializado.
-        """
-        state = (
-            AssetDtoState.from_cache_dict(data["state"])
-            if hasattr(AssetDtoState, "from_cache_dict")
-            else data["state"]
-        )
-        return cls(_state=state, _max_age_seconds=data.get("max_age_seconds", 3600))
 
     def ensure_full_asset_loaded(self, context: "ImmichContext") -> AssetDtoState:
         """
@@ -118,6 +108,7 @@ class AssetCacheEntry:
         """
         state = self.get_state()
         from immich_autotag.assets.asset_dto_state import AssetDtoType
+
         if state.type == AssetDtoType.FULL:
             return state
 
@@ -128,8 +119,52 @@ class AssetCacheEntry:
         """
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
-        from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-        asset_id = self._state.dto.id  # Assumes dto has id attribute
+        refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
+        self._state = refreshed_entry.get_state()
         refreshed = AssetResponseWrapper.from_api(asset_id, context)
         self._state = refreshed._cache_entry.get_state()
         return self
+
+    @classmethod
+    def _from_dto_entry(
+        cls,
+        *,
+        dto,
+        context,
+        dto_type,
+        max_age_seconds: int = 3600,
+    ) -> "AssetCacheEntry":
+        """
+        Crea un AssetCacheEntry a partir de un DTO y tipo, con contexto opcional.
+        """
+        from immich_autotag.assets.asset_dto_state import AssetDtoState
+
+        state = AssetDtoState(dto=dto, type_=dto_type)
+        return cls(_state=state, _max_age_seconds=max_age_seconds)
+
+    @classmethod
+    def _from_api_entry(
+        cls,
+        asset_id: UUID,
+        context,
+        max_age_seconds: int = 3600,
+    ) -> "AssetCacheEntry":
+        """
+        Crea un AssetCacheEntry cargando el asset desde la API (siempre FULL).
+        """
+        from immich_autotag.api.immich_proxy.assets import (
+            proxy_get_asset_info,
+        )
+        from immich_autotag.assets.asset_dto_state import AssetDtoType
+
+        dto = proxy_get_asset_info(asset_id, context.get_client().get_client())
+        if dto is None:
+            raise RuntimeError(
+                f"proxy_get_asset_info returned None for asset id={asset_id}"
+            )
+        return cls._from_dto_entry(
+            dto=dto,
+            context=context,
+            dto_type=AssetDtoType.FULL,
+            max_age_seconds=max_age_seconds,
+        )
