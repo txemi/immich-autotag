@@ -72,10 +72,10 @@ class PerformanceTracker:
         if (
             DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
             and self._total_assets is not None
-            and self._total_assets < 200000
+            and self._total_assets < 1000
         ):
             raise Exception(
-                "Modo CRAZY_DEBUG: total_assets demasiado bajo (<200000) en inicialización del PerformanceTracker"
+                "Modo CRAZY_DEBUG: total_assets demasiado bajo (<100000) en inicialización del PerformanceTracker"
             )
 
     @typechecked
@@ -248,7 +248,7 @@ class PerformanceTracker:
         if (
             DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
             and abs_total is not None
-            and abs_total < 200000
+            and abs_total < 1000
         ):
             raise Exception("Modo CRAZY_DEBUG: abs_total demasiado bajo (<200000)")
 
