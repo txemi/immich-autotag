@@ -11,7 +11,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.types import ImmichClient
 
