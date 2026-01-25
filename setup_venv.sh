@@ -11,13 +11,21 @@
 
 set -e
 
+
 # Parse arguments
 CLEAN=0
 SHOW_HELP=0
+MODE="dev"  # Default mode
 for arg in "$@"; do
     case $arg in
         --clean)
             CLEAN=1
+            ;;
+        --prod)
+            MODE="prod"
+            ;;
+        --dev)
+            MODE="dev"
             ;;
         --help|-h)
             SHOW_HELP=1
@@ -26,8 +34,10 @@ for arg in "$@"; do
 done
 
 if [ "$SHOW_HELP" = "1" ]; then
-    echo "Uso: $0 [--clean] [--help]"
+    echo "Uso: $0 [--clean] [--prod] [--dev] [--help]"
     echo "  --clean   Borra .venv e immich-client antes de crear entorno y cliente."
+    echo "  --prod    Solo instala dependencias de ejecución (producción)."
+    echo "  --dev     Instala dependencias de desarrollo (por defecto)."
     echo "  --help    Muestra esta ayuda y termina."
     exit 0
 fi
@@ -160,10 +170,23 @@ source "$VENV_DIR/bin/activate"
 echo "Virtual environment activated."
 
 if [ -f "$REPO_ROOT/requirements.txt" ]; then
+
     pip install --upgrade pip
-    # Install dependencies except the local client
+    # Install runtime dependencies except the local client
     grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
-    echo "Dependencies installed."
+    echo "Runtime dependencies installed."
+
+    if [ "$MODE" = "dev" ]; then
+        # Install development dependencies if requirements-dev.txt exists
+        if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then
+            pip install -r "$REPO_ROOT/requirements-dev.txt"
+            echo "Development dependencies installed."
+        else
+            echo "requirements-dev.txt not found. Skipping dev dependencies."
+        fi
+    else
+        echo "Modo producción: solo dependencias de ejecución instaladas."
+    fi
 else
     echo "requirements.txt not found."
 fi
