@@ -236,7 +236,6 @@ class AssetResponseWrapper:
         self,
         tag_name: str,
         user: "UserResponseWrapper | None" = None,
-        fail_on_error: bool = False,
     ) -> bool:
         """
         Removes all tags from the asset with the given name (case-insensitive),
@@ -251,7 +250,7 @@ class AssetResponseWrapper:
         from immich_autotag.api.immich_proxy.tags import proxy_untag_assets
         from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 
-        tags: list[TagResponseDto] | Unset = self.tags
+        tags: list[TagResponseDto] | Unset = self.get_tags()
         if isinstance(tags, Unset):
             tags = []
         tags_to_remove: list[TagResponseDto] = [
@@ -436,7 +435,7 @@ class AssetResponseWrapper:
         """Returns the IDs of the asset's current tags."""
         from immich_client.types import Unset
 
-        tags: list[TagResponseDto] | Unset = self.tags
+        tags: list[TagResponseDto] | Unset = self.get_tags()
         if isinstance(tags, Unset):
             return []
         return [t.id for t in tags]
