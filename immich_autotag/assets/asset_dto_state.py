@@ -68,3 +68,6 @@ class AssetDtoState:
 
     def get_uuid(self) -> UUID:
         return UUID(self._dto.id)
+
+    def get_original_file_name(self) -> str:
+        return self._dto.original_file_name
