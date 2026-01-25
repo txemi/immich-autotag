@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 import attrs
+from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
 
 if TYPE_CHECKING:
