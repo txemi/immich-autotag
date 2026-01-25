@@ -77,7 +77,7 @@ class AssetCacheEntry:
         save_entity_to_cache(
             entity=ASSET_CACHE_KEY, key=str(asset_id), data=state.to_cache_dict()
         )
-        return cls(_state=state, _max_age_seconds=max_age_seconds)
+        return cls(state=state, max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_state(
