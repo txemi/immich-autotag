@@ -83,7 +83,7 @@ class AssetDateCandidate:
             link = aw.get_immich_photo_url().geturl()
         except Exception:
             link = "(no link)"
-        return f"[{self.source_kind.name}] date={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.id} | link={link}"
+        return f"[{self.source_kind.name}] date={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.get_id()} | link={link}"
 
     @typechecked
     def __lt__(self, other: object) -> bool:
@@ -100,7 +100,7 @@ class AssetDateCandidate:
     @typechecked
     def __str__(self) -> str:
         try:
-            asset_id = self.asset_wrapper.id
+            asset_id = self.asset_wrapper.get_id()
         except Exception:
             asset_id = None
         return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={asset_id})"
