@@ -81,7 +81,7 @@ class AlbumResponseWrapper:
     def get_default_client() -> ImmichClient:
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-        return ImmichClientWrapper.get_default_instance()
+        return ImmichClientWrapper.get_default_instance().get_client()
 
     @staticmethod
     @typechecked
