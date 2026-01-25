@@ -108,7 +108,7 @@ class AssetResponseWrapper:
         )
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        dto = proxy_get_asset_info(asset_id, context.client)
+        dto = proxy_get_asset_info(asset_id, context.get_client())
         if dto is None:
             raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
         return cls.from_dto(
