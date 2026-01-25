@@ -28,6 +28,8 @@ class TagsNotLoadedError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDtoState:
+
+
     """
     Encapsulates the current DTO, its type (partial/full), and the loaded_at timestamp.
     This class never performs API calls or business logic—just holds and exposes data.
@@ -83,7 +85,9 @@ class AssetDtoState:
         If neither is available, returns raw tag DTOs.
         Raises TagsNotLoadedError if tags are not loaded (UNSET).
         """
-        tags = self._dto.tags
+
+        full=self.get_self_if_full()
+        tags = full._dto.tags
         if isinstance(tags, Unset):
             raise TagsNotLoadedError(
                 "Tags are UNSET; tags have not been loaded for this asset."
@@ -96,8 +100,8 @@ class AssetDtoState:
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
         wrappers = []
-        for tag in tags:
-            wrapper = tag_collection.find_by_name(tag.name)
+        for tag:TagResponseDto in tags:
+            wrapper = tag_collection.get_tag_from_dto(tag)
             if wrapper is None:
 
                 raise ValueError(
@@ -117,17 +121,11 @@ class AssetDtoState:
         return date_candidates
 
     def has_tag(self, tag_name: str) -> bool:
-        if self._type == AssetDtoType.PARTIAL:
-            raise NotImplementedError(
-                "has_tag not implemented for PARTIAL AssetDtoType"
-            )
-        from immich_client.types import Unset  # TODO: Move Unset to proxy if needed
-
-        tags = self._dto.tags
-        if isinstance(tags, Unset):
-            raise NotImplementedError("Tags are UNSET; cannot check for tag existence.")
-        # Aseguramos el tipo para el editor y mypy
-        return any(tag.name and tag.name.lower() == tag_name.lower() for tag in tags)
+        """
+        Devuelve True si el asset tiene un tag con ese nombre (case-insensitive), False si no.
+        """
+        tag_names = self.get_tag_names()
+        return any(tn.lower() == tag_name.lower() for tn in tag_names)
 
     def get_uuid(self) -> UUID:
         return UUID(self._dto.id)
@@ -158,3 +156,17 @@ class AssetDtoState:
         return cls(
             dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
         )
+
+    def get_tag_names(self) -> list[str]:
+        """
+        Devuelve los nombres de los tags asociados a este asset, o una lista vacía si no hay tags.
+        """
+        tag_wrappers = self.get_tags()
+        return [tag_wrapper.name for tag_wrapper in tag_wrappers]
+    def get_self_if_full(self) -> "AssetDtoState":
+        """
+        Devuelve self solo si el estado es FULL, si no lanza una excepción.
+        """
+        if self.get_type() == AssetDtoType.FULL:
+            return self
+        raise RuntimeError("AssetDtoState no es FULL; operación no permitida.")
