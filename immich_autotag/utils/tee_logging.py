@@ -12,7 +12,7 @@ from typeguard import typechecked
 
 
 class Tee:
-    def __init__(self, *, filename: 'Path', mode: str = "a"):
+    def __init__(self, *, filename: Path, mode: str = "a"):
         # Usar pathlib.Path para robustez
         from pathlib import Path
         path = Path(filename)
