@@ -61,7 +61,7 @@ def process_album_permissions(
     for album_wrapper in albums_collection.albums:
         resolved_policy = resolve_album_policy(
             album_name=album_wrapper.get_album_name(),
-            album_id=album_wrapper.get_album_id(),
+            album_id=album_wrapper.get_album_uuid(),
             user_groups=user_groups_dict,
             selection_rules=album_perms_config.selection_rules or [],
         )

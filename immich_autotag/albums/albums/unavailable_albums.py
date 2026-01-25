@@ -58,7 +58,7 @@ class UnavailableAlbums:
         summary_items: list[dict[str, str]] = []
 
         def _unavailable_sort_key(w: AlbumResponseWrapper) -> str:
-            album_id = w.get_album_id()
+            album_id = str(w.get_album_uuid())
             if not album_id:
                 raise RuntimeError(
                     f"Album missing valid id while writing unavailable summary: {w!r}"
@@ -69,7 +69,7 @@ class UnavailableAlbums:
             _unavailable_sort_key
         )
         for wrapper in unavailable_sorted:
-            album_id: str = wrapper.get_album_id()
+            album_id: str = str(wrapper.get_album_uuid())
             if not album_id:
                 raise RuntimeError(
                     f"Album missing valid id while building summary: {wrapper!r}"

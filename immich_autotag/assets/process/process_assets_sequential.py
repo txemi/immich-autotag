@@ -48,7 +48,7 @@ def process_assets_sequential(
         for asset_wrapper in context.asset_manager.iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
         ):
-            asset_id = asset_wrapper.id
+            asset_id = asset_wrapper.get_id()
             log_debug(f"[BUG] Processing asset: {asset_id}")
 
             try:
@@ -82,7 +82,7 @@ def process_assets_sequential(
                         )
                     count += 1
                     StatisticsManager.get_instance().update_checkpoint(
-                        asset_wrapper.id,
+                        asset_wrapper.get_id_as_uuid(),
                         skip_n + count,
                     )
                     continue
@@ -91,7 +91,7 @@ def process_assets_sequential(
                     import traceback
 
                     tb = traceback.format_exc()
-                    asset_id = asset_wrapper.id
+                    asset_id = asset_wrapper.get_id()
                     log(
                         f"[ERROR] {category} - Aborting at asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
@@ -105,7 +105,7 @@ def process_assets_sequential(
             )
             count += 1
             StatisticsManager.get_instance().update_checkpoint(
-                asset_wrapper.id,
+                asset_wrapper.get_id_as_uuid(),
                 skip_n + count,
             )
     except Exception as e:

@@ -227,13 +227,13 @@ class ModificationReport:
         level = kind.value.log_level
         # Mensajes por tipo
         if kind == ModificationKind.DELETE_ALBUM:
-            msg = f"[DELETE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_id()}) deleted. Reason: {extra.get('reason') if extra else ''}"
+            msg = f"[DELETE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_uuid()}) deleted. Reason: {extra.get('reason') if extra else ''}"
         elif kind == ModificationKind.CREATE_ALBUM:
-            msg = f"[CREATE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_id()}) created."
+            msg = f"[CREATE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_uuid()}) created."
         elif kind == ModificationKind.RENAME_ALBUM:
-            msg = f"[RENAME_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_id()}) renamed from '{old_value}' to '{new_value}'."
+            msg = f"[RENAME_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_uuid()}) renamed from '{old_value}' to '{new_value}'."
         else:
-            msg = f"[ALBUM_MODIFICATION] Album '{album.get_album_name()}' (id={album.get_album_id()}) modification: {kind.name}"
+            msg = f"[ALBUM_MODIFICATION] Album '{album.get_album_name()}' (id={album.get_album_uuid()}) modification: {kind.name}"
         log(msg, level=level)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
