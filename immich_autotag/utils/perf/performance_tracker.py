@@ -219,7 +219,9 @@ class PerformanceTracker:
             return f"{seconds:.1f}s"
 
     @typechecked
-    def _format_perf_progress(self, *, count: int, elapsed: float) -> str:
+    def _format_perf_progress(self, *, count: int, elapsed: Optional[float] = None) -> str:
+        if elapsed is None:
+            elapsed = time.time() - self._start_time
         avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         skip_n = self._printable_value_skip_n()
@@ -332,7 +334,7 @@ class PerformanceTracker:
         Mirrors the output of print_progress but as a string.
         """
         elapsed = time.time() - self._start_time
-        return self._format_perf_progress(count, elapsed)
+        return self._format_perf_progress(count=count, elapsed=elapsed)
 
     def set_max_assets(self, value: int | None) -> None:
         """
