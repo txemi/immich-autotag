@@ -102,4 +102,8 @@ class AlbumDtoState:
             raise RuntimeError(f"Unknown AlbumLoadSource: {self._state.load_source!r}")
 
     def is_empty(self) -> bool:
-        raise NotImplementedError("Method is_empty not implemented yet.")
+        if self._load_source == AlbumLoadSource.SEARCH:
+            raise RuntimeError(
+                "Cannot determine if album is empty from SEARCH load source."
+            )
+        return len(self._dto.assets) == 0
