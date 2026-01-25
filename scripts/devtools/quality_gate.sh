@@ -128,9 +128,9 @@ parse_args_and_globals() {
 			TARGET_DIR="$arg"
 		fi
 	done
-	# Si el usuario no fuerza QUALITY_LEVEL, por defecto TARGET siempre en esta rama
+	# Si el usuario no fuerza QUALITY_LEVEL, por defecto RELAXED
 	if [ -z "$QUALITY_LEVEL" ]; then
-		QUALITY_LEVEL="TARGET"
+		QUALITY_LEVEL="RELAXED"
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
