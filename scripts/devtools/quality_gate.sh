@@ -536,6 +536,26 @@ check_no_spanish_chars() {
 }
 
 ###############################################################################
+# Function: check_import_linter
+# Description: Verifies architectural import contracts using import-linter (lint-imports)
+# Globals: REPO_ROOT
+# Returns: 0 if passes, 1 if contracts are broken
+###############################################################################
+check_import_linter() {
+	echo "[CHECK] Running import-linter (lint-imports) for architectural contracts..."
+	if ! command -v lint-imports >/dev/null 2>&1; then
+		echo "[ERROR] lint-imports (import-linter) is not installed or not in PATH."
+		echo "Install it with: pip install import-linter"
+		return 1
+	fi
+	if ! lint-imports --config "$REPO_ROOT/importlinter.ini"; then
+		echo "[ERROR] import-linter found contract violations."
+		return 1
+	fi
+	echo "[OK] import-linter: all contracts satisfied."
+	return 0
+}
+###############################################################################
 # Function: setup_environment
 # Description: Initializes Python environment and max line length.
 # Calls setup_max_line_length and setup_python_env.
@@ -561,6 +581,7 @@ run_quality_gate_check_mode() {
 	# 4. Heavy/informative checks
 	check_jscpd || exit 1
 	check_flake8 || exit 1
+	check_import_linter || exit 1
 	check_mypy || exit 1
 }
 
@@ -581,6 +602,7 @@ run_quality_gate_apply_mode() {
 	# 4. Heavy/informative checks
 	check_jscpd || error_found=1
 	check_flake8 || error_found=1
+	check_import_linter || error_found=1
 	check_mypy || error_found=1
 	if [ "$error_found" -ne 0 ]; then
 		echo "[EXIT] Quality Gate failed (see errors above)."
@@ -602,6 +624,7 @@ run_quality_gate_check_summary() {
 	check_ruff || exit 1
 	# 4. Flake8 (style)
 	check_flake8 || exit 1
+	check_import_linter || exit 1
 	# 5. Policy checks
 	check_no_dynamic_attrs || exit 2
 	check_no_tuples || exit 3
