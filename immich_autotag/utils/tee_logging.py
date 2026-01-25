@@ -10,7 +10,7 @@ from typeguard import typechecked
 
 
 class Tee:
-    def __init__(self, filename: str, mode: str = "a"):
+    def __init__(self, *, filename: str, mode: str = "a"):
         # Open the file with buffering=1 (line buffered)
         # to ensure real-time logging
         self.file = open(filename, mode, buffering=1, encoding="utf-8")

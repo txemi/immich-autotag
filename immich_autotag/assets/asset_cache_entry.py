@@ -75,7 +75,7 @@ class AssetCacheEntry:
         return cls.from_state(state, max_age_seconds=max_age_seconds)
 
     @classmethod
-    def from_api(cls, asset_id: UUID, max_age_seconds: int = 3600) -> "AssetCacheEntry":
+    def from_api(cls, *, asset_id: UUID, max_age_seconds: int = 3600) -> "AssetCacheEntry":
         """
         Crea un AssetCacheEntry cargando el asset desde la caché o la API (siempre FULL).
         asset_id debe ser un UUID.

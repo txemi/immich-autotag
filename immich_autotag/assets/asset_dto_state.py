@@ -38,7 +38,7 @@ class AssetDtoState:
     def loaded_at(self) -> datetime:
         return self._loaded_at
 
-    def update(self, dto: AssetResponseDto, type_: AssetDtoType) -> None:
+    def update(self, *, dto: AssetResponseDto, type_: AssetDtoType) -> None:
         self._dto = dto
         self._type = type_
         self._loaded_at = datetime.now()

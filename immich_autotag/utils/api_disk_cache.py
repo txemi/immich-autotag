@@ -19,7 +19,7 @@ def _get_cache_dir(entity: str, run_dir: Optional[Path] = None) -> Path:
     return cache_dir
 
 
-def save_entity_to_cache(entity: str, key: str, data: dict) -> None:
+def save_entity_to_cache(*, entity: str, key: str, data: dict) -> None:
     """Guarda un objeto en la caché de la ejecución actual."""
     cache_dir = _get_cache_dir(entity)
     path = cache_dir / f"{key}.json"

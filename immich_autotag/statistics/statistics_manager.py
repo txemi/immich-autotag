@@ -225,7 +225,7 @@ class StatisticsManager:
         return self.get_or_create_run_stats()
 
     @typechecked
-    def update_checkpoint(self, last_processed_id: str, count: int) -> RunStatistics:
+    def update_checkpoint(self, *, last_processed_id: str, count: int) -> RunStatistics:
         with self._lock:
 
             self.get_or_create_run_stats().last_processed_id = last_processed_id

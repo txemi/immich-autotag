@@ -62,7 +62,7 @@ class AlbumDtoState:
         """Devuelve el timestamp de obtención del álbum."""
         return self._loaded_at
 
-    def update(self, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
+    def update(self, *, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
         """
         Actualiza el estado con un nuevo DTO, fuente y timestamp actual.
         Garantiza que loaded_at nunca retrocede en el tiempo.

@@ -106,7 +106,7 @@ class PerformanceTracker:
             self._last_log_time = now
 
     @typechecked
-    def _printable_value_avg(self, count: int, elapsed: float) -> float:
+    def _printable_value_avg(self, *, count: int, elapsed: float) -> float:
         return elapsed / count if count else 0
 
     @typechecked
@@ -219,7 +219,7 @@ class PerformanceTracker:
             return f"{seconds:.1f}s"
 
     @typechecked
-    def _format_perf_progress(self, count: int, elapsed: float) -> str:
+    def _format_perf_progress(self, *, count: int, elapsed: float) -> str:
         avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         skip_n = self._printable_value_skip_n()
@@ -283,7 +283,7 @@ class PerformanceTracker:
         return msg
 
     @typechecked
-    def print_progress(self, count: int, elapsed: Optional[float] = None):
+    def print_progress(self, *, count: int, elapsed: Optional[float] = None):
         if elapsed is None:
             elapsed = time.time() - self._start_time
         print("[PERF] " + self._format_perf_progress(count, elapsed))
