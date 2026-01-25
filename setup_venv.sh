@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # Robust script to create virtual environment, install dependencies, and generate/install the local client
 # Automatically detects Immich server version and downloads the matching OpenAPI spec
@@ -8,212 +7,218 @@
 #   ./setup_venv.sh [--clean]
 #   --clean   Borra .venv e immich-client antes de crear entorno y cliente
 
-
 set -e
 
+# --- FUNCIONES PRINCIPALES ---
 
-# Parse arguments
-CLEAN=0
-SHOW_HELP=0
-MODE="dev"  # Default mode
-for arg in "$@"; do
-    case $arg in
-        --clean)
-            CLEAN=1
-            ;;
-        --prod)
-            MODE="prod"
-            ;;
-        --dev)
-            MODE="dev"
-            ;;
-        --help|-h)
-            SHOW_HELP=1
-            ;;
-    esac
-done
+parse_args() {
+	CLEAN=0
+	SHOW_HELP=0
+	MODE="dev" # Default mode
+	for arg in "$@"; do
+		case $arg in
+		--clean)
+			CLEAN=1
+			;;
+		--prod)
+			MODE="prod"
+			;;
+		--dev)
+			MODE="dev"
+			;;
+		--help | -h)
+			SHOW_HELP=1
+			;;
+		esac
+	done
+}
 
-if [ "$SHOW_HELP" = "1" ]; then
-    echo "Uso: $0 [--clean] [--prod] [--dev] [--help]"
-    echo "  --clean   Borra .venv e immich-client antes de crear entorno y cliente."
-    echo "  --prod    Solo instala dependencias de ejecución (producción)."
-    echo "  --dev     Instala dependencias de desarrollo (por defecto)."
-    echo "  --help    Muestra esta ayuda y termina."
-    exit 0
-fi
+print_help() {
+	echo "Uso: $0 [--clean] [--prod] [--dev] [--help]"
+	echo "  --clean   Borra .venv e immich-client antes de crear entorno y cliente."
+	echo "  --prod    Solo instala dependencias de ejecución (producción)."
+	echo "  --dev     Instala dependencias de desarrollo (por defecto)."
+	echo "  --help    Muestra esta ayuda y termina."
+}
+# --- FUNCIONES AUXILIARES ---
 
+# Inicializa rutas y variables globales
+init_paths() {
+	REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	cd "$REPO_ROOT"
 
-# Determine the repository root (where this script is located)
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$REPO_ROOT"
+	VENV_DIR="$REPO_ROOT/.venv"
+	CLIENT_DIR="$REPO_ROOT/immich-client"
+	CONFIG_FILE="$HOME/.config/immich_autotag/config.py"
+}
 
-VENV_DIR="$REPO_ROOT/.venv"
-CLIENT_DIR="$REPO_ROOT/immich-client"
-CONFIG_FILE="$HOME/.config/immich_autotag/config.py"
+clean_env() {
+	echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
+	rm -rf "$VENV_DIR" "$CLIENT_DIR"
+	echo "Limpieza completada."
+}
 
-# Clean if requested
-if [ "$CLEAN" = "1" ]; then
-    echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
-    rm -rf "$VENV_DIR" "$CLIENT_DIR"
-    echo "Limpieza completada."
-fi
-
-# Function to extract config value from Python file
 extract_config() {
-    local key=$1
-    local value=""
-    
-    if [ ! -f "$CONFIG_FILE" ]; then
-        return
-    fi
-    
-    # Use grep + sed to extract value
-    # Handles both quoted strings: key="value" or key='value'
-    # And unquoted values: key=123
-    value=$(grep -E "^\s*$key\s*=" "$CONFIG_FILE" | sed -E 's/.*=\s*["\x27]?([^"\x27,]*)(["\x27,].*)?/\1/' | head -1 | tr -d '\n\r\t ')
-    
-    echo "$value"
+	local key=$1
+	local value=""
+	if [ ! -f "$CONFIG_FILE" ]; then
+		return
+	fi
+	value=$(grep -E "^\s*$key\s*=" "$CONFIG_FILE" | sed -E 's/.*=\s*["\x27]?([^"\x27,]*)(["\x27,].*)?/\1/' | head -1 | tr -d '\n\r\t ')
+	echo "$value"
 }
 
-# Function to get Immich server version from API
 get_immich_version() {
-    local host=$1
-    local port=$2
-    local api_key=$3
-    
-    echo "[DEBUG] get_immich_version called with:" >&2
-    echo "  host='$host'" >&2
-    echo "  port='$port'" >&2
-    echo "  api_key_length=${#api_key}" >&2
-    
-    if [ -z "$host" ] || [ -z "$port" ] || [ -z "$api_key" ]; then
-        echo "[DEBUG] Missing parameters, returning 'main'" >&2
-        echo "main"
-        return
-    fi
-    
-    local url="http://$host:$port/api/server/version"
-    echo "[DEBUG] Calling API: $url" >&2
-    
-    # Try to get server version from API endpoint /api/server/version
-    # Returns JSON like: {"major": 2, "minor": 4, "patch": 1}
-    local response=$(curl -s -m 5 -H "x-api-key: $api_key" "$url" 2>&1)
-    local curl_exit=$?
-    
-    echo "[DEBUG] curl exit code: $curl_exit" >&2
-    echo "[DEBUG] API response: $response" >&2
-    
-    if [ $curl_exit -ne 0 ] || [ -z "$response" ]; then
-        echo "[DEBUG] curl failed or empty response, returning 'main'" >&2
-        echo "main"
-        return
-    fi
-    
-    # Extract version numbers using grep
-    local major=$(echo "$response" | grep -o '"major":[0-9]*' | cut -d':' -f2)
-    local minor=$(echo "$response" | grep -o '"minor":[0-9]*' | cut -d':' -f2)
-    local patch=$(echo "$response" | grep -o '"patch":[0-9]*' | cut -d':' -f2)
-    
-    echo "[DEBUG] Extracted: major='$major' minor='$minor' patch='$patch'" >&2
-    
-    if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
-        echo "[DEBUG] Failed to extract version numbers, returning 'main'" >&2
-        echo "main"
-    else
-        # Format as v<major>.<minor>.<patch> (e.g., v2.4.1)
-        local version="v${major}.${minor}.${patch}"
-        echo "[DEBUG] Detected version: $version" >&2
-        echo "$version"
-    fi
+	local host=$1
+	local port=$2
+	local api_key=$3
+	echo "[DEBUG] get_immich_version called with:" >&2
+	echo "  host='$host'" >&2
+	echo "  port='$port'" >&2
+	echo "  api_key_length=${#api_key}" >&2
+	if [ -z "$host" ] || [ -z "$port" ] || [ -z "$api_key" ]; then
+		echo "[DEBUG] Missing parameters, returning 'main'" >&2
+		echo "main"
+		return
+	fi
+	local url="http://$host:$port/api/server/version"
+	echo "[DEBUG] Calling API: $url" >&2
+	local response=$(curl -s -m 5 -H "x-api-key: $api_key" "$url" 2>&1)
+	local curl_exit=$?
+	echo "[DEBUG] curl exit code: $curl_exit" >&2
+	echo "[DEBUG] API response: $response" >&2
+	if [ $curl_exit -ne 0 ] || [ -z "$response" ]; then
+		echo "[DEBUG] curl failed or empty response, returning 'main'" >&2
+		echo "main"
+		return
+	fi
+	local major=$(echo "$response" | grep -o '"major":[0-9]*' | cut -d':' -f2)
+	local minor=$(echo "$response" | grep -o '"minor":[0-9]*' | cut -d':' -f2)
+	local patch=$(echo "$response" | grep -o '"patch":[0-9]*' | cut -d':' -f2)
+	echo "[DEBUG] Extracted: major='$major' minor='$minor' patch='$patch'" >&2
+	if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
+		echo "[DEBUG] Failed to extract version numbers, returning 'main'" >&2
+		echo "main"
+	else
+		local version="v${major}.${minor}.${patch}"
+		echo "[DEBUG] Detected version: $version" >&2
+		echo "$version"
+	fi
 }
 
-# Read Immich configuration
-IMMICH_HOST=""
-IMMICH_PORT=""
-IMMICH_API_KEY=""
+# Obtiene la URL de OpenAPI adecuada según la configuración
+get_openapi_url() {
+	local config_file="$1"
+	local default_version="v2.4.1"
+	local immich_host=""
+	local immich_port=""
+	local immich_api_key=""
+	local immich_version=""
 
-if [ -f "$CONFIG_FILE" ]; then
-    echo "Reading configuration from $CONFIG_FILE..."
-    IMMICH_HOST=$(extract_config "host")
-    IMMICH_PORT=$(extract_config "port")
-    IMMICH_API_KEY=$(extract_config "api_key")
-fi
+	if [ -f "$config_file" ]; then
+		echo "Reading configuration from $config_file..."
+		immich_host=$(extract_config "host")
+		immich_port=$(extract_config "port")
+		immich_api_key=$(extract_config "api_key")
+	fi
 
-# Default fallback version (matches common deployment v2.4.1)
-DEFAULT_IMMICH_VERSION="v2.4.1"
+	if [ -n "$immich_host" ] && [ -n "$immich_port" ] && [ -n "$immich_api_key" ]; then
+		echo "Connecting to Immich at http://$immich_host:$immich_port to detect version..."
+		immich_version=$(get_immich_version "$immich_host" "$immich_port" "$immich_api_key")
+		echo "Detected Immich version: $immich_version"
+	else
+		echo "WARNING: Could not read Immich config. Config values: host='$immich_host' port='$immich_port' api_key_length=${#immich_api_key}"
+		echo "WARNING: Using default OpenAPI spec version: $default_version"
+		immich_version="$default_version"
+	fi
+	local openapi_url="https://raw.githubusercontent.com/immich-app/immich/$immich_version/open-api/immich-openapi-specs.json"
+	echo "Using OpenAPI spec from: $openapi_url"
+	# Export for use in main
+	OPENAPI_URL="$openapi_url"
+}
+create_venv() {
+	if [ ! -d "$VENV_DIR" ]; then
+		python3 -m venv "$VENV_DIR"
+		echo "Virtual environment created at $VENV_DIR"
+	else
+		echo "Virtual environment already exists at $VENV_DIR"
+	fi
+	source "$VENV_DIR/bin/activate"
+	echo "Virtual environment activated."
+}
+install_dependencies() {
+	if [ -f "$REPO_ROOT/requirements.txt" ]; then
+		pip install --upgrade pip
+		# Install runtime dependencies except the local client
+		grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
+		echo "Runtime dependencies installed."
 
-# Get server version and construct OpenAPI spec URL
-if [ -n "$IMMICH_HOST" ] && [ -n "$IMMICH_PORT" ] && [ -n "$IMMICH_API_KEY" ]; then
-    echo "Connecting to Immich at http://$IMMICH_HOST:$IMMICH_PORT to detect version..."
-    IMMICH_VERSION=$(get_immich_version "$IMMICH_HOST" "$IMMICH_PORT" "$IMMICH_API_KEY")
-    echo "Detected Immich version: $IMMICH_VERSION"
-else
-    echo "WARNING: Could not read Immich config. Config values: host='$IMMICH_HOST' port='$IMMICH_PORT' api_key_length=${#IMMICH_API_KEY}"
-    echo "WARNING: Using default OpenAPI spec version: $DEFAULT_IMMICH_VERSION"
-    IMMICH_VERSION="$DEFAULT_IMMICH_VERSION"
-fi
+		if [ "$MODE" = "dev" ]; then
+			# Install development dependencies if requirements-dev.txt exists
+			if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then
+				pip install -r "$REPO_ROOT/requirements-dev.txt"
+				echo "Development dependencies installed."
+			else
+				echo "requirements-dev.txt not found. Skipping dev dependencies."
+			fi
+		else
+			echo "Modo producción: solo dependencias de ejecución instaladas."
+		fi
+	else
+		echo "requirements.txt not found."
+	fi
+}
 
-# Construct the URL with the detected version
-OPENAPI_URL="https://raw.githubusercontent.com/immich-app/immich/$IMMICH_VERSION/open-api/immich-openapi-specs.json"
-echo "Using OpenAPI spec from: $OPENAPI_URL"
+generate_and_install_client() {
+	# Install the generator if not present
+	if ! pip show openapi-python-client >/dev/null 2>&1; then
+		pip install openapi-python-client
+		echo "openapi-python-client installed."
+	fi
 
+	# Generate the client only if the folder does not exist at the root
+	if [ ! -d "$CLIENT_DIR" ]; then
+		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR"
+		echo "immich-client generated."
+	else
+		echo "The folder $CLIENT_DIR already exists. Regenerating..."
+		rm -rf "$CLIENT_DIR" || true
+		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR" --overwrite
+		echo "immich-client regenerated."
+	fi
 
+	# Install the local client if the folder exists at the root
+	if [ -d "$CLIENT_DIR" ]; then
+		pip install -e "$CLIENT_DIR"
+		echo "Local immich-client installed."
+	else
+		echo "The folder $CLIENT_DIR was not found."
+		exit 1
+	fi
+}
 
-if [ ! -d "$VENV_DIR" ]; then
-    python3 -m venv "$VENV_DIR"
-    echo "Virtual environment created at $VENV_DIR"
-else
-    echo "Virtual environment already exists at $VENV_DIR"
-fi
+# --- MAIN ---
+main() {
+	parse_args "$@"
 
-source "$VENV_DIR/bin/activate"
-echo "Virtual environment activated."
+	if [ "$SHOW_HELP" = "1" ]; then
+		print_help
+		exit 0
+	fi
 
-if [ -f "$REPO_ROOT/requirements.txt" ]; then
+	init_paths
 
-    pip install --upgrade pip
-    # Install runtime dependencies except the local client
-    grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
-    echo "Runtime dependencies installed."
+	if [ "$CLEAN" = "1" ]; then
+		clean_env
+	fi
 
-    if [ "$MODE" = "dev" ]; then
-        # Install development dependencies if requirements-dev.txt exists
-        if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then
-            pip install -r "$REPO_ROOT/requirements-dev.txt"
-            echo "Development dependencies installed."
-        else
-            echo "requirements-dev.txt not found. Skipping dev dependencies."
-        fi
-    else
-        echo "Modo producción: solo dependencias de ejecución instaladas."
-    fi
-else
-    echo "requirements.txt not found."
-fi
+	# Obtener la URL de OpenAPI adecuada
+	get_openapi_url "$CONFIG_FILE"
 
+	create_venv
+	install_dependencies
+	generate_and_install_client
+}
 
-# Install the generator if not present
-if ! pip show openapi-python-client > /dev/null 2>&1; then
-    pip install openapi-python-client
-    echo "openapi-python-client installed."
-fi
-
-# Generate the client only if the folder does not exist at the root
-if [ ! -d "$CLIENT_DIR" ]; then
-    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR"
-    echo "immich-client generated."
-else
-    echo "The folder $CLIENT_DIR already exists. Regenerating..."
-    rm -rf "$CLIENT_DIR" || true
-    openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR" --overwrite
-    echo "immich-client regenerated."
-fi
-
-# Install the local client if the folder exists at the root
-if [ -d "$CLIENT_DIR" ]; then
-    pip install -e "$CLIENT_DIR"
-    echo "Local immich-client installed."
-else
-    echo "The folder $CLIENT_DIR was not found."
-    exit 1
-fi
+# --- EJECUCIÓN ---
+main "$@"
