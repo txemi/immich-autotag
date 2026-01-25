@@ -18,14 +18,14 @@ class TagIdMap:
 
     @typechecked
     def append(self, tag: "TagWrapper"):
-        tag_id: UUID = tag.id
+        tag_id = tag.get_id()
         if tag_id in self._id_to_tag:
             raise ValueError(f"Tag con id {tag_id} ya existe en TagIdMap")
         self._id_to_tag[tag_id] = tag
 
     @typechecked
     def remove(self, tag: "TagWrapper"):
-        tag_id: UUID = tag.id
+        tag_id = tag.get_id()
         if tag_id in self._id_to_tag:
             del self._id_to_tag[tag_id]
         else:
