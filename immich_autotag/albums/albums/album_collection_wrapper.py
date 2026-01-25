@@ -660,6 +660,7 @@ class AlbumCollectionWrapper:
         wrapper: AlbumResponseWrapper,
         client: ImmichClient,
         tag_mod_report: ModificationReport,
+        old_tested_mode=True,
     ) -> None:
         """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
 
@@ -686,7 +687,7 @@ class AlbumCollectionWrapper:
                     return
 
             else:
-                if True:
+                if old_tested_mode:
                     # no podemos usar esto, no tenemos
                     # Combine all duplicates into one
                     surviving_album = self.combine_duplicate_albums(
