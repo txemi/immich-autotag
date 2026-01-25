@@ -736,7 +736,7 @@ class AlbumCollectionWrapper:
         if existing is not None:
             raise RuntimeError(
                 f"Cannot add album: an album with the name '{name}' already exists "
-                f"(id={existing.get_album_id()})."
+                f"(id={existing.get_album_uuid()})."
             )
         # Append to collection and update maps
         self._albums.add(wrapper)
@@ -822,7 +822,7 @@ class AlbumCollectionWrapper:
             if not album.is_duplicate_album():
                 raise RuntimeError(
                     f"Refusing to combine album '{album.get_album_name()}' "
-                    f"(id={album.get_album_id()}): not a duplicate album."
+                    f"(id={album.get_album_uuid()}): not a duplicate album."
                 )
         survivors = list(albums)
         while len(survivors) > 1:
@@ -957,7 +957,7 @@ class AlbumCollectionWrapper:
         Returns the first album with the given UUID, or None if not found.
         """
         for album in self.get_albums():
-            if album.get_album_id() == str(album_id):
+            if str(album.get_album_uuid()) == str(album_id):
                 return album
         return None
 

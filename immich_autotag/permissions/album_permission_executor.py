@@ -236,7 +236,7 @@ def sync_album_permissions(
         resolved_policy: Resolved policy with target members (emails)
         context: ImmichContext with API client
     """
-    album_id = album_wrapper.get_album_id()
+    album_id = album_wrapper.get_album_uuid()
     album_name = album_wrapper.get_album_name()
     # Use the no-cache UUID accessor when interacting with APIs that expect a UUID
     album_uuid = album_wrapper.get_album_uuid_no_cache()

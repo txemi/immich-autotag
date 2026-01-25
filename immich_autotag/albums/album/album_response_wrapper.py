@@ -439,7 +439,7 @@ class AlbumResponseWrapper:
         """Validates if an asset can be added to the album."""
         if self.has_asset_wrapper(asset_wrapper):
             raise AssetAlreadyInAlbumError(
-                f"Asset {asset_wrapper.id} is already in album {self.get_album_id()}"
+                f"Asset {asset_wrapper.get_id()} is already in album {self.get_album_id()}"
             )
 
     @typechecked
@@ -496,7 +496,7 @@ class AlbumResponseWrapper:
         if error_msg and "duplicate" in str(error_msg).lower():
             log(
                 (
-                    f"Asset {asset_wrapper.id} already in album "
+                    f"Asset {asset_wrapper.get_id()} already in album "
                     f"{self.get_album_id()} (API duplicate error). "
                     f"Raising AssetAlreadyInAlbumError."
                 ),
@@ -516,7 +516,7 @@ class AlbumResponseWrapper:
                     "album_url": album_url,
                     "reason": "Stale cached album data detected and reloaded",
                     "details": (
-                        f"Asset {asset_wrapper.id} was not successfully added to album "
+                        f"Asset {asset_wrapper.get_id()} was not successfully added to album "
                         f"{self.get_album_id()}: {error_msg}\n"
                         f"Asset link: {asset_url}\n"
                         f"Album link: {album_url}"
@@ -528,13 +528,13 @@ class AlbumResponseWrapper:
             )
 
             raise AssetAlreadyInAlbumError(
-                f"Asset {asset_wrapper.id} already in album "
+                f"Asset {asset_wrapper.get_id()} already in album "
                 f"{self.get_album_id()} (API duplicate error)"
             )
         else:
             raise RuntimeError(
                 (
-                    f"Asset {asset_wrapper.id} was not successfully added to album "
+                    f"Asset {asset_wrapper.get_id()} was not successfully added to album "
                     f"{self.get_album_id()}: {error_msg}\n"
                     f"Asset link: {asset_url}\n"
                     f"Album link: {album_url}"
@@ -567,7 +567,7 @@ class AlbumResponseWrapper:
             else:
                 log(
                     (
-                        f"After {max_retries} retries, asset {asset_wrapper.id} "
+                        f"After {max_retries} retries, asset {asset_wrapper.get_id()} "
                         f"does NOT appear in album {self.get_album_id()}. "
                         f"This may be an eventual consistency or "
                         f"API issue."
@@ -604,7 +604,7 @@ class AlbumResponseWrapper:
                 )
         else:
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in add_assets_to_album response."
+                f"Asset {asset_wrapper.get_id()} not found in add_assets_to_album response."
             )
 
         # 4. Reporting
@@ -629,7 +629,7 @@ class AlbumResponseWrapper:
 
         if not self.has_asset_wrapper(asset_wrapper):
             log(
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} is not in album "
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} is not in album "
                 f"{self.get_album_id()}, skipping removal.",
                 level=LogLevel.DEBUG,
             )
@@ -661,7 +661,7 @@ class AlbumResponseWrapper:
         """Handles the case where the asset is not found in the removal response."""
         log(
             (
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} not found in "
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} not found in "
                 f"remove_assets_from_album response for album "
                 f"{self.get_album_id()}. Treating as already removed."
             ),
@@ -672,7 +672,7 @@ class AlbumResponseWrapper:
 
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
             raise RuntimeError(
-                f"Asset {asset_wrapper.id} not found in removal response for album "
+                f"Asset {asset_wrapper.get_id()} not found in removal response for album "
                 f"{self.get_album_id()}."
             )
 
@@ -756,7 +756,7 @@ class AlbumResponseWrapper:
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise RuntimeError(
                     (
-                        f"Asset {asset_wrapper.id} was not successfully removed from "
+                        f"Asset {asset_wrapper.get_id()} was not successfully removed from "
                         f"album {self.get_album_id()}: {error_msg}\n"
                         f"Asset link: {asset_url}\n"
                         f"Album link: {album_url}"
@@ -765,7 +765,7 @@ class AlbumResponseWrapper:
             else:
                 log(
                     (
-                        f"[ALBUM REMOVAL] Asset {asset_wrapper.id} could not be removed from "
+                        f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} could not be removed from "
                         f"album {self.get_album_id()}: {error_msg}\n"
                         f"Asset link: {asset_url}\n"
                         f"Album link: {album_url}"
@@ -777,7 +777,7 @@ class AlbumResponseWrapper:
         # Otherwise, treat as fatal
         raise RuntimeError(
             (
-                f"Asset {asset_wrapper.id} was not successfully removed from album "
+                f"Asset {asset_wrapper.get_id()} was not successfully removed from album "
                 f"{self.get_album_id()}: {error_msg}\n"
                 f"Asset link: {asset_url}\n"
                 f"Album link: {album_url}"
@@ -810,7 +810,7 @@ class AlbumResponseWrapper:
             else:
                 log(
                     (
-                        f"After {max_retries} retries, asset {asset_wrapper.id} "
+                        f"After {max_retries} retries, asset {asset_wrapper.get_id()} "
                         f"still appears in album {self.get_album_id()}. "
                         f"This may be an eventual consistency or API issue."
                     ),
@@ -838,7 +838,7 @@ class AlbumResponseWrapper:
         result = self._execute_remove_asset_api(asset_wrapper, client)
 
         # 3. Handle result
-        item = self._find_asset_result_in_response(result, str(asset_wrapper.id))
+        item = self._find_asset_result_in_response(result, asset_wrapper.get_id())
         if item:
             if not item.success:
                 self._handle_remove_asset_error(item, asset_wrapper)
@@ -849,7 +849,7 @@ class AlbumResponseWrapper:
         # 4. Success Log
         log(
             (
-                f"[ALBUM REMOVAL] Asset {asset_wrapper.id} removed from album "
+                f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} removed from album "
                 f"{self.get_album_id()} ('{self.get_album_name()}')."
             ),
             level=LogLevel.FOCUS,

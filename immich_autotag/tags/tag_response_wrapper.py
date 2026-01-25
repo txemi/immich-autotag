@@ -28,6 +28,7 @@ class TagWrapper:
     def __eq__(self, other) -> bool:
         if isinstance(other, TagWrapper):
             return self.get_id() == other.get_id()
+
         return False
 
     def __str__(self) -> str:
