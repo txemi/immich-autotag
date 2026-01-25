@@ -68,17 +68,8 @@ class AssetResponseWrapper:
         return self._context
 
     def _ensure_full_asset_loaded(self) -> AssetDtoState:
-        """Lazy-load the full asset data if not already loaded.
-
-        If not FULL, fetches the complete asset via from_api and updates self._state.
-        """
-        if self._state.type == AssetDtoType.FULL:
-            return self._state
-
-        # Centralize API call in from_api
-        refreshed = type(self).from_api(self.id_as_uuid, self.get_context())
-        self._state = refreshed._state
-        return self._state
+        """Ensure the asset is fully loaded (type FULL) using the cache entry logic."""
+        return self._cache_entry.ensure_full_asset_loaded(self.id_as_uuid, self.get_context())
 
     @classmethod
     def from_dto(
@@ -90,12 +81,14 @@ class AssetResponseWrapper:
     ) -> "AssetResponseWrapper":
         """
         Creates an AssetResponseWrapper from a DTO and a context.
-        Uses AssetDtoState to encapsulate the DTO and its type.
+        Uses AssetDtoState to encapsulate the DTO and its type, wraps in AssetCacheEntry.
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoState
+        from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 
-        state = AssetDtoState(dto, dto_type)
-        return cls(context=context, state=state)
+        state = AssetDtoState(dto=dto, type_=dto_type)
+        cache_entry = AssetCacheEntry(state)
+        return cls(_context=context, _cache_entry=cache_entry)
 
     @classmethod
     def from_api(
@@ -140,7 +133,7 @@ class AssetResponseWrapper:
             update_asset as proxy_update_asset,
         )
 
-        old_date = self._state.dto.created_at
+        old_date = self._cache_entry.get_state().dto.created_at
         # Ensure the date is timezone-aware in UTC
         if new_date.tzinfo is None:
             raise ValueError(
@@ -224,7 +217,7 @@ class AssetResponseWrapper:
         Chooses the oldest and raises an exception if any is earlier than the chosen one.
         """
 
-        date_candidates = self._state.get_dates()
+        date_candidates = self._cache_entry.get_state().get_dates()
         if not date_candidates:
             raise ValueError("Could not determine any date for the asset.")
         best_date = min(date_candidates)
@@ -233,7 +226,7 @@ class AssetResponseWrapper:
                 raise DateIntegrityError(
                     (
                         f"Integrity broken: found a date ({d}) earlier than the best selected date "
-                        f"({best_date}) for asset {self._state.get_uuid()}"
+                        f"({best_date}) for asset {self._cache_entry.get_state().get_uuid()}"
                     )
                 )
         return best_date
@@ -253,7 +246,7 @@ class AssetResponseWrapper:
         if duplicate_id is not None:
             group = context.duplicates_collection.get_group(duplicate_id)
             for dup_id in group:
-                if not include_self and dup_id == self._state.get_uuid():
+                if not include_self and dup_id == self._cache_entry.get_state().get_uuid():
                     continue
                 dup_asset = context.asset_manager.get_asset(dup_id, context)
                 if dup_asset is not None:
@@ -267,7 +260,7 @@ class AssetResponseWrapper:
         """
         Returns True if the asset has the tag with that name (case-insensitive).
         """
-        return self._state._get_full().has_tag(tag_name)
+        return self._cache_entry.get_state()._get_full().has_tag(tag_name)
 
     @typechecked
     def remove_tag_by_name(

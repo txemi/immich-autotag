@@ -1,3 +1,4 @@
+ASSET_CACHE_KEY = "assets"
 import datetime
 from uuid import UUID
 
@@ -14,6 +15,8 @@ class StaleAssetCacheError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetCacheEntry:
+
+
     """
     Encapsula el estado cacheado de un asset, con lógica de frescura y recarga.
     Los atributos son privados; acceso solo mediante métodos públicos.
@@ -37,7 +40,7 @@ class AssetCacheEntry:
         return self._state.loaded_at
 
     @classmethod
-    def from_cache_or_api(
+    def _from_cache_or_api(
         cls,
         asset_id: UUID,
         *,
@@ -57,12 +60,12 @@ class AssetCacheEntry:
             save_entity_to_cache,
         )
 
-        cache_data = get_entity_from_cache("assets", str(asset_id), use_cache=use_cache)
+        cache_data = get_entity_from_cache(ASSET_CACHE_KEY, str(asset_id), use_cache=use_cache)
         if cache_data is not None:
             try:
                 dto = AssetResponseDto.from_dict(cache_data)
                 state = AssetDtoState(dto, AssetDtoType.FULL)
-                return cls.from_state(state, max_age_seconds=max_age_seconds)
+                return cls._from_state(state, max_age_seconds=max_age_seconds)
             except Exception:
                 pass  # Si la caché está corrupta, recarga de API
         # Si no está en caché o está corrupto, recarga desde API
@@ -71,25 +74,16 @@ class AssetCacheEntry:
         if dto is None:
             raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
         state = AssetDtoState(dto, AssetDtoType.FULL)
-        save_entity_to_cache("assets", str(asset_id), dto.to_dict())
-        return cls.from_state(state, max_age_seconds=max_age_seconds)
+        save_entity_to_cache(ASSET_CACHE_KEY, str(asset_id), dto.to_dict())
+        return cls._from_state(state, max_age_seconds=max_age_seconds)
+
 
     @classmethod
-    def from_api(cls, *, asset_id: UUID, max_age_seconds: int = 3600) -> "AssetCacheEntry":
-        """
-        Crea un AssetCacheEntry cargando el asset desde la caché o la API (siempre FULL).
-        asset_id debe ser un UUID.
-        """
-        return cls.from_cache_or_api(
-            asset_id=asset_id, max_age_seconds=max_age_seconds, use_cache=True
-        )
-
-    @classmethod
-    def from_state(
+    def _from_state(
         cls, state: AssetDtoState, max_age_seconds: int = 3600
     ) -> "AssetCacheEntry":
         """
-        Crea un AssetCacheEntry a partir de un estado ya existente.
+        Crea un AssetCacheEntry a partir de un estado ya existente (privado).
         """
         return cls(_state=state, _max_age_seconds=max_age_seconds)
 
@@ -117,3 +111,25 @@ class AssetCacheEntry:
             else data["state"]
         )
         return cls(_state=state, _max_age_seconds=data.get("max_age_seconds", 3600))
+
+    def ensure_full_asset_loaded(self, context: "ImmichContext") -> AssetDtoState:
+        """
+        Ensures the asset is fully loaded (type FULL). If not, fetches from API and updates the cache entry.
+        """
+        state = self.get_state()
+        from immich_autotag.assets.asset_dto_state import AssetDtoType
+        if state.type == AssetDtoType.FULL:
+            return state
+
+        self._reload_from_api(context)
+        return self._state
+
+    def _reload_from_api(self, context: "ImmichContext") -> "AssetCacheEntry":
+        """
+        Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
+        """
+        from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+        asset_id = self._state.dto.id  # Assumes dto has id attribute
+        refreshed = AssetResponseWrapper.from_api(asset_id, context)
+        self._state = refreshed._cache_entry.get_state()
+        return self
