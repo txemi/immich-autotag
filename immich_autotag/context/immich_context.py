@@ -24,7 +24,7 @@ _instance_created = False
 
 @attrs.define(auto_attribs=True, slots=True)
 class ImmichContext:
-    _client: ImmichClientWrapper = attrs.field(
+    _client: "ImmichClientWrapper" = attrs.field(
         validator=attrs.validators.instance_of(ImmichClientWrapper)
     )
     _albums_collection: "AlbumCollectionWrapper" = attrs.field(
