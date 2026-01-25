@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Optional
 from typeguard import typechecked
 
 from immich_autotag.config.models import UserConfig
+import atexit
+import os
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
 
 install_typeguard_import_hook()  # noqa: E402
@@ -100,7 +102,9 @@ def _sync_all_album_permissions(user_config: Optional[UserConfig], context: Immi
 
 
 @typechecked
-def run_main():
+
+def _run_main_inner():
+
 
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
@@ -208,3 +212,23 @@ def run_main():
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
     print_welcome_links(manager.config)
+
+
+def run_main():
+    """
+    Wrapper que ejecuta _run_main_inner, y si el modo de error es CRAZY_DEBUG, activa cProfile y guarda el resultado en profile_debug.stats.
+    """
+    from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+    from immich_autotag.config._internal_types import ErrorHandlingMode
+    import cProfile
+
+    if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
+        profiler = cProfile.Profile()
+        profiler.enable()
+        def _save_profile():
+            profiler.disable()
+            profiler.dump_stats("profile_debug.stats")
+        atexit.register(_save_profile)
+        _run_main_inner()
+    else:
+        _run_main_inner()
