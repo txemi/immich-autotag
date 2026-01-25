@@ -137,11 +137,11 @@ class AssetDtoState:
 
     def to_cache_dict(self) -> dict:
         """
-        Serializa el estado a un diccionario, incluyendo loaded_at en formato ISO.
+        Serializes the state to a dictionary, including loaded_at in ISO format.
         """
         return {
             "dto": self._dto.to_dict() if hasattr(self._dto, "to_dict") else self._dto,
-            "type": self._type.value,
+            "type": self._api_endpoint_source.value,
             "loaded_at": self._loaded_at.isoformat(),
         }
 
