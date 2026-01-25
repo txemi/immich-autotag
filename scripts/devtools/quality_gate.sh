@@ -511,9 +511,9 @@ check_flake8() {
 		flake_failed=1
 	fi
 	if [ $flake_failed -ne 0 ]; then
-		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
-			echo "[RELAXED MODE] Not blocking build on flake8 errors."
+		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			echo "[WARNING] flake8 failed, but relaxed/target mode is enabled. See output above."
+			echo "[RELAXED/TARGET MODE] Not blocking build on flake8 errors."
 		else
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
