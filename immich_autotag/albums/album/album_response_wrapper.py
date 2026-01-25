@@ -334,7 +334,7 @@ class AlbumResponseWrapper:
 
         album_dto = None
         try:
-            album_dto = get_album_info_by_id(self.get_album_uuid_no_cache(), client)
+            album_dto = get_album_info_by_id(self.get_album_uuid(), client)
         except immich_errors.UnexpectedStatus as exc:
             api_exc = AlbumApiExceptionInfo(exc)
             partial = self._build_partial_repr()
