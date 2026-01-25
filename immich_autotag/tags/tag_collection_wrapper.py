@@ -136,12 +136,11 @@ class TagCollectionWrapper:
         """
         Devuelve el TagWrapper correspondiente a un TagResponseDto (dto), o None si no existe.
         """
-        tag = self.find_by_id(getattr(dto, "id", None))
+        tag = self.find_by_id(UUID(dto.id))
         if tag is not None:
             return tag
-        name = getattr(dto, "name", None)
-        if isinstance(name, str):
-            return self.find_by_name(name)
+        name = dto.name
+        return self.find_by_name(name)
         raise NotImplementedError(
             "TagResponseDto no tiene ni id ni name válidos para buscar el TagWrapper."
         )
