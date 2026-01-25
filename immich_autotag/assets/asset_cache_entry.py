@@ -1,4 +1,3 @@
-
 import datetime
 from uuid import UUID
 
@@ -41,6 +40,7 @@ class AssetCacheEntry:
     def from_cache_or_api(
         cls,
         asset_id: UUID,
+        *,
         max_age_seconds: int = 3600,
         use_cache: bool = True,
     ) -> "AssetCacheEntry":
@@ -49,9 +49,13 @@ class AssetCacheEntry:
         asset_id debe ser un UUID.
         """
         from immich_client.models.asset_response_dto import AssetResponseDto
+
         from immich_autotag.api.immich_proxy.assets import get_asset_info
-        from immich_autotag.utils.api_disk_cache import get_entity_from_cache, save_entity_to_cache
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        from immich_autotag.utils.api_disk_cache import (
+            get_entity_from_cache,
+            save_entity_to_cache,
+        )
 
         cache_data = get_entity_from_cache("assets", str(asset_id), use_cache=use_cache)
         if cache_data is not None:
@@ -71,14 +75,14 @@ class AssetCacheEntry:
         return cls.from_state(state, max_age_seconds=max_age_seconds)
 
     @classmethod
-    def from_api(
-        cls, asset_id: UUID, max_age_seconds: int = 3600
-    ) -> "AssetCacheEntry":
+    def from_api(cls, asset_id: UUID, max_age_seconds: int = 3600) -> "AssetCacheEntry":
         """
         Crea un AssetCacheEntry cargando el asset desde la caché o la API (siempre FULL).
         asset_id debe ser un UUID.
         """
-        return cls.from_cache_or_api(asset_id, max_age_seconds=max_age_seconds, use_cache=True)
+        return cls.from_cache_or_api(
+            asset_id=asset_id, max_age_seconds=max_age_seconds, use_cache=True
+        )
 
     @classmethod
     def from_state(
