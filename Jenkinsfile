@@ -54,7 +54,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    echo "Running Quality Gate (strict mode)..."
+                    echo "Running Quality Gate (relaxed mode)..."
                     sh '''
                         chmod +x scripts/devtools/quality_gate.sh
                         bash scripts/devtools/quality_gate.sh --relaxed --check

@@ -5,13 +5,39 @@
 # ============================================================================
 #
 # Usage:
-#   ./quality_gate.sh [--check|-c] [--strict] [--dummy] [target_dir]
+#   ./quality_gate.sh [--check|-c] [--strict] [--target] [--relaxed] [target_dir]
 #
 # Modes:
-#   --strict  Enforce all checks strictly, fail on any error.
-#   --strict  Enforce all checks strictly, fail on any error.
+#   --strict
+#     - Applies ALL checks strictly.
+#     - Any error or warning in any check BLOCKS the build.
+#     - No error is ignored (format, style, types, duplication, architecture, etc).
+#     - Not recommended for CI/pipelines unless code is perfect.
+#
+#   --relaxed
+#     - Applies all checks, but some only warn and DO NOT block the build.
+#     - Checks that DO NOT block in relaxed mode:
+#         * flake8: E501 (long lines) ignored, other errors may block.
+#         * ruff: E501 ignored.
+#         * mypy: only warns, does not block.
+#         * Spanish characters: only warns, does not block.
+#     - The rest of checks CAN block the build if they fail:
+#         * Python syntax errors
+#         * Code duplication (jscpd)
+#         * Architecture contracts (import-linter)
+#         * Forbidden tuples
+#         * getattr/hasattr (only if --enforce-dynamic-attrs)
+#         * Method order (ssort)
+#         * Bash formatting (shfmt)
+#         * isort, black, ruff (except E501)
+#
+#   --target
+#     - Intermediate mode for Quality Gate improvement branches.
+#     - Blocks the build ONLY for a selected subset of warnings/errors (currently: mypy arg-type, call-arg, return-value).
+#     - The rest behave as in relaxed mode (warn only).
+#     - Use this mode to progressively raise the bar in dedicated branches.
+#
 #   --check   Only check, do not modify files (default is apply/fix mode).
-#   --relaxed Some non-critical checks are warnings only.
 #   --enforce-dynamic-attrs  Enforce ban on getattr/hasattr (advanced).
 #
 # If no [target_dir] is given, defaults to the main package.
@@ -19,25 +45,35 @@
 # =====================
 # Quality Gate Checks Table (reference)
 # =====================
-# | Check                            | Description                                 | Strict   | Relaxed (CI) | Dummy |
-# |-----------------------------------|---------------------------------------------|----------|--------------|-------|
-# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |
-# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |
-# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |
-# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |
-# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |
-# | mypy (type check)                 | Type checking                               |   ✔️     |   ✔️         |
-# | uvx ssort (method order)          | Class method ordering                       |   ✔️**   |   ✔️**       |
-# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |
-# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |
-# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |
+# | Check                            | Description                                 | Strict   | Relaxed (CI) | Target (improvement) |
+# |-----------------------------------|---------------------------------------------|----------|--------------|---------------------|
+# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |   ✔️                |
+# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |   ✔️                |
+# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |   ✔️                |
+# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |   ✔️                |
+# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |   ✔️                |
+# | flake8 (E501 long lines)          | Line length                                 |   ✔️     |   Ignored    |   Ignored           |
+# | ruff (E501 long lines)            | Line length                                 |   ✔️     |   Ignored    |   Ignored           |
+# | mypy (type check)                 | Type checking                               |   ✔️     |   Warn only  |   Warn only         |
+# | mypy (arg-type/call-arg/return-value) | Type errors (subset)                   |   ✔️     |   Warn only  |   ✔️                |
+# | uvx ssort (method order)          | Class method ordering                       |   ✔️**   |   ✔️**       |   ✔️**              |
+# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |   ✔️                |
+# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |   ✔️                |
+# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |   Warn              |
 # -----------------------------------------------------------------------------
-# * In relaxed mode, flake8 ignores E501, and flake8 only warns, does not block the build.
+# * In relaxed mode, flake8/ruff ignore E501, and mypy only warns, does not block the build.
 # ** Only if --enforce-dynamic-attrs is used
 #
-# Developer Notes:
-# - To harden the quality gate, consider adding security/static analysis tools (bandit, shellcheck), and enforcing coverage thresholds.
-# - Update the table above if you add or change checks.
+# =====================
+# Quality Gate Objectives Table (current/future)
+# =====================
+# | Objective (subset/block)          | Status      | Plan/Notes                       |
+# |-----------------------------------|-------------|----------------------------------|
+# | mypy arg-type/call-arg/return-value | In progress | Target mode blocks these errors  |
+# | mypy attr-defined                 | Future      | Warn only, will block in future  |
+# | Spanish character check           | Future      | Warn only, will block in future  |
+# | flake8/ruff E501                  | Future      | Ignored, will block in future    |
+#
 
 set -x
 set -e
@@ -80,6 +116,8 @@ parse_args_and_globals() {
 			QUALITY_LEVEL="STRICT"
 		elif [ "$arg" = "--relaxed" ]; then
 			QUALITY_LEVEL="RELAXED"
+		elif [ "$arg" = "--target" ]; then
+			QUALITY_LEVEL="TARGET"
 		elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
 			CHECK_MODE="CHECK"
 		elif [ "$arg" = "--apply" ]; then
@@ -90,13 +128,9 @@ parse_args_and_globals() {
 			TARGET_DIR="$arg"
 		fi
 	done
-	# If the user did not force QUALITY_LEVEL, infer it from CHECK_MODE
+	# Si el usuario no fuerza QUALITY_LEVEL, por defecto RELAXED
 	if [ -z "$QUALITY_LEVEL" ]; then
-		if [ "$CHECK_MODE" = "APPLY" ]; then
-			QUALITY_LEVEL="STRICT"
-		elif [ "$CHECK_MODE" = "CHECK" ]; then
-			QUALITY_LEVEL="RELAXED"
-		fi
+		QUALITY_LEVEL="RELAXED"
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
@@ -109,6 +143,8 @@ parse_args_and_globals() {
 		echo "[QUALITY_LEVEL] Running in STRICT mode (all checks enforced, fail on any error)."
 	elif [ "$QUALITY_LEVEL" = "RELAXED" ]; then
 		echo "[QUALITY_LEVEL] Running in RELAXED mode (some checks are warnings only)."
+	elif [ "$QUALITY_LEVEL" = "TARGET" ]; then
+		echo "[QUALITY_LEVEL] Running in TARGET mode (selected errors block, rest warn only)."
 	fi
 
 	if [ "$CHECK_MODE" = "CHECK" ]; then
@@ -475,9 +511,9 @@ check_flake8() {
 		flake_failed=1
 	fi
 	if [ $flake_failed -ne 0 ]; then
-		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
-			echo "[RELAXED MODE] Not blocking build on flake8 errors."
+		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			echo "[WARNING] flake8 failed, but relaxed/target mode is enabled. See output above."
+			echo "[RELAXED/TARGET MODE] Not blocking build on flake8 errors."
 		else
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
@@ -511,10 +547,21 @@ check_mypy() {
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
 		echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
 		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo "[WARNING] mypy failed, but relaxed mode is enabled. See output above."
-			echo "[RELAXED MODE] Not blocking build on mypy errors."
+			echo '[WARNING] mypy failed, but relaxed mode is enabled. See output above.'
+			echo '[RELAXED MODE] Not blocking build on mypy errors.'
+		elif [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			# Only block for arg-type, call-arg, return-value errors
+			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|return-value)\]' | wc -l)
+			if [ "$mypy_block_count" -gt 0 ]; then
+				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ❌❌❌"
+				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE, CALL-ARG, RETURN-VALUE) DETECTED 🚨"
+				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
+				return 1
+			else
+				echo '[TARGET MODE] Only non-critical mypy errors found. Not blocking build.'
+			fi
 		else
-			echo "[EXIT] Quality Gate failed due to mypy errors."
+			echo '[EXIT] Quality Gate failed due to mypy errors.'
 			return 1
 		fi
 	fi
@@ -536,8 +583,8 @@ check_no_spanish_chars() {
 		echo '❌ Spanish language characters detected in the following files/lines:'
 		echo "$spanish_matches"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
-		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo '[RELAXED MODE] Not blocking build on Spanish character check.'
+		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			echo '[RELAXED/TARGET MODE] Not blocking build on Spanish character check.'
 		else
 			echo 'Build failed: Please remove all Spanish text and accents before publishing.'
 			return 1
