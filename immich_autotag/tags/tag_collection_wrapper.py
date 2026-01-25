@@ -41,7 +41,7 @@ class TagCollectionWrapper:
             "[TAG_CACHE] Detected out-of-sync tag cache, refreshing from API"
         )
 
-        refreshed = self.from_api(client)
+        refreshed = self.__class__._from_api()
         self.tags = refreshed.tags
 
     @typechecked
@@ -75,7 +75,7 @@ class TagCollectionWrapper:
 
     @staticmethod
     @typechecked
-    def from_api() -> "TagCollectionWrapper":
+    def _from_api() -> "TagCollectionWrapper":
         """
         Builds a TagCollectionWrapper instance by fetching tags from the Immich API.
         Uses the client from ImmichContext singleton.
@@ -117,5 +117,5 @@ class TagCollectionWrapper:
         global _tag_collection_singleton
         if _tag_collection_singleton is not None:
             return _tag_collection_singleton
-        _tag_collection_singleton = TagCollectionWrapper.from_api()
+        _tag_collection_singleton = cls._from_api()
         return _tag_collection_singleton
