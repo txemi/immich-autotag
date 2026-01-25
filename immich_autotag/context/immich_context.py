@@ -17,28 +17,17 @@ if TYPE_CHECKING:
     )
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
-
 _instance = None
 _instance_created = False
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class ImmichContext:
-    _client: "ImmichClientWrapper" = attrs.field(
-        validator=attrs.validators.instance_of(ImmichClientWrapper)
-    )
-    _albums_collection: "AlbumCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of("AlbumCollectionWrapper")
-    )
-    _tag_collection: "TagCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of("TagCollectionWrapper")
-    )
-    _duplicates_collection: "DuplicateCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of("DuplicateCollectionWrapper")
-    )
-    _asset_manager: "AssetManager" = attrs.field(
-        validator=attrs.validators.instance_of("AssetManager")
-    )
+    _client: "ImmichClientWrapper" = attrs.field()
+    _albums_collection: "AlbumCollectionWrapper" = attrs.field()
+    _tag_collection: "TagCollectionWrapper" = attrs.field()
+    _duplicates_collection: "DuplicateCollectionWrapper" = attrs.field()
+    _asset_manager: "AssetManager" = attrs.field()
 
     def get_client(self) -> ImmichClientWrapper:
         return self._client
@@ -68,6 +57,37 @@ class ImmichContext:
 
     def __attrs_post_init__(self):
         global _instance, _instance_created
+        # Validación explícita de tipos para evitar problemas de importación circular
+        from immich_autotag.albums.albums.album_collection_wrapper import (
+            AlbumCollectionWrapper,
+        )
+        from immich_autotag.assets.asset_manager import AssetManager
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        from immich_autotag.duplicates.duplicate_collection_wrapper import (
+            DuplicateCollectionWrapper,
+        )
+        from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+
+        if not isinstance(self._client, ImmichClientWrapper):
+            raise TypeError(
+                f"_client debe ser ImmichClientWrapper, no {type(self._client)}"
+            )
+        if not isinstance(self._albums_collection, AlbumCollectionWrapper):
+            raise TypeError(
+                f"_albums_collection debe ser AlbumCollectionWrapper, no {type(self._albums_collection)}"
+            )
+        if not isinstance(self._tag_collection, TagCollectionWrapper):
+            raise TypeError(
+                f"_tag_collection debe ser TagCollectionWrapper, no {type(self._tag_collection)}"
+            )
+        if not isinstance(self._duplicates_collection, DuplicateCollectionWrapper):
+            raise TypeError(
+                f"_duplicates_collection debe ser DuplicateCollectionWrapper, no {type(self._duplicates_collection)}"
+            )
+        if not isinstance(self._asset_manager, AssetManager):
+            raise TypeError(
+                f"_asset_manager debe ser AssetManager, no {type(self._asset_manager)}"
+            )
         # Reserved global variables _instance and _instance_created are required for singleton pattern
         if _instance_created:
             print(
@@ -99,7 +119,7 @@ class ImmichContext:
     @staticmethod
     @typechecked
     def create_default_instance(
-        client: ImmichClientWrapper,
+        client: "ImmichClientWrapper",
         albums_collection: "AlbumCollectionWrapper",
         tag_collection: "TagCollectionWrapper",
         duplicates_collection: "DuplicateCollectionWrapper",
