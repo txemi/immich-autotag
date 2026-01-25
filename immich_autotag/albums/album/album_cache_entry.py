@@ -68,7 +68,7 @@ class AlbumCacheEntry:
             )
         return self._dto
 
-    def ensure_full_loaded(self) -> None:
+    def ensure_full_loaded(self) -> AlbumCacheEntry:
         """
         Asegura que el DTO es de tipo DETAIL (full). Si no lo es, recarga usando reload_func.
         Si ya es full, no hace nada. Si no es full y no se proporciona reload_func, lanza excepción.
