@@ -1,6 +1,8 @@
+
 import enum
 from datetime import datetime
 from typing import Iterator
+from uuid import UUID
 
 import attrs
 from immich_client.models.tag_response_dto import TagResponseDto
@@ -38,8 +40,9 @@ class AssetDtoState:
         self._loaded_at = datetime.now()
 
     def get_tags(self):
-        # Placeholder: implement actual tag extraction from self._dto if available
-        raise NotImplementedError("get_tags method not implemented yet")
+        def get_tags(self) -> list[TagResponseDto]:
+            # Placeholder: implement actual tag extraction from self._dto if available
+            raise NotImplementedError("get_tags method not implemented yet")
 
     def get_dates(self):
         def _get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
@@ -62,7 +65,7 @@ class AssetDtoState:
         if isinstance(tags, Unset):
             raise NotImplementedError("Tags are UNSET; cannot check for tag existence.")
         # Aseguramos el tipo para el editor y mypy
-        from typing import cast
-
-        tags = cast(list[TagResponseDto], tags)
         return any(tag.name and tag.name.lower() == tag_name.lower() for tag in tags)
+
+    def get_uuid(self) -> UUID:
+        return UUID(self._dto.id)

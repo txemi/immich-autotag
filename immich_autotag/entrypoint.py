@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import atexit
+import os
 from typing import TYPE_CHECKING, Optional
 
 from typeguard import typechecked
 
 from immich_autotag.config.models import UserConfig
-import atexit
-import os
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
 
 install_typeguard_import_hook()  # noqa: E402
@@ -102,9 +102,7 @@ def _sync_all_album_permissions(user_config: Optional[UserConfig], context: Immi
 
 
 @typechecked
-
 def _run_main_inner():
-
 
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
@@ -218,15 +216,19 @@ def run_main():
     """
     Wrapper que ejecuta _run_main_inner, y si el modo de error es CRAZY_DEBUG, activa cProfile y guarda el resultado en profile_debug.stats.
     """
-    from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-    from immich_autotag.config._internal_types import ErrorHandlingMode
     import cProfile
 
+    from immich_autotag.config._internal_types import ErrorHandlingMode
+    from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-        from immich_autotag.utils.run_output_dir import get_run_output_dir
         import datetime
+
+        from immich_autotag.utils.run_output_dir import get_run_output_dir
+
         profiler = cProfile.Profile()
         profiler.enable()
+
         def _save_profile():
             profiler.disable()
             run_dir = get_run_output_dir()
@@ -235,6 +237,7 @@ def run_main():
             profile_path = run_dir / f"profile_{ts}_PID{pid}.stats"
             profiler.dump_stats(str(profile_path))
             print(f"[PROFILE] cProfile stats saved to {profile_path}")
+
         atexit.register(_save_profile)
         _run_main_inner()
     else:
