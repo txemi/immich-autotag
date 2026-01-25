@@ -230,10 +230,9 @@ class AlbumResponseWrapper:
         """
         assets = self._ensure_full_album_loaded(
             self.get_default_client()
-        )._album_dto.assets
-        if assets is None:
-            return True
-        return len(assets) == 0
+        )._state.is_empty()
+        return assets
+    
 
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
