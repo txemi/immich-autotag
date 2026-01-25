@@ -456,7 +456,9 @@ class AssetResponseWrapper:
         from immich_client.types import Unset
 
         tag_names: list[TagResponseDto] | Unset = (
-            self._cache_entry.ensure_full_asset_loaded().get_tag_names()
+            self._cache_entry.ensure_full_asset_loaded(
+                self.get_context()
+            ).get_tag_names()
         )
         if isinstance(tag_names, Unset):
             raise ValueError(

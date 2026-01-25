@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING, Callable, Generator
 
 from immich_client.models.metadata_search_dto import MetadataSearchDto
 from immich_client.models.search_asset_response_dto import SearchAssetResponseDto
@@ -80,7 +80,7 @@ def _log_page_progress(
     count: int,
     abs_pos: int,
     total_assets: int | None,
-    log: callable,
+    log: Callable,
 ) -> None:
     msg = f"[PROGRESS] Page {page}: {len(assets_page)} assets (full info) | Processed so far: {count} (absolute: {abs_pos}"
     if total_assets:

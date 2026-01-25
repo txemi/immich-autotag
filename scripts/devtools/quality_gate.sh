@@ -128,9 +128,9 @@ parse_args_and_globals() {
 			TARGET_DIR="$arg"
 		fi
 	done
-	# Si el usuario no fuerza QUALITY_LEVEL, por defecto RELAXED siempre
+	# Si el usuario no fuerza QUALITY_LEVEL, por defecto TARGET siempre en esta rama
 	if [ -z "$QUALITY_LEVEL" ]; then
-		QUALITY_LEVEL="RELAXED"
+		QUALITY_LEVEL="TARGET"
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
@@ -511,9 +511,9 @@ check_flake8() {
 		flake_failed=1
 	fi
 	if [ $flake_failed -ne 0 ]; then
-		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo "[WARNING] flake8 failed, but relaxed mode is enabled. See output above."
-			echo "[RELAXED MODE] Not blocking build on flake8 errors."
+		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			echo "[WARNING] flake8 failed, but relaxed/target mode is enabled. See output above."
+			echo "[RELAXED/TARGET MODE] Not blocking build on flake8 errors."
 		else
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
@@ -553,8 +553,9 @@ check_mypy() {
 			# Only block for arg-type, call-arg, return-value errors
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|return-value)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
-				echo "[TARGET MODE] Blocking build due to $mypy_block_count critical mypy errors (arg-type, call-arg, return-value)."
-				echo '[EXIT] Quality Gate failed due to critical mypy errors.'
+				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ❌❌❌"
+				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE, CALL-ARG, RETURN-VALUE) DETECTED 🚨"
+				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1
 			else
 				echo '[TARGET MODE] Only non-critical mypy errors found. Not blocking build.'
@@ -582,8 +583,8 @@ check_no_spanish_chars() {
 		echo '❌ Spanish language characters detected in the following files/lines:'
 		echo "$spanish_matches"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
-		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo '[RELAXED MODE] Not blocking build on Spanish character check.'
+		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			echo '[RELAXED/TARGET MODE] Not blocking build on Spanish character check.'
 		else
 			echo 'Build failed: Please remove all Spanish text and accents before publishing.'
 			return 1
