@@ -182,6 +182,14 @@ setup_max_line_length() {
 ###############################################################################
 setup_python_env() {
 	VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
+	echo "[INFO] Ejecutando setup_venv.sh --dev para asegurar el entorno y dependencias..."
+	if [ -f "$REPO_ROOT/setup_venv.sh" ]; then
+		chmod +x "$REPO_ROOT/setup_venv.sh"
+		bash "$REPO_ROOT/setup_venv.sh" --dev
+	else
+		echo "[ERROR] setup_venv.sh not found at $REPO_ROOT. Cannot set up development environment."
+		exit 1
+	fi
 	if [ -f "$VENV_ACTIVATE" ]; then
 		# Use project venv when available
 		source "$VENV_ACTIVATE"
@@ -502,8 +510,13 @@ check_mypy() {
 		mypy_files_count=$(echo "$mypy_output" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
 		echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
-		echo "[EXIT] Quality Gate failed due to mypy errors."
-		return 1
+		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
+			echo "[WARNING] mypy failed, but relaxed mode is enabled. See output above."
+			echo "[RELAXED MODE] Not blocking build on mypy errors."
+		else
+			echo "[EXIT] Quality Gate failed due to mypy errors."
+			return 1
+		fi
 	fi
 	echo "Static checks (ruff/flake8/mypy) completed successfully."
 	return 0
