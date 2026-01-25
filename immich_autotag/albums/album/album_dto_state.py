@@ -48,11 +48,11 @@ class AlbumDtoState:
 
     def get_album_id(self) -> UUID:
         """Devuelve el ID del álbum (sin exponer el DTO completo)."""
-        return self._dto.id
+        return UUID(self._dto.id)
 
     def get_album_name(self) -> str:
         """Devuelve el nombre del álbum (sin exponer el DTO completo)."""
-        return self._dto.albumName
+        return self._dto.album_name
 
     def get_load_source(self) -> AlbumLoadSource:
         """Devuelve la fuente de la API desde la que se obtuvo el álbum."""
@@ -84,9 +84,19 @@ class AlbumDtoState:
         return UUID(self._album_dto.owner_id)
 
     @staticmethod
-    def create(*, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> "AlbumDtoState":
+    def create(
+        *, dto: AlbumResponseDto, load_source: AlbumLoadSource
+    ) -> "AlbumDtoState":
         """
         Crea una nueva instancia de AlbumDtoState de forma segura para evitar problemas con attrs y enums.
         Los argumentos deben pasarse con nombre (no posicionales).
         """
         return AlbumDtoState(dto=dto, load_source=load_source)
+
+    def is_full(self) -> bool:
+        if self._load_source == AlbumLoadSource.DETAIL:
+            return True
+        elif self._load_source == AlbumLoadSource.SEARCH:
+            return False
+        else:
+            raise RuntimeError(f"Unknown AlbumLoadSource: {self._state.load_source!r}")

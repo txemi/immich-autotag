@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import datetime
-import enum
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 from uuid import UUID
@@ -44,9 +43,6 @@ class AssetAlreadyInAlbumError(Exception):
     """
 
     pass
-
-
-
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -107,9 +103,8 @@ class AlbumResponseWrapper:
 
     @typechecked
     def get_album_uuid(self) -> "UUID":
-        from uuid import UUID
 
-        return UUID(self._state.get_album_id())
+        return self._state.get_album_id()
 
     @typechecked
     def get_album_name(self) -> str:
@@ -378,12 +373,7 @@ class AlbumResponseWrapper:
             self._update_from_dto(dto, load_source)
 
     def _is_full(self) -> bool:
-        if self._state.load_source == AlbumLoadSource.DETAIL:
-            return True
-        elif self._state.load_source == AlbumLoadSource.SEARCH:
-            return False
-        else:
-            raise RuntimeError(f"Unknown AlbumLoadSource: {self._state.load_source!r}")
+        return self._state.is_full()
 
     @typechecked
     def ensure_full(self) -> None:
