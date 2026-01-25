@@ -10,6 +10,12 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 
 
 class AssetDtoType(enum.Enum):
+    """
+    Encodes which API endpoint was used to load the Asset DTO.
+    - PARTIAL: Loaded via a bulk search endpoint (e.g., /assets/search), typically with incomplete or partial data.
+    - FULL: Loaded via a single-asset detail endpoint (e.g., /assets/{id}), with all fields populated.
+    This distinction is important for knowing whether the DTO contains all available data or only a subset.
+    """
     PARTIAL = "partial"
     FULL = "full"
 
@@ -27,13 +33,16 @@ class AssetDtoState:
     """
 
     _dto: AssetResponseDto
-    _type: AssetDtoType
+    # Indicates which API endpoint was used to load this DTO (e.g., 'search' for bulk/partial, 'get_by_id' for full detail).
+    # This allows consumers to know if the DTO contains all fields (FULL) or only a subset (PARTIAL).
+    # See AssetDtoType for details.
+    _api_endpoint_source: AssetDtoType
     _loaded_at: datetime = attrs.field(factory=datetime.now)
 
     def __attrs_post_init__(self):
-        # Comprobación defensiva del tipo de tags según el tipo de DTO
+        # Comprobación defensiva del tipo de tags según el endpoint de la API usado
         tags = getattr(self._dto, "tags", None)
-        if self._type == AssetDtoType.FULL:
+        if self._api_endpoint_source == AssetDtoType.FULL:
             if (
                 tags is not None
                 and not isinstance(tags, list)
@@ -42,7 +51,7 @@ class AssetDtoState:
                 raise TypeError(
                     f"En modo FULL, tags debe ser una lista o Unset, pero es {type(tags)}"
                 )
-        elif self._type == AssetDtoType.PARTIAL:
+        elif self._api_endpoint_source == AssetDtoType.PARTIAL:
             if (
                 tags is not None
                 and not isinstance(tags, set)
@@ -54,14 +63,14 @@ class AssetDtoState:
         # Si se amplían los tipos, añadir más comprobaciones aquí
 
     def get_type(self) -> AssetDtoType:
-        return self._type
+        return self._api_endpoint_source
 
     def get_loaded_at(self) -> datetime:
         return self._loaded_at
 
-    def update(self, *, dto: AssetResponseDto, type_: AssetDtoType) -> None:
+    def update(self, *, dto: AssetResponseDto, api_endpoint_source: AssetDtoType) -> None:
         self._dto = dto
-        self._type = type_
+        self._api_endpoint_source = api_endpoint_source
         self._loaded_at = datetime.now()
 
     def get_tags(self):
@@ -141,6 +150,6 @@ class AssetDtoState:
         from immich_client.models.asset_response_dto import AssetResponseDto
 
         dto = AssetResponseDto.from_dict(data["dto"])
-        type_ = AssetDtoType(data["type"])
+        api_endpoint_source = AssetDtoType(data["type"])
         loaded_at = datetime.fromisoformat(data["loaded_at"])
-        return cls(_dto=dto, _type=type_, _loaded_at=loaded_at)
+        return cls(_dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at)
