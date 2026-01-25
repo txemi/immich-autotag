@@ -33,7 +33,7 @@ def proxy_get_album_info(
         return AlbumResponseDto.from_dict(cache_data)
     dto = get_album_info.sync(id=album_id, client=client)
     if dto is not None:
-        save_entity_to_cache("albums", str(album_id), dto.to_dict())
+        save_entity_to_cache(entity="albums", key=str(album_id), data=dto.to_dict())
     return dto
 
 
