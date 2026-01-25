@@ -146,7 +146,7 @@ def _run_main_inner():
     client_wrapper = ImmichClientWrapper.create_default_instance(client)
     # Pasa la clase wrapper, no el cliente crudo, al contexto
     tag_collection = list_tags(client)
-    albums_collection = AlbumCollectionWrapper.from_client(client)
+    albums_collection = AlbumCollectionWrapper.from_client()
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
     perf_phase_tracker.mark(phase="lazy", event="start")
