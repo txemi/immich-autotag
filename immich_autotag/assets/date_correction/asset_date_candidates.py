@@ -93,7 +93,9 @@ class AssetDateCandidates:
     @typechecked
     def format_info(self) -> str:
         aw = self.asset_wrapper
-        lines = [f"[AssetDateCandidates] Asset: {aw.id} | {aw.original_file_name}"]
+        lines = [
+            f"[AssetDateCandidates] Asset: {aw.get_id()} | {aw.get_original_file_name()}"
+        ]
         lines.append(f"  Link: {aw.get_immich_photo_url().geturl()}")
         try:
             file_created_at = aw.asset.file_created_at
