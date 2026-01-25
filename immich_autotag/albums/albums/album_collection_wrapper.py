@@ -181,8 +181,7 @@ class AlbumCollectionWrapper:
     def get_client() -> ImmichClient:
         """Returns the current ImmichClient from the context singleton."""
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-
-        return ImmichClientWrapper.get_default_instance()
+        return ImmichClientWrapper.get_default_instance().get_client()
 
     @staticmethod
     @typechecked
