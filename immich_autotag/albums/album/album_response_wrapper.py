@@ -11,8 +11,8 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
+from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
@@ -73,6 +73,7 @@ class AlbumResponseWrapper:
     def owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
         from uuid import UUID
+
         return UUID(self._cache_entry.get_state().get_dto().owner_id)
 
     # --- 4. Static Methods ---
@@ -904,7 +905,7 @@ class AlbumResponseWrapper:
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
         from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
-        from immich_autotag.albums.album.album_dto_state import AlbumDtoState
+
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         cache_entry = AlbumCacheEntry(dto=state)
         return cls(cache_entry=cache_entry)
