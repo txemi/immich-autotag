@@ -167,7 +167,7 @@ class AssetDtoState:
         api_endpoint_source = AssetDtoType(str(data["type"]))
         loaded_at = datetime.fromisoformat(str(data["loaded_at"]))
         return cls(
-            _dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at
+            dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
         )
 
     def get_tag_names(self) -> list[str]:
