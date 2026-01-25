@@ -163,6 +163,13 @@ class AlbumResponseWrapper:
 
         return self._state.get_owner_uuid()
 
+    def _get_album_full_or_load_dto(self) -> AlbumResponseDto:
+        """
+        Returns the full AlbumResponseDto, loading it from the API if necessary.
+        Ensures the album is in DETAIL/full mode.
+        """
+        self.ensure_full()._state
+
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
         """
@@ -175,7 +182,7 @@ class AlbumResponseWrapper:
 
         if self._asset_ids_cache is not None:
             return self._asset_ids_cache
-        assets = self._album_dto.assets
+        assets = self._get_album_full_or_load_dto().get_assets()
         self._asset_ids_cache = set(UUID(a.id) for a in assets)
         return self._asset_ids_cache
 
@@ -237,6 +244,8 @@ class AlbumResponseWrapper:
     @typechecked
     def _set_album_full(self, value: AlbumResponseDto) -> None:
         self._update_from_dto(value, AlbumLoadSource.DETAIL)
+
+        self.invalidate_cache()
 
     # --- 10. Private Methods - Error Handling and Verification ---
     @typechecked
@@ -323,7 +332,7 @@ class AlbumResponseWrapper:
 
     # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
-    def reload_from_api(self, client: ImmichClient) -> None:
+    def reload_from_api(self, client: ImmichClient) -> AlbumResponseWrapper:
         """Reloads the album DTO from the API and clears the cache."""
         from immich_client import errors as immich_errors
 
@@ -349,7 +358,7 @@ class AlbumResponseWrapper:
             )
         else:
             self._set_album_full(album_dto)
-            self.invalidate_cache()
+        return self
 
     @typechecked
     def merge_from_dto(
@@ -376,13 +385,14 @@ class AlbumResponseWrapper:
         return self._state.is_full()
 
     @typechecked
-    def ensure_full(self) -> None:
+    def ensure_full(self) -> AlbumResponseWrapper:
         if self._unavailable:
             raise RuntimeError(
                 "Album is marked unavailable; cannot ensure full DTO for this album"
             )
         if not self._is_full():
             self.reload_from_api(self.get_default_client())
+        return self
 
     @typechecked
     def has_loaded_assets(self) -> bool:
