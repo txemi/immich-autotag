@@ -33,7 +33,6 @@ from immich_client.models.update_asset_dto import UpdateAssetDto
 from immich_autotag.types import ImmichClient
 
 
-
 def proxy_get_asset_info(
     asset_id: UUID, client: ImmichClient, use_cache: bool = True
 ) -> AssetResponseDto | None:
@@ -45,7 +44,6 @@ def proxy_get_asset_info(
     _asset_api_ids.add(str(asset_id))
     # Llama directamente a la API, sin lógica de caché
     return _get_asset_info.sync(id=asset_id, client=client)
-
 
 
 def proxy_update_asset(
