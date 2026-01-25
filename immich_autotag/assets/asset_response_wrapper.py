@@ -97,6 +97,7 @@ class AssetResponseWrapper:
         If tag_mod_report is provided, logs the modification.
         """
         from immich_autotag.api.immich_proxy.assets import proxy_update_asset
+
         raise_deprecated_path("realmente necesitamos esto?")
         old_date = self.get_created_at()
         # Ensure the date is timezone-aware in UTC
@@ -339,6 +340,7 @@ class AssetResponseWrapper:
                 )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
+
             log(
                 f"[INFO] Asset.id={self.get_id()} already has tag '{tag_name}', skipping.",
                 level=LogLevel.DEBUG,
@@ -365,9 +367,7 @@ class AssetResponseWrapper:
             )
             return False
         if not self.get_id():
-            error_msg = (
-                f"[ERROR] Asset object is missing id. Asset DTO: {self._cache_entry.get_state().dto}"
-            )
+            error_msg = f"[ERROR] Asset object is missing id. Asset DTO: {self._cache_entry.get_state().dto}"
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
@@ -498,6 +498,7 @@ class AssetResponseWrapper:
 
     def get_original_path(self) -> "Path":
         from pathlib import Path
+
         path = Path(self._cache_entry.get_state().dto.original_path)
         return path
 
@@ -506,7 +507,9 @@ class AssetResponseWrapper:
         Returns the duplicate_id as UUID (or None if not present or invalid).
         """
         from uuid import UUID
+
         from immich_client.types import Unset
+
         val = self._cache_entry.get_state().dto.duplicate_id
         if val is None or isinstance(val, Unset):
             return None
