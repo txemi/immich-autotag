@@ -16,7 +16,6 @@ class StaleAlbumCacheError(Exception):
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
     _dto: AlbumDtoState
-    _timestamp: float = attrs.field(factory=lambda: time.time())
     _max_age_seconds: int = 3600
 
     @classmethod
@@ -30,7 +29,7 @@ class AlbumCacheEntry:
         if cache_data is not None:
             try:
                 dto = AlbumDtoState.from_dict(cache_data)
-                entry = cls(_dto=dto, _timestamp=time.time(), _max_age_seconds=max_age_seconds)
+                entry = cls(dto=dto, max_age_seconds=max_age_seconds)
                 if not entry.is_stale():
                     return entry
             except Exception:
@@ -38,12 +37,12 @@ class AlbumCacheEntry:
         # Si no está en caché o está corrupto, recarga desde API
         album_dto: AlbumResponseDto = fetch_album_func(album_id)
         dto = AlbumDtoState.from_dto(album_dto)
-        entry = cls(_dto=dto, _timestamp=time.time(), _max_age_seconds=max_age_seconds)
+        entry = cls(dto=dto, max_age_seconds=max_age_seconds)
         save_entity_to_cache("albums", album_id, dto.to_dict())
         return entry
 
     def is_stale(self) -> bool:
-        return (time.time() - self._timestamp) > self._max_age_seconds
+        return (time.time() - self._dto.timestamp) > self._max_age_seconds
 
     def get_state(self) -> AlbumDtoState:
         if self.is_stale():
