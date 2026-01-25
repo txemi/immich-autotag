@@ -37,6 +37,7 @@ from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+from immich_autotag.utils.deprecation import raise_deprecated_path
 from immich_autotag.utils.url_helpers import get_immich_photo_url
 
 if TYPE_CHECKING:
@@ -98,8 +99,8 @@ class AssetResponseWrapper:
         If tag_mod_report is provided, logs the modification.
         """
         from immich_autotag.api.immich_proxy.assets import proxy_update_asset
-
-        old_date = self._cache_entry.get_state().dto.created_at
+        raise_deprecated_path("realmente necesitamos esto?")
+        old_date = self.get_created_at()
         # Ensure the date is timezone-aware in UTC
         if new_date.tzinfo is None:
             raise ValueError(
@@ -116,8 +117,8 @@ class AssetResponseWrapper:
             photo_url_obj = self.get_immich_photo_url()
             photo_url = photo_url_obj.geturl()
             log_msg = (
-                f"[INFO] Updating asset date: asset.id={self.id}, "
-                f"asset_name={self.original_file_name}, "
+                f"[INFO] Updating asset date: asset.id={self.get_id()}, "
+                f"asset_name={self.get_original_file_name()}, "
                 f"old_date={old_date}, new_date={new_date}\n"
                 f"[INFO] Immich photo link: {photo_url}"
             )
@@ -150,8 +151,8 @@ class AssetResponseWrapper:
         if not isinstance(response, AssetResponseDto):
             raise DateIntegrityError(
                 f"[ERROR] update_asset.sync did not return AssetResponseDto, "
-                f"got {type(response)}: {response} for asset.id={self.id} "
-                f"({self.original_file_name})"
+                f"got {type(response)}: {response} for asset.id={self.get_id()} "
+                f"({self.get_original_file_name()})"
             )
         # If the response has an 'error' attribute and it is not None, fail fast (static access only)
         # This assumes that if present, 'error' is a public attribute of the response object
@@ -207,7 +208,7 @@ class AssetResponseWrapper:
         """
 
         context = self.get_context()
-        duplicate_id = self.duplicate_id_as_uuid
+        duplicate_id = self.get_duplicate_id_as_uuid()
         wrappers = []
         if duplicate_id is not None:
             group = context.duplicates_collection.get_group(duplicate_id)
@@ -263,13 +264,13 @@ class AssetResponseWrapper:
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
-                    f"[BUG][INFO] Asset id={self.id} does not have the tag '{tag_name}'"
+                    f"[BUG][INFO] Asset id={self.get_id()} does not have the tag '{tag_name}'"
                 )
             return False
 
         if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(
-                f"[BUG] Before removal: asset.id={self.id}, asset_name={self.original_file_name}, "
+                f"[BUG] Before removal: asset.id={self.get_id()}, asset_name={self.get_original_file_name()}, "
                 f"tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
             )
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
@@ -292,7 +293,7 @@ class AssetResponseWrapper:
                     f"[BUG] Full untag_assets response for tag_id={tag.id}: {response}"
                 )
                 log_debug(
-                    f"[BUG][INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.id}. "
+                    f"[BUG][INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.get_id()}. "
                     f"Response: {response}"
                 )
             removed_any = True
@@ -336,13 +337,12 @@ class AssetResponseWrapper:
         if self.has_tag(tag_name):
             if fail_if_exists:
                 raise ValueError(
-                    f"[INFO] Asset.id={self.id} already has tag '{tag_name}'"
+                    f"[INFO] Asset.id={self.get_id()} already has tag '{tag_name}'"
                 )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
-
             log(
-                f"[INFO] Asset.id={self.id} already has tag '{tag_name}', skipping.",
+                f"[INFO] Asset.id={self.get_id()} already has tag '{tag_name}', skipping.",
                 level=LogLevel.DEBUG,
             )
             return False
@@ -366,9 +366,9 @@ class AssetResponseWrapper:
                 extra={"error": error_msg},
             )
             return False
-        if not self.id:
+        if not self.get_id():
             error_msg = (
-                f"[ERROR] Asset object is missing id. Asset DTO: {self._state.dto}"
+                f"[ERROR] Asset object is missing id. Asset DTO: {self._cache_entry.get_state().dto}"
             )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
@@ -390,7 +390,7 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         log(
-            f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.id}",
+            f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.get_id()}",
             level=LogLevel.DEBUG,
         )
 
@@ -419,11 +419,8 @@ class AssetResponseWrapper:
                 )
             return False
         log(f"[DEBUG] Response proxy_tag_assets: {response}", level=LogLevel.DEBUG)
-        # OPTIMIZATION: Trust tag_assets API response instead of reloading asset.
-        # The API call should atomically apply tags and succeed or fail accordingly.
-        # Removed: get_asset_info.sync() reload that added HTTP request per tag addition
         log(
-            f"[INFO] Added tag '{tag_name}' to asset.id={self.id}.",
+            f"[INFO] Added tag '{tag_name}' to asset.id={self.get_id()}.",
             level=LogLevel.DEBUG,
         )
         from immich_autotag.report.modification_kind import ModificationKind
@@ -489,43 +486,33 @@ class AssetResponseWrapper:
         match_results = rule_set.matching_rules(self)
         return match_results.classification_status()
 
-    @property
-    def original_file_name(self) -> str:
+    def get_original_file_name(self) -> str:
         return self._cache_entry.get_state().get_original_file_name()
 
-    @property
     def is_favorite(self) -> bool:
-        return self._state.dto.is_favorite
+        return self._cache_entry.get_state().dto.is_favorite
 
-    @property
-    def created_at(self) -> datetime | str | None:
-        return self._state.dto.created_at
+    def get_created_at(self) -> datetime | str | None:
+        return self._cache_entry.get_state().dto.created_at
 
-    @property
-    def id(self) -> str:
-        return self._state.dto.id
+    def get_id(self) -> str:
+        return self._cache_entry.get_state().dto.id
 
-    @property
-    def original_path(self) -> "Path":
+    def get_original_path(self) -> "Path":
         from pathlib import Path
-
         path = Path(self._cache_entry.get_state().dto.original_path)
         return path
 
-    @property
-    def duplicate_id_as_uuid(self) -> "UUID | None":
+    def get_duplicate_id_as_uuid(self) -> "UUID | None":
         """
         Returns the duplicate_id as UUID (or None if not present or invalid).
         """
         from uuid import UUID
-
         from immich_client.types import Unset
-
         val = self._cache_entry.get_state().dto.duplicate_id
         if val is None or isinstance(val, Unset):
             return None
         try:
-            # Accept both str and other representations that can be cast to str
             return UUID(val)
         except Exception:
             try:
@@ -767,16 +754,16 @@ class AssetResponseWrapper:
         if changes:
             for c in changes:
                 log(
-                    f"[TAG CONVERSION] {c} on asset {self.id} ({self.original_file_name})",
+                    f"[TAG CONVERSION] {c} on asset {self.get_id()} ({self.get_original_file_name()})",
                     level=LogLevel.FOCUS,
                 )
         else:
             log(
-                f"[TAG CONVERSION] No tag changes performed on asset {self.id} ({self.original_file_name})",
+                f"[TAG CONVERSION] No tag changes performed on asset {self.get_id()} ({self.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
         log(
-            f"[TAG CONVERSION] Tag conversion finished for asset {self.id} ({self.original_file_name})",
+            f"[TAG CONVERSION] Tag conversion finished for asset {self.get_id()} ({self.get_original_file_name()})",
             level=LogLevel.FOCUS,
         )
         return changes
@@ -1051,26 +1038,26 @@ class AssetResponseWrapper:
             link = "(no link)"
         lines.append(f"  Link: {link}")
         try:
-            created_at = self._state.dto.created_at
+            created_at = self.get_created_at()
         except AttributeError:
             created_at = None
         lines.append(f"  created_at: {created_at}")
         try:
-            file_created_at = self._state.dto.file_created_at
+            file_created_at = self._cache_entry.get_state().dto.file_created_at
         except AttributeError:
             file_created_at = None
         lines.append(f"  file_created_at: {file_created_at}")
         # exif_created_at is not present in AssetResponseDto
         lines.append("  exif_created_at: (not available)")
         try:
-            updated_at = self._state.dto.updated_at
+            updated_at = self._cache_entry.get_state().dto.updated_at
         except AttributeError:
             updated_at = None
         lines.append(f"  updated_at: {updated_at}")
         lines.append(f"  Tags: {self.get_tag_names()}")
         lines.append(f"  Albums: {self.get_album_names()}")
         try:
-            original_path = self._state.dto.original_path
+            original_path = self.get_original_path()
         except AttributeError:
             original_path = None
         lines.append(f"  Path: {original_path}")
