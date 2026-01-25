@@ -47,7 +47,9 @@ class TagCollectionWrapper:
         self.tags = refreshed.tags
 
     @typechecked
-    def create_tag_if_not_exists(self, *, name: str, client: ImmichClient) -> TagWrapper:
+    def create_tag_if_not_exists(
+        self, *, name: str, client: ImmichClient
+    ) -> TagWrapper:
         """
         Creates the tag in Immich if it doesn't exist and adds it to the local collection.
         Returns the corresponding TagResponseDto.
