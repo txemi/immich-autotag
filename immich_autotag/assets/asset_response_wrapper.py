@@ -70,7 +70,7 @@ class AssetResponseWrapper:
     def _ensure_full_asset_loaded(self) -> AssetDtoState:
         """Ensure the asset is fully loaded (type FULL) using the cache entry logic."""
         return self._cache_entry.ensure_full_asset_loaded(
-            self.id_as_uuid, self.get_context()
+            self.get_id_as_uuid(), self.get_context()
         )
 
     # Métodos de construcción movidos a AssetCacheEntry
@@ -139,7 +139,7 @@ class AssetResponseWrapper:
             extra={"pre_update": True},
         )
         response = proxy_update_asset(
-            asset_id=self.id_as_uuid,
+            asset_id=self.get_id_as_uuid(),
             client=self.get_context().client,
             body=dto,
         )
@@ -170,7 +170,7 @@ class AssetResponseWrapper:
         """
         from immich_autotag.utils.url_helpers import get_immich_photo_url
 
-        return get_immich_photo_url(self.id_as_uuid)
+        return get_immich_photo_url(self.get_id_as_uuid())
 
     @typechecked
     def get_best_date(self) -> datetime:
@@ -285,7 +285,7 @@ class AssetResponseWrapper:
             response = proxy_untag_assets(
                 tag_id=UUID(tag.id),
                 client=self.get_context().client,
-                asset_ids=[self.id_as_uuid],
+                asset_ids=[self.get_id_as_uuid()],
             )
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -402,7 +402,7 @@ class AssetResponseWrapper:
             response = proxy_tag_assets(
                 tag_id=UUID(tag.id),
                 client=self.get_context().client,
-                asset_ids=[self.id_as_uuid],
+                asset_ids=[self.get_id_as_uuid()],
             )
         except Exception as e:
             error_msg = f"[ERROR] Exception during proxy_tag_assets: {e}"
@@ -838,10 +838,8 @@ class AssetResponseWrapper:
 
         return album_name
 
-    @property
-    def id_as_uuid(self) -> "UUID":
-
-        return self._state.get_uuid()
+    def get_id_as_uuid(self) -> "UUID":
+        return self._cache_entry.get_state().get_uuid()
 
     @typechecked
     def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
@@ -875,7 +873,7 @@ class AssetResponseWrapper:
 
         from immich_autotag.utils.url_helpers import get_immich_photo_url
 
-        url = get_immich_photo_url(self.id_as_uuid)
+        url = get_immich_photo_url(self.get_id_as_uuid())
         return url
 
     def get_uuid(self) -> UUID:

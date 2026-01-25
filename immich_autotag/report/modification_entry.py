@@ -76,7 +76,7 @@ class ModificationEntry:
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
             asset_id=(
-                self.asset_wrapper.id_as_uuid
+                self.asset_wrapper.get_id_as_uuid()
                 if self.asset_wrapper is not None
                 else None
             ),

@@ -454,7 +454,7 @@ class AlbumResponseWrapper:
         result = proxy_add_assets_to_album(
             album_id=self.get_album_uuid_no_cache(),
             client=client,
-            asset_ids=[asset_wrapper.id_as_uuid],
+            asset_ids=[asset_wrapper.get_id_as_uuid()],
         )
         if not isinstance(result, list):
             raise RuntimeError(
@@ -596,7 +596,7 @@ class AlbumResponseWrapper:
         result = self._execute_add_asset_api(asset_wrapper, client)
 
         # 3. Handle result
-        item = self._find_asset_result_in_response(result, asset_wrapper.id_as_uuid)
+        item = self._find_asset_result_in_response(result, asset_wrapper.get_id_as_uuid())
         if item:
             if not item.success:
                 self._handle_add_asset_error(
@@ -646,7 +646,7 @@ class AlbumResponseWrapper:
         result = proxy_remove_asset_from_album(
             album_id=self.get_album_uuid_no_cache(),
             client=client,
-            asset_ids=[asset_wrapper.id_as_uuid],
+            asset_ids=[asset_wrapper.get_id_as_uuid()],
         )
         if not isinstance(result, list):
             raise RuntimeError(
