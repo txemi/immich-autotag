@@ -4,6 +4,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.duplicates.duplicate_album_reports import (
+    DuplicateAlbumReport,
     DuplicateAlbumReports,
 )
 
@@ -28,21 +29,15 @@ def collect_duplicate(
         }
         if existing is not None:
             try:
-                entry["existing"] = {
-                    "id": existing.get_album_id(),
-                    "name": existing.get_album_name(),
-                }
+                report = DuplicateAlbumReport(
+                    album_name=existing.get_album_name() if existing else "",
+                    existing_album=existing,
+                    incoming_album=incoming,
+                    note=reason,
+                )
+                _collected_duplicates.append(report)
             except Exception:
-                entry["existing"] = {"id": None, "name": None}
-        if incoming is not None:
-            try:
-                entry["incoming"] = {
-                    "id": incoming.get_album_id(),
-                    "name": incoming.get_album_name(),
-                }
-            except Exception:
-                entry["incoming"] = {"id": None, "name": None}
-        _collected_duplicates.append(entry)
+                pass
     except Exception:
         # Best-effort; do not allow errors here to interrupt main flow
         return
