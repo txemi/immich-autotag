@@ -70,9 +70,7 @@ class AssetResponseWrapper:
 
     def _ensure_full_asset_loaded(self) -> AssetDtoState:
         """Ensure the asset is fully loaded (type FULL) using the cache entry logic."""
-        return self._cache_entry.ensure_full_asset_loaded(
-            self.get_id_as_uuid(), self.get_context()
-        )
+        return self._cache_entry.ensure_full_asset_loaded(self.get_context())
 
     # Métodos de construcción movidos a AssetCacheEntry
 
