@@ -86,7 +86,8 @@ class TagCollectionWrapper:
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-        client = ImmichClientWrapper.get_default_instance()
+        client_wrapper = ImmichClientWrapper.get_default_instance()
+        client = client_wrapper.get_client()
         tags_dto = proxy_get_all_tags(client=client)
         if tags_dto is None:
             tags_dto = []
