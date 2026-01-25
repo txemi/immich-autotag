@@ -67,9 +67,9 @@ def _handle_classified_asset(
     )
 
     all_albums = list(
-        asset_wrapper.get_context().get_albums_collection().albums_wrappers_for_asset_wrapper(
-            asset_wrapper
-        )
+        asset_wrapper.get_context()
+        .get_albums_collection()
+        .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
     remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
@@ -103,9 +103,9 @@ def _handle_classification_conflict(
     )
 
     all_albums = list(
-        asset_wrapper.get_context().get_albums_collection().albums_wrappers_for_asset_wrapper(
-            asset_wrapper
-        )
+        asset_wrapper.get_context()
+        .get_albums_collection()
+        .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
     remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
