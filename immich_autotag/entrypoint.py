@@ -141,12 +141,10 @@ def _run_main_inner():
         auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
-    # Registrar el singleton del cliente
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-    ImmichClientWrapper.create_default_instance(client)
-
-    # Create all required objects before context
+    client_wrapper = ImmichClientWrapper.create_default_instance(client)
+    # Pasa la clase wrapper, no el cliente crudo, al contexto
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client(client)
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
@@ -155,12 +153,9 @@ def _run_main_inner():
     albums_collection.log_lazy_load_timing()
     perf_phase_tracker.mark("lazy", "end")
     duplicates_collection = load_duplicates_collection(client)
-    # AssetManager expects a Client, but ImmichClient is an AuthenticatedClient (subclass of Client)
-    # Use type: ignore to suppress mypy error, as runtime is compatible
     asset_manager = AssetManager(client=client)  # type: ignore
-    # Now create the context with all objects
     context = ImmichContext.create_default_instance(
-        client=client,
+        client=client_wrapper,
         albums_collection=albums_collection,
         tag_collection=tag_collection,
         duplicates_collection=duplicates_collection,

@@ -84,6 +84,7 @@ class TagCollectionWrapper:
         """
         from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
         client = ImmichClientWrapper.get_default_instance()
         tags_dto = proxy_get_all_tags(client=client)

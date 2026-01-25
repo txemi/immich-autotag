@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.types import ImmichClient
+from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.albums.albums.album_collection_wrapper import (
@@ -24,9 +24,8 @@ _instance_created = False
 
 @attrs.define(auto_attribs=True, slots=True)
 class ImmichContext:
-
-    _client: ImmichClient = attrs.field(
-        validator=attrs.validators.instance_of((ImmichClient,))
+    _client: ImmichClientWrapper = attrs.field(
+        validator=attrs.validators.instance_of(ImmichClientWrapper)
     )
     _albums_collection: "AlbumCollectionWrapper" = attrs.field(
         validator=attrs.validators.instance_of("AlbumCollectionWrapper")
@@ -41,7 +40,7 @@ class ImmichContext:
         validator=attrs.validators.instance_of("AssetManager")
     )
 
-    def get_client(self) -> ImmichClient:
+    def get_client(self) -> ImmichClientWrapper:
         return self._client
 
     def get_albums_collection(self) -> "AlbumCollectionWrapper":
@@ -100,7 +99,7 @@ class ImmichContext:
     @staticmethod
     @typechecked
     def create_default_instance(
-        client: ImmichClient,
+        client: ImmichClientWrapper,
         albums_collection: "AlbumCollectionWrapper",
         tag_collection: "TagCollectionWrapper",
         duplicates_collection: "DuplicateCollectionWrapper",
@@ -135,7 +134,6 @@ class ImmichContext:
 
     @staticmethod
     def get_default_client():
-        """Returns the ImmichClient from the global singleton context."""
+        """Returns the ImmichClientWrapper from the global singleton context."""
         ctx = ImmichContext.get_default_instance()
-        return ctx.client
-        return ctx.client
+        return ctx.get_client()
