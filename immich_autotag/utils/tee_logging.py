@@ -14,9 +14,7 @@ from typeguard import typechecked
 class Tee:
     def __init__(self, *, filename: Path, mode: str = "a"):
         # Usar pathlib.Path para robustez
-        from pathlib import Path
-        path = Path(filename)
-        self.file = open(path, mode, buffering=1, encoding="utf-8")
+        self.file = open(filename, mode, buffering=1, encoding="utf-8")
         self.stdout = sys.stdout
         self.stderr = sys.stderr
         # Redirect global streams
