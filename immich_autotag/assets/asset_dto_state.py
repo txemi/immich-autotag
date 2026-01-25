@@ -19,8 +19,10 @@ class TagsNotLoadedError(Exception):
     pass
 
 
+
 @attrs.define(auto_attribs=True, slots=True)
-class AssetDtoState:    """
+class AssetDtoState:
+    """
     Encapsulates the current DTO, its type (partial/full), and the loaded_at timestamp.
     This class never performs API calls or business logic—just holds and exposes data.
     """
