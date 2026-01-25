@@ -455,11 +455,9 @@ class AssetResponseWrapper:
         """
         from immich_client.types import Unset
 
-        tag_names: list[str] | Unset = (
-            self._cache_entry.ensure_full_asset_loaded(
-                self.get_context()
-            ).get_tag_names()
-        )
+        tag_names: list[str] | Unset = self._cache_entry.ensure_full_asset_loaded(
+            self.get_context()
+        ).get_tag_names()
         if isinstance(tag_names, Unset):
             raise ValueError(
                 "Tags are UNSET; tags have not been loaded for this asset."
