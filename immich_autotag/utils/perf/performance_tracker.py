@@ -68,6 +68,15 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
+        # --- CONDICIÓN CRAZY EN CONSTRUCTOR ---
+        if (
+            DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
+            and self._total_assets is not None
+            and self._total_assets < 200000
+        ):
+            raise Exception(
+                "Modo CRAZY_DEBUG: total_assets demasiado bajo (<200000) en inicialización del PerformanceTracker"
+            )
 
     @typechecked
     def set_skip_n(self, value: int) -> None:
