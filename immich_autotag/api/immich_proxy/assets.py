@@ -31,32 +31,19 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
 
 from immich_autotag.types import ImmichClient
-from immich_autotag.utils.api_disk_cache import (
-    get_entity_from_cache,
-    save_entity_to_cache,
-)
 
 
 def get_asset_info(
     asset_id: UUID, client: ImmichClient, use_cache: bool = True
 ) -> AssetResponseDto | None:
     """
-    Wrapper centralizado para get_asset_info.sync. Incluye diagnóstico de llamadas y caché en disco.
+    Wrapper centralizado para get_asset_info.sync. Ahora delega toda la lógica de caché a AssetCacheEntry.
     """
     global _asset_api_call_count, _asset_api_ids
     _asset_api_call_count += 1
     _asset_api_ids.add(str(asset_id))
-    # Buscar en caché
-    cache_data = get_entity_from_cache("assets", str(asset_id), use_cache=use_cache)
-    if cache_data is not None:
-        # Reconstruir el DTO desde dict
-        return AssetResponseDto.from_dict(cache_data)
-    # Si no está en caché, llamar a la API
-    dto = _get_asset_info.sync(id=asset_id, client=client)
-    if dto is not None:
-        # Guardar en caché como dict
-        save_entity_to_cache("assets", str(asset_id), dto.to_dict())
-    return dto
+    # Llama directamente a la API, sin lógica de caché
+    return _get_asset_info.sync(id=asset_id, client=client)
 
 
 def update_asset(
