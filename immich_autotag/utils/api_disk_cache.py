@@ -1,7 +1,6 @@
-import os
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from immich_autotag.utils.run_output_dir import find_recent_run_dirs, get_run_output_dir
 
@@ -28,7 +27,9 @@ def save_entity_to_cache(entity: str, key: str, data: dict) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def get_entity_from_cache(entity: str, key: str, use_cache: Optional[bool] = None) -> Optional[dict]:
+def get_entity_from_cache(
+    entity: str, key: str, use_cache: Optional[bool] = None
+) -> Optional[dict]:
     """
     Busca un objeto en la caché (primero en la ejecución actual, luego en previas).
     Si use_cache es False, nunca busca en caché.

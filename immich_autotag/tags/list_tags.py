@@ -9,6 +9,6 @@ from immich_autotag.types import ImmichClient
 
 @typechecked
 def list_tags(client: ImmichClient) -> TagCollectionWrapper:
-    tag_collection = TagCollectionWrapper.from_api()
+    tag_collection = TagCollectionWrapper.get_instance()
     print_tags(tag_collection)
     return tag_collection
