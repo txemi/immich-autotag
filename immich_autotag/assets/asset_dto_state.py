@@ -1,6 +1,9 @@
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
 import enum
 from datetime import datetime
-from typing import Iterator
+from typing import Iterator, cast, Mapping, Any
 from uuid import UUID
 
 import attrs
@@ -28,6 +31,7 @@ class TagsNotLoadedError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDtoState:
+    from typing import cast, Mapping, Any
     """
     Encapsulates the current DTO, its type (partial/full), and the loaded_at timestamp.
     This class never performs API calls or business logic—just holds and exposes data.
@@ -76,7 +80,7 @@ class AssetDtoState:
         self._api_endpoint_source = api_endpoint_source
         self._loaded_at = datetime.now()
 
-    def get_tags(self):
+    def get_tags(self) -> list["TagWrapper"]:
         """
         Returns a list of TagWrapper for the tags associated with this asset.
         If tag_collection is provided, returns TagWrapper objects; otherwise, uses the singleton collection (requires it to be initialized, or pass client for first use).
@@ -97,7 +101,7 @@ class AssetDtoState:
         from immich_autotag.context.immich_context import ImmichContext
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
-        wrappers = []
+        wrappers: list["TagWrapper"] = []
         for tag in tags:
             # Robust type check
             from immich_client.models.tag_response_dto import TagResponseDto
@@ -109,7 +113,7 @@ class AssetDtoState:
             wrapper = tag_collection.get_tag_from_dto(tag)
             if wrapper is None:
                 raise ValueError(
-                    f"Tag '{tag.get_name()}' not found in TagCollectionWrapper for asset {self._dto.id}"
+                    f"Tag '{tag.name}' not found in TagCollectionWrapper for asset {self._dto.id}"
                 )
             wrappers.append(wrapper)
         return wrappers
@@ -137,7 +141,7 @@ class AssetDtoState:
     def get_original_file_name(self) -> str:
         return self._dto.original_file_name
 
-    def to_cache_dict(self) -> dict:
+    def to_cache_dict(self) -> dict[str, object]:
         """
         Serializes the state to a dictionary, including loaded_at in ISO format.
         """
@@ -148,17 +152,17 @@ class AssetDtoState:
         }
 
     @classmethod
-    def from_cache_dict(cls, data: dict) -> "AssetDtoState":
+    def from_cache_dict(cls, data: dict[str, object]) -> "AssetDtoState":
         """
         Reconstruye el estado desde un diccionario serializado.
         """
         from immich_client.models.asset_response_dto import AssetResponseDto
 
-        dto = AssetResponseDto.from_dict(data["dto"])
-        api_endpoint_source = AssetDtoType(data["type"])
-        loaded_at = datetime.fromisoformat(data["loaded_at"])
+        dto = AssetResponseDto.from_dict(cast(Mapping[str, Any], data["dto"]))
+        api_endpoint_source = AssetDtoType(str(data["type"]))
+        loaded_at = datetime.fromisoformat(str(data["loaded_at"]))
         return cls(
-            dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
+            _dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at
         )
 
     def get_tag_names(self) -> list[str]:
