@@ -74,7 +74,7 @@ class AssetCacheEntry:
                 f"proxy_get_asset_info returned None for asset id={asset_id}"
             )
         state = AssetDtoState(dto=dto, type_=AssetDtoType.FULL)
-        save_entity_to_cache(ASSET_CACHE_KEY, str(asset_id), state.to_cache_dict())
+        save_entity_to_cache(entity=ASSET_CACHE_KEY, key=str(asset_id), data=state.to_cache_dict())
         return cls(_state=state, _max_age_seconds=max_age_seconds)
 
     @classmethod
