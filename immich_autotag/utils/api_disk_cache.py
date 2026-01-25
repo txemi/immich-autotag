@@ -41,7 +41,7 @@ def get_entity_from_cache(
     # 1. Buscar en la ejecución actual
     cache_dir = _get_cache_dir(entity)
     path = cache_dir / f"{key}.json"
-    if path.exists():
+    if path.exists() and path.stat().st_size > 0:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     # 2. Buscar en ejecuciones previas (ordenadas de más reciente a más antigua)
@@ -49,7 +49,7 @@ def get_entity_from_cache(
     for run_dir in find_recent_run_dirs(logs_dir, exclude_current=True):
         prev_cache_dir = run_dir / CACHE_SUBDIR / entity
         prev_path = prev_cache_dir / f"{key}.json"
-        if prev_path.exists():
+        if prev_path.exists() and prev_path.stat().st_size > 0:
             with open(prev_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             # Opcional: copiar a la caché actual para acelerar futuras búsquedas
