@@ -62,7 +62,7 @@ class AssetCacheEntry:
         )
         if cache_data is not None:
             state = AssetDtoState.from_cache_dict(cache_data)
-            entry = cls(_state=state, _max_age_seconds=max_age_seconds)
+            entry = cls(state=state, max_age_seconds=max_age_seconds)
             if not entry.is_stale():
                 return entry
         # Si la caché está caducada o no existe, recarga desde API
