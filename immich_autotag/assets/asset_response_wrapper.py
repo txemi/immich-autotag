@@ -377,7 +377,7 @@ class AssetResponseWrapper:
 
                 tag_mod_report.add_modification(
                     asset_id=None,
-                    asset_name=self.original_file_name,
+                    asset_name=self.get_original_file_name(),
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
                     tag=tag,
                     user=user_wrapper,
@@ -612,7 +612,7 @@ class AssetResponseWrapper:
                 )
             else:
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) "
+                    f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) "
                     f"{tag_present_reason}. Tag '{tag_name}' already present.",
                     level=LogLevel.FOCUS,
                 )
@@ -1035,7 +1035,7 @@ class AssetResponseWrapper:
 
     @typechecked
     def format_info(self) -> str:
-        lines = [f"Asset {self.id} | {self.original_file_name}"]
+        lines = [f"Asset {self.get_id()} | {self.get_original_file_name()}"]
         try:
             link = self.get_immich_photo_url().geturl()
         except Exception:
