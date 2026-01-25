@@ -125,14 +125,16 @@ class AlbumCollectionWrapper:
             level=LogLevel.PROGRESS,
         )
 
-    def ensure_all_full(self, perf_phase_tracker=None) -> None:
+    def ensure_all_full(self, perf_phase_tracker: object = None) -> None:
         """
         Public method to force all albums in the collection to be fully loaded (DETAIL/full mode).
         Adds timing logs at PROGRESS level. Optionally tracks perf phase if tracker is provided.
         """
         import time
+
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
+        from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
         if perf_phase_tracker:
             perf_phase_tracker.mark("full", "start")
@@ -141,11 +143,16 @@ class AlbumCollectionWrapper:
             level=LogLevel.PROGRESS,
         )
         t0 = time.time()
-        total = len(self.get_albums())
-        for idx, album in enumerate(self.get_albums(), 1):
-            log(f"[ALBUM-FULL-LOAD][DEBUG] Cargando álbum {idx}/{total}: '{album.get_album_name()}'", level=LogLevel.DEBUG)
+        albums = self.get_albums()
+        total = len(albums)
+        tracker = PerformanceTracker(total_assets=total)
+        for idx, album in enumerate(albums, 1):
+            log(
+                f"[ALBUM-FULL-LOAD][DEBUG] Cargando álbum {idx}/{total}: '{album.get_album_name()}'",
+                level=LogLevel.DEBUG,
+            )
             album.ensure_full()
-            
+            tracker.print_progress(idx)
         t1 = time.time()
         log(
             f"[PROGRESS] [ALBUM-FULL-LOAD] Finished full album load. Elapsed: {t1-t0:.2f} seconds.",
