@@ -93,7 +93,7 @@ def process_single_asset(
     )
 
     asset_url = asset_wrapper.get_immich_photo_url().geturl()
-    asset_name = asset_wrapper.original_file_name or "[no name]"
+    asset_name = asset_wrapper.get_original_file_name() or "[no name]"
     log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
 
     # The following variables are reserved for future development.
@@ -141,7 +141,7 @@ def process_single_asset(
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     try:
-        asset_id = asset_wrapper.id
+        asset_id = asset_wrapper.get_uuid()
     except AttributeError:
         asset_id = None
     log(

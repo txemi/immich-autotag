@@ -491,7 +491,7 @@ class AssetResponseWrapper:
 
     @property
     def original_file_name(self) -> str:
-        return self._state.get_original_file_name()
+        return self._cache_entry.get_state().get_original_file_name()
 
     @property
     def is_favorite(self) -> bool:
