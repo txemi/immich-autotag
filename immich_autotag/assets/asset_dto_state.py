@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
+
 import enum
 from datetime import datetime
-from typing import Iterator, cast, Mapping, Any
+from typing import Any, Iterator, Mapping, cast
 from uuid import UUID
 
 import attrs
@@ -31,7 +35,8 @@ class TagsNotLoadedError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDtoState:
-    from typing import cast, Mapping, Any
+    from typing import Any, Mapping, cast
+
     """
     Encapsulates the current DTO, its type (partial/full), and the loaded_at timestamp.
     This class never performs API calls or business logic—just holds and exposes data.

@@ -562,14 +562,13 @@ class AssetResponseWrapper:
         status = match_result_list.classification_status()
 
         if status.is_conflict():
-            import uuid
 
             # Get details for error message
             match_detail = self.get_classification_match_detail()
-            photo_url = get_immich_photo_url(uuid.UUID(self.id))
+            photo_url = get_immich_photo_url(self.get_id_as_uuid())
             n_rules_matched = len(match_result_list.rules())
             msg = (
-                f"[ERROR] Asset id={self.id} ({self.original_file_name}) is classified by "
+                f"[ERROR] Asset id={self.get_id()} ({self.get_original_file_name()}) is classified by "
                 f"{n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched}, "
                 f"albums={match_detail.albums_matched}\nLink: {photo_url}"
             )
@@ -609,7 +608,7 @@ class AssetResponseWrapper:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) "
+                    f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) "
                     f"{tag_present_reason}. Tagged as '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
@@ -622,8 +621,8 @@ class AssetResponseWrapper:
         else:
             if self.has_tag(tag_name):
                 log(
-                    f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.id} "
-                    f"({self.original_file_name}) because {tag_absent_reason}.",
+                    f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.get_id()} "
+                    f"({self.get_original_file_name()}) because {tag_absent_reason}.",
                     level=LogLevel.FOCUS,
                 )
                 if user is None:
@@ -631,7 +630,7 @@ class AssetResponseWrapper:
                 self.remove_tag_by_name(tag_name, user=user)
             else:
                 log(
-                    f"[CLASSIFICATION] asset.id={self.id} ({self.original_file_name}) {tag_absent_reason}. Tag '{tag_name}' not present.",
+                    f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) {tag_absent_reason}. Tag '{tag_name}' not present.",
                     level=LogLevel.FOCUS,
                 )
 
@@ -734,10 +733,10 @@ class AssetResponseWrapper:
 
         # Log the classification result
         log(
-            f"[CLASSIFICATION] Asset {self.id} | Name: {self.original_file_name} | "
-            f"Favorite: {self.is_favorite} | Tags: {', '.join(tag_names) if tag_names else '-'} | "
+            f"[CLASSIFICATION] Asset {self.get_id()} | Name: {self.get_original_file_name()} | "
+            f"Favorite: {self.is_favorite()} | Tags: {', '.join(tag_names) if tag_names else '-'} | "
             f"Albums: {', '.join(album_names) if album_names else '-'} | Status: {status.value} | "
-            f"Date: {self.created_at} | original_path: {self.original_path}",
+            f"Date: {self.get_created_at()} | original_path: {self.get_original_path()}",
             level=LogLevel.FOCUS,
         )
         return ClassificationUpdateResult(bool(tag_names), bool(album_names))
@@ -928,14 +927,14 @@ class AssetResponseWrapper:
             if not self.has_tag(tag_name):
                 self.add_tag_by_name(tag_name)
                 log(
-                    f"asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict. "
+                    f"asset.id={self.get_id()} ({self.get_original_file_name()}) is in duplicate album conflict. "
                     f"Tagged as '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
         else:
             if self.has_tag(tag_name):
                 log(
-                    f"Removing tag '{tag_name}' from asset.id={self.id} "
+                    f"Removing tag '{tag_name}' from asset.id={self.get_id()} "
                     f"because duplicate album conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
@@ -952,13 +951,13 @@ class AssetResponseWrapper:
                 if not self.has_tag(tag_for_set):
                     self.add_tag_by_name(tag_for_set)
                     log(
-                        f"asset.id={self.id} ({self.original_file_name}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'.",
+                        f"asset.id={self.get_id()} ({self.get_original_file_name()}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'.",
                         level=LogLevel.FOCUS,
                     )
             else:
                 if self.has_tag(tag_for_set):
                     log(
-                        f"Removing tag '{tag_for_set}' from asset.id={self.id} because duplicate album conflict (set {duplicate_id}) is resolved.",
+                        f"Removing tag '{tag_for_set}' from asset.id={self.get_id()} because duplicate album conflict (set {duplicate_id}) is resolved.",
                         level=LogLevel.FOCUS,
                     )
                     user_wrapper = (
@@ -1004,7 +1003,7 @@ class AssetResponseWrapper:
                 self.add_tag_by_name(tag_name)
                 folders_str = str(candidate_folders) if candidate_folders else "unknown"
                 log(
-                    f"[ALBUM DETECTION] Asset '{self.original_file_name}' ({self.id}) has multiple candidate folders: "
+                    f"[ALBUM DETECTION] Asset '{self.get_original_file_name()}' ({self.get_id()}) has multiple candidate folders: "
                     f"{folders_str}. Tagged with '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
@@ -1025,7 +1024,7 @@ class AssetResponseWrapper:
         else:
             if self.has_tag(tag_name):
                 log(
-                    f"[ALBUM DETECTION] Removing tag '{tag_name}' from asset '{self.original_file_name}' ({self.id}) "
+                    f"[ALBUM DETECTION] Removing tag '{tag_name}' from asset '{self.get_original_file_name()}' ({self.get_id()}) "
                     f"because album detection conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
