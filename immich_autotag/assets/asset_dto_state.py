@@ -20,8 +20,7 @@ class TagsNotLoadedError(Exception):
 
 
 @attrs.define(auto_attribs=True, slots=True)
-class AssetDtoState:
-    """
+class AssetDtoState:    """
     Encapsulates the current DTO, its type (partial/full), and the loaded_at timestamp.
     This class never performs API calls or business logic—just holds and exposes data.
     """
@@ -29,6 +28,17 @@ class AssetDtoState:
     _dto: AssetResponseDto
     _type: AssetDtoType
     _loaded_at: datetime = attrs.field(factory=datetime.now)
+
+    def __attrs_post_init__(self):
+        # Comprobación defensiva del tipo de tags según el tipo de DTO
+        tags = getattr(self._dto, "tags", None)
+        if self._type == AssetDtoType.FULL:
+            if tags is not None and not isinstance(tags, list) and not isinstance(tags, Unset):
+                raise TypeError(f"En modo FULL, tags debe ser una lista o Unset, pero es {type(tags)}")
+        elif self._type == AssetDtoType.PARTIAL:
+            if tags is not None and not isinstance(tags, set) and not isinstance(tags, Unset):
+                raise TypeError(f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}")
+        # Si se amplían los tipos, añadir más comprobaciones aquí
 
     @property
     def type(self) -> AssetDtoType:

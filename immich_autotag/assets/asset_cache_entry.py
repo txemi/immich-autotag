@@ -49,7 +49,6 @@ class AssetCacheEntry:
         Intenta cargar el asset desde la caché de disco; si no está o está corrupto, recarga desde la API y guarda en caché.
         asset_id debe ser un UUID.
         """
-        from immich_client.models.asset_response_dto import AssetResponseDto
 
         from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
