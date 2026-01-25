@@ -46,6 +46,16 @@ def log_debug(msg: str) -> None:
 
 
 @typechecked
+def log_trace(msg: str) -> None:
+    """
+    Log a trace message at TRACE level (ultra-verbose, diagnostic-only).
+    """
+    from .levels import LogLevel
+
+    logging.log(LogLevel.TRACE.level_value, msg)
+
+
+@typechecked
 def is_log_level_enabled(level: LogLevel) -> bool:
     """
     Returns True if the given log level is enabled for the root logger.
