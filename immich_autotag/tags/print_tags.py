@@ -9,5 +9,5 @@ from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 def print_tags(tag_collection: TagCollectionWrapper) -> None:
     print("Tags:")
     for tag in tag_collection:
-        print(f"- {tag.name}")
+        print(f"- {tag.get_name()}")
     print(f"Total tags: {len(tag_collection)}\n")
