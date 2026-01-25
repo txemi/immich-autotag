@@ -982,7 +982,7 @@ class AlbumCollectionWrapper:
         if client is None:
             from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-            client = ImmichClientWrapper.get_default_instance()
+            client = ImmichClientWrapper.get_default_instance().get_client()
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
 
