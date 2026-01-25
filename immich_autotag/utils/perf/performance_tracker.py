@@ -5,6 +5,8 @@ from typing import Optional
 import attr
 from typeguard import typechecked
 
+from immich_autotag.config._internal_types import ErrorHandlingMode
+from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
@@ -231,6 +233,16 @@ class PerformanceTracker:
         previous_sessions_time = self._printable_value_previous_sessions_time()
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
+
+        # --- CONDICIÓN CRAZY ---
+        # Si el modo es CRAZY_DEBUG, abs_total no es None y abs_total < 200000, lanzar excepción
+        if (
+            DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
+            and abs_total is not None
+            and abs_total < 200000
+        ):
+            raise Exception("Modo CRAZY_DEBUG: abs_total demasiado bajo (<200000)")
+
         est_remaining_session = self._printable_value_est_remaining_session(
             count, elapsed
         )
