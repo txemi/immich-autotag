@@ -152,7 +152,14 @@ class AlbumCollectionWrapper:
                 level=LogLevel.DEBUG,
             )
             album.ensure_full()
-            tracker.print_progress(idx)
+            # Only log progress at intervals determined by the tracker
+            # (mimic the print_progress interval logic)
+            if idx == 1 or idx == total or idx % tracker._log_interval == 0:
+                progress_msg = tracker.get_progress_description(idx)
+                log(
+                    f"[ALBUM-FULL-LOAD][PROGRESS] {progress_msg} | Album: '{album.get_album_name()}'",
+                    level=LogLevel.PROGRESS,
+                )
         t1 = time.time()
         log(
             f"[PROGRESS] [ALBUM-FULL-LOAD] Finished full album load. Elapsed: {t1-t0:.2f} seconds.",
