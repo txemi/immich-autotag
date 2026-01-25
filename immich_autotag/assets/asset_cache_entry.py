@@ -63,9 +63,8 @@ class AssetCacheEntry:
         )
         if cache_data is not None:
             try:
-                dto = AssetResponseDto.from_dict(cache_data)
-                state = AssetDtoState(dto, AssetDtoType.FULL)
-                return cls._from_state(state, max_age_seconds=max_age_seconds)
+                state = AssetDtoState.from_cache_dict(cache_data)
+                return cls(_state=state, _max_age_seconds=max_age_seconds)
             except Exception:
                 pass  # Si la caché está corrupta, recarga de API
         # Si no está en caché o está corrupto, recarga desde API
@@ -75,9 +74,9 @@ class AssetCacheEntry:
             raise RuntimeError(
                 f"proxy_get_asset_info returned None for asset id={asset_id}"
             )
-        state = AssetDtoState(dto, AssetDtoType.FULL)
-        save_entity_to_cache(ASSET_CACHE_KEY, str(asset_id), dto.to_dict())
-        return cls._from_state(state, max_age_seconds=max_age_seconds)
+        state = AssetDtoState(dto=dto, type_=AssetDtoType.FULL)
+        save_entity_to_cache(ASSET_CACHE_KEY, str(asset_id), state.to_cache_dict())
+        return cls(_state=state, _max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_state(
@@ -88,19 +87,7 @@ class AssetCacheEntry:
         """
         return cls(_state=state, _max_age_seconds=max_age_seconds)
 
-    def to_cache_dict(self) -> dict:
-        """
-        Serializa la entrada de caché a un diccionario.
-        """
-        return {
-            "state": (
-                self._state.to_cache_dict()
-                if hasattr(self._state, "to_cache_dict")
-                else self._state
-            ),
-            "max_age_seconds": self._max_age_seconds,
-        }
-
+    # Eliminados los métodos to_cache_dict y from_cache_dict: la caché serializa solo AssetDtoState
 
     def ensure_full_asset_loaded(self, context: "ImmichContext") -> AssetDtoState:
         """
