@@ -596,7 +596,9 @@ class AlbumResponseWrapper:
         result = self._execute_add_asset_api(asset_wrapper, client)
 
         # 3. Handle result
-        item = self._find_asset_result_in_response(result, asset_wrapper.get_id_as_uuid())
+        item = self._find_asset_result_in_response(
+            result, asset_wrapper.get_id_as_uuid()
+        )
         if item:
             if not item.success:
                 self._handle_add_asset_error(
