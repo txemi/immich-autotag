@@ -446,7 +446,7 @@ class AssetResponseWrapper:
         """
         Returns the names of the albums this asset belongs to.
         """
-        return self.get_context().albums_collection.album_names_for_asset(self)
+        return self.get_context().get_albums_collection().album_names_for_asset(self)
 
     @typechecked
     def get_tag_names(self) -> list[str]:
