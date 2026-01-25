@@ -24,13 +24,13 @@ def try_autofix(
     if fix_type == ClassificationTagComparisonResult.AUTOFIX_OTHER:
         duplicate_wrapper.add_tag_by_name(tag_to_add)
         log(
-            f"[DUPLICATE TAGS][AUTO-FIX] Added classification tag '{tag_to_add}' to asset {duplicate_wrapper.asset.id}",
+            f"[DUPLICATE TAGS][AUTO-FIX] Added classification tag '{tag_to_add}' to asset {duplicate_wrapper.get_id()}",
             level=LogLevel.FOCUS,
         )
     elif fix_type == ClassificationTagComparisonResult.AUTOFIX_SELF:
         asset_wrapper.add_tag_by_name(tag_to_add)
         log(
-            f"[DUPLICATE TAGS][AUTO-FIX] Added classification tag '{tag_to_add}' to asset {asset_wrapper.asset.id}",
+            f"[DUPLICATE TAGS][AUTO-FIX] Added classification tag '{tag_to_add}' to asset {asset_wrapper.get_id()}",
             level=LogLevel.FOCUS,
         )
     else:

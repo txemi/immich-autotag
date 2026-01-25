@@ -10,7 +10,7 @@ def get_duplicate_wrappers(
     """
     Returns the list of duplicate AssetResponseWrapper for the given asset.
     """
-    context = asset_wrapper.context
-    return context.duplicates_collection.get_duplicate_asset_wrappers(
-        asset_wrapper.duplicate_id_as_uuid, context.asset_manager, context
+    context = asset_wrapper.get_context()
+    return context.get_duplicates_collection().get_duplicate_asset_wrappers(
+        asset_wrapper.get_duplicate_id_as_uuid(), context.get_asset_manager(), context
     )
