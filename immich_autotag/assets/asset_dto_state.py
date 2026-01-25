@@ -109,7 +109,7 @@ class AssetDtoState:
             wrapper = tag_collection.get_tag_from_dto(tag)
             if wrapper is None:
                 raise ValueError(
-                    f"Tag '{tag.name}' not found in TagCollectionWrapper for asset {self._dto.id}"
+                    f"Tag '{tag.get_name()}' not found in TagCollectionWrapper for asset {self._dto.id}"
                 )
             wrappers.append(wrapper)
         return wrappers
@@ -166,7 +166,7 @@ class AssetDtoState:
         Devuelve los nombres de los tags asociados a este asset, o una lista vacía si no hay tags.
         """
         tag_wrappers = self.get_tags()
-        return [tag_wrapper.name for tag_wrapper in tag_wrappers]
+        return [tag_wrapper.get_name() for tag_wrapper in tag_wrappers]
 
     def get_self_if_full(self) -> "AssetDtoState":
         """
