@@ -53,6 +53,6 @@ def get_entity_from_cache(
             with open(prev_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             # Opcional: copiar a la caché actual para acelerar futuras búsquedas
-            save_entity_to_cache(entity, key, data)
+            save_entity_to_cache(entity=entity, key=key, data=data)
             return data
     return None
