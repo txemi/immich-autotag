@@ -70,7 +70,7 @@ def move_assets_between_albums(
                 raise
             else:
                 log(
-                    f"Warning: failed to add asset {asset_wrapper.id} to dest album {dest.get_album_id()}: {e}",
+                    f"Warning: failed to add asset {asset_wrapper.get_id()} to dest album {dest.get_album_uuid()}: {e}",
                     level=LogLevel.WARNING,
                 )
                 continue
@@ -82,7 +82,7 @@ def move_assets_between_albums(
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise
             log(
-                f"Warning: failed to remove asset {asset_wrapper.id} from src album {src.get_album_id()}: {e}",
+                f"Warning: failed to remove asset {asset_wrapper.get_id()} from src album {src.get_album_uuid()}: {e}",
                 level=LogLevel.WARNING,
             )
             continue
