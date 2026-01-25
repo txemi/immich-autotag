@@ -142,7 +142,7 @@ class ClassificationRuleSet:
         wrappers: List[AssetResponseWrapper] = []
 
         for asset_uuid in all_uuids:
-            wrapper = context.asset_manager.get_asset(asset_uuid, context)
+            wrapper = context.get_asset_manager().get_asset(asset_uuid, context)
             if wrapper is None:
                 raise RuntimeError(
                     f"[ERROR] Asset with ID {asset_uuid} could not be loaded from API."
