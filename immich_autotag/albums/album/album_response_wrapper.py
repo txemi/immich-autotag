@@ -11,7 +11,8 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
+from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
@@ -48,7 +49,7 @@ class AssetAlreadyInAlbumError(Exception):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
     # --- 1. Fields ---
-    _state: AlbumDtoState = attrs.field(kw_only=True)
+    _cache_entry: AlbumCacheEntry = attrs.field(kw_only=True)
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
 
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
@@ -72,8 +73,7 @@ class AlbumResponseWrapper:
     def owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
         from uuid import UUID
-
-        return UUID(self._album_dto.owner_id)
+        return UUID(self._cache_entry.get_state().get_dto().owner_id)
 
     # --- 4. Static Methods ---
     @staticmethod
@@ -103,12 +103,11 @@ class AlbumResponseWrapper:
 
     @typechecked
     def get_album_uuid(self) -> "UUID":
-
-        return self._state.get_album_id()
+        return self._cache_entry.get_state().get_album_id()
 
     @typechecked
     def get_album_name(self) -> str:
-        return self._state.get_album_name()
+        return self._cache_entry.get_state().get_album_name()
 
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
@@ -143,7 +142,7 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def _ensure_full_album_loaded(self, client: ImmichClient) -> AlbumResponseWrapper:
-        if self._state.get_load_source() == AlbumLoadSource.DETAIL:
+        if self._cache_entry.get_state().get_load_source() == AlbumLoadSource.DETAIL:
             return self
         self.reload_from_api(client)
         return self
@@ -154,21 +153,19 @@ class AlbumResponseWrapper:
         Returns an AlbumUserList encapsulating all users in the album (album_users).
         This provides a robust, consistent interface for album user access.
         """
-
-        return self._state.get_album_users()
+        return self._cache_entry.get_state().get_album_users()
 
     @typechecked
     def get_owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
-
-        return self._state.get_owner_uuid()
+        return self._cache_entry.get_state().get_owner_uuid()
 
     def _get_album_full_or_load_dto(self) -> AlbumResponseDto:
         """
         Returns the full AlbumResponseDto, loading it from the API if necessary.
         Ensures the album is in DETAIL/full mode.
         """
-        self.ensure_full()._state
+        return self.ensure_full()._cache_entry.get_state().get_dto()
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
@@ -238,7 +235,7 @@ class AlbumResponseWrapper:
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> None:
-        self._state.update(dto=dto, load_source=load_source)
+        self._cache_entry.get_state().update(dto=dto, load_source=load_source)
         self.invalidate_cache()
 
     @typechecked
@@ -382,7 +379,7 @@ class AlbumResponseWrapper:
             self._update_from_dto(dto, load_source)
 
     def _is_full(self) -> bool:
-        return self._state.is_full()
+        return self._cache_entry.get_state().is_full()
 
     @typechecked
     def ensure_full(self) -> AlbumResponseWrapper:
