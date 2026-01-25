@@ -459,7 +459,9 @@ class AssetResponseWrapper:
             self._cache_entry.ensure_full_asset_loaded().get_tag_names()
         )
         if isinstance(tag_names, Unset):
-            raise ValueError("Tags are UNSET; tags have not been loaded for this asset.")
+            raise ValueError(
+                "Tags are UNSET; tags have not been loaded for this asset."
+            )
         return tag_names
 
     @typechecked
