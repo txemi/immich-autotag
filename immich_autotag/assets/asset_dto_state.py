@@ -28,8 +28,6 @@ class TagsNotLoadedError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDtoState:
-
-
     """
     Encapsulates the current DTO, its type (partial/full), and the loaded_at timestamp.
     This class never performs API calls or business logic—just holds and exposes data.
@@ -86,7 +84,7 @@ class AssetDtoState:
         Raises TagsNotLoadedError if tags are not loaded (UNSET).
         """
 
-        full=self.get_self_if_full()
+        full = self.get_self_if_full()
         tags = full._dto.tags
         if isinstance(tags, Unset):
             raise TagsNotLoadedError(
@@ -100,10 +98,13 @@ class AssetDtoState:
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
         wrappers = []
-        for tag:TagResponseDto in tags:
+        for tag in tags:  # type: TagResponseDto
+            if not isinstance(tag, TagResponseDto):
+                raise TypeError(
+                    f"Tag en tags no es del tipo esperado TagResponseDto, sino {type(tag)}. Asset: {self._dto.id}"
+                )
             wrapper = tag_collection.get_tag_from_dto(tag)
             if wrapper is None:
-
                 raise ValueError(
                     f"Tag '{tag.name}' not found in TagCollectionWrapper for asset {self._dto.id}"
                 )
@@ -163,6 +164,7 @@ class AssetDtoState:
         """
         tag_wrappers = self.get_tags()
         return [tag_wrapper.name for tag_wrapper in tag_wrappers]
+
     def get_self_if_full(self) -> "AssetDtoState":
         """
         Devuelve self solo si el estado es FULL, si no lanza una excepción.
