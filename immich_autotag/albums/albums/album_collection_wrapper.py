@@ -149,7 +149,7 @@ class AlbumCollectionWrapper:
         for idx, album in enumerate(albums, 1):
             log(
                 f"[ALBUM-FULL-LOAD][DEBUG] Cargando álbum {idx}/{total}: '{album.get_album_name()}'",
-                level=LogLevel.DEBUG,
+                level=LogLevel.TRACE,
             )
             album.ensure_full()
             # Delegar la lógica de cuándo loguear al tracker

@@ -10,7 +10,7 @@ from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
 from immich_autotag.logging.levels import LogLevel
-from immich_autotag.logging.utils import log, log_debug
+from immich_autotag.logging.utils import log, log_trace
 from immich_autotag.types import ImmichClient
 
 # --- Diagnóstico de llamadas a la API de álbumes ---
@@ -45,7 +45,7 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> "AlbumResponse
     from immich_autotag.utils.url_helpers import get_immich_album_url
 
     album_url = get_immich_album_url(album_id).geturl()
-    log_debug(f"Fetched album info for id={album_id}: {album_url}")
+    log_trace(f"Fetched album info for id={album_id}: {album_url}")
     if a is None:
         raise RuntimeError(f"get_album_info.sync returned None for album id={album_id}")
     return a
