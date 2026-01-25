@@ -101,8 +101,7 @@ class PerformanceTracker:
         now = time.time()
         # If the tracker is not properly initialized, it should never reach here
         if now - self._last_log_time >= self._log_interval:
-            elapsed = now - self._start_time
-            self.print_progress(count, elapsed)
+            self.print_progress(count=count)
             self._last_log_time = now
 
     @typechecked
@@ -121,7 +120,7 @@ class PerformanceTracker:
     ) -> AbsTotalAndAvg:
         """Returns abs_total and avg for methods that use them together."""
         abs_total = self._printable_value_abs_total()
-        avg = self._printable_value_avg(count, elapsed)
+        avg = self._printable_value_avg(count=count, elapsed=elapsed)
         return AbsTotalAndAvg(abs_total=abs_total, avg=avg)
 
     @typechecked
@@ -163,7 +162,7 @@ class PerformanceTracker:
     def _printable_value__get_avg_and_totals(
         self, count: int, elapsed: float
     ) -> AvgAndTotals:
-        avg = self._printable_value_avg(count, elapsed)
+        avg = self._printable_value_avg(count=count, elapsed=elapsed)
         total_to_process = self._printable_value_total_to_process()
         estimator = self._printable_value_estimator()
         estimation_mode = self._printable_value_estimation_mode()
@@ -200,7 +199,7 @@ class PerformanceTracker:
     def _printable_value_est_total_all(
         self, count: int, elapsed: float
     ) -> Optional[float]:
-        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(count, elapsed)
+        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(count=count, elapsed=elapsed)
         abs_total = abs_total_and_avg.abs_total
         avg = abs_total_and_avg.avg
         if abs_total and count > 0:
@@ -222,7 +221,7 @@ class PerformanceTracker:
     def _format_perf_progress(self, *, count: int, elapsed: Optional[float] = None) -> str:
         if elapsed is None:
             elapsed = time.time() - self._start_time
-        avg = self._printable_value_avg(count, elapsed)
+        avg = self._printable_value_avg(count=count, elapsed=elapsed)
         total_to_process = self._printable_value_total_to_process()
         skip_n = self._printable_value_skip_n()
         previous_sessions_time = self._printable_value_previous_sessions_time()
@@ -288,7 +287,7 @@ class PerformanceTracker:
     def print_progress(self, *, count: int, elapsed: Optional[float] = None):
         if elapsed is None:
             elapsed = time.time() - self._start_time
-        print("[PERF] " + self._format_perf_progress(count, elapsed))
+        print("[PERF] " + self._format_perf_progress(count=count, elapsed=elapsed))
 
     @typechecked
     def _printable_value_total_assets(self) -> Optional[int]:

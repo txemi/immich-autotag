@@ -149,9 +149,9 @@ def _run_main_inner():
     albums_collection = AlbumCollectionWrapper.from_client(client)
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
-    perf_phase_tracker.mark("lazy", "start")
+    perf_phase_tracker.mark(phase="lazy", event="start")
     albums_collection.log_lazy_load_timing()
-    perf_phase_tracker.mark("lazy", "end")
+    perf_phase_tracker.mark(phase="lazy", event="end")
     duplicates_collection = load_duplicates_collection(client)
     asset_manager = AssetManager(client=client)  # type: ignore
     context = ImmichContext.create_default_instance(
@@ -189,7 +189,7 @@ def _run_main_inner():
 
     else:
         # You can change the max_assets value here or pass it as an external argument
-        perf_phase_tracker.mark("assets", "start")
+        perf_phase_tracker.mark(phase="assets", event="start")
         log(
             "[PROGRESS] [ASSET-PROCESS] Starting asset processing",
             level=LogLevel.PROGRESS,
@@ -201,7 +201,7 @@ def _run_main_inner():
             f"[PROGRESS] [ASSET-PROCESS] Finished asset processing. Elapsed: {t1-t0:.2f} seconds.",
             level=LogLevel.PROGRESS,
         )
-        perf_phase_tracker.mark("assets", "end")
+        perf_phase_tracker.mark(phase="assets", event="end")
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
     print_welcome_links(manager.config)
