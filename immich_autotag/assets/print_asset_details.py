@@ -24,5 +24,5 @@ def print_asset_details_with_tags(asset_id: UUID, client: ImmichClient) -> None:
     tag_list = asset_wrapper.get_tags()
     tag_names = [tag.name for tag in tag_list] if tag_list else []
     print(
-        f"Asset: {asset_wrapper.asset.original_file_name} | Tags: {', '.join(tag_names) if tag_names else '-'}"
+        f"Asset: {asset_wrapper.asset.get_original_file_name()} | Tags: {', '.join(tag_names) if tag_names else '-'}"
     )
