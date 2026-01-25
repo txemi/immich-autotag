@@ -255,14 +255,14 @@ class PerformanceTracker:
             if abs_total:
                 msg += f"/{abs_total}(abs_total)"
 
-        # Solo mostrar skip si es distinto de cero
-        if skip_n:
-            msg += f" Skip:{skip_n}"
-
-        # Porcentaje
+        # Porcentaje (ahora justo tras el contador principal)
         if abs_total and abs_total > 0:
             percent = 100.0 * abs_count / abs_total
             msg += f" [{percent:.2f}%]"
+
+        # Solo mostrar skip si es distinto de cero
+        if skip_n:
+            msg += f" Skip:{skip_n}"
 
         # Remaining
         if est_remaining_session is not None:
@@ -272,11 +272,19 @@ class PerformanceTracker:
         else:
             msg += " Remaining:?/"
 
-        msg += f"{self._printable_value_fmt_time(elapsed)}(Elapsed)"
-        msg += f"/{self._printable_value_fmt_time(previous_sessions_time + elapsed)}(TotalElapsed)"
+        # Tiempos: ocultar uno si son iguales
+        elapsed_str = self._printable_value_fmt_time(elapsed) + "(Elapsed)"
+        total_elapsed_str = self._printable_value_fmt_time(previous_sessions_time + elapsed) + "(TotalElapsed)"
+        if elapsed_str == total_elapsed_str:
+            msg += elapsed_str
+        else:
+            msg += elapsed_str + "/" + total_elapsed_str
 
         if est_total_all is not None:
-            msg += f"/{self._printable_value_fmt_time(est_total_all)}(est_total_all)"
+            est_total_all_str = self._printable_value_fmt_time(est_total_all) + "(est_total_all)"
+            # Si coincide con alguno de los anteriores, no mostrarlo
+            if est_total_all_str != elapsed_str and est_total_all_str != total_elapsed_str:
+                msg += f"/{est_total_all_str}"
         else:
             msg += "/?(est_total_all)"
 
