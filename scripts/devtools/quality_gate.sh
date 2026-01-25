@@ -128,13 +128,9 @@ parse_args_and_globals() {
 			TARGET_DIR="$arg"
 		fi
 	done
-	# If the user did not force QUALITY_LEVEL, infer it from CHECK_MODE
+	# Si el usuario no fuerza QUALITY_LEVEL, por defecto RELAXED siempre
 	if [ -z "$QUALITY_LEVEL" ]; then
-		if [ "$CHECK_MODE" = "APPLY" ]; then
-			QUALITY_LEVEL="STRICT"
-		elif [ "$CHECK_MODE" = "CHECK" ]; then
-			QUALITY_LEVEL="RELAXED"
-		fi
+		QUALITY_LEVEL="RELAXED"
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
