@@ -16,6 +16,7 @@ class AssetDtoType(enum.Enum):
     - FULL: Loaded via a single-asset detail endpoint (e.g., /assets/{id}), with all fields populated.
     This distinction is important for knowing whether the DTO contains all available data or only a subset.
     """
+
     PARTIAL = "partial"
     FULL = "full"
 
@@ -68,7 +69,9 @@ class AssetDtoState:
     def get_loaded_at(self) -> datetime:
         return self._loaded_at
 
-    def update(self, *, dto: AssetResponseDto, api_endpoint_source: AssetDtoType) -> None:
+    def update(
+        self, *, dto: AssetResponseDto, api_endpoint_source: AssetDtoType
+    ) -> None:
         self._dto = dto
         self._api_endpoint_source = api_endpoint_source
         self._loaded_at = datetime.now()
@@ -152,4 +155,6 @@ class AssetDtoState:
         dto = AssetResponseDto.from_dict(data["dto"])
         api_endpoint_source = AssetDtoType(data["type"])
         loaded_at = datetime.fromisoformat(data["loaded_at"])
-        return cls(_dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at)
+        return cls(
+            _dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at
+        )
