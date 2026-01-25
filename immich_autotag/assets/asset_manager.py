@@ -33,7 +33,7 @@ class AssetManager:
         Supports skipping the first `skip_n` assets efficiently.
         """
         for asset in get_all_assets(context, max_assets=max_assets, skip_n=skip_n):
-            asset_uuid = UUID(asset.id)
+            asset_uuid = UUID(asset.get_id())
             self._assets[asset_uuid] = asset
             yield asset
 
