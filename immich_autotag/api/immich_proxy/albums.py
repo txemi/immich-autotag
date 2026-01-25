@@ -1,4 +1,3 @@
-from immich_autotag.utils.api_disk_cache import get_entity_from_cache, save_entity_to_cache
 from typing import List
 from uuid import UUID
 
@@ -16,6 +15,11 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
+
+from immich_autotag.utils.api_disk_cache import (
+    get_entity_from_cache,
+    save_entity_to_cache,
+)
 
 
 def proxy_get_album_info(
