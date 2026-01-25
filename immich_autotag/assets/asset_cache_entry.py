@@ -61,11 +61,11 @@ class AssetCacheEntry:
             ASSET_CACHE_KEY, str(asset_id), use_cache=use_cache
         )
         if cache_data is not None:
-            try:
-                state = AssetDtoState.from_cache_dict(cache_data)
-                return cls(_state=state, _max_age_seconds=max_age_seconds)
-            except Exception:
-                pass  # Si la caché está corrupta, recarga de API
+            state = AssetDtoState.from_cache_dict(cache_data)
+            entry = cls(_state=state, _max_age_seconds=max_age_seconds)
+            if not entry.is_stale():
+                return entry
+        # Si la caché está caducada o no existe, recarga desde API
         # Si no está en caché o está corrupto, recarga desde API
         client = ImmichClientWrapper.get_default_instance().get_client()
         dto = proxy_get_asset_info(asset_id, client, use_cache=False)
