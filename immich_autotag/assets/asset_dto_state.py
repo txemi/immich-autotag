@@ -4,6 +4,7 @@ from typing import Iterator
 from uuid import UUID
 
 import attrs
+from immich_client.types import Unset
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 
@@ -11,6 +12,11 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 class AssetDtoType(enum.Enum):
     PARTIAL = "partial"
     FULL = "full"
+
+
+# Exception for tags not loaded
+class TagsNotLoadedError(Exception):
+    pass
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -38,9 +44,34 @@ class AssetDtoState:
         self._loaded_at = datetime.now()
 
     def get_tags(self):
-        # def get_tags(self) -> list[TagResponseDto]:
-        # Placeholder: implement actual tag extraction from self._dto if available
-        raise NotImplementedError("get_tags method not implemented yet")
+        """
+        Returns a list of TagWrapper for the tags associated with this asset.
+        If tag_collection is provided, returns TagWrapper objects; otherwise, uses the singleton collection (requires it to be initialized, or pass client for first use).
+        If neither is available, returns raw tag DTOs.
+        Raises TagsNotLoadedError if tags are not loaded (UNSET).
+        """
+        tags = self._dto.tags
+        if isinstance(tags, Unset):
+            raise TagsNotLoadedError(
+                "Tags are UNSET; tags have not been loaded for this asset."
+            )
+        if tags is None:
+            raise TagsNotLoadedError(
+                "Tags are None; this should not happen with DTOs. Please check DTO construction."
+            )
+        from immich_autotag.context.immich_context import ImmichContext
+
+        tag_collection = ImmichContext.get_default_instance().get_tag_collection()
+        wrappers = []
+        for tag in tags:
+            wrapper = tag_collection.find_by_name(tag.name)
+            if wrapper is None:
+
+                raise ValueError(
+                    f"Tag '{tag.name}' not found in TagCollectionWrapper for asset {self._dto.id}"
+                )
+            wrappers.append(wrapper)
+        return wrappers
 
     def get_dates(self):
         def _get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:

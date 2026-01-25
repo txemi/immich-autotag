@@ -25,21 +25,36 @@ _instance_created = False
 @attrs.define(auto_attribs=True, slots=True)
 class ImmichContext:
 
-    client: ImmichClient = attrs.field(
+    _client: ImmichClient = attrs.field(
         validator=attrs.validators.instance_of((ImmichClient,))
     )
-    albums_collection: "AlbumCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of(object)
+    _albums_collection: "AlbumCollectionWrapper" = attrs.field(
+        validator=attrs.validators.instance_of("AlbumCollectionWrapper")
     )
-    tag_collection: "TagCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of(object)
+    _tag_collection: "TagCollectionWrapper" = attrs.field(
+        validator=attrs.validators.instance_of("TagCollectionWrapper")
     )
-    duplicates_collection: "DuplicateCollectionWrapper" = attrs.field(
-        validator=attrs.validators.instance_of(object)
+    _duplicates_collection: "DuplicateCollectionWrapper" = attrs.field(
+        validator=attrs.validators.instance_of("DuplicateCollectionWrapper")
     )
-    asset_manager: "AssetManager" = attrs.field(
-        validator=attrs.validators.instance_of(object)
+    _asset_manager: "AssetManager" = attrs.field(
+        validator=attrs.validators.instance_of("AssetManager")
     )
+
+    def get_client(self) -> ImmichClient:
+        return self._client
+
+    def get_albums_collection(self) -> "AlbumCollectionWrapper":
+        return self._albums_collection
+
+    def get_tag_collection(self) -> "TagCollectionWrapper":
+        return self._tag_collection
+
+    def get_duplicates_collection(self) -> "DuplicateCollectionWrapper":
+        return self._duplicates_collection
+
+    def get_asset_manager(self) -> "AssetManager":
+        return self._asset_manager
 
     @staticmethod
     @typechecked

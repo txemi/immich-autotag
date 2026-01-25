@@ -4,6 +4,8 @@ from typeguard import typechecked
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from immich_autotag.types import ImmichClient
 
+_tag_collection_singleton: TagCollectionWrapper | None = None
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
@@ -15,6 +17,14 @@ class TagCollectionWrapper:
         # Defensive: never allow None for tags
         if self.tags is None:
             raise ValueError("tags cannot be None; use an empty list instead")
+        global _tag_collection_singleton
+        if (
+            _tag_collection_singleton is not None
+            and self is not _tag_collection_singleton
+        ):
+            raise RuntimeError(
+                "TagCollectionWrapper singleton already exists. Use TagCollectionWrapper.get_instance()."
+            )
 
     @typechecked
     def _sync_from_api(self, client: ImmichClient) -> None:
@@ -63,12 +73,15 @@ class TagCollectionWrapper:
 
     @staticmethod
     @typechecked
-    def from_api(client: ImmichClient) -> "TagCollectionWrapper":
+    def from_api() -> "TagCollectionWrapper":
         """
         Builds a TagCollectionWrapper instance by fetching tags from the Immich API.
+        Uses the client from ImmichContext singleton.
         """
         from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
+        from immich_autotag.context.immich_context import ImmichContext
 
+        client = ImmichContext.get_default_client()
         tags_dto = proxy_get_all_tags(client=client)
         if tags_dto is None:
             tags_dto = []
@@ -93,3 +106,14 @@ class TagCollectionWrapper:
     @typechecked
     def __len__(self) -> int:
         return len(self.tags)
+
+    @classmethod
+    def get_instance(cls) -> "TagCollectionWrapper":
+        """
+        Returns the singleton instance of TagCollectionWrapper. If not initialized, fetches from API using the client from ImmichContext singleton.
+        """
+        global _tag_collection_singleton
+        if _tag_collection_singleton is not None:
+            return _tag_collection_singleton
+        _tag_collection_singleton = TagCollectionWrapper.from_api()
+        return _tag_collection_singleton
