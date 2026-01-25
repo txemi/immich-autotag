@@ -4,7 +4,6 @@ from typing import Iterator
 from uuid import UUID
 
 import attrs
-from immich_client.models.tag_response_dto import TagResponseDto
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 
@@ -39,9 +38,9 @@ class AssetDtoState:
         self._loaded_at = datetime.now()
 
     def get_tags(self):
-        def get_tags(self) -> list[TagResponseDto]:
-            # Placeholder: implement actual tag extraction from self._dto if available
-            raise NotImplementedError("get_tags method not implemented yet")
+        # def get_tags(self) -> list[TagResponseDto]:
+        # Placeholder: implement actual tag extraction from self._dto if available
+        raise NotImplementedError("get_tags method not implemented yet")
 
     def get_dates(self):
         def _get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
