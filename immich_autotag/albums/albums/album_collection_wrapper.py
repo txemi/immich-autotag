@@ -125,35 +125,34 @@ class AlbumCollectionWrapper:
             level=LogLevel.PROGRESS,
         )
 
-    def _ensure_all_albums_full(self) -> None:
+    def ensure_all_full(self, perf_phase_tracker=None) -> None:
         """
-        Forces all albums in the collection to be fully loaded (DETAIL/full mode).
-        Adds timing logs at PROGRESS level. Internal use only.
+        Public method to force all albums in the collection to be fully loaded (DETAIL/full mode).
+        Adds timing logs at PROGRESS level. Optionally tracks perf phase if tracker is provided.
         """
         import time
-
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
+        if perf_phase_tracker:
+            perf_phase_tracker.mark("full", "start")
         log(
-            "[PROGRESS] Starting full album loading before asset iteration...",
+            "[PROGRESS] [ALBUM-FULL-LOAD] Starting full album load",
             level=LogLevel.PROGRESS,
         )
         t0 = time.time()
-        for idx, album_wrapper in enumerate(self.get_albums(), 1):
-            try:
-                album_wrapper.ensure_full()
-            except Exception as e:
-                log(
-                    f"[WARNING] Failed to fully load album "
-                    f"'{album_wrapper.get_album_name()}': {e}",
-                    level=LogLevel.WARNING,
-                )
+        total = len(self.get_albums())
+        for idx, album in enumerate(self.get_albums(), 1):
+            log(f"[ALBUM-FULL-LOAD][DEBUG] Cargando álbum {idx}/{total}: '{album.get_album_name()}'", level=LogLevel.DEBUG)
+            album.ensure_full()
+            
         t1 = time.time()
         log(
-            f"[PROGRESS] Finished full album loading. Elapsed: {t1-t0:.2f} seconds.",
+            f"[PROGRESS] [ALBUM-FULL-LOAD] Finished full album load. Elapsed: {t1-t0:.2f} seconds.",
             level=LogLevel.PROGRESS,
         )
+        if perf_phase_tracker:
+            perf_phase_tracker.mark("full", "end")
 
     @typechecked
     def __attrs_post_init__(self) -> None:

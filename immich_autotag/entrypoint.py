@@ -171,21 +171,7 @@ def run_main():
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
-    perf_phase_tracker.mark("full", "start")
-    log(
-        "[PROGRESS] [ALBUM-FULL-LOAD] Starting full album load",
-        level=LogLevel.PROGRESS,
-    )
-    t0 = time.time()
-    # Use public method to avoid protected access warning
-    for album in albums_collection.get_albums():
-        album.ensure_full()
-    t1 = time.time()
-    log(
-        f"[PROGRESS] [ALBUM-FULL-LOAD] Finished full album load. Elapsed: {t1-t0:.2f} seconds.",
-        level=LogLevel.PROGRESS,
-    )
-    perf_phase_tracker.mark("full", "end")
+    albums_collection.ensure_all_full(perf_phase_tracker=perf_phase_tracker)
 
     # --- ALBUM PERMISSIONS: Phase 1 & 2 (BEFORE processing assets)
     process_album_permissions(manager.config, context)
