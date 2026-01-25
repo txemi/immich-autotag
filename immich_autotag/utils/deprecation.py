@@ -2,11 +2,14 @@
 Utilidad para marcar rutas deprecadas o no alcanzables en el código.
 """
 
+
 class InternalDeprecationError(Exception):
     """
     Excepción para indicar que se ha ejecutado una ruta deprecada o no válida.
     """
+
     pass
+
 
 def raise_deprecated_path(description: str) -> None:
     """

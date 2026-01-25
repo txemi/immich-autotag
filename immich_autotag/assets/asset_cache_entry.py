@@ -1,3 +1,5 @@
+from immich_autotag.context.immich_context import ImmichContext
+
 ASSET_CACHE_KEY = "assets"
 import datetime
 from uuid import UUID
