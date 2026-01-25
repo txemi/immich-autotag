@@ -199,7 +199,9 @@ class PerformanceTracker:
     def _printable_value_est_total_all(
         self, count: int, elapsed: float
     ) -> Optional[float]:
-        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(count=count, elapsed=elapsed)
+        abs_total_and_avg = self._printable_value__get_abs_total_and_avg(
+            count=count, elapsed=elapsed
+        )
         abs_total = abs_total_and_avg.abs_total
         avg = abs_total_and_avg.avg
         if abs_total and count > 0:
@@ -218,7 +220,9 @@ class PerformanceTracker:
             return f"{seconds:.1f}s"
 
     @typechecked
-    def _format_perf_progress(self, *, count: int, elapsed: Optional[float] = None) -> str:
+    def _format_perf_progress(
+        self, *, count: int, elapsed: Optional[float] = None
+    ) -> str:
         if elapsed is None:
             elapsed = time.time() - self._start_time
         avg = self._printable_value_avg(count=count, elapsed=elapsed)
@@ -274,16 +278,24 @@ class PerformanceTracker:
 
         # Tiempos: ocultar uno si son iguales
         elapsed_str = self._printable_value_fmt_time(elapsed) + "(Elapsed)"
-        total_elapsed_str = self._printable_value_fmt_time(previous_sessions_time + elapsed) + "(TotalElapsed)"
+        total_elapsed_str = (
+            self._printable_value_fmt_time(previous_sessions_time + elapsed)
+            + "(TotalElapsed)"
+        )
         if elapsed_str == total_elapsed_str:
             msg += elapsed_str
         else:
             msg += elapsed_str + "/" + total_elapsed_str
 
         if est_total_all is not None:
-            est_total_all_str = self._printable_value_fmt_time(est_total_all) + "(est_total_all)"
+            est_total_all_str = (
+                self._printable_value_fmt_time(est_total_all) + "(est_total_all)"
+            )
             # Si coincide con alguno de los anteriores, no mostrarlo
-            if est_total_all_str != elapsed_str and est_total_all_str != total_elapsed_str:
+            if (
+                est_total_all_str != elapsed_str
+                and est_total_all_str != total_elapsed_str
+            ):
                 msg += f"/{est_total_all_str}"
         else:
             msg += "/?(est_total_all)"
