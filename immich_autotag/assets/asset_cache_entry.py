@@ -24,7 +24,7 @@ class AssetCacheEntry:
     _max_age_seconds: int = 3600  # Por defecto, 1h
 
     def is_stale(self) -> bool:
-        age = (datetime.datetime.now() - self._state.loaded_at).total_seconds()
+        age = (datetime.datetime.now() - self._state.get_loaded_at()).total_seconds()
         return age > self._max_age_seconds
 
     def get_state(self) -> AssetDtoState:
@@ -35,7 +35,7 @@ class AssetCacheEntry:
         return self._state
 
     def get_loaded_at(self) -> datetime.datetime:
-        return self._state.loaded_at
+        return self._state.get_loaded_at()
 
     @classmethod
     def _from_cache_or_api(
@@ -95,7 +95,7 @@ class AssetCacheEntry:
         state = self.get_state()
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        if state.type == AssetDtoType.FULL:
+        if state.get_type() == AssetDtoType.FULL:
             return state
 
         self._reload_from_api(context)
