@@ -83,6 +83,7 @@ class AssetResponseWrapper:
     @classmethod
     def from_dto(
         cls: type["AssetResponseWrapper"],
+        *,
         dto: AssetResponseDto,
         context: "ImmichContext",
         dto_type: AssetDtoType,
@@ -111,9 +112,7 @@ class AssetResponseWrapper:
         dto = proxy_get_asset_info(asset_id, context.get_client().get_client())
         if dto is None:
             raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
-        return cls.from_dto(
-            dto, context, AssetDtoType.FULL, max_age_seconds=max_age_seconds
-        )
+        return cls.from_dto(dto=dto, context=context, dto_type=AssetDtoType.FULL)
 
     def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
