@@ -6,6 +6,7 @@ from immich_client import Client
 from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+ # Importación eliminada: AssetCacheEntry solo se usa internamente en AssetResponseWrapper
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.get_all_assets import get_all_assets
 
@@ -42,11 +43,13 @@ class AssetManager:
         """
         Returns an asset by its UUID, using the cache if available,
         or requesting it from the API and storing it if not.
-        Añade diagnóstico de llamadas totales y IDs únicos.
+        Primero consulta la caché en memoria, luego en disco, y finalmente la API.
         """
         if asset_id in self._assets:
             return self._assets[asset_id]
-        asset = AssetResponseWrapper.from_api(asset_id, context)
+
+        # Centraliza la lógica de obtención en AssetResponseWrapper
+        asset = AssetResponseWrapper.from_id(asset_id, context)
         self._assets[asset_id] = asset
         return asset
 
@@ -62,6 +65,9 @@ class AssetManager:
             return self._assets[asset_uuid]
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        wrapper = AssetResponseWrapper.from_dto(asset_dto, context, AssetDtoType.FULL)
+        entry = AssetCacheEntry._from_dto_entry(
+            dto=asset_dto, context=context, dto_type=AssetDtoType.FULL
+        )
+        wrapper = entry.to_response_wrapper(context)
         self._assets[asset_uuid] = wrapper
         return wrapper
