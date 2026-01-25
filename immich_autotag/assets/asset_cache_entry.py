@@ -1,5 +1,6 @@
+
 import datetime
-from typing import Any
+from uuid import UUID
 
 import attrs
 
@@ -39,21 +40,18 @@ class AssetCacheEntry:
     @classmethod
     def from_cache_or_api(
         cls,
-        asset_id: Any,
-        context: Any,
+        asset_id: UUID,
         max_age_seconds: int = 3600,
         use_cache: bool = True,
     ) -> "AssetCacheEntry":
         """
         Intenta cargar el asset desde la caché de disco; si no está o está corrupto, recarga desde la API y guarda en caché.
+        asset_id debe ser un UUID.
         """
         from immich_client.models.asset_response_dto import AssetResponseDto
-
         from immich_autotag.api.immich_proxy.assets import get_asset_info
-        from immich_autotag.utils.api_disk_cache import (
-            get_entity_from_cache,
-            save_entity_to_cache,
-        )
+        from immich_autotag.utils.api_disk_cache import get_entity_from_cache, save_entity_to_cache
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
         cache_data = get_entity_from_cache("assets", str(asset_id), use_cache=use_cache)
         if cache_data is not None:
@@ -64,12 +62,7 @@ class AssetCacheEntry:
             except Exception:
                 pass  # Si la caché está corrupta, recarga de API
         # Si no está en caché o está corrupto, recarga desde API
-        if context is not None and hasattr(context, "client"):
-            client = context.client
-        elif hasattr(context, "get_client"):
-            client = context.get_client()
-        else:
-            raise ValueError("Context must provide a .client or .get_client() method")
+        client = ImmichClientWrapper.get_default_instance().get_client()
         dto = get_asset_info(asset_id, client, use_cache=False)
         if dto is None:
             raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
@@ -79,14 +72,13 @@ class AssetCacheEntry:
 
     @classmethod
     def from_api(
-        cls, asset_id: Any, context: Any, max_age_seconds: int = 3600
+        cls, asset_id: UUID, max_age_seconds: int = 3600
     ) -> "AssetCacheEntry":
         """
         Crea un AssetCacheEntry cargando el asset desde la caché o la API (siempre FULL).
+        asset_id debe ser un UUID.
         """
-        return cls.from_cache_or_api(
-            asset_id, context, max_age_seconds=max_age_seconds, use_cache=True
-        )
+        return cls.from_cache_or_api(asset_id, max_age_seconds=max_age_seconds, use_cache=True)
 
     @classmethod
     def from_state(
