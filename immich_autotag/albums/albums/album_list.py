@@ -14,7 +14,7 @@ class AlbumList:
     @typechecked
     def get_by_uuid(self, uuid: str) -> AlbumResponseWrapper | None:
         for album in self._albums:
-            if album.get_album_id() == uuid:
+            if album.get_album_uuid() == uuid:
                 return album
         return None
 
@@ -22,7 +22,7 @@ class AlbumList:
     def append(self, album: AlbumResponseWrapper):
         if album in self._albums:
             raise ValueError("Album already in AlbumList (no uuid)")
-        album_id = album.get_album_id()
+        album_id = album.get_album_uuid()
         if self.get_by_uuid(album_id) is not None:
             raise ValueError(f"Album with uuid {album_id} already in AlbumList")
 
