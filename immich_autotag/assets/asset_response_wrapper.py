@@ -20,7 +20,7 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
-from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
+from immich_autotag.assets.asset_dto_state import AssetDtoState
 from immich_autotag.assets.classification_update_result import (
     ClassificationUpdateResult,
 )
@@ -69,43 +69,11 @@ class AssetResponseWrapper:
 
     def _ensure_full_asset_loaded(self) -> AssetDtoState:
         """Ensure the asset is fully loaded (type FULL) using the cache entry logic."""
-        return self._cache_entry.ensure_full_asset_loaded(self.id_as_uuid, self.get_context())
-
-    @classmethod
-    def from_dto(
-        cls: type["AssetResponseWrapper"],
-        *,
-        dto: AssetResponseDto,
-        context: "ImmichContext",
-        dto_type: AssetDtoType,
-    ) -> "AssetResponseWrapper":
-        """
-        Creates an AssetResponseWrapper from a DTO and a context.
-        Uses AssetDtoState to encapsulate the DTO and its type, wraps in AssetCacheEntry.
-        """
-        from immich_autotag.assets.asset_dto_state import AssetDtoState
-        from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
-
-        state = AssetDtoState(dto=dto, type_=dto_type)
-        cache_entry = AssetCacheEntry(state)
-        return cls(_context=context, _cache_entry=cache_entry)
-
-    @classmethod
-    def from_api(
-        cls, asset_id: UUID, context: "ImmichContext"
-    ) -> "AssetResponseWrapper":
-        """
-        Fetches the asset from the API and returns a fully constructed AssetResponseWrapper (always FULL).
-        """
-        from immich_autotag.api.immich_proxy.assets import (
-            get_asset_info as proxy_get_asset_info,
+        return self._cache_entry.ensure_full_asset_loaded(
+            self.id_as_uuid, self.get_context()
         )
-        from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        dto = proxy_get_asset_info(asset_id, context.get_client().get_client())
-        if dto is None:
-            raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
-        return cls.from_dto(dto=dto, context=context, dto_type=AssetDtoType.FULL)
+    # Métodos de construcción movidos a AssetCacheEntry
 
     def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
@@ -129,9 +97,7 @@ class AssetResponseWrapper:
         Updates the main date (created_at) of the asset using the Immich API.
         If tag_mod_report is provided, logs the modification.
         """
-        from immich_autotag.api.immich_proxy.assets import (
-            update_asset as proxy_update_asset,
-        )
+        from immich_autotag.api.immich_proxy.assets import proxy_update_asset
 
         old_date = self._cache_entry.get_state().dto.created_at
         # Ensure the date is timezone-aware in UTC
@@ -190,7 +156,7 @@ class AssetResponseWrapper:
         # If the response has an 'error' attribute and it is not None, fail fast (static access only)
         # This assumes that if present, 'error' is a public attribute of the response object
         # OPTIMIZATION: Trust the API response instead of polling with sleep().
-        # The API call to update_asset should atomically update and return the asset.
+        # The API call to proxy_update_asset should atomically update and return the asset.
         # Removed: polling loop with time.sleep(1.5s) retry logic that added 1.5-4.5s per asset
         if check_update_applied:
             if is_log_level_enabled(LogLevel.DEBUG):
@@ -246,7 +212,10 @@ class AssetResponseWrapper:
         if duplicate_id is not None:
             group = context.duplicates_collection.get_group(duplicate_id)
             for dup_id in group:
-                if not include_self and dup_id == self._cache_entry.get_state().get_uuid():
+                if (
+                    not include_self
+                    and dup_id == self._cache_entry.get_state().get_uuid()
+                ):
                     continue
                 dup_asset = context.asset_manager.get_asset(dup_id, context)
                 if dup_asset is not None:
