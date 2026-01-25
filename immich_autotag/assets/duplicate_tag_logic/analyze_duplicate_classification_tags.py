@@ -33,10 +33,10 @@ def analyze_duplicate_classification_tags(
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
-    duplicate_id = asset_wrapper.asset.duplicate_id
+    duplicate_id = asset_wrapper.get_duplicate_id_as_uuid()
     if not duplicate_id:
         log(
-            f"[DUPLICATE TAGS] Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name}) has no duplicates. Nothing to check.",
+            f"[DUPLICATE TAGS] Asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()}) has no duplicates. Nothing to check.",
             level=LogLevel.FOCUS,
         )
         return DuplicateTagAnalysisResult.NO_DUPLICATES
@@ -44,7 +44,7 @@ def analyze_duplicate_classification_tags(
     any_autofix = False
     all_equal = True
     for duplicate_wrapper in duplicate_wrappers:
-        if duplicate_wrapper.asset.id == asset_wrapper.asset.id:
+        if duplicate_wrapper.get_id() == asset_wrapper.get_id():
             continue
         log(
             f"[DUPLICATE TAGS][INFO] Duplicate asset info:\n{duplicate_wrapper.format_info()}",
@@ -68,7 +68,7 @@ def analyze_duplicate_classification_tags(
                 any_autofix = True
             else:
                 log(
-                    f"[DUPLICATE TAGS][ERROR] tag_info is None for autofix result on asset {asset_wrapper.asset.id}",
+                    f"[DUPLICATE TAGS][ERROR] tag_info is None for autofix result on asset {asset_wrapper.get_id()}",
                     level=LogLevel.ERROR,
                 )
             continue
