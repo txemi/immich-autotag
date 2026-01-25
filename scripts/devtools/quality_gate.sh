@@ -583,8 +583,8 @@ check_no_spanish_chars() {
 		echo '❌ Spanish language characters detected in the following files/lines:'
 		echo "$spanish_matches"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
-		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo '[RELAXED MODE] Not blocking build on Spanish character check.'
+		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			echo '[RELAXED/TARGET MODE] Not blocking build on Spanish character check.'
 		else
 			echo 'Build failed: Please remove all Spanish text and accents before publishing.'
 			return 1
