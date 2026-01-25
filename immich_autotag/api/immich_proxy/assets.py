@@ -33,7 +33,8 @@ from immich_client.models.update_asset_dto import UpdateAssetDto
 from immich_autotag.types import ImmichClient
 
 
-def get_asset_info(
+
+def proxy_get_asset_info(
     asset_id: UUID, client: ImmichClient, use_cache: bool = True
 ) -> AssetResponseDto | None:
     """
@@ -46,7 +47,8 @@ def get_asset_info(
     return _get_asset_info.sync(id=asset_id, client=client)
 
 
-def update_asset(
+
+def proxy_update_asset(
     asset_id: UUID, client: ImmichClient, body: UpdateAssetDto
 ) -> AssetResponseDto | None:
     """
