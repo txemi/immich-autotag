@@ -222,17 +222,19 @@ class AlbumCollectionWrapper:
         Returns True if marked. Raises if already deleted or not present.
         """
         if (
-            self._ensure_fully_loaded()._albums.get_by_id(album_wrapper.get_album_id())
+            self._ensure_fully_loaded()._albums.get_by_id(
+                album_wrapper.get_album_uuid()
+            )
             is None
         ):
             raise RuntimeError(
                 f"Album '{album_wrapper.get_album_name()}' "
-                f"(id={album_wrapper.get_album_id()}) is not present in the collection."
+                f"(id={album_wrapper.get_album_uuid()}) is not present in the collection."
             )
         if album_wrapper.is_deleted():
             raise RuntimeError(
                 f"Album '{album_wrapper.get_album_name()}' "
-                f"(id={album_wrapper.get_album_id()}) is already deleted."
+                f"(id={album_wrapper.get_album_uuid()}) is already deleted."
             )
         album_wrapper.mark_deleted()
         self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
@@ -254,7 +256,7 @@ class AlbumCollectionWrapper:
             if not is_temporary_album(album_wrapper.get_album_name()):
                 raise RuntimeError(
                     f"Integrity check failed: album '{album_wrapper.get_album_name()}' "
-                    f"(id={album_wrapper.get_album_id()}) is not temporary but was "
+                    f"(id={album_wrapper.get_album_uuid()}) is not temporary but was "
                     f"passed to _remove_empty_temporary_albums."
                 )
 
@@ -383,7 +385,7 @@ class AlbumCollectionWrapper:
             from immich_autotag.logging.utils import log
 
             log(
-                f"[ALBUM REMOVAL] Album {album_wrapper.get_album_id()} ('"
+                f"[ALBUM REMOVAL] Album {album_wrapper.get_album_uuid()} ('"
                 f"{album_wrapper.get_album_name()}') removed from collection "
                 f"(local, not_found cleanup).",
                 level=LogLevel.FOCUS,
@@ -446,7 +448,7 @@ class AlbumCollectionWrapper:
 
         This updates internal counters and triggers a global policy evaluation.
         """
-        album_id = album_wrapper.get_album_id()
+        album_id = album_wrapper.get_album_uuid()
 
         # Use wrapper identity (by album id) for membership; avoid double-counting
         added = self._unavailable.add(album_wrapper)
@@ -533,7 +535,7 @@ class AlbumCollectionWrapper:
             if not wrapper.is_duplicate_album():
                 raise RuntimeError(
                     f"Refusing to delete album "
-                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_id()}): "
+                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}): "
                     "not a temporary or duplicate album."
                 )
         # Remove locally first to avoid errors if already deleted
@@ -573,13 +575,13 @@ class AlbumCollectionWrapper:
                     err_reason = "Permission denied"
             log(
                 f"Failed to delete album "
-                f"'{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). "
+                f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}). "
                 f"Reason: {err_reason}. Exception: {msg}",
                 level=LogLevel.WARNING,
             )
             raise RuntimeError(
                 f"Failed to delete album "
-                f"'{wrapper.get_album_name()}' (id={wrapper.get_album_id()}). "
+                f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}). "
                 f"Reason: {err_reason}."
             ) from exc
         from immich_autotag.report.modification_kind import ModificationKind
@@ -647,8 +649,8 @@ class AlbumCollectionWrapper:
             error_message=f"duplicate album name encountered: {name}",
             error_category="DUPLICATE_ALBUM",
             extra={
-                "existing_id": existing.get_album_id(),
-                "incoming_id": incoming_album.get_album_id(),
+                "existing_id": existing.get_album_uuid(),
+                "incoming_id": incoming_album.get_album_uuid(),
             },
         )
         return
