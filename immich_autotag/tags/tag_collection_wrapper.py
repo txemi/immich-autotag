@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import attrs
 from typeguard import typechecked
 
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from immich_autotag.types import ImmichClient
 
-_tag_collection_singleton: TagCollectionWrapper | None = None
+_tag_collection_singleton: "TagCollectionWrapper | None" = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
