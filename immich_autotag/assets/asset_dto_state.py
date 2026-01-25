@@ -101,3 +101,25 @@ class AssetDtoState:
 
     def get_original_file_name(self) -> str:
         return self._dto.original_file_name
+
+    def to_cache_dict(self) -> dict:
+        """
+        Serializa el estado a un diccionario, incluyendo loaded_at en formato ISO.
+        """
+        return {
+            "dto": self._dto.to_dict() if hasattr(self._dto, "to_dict") else self._dto,
+            "type": self._type.value,
+            "loaded_at": self._loaded_at.isoformat(),
+        }
+
+    @classmethod
+    def from_cache_dict(cls, data: dict) -> "AssetDtoState":
+        """
+        Reconstruye el estado desde un diccionario serializado.
+        """
+        from immich_client.models.asset_response_dto import AssetResponseDto
+
+        dto = AssetResponseDto.from_dict(data["dto"])
+        type_ = AssetDtoType(data["type"])
+        loaded_at = datetime.fromisoformat(data["loaded_at"])
+        return cls(_dto=dto, _type=type_, _loaded_at=loaded_at)
