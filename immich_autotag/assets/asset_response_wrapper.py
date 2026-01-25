@@ -17,6 +17,9 @@ from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+from immich_autotag.assets.asset_cache_entry import (
+    AssetCacheEntry,
+)
 from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
 from immich_autotag.assets.classification_update_result import (
     ClassificationUpdateResult,
@@ -51,9 +54,9 @@ class AssetResponseWrapper:
     _context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(ImmichContext)
     )
-    _state: AssetDtoState = attrs.field()
+    _cache_entry: AssetCacheEntry = attrs.field()
 
-    # NOTE: The rest of the methods will continue using self._state. No reordering or logic changes yet.
+    # El resto de métodos usará self._cache_entry.get_state() en vez de self._state directamente.
 
     def __attrs_post_init__(self) -> None:
         # Use isinstance for type validation, which is more robust and preferred
@@ -108,7 +111,9 @@ class AssetResponseWrapper:
         dto = proxy_get_asset_info(asset_id, context.client)
         if dto is None:
             raise RuntimeError(f"get_asset_info returned None for asset id={asset_id}")
-        return cls.from_dto(dto, context, AssetDtoType.FULL)
+        return cls.from_dto(
+            dto, context, AssetDtoType.FULL, max_age_seconds=max_age_seconds
+        )
 
     def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
@@ -543,8 +548,7 @@ class AssetResponseWrapper:
     def original_path(self) -> "Path":
         from pathlib import Path
 
-        path = Path(self._state.dto.original_path)
-
+        path = Path(self._cache_entry.get_state().dto.original_path)
         return path
 
     @property
@@ -556,7 +560,7 @@ class AssetResponseWrapper:
 
         from immich_client.types import Unset
 
-        val = self._state.dto.duplicate_id
+        val = self._cache_entry.get_state().dto.duplicate_id
         if val is None or isinstance(val, Unset):
             return None
         try:
