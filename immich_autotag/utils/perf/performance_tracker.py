@@ -220,20 +220,16 @@ class PerformanceTracker:
 
     @typechecked
     def _format_perf_progress(self, count: int, elapsed: float) -> str:
-
         avg = self._printable_value_avg(count, elapsed)
         total_to_process = self._printable_value_total_to_process()
         skip_n = self._printable_value_skip_n()
-        # Removed unused variable assignment for total_assets
         previous_sessions_time = self._printable_value_previous_sessions_time()
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
-        # est_total_session = self._printable_value_est_total_session(count, elapsed)  # Unused
         est_remaining_session = self._printable_value_est_remaining_session(
             count, elapsed
         )
         est_total_all = self._printable_value_est_total_all(count, elapsed)
-        # est_remaining_all = self._printable_value_est_remaining_all(count, elapsed, previous_sessions_time)  # Unused
 
         from immich_autotag.logging.utils import log_trace
 
@@ -241,22 +237,33 @@ class PerformanceTracker:
             f"PROGRESS-LINE: count={count}, total_to_process={total_to_process}, "
             f"abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
         )
-        msg = f"Processed:{count}"
-        if total_to_process:
-            msg += f"/{total_to_process}(total_to_process)"
 
-        msg += f"/{abs_count}(abs_count)"
-        if abs_total:
+        # Construcción de la línea de progreso
+        msg = "Processed:"
+        # Mostrar solo abs_count si es igual a count
+        if abs_count == count:
+            msg += f"{abs_count}"
+        else:
+            msg += f"{count}/{abs_count}(abs_count)"
+
+        # Mostrar solo abs_total si es igual a total_to_process y existe
+        if abs_total and total_to_process and abs_total == total_to_process:
             msg += f"/{abs_total}(abs_total)"
+        elif total_to_process:
+            msg += f"/{total_to_process}(total_to_process)"
+            if abs_total:
+                msg += f"/{abs_total}(abs_total)"
 
-        # Always print skip_n
-        msg += f" Skip:{skip_n}"
+        # Solo mostrar skip si es distinto de cero
+        if skip_n:
+            msg += f" Skip:{skip_n}"
 
-        # Progress percentage
+        # Porcentaje
         if abs_total and abs_total > 0:
             percent = 100.0 * abs_count / abs_total
             msg += f" [{percent:.2f}%]"
 
+        # Remaining
         if est_remaining_session is not None:
             msg += (
                 f" Remaining:{self._printable_value_fmt_time(est_remaining_session)}/"
@@ -265,10 +272,7 @@ class PerformanceTracker:
             msg += " Remaining:?/"
 
         msg += f"{self._printable_value_fmt_time(elapsed)}(Elapsed)"
-        msg += (
-            f"/{self._printable_value_fmt_time(previous_sessions_time + elapsed)}"
-            "(TotalElapsed)"
-        )
+        msg += f"/{self._printable_value_fmt_time(previous_sessions_time + elapsed)}(TotalElapsed)"
 
         if est_total_all is not None:
             msg += f"/{self._printable_value_fmt_time(est_total_all)}(est_total_all)"
@@ -276,7 +280,6 @@ class PerformanceTracker:
             msg += "/?(est_total_all)"
 
         msg += f" Average: {avg:.3f} s"
-
         return msg
 
     @typechecked
