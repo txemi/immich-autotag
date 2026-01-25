@@ -38,7 +38,7 @@ class AssetCacheEntry:
         return self._state.get_loaded_at()
 
     @classmethod
-    def _from_cache_or_api(
+    def from_cache_or_api(
         cls,
         asset_id: UUID,
         *,
