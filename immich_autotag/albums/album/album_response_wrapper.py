@@ -901,8 +901,11 @@ class AlbumResponseWrapper:
     @classmethod
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
+        from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
+        from immich_autotag.albums.album.album_dto_state import AlbumDtoState
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
-        return cls(state=state)
+        cache_entry = AlbumCacheEntry(dto=state)
+        return cls(cache_entry=cache_entry)
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible."""
