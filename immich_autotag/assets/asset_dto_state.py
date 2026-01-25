@@ -101,6 +101,7 @@ class AssetDtoState:
         for tag in tags:
             # Robust type check
             from immich_client.models.tag_response_dto import TagResponseDto
+
             if not isinstance(tag, TagResponseDto):
                 raise TypeError(
                     f"Tag en tags no es del tipo esperado TagResponseDto, sino {type(tag)}. Asset: {self._dto.id}"
