@@ -944,12 +944,12 @@ class AlbumCollectionWrapper:
         return wrapper
 
     @classmethod
-    def resync_from_api_class(cls, client: "ImmichClient") -> None:
+    def resync_from_api_class(cls) -> None:
         """
         Class wrapper to maintain compatibility: calls the instance method on the singleton.
         """
         instance = cls.get_instance()
-        instance.resync_from_api(client)
+        instance.resync_from_api()
 
     @typechecked
     def find_album_by_id(self, album_id: UUID) -> AlbumResponseWrapper | None:
@@ -962,9 +962,7 @@ class AlbumCollectionWrapper:
         return None
 
     @typechecked
-    def resync_from_api(
-        self, client: "ImmichClient" = None, clear_first: bool = True
-    ) -> None:
+    def resync_from_api(self, clear_first: bool = True) -> None:
         """
         Reloads the album collection from the API, same as from_client but on the current instance.
         - Downloads all albums from the API (initially without assets).
@@ -979,10 +977,7 @@ class AlbumCollectionWrapper:
 
         # Set sync state to SYNCING at the start
         self._sync_state = SyncState.SYNCING
-        if client is None:
-            from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-
-            client = ImmichClientWrapper.get_default_instance().get_client()
+        client = self.get_client()
         tag_mod_report = ModificationReport.get_instance()
         assert isinstance(tag_mod_report, ModificationReport)
 
@@ -1048,13 +1043,13 @@ class AlbumCollectionWrapper:
         return len(list(names)) > 1
 
     @classmethod
-    def from_client(cls, client: "ImmichClient") -> "AlbumCollectionWrapper":
+    def from_client(cls) -> "AlbumCollectionWrapper":
         """
-        Instantiates the singleton and loads albums from the API using the provided client.
+        Instantiates the singleton and loads albums from the API using the default client.
         Returns the singleton instance.
         """
         instance = cls()
-        instance.resync_from_api(client=client)
+        instance.resync_from_api()
         return instance
 
     def __len__(self) -> int:
