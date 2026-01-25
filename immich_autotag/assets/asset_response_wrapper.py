@@ -813,7 +813,7 @@ class AssetResponseWrapper:
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
         if rule_set.matches_any_album_of_asset(self):
             return None
-        analyzer = AlbumFolderAnalyzer(self.original_path)
+        analyzer = AlbumFolderAnalyzer(self.get_original_path())
         album_name = analyzer.get_album_name()
 
         # Check if there's a conflict (multiple candidate folders) and ensure tag symmetry
@@ -878,12 +878,12 @@ class AssetResponseWrapper:
         """
 
         context = self.get_context()
-        duplicate_id = self.duplicate_id_as_uuid
+        duplicate_id = self.get_duplicate_id_as_uuid()
         wrappers = []
         if duplicate_id is not None:
             group = context.duplicates_collection.get_group(duplicate_id)
             for dup_id in group:
-                if str(dup_id) == self._state.dto.id:
+                if dup_id == self.get_uuid():
                     continue
                 dup_asset = context.asset_manager.get_asset(dup_id, context)
                 if dup_asset is not None:
