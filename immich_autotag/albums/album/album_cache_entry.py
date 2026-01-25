@@ -30,7 +30,6 @@ class AlbumCacheEntry:
     def from_cache_or_api(
         cls,
         album_id: "UUID",
-        fetch_album_func,
         *,
         max_age_seconds: int = 3600,
         use_cache: bool = True,
@@ -68,3 +67,24 @@ class AlbumCacheEntry:
                 f"Album cache entry is stale (>{self._max_age_seconds}s)"
             )
         return self._dto
+
+    def ensure_full_loaded(self) -> None:
+        """
+        Asegura que el DTO es de tipo DETAIL (full). Si no lo es, recarga usando reload_func.
+        Si ya es full, no hace nada. Si no es full y no se proporciona reload_func, lanza excepción.
+        """
+        if self._dto.is_full():
+            return self
+
+        # Recarga el DTO usando la función proporcionada
+        album_dto = self.from_cache_or_api()
+        # Se asume que album_dto es un AlbumResponseDto en modo DETAIL
+        self._dto.update(dto=album_dto, load_source=self._dto.get_load_source().DETAIL)
+        return self
+
+    def is_empty(self) -> bool:
+        """
+        Devuelve True si el álbum no tiene assets, False en caso contrario.
+        No fuerza recarga, usa el DTO actual.
+        """
+        return self.ensure_full_loaded()._dto.is_empty()

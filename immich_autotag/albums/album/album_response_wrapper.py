@@ -230,7 +230,6 @@ class AlbumResponseWrapper:
             self.get_default_client()
         )._cache_entry.is_empty()
         return assets
-    
 
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
