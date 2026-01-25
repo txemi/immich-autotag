@@ -40,12 +40,10 @@ class AssetDtoState:    """
                 raise TypeError(f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}")
         # Si se amplían los tipos, añadir más comprobaciones aquí
 
-    @property
-    def type(self) -> AssetDtoType:
+    def get_type(self) -> AssetDtoType:
         return self._type
 
-    @property
-    def loaded_at(self) -> datetime:
+    def get_loaded_at(self) -> datetime:
         return self._loaded_at
 
     def update(self, *, dto: AssetResponseDto, type_: AssetDtoType) -> None:
