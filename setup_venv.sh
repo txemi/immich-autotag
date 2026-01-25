@@ -3,9 +3,35 @@
 # Robust script to create virtual environment, install dependencies, and generate/install the local client
 # Automatically detects Immich server version and downloads the matching OpenAPI spec
 # Always operates from the repository root, regardless of the invocation directory
-# Usage: source setup_venv.sh
+
+# Usage:
+#   ./setup_venv.sh [--clean]
+#   --clean   Borra .venv e immich-client antes de crear entorno y cliente
+
 
 set -e
+
+# Parse arguments
+CLEAN=0
+SHOW_HELP=0
+for arg in "$@"; do
+    case $arg in
+        --clean)
+            CLEAN=1
+            ;;
+        --help|-h)
+            SHOW_HELP=1
+            ;;
+    esac
+done
+
+if [ "$SHOW_HELP" = "1" ]; then
+    echo "Uso: $0 [--clean] [--help]"
+    echo "  --clean   Borra .venv e immich-client antes de crear entorno y cliente."
+    echo "  --help    Muestra esta ayuda y termina."
+    exit 0
+fi
+
 
 # Determine the repository root (where this script is located)
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,6 +40,13 @@ cd "$REPO_ROOT"
 VENV_DIR="$REPO_ROOT/.venv"
 CLIENT_DIR="$REPO_ROOT/immich-client"
 CONFIG_FILE="$HOME/.config/immich_autotag/config.py"
+
+# Clean if requested
+if [ "$CLEAN" = "1" ]; then
+    echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
+    rm -rf "$VENV_DIR" "$CLIENT_DIR"
+    echo "Limpieza completada."
+fi
 
 # Function to extract config value from Python file
 extract_config() {
