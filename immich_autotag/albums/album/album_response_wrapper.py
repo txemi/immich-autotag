@@ -238,7 +238,7 @@ class AlbumResponseWrapper:
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> None:
-        self._state.update(dto, load_source)
+        self._state.update(dto=dto, load_source=load_source)
         self.invalidate_cache()
 
     @typechecked
