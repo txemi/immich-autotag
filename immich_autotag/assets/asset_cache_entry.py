@@ -119,23 +119,21 @@ class AssetCacheEntry:
         """
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
+        asset_id = self._state.id  # Se asume que el DTO tiene un atributo id
         refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
         self._state = refreshed_entry.get_state()
-        refreshed = AssetResponseWrapper.from_api(asset_id, context)
-        self._state = refreshed._cache_entry.get_state()
         return self
 
     @classmethod
     def _from_dto_entry(
         cls,
         *,
-        dto,
-        context,
-        dto_type,
+        dto: "AssetResponseDto",  # Usa el tipo real del DTO si está disponible
+        dto_type: AssetDtoType,
         max_age_seconds: int = 3600,
     ) -> "AssetCacheEntry":
         """
-        Crea un AssetCacheEntry a partir de un DTO y tipo, con contexto opcional.
+        Crea un AssetCacheEntry a partir de un DTO y tipo.
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
@@ -146,7 +144,7 @@ class AssetCacheEntry:
     def _from_api_entry(
         cls,
         asset_id: UUID,
-        context,
+        context: "ImmichContext",
         max_age_seconds: int = 3600,
     ) -> "AssetCacheEntry":
         """
@@ -164,7 +162,6 @@ class AssetCacheEntry:
             )
         return cls._from_dto_entry(
             dto=dto,
-            context=context,
             dto_type=AssetDtoType.FULL,
             max_age_seconds=max_age_seconds,
         )
