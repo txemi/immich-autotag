@@ -29,15 +29,14 @@ class AssetCacheEntry:
         age = (datetime.datetime.now() - self._state.get_loaded_at()).total_seconds()
         return age > self._max_age_seconds
 
-    def get_state(self) -> AssetDtoState:
-        if self.is_stale():
-            raise StaleAssetCacheError(
-                f"Asset cache entry is stale (>{self._max_age_seconds}s)"
-            )
+    def _get_state(self) -> AssetDtoState:
+        # Private: ensures freshness before returning the internal state
+        self._ensure_fresh(ImmichContext.get_default_instance())
         return self._state
 
     def get_loaded_at(self) -> datetime.datetime:
-        return self._state.get_loaded_at()
+        # Use the private _get_state to ensure freshness
+        return self._get_state().get_loaded_at()
 
     @classmethod
     def from_cache_or_api(
@@ -96,7 +95,7 @@ class AssetCacheEntry:
         """
         Ensures the asset is fully loaded (type FULL). If not, fetches from API and updates the cache entry.
         """
-        state = self.get_state()
+        state = self._get_state()
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
         if state.get_type() == AssetDtoType.FULL:
@@ -111,7 +110,7 @@ class AssetCacheEntry:
         """
         asset_id = self._state.id  # Se asume que el DTO tiene un atributo id
         refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
-        self._state = refreshed_entry.get_state()
+        self._state = refreshed_entry._get_state()
         return self
 
     @classmethod
@@ -160,6 +159,14 @@ class AssetCacheEntry:
         """
         Returns the names of the tags associated with this asset, or an empty list if not available.
         """
-        full = self._ensure_full_asset_loaded(ImmichContext.get_default_instance())
-        state = full._state
-        return state._state.get_tag_names()
+        state = self._get_state()
+        return state.get_tag_names()
+
+    def _ensure_fresh(self, context: "ImmichContext") -> "AssetCacheEntry":
+        """
+        Ensures the cache entry is fresh. If stale, reloads from API and updates self.
+        Always returns self for convenience. Intended for internal use only.
+        """
+        if self.is_stale():
+            self._reload_from_api(context)
+        return self
