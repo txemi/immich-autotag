@@ -824,7 +824,7 @@ class AssetResponseWrapper:
         return album_name
 
     def get_id_as_uuid(self) -> "UUID":
-        return self._cache_entry.get_state().get_uuid()
+        return self._cache_entry.get_uuid()
 
     @typechecked
     def has_same_classification_tags_as(self, *, other: "AssetResponseWrapper") -> bool:
