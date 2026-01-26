@@ -7,7 +7,7 @@ from immich_autotag.duplicates.duplicates_cache_constants import (
     DUPLICATES_CACHE_FILENAME,
 )
 from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
-from immich_autotag.utils.run_output_dir import find_recent_run_dirs
+from immich_autotag.run_output.run_output_dir import find_recent_run_dirs
 
 
 @typechecked

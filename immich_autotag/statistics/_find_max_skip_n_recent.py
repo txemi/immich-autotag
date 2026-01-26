@@ -6,7 +6,7 @@ from typeguard import typechecked
 
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
-from immich_autotag.utils.run_output_dir import get_run_output_dir
+from immich_autotag.run_output.run_output_dir import get_run_output_dir
 
 
 @typechecked

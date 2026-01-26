@@ -4,7 +4,7 @@ import datetime
 import os
 import threading
 import time
-from immich_autotag.utils.run_output_dir import get_run_output_dir
+from immich_autotag.run_output.run_output_dir import get_run_output_dir
 
 
 def setup_tracemalloc_snapshot():
