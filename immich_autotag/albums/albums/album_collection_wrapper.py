@@ -639,7 +639,7 @@ class AlbumCollectionWrapper:
                 album_name=name,
                 existing_album=existing,
                 incoming_album=incoming_album,
-                note="duplicate skipped durante carga inicial",
+                    note="duplicate skipped during initial load",
             )
         )
         from immich_autotag.report.modification_kind import ModificationKind
@@ -690,7 +690,7 @@ class AlbumCollectionWrapper:
 
             else:
                 if old_tested_mode:
-                    # no podemos usar esto, no tenemos
+                        # we cannot use this, we do not have
                     # Combine all duplicates into one
                     surviving_album = self.combine_duplicate_albums(
                         list(self.find_all_albums_with_name(name)),
@@ -986,7 +986,7 @@ class AlbumCollectionWrapper:
             self._sync_state = SyncState.NOT_STARTED
             raise RuntimeError("Failed to fetch albums: API returned None")
 
-        # Limpiar duplicados previos antes de recargar
+            # Clear previous duplicates before reloading
         self._collected_duplicates.clear()
 
         log(

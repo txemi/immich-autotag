@@ -18,8 +18,8 @@ class StaleAssetCacheError(Exception):
 @attrs.define(auto_attribs=True, slots=True)
 class AssetCacheEntry:
     """
-    Encapsula el estado cacheado de un asset, con lógica de frescura y recarga.
-    Los atributos son privados; acceso solo mediante métodos públicos.
+    Encapsulates the cached state of an asset, with freshness and reload logic.
+    Attributes are private; access only via public methods.
     """
 
     _state: AssetDtoState
@@ -48,8 +48,8 @@ class AssetCacheEntry:
         use_cache: bool = True,
     ) -> "AssetCacheEntry":
         """
-        Intenta cargar el asset desde la caché de disco; si no está o está corrupto, recarga desde la API y guarda en caché.
-        asset_id debe ser un UUID.
+        Attempts to load the asset from disk cache; if not present or corrupted, reloads from the API and saves to cache.
+        asset_id must be a UUID.
         """
 
         from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
@@ -67,8 +67,8 @@ class AssetCacheEntry:
             entry = cls(state=state, max_age_seconds=max_age_seconds)
             if not entry.is_stale():
                 return entry
-        # Si la caché está caducada o no existe, recarga desde API
-        # Si no está en caché o está corrupto, recarga desde API
+        # If the cache is expired or does not exist, reload from API
+        # If not in cache or corrupted, reload from API
         client = ImmichClientWrapper.get_default_instance().get_client()
         dto = proxy_get_asset_info(asset_id, client, use_cache=False)
         if dto is None:
@@ -90,7 +90,7 @@ class AssetCacheEntry:
         """
         return cls(_state=state, _max_age_seconds=max_age_seconds)
 
-    # Eliminados los métodos to_cache_dict y from_cache_dict: la caché serializa solo AssetDtoState
+    # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 
     def ensure_full_asset_loaded(self, context: "ImmichContext") -> AssetDtoState:
         """
@@ -118,7 +118,7 @@ class AssetCacheEntry:
     def _from_dto_entry(
         cls,
         *,
-        dto: "AssetResponseDto",  # Usa el tipo real del DTO si está disponible
+        dto: "AssetResponseDto",  # Use the real DTO type if available
         dto_type: AssetDtoType,
         max_age_seconds: int = 3600,
     ) -> "AssetCacheEntry":
@@ -138,7 +138,7 @@ class AssetCacheEntry:
         max_age_seconds: int = 3600,
     ) -> "AssetCacheEntry":
         """
-        Crea un AssetCacheEntry cargando el asset desde la API (siempre FULL).
+        Creates an AssetCacheEntry by loading the asset from the API (always FULL).
         """
         from immich_autotag.api.immich_proxy.assets import (
             proxy_get_asset_info,
