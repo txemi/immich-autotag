@@ -1,4 +1,5 @@
 from typing import Iterator
+from uuid import UUID
 
 import attrs
 from typeguard import typechecked
