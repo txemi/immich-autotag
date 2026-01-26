@@ -65,7 +65,7 @@ class ClassificationRuleWrapper:
         """
         Returns a MatchResult for this rule and the given asset (with lists of matching tags, albums, and asset_links), or None if no match.
         """
-        # Importación local para evitar ciclo
+        # Local import to avoid cycle
         from immich_autotag.classification.match_result import MatchResult
 
         asset_tags = set(asset_wrapper.get_tag_names())

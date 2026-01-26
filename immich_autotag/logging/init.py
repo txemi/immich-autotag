@@ -19,7 +19,7 @@ def initialize_logging() -> None:
     manager = ConfigManager.get_instance()
     filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
 
-    # --- Lógica de forzado de log para desarrollo/CI ---
+    # --- Forced logging logic for development/CI ---
     if FORCED_LOG_LEVEL is not None:
         # FORCED_LOG_LEVEL es LogLevel (enum), se pasa directamente
         setup_logging(level=FORCED_LOG_LEVEL)

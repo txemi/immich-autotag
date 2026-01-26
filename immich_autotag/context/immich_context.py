@@ -57,7 +57,7 @@ class ImmichContext:
 
     def __attrs_post_init__(self):
         global _instance, _instance_created
-        # Validación explícita de tipos para evitar problemas de importación circular
+        # Explicit type validation to avoid circular import issues
         from immich_autotag.albums.albums.album_collection_wrapper import (
             AlbumCollectionWrapper,
         )

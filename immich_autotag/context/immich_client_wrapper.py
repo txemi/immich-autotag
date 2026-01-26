@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from immich_autotag.types import ImmichClient
 
-# Singleton de módulo
+# Module singleton
 _singleton: "ImmichClientWrapper | None" = None
 
 

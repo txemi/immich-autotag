@@ -57,7 +57,7 @@ class AssetResponseWrapper:
     )
     _cache_entry: AssetCacheEntry = attrs.field()
 
-    # El resto de métodos usará self._cache_entry.get_state() en vez de self._state directamente.
+    # The rest of the methods will use self._cache_entry.get_state() instead of self._state directly.
 
     def __attrs_post_init__(self) -> None:
         # Use isinstance for type validation, which is more robust and preferred
@@ -72,7 +72,7 @@ class AssetResponseWrapper:
         """Ensure the asset is fully loaded (type FULL) using the cache entry logic."""
         return self._cache_entry.ensure_full_asset_loaded(self.get_context())
 
-    # Métodos de construcción movidos a AssetCacheEntry
+    # Construction methods moved to AssetCacheEntry
 
     def get_tags(self) -> list[TagResponseDto] | Unset:
         """Lazy-load tags if not present in the current asset.
@@ -855,7 +855,7 @@ class AssetResponseWrapper:
     def get_uuid(self) -> UUID:
         return self._cache_entry.get_state().get_uuid()
 
-    # Eliminado método duplicado get_album_names (F811)
+    # Removed duplicate method get_album_names (F811)
 
     @typechecked
     def get_duplicate_wrappers(self) -> list["AssetResponseWrapper"]:
@@ -1057,7 +1057,7 @@ class AssetResponseWrapper:
         cls, asset_id: UUID, context: "ImmichContext"
     ) -> "AssetResponseWrapper":
         """
-        Obtiene un AssetResponseWrapper por ID, delegando la lógica de obtención a AssetCacheEntry._from_cache_or_api.
+        Gets an AssetResponseWrapper by ID, delegating the retrieval logic to AssetCacheEntry._from_cache_or_api.
         """
         from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 

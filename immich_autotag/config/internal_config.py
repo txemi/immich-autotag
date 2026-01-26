@@ -37,8 +37,8 @@ MERGE_DUPLICATE_ALBUMS_ENABLED = (
 
 # ==================== LOGGING CONTROL FOR DEVELOPMENT/CI ====================
 # If set to a log level string (e.g., 'DEBUG', 'INFO', 'PROGRESS', 'FOCUS'),
-# this will force the global log level for the app, ignorando cualquier otra lógica.
+# this will force the global log level for the app, ignoring any other logic.
 # If None, normal logic applies.
 FORCED_LOG_LEVEL = (
     LogLevel.DEBUG
-)  # Cambia a 'DEBUG' para forzar log masivo en desarrollo/CI
+)  # Change to 'DEBUG' to force massive logging in development/CI

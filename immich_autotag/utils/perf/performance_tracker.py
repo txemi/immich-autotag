@@ -68,14 +68,14 @@ class PerformanceTracker:
             raise ValueError(
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
             )
-        # --- CONDICIÓN CRAZY EN CONSTRUCTOR ---
+        # --- CRAZY CONDITION IN CONSTRUCTOR ---
         if (
             DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
             and self._total_assets is not None
             and self._total_assets < 1000
         ):
             raise Exception(
-                "Modo CRAZY_DEBUG: total_assets demasiado bajo (<100000) en inicialización del PerformanceTracker"
+                "CRAZY_DEBUG mode: total_assets too low (<100000) during PerformanceTracker initialization"
             )
 
     @typechecked
@@ -243,14 +243,14 @@ class PerformanceTracker:
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
 
-        # --- CONDICIÓN CRAZY ---
-        # Si el modo es CRAZY_DEBUG, abs_total no es None y abs_total < 200000, lanzar excepción
+        # --- CRAZY CONDITION ---
+        # If mode is CRAZY_DEBUG, abs_total is not None and abs_total < 200000, raise exception
         if (
             DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
             and abs_total is not None
             and abs_total < 1000
         ):
-            raise Exception("Modo CRAZY_DEBUG: abs_total demasiado bajo (<200000)")
+            raise Exception("CRAZY_DEBUG mode: abs_total too low (<200000)")
 
         est_remaining_session = self._printable_value_est_remaining_session(
             count, elapsed
@@ -264,15 +264,15 @@ class PerformanceTracker:
             f"abs_count={abs_count}, abs_total={abs_total}, skip_n={skip_n}"
         )
 
-        # Construcción de la línea de progreso
+        # Progress line construction
         msg = "Processed:"
-        # Mostrar solo abs_count si es igual a count
+        # Show only abs_count if it is equal to count
         if abs_count == count:
             msg += f"{abs_count}"
         else:
             msg += f"{count}/{abs_count}(abs_count)"
 
-        # Mostrar solo abs_total si es igual a total_to_process y existe
+        # Show only abs_total if it is equal to total_to_process and exists
         if abs_total and total_to_process and abs_total == total_to_process:
             msg += f"/{abs_total}(abs_total)"
         elif total_to_process:
@@ -280,12 +280,12 @@ class PerformanceTracker:
             if abs_total:
                 msg += f"/{abs_total}(abs_total)"
 
-        # Porcentaje (ahora justo tras el contador principal)
+        # Percentage (now right after the main counter)
         if abs_total and abs_total > 0:
             percent = 100.0 * abs_count / abs_total
             msg += f" [{percent:.2f}%]"
 
-        # Solo mostrar skip si es distinto de cero
+        # Show skip only if it is different from zero
         if skip_n:
             msg += f" Skip:{skip_n}"
 
@@ -297,7 +297,7 @@ class PerformanceTracker:
         else:
             msg += " Remaining:?/"
 
-        # Tiempos: ocultar uno si son iguales (con tolerancia numérica)
+        # Times: hide one if they are equal (with numerical tolerance)
         elapsed_val = elapsed
         total_elapsed_val = previous_sessions_time + elapsed
         elapsed_str = self._printable_value_fmt_time(elapsed) + "(Elapsed)"

@@ -50,7 +50,7 @@ class AssetDtoState:
     _loaded_at: datetime = attrs.field(factory=datetime.now)
 
     def __attrs_post_init__(self):
-        # Comprobación defensiva del tipo de tags según el endpoint de la API usado
+        # Defensive check of the type of tags according to the API endpoint used
         tags = getattr(self._dto, "tags", None)
         if self._api_endpoint_source == AssetDtoType.FULL:
             if (
@@ -59,7 +59,7 @@ class AssetDtoState:
                 and not isinstance(tags, Unset)
             ):
                 raise TypeError(
-                    f"En modo FULL, tags debe ser una lista o Unset, pero es {type(tags)}"
+                    f"In FULL mode, tags must be a list or Unset, but it is {type(tags)}"
                 )
         elif self._api_endpoint_source == AssetDtoType.PARTIAL:
             if (
@@ -70,7 +70,7 @@ class AssetDtoState:
                 raise TypeError(
                     f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}"
                 )
-        # Si se amplían los tipos, añadir más comprobaciones aquí
+        # If more types are added, add more checks here
 
     def get_type(self) -> AssetDtoType:
         return self._api_endpoint_source
@@ -135,7 +135,7 @@ class AssetDtoState:
 
     def has_tag(self, tag_name: str) -> bool:
         """
-        Devuelve True si el asset tiene un tag con ese nombre (case-insensitive), False si no.
+        Returns True if the asset has a tag with that name (case-insensitive), False otherwise.
         """
         tag_names = self.get_tag_names()
         return any(tn.lower() == tag_name.lower() for tn in tag_names)
@@ -159,7 +159,7 @@ class AssetDtoState:
     @classmethod
     def from_cache_dict(cls, data: dict[str, object]) -> "AssetDtoState":
         """
-        Reconstruye el estado desde un diccionario serializado.
+        Reconstructs the state from a serialized dictionary.
         """
         from immich_client.models.asset_response_dto import AssetResponseDto
 
@@ -172,18 +172,18 @@ class AssetDtoState:
 
     def get_tag_names(self) -> list[str]:
         """
-        Devuelve los nombres de los tags asociados a este asset, o una lista vacía si no hay tags.
+        Returns the names of the tags associated with this asset, or an empty list if there are no tags.
         """
         tag_wrappers = self.get_tags()
         return [tag_wrapper.get_name() for tag_wrapper in tag_wrappers]
 
     def get_self_if_full(self) -> "AssetDtoState":
         """
-        Devuelve self solo si el estado es FULL, si no lanza una excepción.
+        Returns self only if the state is FULL, otherwise raises an exception.
         """
         if self.get_type() == AssetDtoType.FULL:
             return self
-        raise RuntimeError("AssetDtoState no es FULL; operación no permitida.")
+        raise RuntimeError("AssetDtoState is not FULL; operation not allowed.")
     def get_is_favorite(self) -> bool:
         """
         Returns True if the asset is marked as favorite, False otherwise.

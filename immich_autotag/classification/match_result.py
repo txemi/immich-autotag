@@ -15,7 +15,7 @@ class MatchResult:
     rule: "ClassificationRuleWrapper" = attr.ib(
         validator=attr.validators.instance_of(
             object
-        )  # No se puede validar el tipo real aquí por el ciclo
+        )  # Cannot validate the real type here due to the cycle
     )
     tags_matched: list[str] = attr.ib(
         factory=list,
