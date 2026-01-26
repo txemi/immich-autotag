@@ -215,6 +215,21 @@ class StatisticsManager:
                 count=0,
                 git_describe_runtime=git_describe_runtime,
                 git_describe_package=git_describe_package,
+                album_date_mismatch_count=0,
+                update_asset_date_count=0,
+                total_assets=None,
+                max_assets=None,
+                skip_n=None,
+                started_at=None,
+                finished_at=None,
+                abrupt_exit_at=None,
+                # Can be None if there is no previous data; better than inventing a zero
+                previous_sessions_time=None,
+                extra={},
+                output_tag_counters={},
+                output_album_counters={},
+                progress_description=None,
+                event_counters={},
             )
             self._current_stats.save_to_file()
             return self._current_stats
