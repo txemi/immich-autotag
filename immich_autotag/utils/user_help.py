@@ -14,6 +14,7 @@ def _generate_links(config: UserConfig) -> List[str]:
 
     # Collect all autotag values from the new configuration structure
     from typing import Set, Tuple
+
     tags_to_add: List[Tuple[str, str]] = []
 
     # From classification rules (input tags)
