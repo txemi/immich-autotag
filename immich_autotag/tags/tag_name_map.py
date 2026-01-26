@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class TagNameMap:
     """
-    Mapa eficiente de nombre (str) a TagWrapper.
+    Efficient map from name (str) to TagWrapper.
     """
 
     _name_to_tag: Dict[str, "TagWrapper"] = attrs.field(factory=dict)
@@ -19,20 +19,20 @@ class TagNameMap:
     def add(self, tag: "TagWrapper"):
         name = tag.get_name()
         if name in self._name_to_tag:
-            raise RuntimeError(f"Tag con nombre '{name}' ya existe en TagNameMap.")
+            raise RuntimeError(f"Tag with name '{name}' already exists in TagNameMap.")
         self._name_to_tag[name] = tag
 
     @typechecked
     def remove(self, tag: "TagWrapper"):
         name = tag.get_name()
         if name not in self._name_to_tag:
-            raise RuntimeError(f"No existe tag con nombre '{name}' en TagNameMap.")
+            raise RuntimeError(f"No tag with name '{name}' exists in TagNameMap.")
         del self._name_to_tag[name]
 
     @typechecked
     def get(self, name: str) -> "TagWrapper":
         if name not in self._name_to_tag:
-            raise RuntimeError(f"Tag con nombre '{name}' no existe en TagNameMap.")
+            raise RuntimeError(f"Tag with name '{name}' does not exist in TagNameMap.")
         return self._name_to_tag[name]
 
     def to_list(self) -> List["TagWrapper"]:

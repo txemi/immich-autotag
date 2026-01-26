@@ -4,7 +4,7 @@ from pathlib import Path
 from .manager import RunOutputManager
 
 warnings.warn(
-    "El módulo run_output_dir.py está deprecado. Usa RunOutputManager en su lugar.",
+    "The run_output_dir.py module is deprecated. Use RunOutputManager instead.",
     DeprecationWarning,
     stacklevel=2,
 )

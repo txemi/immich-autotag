@@ -143,14 +143,14 @@ def _run_main_inner():
 
     client_wrapper = ImmichClientWrapper.create_default_instance(client)
 
-    # Limpieza de etiquetas duplicadas conflictivas antes de cualquier operación
+    # Cleanup of duplicate/conflict autotag labels before any operation
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
-    # CHAPUZA DE LIMPIEZA/MANTENIMIENTO: borrar etiquetas conflictivas antes de iterar por assets
+    # MAINTENANCE HACK: delete conflict autotag labels before iterating over assets
     deleted_count = TagCollectionWrapper.maintenance_delete_conflict_tags(client)
     if deleted_count > 0:
         log(
-            f"[CLEANUP-CHAPUZA] Deleted {deleted_count} duplicate/conflict autotag labels.",
+            f"[CLEANUP] Deleted {deleted_count} duplicate/conflict autotag labels.",
             level=LogLevel.INFO,
         )
 
@@ -216,11 +216,11 @@ def _run_main_inner():
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
     print_welcome_links(manager.config)
 
-    # CHAPUZA DE LIMPIEZA/MANTENIMIENTO: borrar etiquetas conflictivas antes de iterar por assets
+    # MAINTENANCE HACK: delete conflict autotag labels before iterating over assets
     deleted_count = TagCollectionWrapper.maintenance_delete_conflict_tags(client)
     if deleted_count > 0:
         log(
-            f"[CLEANUP-CHAPUZA] Deleted {deleted_count} duplicate/conflict autotag labels.",
+            f"[CLEANUP] Deleted {deleted_count} duplicate/conflict autotag labels.",
             level=LogLevel.INFO,
         )
 
