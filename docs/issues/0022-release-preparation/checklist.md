@@ -3,10 +3,10 @@
 
 ## Main Tasks
 
-- [ ] Revisar la documentación general
-- [ ] Revisar que la configuración está documentada
-- [ ] Actualizar el CHANGELOG.md
-- [ ] Revisar la configuración interna (asegurar que no estamos en modo depuración)
+- [ ] Review the general documentation
+- [ ] Review that the configuration is documented
+- [ ] Update the CHANGELOG.md
+- [ ] Review the internal configuration (ensure we are not in debug mode)
 - [ ] Revisar la seguridad del workflow de release en GitHub Actions ([ver subtask](subtasks/github-actions-release-safety.md))
 
 ## Notes
