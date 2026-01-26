@@ -44,11 +44,13 @@ def _yield_assets_from_page(
     # Use top-level imports where possible to avoid redefinition warnings.
     yielded = 0
     # Import AssetManager here to avoid circular imports
-    from immich_autotag.assets.asset_manager import AssetManager
+
     # Usar el getter explícito del contexto para obtener el asset_manager
     asset_manager = context.get_asset_manager()
     if asset_manager is None:
-        raise RuntimeError("[ERROR] ImmichContext.get_asset_manager() devolvió None. Refactor necesario.")
+        raise RuntimeError(
+            "[ERROR] ImmichContext.get_asset_manager() devolvió None. Refactor necesario."
+        )
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
             continue
