@@ -1,8 +1,10 @@
-import cProfile
 import atexit
+import cProfile
 import datetime
 import os
+
 from immich_autotag.utils.run_output_dir import get_run_output_dir
+
 
 def setup_cprofile_profiler():
     """
