@@ -29,9 +29,9 @@ class DestinationWrapper:
         changes = []
         # Add destination tags
         for tag in self.get_tag_names():
-            if not asset_wrapper.has_tag(tag):
+            if not asset_wrapper.has_tag(tag_name=tag):
                 try:
-                    asset_wrapper.add_tag_by_name(tag)
+                    asset_wrapper.add_tag_by_name(tag_name=tag)
                     changes.append(f"Added tag '{tag}'")
                 except Exception as e:
                     changes.append(f"Failed to add tag '{tag}': {e}")
