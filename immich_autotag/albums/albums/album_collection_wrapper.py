@@ -639,7 +639,7 @@ class AlbumCollectionWrapper:
                 album_name=name,
                 existing_album=existing,
                 incoming_album=incoming_album,
-                    note="duplicate skipped during initial load",
+                note="duplicate skipped during initial load",
             )
         )
         from immich_autotag.report.modification_kind import ModificationKind
@@ -690,7 +690,7 @@ class AlbumCollectionWrapper:
 
             else:
                 if old_tested_mode:
-                        # we cannot use this, we do not have
+                    # we cannot use this, we do not have
                     # Combine all duplicates into one
                     surviving_album = self.combine_duplicate_albums(
                         list(self.find_all_albums_with_name(name)),
