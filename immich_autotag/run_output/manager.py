@@ -10,6 +10,7 @@ class RunOutputManager:
     _RUN_DIR_PID_MARK = "PID"
     _RUN_DIR_PID_SEP = "_PID"
     _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
+    _RUN_OUTPUT_DIR: Optional[Path] = None
 
     @staticmethod
     def _is_run_dir(subdir: Path) -> bool:
