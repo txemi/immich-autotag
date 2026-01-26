@@ -182,4 +182,4 @@ class AssetCacheEntry:
         """
         Returns the original file name of the asset. This value is immutable, so no freshness check is needed.
         """
-        return self._ensure_fresh().get_original_file_name()
+        return self._get_fresh_state().get_original_file_name()
