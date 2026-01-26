@@ -641,7 +641,10 @@ claro
 oscuro
 complicado
 complejo
-sencillo'
+sencillo
+referencia
+ejemplo'
+
 	local SPANISH_WORD_PATTERN
 	SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
 	local SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
@@ -658,7 +661,7 @@ sencillo'
 	files_to_check=$(git ls-files | grep -v "$SCRIPT_REL_PATH" | grep -v "$QUALITY_GATE_REL_PATH")
 
 	# Search for Spanish characters/words in the selected files
-	spanish_matches=$(echo "$files_to_check" | xargs grep -n -I -E "$SPANISH_PATTERN" || true)
+	spanish_matches=$(echo "$files_to_check" | xargs grep -n -I -i -E "$SPANISH_PATTERN" || true)
 
 	if [ -n "$spanish_matches" ]; then
 		echo '❌ Spanish language characters detected in the following files/lines:'
