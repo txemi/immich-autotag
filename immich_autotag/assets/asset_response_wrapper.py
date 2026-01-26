@@ -72,7 +72,8 @@ class AssetResponseWrapper:
     def get_tags(self) -> list[TagWrapper]:
         """Lazy-load tags if not present in the current asset.
 
-        Returns the tags list from the asset. If tags are not yet loaded (UNSET from search_assets),
+        Returns the tags list from the asset. If tags are not yet loaded
+        (UNSET from search_assets),
         this property triggers lazy-loading of the full asset via get_asset_info.
 
         Returns:
@@ -259,7 +260,8 @@ class AssetResponseWrapper:
             return False
         if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(
-                f"[BUG] Before removal: asset.id={self.get_id()}, asset_name={self.get_original_file_name()}, "
+                f"[BUG] Before removal: asset.id={self.get_id()}, "
+                f"asset_name={self.get_original_file_name()}, "
                 f"tag_name='{tag_name}', tag_ids={[str(tag.get_id()) for tag in tags_to_remove]}"
             )
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
