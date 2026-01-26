@@ -20,15 +20,15 @@ class AlbumLoadSource(enum.Enum):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumDtoState:
     """
-    Encapsula el estado de un AlbumResponseDto recuperado de la API.
+    Encapsulates the state of an AlbumResponseDto retrieved from the API.
 
-    Esta clase agrupa tres atributos que siempre se obtienen juntos al consultar un álbum:
-      - El DTO de álbum (privado, no se expone directamente)
-      - El enum AlbumLoadSource que indica la fuente de la API
-      - El timestamp (loaded_at) de la obtención
+    This class groups three attributes that are always obtained together when querying an album:
+        - The album DTO (private, not exposed directly)
+        - The AlbumLoadSource enum indicating the API source
+        - The loaded_at timestamp
 
-    El DTO no se expone directamente. El acceso debe hacerse mediante métodos públicos
-    que devuelven solo la información necesaria.
+    The DTO is not exposed directly. Access must be through public methods
+    that return only the necessary information.
     """
 
     _dto: AlbumResponseDto = attrs.field(
@@ -44,28 +44,28 @@ class AlbumDtoState:
 
     def __attrs_post_init__(self):
         if self._dto is None:
-            raise ValueError("_dto (AlbumResponseDto) no puede ser None")
+            raise ValueError("_dto (AlbumResponseDto) cannot be None")
 
     def get_album_id(self) -> UUID:
-        """Devuelve el ID del álbum (sin exponer el DTO completo)."""
+        """Returns the album ID (without exposing the full DTO)."""
         return UUID(self._dto.id)
 
     def get_album_name(self) -> str:
-        """Devuelve el nombre del álbum (sin exponer el DTO completo)."""
+        """Returns the album name (without exposing the full DTO)."""
         return self._dto.album_name
 
     def get_load_source(self) -> AlbumLoadSource:
-        """Devuelve la fuente de la API desde la que se obtuvo el álbum."""
+        """Returns the API source from which the album was obtained."""
         return self._load_source
 
     def get_loaded_at(self) -> datetime.datetime:
-        """Devuelve el timestamp de obtención del álbum."""
+        """Returns the timestamp when the album was obtained."""
         return self._loaded_at
 
     def update(self, *, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
         """
-        Actualiza el estado con un nuevo DTO, fuente y timestamp actual.
-        Garantiza que loaded_at nunca retrocede en el tiempo.
+        Updates the state with a new DTO, source, and current timestamp.
+        Ensures loaded_at never goes backwards in time.
         """
         now = datetime.datetime.now()
         if self._loaded_at and now < self._loaded_at:
@@ -88,8 +88,8 @@ class AlbumDtoState:
         *, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> "AlbumDtoState":
         """
-        Crea una nueva instancia de AlbumDtoState de forma segura para evitar problemas con attrs y enums.
-        Los argumentos deben pasarse con nombre (no posicionales).
+        Creates a new instance of AlbumDtoState safely to avoid issues with attrs and enums.
+        Arguments must be passed by name (not positional).
         """
         return AlbumDtoState(dto=dto, load_source=load_source)
 

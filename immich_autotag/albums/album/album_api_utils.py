@@ -13,18 +13,18 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_trace
 from immich_autotag.types import ImmichClient
 
-# --- Diagnóstico de llamadas a la API de álbumes ---
+ # --- Album API call diagnostics ---
 _album_api_call_count = 0
 _album_api_ids: set[str] = set()
 
 
 def _print_album_api_call_summary():
     log(
-        f"[DIAG] get_album_info_by_id: llamadas totales={_album_api_call_count}, IDs únicos={len(_album_api_ids)}",
+        f"[DIAG] get_album_info_by_id: total calls={_album_api_call_count}, unique IDs={len(_album_api_ids)}",
         level=LogLevel.DEBUG,
     )
     if len(_album_api_ids) < 30:
-        log(f"[DIAG] IDs únicos: {_album_api_ids}", level=LogLevel.DEBUG)
+        log(f"[DIAG] Unique IDs: {_album_api_ids}", level=LogLevel.DEBUG)
 
 
 atexit.register(_print_album_api_call_summary)
@@ -35,7 +35,7 @@ def get_album_info_by_id(album_id: UUID, client: ImmichClient) -> "AlbumResponse
     """
     Unified wrapper for get_album_info.sync(id=..., client=...).
     Returns the album DTO or raises on error.
-    Añade diagnóstico de llamadas totales y IDs únicos.
+    Adds diagnostics for total calls and unique IDs.
     """
     global _album_api_call_count
     _album_api_call_count += 1
