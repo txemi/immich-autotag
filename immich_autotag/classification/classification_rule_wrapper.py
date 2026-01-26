@@ -19,6 +19,8 @@ from immich_autotag.config.models import ClassificationRule
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class ClassificationRuleWrapper:
 
+
+
     rule: ClassificationRule = attrs.field(
         validator=attrs.validators.instance_of(ClassificationRule)
     )
@@ -68,6 +70,12 @@ class ClassificationRuleWrapper:
         # Local import to avoid cycle
         from immich_autotag.classification.match_result import MatchResult
 
+        # FOCUS log: asset link and rule info (direct attribute/method access)
+        asset_id = asset_wrapper.get_id_as_uuid()
+        asset_url = asset_wrapper.get_immich_photo_url()
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+        log(f"Evaluating asset: id={asset_id} url={asset_url} | {self.to_log_string()}", level=LogLevel.FOCUS)
         asset_tags = set(asset_wrapper.get_tag_names())
         print(f"[DEBUG] asset_tags: {asset_tags}")
         album_names = set(asset_wrapper.get_album_names())
@@ -169,3 +177,13 @@ class ClassificationRuleWrapper:
         return changes
 
     # You can add more utility methods as needed
+
+    def to_log_string(self) -> str:
+        """
+        Devuelve un string resumen de la regla para logging/debug.
+        """
+        return (
+            f"ClassificationRuleWrapper(tag_names={self.rule.tag_names}, "
+            f"album_patterns={self.rule.album_name_patterns}, "
+            f"asset_links={self.rule.asset_links})"
+        )
