@@ -144,7 +144,7 @@ def _run_main_inner():
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
     client_wrapper = ImmichClientWrapper.create_default_instance(client)
-    # Pasa la clase wrapper, no el cliente crudo, al contexto
+    # Pass the wrapper class, not the raw client, to the context
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client()
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
@@ -209,7 +209,7 @@ def _run_main_inner():
 
 def run_main():
     """
-    Wrapper que ejecuta _run_main_inner, y si el modo de error es CRAZY_DEBUG, activa cProfile y guarda el resultado en profile_debug.stats.
+    Wrapper that runs _run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
     """
     import cProfile
 

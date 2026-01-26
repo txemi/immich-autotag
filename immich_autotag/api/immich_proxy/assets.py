@@ -1,4 +1,4 @@
-# --- Diagnóstico de llamadas a la API de assets ---
+# --- Diagnostics for asset API calls ---
 import atexit
 
 from immich_autotag.logging.levels import LogLevel
@@ -10,17 +10,17 @@ _asset_api_ids: set[str] = set()
 
 def _print_asset_api_call_summary():
     log(
-        f"[DIAG] get_asset_info: llamadas totales={_asset_api_call_count}, IDs únicos={len(_asset_api_ids)}",
+        f"[DIAG] get_asset_info: total calls={_asset_api_call_count}, unique IDs={len(_asset_api_ids)}",
         level=LogLevel.DEBUG,
     )
     if len(_asset_api_ids) < 30:
-        log(f"[DIAG] Asset IDs únicos: {_asset_api_ids}", level=LogLevel.DEBUG)
+        log(f"[DIAG] Unique Asset IDs: {_asset_api_ids}", level=LogLevel.DEBUG)
 
 
 atexit.register(_print_asset_api_call_summary)
 """
-Proxy/fachada para todas las llamadas a la API de assets de Immich.
-Este módulo es el ÚNICO punto autorizado para interactuar con immich_client.api.assets.
+Proxy/facade for all Immich asset API calls.
+This module is the ONLY authorized point to interact with immich_client.api.assets.
 """
 
 from uuid import UUID
@@ -37,12 +37,12 @@ def proxy_get_asset_info(
     asset_id: UUID, client: ImmichClient, use_cache: bool = True
 ) -> AssetResponseDto | None:
     """
-    Wrapper centralizado para get_asset_info.sync. Ahora delega toda la lógica de caché a AssetCacheEntry.
+    Centralized wrapper for get_asset_info.sync. Now delegates all cache logic to AssetCacheEntry.
     """
     global _asset_api_call_count, _asset_api_ids
     _asset_api_call_count += 1
     _asset_api_ids.add(str(asset_id))
-    # Llama directamente a la API, sin lógica de caché
+    # Calls the API directly, without cache logic
     return _get_asset_info.sync(id=asset_id, client=client)
 
 
@@ -50,6 +50,6 @@ def proxy_update_asset(
     asset_id: UUID, client: ImmichClient, body: UpdateAssetDto
 ) -> AssetResponseDto | None:
     """
-    Wrapper centralizado para update_asset.sync.
+    Centralized wrapper for update_asset.sync.
     """
     return _update_asset.sync(id=asset_id, client=client, body=body)
