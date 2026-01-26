@@ -19,8 +19,6 @@ from immich_autotag.config.models import ClassificationRule
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
 class ClassificationRuleWrapper:
 
-
-
     rule: ClassificationRule = attrs.field(
         validator=attrs.validators.instance_of(ClassificationRule)
     )
@@ -75,7 +73,11 @@ class ClassificationRuleWrapper:
         asset_url = asset_wrapper.get_immich_photo_url()
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
-        log(f"Evaluating asset: id={asset_id} url={asset_url} | {self.to_log_string()}", level=LogLevel.FOCUS)
+
+        log(
+            f"Evaluating asset: id={asset_id} url={asset_url} | {self.to_log_string()}",
+            level=LogLevel.FOCUS,
+        )
         asset_tags = set(asset_wrapper.get_tag_names())
         print(f"[DEBUG] asset_tags: {asset_tags}")
         album_names = set(asset_wrapper.get_album_names())
