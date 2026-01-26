@@ -1,4 +1,4 @@
-
+import tracemalloc
 import atexit
 import datetime
 import os
@@ -26,7 +26,7 @@ def setup_tracemalloc_snapshot():
     atexit.register(_save_snapshot)
 
     # Periodic snapshotting
-    interval = float(os.environ.get("TRACEMALLOC_SNAPSHOT_INTERVAL", 300))  # seconds, default 5 min
+    interval = float(os.environ.get("TRACEMALLOC_SNAPSHOT_INTERVAL", 120))  # seconds, default 2 min
     stop_event = threading.Event()
 
     def periodic_snapshots():
