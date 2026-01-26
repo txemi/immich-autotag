@@ -886,7 +886,7 @@ class AssetResponseWrapper:
         # tag_mod_report parameter removed
         user: "UserResponseWrapper | None" = None,
         duplicate_id: str | None = None,
-        disable=True
+        disable=True,
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
