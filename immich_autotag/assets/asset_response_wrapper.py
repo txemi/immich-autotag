@@ -497,22 +497,22 @@ class AssetResponseWrapper:
         return match_results.classification_status()
 
     def get_original_file_name(self) -> str:
-        return self._cache_entry.get_state().get_original_file_name()
+        return self._cache_entry.get_original_file_name()
 
     def is_favorite(self) -> bool:
-        return self._cache_entry.get_state().get_is_favorite()
+        return self._cache_entry.get_is_favorite()
 
     def get_created_at(self) -> datetime | str | None:
-        return self._cache_entry.get_state().get_created_at()
+        return self._cache_entry.get_created_at()
 
     def get_id(self) -> str:
-        return self._cache_entry.get_state().get_id()
+        return self._cache_entry.get_id()
 
     def get_original_path(self) -> "Path":
-        return self._cache_entry.get_state().get_original_path()
+        return self._cache_entry.get_original_path()
 
     def get_duplicate_id_as_uuid(self) -> "UUID | None":
-        return self._cache_entry.get_state().get_duplicate_id_as_uuid()
+        return self._cache_entry.get_duplicate_id_as_uuid()
 
     @typechecked
     def get_classification_match_detail(self) -> MatchClassificationResult:
