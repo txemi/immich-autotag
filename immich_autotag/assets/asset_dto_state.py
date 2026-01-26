@@ -184,6 +184,7 @@ class AssetDtoState:
         if self.get_type() == AssetDtoType.FULL:
             return self
         raise RuntimeError("AssetDtoState is not FULL; operation not allowed.")
+
     def get_is_favorite(self) -> bool:
         """
         Returns True if the asset is marked as favorite, False otherwise.

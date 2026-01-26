@@ -26,7 +26,7 @@ def proxy_get_album_info(
     *, album_id: UUID, client: AuthenticatedClient, use_cache: bool = True
 ) -> AlbumResponseDto | None:
     """
-    Wrapper centralizado para get_album_info.sync. Incluye caché en disco.
+    Centralized wrapper for get_album_info.sync. Includes disk cache.
     """
     cache_data = get_entity_from_cache("albums", str(album_id), use_cache=use_cache)
     if cache_data is not None:
