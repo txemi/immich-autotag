@@ -36,7 +36,7 @@ class AlbumCacheEntry:
         use_cache: bool = True,
     ) -> "AlbumCacheEntry":
         """
-        Intenta cargar el álbum desde caché. Si está obsoleto o no existe, lo recarga usando fetch_album_func.
+        Attempts to load the album from cache. If it is stale or does not exist, reloads using fetch_album_func.
         """
         # Always use string representation for cache keys, but require UUID type for album_id
         album_id_str = str(album_id)
@@ -48,8 +48,8 @@ class AlbumCacheEntry:
                 if not entry.is_stale():
                     return entry
             except Exception:
-                pass  # Si la caché está corrupta, recarga de API
-        # Si no está en caché o está corrupto, recarga desde API
+                pass  # If the cache is corrupt, reload from API
+            # If not in cache or corrupt, reload from API
         album_dto: AlbumResponseDto = fetch_album_func(album_id)
         dto = AlbumDtoState.from_dto(album_dto)
         entry = cls(dto=dto, max_age_seconds=max_age_seconds)
@@ -57,7 +57,7 @@ class AlbumCacheEntry:
         return entry
 
     def is_stale(self) -> bool:
-        # _dto.get_loaded_at() es un datetime, lo convertimos a timestamp para comparar
+        # _dto.get_loaded_at() is a datetime, convert to timestamp for comparison
         return (
             time.time() - self._dto.get_loaded_at().timestamp()
         ) > self._max_age_seconds
@@ -71,22 +71,22 @@ class AlbumCacheEntry:
 
     def ensure_full_loaded(self) -> AlbumCacheEntry:
         """
-        Asegura que el DTO es de tipo DETAIL (full). Si no lo es, recarga usando reload_func.
-        Si ya es full, no hace nada. Si no es full y no se proporciona reload_func, lanza excepción.
+        Ensures the DTO is of type DETAIL (full). If not, reloads using reload_func.
+        If already full, does nothing. If not full and no reload_func is provided, raises exception.
         """
         if self._dto.is_full():
             return self
 
-        # Recarga el DTO usando la función proporcionada
+        # Reload the DTO using the provided function
         album_dto = self.from_cache_or_api()
-        # Se asume que album_dto es un AlbumResponseDto en modo DETAIL
+        # Assumes album_dto is an AlbumResponseDto in DETAIL mode
         self._dto.update(dto=album_dto, load_source=self._dto.get_load_source().DETAIL)
         return self
 
     def is_empty(self) -> bool:
         """
-        Devuelve True si el álbum no tiene assets, False en caso contrario.
-        No fuerza recarga, usa el DTO actual.
+        Returns True if the album has no assets, False otherwise.
+        Does not force reload, uses the current DTO.
         """
         return self.ensure_full_loaded()._dto.is_empty()
 
