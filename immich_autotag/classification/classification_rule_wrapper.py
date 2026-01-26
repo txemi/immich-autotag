@@ -70,7 +70,7 @@ class ClassificationRuleWrapper:
 
         # FOCUS log: asset link and rule info (direct attribute/method access)
         asset_id = asset_wrapper.get_id_as_uuid()
-        asset_url = asset_wrapper.get_immich_photo_url()
+        asset_url = asset_wrapper.get_immich_photo_url().geturl()
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
