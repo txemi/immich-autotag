@@ -250,7 +250,9 @@ class PerformanceTracker:
             and abs_total is not None
             and abs_total < 1000
         ):
-            raise Exception("CRAZY_DEBUG mode: abs_total too low (<200000)")
+            raise Exception(
+                "CRAZY_DEBUG mode: abs_total too low (<200000)"
+            )
 
         est_remaining_session = self._printable_value_est_remaining_session(
             count, elapsed
