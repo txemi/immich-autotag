@@ -13,8 +13,8 @@ name: Release to PyPI and Docker Hub
 on:
   push:
     tags:
-      - 'v*.*.*'   # Solo se dispara en tags tipo v0.70.1
-  workflow_dispatch:  # Permite lanzar manualmente desde la UI
+      - 'v*.*.*'   # Only triggers on tags like v0.70.1
+  workflow_dispatch:  # Allows manual launch from the UI
 
 jobs:
   build-and-publish:
