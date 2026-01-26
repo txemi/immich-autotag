@@ -78,8 +78,8 @@ pipeline {
     
     post {
         always {
-            // Archive run outputs (logs, reports, links) generated per execution
-            archiveArtifacts artifacts: 'logs_local/**/*', fingerprint: true, allowEmptyArchive: true
+            // Archive run outputs (logs, reports, links) generated per execution, excluding albums cache
+            archiveArtifacts artifacts: 'logs_local/**/*', excludes: 'logs_local/*/api_cache/*/**', fingerprint: true, allowEmptyArchive: true
             echo "Pipeline execution completed at ${new Date()}"
         }
         success {
