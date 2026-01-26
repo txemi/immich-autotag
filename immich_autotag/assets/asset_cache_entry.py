@@ -86,9 +86,9 @@ class AssetCacheEntry:
         cls, state: AssetDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
     ) -> "AssetCacheEntry":
         """
-        Crea un AssetCacheEntry a partir de un estado ya existente (privado).
+        Creates an AssetCacheEntry from an existing state (private).
         """
-        return cls(_state=state, _max_age_seconds=max_age_seconds)
+        return cls(state=state, max_age_seconds=max_age_seconds)
 
     # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 
@@ -109,9 +109,9 @@ class AssetCacheEntry:
         """
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
-        asset_id = self._state.id  # Se asume que el DTO tiene un atributo id
+        asset_id = self._state.get_uuid()
         refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
-        self._state = refreshed_entry._get_state()
+        self._state = refreshed_entry._state
         return self
 
     @classmethod
@@ -123,12 +123,12 @@ class AssetCacheEntry:
         max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
         """
-        Crea un AssetCacheEntry a partir de un DTO y tipo.
+        Creates an AssetCacheEntry from a DTO and type.
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
-        state = AssetDtoState(dto=dto, _api_endpoint_source=dto_type)
-        return cls(_state=state, _max_age_seconds=max_age_seconds)
+        state = AssetDtoState(dto=dto, api_endpoint_source=dto_type)
+        return cls(state=state, max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_api_entry(
