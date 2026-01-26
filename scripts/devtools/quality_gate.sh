@@ -602,7 +602,6 @@ siempre
 nunca
 antes
 hoy
-mañana
 ayer
 entonces
 luego

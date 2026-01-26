@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-# Añadir timestamp al nombre del fichero de estadísticas para que sea único por ejecución
+# Add timestamp to the statistics file name to make it unique per run
 TS=$(date -u +"%Y%m%dT%H%M%SZ")
 OUTPUT_FILE="profile_${TS}.stats"
 
