@@ -29,7 +29,7 @@ class ImmichContext:
     _duplicates_collection: "DuplicateCollectionWrapper" = attrs.field()
     _asset_manager: "AssetManager" = attrs.field()
 
-    def get_client(self) -> ImmichClientWrapper:
+    def get_client_wrapper(self) -> ImmichClientWrapper:
         return self._client
 
     def get_albums_collection(self) -> "AlbumCollectionWrapper":
