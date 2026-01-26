@@ -94,7 +94,7 @@ class ClassificationRuleWrapper:
         print(f"[DEBUG] asset_link_uuids: {asset_link_uuids}")
         asset_uuid = asset_wrapper.get_id_as_uuid()
         print(f"[DEBUG] asset_uuid: {asset_uuid}")
-        # Mostrar la URL como string también en modo debug
+        # Also show the URL as a string in debug mode
         print(f"[DEBUG] asset_url (string): {asset_url}")
         asset_links_matched = []
         if asset_link_uuids and asset_uuid is not None:
