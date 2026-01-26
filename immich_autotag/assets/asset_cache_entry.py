@@ -2,6 +2,7 @@ from immich_autotag.context.immich_context import ImmichContext
 
 ASSET_CACHE_KEY = "assets"
 import datetime
+from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from uuid import UUID
 
 import attrs
@@ -23,7 +24,7 @@ class AssetCacheEntry:
     """
 
     _state: AssetDtoState
-    _max_age_seconds: int = 3600  # Por defecto, 1h
+    _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS  # Global default
 
     def is_stale(self) -> bool:
         age = (datetime.datetime.now() - self._state.get_loaded_at()).total_seconds()
@@ -43,7 +44,7 @@ class AssetCacheEntry:
         cls,
         asset_id: UUID,
         *,
-        max_age_seconds: int = 3600,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
         use_cache: bool = True,
     ) -> "AssetCacheEntry":
         """
@@ -82,7 +83,7 @@ class AssetCacheEntry:
 
     @classmethod
     def _from_state(
-        cls, state: AssetDtoState, max_age_seconds: int = 3600
+        cls, state: AssetDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
     ) -> "AssetCacheEntry":
         """
         Crea un AssetCacheEntry a partir de un estado ya existente (privado).
@@ -119,7 +120,7 @@ class AssetCacheEntry:
         *,
         dto: "AssetResponseDto",  # Use the real DTO type if available
         dto_type: AssetDtoType,
-        max_age_seconds: int = 3600,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
         """
         Crea un AssetCacheEntry a partir de un DTO y tipo.
@@ -134,7 +135,7 @@ class AssetCacheEntry:
         cls,
         asset_id: UUID,
         context: "ImmichContext",
-        max_age_seconds: int = 3600,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
         """
         Creates an AssetCacheEntry by loading the asset from the API (always FULL).

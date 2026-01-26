@@ -25,7 +25,7 @@ class StaleAlbumCacheError(Exception):
 class AlbumCacheEntry:
 
     _dto: AlbumDtoState
-    _max_age_seconds: int = 3600
+    _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
 
     @classmethod
     def from_cache_or_api(
@@ -52,7 +52,7 @@ class AlbumCacheEntry:
             # If not in cache or corrupt, reload from API
         album_dto: AlbumResponseDto = fetch_album_func(album_id)
         dto = AlbumDtoState.from_dto(album_dto)
-        entry = cls(dto=dto, max_age_seconds=max_age_seconds)
+        entry = cls(dto=dto, max_age_seconds=DEFAULT_CACHE_MAX_AGE_SECONDS)
         save_entity_to_cache("albums", album_id_str, dto.to_dict())
         return entry
 
