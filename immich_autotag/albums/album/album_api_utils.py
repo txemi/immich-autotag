@@ -13,7 +13,7 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_trace
 from immich_autotag.types import ImmichClient
 
- # --- Album API call diagnostics ---
+# --- Album API call diagnostics ---
 _album_api_call_count = 0
 _album_api_ids: set[str] = set()
 
