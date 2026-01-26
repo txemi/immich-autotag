@@ -211,10 +211,11 @@ def run_main():
     """
     Wrapper that runs _run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
     """
-    from immich_autotag.config.internal_config import ENABLE_PROFILING
+    from immich_autotag.config.internal_config import ENABLE_PROFILING, ENABLE_MEMORY_PROFILING
+    if ENABLE_MEMORY_PROFILING:
+        from immich_autotag.utils.perf.memory_profiler import setup_tracemalloc_snapshot
+        setup_tracemalloc_snapshot()
     if ENABLE_PROFILING:
         from immich_autotag.utils.perf.cprofile_profiler import setup_cprofile_profiler
         setup_cprofile_profiler()
-        _run_main_inner()
-    else:
-        _run_main_inner()
+    _run_main_inner()

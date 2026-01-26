@@ -1,3 +1,5 @@
+# Independent memory profiling flag
+ENABLE_MEMORY_PROFILING = False  # Set to True to enable tracemalloc memory profiling
 # Import para tipado de FORCED_LOG_LEVEL
 from immich_autotag.logging.levels import LogLevel
 
