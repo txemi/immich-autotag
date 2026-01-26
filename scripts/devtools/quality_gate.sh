@@ -640,6 +640,10 @@ improbable
 claro
 oscuro
 complicado
+limpieza
+mantenimiento
+etiqueta
+etiquetas
 complejo
 sencillo
 referencia
