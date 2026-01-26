@@ -368,12 +368,6 @@ class AlbumCollectionWrapper:
                     f"{len(album_wrapper.get_asset_uuids())} assets.",
                     level=LogLevel.PROGRESS,
                 )
-            log(
-                f"[ALBUM-LOAD][API][{idx}/{total}] Album "
-                f"'{album_wrapper.get_album_name()}' reloaded with "
-                f"{len(album_wrapper.get_asset_uuids())} assets.",
-                level=LogLevel.INFO,
-            )
             asset_map.add_album_for_asset_ids(album_wrapper)
         albums_to_remove = self._detect_empty_temporary_albums()
 
