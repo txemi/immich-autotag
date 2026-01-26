@@ -2,12 +2,12 @@ from immich_autotag.context.immich_context import ImmichContext
 
 ASSET_CACHE_KEY = "assets"
 import datetime
-from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from uuid import UUID
 
 import attrs
 
 from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
+from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 
 
 class StaleAssetCacheError(Exception):
@@ -30,14 +30,14 @@ class AssetCacheEntry:
         age = (datetime.datetime.now() - self._state.get_loaded_at()).total_seconds()
         return age > self._max_age_seconds
 
-    def _get_state(self) -> AssetDtoState:
+    def _get_fresh_state(self) -> AssetDtoState:
         # Private: ensures freshness before returning the internal state
         self._ensure_fresh(ImmichContext.get_default_instance())
         return self._state
 
     def get_loaded_at(self) -> datetime.datetime:
-        # Use the private _get_state to ensure freshness
-        return self._get_state().get_loaded_at()
+        # Use the private _get_fresh_state to ensure freshness
+        return self._get_fresh_state().get_loaded_at()
 
     @classmethod
     def from_cache_or_api(
@@ -96,7 +96,7 @@ class AssetCacheEntry:
         """
         Ensures the asset is fully loaded (type FULL). If not, fetches from API and updates the cache entry.
         """
-        state = self._get_state()
+        state = self._get_fresh_state()
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
         if state.get_type() == AssetDtoType.FULL:
@@ -160,7 +160,7 @@ class AssetCacheEntry:
         """
         Returns the names of the tags associated with this asset, or an empty list if not available.
         """
-        state = self._get_state()
+        state = self._get_fresh_state()
         return state.get_tag_names()
 
     def _ensure_fresh(self, context: "ImmichContext") -> "AssetCacheEntry":
@@ -171,3 +171,9 @@ class AssetCacheEntry:
         if self.is_stale():
             self._reload_from_api(context)
         return self
+
+    def get_uuid(self) -> UUID:
+        """
+        Returns the UUID of the asset. The asset ID is immutable, so we do not require a fresh state for this operation.
+        """
+        return self._state.get_uuid()
