@@ -72,8 +72,9 @@ class RunStatistics(BaseModel):
     abrupt_exit_at: Optional[datetime] = Field(
         None, description="Datetime when an abrupt exit occurred (if any)"
     )
-    previous_sessions_time: float = Field(
-        0.0, description="Accumulated time (seconds) of previous sessions for this run."
+    previous_sessions_time: Optional[float] = Field(
+        None,
+        description="Accumulated time (seconds) of previous sessions for this run. Can be None if no previous data is available.",
     )
     extra: Dict[str, Any] = Field(
         default_factory=dict, description="Extensible field for future stats"
