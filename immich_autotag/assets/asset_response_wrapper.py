@@ -201,9 +201,7 @@ class AssetResponseWrapper:
 
     @typechecked
     def get_all_duplicate_wrappers(
-        self,
-        *,
-        include_self: bool = True
+        self, *, include_self: bool = True
     ) -> list["AssetResponseWrapper"]:
         """
         Returns a list of AssetResponseWrapper objects for all duplicates of this asset.
@@ -339,7 +337,9 @@ class AssetResponseWrapper:
             tag = (
                 self.get_context()
                 .get_tag_collection()
-                .create_tag_if_not_exists(name=tag_name, client=self.get_context().get_client().get_client())
+                .create_tag_if_not_exists(
+                    name=tag_name, client=self.get_context().get_client().get_client()
+                )
             )
         # Check if the asset already has the tag
         if self.has_tag(tag_name):
