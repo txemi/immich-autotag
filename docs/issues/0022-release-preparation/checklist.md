@@ -1,11 +1,12 @@
+
 # Release Preparation Checklist
 
 ## Main Tasks
 
-- [ ] Revisar la documentación general
-- [ ] Revisar que la configuración está documentada
-- [ ] Actualizar el CHANGELOG.md
-- [ ] Revisar la configuración interna (asegurar que no estamos en modo depuración)
+- [ ] Review general documentation
+- [ ] Ensure configuration is documented
+- [ ] Update CHANGELOG.md
+- [ ] Review internal configuration (make sure debug mode is off)
 
-## Notas
-- Añadir subtareas en la carpeta `subtasks` si se requiere desglosar alguna tarea.
+## Notes
+- Add subtasks in the `subtasks` folder if you need to break down any task.
