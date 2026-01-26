@@ -758,7 +758,11 @@ run_quality_gate_apply_mode() {
 # This ensures the developer sees the most relevant actionable error at the end.
 run_quality_gate_check_summary() {
 	echo "[SUMMARY] Running prioritized checks to show the most important remaining error."
-	# 1. Type checking (mypy)
+	# 1. Checks we have already passed (quality threshold):
+	#    We put first the checks that we have already passed (like the language check),
+	#    so that if they break, it is very obvious and immediately visible.
+	#    This way we avoid quality deterioration in aspects that are already under control.
+	check_no_spanish_chars || exit 5
 	check_mypy || exit 1
 	# 2. Syntax errors
 	check_python_syntax || exit 1
@@ -771,7 +775,6 @@ run_quality_gate_check_summary() {
 	check_no_dynamic_attrs || exit 2
 	check_no_tuples || exit 3
 	# 6. Spanish character check
-	check_no_spanish_chars || exit 5
 	# 7. Code duplication (least urgent)
 	check_jscpd || exit 1
 	# 8. Formatters (least urgent in summary)
