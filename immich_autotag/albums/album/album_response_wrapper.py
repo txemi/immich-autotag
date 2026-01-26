@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
     from immich_autotag.context.immich_context import ImmichContext
 
-from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
