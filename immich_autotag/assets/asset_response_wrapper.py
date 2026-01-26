@@ -862,7 +862,7 @@ class AssetResponseWrapper:
         return url
 
     def get_uuid(self) -> UUID:
-        return self._cache_entry.get_state().get_uuid()
+        return self._cache_entry.get_uuid()
 
     # Removed duplicate method get_album_names (F811)
 
