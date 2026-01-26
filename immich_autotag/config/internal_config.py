@@ -1,6 +1,6 @@
-
 # ==================== IMPORTS ====================
 from immich_autotag.logging.levels import LogLevel
+
 from ._internal_types import ErrorHandlingMode
 
 # ==================== MULTITHREADING / CONCURRENCY ====================
@@ -27,10 +27,14 @@ ALBUM_ERROR_WINDOW_SECONDS = 24 * 3600
 # take global action (in DEVELOPMENT this causes fail-fast; in PRODUCTION we log a summary).
 GLOBAL_UNAVAILABLE_THRESHOLD = 5
 # Enable/disable merging albums with the same name
-MERGE_DUPLICATE_ALBUMS_ENABLED = True  # Change to True to enable merging of duplicate albums
+MERGE_DUPLICATE_ALBUMS_ENABLED = (
+    True  # Change to True to enable merging of duplicate albums
+)
 
 # ==================== LOGGING CONTROL FOR DEVELOPMENT/CI ====================
 # If set to a log level string (e.g., 'DEBUG', 'INFO', 'PROGRESS', 'FOCUS'),
 # this will force the global log level for the app, ignoring any other logic.
 # If None, normal logic applies.
-FORCED_LOG_LEVEL = LogLevel.DEBUG  # Change to 'DEBUG' to force massive logging in development/CI
+FORCED_LOG_LEVEL = (
+    LogLevel.DEBUG
+)  # Change to 'DEBUG' to force massive logging in development/CI
