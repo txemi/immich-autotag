@@ -75,7 +75,8 @@ class UserResponseWrapper:
             return cls._cached_user_wrapper  # type: ignore
         from immich_autotag.utils.user_helpers import get_current_user
 
-        user_dto = get_current_user(context)
+        # get_current_user expects an AuthenticatedClient, not ImmichContext
+        user_dto = get_current_user(context.get_client_wrapper.get_client())
         cls._cached_user_wrapper = cls(user=user_dto)
         return cls._cached_user_wrapper  # type: ignore
 
