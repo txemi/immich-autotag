@@ -34,14 +34,25 @@ _instance = None
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class StatisticsManager:
 
-    _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)
-    _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)
+    #
+    # NOTA IMPORTANTE SOBRE attrs Y EL LINTER:
+    #
+    # Por convención, los argumentos del constructor de clases con attrs deben ser públicos (sin barra baja),
+    # aunque los atributos internos sean privados (con barra baja). attrs requiere esto para funcionar correctamente.
+    # Si el linter (por ejemplo, flake8, pylint, mypy) se queja por la discrepancia entre argumentos públicos y atributos privados,
+    # se debe silenciar la advertencia con un noqa o configuración específica, ya que esta es la forma correcta con attrs.
+    # Ejemplo: pylint: disable=attribute-defined-outside-init
+    #
+    # Referencia: https://www.attrs.org/en/stable/init.html#private-attributes
+    #
+    _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)  # noqa
+    _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)  # noqa
     _current_stats: Optional[RunStatistics] = attr.ib(
         default=None, init=False, repr=False
-    )
-    _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)
-    _checkpoint: CheckpointManager = attr.ib(default=None, init=False, repr=False)
-    _tags: TagStatsManager = attr.ib(default=None, init=False, repr=False)
+    )  # noqa
+    _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)  # noqa
+    _checkpoint: CheckpointManager = attr.ib(default=None, init=False, repr=False)  # noqa
+    _tags: TagStatsManager = attr.ib(default=None, init=False, repr=False)  # noqa
 
     @typechecked
     def _get_or_create_perf_tracker(self) -> PerformanceTracker:
@@ -173,7 +184,7 @@ class StatisticsManager:
                 "PerformanceTracker not initialized: totals missing. "
                 "Call set_total_assets or set_max_assets before processing."
             )
-        self._get_or_create_perf_tracker().print_progress(count)
+        self._get_or_create_perf_tracker().print_progress(count=count)
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
@@ -185,6 +196,8 @@ class StatisticsManager:
                 "[INFO] Reserved global variable _instance is None, creating new instance."
             )
             StatisticsManager()
+        if _instance is None:
+            raise RuntimeError("StatisticsManager instance not initialized.")
         return _instance
 
     @typechecked
@@ -275,9 +288,15 @@ class StatisticsManager:
             now = datetime.now(timezone.utc)
             self.get_or_create_run_stats().finished_at = now
             # Add the time of this session to the accumulated total
-            if self.get_or_create_run_stats().started_at is not None:
-                session_time = (now - self._current_stats.started_at).total_seconds()
-                self.get_or_create_run_stats().previous_sessions_time += session_time
+            started_at = self.get_or_create_run_stats().started_at
+            if started_at is not None:
+                session_time = (now - started_at).total_seconds()
+                prev = self.get_or_create_run_stats().previous_sessions_time
+                if prev is None:
+                    prev = 0.0
+                self.get_or_create_run_stats().previous_sessions_time = (
+                    prev + session_time
+                )
             self._save_to_file()
 
     @typechecked
