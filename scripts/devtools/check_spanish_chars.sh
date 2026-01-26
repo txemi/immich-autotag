@@ -21,8 +21,7 @@ SCRIPT_PATH="$SCRIPT_DIR/check_spanish_chars.sh"
 
 
 # List of common Spanish words, one per line for readability
-SPANISH_WORDS=$(cat <<'EOF'
-si
+SPANISH_WORDS='si
 solo
 mantenemos
 compatibilidad
@@ -106,9 +105,11 @@ claro
 oscuro
 complicado
 complejo
-sencillo
-EOF
-)
+sencillo'
+
+# Build the Spanish word pattern for grep
+SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
+SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
 if [ -f scripts/devtools/git_tracked_files.txt ]; then
 	files_to_check=$(cat scripts/devtools/git_tracked_files.txt)
 else
