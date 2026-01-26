@@ -115,7 +115,6 @@ class ClassificationRuleWrapper:
                 level=LogLevel.PROGRESS,
             )
 
-            raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
         if not tags_matched and not albums_matched and not asset_links_matched:
             print("[DEBUG] No matches found, returning None")
             return None
