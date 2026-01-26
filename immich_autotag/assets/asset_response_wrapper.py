@@ -90,6 +90,7 @@ class AssetResponseWrapper:
     @typechecked
     def update_date(
         self,
+        *,
         new_date: datetime,
         check_update_applied: bool = False,
     ) -> None:
@@ -200,7 +201,9 @@ class AssetResponseWrapper:
 
     @typechecked
     def get_all_duplicate_wrappers(
-        self, include_self: bool = True
+        self,
+        *,
+        include_self: bool = True
     ) -> list["AssetResponseWrapper"]:
         """
         Returns a list of AssetResponseWrapper objects for all duplicates of this asset.
@@ -226,7 +229,7 @@ class AssetResponseWrapper:
         return wrappers
 
     @typechecked
-    def has_tag(self, tag_name: str) -> bool:
+    def has_tag(self, *, tag_name: str) -> bool:
         """
         Returns True if the asset has the tag with that name (case-insensitive).
         """
@@ -235,6 +238,7 @@ class AssetResponseWrapper:
     @typechecked
     def remove_tag_by_name(
         self,
+        *,
         tag_name: str,
         user: "UserResponseWrapper | None" = None,
     ) -> bool:
@@ -314,6 +318,7 @@ class AssetResponseWrapper:
     @typechecked
     def add_tag_by_name(
         self,
+        *,
         tag_name: str,
         fail_if_exists: bool = False,
     ) -> bool:
@@ -526,7 +531,7 @@ class AssetResponseWrapper:
         return MatchClassificationResult.from_match_result_list(match_result_list)
 
     @typechecked
-    def check_unique_classification(self, fail_fast: bool = True) -> bool:
+    def check_unique_classification(self, *, fail_fast: bool = True) -> bool:
         """
         Checks if the asset is classified by more than one rule.
         Returns True if there is a conflict (multiple rules matched), False otherwise.
@@ -569,6 +574,7 @@ class AssetResponseWrapper:
     @typechecked
     def _ensure_tag_for_classification_status(
         self,
+        *,
         tag_name: str,
         should_have_tag_fn: Callable[[], bool],
         tag_present_reason: str,
@@ -657,6 +663,7 @@ class AssetResponseWrapper:
     @typechecked
     def _ensure_autotag_conflict_category(
         self,
+        *,
         status: "ClassificationStatus",
         user: UserResponseWrapper | None = None,
     ) -> None:
@@ -728,6 +735,7 @@ class AssetResponseWrapper:
     @typechecked
     def apply_tag_conversions(
         self,
+        *,
         tag_conversions: TagConversions,
     ) -> list[str]:
         """
@@ -819,7 +827,7 @@ class AssetResponseWrapper:
         return self._cache_entry.get_state().get_uuid()
 
     @typechecked
-    def has_same_classification_tags_as(self, other: "AssetResponseWrapper") -> bool:
+    def has_same_classification_tags_as(self, *, other: "AssetResponseWrapper") -> bool:
         """
         Compare classification tags between self and another AssetResponseWrapper.
         Returns True if tags are equal, False otherwise.
@@ -880,6 +888,7 @@ class AssetResponseWrapper:
     @typechecked
     def ensure_autotag_duplicate_album_conflict(
         self,
+        *,
         conflict: bool,
         # tag_mod_report parameter removed
         user: "UserResponseWrapper | None" = None,
@@ -922,12 +931,7 @@ class AssetResponseWrapper:
                     f"because duplicate album conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
-                user_wrapper = (
-                    user
-                    if user is None or isinstance(user, UserResponseWrapper)
-                    else None
-                )
-                self.remove_tag_by_name(tag_name, user=user_wrapper)
+                self.remove_tag_by_name(tag_name, user=user)
         # Per-duplicate-set tag
         if duplicate_id:
             tag_for_set = f"{tag_name}_{duplicate_id}"
@@ -944,16 +948,12 @@ class AssetResponseWrapper:
                         f"Removing tag '{tag_for_set}' from asset.id={self.get_id()} because duplicate album conflict (set {duplicate_id}) is resolved.",
                         level=LogLevel.FOCUS,
                     )
-                    user_wrapper = (
-                        user
-                        if user is None or isinstance(user, UserResponseWrapper)
-                        else None
-                    )
-                    self.remove_tag_by_name(tag_for_set, user=user_wrapper)
+                    self.remove_tag_by_name(tag_for_set, user=user)
 
     @typechecked
     def ensure_autotag_album_detection_conflict(
         self,
+        *,
         conflict: bool,
         candidate_folders: list[str] | None = None,
         user: "UserResponseWrapper | None" = None,
@@ -1012,12 +1012,7 @@ class AssetResponseWrapper:
                     f"because album detection conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
-                user_wrapper = (
-                    user
-                    if user is None or isinstance(user, UserResponseWrapper)
-                    else None
-                )
-                self.remove_tag_by_name(tag_name, user=user_wrapper)
+                self.remove_tag_by_name(tag_name, user=user)
 
     @typechecked
     def format_info(self) -> str:
@@ -1033,15 +1028,22 @@ class AssetResponseWrapper:
             created_at = None
         lines.append(f"  created_at: {created_at}")
         try:
-            file_created_at = self._cache_entry.get_state().dto.file_created_at
-        except AttributeError:
+            file_created_at = None
+            state = self._cache_entry.get_state()
+            dates = state.get_dates()
+            if len(dates) > 1:
+                file_created_at = dates[1]
+        except Exception:
             file_created_at = None
         lines.append(f"  file_created_at: {file_created_at}")
         # exif_created_at is not present in AssetResponseDto
         lines.append("  exif_created_at: (not available)")
         try:
-            updated_at = self._cache_entry.get_state().dto.updated_at
-        except AttributeError:
+            updated_at = None
+            # If AssetDtoState has a get_updated_at method, use it; otherwise, skip
+            state = self._cache_entry.get_state()
+            updated_at = state.get_updated_at()
+        except Exception:
             updated_at = None
         lines.append(f"  updated_at: {updated_at}")
         lines.append(f"  Tags: {self.get_tag_names()}")
