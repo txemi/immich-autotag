@@ -342,7 +342,7 @@ class AssetResponseWrapper:
                 )
             )
         # Check if the asset already has the tag
-        if self.has_tag(tag_name):
+        if self.has_tag(tag_name=tag_name):
             if fail_if_exists:
                 raise ValueError(
                     f"[INFO] Asset.id={self.get_id()} already has tag '{tag_name}'"
@@ -595,8 +595,8 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         if should_have_tag_fn():
-            if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name)
+            if not self.has_tag(tag_name=tag_name):
+                self.add_tag_by_name(tag_name=tag_name)
                 log(
                     f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) "
                     f"{tag_present_reason}. Tagged as '{tag_name}'.",
@@ -609,7 +609,7 @@ class AssetResponseWrapper:
                     level=LogLevel.FOCUS,
                 )
         else:
-            if self.has_tag(tag_name):
+            if self.has_tag(tag_name=tag_name):
                 log(
                     f"[CLASSIFICATION] Removing tag '{tag_name}' from asset.id={self.get_id()} "
                     f"({self.get_original_file_name()}) because {tag_absent_reason}.",
@@ -617,7 +617,7 @@ class AssetResponseWrapper:
                 )
                 if user is None:
                     user = UserResponseWrapper.from_context(self.get_context())
-                self.remove_tag_by_name(tag_name, user=user)
+                self.remove_tag_by_name(tag_name=tag_name, user=user)
             else:
                 log(
                     f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) {tag_absent_reason}. Tag '{tag_name}' not present.",
@@ -917,38 +917,38 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         if conflict:
-            if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name)
+            if not self.has_tag(tag_name=tag_name):
+                self.add_tag_by_name(tag_name=tag_name)
                 log(
                     f"asset.id={self.get_id()} ({self.get_original_file_name()}) is in duplicate album conflict. "
                     f"Tagged as '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
         else:
-            if self.has_tag(tag_name):
+            if self.has_tag(tag_name=tag_name):
                 log(
                     f"Removing tag '{tag_name}' from asset.id={self.get_id()} "
                     f"because duplicate album conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
-                self.remove_tag_by_name(tag_name, user=user)
+                self.remove_tag_by_name(tag_name=tag_name, user=user)
         # Per-duplicate-set tag
         if duplicate_id:
             tag_for_set = f"{tag_name}_{duplicate_id}"
             if conflict:
-                if not self.has_tag(tag_for_set):
-                    self.add_tag_by_name(tag_for_set)
+                if not self.has_tag(tag_name=tag_for_set):
+                    self.add_tag_by_name(tag_name=tag_for_set)
                     log(
                         f"asset.id={self.get_id()} ({self.get_original_file_name()}) is in duplicate album conflict (set {duplicate_id}). Tagged as '{tag_for_set}'.",
                         level=LogLevel.FOCUS,
                     )
             else:
-                if self.has_tag(tag_for_set):
+                if self.has_tag(tag_name=tag_for_set):
                     log(
                         f"Removing tag '{tag_for_set}' from asset.id={self.get_id()} because duplicate album conflict (set {duplicate_id}) is resolved.",
                         level=LogLevel.FOCUS,
                     )
-                    self.remove_tag_by_name(tag_for_set, user=user)
+                    self.remove_tag_by_name(tag_name=tag_for_set, user=user)
 
     @typechecked
     def ensure_autotag_album_detection_conflict(
@@ -983,8 +983,8 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         if conflict:
-            if not self.has_tag(tag_name):
-                self.add_tag_by_name(tag_name)
+            if not self.has_tag(tag_name=tag_name):
+                self.add_tag_by_name(tag_name=tag_name)
                 folders_str = str(candidate_folders) if candidate_folders else "unknown"
                 log(
                     f"[ALBUM DETECTION] Asset '{self.get_original_file_name()}' ({self.get_id()}) has multiple candidate folders: "
@@ -1006,13 +1006,13 @@ class AssetResponseWrapper:
                     ),
                 )
         else:
-            if self.has_tag(tag_name):
+            if self.has_tag(tag_name=tag_name):
                 log(
                     f"[ALBUM DETECTION] Removing tag '{tag_name}' from asset '{self.get_original_file_name()}' ({self.get_id()}) "
                     f"because album detection conflict is resolved.",
                     level=LogLevel.FOCUS,
                 )
-                self.remove_tag_by_name(tag_name, user=user)
+                self.remove_tag_by_name(tag_name=tag_name, user=user)
 
     @typechecked
     def format_info(self) -> str:
