@@ -3,7 +3,7 @@
 
 FROM python:3.11-slim
 
-# Instala cron, git y dependencias
+# Install cron, git, and dependencies
 RUN apt-get update && apt-get install -y cron git && rm -rf /var/lib/apt/lists/*
 
 # Install immich-autotag from PyPI
@@ -14,9 +14,7 @@ RUN pip install --no-cache-dir immich-autotag
 # Set working directory
 WORKDIR /root
 
-
-
-# Copia el entrypoint y plantilla de crontab
+# Copy the entrypoint and crontab template
 COPY docker/cron-entrypoint.sh /cron-entrypoint.sh
 COPY docker/crontab.template /crontab.template
 RUN chmod +x /cron-entrypoint.sh
