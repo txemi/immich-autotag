@@ -33,7 +33,7 @@ def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
     log("[DEBUG] Applying tag conversions...", level=LogLevel.FOCUS)
 
     tag_conversions = TagConversions.from_config_manager()
-    return asset_wrapper.apply_tag_conversions(tag_conversions)
+    return asset_wrapper.apply_tag_conversions(tag_conversions=tag_conversions)
 
 
 @typechecked
