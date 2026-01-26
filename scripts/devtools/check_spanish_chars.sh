@@ -110,12 +110,7 @@ sencillo'
 # Build the Spanish word pattern for grep
 SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
 SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
-if [ -f scripts/devtools/git_tracked_files.txt ]; then
-	files_to_check=$(cat scripts/devtools/git_tracked_files.txt)
-else
-	echo "git_tracked_files.txt not found. Run 'git ls-files > scripts/devtools/git_tracked_files.txt' first."
-	exit 1
-fi
+files_to_check=$(git ls-files)
 
 
 # Search for Spanish characters/words in the git-tracked files
