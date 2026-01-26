@@ -1,11 +1,11 @@
 """
-Utilidad para marcar rutas deprecadas o no alcanzables en el código.
+Utility to mark deprecated or unreachable code paths.
 """
 
 
 class InternalDeprecationError(Exception):
     """
-    Excepción para indicar que se ha ejecutado una ruta deprecada o no válida.
+    Exception to indicate that a deprecated or invalid code path has been executed.
     """
 
     pass
@@ -13,7 +13,7 @@ class InternalDeprecationError(Exception):
 
 def raise_deprecated_path(description: str) -> None:
     """
-    Lanza una excepción InternalDeprecationError con una descripción informativa.
-    Uso: llamar en puntos del código que no deberían ejecutarse.
+    Raises an InternalDeprecationError with an informative description.
+    Usage: call at points in the code that should not be executed.
     """
     raise InternalDeprecationError(f"DEPRECATED PATH: {description}")

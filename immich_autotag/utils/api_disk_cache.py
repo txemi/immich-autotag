@@ -4,14 +4,14 @@ from typing import Optional
 
 from immich_autotag.utils.run_output_dir import find_recent_run_dirs, get_run_output_dir
 
-# Config global para activar/desactivar cacheo (puede ser sobrescrito por parámetro)
+# Global config to enable/disable caching (can be overridden by parameter)
 API_CACHE_ENABLED = True
 
 CACHE_SUBDIR = "api_cache"
 
 
 def _get_cache_dir(entity: str, run_dir: Optional[Path] = None) -> Path:
-    """Devuelve el directorio de caché para una entidad (albums, assets, etc) en la ejecución dada."""
+    """Returns the cache directory for an entity (albums, assets, etc) in the given run."""
     if run_dir is None:
         run_dir = get_run_output_dir()
     cache_dir = run_dir / CACHE_SUBDIR / entity
@@ -20,7 +20,7 @@ def _get_cache_dir(entity: str, run_dir: Optional[Path] = None) -> Path:
 
 
 def save_entity_to_cache(*, entity: str, key: str, data: dict) -> None:
-    """Guarda un objeto en la caché de la ejecución actual."""
+    """Saves an object in the cache of the current run."""
     cache_dir = _get_cache_dir(entity)
     path = cache_dir / f"{key}.json"
     with open(path, "w", encoding="utf-8") as f:
@@ -31,20 +31,20 @@ def get_entity_from_cache(
     entity: str, key: str, use_cache: Optional[bool] = None
 ) -> Optional[dict]:
     """
-    Busca un objeto en la caché (primero en la ejecución actual, luego en previas).
-    Si use_cache es False, nunca busca en caché.
+    Searches for an object in the cache (first in the current run, then in previous runs).
+    If use_cache is False, never searches in cache.
     """
     if use_cache is None:
         use_cache = API_CACHE_ENABLED
     if not use_cache:
         return None
-    # 1. Buscar en la ejecución actual
+    # 1. Search in the current run
     cache_dir = _get_cache_dir(entity)
     path = cache_dir / f"{key}.json"
     if path.exists() and path.stat().st_size > 0:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
-    # 2. Buscar en ejecuciones previas (ordenadas de más reciente a más antigua)
+    # 2. Search in previous runs (ordered from most recent to oldest)
     logs_dir = Path("logs_local")
     for run_dir in find_recent_run_dirs(logs_dir, exclude_current=True):
         prev_cache_dir = run_dir / CACHE_SUBDIR / entity
@@ -52,7 +52,7 @@ def get_entity_from_cache(
         if prev_path.exists() and prev_path.stat().st_size > 0:
             with open(prev_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            # Opcional: copiar a la caché actual para acelerar futuras búsquedas
+            # Optional: copy to the current cache to speed up future searches
             save_entity_to_cache(entity=entity, key=key, data=data)
             return data
     return None
