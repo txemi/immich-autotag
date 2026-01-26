@@ -51,11 +51,11 @@ def remove_asset_from_autotag_temporary_albums(
             continue
 
         # Skip if asset not in album (idempotent check)
-        if not album_wrapper.has_asset(asset_wrapper.asset):
+        if not album_wrapper.has_asset(asset_wrapper):
             continue
 
         try:
-            client = asset_wrapper.context.client
+            client = asset_wrapper.get_context().get_client()
         except Exception:
 
             from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
@@ -72,7 +72,7 @@ def remove_asset_from_autotag_temporary_albums(
             removed_album_names.append(album_wrapper.get_album_name())
 
             log(
-                f"Asset {asset_wrapper.id} removed from temporary album "
+                f"Asset {asset_wrapper.get_id()} removed from temporary album "
                 f"{album_wrapper.get_album_name()}",
                 level=LogLevel.DEBUG,
             )
@@ -82,7 +82,7 @@ def remove_asset_from_autotag_temporary_albums(
             if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
                 raise
             log(
-                f"Failed to remove asset {asset_wrapper.id} from temporary album {album_wrapper.get_album_name()}: {e}",
+                f"Failed to remove asset {asset_wrapper.get_id()} from temporary album {album_wrapper.get_album_name()}: {e}",
                 level=LogLevel.IMPORTANT,
             )
             # Continue processing other albums even if one fails
@@ -90,7 +90,7 @@ def remove_asset_from_autotag_temporary_albums(
 
     if removed_album_names:
         log(
-            f"Asset {asset_wrapper.id} cleaned up from {len(removed_album_names)} temporary album(s): {removed_album_names}",
+            f"Asset {asset_wrapper.get_id()} cleaned up from {len(removed_album_names)} temporary album(s): {removed_album_names}",
             level=LogLevel.FOCUS,
         )
 
