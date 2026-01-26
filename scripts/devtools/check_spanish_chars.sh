@@ -8,6 +8,11 @@ set -x
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR" | xargs dirname)"
 
+# Get the relative path of the current script from the project root
+SCRIPT_ABS_PATH="$(realpath "$0")"
+SCRIPT_REL_PATH="${SCRIPT_ABS_PATH#$PROJECT_ROOT/}"
+
+
 # Set the target directory to project root unless overridden by argument
 TARGET_DIR="${1:-$PROJECT_ROOT}"
 
@@ -110,7 +115,7 @@ sencillo'
 # Build the Spanish word pattern for grep
 SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
 SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
-files_to_check=$(git ls-files | grep -v "scripts/devtools/check_spanish_chars.sh")
+files_to_check=$(git ls-files | grep -v "$SCRIPT_REL_PATH")
 
 
 # Search for Spanish characters/words in the git-tracked files
