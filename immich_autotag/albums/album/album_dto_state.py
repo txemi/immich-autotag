@@ -107,3 +107,12 @@ class AlbumDtoState:
                 "Cannot determine if album is empty from SEARCH load source."
             )
         return len(self._dto.assets) == 0
+
+    def get_asset_uuids(self) -> set[UUID]:
+        """
+        Returns the set of asset UUIDs in the album.
+        Only allowed in DETAIL/full mode.
+        """
+        if self._load_source != AlbumLoadSource.DETAIL:
+            raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
+        return set(UUID(a.id) for a in self._dto.assets)

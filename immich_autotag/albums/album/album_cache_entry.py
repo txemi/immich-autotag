@@ -90,9 +90,12 @@ class AlbumCacheEntry:
         """
         return self.ensure_full_loaded()._dto.is_empty()
 
+    def _get_dto(self) -> AlbumDtoState:
+        return self._dto
+
     def get_asset_uuids(self) -> set[UUID]:
         """
         Returns the set of asset UUIDs in the album, ensuring full DTO is loaded.
         Does not expose DTOs directly.
         """
-        return self.ensure_full_loaded().get_dto().get_asset_uuids()
+        return self.ensure_full_loaded()._get_dto().get_asset_uuids()
