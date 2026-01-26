@@ -163,15 +163,15 @@ install_system_dev_tools() {
 	if [ "$MODE" = "dev" ]; then
 		# Solo Ubuntu/Debian
 		if command -v apt-get >/dev/null 2>&1; then
-			echo "[DEV] Instalando herramientas de desarrollo del sistema (shfmt, etc.)..."
+			echo "[DEV] Installing system development tools (shfmt, etc.)..."
 			sudo apt-get update
 			sudo apt-get install -y shfmt
-			# AVISO: No instalar paquetes de Python ni Node.js globalmente.
-			# Si jscpd es necesario, debe instalarse solo mediante el gestor de paquetes de la distribución (apt, dnf, etc) o en un entorno local.
-			# PROHIBIDO: instalar paquetes de Python o Node.js globalmente (ni pip install --user, ni npm install -g, ni sudo pip/npm).
-			# Si jscpd no está en los repositorios, documentar la necesidad y buscar alternativa empaquetada.
+			# WARNING: Do not install Python or Node.js packages globally.
+			# If jscpd is needed, install only via the distribution package manager (apt, dnf, etc) or in a local environment.
+			# FORBIDDEN: Do not install Python or Node.js packages globally (no pip install --user, no npm install -g, no sudo pip/npm).
+			# If jscpd is not in the repositories, document the need and look for a packaged alternative.
 		else
-			echo "[DEV] Saltando instalación de herramientas de sistema: gestor apt-get no encontrado. Instala shfmt y jscpd manualmente si es necesario."
+			echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
 		fi
 	fi
 }
@@ -190,7 +190,7 @@ install_python_dev_requirements() {
 	fi
 }
 
-# Orquesta la instalación de dependencias
+# Orchestrates dependency installation
 install_dependencies() {
 	install_python_requirements
 	install_system_dev_tools
