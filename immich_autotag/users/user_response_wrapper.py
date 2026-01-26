@@ -7,8 +7,9 @@ import attrs
 from typeguard import typechecked
 
 if TYPE_CHECKING:
-    from immich_client.models.user_response_dto import UserResponseDto
     from immich_client.models.user_admin_response_dto import UserAdminResponseDto
+    from immich_client.models.user_response_dto import UserResponseDto
+
     from immich_autotag.context.immich_context import ImmichContext
 
 
@@ -36,7 +37,10 @@ class UserResponseWrapper:
             raise TypeError(
                 f"user must be a UserResponseDto or UserAdminResponseDto, got {type(value)}"
             )
-    user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field(validator=_validate_user)
+
+    user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field(
+        validator=_validate_user
+    )
     _cached_user_wrapper = None  # Class variable to cache the user
 
     @property
