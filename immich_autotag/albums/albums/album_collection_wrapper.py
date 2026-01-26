@@ -313,7 +313,7 @@ class AlbumCollectionWrapper:
 
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-        client = ImmichClientWrapper.get_default_instance()
+        client = ImmichClientWrapper.get_default_instance().get_client()
         albums = self.get_albums()
         total = len(albums)
         for idx, album_wrapper in enumerate(albums, 1):
