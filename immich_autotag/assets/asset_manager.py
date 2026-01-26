@@ -9,7 +9,7 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.get_all_assets import get_all_assets
 
-# Importación eliminada: AssetCacheEntry solo se usa internamente en AssetResponseWrapper
+# Removed import: AssetCacheEntry is only used internally in AssetResponseWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
@@ -44,12 +44,12 @@ class AssetManager:
         """
         Returns an asset by its UUID, using the cache if available,
         or requesting it from the API and storing it if not.
-        Primero consulta la caché en memoria, luego en disco, y finalmente la API.
+        First checks the in-memory cache, then disk, and finally the API.
         """
         if asset_id in self._assets:
             return self._assets[asset_id]
 
-        # Centraliza la lógica de obtención en AssetResponseWrapper
+        # Centralizes the retrieval logic in AssetResponseWrapper
         asset = AssetResponseWrapper.from_id(asset_id, context)
         self._assets[asset_id] = asset
         return asset
