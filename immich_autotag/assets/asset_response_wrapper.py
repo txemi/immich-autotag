@@ -75,17 +75,10 @@ class AssetResponseWrapper:
     # Construction methods moved to AssetCacheEntry
 
     def get_tags(self) -> list[TagResponseDto] | Unset:
-        """Lazy-load tags if not present in the current asset.
-
-        Returns the tags list from the asset. If tags are not yet loaded (UNSET from search_assets),
-        this property triggers lazy-loading of the full asset via get_asset_info.
-
-        Returns:
-            list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
-        """
-
-        # Use the public getter from AssetDtoState
-        return self._ensure_full_asset_loaded().get_tags()
+        """Return TagResponseDto list, converting from TagWrapper if needed."""
+        wrappers = self._ensure_full_asset_loaded().get_tags()
+        # Convert TagWrapper to TagResponseDto
+        return [w.to_dto() for w in wrappers]
 
     @typechecked
     def update_date(
@@ -141,7 +134,7 @@ class AssetResponseWrapper:
         )
         response = proxy_update_asset(
             asset_id=self.get_id_as_uuid(),
-            client=self.get_context().get_authenticated_client(),
+            client=self.get_context().get_client().get_client(),
             body=dto,
         )
         # Fail-fast: check response type and status directly, no dynamic attribute access
@@ -209,7 +202,7 @@ class AssetResponseWrapper:
 
         context = self.get_context()
         duplicate_id = self.get_duplicate_id_as_uuid()
-        wrappers = []
+        wrappers: list[AssetResponseWrapper] = []
         if duplicate_id is not None:
             group = context.get_duplicates_collection().get_group(duplicate_id)
             for dup_id in group:
@@ -270,7 +263,7 @@ class AssetResponseWrapper:
         if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(
                 f"[BUG] Before removal: asset.id={self.get_id()}, asset_name={self.get_original_file_name()}, "
-                f"tag_name='{tag_name}', tag_ids={[tag.id for tag in tags_to_remove]}"
+                f"tag_name='{tag_name}', tag_ids={[str(tag.id) for tag in tags_to_remove]}"
             )
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
 
@@ -282,17 +275,19 @@ class AssetResponseWrapper:
         removed_any = False
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
+            # tag is TagResponseDto, get id as UUID
+            tag_uuid = UUID(tag.id)
             response = proxy_untag_assets(
-                tag_id=UUID(tag.id),
-                client=self.get_context().get_client(),
+                tag_id=tag_uuid,
+                client=self.get_context().get_client().get_client(),
                 asset_ids=[self.get_id_as_uuid()],
             )
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
-                    f"[BUG] Full untag_assets response for tag_id={tag.id}: {response}"
+                    f"[BUG] Full untag_assets response for tag_id={str(tag_uuid)}: {response}"
                 )
                 log_debug(
-                    f"[BUG][INFO] Removed tag '{tag_name}' (id={tag.id}) from asset.id={self.get_id()}. "
+                    f"[BUG][INFO] Removed tag '{tag_name}' (id={str(tag_uuid)}) from asset.id={self.get_id()}. "
                     f"Response: {response}"
                 )
             removed_any = True
@@ -332,7 +327,7 @@ class AssetResponseWrapper:
             tag = (
                 self.get_context()
                 .get_tag_collection()
-                .create_tag_if_not_exists(tag_name, self.get_context().get_client())
+                .create_tag_if_not_exists(name=tag_name, client=self.get_context().get_client().get_client())
             )
         # Check if the asset already has the tag
         if self.has_tag(tag_name):
@@ -349,7 +344,7 @@ class AssetResponseWrapper:
             )
             return False
         # Extra checks and logging before API call
-        if not tag or tag.id is None:
+        if not tag or not hasattr(tag, "get_id"):
             error_msg = (
                 f"[ERROR] Tag object for '{tag_name}' is missing or has no id. "
                 f"Tag: {tag}"
@@ -369,7 +364,7 @@ class AssetResponseWrapper:
             )
             return False
         if not self.get_id():
-            error_msg = f"[ERROR] Asset object is missing id. Asset DTO: {self._cache_entry.get_state().dto}"
+            error_msg = f"[ERROR] Asset object is missing id. Asset state: {str(self._cache_entry.get_state())}"
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
@@ -378,9 +373,8 @@ class AssetResponseWrapper:
                 from immich_autotag.report.modification_kind import ModificationKind
 
                 tag_mod_report.add_modification(
-                    asset_id=None,
-                    asset_name=self.get_original_file_name(),
                     kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    asset_wrapper=self,
                     tag=tag,
                     user=user_wrapper,
                     extra={"error": error_msg},
@@ -390,7 +384,7 @@ class AssetResponseWrapper:
         from immich_autotag.logging.utils import log
 
         log(
-            f"[DEBUG] Calling tag_assets.sync with tag_id={tag.id} and asset_id={self.get_id()}",
+            f"[DEBUG] Calling tag_assets.sync with tag_id={tag.get_id()} and asset_id={self.get_id()}",
             level=LogLevel.DEBUG,
         )
 
@@ -400,8 +394,8 @@ class AssetResponseWrapper:
 
         try:
             response = proxy_tag_assets(
-                tag_id=UUID(tag.id),
-                client=self.get_context().get_authenticated_client(),
+                tag_id=tag.get_id(),
+                client=self.get_context().get_client().get_client(),
                 asset_ids=[self.get_id_as_uuid()],
             )
         except Exception as e:
