@@ -20,7 +20,6 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
-from immich_autotag.assets.asset_dto_state import AssetDtoState
 from immich_autotag.assets.classification_update_result import (
     ClassificationUpdateResult,
 )
@@ -67,7 +66,6 @@ class AssetResponseWrapper:
     def get_context(self) -> "ImmichContext":
         """Read-only access to the context. No external modification allowed."""
         return self._context
-
 
     # Construction methods moved to AssetCacheEntry
 
@@ -843,9 +841,15 @@ class AssetResponseWrapper:
         Returns a ParseResult URL object for this asset.
         """
 
-        from immich_autotag.utils.url_helpers import get_immich_photo_url
+        url = self.get_immich_photo_url()
+        return url
 
-        url = get_immich_photo_url(self.get_id_as_uuid())
+    def get_url(self) -> ParseResult:
+        """
+        Returns a ParseResult URL object for this asset.
+        """
+
+        url = self.get_immich_photo_url()
         return url
 
     def get_uuid(self) -> UUID:
