@@ -84,6 +84,7 @@ class AssetResponseWrapper:
             list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
         """
 
+        # Use the public getter from AssetDtoState
         return self._ensure_full_asset_loaded().get_tags()
 
     @typechecked
@@ -140,7 +141,7 @@ class AssetResponseWrapper:
         )
         response = proxy_update_asset(
             asset_id=self.get_id_as_uuid(),
-            client=self.get_context().get_client(),
+            client=self.get_context().get_authenticated_client(),
             body=dto,
         )
         # Fail-fast: check response type and status directly, no dynamic attribute access
@@ -229,7 +230,7 @@ class AssetResponseWrapper:
         """
         Returns True if the asset has the tag with that name (case-insensitive).
         """
-        return self._cache_entry.get_state().get_full().has_tag(tag_name)
+        return self._cache_entry.get_state().has_tag(tag_name)
 
     @typechecked
     def remove_tag_by_name(
@@ -400,7 +401,7 @@ class AssetResponseWrapper:
         try:
             response = proxy_tag_assets(
                 tag_id=UUID(tag.id),
-                client=self.get_context().get_client(),
+                client=self.get_context().get_authenticated_client(),
                 asset_ids=[self.get_id_as_uuid()],
             )
         except Exception as e:
