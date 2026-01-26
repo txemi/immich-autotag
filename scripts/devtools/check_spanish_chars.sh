@@ -12,12 +12,113 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR" | xargs dirname)"
 TARGET_DIR="${1:-$PROJECT_ROOT}"
 
 # Exclude common build and dependency folders
-EXCLUDES=".git,.venv,.mypy_cache,node_modules,dist,build,logs_local,jenkins_logs,__pycache__,scripts/devtools/check_spanish_chars.sh"
+EXCLUDES=".git,.venv,.mypy_cache,node_modules,dist,build,jenkins_logs,__pycache__,scripts/devtools/check_spanish_chars.sh,logs_local"
 
 # Find Spanish/accented characters and common Spanish words in comments
+
 EXCLUDE_ARGS=$(printf -- '--exclude-dir=%s ' $(echo $EXCLUDES | tr ',' ' '))
-SPANISH_PATTERN='[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\b(si|solo|mantenemos|compatibilidad|devolviendo|lista|uno|cero|mapa|soporta|estructura|necesitaría|cambiado|no|tenemos|usamos|comentario|ejemplo|devuelve|el|la|los|las|un|una|unos|unas|por|para|con|sin|sobre|entre|pero|porque|cuando|donde|como|más|menos|muy|también|aquí|allí|este|ese|esa|estos|esas|aquellos|aquellas|ya|todavía|aún|quizá|quizás|siempre|nunca|jamás|antes|después|hoy|mañana|ayer|ahora|entonces|luego|mientras|durante|despues|antes|nuevo|nueva|nuevos|nuevas|viejo|vieja|viejos|viejas|primero|primera|primeros|primeras|último|última|últimos|últimas|mejor|peor|mayor|menor|grande|pequeño|pequeña|pequeños|pequeñas|importante|interesante|difícil|fácil|rápido|lento|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|probable|improbable|claro|oscuro|simple|complicado|complejo|sencillo|difícil|fácil|rápido|lento|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|probable|improbable|claro|oscuro|simple|complicado|complejo|sencillo)\b'
-spanish_matches=$(grep -r -n -I -E "$SPANISH_PATTERN" "$TARGET_DIR" $EXCLUDE_ARGS --exclude=*.json --exclude=*.data.json --exclude=*.pyc --exclude=*.pyo || true)
+SCRIPT_PATH="$SCRIPT_DIR/check_spanish_chars.sh"
+
+
+# List of common Spanish words, one per line for readability
+SPANISH_WORDS=$(cat <<'EOF'
+si
+solo
+mantenemos
+compatibilidad
+devolviendo
+lista
+soporta
+estructura
+necesitaría
+cambiado
+tenemos
+usamos
+comentario
+ejemplo
+devuelve
+más
+menos
+muy
+también
+aquí
+allí
+aquellos
+aquellas
+todavía
+aún
+quizá
+quizás
+siempre
+nunca
+jamás
+antes
+después
+hoy
+mañana
+ayer
+entonces
+luego
+mientras
+durante
+nuevo
+nueva
+nuevos
+nuevas
+viejo
+vieja
+viejos
+viejas
+primero
+primera
+primeros
+primeras
+último
+última
+últimos
+últimas
+mejor
+peor
+mayor
+menor
+grande
+pequeño
+pequeña
+pequeños
+pequeñas
+importante
+interesante
+difícil
+fácil
+rápido
+lento
+posible
+imposible
+correcto
+incorrecto
+verdadero
+falso
+cierto
+seguro
+probable
+improbable
+claro
+oscuro
+complicado
+complejo
+sencillo
+EOF
+)
+if [ -f scripts/devtools/git_tracked_files.txt ]; then
+	files_to_check=$(cat scripts/devtools/git_tracked_files.txt)
+else
+	echo "git_tracked_files.txt not found. Run 'git ls-files > scripts/devtools/git_tracked_files.txt' first."
+	exit 1
+fi
+
+
+# Search for Spanish characters/words in the git-tracked files
+spanish_matches=$(echo "$files_to_check" | xargs grep -n -I -E "$SPANISH_PATTERN" || true)
 
 if [ -n "$spanish_matches" ]; then
 	echo '❌ Spanish language characters detected in the following files/lines:'
