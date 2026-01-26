@@ -316,9 +316,15 @@ class AlbumCollectionWrapper:
         client = ImmichClientWrapper.get_default_instance().get_client()
         albums = self.get_albums()
         total = len(albums)
+        tracker = None
+        if total > 0:
+            from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
+
+            tracker = PerformanceTracker(total_assets=total)
         for idx, album_wrapper in enumerate(albums, 1):
             # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
+
             if album_wrapper.is_empty():
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
@@ -348,16 +354,22 @@ class AlbumCollectionWrapper:
                         f"marked for removal after map build.",
                         level=LogLevel.WARNING,
                     )
-            else:
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+            if tracker and tracker.should_log_progress(idx):
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
 
-                log(
-                    f"[ALBUM-LOAD][API][{idx}/{total}] Album "
+                progress_msg = tracker.get_progress_description(idx)
+                log(f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}Album "
                     f"'{album_wrapper.get_album_name()}' reloaded with "
-                    f"{len(album_wrapper.get_asset_uuids())} assets.",
-                    level=LogLevel.INFO,
-                )
+                    f"{len(album_wrapper.get_asset_uuids())} assets.", level=LogLevel.PROGRESS)
+            log(
+                f"[ALBUM-LOAD][API][{idx}/{total}] Album "
+                f"'{album_wrapper.get_album_name()}' reloaded with "
+                f"{len(album_wrapper.get_asset_uuids())} assets.",
+                level=LogLevel.INFO,
+            )
             asset_map.add_album_for_asset_ids(album_wrapper)
         albums_to_remove = self._detect_empty_temporary_albums()
 
