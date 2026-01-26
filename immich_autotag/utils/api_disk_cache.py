@@ -23,7 +23,7 @@ def _get_cache_dir(entity: str, run_dir: Optional[Path] = None) -> Path:
     return cache_dir
 
 
-def save_entity_to_cache(*, entity: str, key: str, data: dict) -> None:
+def save_entity_to_cache(*, entity: str, key: str, data: dict[str, object]) -> None:
     """Saves an object in the cache of the current run."""
     cache_dir = _get_cache_dir(entity)
     path = cache_dir / f"{key}.json"
@@ -33,7 +33,7 @@ def save_entity_to_cache(*, entity: str, key: str, data: dict) -> None:
 
 def get_entity_from_cache(
     entity: str, key: str, use_cache: Optional[bool] = None
-) -> Optional[dict]:
+) -> Optional[dict[str, object]]:
     """
     Searches for an object in the cache (first in the current run, then in previous
     runs). If use_cache is False, never searches in cache.
