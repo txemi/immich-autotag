@@ -68,24 +68,21 @@ class AssetResponseWrapper:
         """Read-only access to the context. No external modification allowed."""
         return self._context
 
-    def _ensure_full_asset_loaded(self) -> AssetDtoState:
-        """Ensure the asset is fully loaded (type FULL) using the cache entry logic."""
-        return self._cache_entry.ensure_full_asset_loaded(self.get_context())
 
     # Construction methods moved to AssetCacheEntry
 
-    def get_tags(self) -> list[TagResponseDto] | Unset:
+    def get_tags(self) -> list[TagWrapper]:
         """Lazy-load tags if not present in the current asset.
 
         Returns the tags list from the asset. If tags are not yet loaded (UNSET from search_assets),
         this property triggers lazy-loading of the full asset via get_asset_info.
 
         Returns:
-            list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
+            list[TagWrapper]: Tag wrappers from the asset
         """
 
         # Use the public getter from AssetDtoState
-        return self._ensure_full_asset_loaded().get_tags()
+        return self._cache_entry.get_tags()
 
     @typechecked
     def update_date(
@@ -185,7 +182,7 @@ class AssetResponseWrapper:
         Chooses the oldest and raises an exception if any is earlier than the chosen one.
         """
 
-        date_candidates = self._cache_entry.get_state().get_dates()
+        date_candidates = self._cache_entry.get_dates()
         if not date_candidates:
             raise ValueError("Could not determine any date for the asset.")
         best_date = min(date_candidates)
@@ -194,7 +191,7 @@ class AssetResponseWrapper:
                 raise DateIntegrityError(
                     (
                         f"Integrity broken: found a date ({d}) earlier than the best selected date "
-                        f"({best_date}) for asset {self._cache_entry.get_state().get_uuid()}"
+                        f"({best_date}) for asset {self._cache_entry.get_uuid()}"
                     )
                 )
         return best_date
@@ -231,7 +228,7 @@ class AssetResponseWrapper:
         """
         Returns True if the asset has the tag with that name (case-insensitive).
         """
-        return self._cache_entry.get_state().has_tag(tag_name)
+        return self._cache_entry.has_tag(tag_name)
 
     @typechecked
     def remove_tag_by_name(
@@ -248,44 +245,34 @@ class AssetResponseWrapper:
         Raises if any remain.
         Uses TagWrapper from the tag collection for all reporting.
         """
-        from immich_client.types import Unset
 
         from immich_autotag.api.immich_proxy.tags import proxy_untag_assets
         from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 
-        tags: list[TagResponseDto] | Unset = self.get_tags()
-        if isinstance(tags, Unset):
-            tags = []
-        tags_to_remove: list[TagResponseDto] = [
-            tag for tag in tags if tag.name and tag.name.lower() == tag_name.lower()
+        tags = self.get_tags()
+        tags_to_remove = [
+            tag for tag in tags if tag.get_name().lower() == tag_name.lower()
         ]
-
-        if tags_to_remove:
-            tag_wrapper = self.get_context().get_tag_collection().find_by_name(tag_name)
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
                     f"[BUG][INFO] Asset id={self.get_id()} does not have the tag '{tag_name}'"
                 )
             return False
-
         if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(
                 f"[BUG] Before removal: asset.id={self.get_id()}, asset_name={self.get_original_file_name()}, "
-                f"tag_name='{tag_name}', tag_ids={[str(tag.id) for tag in tags_to_remove]}"
+                f"tag_name='{tag_name}', tag_ids={[str(tag.get_id()) for tag in tags_to_remove]}"
             )
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
-
         assert isinstance(
             self.get_context().get_tag_collection(), TagCollectionWrapper
         ), "context.tag_collection must be an object"
         tag_wrapper = self.get_context().get_tag_collection().find_by_name(tag_name)
-
         removed_any = False
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
-            # tag is TagResponseDto, get id as UUID
-            tag_uuid = UUID(tag.id)
+            tag_uuid = tag.get_id()
             response = proxy_untag_assets(
                 tag_id=tag_uuid,
                 client=self.get_context().get_client().get_client(),
