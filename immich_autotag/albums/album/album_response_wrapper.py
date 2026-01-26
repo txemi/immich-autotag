@@ -171,32 +171,18 @@ class AlbumResponseWrapper:
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
         """
-        Returns the set of asset IDs as UUIDs, building the cache if it does not exist.
-        If the album is not in DETAIL/full mode, ensures full mode using ensure_full().
+        Returns the set of asset IDs as UUIDs, using the AlbumCacheEntry logic.
         """
-        from uuid import UUID
-
-        self.ensure_full()
-
-        if self._asset_ids_cache is not None:
-            return self._asset_ids_cache
-        assets = self._get_album_full_or_load_dto().get_assets()
-        self._asset_ids_cache = set(UUID(a.id) for a in assets)
-        return self._asset_ids_cache
+        return self._cache_entry.get_asset_uuids()
 
     # --- 6. Public Methods - Asset Management ---
-    def get_asset_ids(self) -> set[UUID]:
-        """
-        Returns the set of asset IDs as UUIDs using the centralized cache.
-        """
-        return self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
     def get_asset_uuids(self) -> set[UUID]:
         """
-        Returns the asset IDs as a set of UUID objects.
+        Returns the asset IDs as a set of UUID objects using the AlbumCacheEntry logic.
         """
-        return self._get_or_build_asset_ids_cache()
+        return self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:

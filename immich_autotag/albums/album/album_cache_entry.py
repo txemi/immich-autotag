@@ -23,6 +23,7 @@ class StaleAlbumCacheError(Exception):
 
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
+
     _dto: AlbumDtoState
     _max_age_seconds: int = 3600
 
@@ -88,3 +89,10 @@ class AlbumCacheEntry:
         No fuerza recarga, usa el DTO actual.
         """
         return self.ensure_full_loaded()._dto.is_empty()
+
+    def get_asset_uuids(self) -> set[UUID]:
+        """
+        Returns the set of asset UUIDs in the album, ensuring full DTO is loaded.
+        Does not expose DTOs directly.
+        """
+        return self.ensure_full_loaded().get_dto().get_asset_uuids()
