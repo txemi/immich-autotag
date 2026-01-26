@@ -27,14 +27,16 @@ def _fetch_assets_page(
 
     body = MetadataSearchDto(page=page)
     log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
-    response = proxy_search_assets(client=context.client, body=body)
+    response = proxy_search_assets(
+        client=context.get_client_wrapper().get_client(), body=body
+    )
     log_debug(f"[BUG] After search_assets.sync_detailed, page={page}")
     return response
 
 
 @typechecked
 def _yield_assets_from_page(
-    assets_page: list,
+    assets_page: list[object],
     start_idx: int,
     context: "ImmichContext",
     max_assets: int | None,
