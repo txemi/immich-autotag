@@ -185,6 +185,13 @@ class AlbumResponseWrapper:
         return self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
+    def get_asset_ids(self) -> set[UUID]:
+        """
+        Returns the set of asset IDs as UUIDs using the AlbumCacheEntry logic.
+        """
+        return self._cache_entry.get_asset_uuids()
+
+    @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
         from uuid import UUID
 
