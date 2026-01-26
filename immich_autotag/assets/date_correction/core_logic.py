@@ -139,14 +139,14 @@ def correct_asset_date(
     )
     if DateCorrectionStepResult.should_exit(step_result):
         log(
-            f"[DATE CORRECTION] Date corrected by filename for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] Date corrected by filename for asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()})",
             level=LogLevel.FOCUS,
         )
         return step_result
 
     if not flat_candidates:
         log(
-            f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] No date candidates found for asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()})",
             level=LogLevel.FOCUS,
         )
         return DateCorrectionStepResult.EXIT
@@ -156,26 +156,26 @@ def correct_asset_date(
 
     if immich_date <= oldest:
         log(
-            f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do. Asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()})",
             level=LogLevel.FOCUS,
         )
         return DateCorrectionStepResult.EXIT
     if immich_date.date() == oldest.date():
         log(
-            f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do. Asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()})",
             level=LogLevel.FOCUS,
         )
         return DateCorrectionStepResult.EXIT
     if _is_precise_and_rounded_midnight_close(immich_date, oldest):
         log(
-            f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do. Asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()})",
             level=LogLevel.FOCUS,
         )
         return DateCorrectionStepResult.EXIT
     diff_seconds_abs = abs((immich_date - oldest).total_seconds())
     if diff_seconds_abs < 20 * 3600:
         log(
-            f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do. Asset {asset_wrapper.asset.id} ({asset_wrapper.original_file_name})",
+            f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do. Asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()})",
             level=LogLevel.FOCUS,
         )
         return DateCorrectionStepResult.EXIT

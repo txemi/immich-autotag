@@ -140,7 +140,7 @@ class AssetResponseWrapper:
         )
         response = proxy_update_asset(
             asset_id=self.get_id_as_uuid(),
-            client=self.get_context().client,
+            client=self.get_context().get_client(),
             body=dto,
         )
         # Fail-fast: check response type and status directly, no dynamic attribute access
@@ -210,14 +210,14 @@ class AssetResponseWrapper:
         duplicate_id = self.get_duplicate_id_as_uuid()
         wrappers = []
         if duplicate_id is not None:
-            group = context.duplicates_collection.get_group(duplicate_id)
+            group = context.get_duplicates_collection().get_group(duplicate_id)
             for dup_id in group:
                 if (
                     not include_self
                     and dup_id == self._cache_entry.get_state().get_uuid()
                 ):
                     continue
-                dup_asset = context.asset_manager.get_asset(dup_id, context)
+                dup_asset = context.get_asset_manager().get_asset(dup_id, context)
                 if dup_asset is not None:
                     wrappers.append(dup_asset)
         if include_self and (self not in wrappers):
@@ -229,7 +229,7 @@ class AssetResponseWrapper:
         """
         Returns True if the asset has the tag with that name (case-insensitive).
         """
-        return self._cache_entry.get_state()._get_full().has_tag(tag_name)
+        return self._cache_entry.get_state().get_full().has_tag(tag_name)
 
     @typechecked
     def remove_tag_by_name(
@@ -258,7 +258,7 @@ class AssetResponseWrapper:
         ]
 
         if tags_to_remove:
-            tag_wrapper = self.get_context().tag_collection.find_by_name(tag_name)
+            tag_wrapper = self.get_context().get_tag_collection().find_by_name(tag_name)
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -274,16 +274,16 @@ class AssetResponseWrapper:
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
 
         assert isinstance(
-            self.get_context().tag_collection, TagCollectionWrapper
+            self.get_context().get_tag_collection(), TagCollectionWrapper
         ), "context.tag_collection must be an object"
-        tag_wrapper = self.get_context().tag_collection.find_by_name(tag_name)
+        tag_wrapper = self.get_context().get_tag_collection().find_by_name(tag_name)
 
         removed_any = False
         tag_mod_report = ModificationReport.get_instance()
         for tag in tags_to_remove:
             response = proxy_untag_assets(
                 tag_id=UUID(tag.id),
-                client=self.get_context().client,
+                client=self.get_context().get_client(),
                 asset_ids=[self.get_id_as_uuid()],
             )
             if is_log_level_enabled(LogLevel.DEBUG):
@@ -326,10 +326,12 @@ class AssetResponseWrapper:
         # Get the UserWrapper in a clean and encapsulated way
         user_wrapper = UserResponseWrapper.from_context(self.get_context())
 
-        tag = self.get_context().tag_collection.find_by_name(tag_name)
+        tag = self.get_context().get_tag_collection().find_by_name(tag_name)
         if tag is None:
-            tag = self.get_context().tag_collection.create_tag_if_not_exists(
-                tag_name, self.get_context().client
+            tag = (
+                self.get_context()
+                .get_tag_collection()
+                .create_tag_if_not_exists(tag_name, self.get_context().get_client())
             )
         # Check if the asset already has the tag
         if self.has_tag(tag_name):
@@ -398,7 +400,7 @@ class AssetResponseWrapper:
         try:
             response = proxy_tag_assets(
                 tag_id=UUID(tag.id),
-                client=self.get_context().client,
+                client=self.get_context().get_client(),
                 asset_ids=[self.get_id_as_uuid()],
             )
         except Exception as e:
@@ -491,38 +493,19 @@ class AssetResponseWrapper:
         return self._cache_entry.get_state().get_original_file_name()
 
     def is_favorite(self) -> bool:
-        return self._cache_entry.get_state().dto.is_favorite
+        return self._cache_entry.get_state().get_is_favorite()
 
     def get_created_at(self) -> datetime | str | None:
-        return self._cache_entry.get_state().dto.created_at
+        return self._cache_entry.get_state().get_created_at()
 
     def get_id(self) -> str:
-        return self._cache_entry.get_state().dto.id
+        return self._cache_entry.get_state().get_id()
 
     def get_original_path(self) -> "Path":
-        from pathlib import Path
-
-        path = Path(self._cache_entry.get_state().dto.original_path)
-        return path
+        return self._cache_entry.get_state().get_original_path()
 
     def get_duplicate_id_as_uuid(self) -> "UUID | None":
-        """
-        Returns the duplicate_id as UUID (or None if not present or invalid).
-        """
-        from uuid import UUID
-
-        from immich_client.types import Unset
-
-        val = self._cache_entry.get_state().dto.duplicate_id
-        if val is None or isinstance(val, Unset):
-            return None
-        try:
-            return UUID(val)
-        except Exception:
-            try:
-                return UUID(str(val))
-            except Exception:
-                return None
+        return self._cache_entry.get_state().get_duplicate_id_as_uuid()
 
     @typechecked
     def get_classification_match_detail(self) -> MatchClassificationResult:
@@ -579,11 +562,13 @@ class AssetResponseWrapper:
             return True
         return False
 
+    from typing import Callable
+
     @typechecked
     def _ensure_tag_for_classification_status(
         self,
         tag_name: str,
-        should_have_tag_fn: callable,
+        should_have_tag_fn: Callable[[], bool],
         tag_present_reason: str,
         tag_absent_reason: str,
         user: UserResponseWrapper | None = None,
