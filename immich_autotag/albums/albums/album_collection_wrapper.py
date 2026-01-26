@@ -356,14 +356,18 @@ class AlbumCollectionWrapper:
                     )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
+
             if tracker and tracker.should_log_progress(idx):
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
 
                 progress_msg = tracker.get_progress_description(idx)
-                log(f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}Album "
+                log(
+                    f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}Album "
                     f"'{album_wrapper.get_album_name()}' reloaded with "
-                    f"{len(album_wrapper.get_asset_uuids())} assets.", level=LogLevel.PROGRESS)
+                    f"{len(album_wrapper.get_asset_uuids())} assets.",
+                    level=LogLevel.PROGRESS,
+                )
             log(
                 f"[ALBUM-LOAD][API][{idx}/{total}] Album "
                 f"'{album_wrapper.get_album_name()}' reloaded with "
