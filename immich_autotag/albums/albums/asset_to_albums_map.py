@@ -16,8 +16,6 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
     """
 
     def __init__(self):
-        from uuid import UUID
-
         self._map: dict[UUID, AlbumList] = dict()
 
     # Rely on MutableMapping.get implementation; avoid overriding overloaded signature.
@@ -80,8 +78,6 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
             raise KeyError(f"Asset UUID {asset_uuid} not found in AssetToAlbumsMap.")
 
     def __getitem__(self, key: UUID) -> AlbumList:
-        from uuid import UUID
-
         if not isinstance(key, UUID):
             raise TypeError(
                 f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
@@ -89,8 +85,6 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
         return self._map[key]
 
     def __setitem__(self, key: UUID, value: AlbumList) -> None:
-        from uuid import UUID
-
         if not isinstance(key, UUID):
             raise TypeError(
                 f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
@@ -98,8 +92,6 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
         self._map[key] = value
 
     def __delitem__(self, key: UUID) -> None:
-        from uuid import UUID
-
         if not isinstance(key, UUID):
             raise TypeError(
                 f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
@@ -110,8 +102,6 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
         return iter(self._map)
 
     def __contains__(self, key: object) -> bool:
-        from uuid import UUID
-
         if not isinstance(key, UUID):
             raise TypeError(
                 f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
