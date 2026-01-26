@@ -1,6 +1,6 @@
 pipeline {
     options {
-        // Conserva solo los 4 últimos builds
+        // Keep only the last 4 builds
         buildDiscarder(logRotator(numToKeepStr: '4'))
     }
     agent {

@@ -5,11 +5,11 @@
 
 # Usage:
 #   ./setup_venv.sh [--clean]
-#   --clean   Borra .venv e immich-client antes de crear entorno y cliente
+#   --clean   Deletes .venv and immich-client before creating environment and client
 
 set -e
 
-# --- FUNCIONES PRINCIPALES ---
+# --- MAIN FUNCTIONS ---
 
 parse_args() {
 	CLEAN=0
@@ -34,13 +34,13 @@ parse_args() {
 }
 
 print_help() {
-	echo "Uso: $0 [--clean] [--prod] [--dev] [--help]"
-	echo "  --clean   Borra .venv e immich-client antes de crear entorno y cliente."
-	echo "  --prod    Solo instala dependencias de ejecución (producción)."
-	echo "  --dev     Instala dependencias de desarrollo (por defecto)."
-	echo "  --help    Muestra esta ayuda y termina."
+	echo "Usage: $0 [--clean] [--prod] [--dev] [--help]"
+	echo "  --clean   Deletes .venv and immich-client before creating environment and client."
+	echo "  --prod    Only installs runtime (production) dependencies."
+	echo "  --dev     Installs development dependencies (default)."
+	echo "  --help    Shows this help and exits."
 }
-# --- FUNCIONES AUXILIARES ---
+# --- AUXILIARY FUNCTIONS ---
 
 # Inicializa rutas y variables globales
 init_paths() {
@@ -53,9 +53,9 @@ init_paths() {
 }
 
 clean_env() {
-	echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
-	rm -rf "$VENV_DIR" "$CLIENT_DIR"
-	echo "Limpieza completada."
+    echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
+    rm -rf "$VENV_DIR" "$CLIENT_DIR"
+    echo "Cleanup completed."
 }
 
 extract_config() {
@@ -106,7 +106,7 @@ get_immich_version() {
 	fi
 }
 
-# Obtiene la URL de OpenAPI adecuada según la configuración
+# Gets the appropriate OpenAPI URL according to the configuration
 get_openapi_url() {
 	local config_file="$1"
 	local default_version="v2.4.1"
@@ -162,7 +162,7 @@ install_dependencies() {
 				echo "requirements-dev.txt not found. Skipping dev dependencies."
 			fi
 		else
-			echo "Modo producción: solo dependencias de ejecución instaladas."
+			echo "Production mode: only runtime dependencies installed."
 		fi
 	else
 		echo "requirements.txt not found."
@@ -212,7 +212,7 @@ main() {
 		clean_env
 	fi
 
-	# Obtener la URL de OpenAPI adecuada
+	# Get the appropriate OpenAPI URL
 	get_openapi_url "$CONFIG_FILE"
 
 	create_venv
@@ -220,5 +220,5 @@ main() {
 	generate_and_install_client
 }
 
-# --- EJECUCIÓN ---
+# --- EXECUTION ---
 main "$@"
