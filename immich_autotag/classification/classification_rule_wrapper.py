@@ -100,13 +100,17 @@ class ClassificationRuleWrapper:
         print(f"[DEBUG] asset_links_matched: {asset_links_matched}")
 
         print(f"[DEBUG] DEFAULT_ERROR_MODE: {DEFAULT_ERROR_MODE}")
-        
+
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
             asset_id = asset_wrapper.get_id_as_uuid()
             asset_url = asset_wrapper.get_immich_photo_url()
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
-            log(f"Evaluating asset: id={asset_id} url={asset_url} | {self.to_log_string()}", level=LogLevel.PROGRESS)
+
+            log(
+                f"Evaluating asset: id={asset_id} url={asset_url} | {self.to_log_string()}",
+                level=LogLevel.PROGRESS,
+            )
 
             raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
         if not tags_matched and not albums_matched and not asset_links_matched:
