@@ -82,6 +82,7 @@ class ClassificationRuleWrapper:
         print(f"[DEBUG] asset_tags: {asset_tags}")
         album_names = set(asset_wrapper.get_album_names())
         print(f"[DEBUG] album_names: {album_names}")
+        print(f"[DEBUG] asset_url: {asset_url}")
 
         tags_matched = [tag for tag in asset_tags if self.has_tag(tag)]
         print(f"[DEBUG] tags_matched: {tags_matched}")
@@ -93,6 +94,8 @@ class ClassificationRuleWrapper:
         print(f"[DEBUG] asset_link_uuids: {asset_link_uuids}")
         asset_uuid = asset_wrapper.get_id_as_uuid()
         print(f"[DEBUG] asset_uuid: {asset_uuid}")
+        # Mostrar la URL como string también en modo debug
+        print(f"[DEBUG] asset_url (string): {asset_url}")
         asset_links_matched = []
         if asset_link_uuids and asset_uuid is not None:
             if asset_uuid in asset_link_uuids:
@@ -103,7 +106,7 @@ class ClassificationRuleWrapper:
 
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
             asset_id = asset_wrapper.get_id_as_uuid()
-            asset_url = asset_wrapper.get_immich_photo_url()
+            asset_url = asset_wrapper.get_immich_photo_url().geturl()
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
