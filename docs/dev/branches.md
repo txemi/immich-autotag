@@ -25,11 +25,11 @@ This document outlines the branching strategy used in immich-autotag, particular
   - Changes can be merged to main/develop quickly without waiting for code
   - Keeps documentation versions synchronized across branches
 - **Policy:** 
-  - Use `--ff-only` or `--no-ff` merges to main/develop
+  - Use `--ff-only` or `--no-ff` merges to main/develop (fast-forward or no fast-forward)
   - Never add code or build artifacts
   - Keep reasonably up-to-date with main
   
-**For detailed guidelines:** See [Issue 0020 — docs-track Branch](../issues/0020-docs-track-branch/readme.md)
+ **For detailed guidelines:** See [Issue 0020 — docs-track Branch](../issues/0020-docs-track-branch/readme.md)
 
 ## Feature / Experimental Branches
 
