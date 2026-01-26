@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -35,7 +35,7 @@ class RunOutputManager:
         return [d for d in base_dir.iterdir() if RunOutputManager._is_run_dir(d)]
 
     @classmethod
-    def get_run_output_dir(cls, base_dir: Path = None) -> Path:
+    def get_run_output_dir(cls, base_dir: Path |None= None) -> Path:
         """
         Returns the output directory for the current run. Argument must be a Path.
         """
