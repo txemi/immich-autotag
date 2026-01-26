@@ -13,7 +13,7 @@ from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
-from immich_autotag.utils.run_output_dir import (
+from immich_autotag.run_output.run_output_dir import (
     LOGS_LOCAL_DIR,
     find_recent_run_dirs,
     get_previous_run_output_dir,
