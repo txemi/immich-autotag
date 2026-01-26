@@ -182,7 +182,7 @@ class ClassificationRuleWrapper:
 
     def to_log_string(self) -> str:
         """
-        Devuelve un string resumen de la regla para logging/debug.
+        Returns a summary string of the rule for logging/debug.
         """
         return (
             f"ClassificationRuleWrapper(tag_names={self.rule.tag_names}, "
