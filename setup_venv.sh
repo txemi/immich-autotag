@@ -162,14 +162,24 @@ install_python_requirements() {
 install_system_dev_tools() {
 	if [ "$MODE" = "dev" ]; then
 		# Solo Ubuntu/Debian
+		if command -v shfmt >/dev/null 2>&1; then
+			echo "[DEV] shfmt already installed. Skipping system tools installation."
+			return
+		fi
 		if command -v apt-get >/dev/null 2>&1; then
 			echo "[DEV] Installing system development tools (shfmt, etc.)..."
-			sudo apt-get update
-			sudo apt-get install -y shfmt
-			# WARNING: Do not install Python or Node.js packages globally.
-			# If jscpd is needed, install only via the distribution package manager (apt, dnf, etc) or in a local environment.
-			# FORBIDDEN: Do not install Python or Node.js packages globally (no pip install --user, no npm install -g, no sudo pip/npm).
-			# If jscpd is not in the repositories, document the need and look for a packaged alternative.
+			if command -v sudo >/dev/null 2>&1; then
+				sudo apt-get update && sudo apt-get install -y shfmt
+			elif [ "$(id -u)" -eq 0 ]; then
+				apt-get update && apt-get install -y shfmt
+			else
+				echo "ERROR: Neither sudo is available nor running as root. Cannot install shfmt." >&2
+				exit 1
+			fi
+			if ! command -v shfmt >/dev/null 2>&1; then
+				echo "ERROR: shfmt installation failed. Please install it manually." >&2
+				exit 1
+			fi
 		else
 			echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
 		fi
