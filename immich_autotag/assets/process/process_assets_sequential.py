@@ -59,7 +59,7 @@ def process_assets_sequential(
                 is_recoverable = categorized.is_recoverable
                 category = categorized.category_name
 
-                # Si es recuperable, o no es recuperable pero estamos en modo BATCH, tratamos igual
+                # If recoverable, or not recoverable but we are in BATCH mode, treat the same
                 if is_recoverable or error_mode == ErrorHandlingMode.USER:
                     import traceback
 

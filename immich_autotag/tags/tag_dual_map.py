@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class TagDualMap:
     """
-    Encapsula TagIdMap (por id) y TagNameMap (por nombre).
-    Mantiene ambos sincronizados y provee acceso eficiente.
+    Encapsulates TagIdMap (by id) and TagNameMap (by name).
+    Keeps both in sync and provides efficient access.
     """
 
     _id_map: TagIdMap = attrs.field(factory=TagIdMap)
@@ -39,7 +39,7 @@ class TagDualMap:
         return self._name_map.get(name)
 
     def values(self) -> List["TagWrapper"]:
-        # Devuelve todos los TagWrapper
+        # Returns all TagWrapper objects
         return self._id_map.to_list()
 
     def clear(self):
