@@ -53,6 +53,8 @@ class ConversionWrapper:
         Removes source tags/albums only if the conversion mode is MOVE.
         """
         match_result = self.get_source_wrapper().matches_asset(asset_wrapper)
+        if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
+            raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
         source_matched = match_result is not None and match_result.is_match()
         changes = []
         if source_matched:
