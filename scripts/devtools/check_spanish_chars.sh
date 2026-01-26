@@ -14,9 +14,11 @@ TARGET_DIR="${1:-$PROJECT_ROOT}"
 # Exclude common build and dependency folders
 EXCLUDES=".git,.venv,node_modules,dist,build,logs_local,jenkins_logs,__pycache__"
 
-# Find Spanish/accented characters in source code
+
+# Find Spanish/accented characters and common Spanish words in comments
 EXCLUDE_ARGS=$(printf -- '--exclude-dir=%s ' $(echo $EXCLUDES | tr ',' ' '))
-spanish_matches=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' "$TARGET_DIR" $EXCLUDE_ARGS || true)
+SPANISH_PATTERN='[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\b(si|solo|mantenemos|compatibilidad|devolviendo|lista|uno|cero|mapa|soporta|estructura|necesitaría|cambiado|no|tenemos|usamos|comentario|ejemplo|devuelve|el|la|los|las|un|una|unos|unas|por|para|con|sin|sobre|entre|pero|porque|cuando|donde|como|más|menos|muy|también|aquí|allí|este|ese|esa|estos|esas|aquellos|aquellas|ya|todavía|aún|quizá|quizás|siempre|nunca|jamás|antes|después|hoy|mañana|ayer|ahora|entonces|luego|mientras|durante|despues|antes|nuevo|nueva|nuevos|nuevas|viejo|vieja|viejos|viejas|primero|primera|primeros|primeras|último|última|últimos|últimas|mejor|peor|mayor|menor|grande|pequeño|pequeña|pequeños|pequeñas|importante|interesante|difícil|fácil|rápido|lento|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|probable|improbable|claro|oscuro|simple|complicado|complejo|sencillo|difícil|fácil|rápido|lento|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|probable|improbable|claro|oscuro|simple|complicado|complejo|sencillo)\b'
+spanish_matches=$(grep -r -n -I -E "$SPANISH_PATTERN" "$TARGET_DIR" $EXCLUDE_ARGS || true)
 
 if [ -n "$spanish_matches" ]; then
     echo '❌ Spanish language characters detected in the following files/lines:'
