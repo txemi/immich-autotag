@@ -110,7 +110,7 @@ sencillo'
 # Build the Spanish word pattern for grep
 SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
 SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
-files_to_check=$(git ls-files)
+files_to_check=$(git ls-files | grep -v "scripts/devtools/check_spanish_chars.sh")
 
 
 # Search for Spanish characters/words in the git-tracked files
