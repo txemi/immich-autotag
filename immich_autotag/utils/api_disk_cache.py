@@ -2,7 +2,10 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from immich_autotag.utils.run_output_dir import find_recent_run_dirs, get_run_output_dir
+from immich_autotag.run_output.run_output_dir import (
+    find_recent_run_dirs,
+    get_run_output_dir,
+)
 
 # Global config to enable/disable caching (can be overridden by parameter)
 API_CACHE_ENABLED = True

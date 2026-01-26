@@ -1,9 +1,9 @@
-import tracemalloc
 import atexit
 import datetime
 import os
 import threading
 import time
+import tracemalloc
 
 from immich_autotag.run_output.run_output_dir import get_run_output_dir
 

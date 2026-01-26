@@ -1,7 +1,8 @@
-from pathlib import Path
-from typing import Optional
 import os
 from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
 
 class RunOutputManager:
     # --- Constantes y variables de clase para gestión de ejecuciones ---
@@ -157,21 +158,21 @@ class RunOutputManager:
         return cls._current_instance
 
     def get_log_path(self, name: str) -> Path:
-        """Devuelve la ruta para un log específico de esta ejecución."""
+        """Returns the path for a specific log of this run."""
         return self.run_dir / f"{name}.log"
 
     def get_stats_path(self, name: str) -> Path:
-        """Devuelve la ruta para un fichero de estadísticas."""
+        """Returns the path for a statistics file."""
         return self.run_dir / f"{name}.stats"
 
     def get_cache_dir(self, name: str) -> Path:
-        """Devuelve la ruta para un subdirectorio de caché."""
+        """Returns the path for a cache subdirectory."""
         d = self.run_dir / f"cache_{name}"
         d.mkdir(exist_ok=True)
         return d
 
     def get_custom_path(self, *parts) -> Path:
-        """Devuelve una ruta arbitraria dentro del run_dir."""
+        """Returns an arbitrary path inside the run_dir."""
         p = self.run_dir.joinpath(*parts)
         p.parent.mkdir(parents=True, exist_ok=True)
         return p

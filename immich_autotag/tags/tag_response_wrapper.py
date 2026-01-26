@@ -1,8 +1,8 @@
+from uuid import UUID
 
 import attrs
 from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
-from uuid import UUID
 
 
 @attrs.define(auto_attribs=True, slots=True)

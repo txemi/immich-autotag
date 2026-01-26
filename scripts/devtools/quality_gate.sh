@@ -373,9 +373,9 @@ check_ssort() {
 check_ruff() {
 	local ruff_ignore="" ruff_exit
 	ensure_tool ruff ruff
-	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
+	if [ "$QUALITY_LEVEL" != "STRICT" ]; then
 		ruff_ignore="--ignore E501"
-		echo "[RELAXED MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
+		echo "[NON-STRICT MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	fi
 	if [ "$CHECK_MODE" = "CHECK" ]; then
 		"$PY_BIN" -m ruff check --fix $ruff_ignore "$TARGET_DIR"
@@ -501,9 +501,9 @@ check_flake8() {
 	local flake_failed=0 flake8_ignore
 	ensure_tool flake8 flake8
 	flake8_ignore="E203,W503"
-	if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
+	if [ "$QUALITY_LEVEL" != "STRICT" ]; then
 		flake8_ignore="$flake8_ignore,E501"
-		echo "[RELAXED MODE] E501 (line length) errors are ignored and will NOT block the build."
+		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
 	fi
 	echo "[INFO] Running flake8 (output below if any):"
 	"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
@@ -711,22 +711,20 @@ setup_environment() {
 
 # Run all quality checks in CHECK mode (fail fast on first error)
 run_quality_gate_check_mode() {
-	# 1. Auto-fixers and formatters
+	# 1. Blocking checks (fail fast on first error)
+	check_python_syntax || exit 1
+	check_mypy || exit 1
+	check_jscpd || exit 1
+	check_import_linter || exit 1
+	check_no_dynamic_attrs || exit 2
+	check_no_tuples || exit 3
+	check_no_spanish_chars || exit 5
+	# 2. Formatters and style (run only if all blocking checks pass)
 	check_shfmt || exit 1
 	check_isort || exit 1
 	check_black || exit 1
 	check_ruff || exit 1
-	# 2. Fast/deterministic checks
-	check_python_syntax || exit 1
-	# 3. Internal policy checks
-	check_no_dynamic_attrs || exit 2
-	check_no_tuples || exit 3
-	check_no_spanish_chars || exit 5
-	# 4. Heavy/informative checks
-	check_jscpd || exit 1
 	check_flake8 || exit 1
-	check_import_linter || exit 1
-	check_mypy || exit 1
 }
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
