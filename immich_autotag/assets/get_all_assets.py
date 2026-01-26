@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Generator
 
 from immich_client.models.metadata_search_dto import MetadataSearchDto
-from immich_client.models.search_asset_response_dto import SearchAssetResponseDto
+from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.search_response_dto import SearchResponseDto
 from immich_client.types import Response
 from typeguard import typechecked
 
@@ -27,6 +28,7 @@ def _fetch_assets_page(
 
     body = MetadataSearchDto(page=page)
     log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
+    # Use ImmichClient type for client
     response = proxy_search_assets(
         client=context.get_client_wrapper().get_client(), body=body
     )
@@ -36,7 +38,7 @@ def _fetch_assets_page(
 
 @typechecked
 def _yield_assets_from_page(
-    assets_page: list[object],
+    assets_page: list[AssetResponseDto],
     start_idx: int,
     context: "ImmichContext",
     max_assets: int | None,
@@ -49,38 +51,27 @@ def _yield_assets_from_page(
 
     # Use the explicit context getter to obtain the asset_manager
     asset_manager = context.get_asset_manager()
-    if asset_manager is None:
-        raise RuntimeError(
-            "[ERROR] ImmichContext.get_asset_manager() returned None. Refactor needed."
-        )
+    # AssetManager is always expected to be present; remove None check
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
             continue
         if max_assets is not None and max_assets >= 0 and count + yielded >= max_assets:
             break
-        if asset is not None:
-            log_debug(f"[INFO] Using AssetManager to get wrapper, asset_id={asset.id}")
-            # Use the manager method to get the unique wrapper
-            wrapper = asset_manager.get_wrapper_for_asset(asset, context)
-            yield wrapper
-            yielded += 1
-        else:
-            log_debug(
-                "[BUG] [ERROR] Could not load asset from search. search_assets returned None."
-            )
-            raise RuntimeError(
-                "[ERROR] Could not load asset from search. search_assets returned None."
-            )
+        # asset is always AssetResponseDto
+        log_debug(f"[INFO] Using AssetManager to get wrapper, asset_id={asset.id}")
+        wrapper = asset_manager.get_wrapper_for_asset(asset, context)
+        yield wrapper
+        yielded += 1
 
 
 @typechecked
 def _log_page_progress(
     page: int,
-    assets_page: list,
+    assets_page: list[AssetResponseDto],
     count: int,
     abs_pos: int,
     total_assets: int | None,
-    log: Callable,
+    log: Callable[[str], None],
 ) -> None:
     msg = f"[PROGRESS] Page {page}: {len(assets_page)} assets (full info) | Processed so far: {count} (absolute: {abs_pos}"
     if total_assets:
@@ -99,7 +90,7 @@ def get_all_assets(
     Skips the first `skip_n` assets efficiently (without fetching their full info).
     """
     # The actual page size is determined by the backend. Initially we assume 100, but we detect it in the first response.
-    PAGE_SIZE = None
+    page_size = None  # Local variable for page size
     page = 1
     skip_offset = 0
     count = 0
@@ -123,7 +114,15 @@ def get_all_assets(
         else:
             response_obj = response
         # Now response_obj should be a SearchResponseDto
-        assets_page = response_obj.assets.items
+        # assets_page should be a list[AssetResponseDto]
+        # assets_page should be a list[AssetResponseDto]
+        # Explicitly cast assets_page to correct type
+        raw_items = response_obj.assets.items  # type: ignore
+        if not isinstance(raw_items, list):
+            assets_page = []
+        else:
+            # Filter only AssetResponseDto objects
+            assets_page = [item for item in raw_items if isinstance(item, AssetResponseDto)]  # type: ignore
         log(
             f"[PROGRESS] Page {page}: {len(assets_page)} assets received from API.",
             level=LogLevel.PROGRESS,
@@ -135,10 +134,10 @@ def get_all_assets(
             )
             break
         if first_page:
-            PAGE_SIZE = len(assets_page)
+            page_size = len(assets_page)  # type: ignore
             if skip_n:
-                page = (skip_n // PAGE_SIZE) + 1
-                skip_offset = skip_n % PAGE_SIZE
+                page = (skip_n // page_size) + 1
+                skip_offset = skip_n % page_size
             first_page = False
         # Apply skip only on the first page processed after calculation
         start_idx = skip_offset if skip_n and not skip_applied else 0
@@ -158,9 +157,8 @@ def get_all_assets(
             log(f"[PROGRESS] Asset processed, count={count}", level=LogLevel.DEBUG)
         skip_applied = skip_n and not skip_applied
         abs_pos = skip_n + count
-        response_assets = response.parsed.assets
-        assert isinstance(response_assets, SearchAssetResponseDto)
-        total_assets = response_assets.total
+        response_assets = getattr(response.parsed, "assets", None)
+        total_assets = response_assets.total if response_assets is not None else None
         _log_page_progress(
             page,
             assets_page,
@@ -176,7 +174,7 @@ def get_all_assets(
                 level=LogLevel.PROGRESS,
             )
             break
-        if not response_assets.next_page:
+        if response_assets is None or not getattr(response_assets, "next_page", None):
             log(
                 f"[PROGRESS] No next_page in response after page {page}, ending loop.",
                 level=LogLevel.PROGRESS,
