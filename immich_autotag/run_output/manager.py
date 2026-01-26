@@ -1,7 +1,8 @@
-from pathlib import Path
-from typing import Optional
 import os
 from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
 
 class RunOutputManager:
     """
@@ -39,6 +40,7 @@ class RunOutputManager:
     ---
     If you need to save or find any data related to a run, always use this object.
     """
+
     def __init__(self, run_dir: Optional[Path] = None, base_dir: Optional[Path] = None):
         if run_dir is not None:
             self.run_dir = Path(run_dir).resolve()
