@@ -8,7 +8,8 @@ from typeguard import typechecked
 @attrs.define(auto_attribs=True, slots=True)
 class AdaptiveTimeEstimator:
     """
-    Estimates remaining time using an exponential weighted moving average (EWMA) over asset times.
+    Estimates remaining time using an exponential weighted moving average (EWMA)
+    over asset times.
     """
 
     alpha: float = 0.2

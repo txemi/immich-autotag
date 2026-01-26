@@ -17,5 +17,8 @@ def get_immich_photo_url(asset_id: uuid.UUID) -> ParseResult:
     if not isinstance(asset_id, uuid.UUID):
         raise TypeError(f"asset_id must be uuid.UUID, not {type(asset_id)}")
     asset_id_str = str(asset_id)
-    url = f"{get_immich_web_base_url()}{IMMICH_PHOTO_PATH_TEMPLATE.format(id=asset_id_str)}"
+    url = (
+        f"{get_immich_web_base_url()}"
+        f"{IMMICH_PHOTO_PATH_TEMPLATE.format(id=asset_id_str)}"
+    )
     return urlparse(url)

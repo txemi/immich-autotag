@@ -124,7 +124,8 @@ class TagCollectionWrapper:
     @classmethod
     def get_instance(cls) -> "TagCollectionWrapper":
         """
-        Returns the singleton instance of TagCollectionWrapper. If not initialized, fetches from API using the client from ImmichContext singleton.
+        Returns the singleton instance of TagCollectionWrapper. If not initialized,
+        fetches from API using the client from ImmichContext singleton.
         """
         global _tag_collection_singleton
         if _tag_collection_singleton is not None:
@@ -134,7 +135,8 @@ class TagCollectionWrapper:
 
     def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper | None":
         """
-        Returns the TagWrapper corresponding to a TagResponseDto (dto), or None if it does not exist.
+        Returns the TagWrapper corresponding to a TagResponseDto (dto), or None if it
+        does not exist.
         """
         tag = self.find_by_id(UUID(dto.id))
         if tag is not None:
@@ -142,5 +144,6 @@ class TagCollectionWrapper:
         name = dto.name
         return self.find_by_name(name)
         raise NotImplementedError(
-            "TagResponseDto does not have valid id or name to search for the TagWrapper."
+            "TagResponseDto does not have valid id or name to search for the "
+            "TagWrapper."
         )

@@ -1,7 +1,8 @@
 """
 setup_runtime.py
 
-Utilities to initialize the runtime environment: duplicate logging and global exception hook.
+Utilities to initialize the runtime environment: duplicate logging and global
+exception hook.
 """
 
 

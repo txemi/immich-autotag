@@ -11,7 +11,8 @@ CACHE_SUBDIR = "api_cache"
 
 
 def _get_cache_dir(entity: str, run_dir: Optional[Path] = None) -> Path:
-    """Returns the cache directory for an entity (albums, assets, etc) in the given run."""
+    """Returns the cache directory for an entity (albums, assets, etc) in the given
+    run."""
     if run_dir is None:
         run_dir = get_run_output_dir()
     cache_dir = run_dir / CACHE_SUBDIR / entity
@@ -31,8 +32,8 @@ def get_entity_from_cache(
     entity: str, key: str, use_cache: Optional[bool] = None
 ) -> Optional[dict]:
     """
-    Searches for an object in the cache (first in the current run, then in previous runs).
-    If use_cache is False, never searches in cache.
+    Searches for an object in the cache (first in the current run, then in previous
+    runs). If use_cache is False, never searches in cache.
     """
     if use_cache is None:
         use_cache = API_CACHE_ENABLED

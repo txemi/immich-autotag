@@ -66,7 +66,8 @@ class PerformanceTracker:
         # Strict validation: if something essential is missing, crash
         if self._estimation_mode == TimeEstimationMode.EWMA and self._estimator is None:
             raise ValueError(
-                "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. Cannot initialize the tracker."
+                "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. "
+                "Cannot initialize the tracker."
             )
         # --- CRAZY CONDITION IN CONSTRUCTOR ---
         if (
@@ -75,7 +76,8 @@ class PerformanceTracker:
             and self._total_assets < 1000
         ):
             raise Exception(
-                "CRAZY_DEBUG mode: total_assets too low (<100000) during PerformanceTracker initialization"
+                "CRAZY_DEBUG mode: total_assets too low (<100000) during "
+                "PerformanceTracker initialization"
             )
 
     @typechecked
@@ -96,7 +98,8 @@ class PerformanceTracker:
     @typechecked
     def _calc_total_to_process(self) -> Optional[int]:
         """
-        Returns the number of assets to process, using the minimum of max_assets and (total_assets - skip_n) if both are set.
+        Returns the number of assets to process, using the minimum of max_assets and
+        (total_assets - skip_n) if both are set.
         """
         skip_n = self._printable_value_skip_n()
         if self._max_assets is not None and self._total_assets is not None:
@@ -244,7 +247,8 @@ class PerformanceTracker:
         abs_total = self._printable_value_abs_total()
 
         # --- CRAZY CONDITION ---
-        # If mode is CRAZY_DEBUG, abs_total is not None and abs_total < 200000, raise exception
+        # If mode is CRAZY_DEBUG, abs_total is not None and abs_total < 200000,
+        # raise exception
         if (
             DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
             and abs_total is not None
@@ -374,22 +378,24 @@ class PerformanceTracker:
     def get_progress_description(self, count: int) -> str:
         """
         Returns a textual description of current progress, including percentage and
-        time estimation if available. If called after should_log_progress, updates last_log_time.
-        Mirrors the output of print_progress but as a string.
+        time estimation if available. If called after should_log_progress, updates
+        last_log_time. Mirrors the output of print_progress but as a string.
         """
         elapsed = time.time() - self._start_time
         return self._format_perf_progress(count=count, elapsed=elapsed)
 
     def set_max_assets(self, value: int | None) -> None:
         """
-        Public setter to update max_assets in a controlled way. Allows None to disable the limit.
+        Public setter to update max_assets in a controlled way. Allows None to disable
+        the limit.
         """
         self._max_assets = value
 
     def should_log_progress(self, count: int) -> bool:
         """
-        Returns True if a progress log should be emitted for this count, according to the internal log interval logic.
-        Updates internal state if True (so that get_progress_description can be used externally).
+        Returns True if a progress log should be emitted for this count, according to
+        the internal log interval logic. Updates internal state if True (so that
+        get_progress_description can be used externally).
         """
         now = time.time()
         if count == 1 or (self._total_assets and count == self._total_assets):

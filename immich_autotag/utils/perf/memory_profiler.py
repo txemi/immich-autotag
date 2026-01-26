@@ -10,7 +10,8 @@ from immich_autotag.run_output.run_output_dir import get_run_output_dir
 
 def setup_tracemalloc_snapshot():
     """
-    Set up tracemalloc to track memory allocations and save a snapshot at exit and periodically.
+    Set up tracemalloc to track memory allocations and save a snapshot at exit and
+    periodically.
     """
     tracemalloc.start()
 

@@ -1,6 +1,8 @@
+
 import attrs
 from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
+from uuid import UUID
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -12,9 +14,7 @@ class TagWrapper:
     tag: TagResponseDto
 
     @typechecked
-    def get_id(self) -> "UUID":
-        from uuid import UUID
-
+    def get_id(self) -> UUID:
         id_val = self.tag.id
         return UUID(id_val)
 

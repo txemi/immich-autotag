@@ -1,5 +1,6 @@
 """
-Utility functions to build links to GitHub documentation according to the running version/commit.
+Utility functions to build links to GitHub documentation according to the running
+version/commit.
 """
 
 from immich_autotag import __git_commit__, __git_describe__
@@ -7,8 +8,9 @@ from immich_autotag import __git_commit__, __git_describe__
 
 def get_git_ref():
     """
-    Returns the git reference identifier (short commit or describe) of the running version.
-    Tries to use __git_describe__, if not available uses __git_commit__, otherwise 'main'.
+    Returns the git reference identifier (short commit or describe) of the running
+    version. Tries to use __git_describe__, if not available uses __git_commit__,
+    otherwise 'main'.
     """
     return __git_describe__ or __git_commit__ or "main"
 
