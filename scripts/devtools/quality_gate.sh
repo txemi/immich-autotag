@@ -584,6 +584,7 @@ check_no_spanish_chars() {
 mantenemos
 compatibilidad
 devolviendo
+nombre
 lista
 soporta
 estructura
