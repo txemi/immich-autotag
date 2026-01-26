@@ -183,7 +183,7 @@ def correct_asset_date(
     photo_url_obj = asset_wrapper.get_immich_photo_url()
     photo_url = photo_url_obj.geturl()
     log(
-        f"[DATE CORRECTION][LINK] Asset {asset_wrapper.asset.id} -> {photo_url}",
+        f"[DATE CORRECTION][LINK] Asset {asset_wrapper.get_id()} -> {photo_url}",
         level=LogLevel.FOCUS,
     )
 
@@ -196,7 +196,7 @@ def correct_asset_date(
     immich_utc = to_utc(immich_date)
     oldest_utc = to_utc(oldest)
     msg = (
-        f"[DATE CORRECTION] Unhandled case: Immich date {immich_date} and oldest {oldest} (asset {asset_wrapper.asset.id})\n"
+        f"[DATE CORRECTION] Unhandled case: Immich date {immich_date} and oldest {oldest} (asset {asset_wrapper.get_id()})\n"
         f"[DATE CORRECTION][UTC] Immich date UTC: {immich_utc}, oldest UTC: {oldest_utc}"
         f"[DATE CORRECTION][DIFF] Immich date - oldest: {diff_timedelta} ({diff_seconds:.1f} seconds)\n"
         f"\n[COMPLETE DIAGNOSIS]\n{date_sources_list.format_full_info()}"

@@ -28,13 +28,13 @@ def get_asset_date_candidates(
             AssetDateCandidate(
                 source_kind=DateSourceKind.IMMICH,
                 date=immich_dt,
-                file_path=asset_wrapper.asset.original_path,
+                file_path=asset_wrapper.get_original_path(),
                 asset_wrapper=asset_wrapper,
             )
         )
 
     # WhatsApp filename date
-    filename = asset_wrapper.asset.original_file_name
+    filename = asset_wrapper.get_original_file_name()
     wa_filename_dt = extract_whatsapp_date_from_path(filename)
     if wa_filename_dt:
         candidates.add(
@@ -47,7 +47,7 @@ def get_asset_date_candidates(
         )
 
     # WhatsApp path date
-    path = asset_wrapper.asset.original_path
+    path = asset_wrapper.get_original_path()
     wa_path_dt = extract_whatsapp_date_from_path(path)
     if wa_path_dt:
         candidates.add(
