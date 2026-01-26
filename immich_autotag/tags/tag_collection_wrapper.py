@@ -156,8 +156,8 @@ class TagCollectionWrapper:
     @staticmethod
     def maintenance_delete_conflict_tags(client: ImmichClient) -> int:
         """
-        CHAPUZA DE LIMPIEZA/MANTENIMIENTO: Borra todas las etiquetas cuyo nombre empiece por el prefijo conflictivo fijo.
-        Devuelve el número de etiquetas eliminadas.
+        MAINTENANCE HACK: Deletes all tags whose name starts with the fixed conflict prefix.
+        Returns the number of deleted tags.
         """
         prefix = "autotag_output_duplicate_asset_album_conflict_"
         from immich_autotag.api.immich_proxy.tags import (
@@ -170,6 +170,6 @@ class TagCollectionWrapper:
         for tag in tags_dto:
             if tag.name.startswith(prefix):
                 proxy_delete_tag(client=client, tag_id=tag.id)
-                print(f"[CLEANUP-CHAPUZA] Deleted tag: {tag.name} (id={tag.id})")
+                print(f"[CLEANUP] Deleted tag: {tag.name} (id={tag.id})")
                 count += 1
         return count

@@ -47,11 +47,11 @@ def _yield_assets_from_page(
     yielded = 0
     # Import AssetManager here to avoid circular imports
 
-    # Usar el getter explícito del contexto para obtener el asset_manager
+    # Use the explicit context getter to obtain the asset_manager
     asset_manager = context.get_asset_manager()
     if asset_manager is None:
         raise RuntimeError(
-            "[ERROR] ImmichContext.get_asset_manager() devolvió None. Refactor necesario."
+            "[ERROR] ImmichContext.get_asset_manager() returned None. Refactor needed."
         )
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
@@ -59,10 +59,8 @@ def _yield_assets_from_page(
         if max_assets is not None and max_assets >= 0 and count + yielded >= max_assets:
             break
         if asset is not None:
-            log_debug(
-                f"[INFO] Usando AssetManager para obtener wrapper, asset_id={asset.id}"
-            )
-            # Usar el método del manager para obtener el wrapper único
+            log_debug(f"[INFO] Using AssetManager to get wrapper, asset_id={asset.id}")
+            # Use the manager method to get the unique wrapper
             wrapper = asset_manager.get_wrapper_for_asset(asset, context)
             yield wrapper
             yielded += 1

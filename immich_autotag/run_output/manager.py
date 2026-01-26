@@ -5,7 +5,7 @@ from typing import Optional
 
 
 class RunOutputManager:
-    # --- Constantes y variables de clase para gestión de ejecuciones ---
+    # --- Class constants and variables for execution management ---
     LOGS_LOCAL_DIR = Path("logs_local")
     _RUN_DIR_PID_MARK = "PID"
     _RUN_DIR_PID_SEP = "_PID"
@@ -153,8 +153,8 @@ class RunOutputManager:
     @classmethod
     def current(cls, base_dir: Optional[Path] = None):
         """
-        Devuelve la instancia singleton asociada a la ejecución actual.
-        Si no existe, la crea.
+        Returns the singleton instance associated with the current execution.
+        If it does not exist, it creates it.
         """
         if cls._current_instance is None:
             cls._current_instance = cls(base_dir=base_dir)
