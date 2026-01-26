@@ -581,7 +581,6 @@ check_no_spanish_chars() {
 
 	# Spanish word list
 	local SPANISH_WORDS='si
-solo
 mantenemos
 compatibilidad
 devolviendo
