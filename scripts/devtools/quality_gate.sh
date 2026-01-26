@@ -584,6 +584,7 @@ check_no_spanish_chars() {
 mantenemos
 compatibilidad
 devolviendo
+nombre
 lista
 soporta
 estructura
@@ -639,6 +640,10 @@ improbable
 claro
 oscuro
 complicado
+limpieza
+mantenimiento
+etiqueta
+etiquetas
 complejo
 sencillo
 referencia

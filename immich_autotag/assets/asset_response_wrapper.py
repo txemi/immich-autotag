@@ -886,13 +886,15 @@ class AssetResponseWrapper:
         # tag_mod_report parameter removed
         user: "UserResponseWrapper | None" = None,
         duplicate_id: str | None = None,
+        disable=True,
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
         Also handles the per-duplicate-set tag if duplicate_id is provided.
         """
-
+        if disable:
+            return
         config: Optional[UserConfig] = ConfigManager.get_instance().config
         tag_name = None
         # Use explicit type and direct access for duplicate_processing

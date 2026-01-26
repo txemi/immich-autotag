@@ -142,6 +142,18 @@ def _run_main_inner():
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
     client_wrapper = ImmichClientWrapper.create_default_instance(client)
+
+    # Limpieza de etiquetas duplicadas conflictivas antes de cualquier operación
+    from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+
+    # CHAPUZA DE LIMPIEZA/MANTENIMIENTO: borrar etiquetas conflictivas antes de iterar por assets
+    deleted_count = TagCollectionWrapper.maintenance_delete_conflict_tags(client)
+    if deleted_count > 0:
+        log(
+            f"[CLEANUP-CHAPUZA] Deleted {deleted_count} duplicate/conflict autotag labels.",
+            level=LogLevel.INFO,
+        )
+
     # Pass the wrapper class, not the raw client, to the context
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client()
@@ -203,6 +215,14 @@ def _run_main_inner():
 
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
     print_welcome_links(manager.config)
+
+    # CHAPUZA DE LIMPIEZA/MANTENIMIENTO: borrar etiquetas conflictivas antes de iterar por assets
+    deleted_count = TagCollectionWrapper.maintenance_delete_conflict_tags(client)
+    if deleted_count > 0:
+        log(
+            f"[CLEANUP-CHAPUZA] Deleted {deleted_count} duplicate/conflict autotag labels.",
+            level=LogLevel.INFO,
+        )
 
 
 def run_main():

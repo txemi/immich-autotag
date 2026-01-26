@@ -2,6 +2,7 @@ from typing import List
 from uuid import UUID
 
 from immich_client.api.tags import create_tag as _create_tag
+from immich_client.api.tags import delete_tag as _delete_tag
 from immich_client.api.tags import get_all_tags as _get_all_tags
 from immich_client.api.tags import tag_assets, untag_assets
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
@@ -40,3 +41,9 @@ def proxy_create_tag(*, client: ImmichClient, name: str):
 def proxy_get_all_tags(*, client: ImmichClient):
     """Proxy for get_all_tags.sync with explicit keyword arguments."""
     return _get_all_tags.sync(client=client)
+
+
+def proxy_delete_tag(*, client: ImmichClient, tag_id):
+    """Proxy for delete_tag.sync_detailed con resultado parseado."""
+    response = _delete_tag.sync_detailed(id=tag_id, client=client)
+    return response.parsed

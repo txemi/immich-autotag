@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -10,6 +10,7 @@ class RunOutputManager:
     _RUN_DIR_PID_MARK = "PID"
     _RUN_DIR_PID_SEP = "_PID"
     _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
+    _RUN_OUTPUT_DIR: Optional[Path] = None
 
     @staticmethod
     def _is_run_dir(subdir: Path) -> bool:
@@ -35,11 +36,12 @@ class RunOutputManager:
         return [d for d in base_dir.iterdir() if RunOutputManager._is_run_dir(d)]
 
     @classmethod
-    def get_run_output_dir(cls, base_dir: Path = None) -> Path:
+    def get_run_output_dir(cls, base_dir: Path | None = None) -> Path:
         """
         Returns the output directory for the current run. Argument must be a Path.
         """
-        if not hasattr(cls, '_RUN_OUTPUT_DIR') or cls._RUN_OUTPUT_DIR is None:
+
+        if cls._RUN_OUTPUT_DIR is None:
             if base_dir is None:
                 base_dir = cls.LOGS_LOCAL_DIR
             now = datetime.now().strftime(cls._RUN_DIR_DATE_FORMAT)
@@ -98,6 +100,7 @@ class RunOutputManager:
             if d != current:
                 return d
         return None
+
     """
     RunOutputManager centralizes and abstracts the management of output paths and persistence (logs, statistics, caches, reports, etc.)
     for a specific system execution.

@@ -14,6 +14,7 @@ from immich_autotag.tags.tag_dual_map import TagDualMap
 from immich_autotag.types import ImmichClient
 
 _tag_collection_singleton: "TagCollectionWrapper | None" = None
+_loaded_tags: bool = False
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -89,11 +90,15 @@ class TagCollectionWrapper:
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
+        global _loaded_tags
+        if _loaded_tags:
+            raise RuntimeError("Tags have already been loaded once.")
+
         client_wrapper = ImmichClientWrapper.get_default_instance()
         client = client_wrapper.get_client()
         tags_dto = proxy_get_all_tags(client=client)
         if tags_dto is None:
-            tags_dto = []
+            raise RuntimeError("API returned None when fetching all tags")
         tags = [TagWrapper(tag) for tag in tags_dto]
         wrapper = TagCollectionWrapper()
         wrapper._index.clear()
@@ -147,3 +152,24 @@ class TagCollectionWrapper:
             "TagResponseDto does not have valid id or name to search for the "
             "TagWrapper."
         )
+
+    @staticmethod
+    def maintenance_delete_conflict_tags(client: ImmichClient) -> int:
+        """
+        CHAPUZA DE LIMPIEZA/MANTENIMIENTO: Borra todas las etiquetas cuyo nombre empiece por el prefijo conflictivo fijo.
+        Devuelve el número de etiquetas eliminadas.
+        """
+        prefix = "autotag_output_duplicate_asset_album_conflict_"
+        from immich_autotag.api.immich_proxy.tags import (
+            proxy_delete_tag,
+            proxy_get_all_tags,
+        )
+
+        tags_dto = proxy_get_all_tags(client=client) or []
+        count = 0
+        for tag in tags_dto:
+            if tag.name.startswith(prefix):
+                proxy_delete_tag(client=client, tag_id=tag.id)
+                print(f"[CLEANUP-CHAPUZA] Deleted tag: {tag.name} (id={tag.id})")
+                count += 1
+        return count
