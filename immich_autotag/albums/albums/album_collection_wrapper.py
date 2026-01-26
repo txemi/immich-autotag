@@ -148,11 +148,11 @@ class AlbumCollectionWrapper:
         tracker = PerformanceTracker(total_assets=total)
         for idx, album in enumerate(albums, 1):
             log(
-                f"[ALBUM-FULL-LOAD][DEBUG] Cargando álbum {idx}/{total}: '{album.get_album_name()}'",
+                f"[ALBUM-FULL-LOAD][DEBUG] Loading album {idx}/{total}: '{album.get_album_name()}'",
                 level=LogLevel.TRACE,
             )
             album.ensure_full()
-            # Delegar la lógica de cuándo loguear al tracker
+            # Delegate the logic of when to log to the tracker
             if tracker.should_log_progress(idx):
                 progress_msg = tracker.get_progress_description(idx)
                 log(
@@ -797,8 +797,8 @@ class AlbumCollectionWrapper:
         Optimized: uses AlbumDualMap for O(1) lookup, then filters deleted.
         """
         self._ensure_fully_loaded()
-        # AlbumNameMap solo soporta un álbum por nombre, pero si hay duplicados, habría que cambiar la estructura.
-        # Si el mapa soporta solo uno, mantenemos compatibilidad devolviendo una lista de uno o cero.
+        # AlbumNameMap only supports one album per name, but if there are duplicates, the structure would need to be changed.
+        # If the map only supports one, we maintain compatibility by returning a list of one or zero.
         album = self._albums.get_by_name(album_name)
         if album is not None and not album.is_deleted():
             yield album
