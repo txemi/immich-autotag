@@ -578,17 +578,117 @@ check_mypy() {
 check_no_spanish_chars() {
 	local spanish_matches
 	echo "Checking for Spanish language characters in source files..."
-	spanish_matches=$(grep -r -n -I -E '[áéíóúÁÉÍÓÚñÑüÜ¿¡]' . --exclude-dir={.git,.venv,node_modules,dist,build,logs_local,jenkins_logs} || true)
+
+	# Spanish word list
+	local SPANISH_WORDS='si
+solo
+mantenemos
+compatibilidad
+devolviendo
+lista
+soporta
+estructura
+necesitaría
+cambiado
+tenemos
+usamos
+comentario
+ejemplo
+devuelve
+más
+menos
+muy
+también
+aquí
+allí
+aquellos
+aquellas
+todavía
+aún
+quizá
+quizás
+siempre
+nunca
+jamás
+antes
+después
+hoy
+mañana
+ayer
+entonces
+luego
+mientras
+durante
+nuevo
+nueva
+nuevos
+nuevas
+viejo
+vieja
+viejos
+viejas
+primero
+primera
+primeros
+primeras
+último
+última
+últimos
+últimas
+mejor
+peor
+mayor
+menor
+grande
+pequeño
+pequeña
+pequeños
+pequeñas
+importante
+interesante
+difícil
+fácil
+rápido
+lento
+posible
+imposible
+correcto
+incorrecto
+verdadero
+falso
+cierto
+seguro
+probable
+improbable
+claro
+oscuro
+complicado
+complejo
+sencillo'
+	local SPANISH_WORD_PATTERN
+	SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
+	local SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
+
+	# Get relative paths for exclusion
+	local SCRIPT_ABS_PATH QUALITY_GATE_ABS_PATH SCRIPT_REL_PATH QUALITY_GATE_REL_PATH
+	SCRIPT_ABS_PATH="$(realpath "$0")"
+	QUALITY_GATE_ABS_PATH="$(realpath "$BASH_SOURCE")"
+	SCRIPT_REL_PATH="${SCRIPT_ABS_PATH#$PWD/}"
+	QUALITY_GATE_REL_PATH="${QUALITY_GATE_ABS_PATH#$PWD/}"
+
+	# Get git-tracked files and exclude this script and quality_gate.sh
+	local files_to_check
+	files_to_check=$(git ls-files | grep -v "$SCRIPT_REL_PATH" | grep -v "$QUALITY_GATE_REL_PATH")
+
+	# Search for Spanish characters/words in the selected files
+	spanish_matches=$(echo "$files_to_check" | xargs grep -n -I -E "$SPANISH_PATTERN" || true)
+
 	if [ -n "$spanish_matches" ]; then
 		echo '❌ Spanish language characters detected in the following files/lines:'
 		echo "$spanish_matches"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
-		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
-			echo '[RELAXED/TARGET MODE] Not blocking build on Spanish character check.'
-		else
-			echo 'Build failed: Please remove all Spanish text and accents before publishing.'
-			return 1
-		fi
+		echo 'Build failed: Please remove all Spanish text and accents before publishing.'
+		return 1
 	else
 		echo "✅ No Spanish language characters detected."
 	fi
