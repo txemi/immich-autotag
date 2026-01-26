@@ -146,43 +146,55 @@ create_venv() {
 	source "$VENV_DIR/bin/activate"
 	echo "Virtual environment activated."
 }
-install_dependencies() {
+
+# Instala dependencias Python de runtime
+install_python_requirements() {
 	if [ -f "$REPO_ROOT/requirements.txt" ]; then
 		pip install --upgrade pip
-		# Install runtime dependencies except the local client
 		grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
 		echo "Runtime dependencies installed."
-
-		if [ "$MODE" = "dev" ]; then
-			# --- SYSTEM DEV TOOLS INSTALLATION ---
-			# Only for Ubuntu/Debian. Add more tools as needed for quality gate
-			if command -v apt-get >/dev/null 2>&1; then
-				echo "[DEV] Instalando herramientas de desarrollo del sistema (shfmt, jscpd, etc.)..."
-				sudo apt-get update
-				sudo apt-get install -y shfmt
-				# AVISO: No instalar paquetes de Python ni Node.js globalmente.
-				# Si jscpd es necesario, debe instalarse solo mediante el gestor de paquetes de la distribución (apt, dnf, etc) o en un entorno local.
-				# PROHIBIDO: instalar paquetes de Python o Node.js globalmente (ni pip install --user, ni npm install -g, ni sudo pip/npm).
-				# Si jscpd no está en los repositorios, documentar la necesidad y buscar alternativa empaquetada.
-			else
-				echo "[DEV] Saltando instalación de herramientas de sistema: gestor apt-get no encontrado. Instala shfmt y jscpd manualmente si es necesario."
-			fi
-		fi
-
-		if [ "$MODE" = "dev" ]; then
-			# Install development dependencies if requirements-dev.txt exists
-			if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then
-				pip install -r "$REPO_ROOT/requirements-dev.txt"
-				echo "Development dependencies installed."
-			else
-				echo "requirements-dev.txt not found. Skipping dev dependencies."
-			fi
-		else
-			echo "Production mode: only runtime dependencies installed."
-		fi
 	else
 		echo "requirements.txt not found."
 	fi
+}
+
+# Instala herramientas de desarrollo del sistema (solo modo dev)
+install_system_dev_tools() {
+	if [ "$MODE" = "dev" ]; then
+		# Solo Ubuntu/Debian
+		if command -v apt-get >/dev/null 2>&1; then
+			echo "[DEV] Instalando herramientas de desarrollo del sistema (shfmt, etc.)..."
+			sudo apt-get update
+			sudo apt-get install -y shfmt
+			# AVISO: No instalar paquetes de Python ni Node.js globalmente.
+			# Si jscpd es necesario, debe instalarse solo mediante el gestor de paquetes de la distribución (apt, dnf, etc) o en un entorno local.
+			# PROHIBIDO: instalar paquetes de Python o Node.js globalmente (ni pip install --user, ni npm install -g, ni sudo pip/npm).
+			# Si jscpd no está en los repositorios, documentar la necesidad y buscar alternativa empaquetada.
+		else
+			echo "[DEV] Saltando instalación de herramientas de sistema: gestor apt-get no encontrado. Instala shfmt y jscpd manualmente si es necesario."
+		fi
+	fi
+}
+
+# Instala dependencias Python de desarrollo (solo modo dev)
+install_python_dev_requirements() {
+	if [ "$MODE" = "dev" ]; then
+		if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then
+			pip install -r "$REPO_ROOT/requirements-dev.txt"
+			echo "Development dependencies installed."
+		else
+			echo "requirements-dev.txt not found. Skipping dev dependencies."
+		fi
+	else
+		echo "Production mode: only runtime dependencies installed."
+	fi
+}
+
+# Orquesta la instalación de dependencias
+install_dependencies() {
+	install_python_requirements
+	install_system_dev_tools
+	install_python_dev_requirements
 }
 
 generate_and_install_client() {
