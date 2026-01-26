@@ -45,13 +45,19 @@ class StatisticsManager:
     #
     # Referencia: https://www.attrs.org/en/stable/init.html#private-attributes
     #
-    _perf_tracker: PerformanceTracker = attr.ib(default=None, init=False, repr=False)  # noqa
+    _perf_tracker: PerformanceTracker = attr.ib(
+        default=None, init=False, repr=False
+    )  # noqa
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)  # noqa
     _current_stats: Optional[RunStatistics] = attr.ib(
         default=None, init=False, repr=False
     )  # noqa
-    _current_file: Optional[Path] = attr.ib(default=None, init=False, repr=False)  # noqa
-    _checkpoint: CheckpointManager = attr.ib(default=None, init=False, repr=False)  # noqa
+    _current_file: Optional[Path] = attr.ib(
+        default=None, init=False, repr=False
+    )  # noqa
+    _checkpoint: CheckpointManager = attr.ib(
+        default=None, init=False, repr=False
+    )  # noqa
     _tags: TagStatsManager = attr.ib(default=None, init=False, repr=False)  # noqa
 
     @typechecked
