@@ -28,6 +28,7 @@ done
 
 if [ ! -d "$VENV_DIR" ]; then
   echo "ERROR: Virtual environment not found in $VENV_DIR"
+  echo "Tip: run ./setup_venv.sh to create the virtual environment."
   exit 1
 fi
 
