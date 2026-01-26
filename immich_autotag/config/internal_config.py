@@ -16,8 +16,12 @@ USE_THREADPOOL = False  # Set to True to force thread pool usage, False for dire
 # Sequential mode is usually faster for this workload, but you can experiment with USE_THREADPOOL for benchmarking.
 MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best performance in this environment)
 
+
 # Internal usage example:
 DEFAULT_ERROR_MODE = ErrorHandlingMode.CRAZY_DEBUG
+
+# Independent profiling flag
+ENABLE_PROFILING = False  # Set to True to enable cProfile profiling regardless of error mode
 
 # Album error handling thresholds (tunable)
 # Number of errors in the window required to mark an album unavailable

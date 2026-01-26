@@ -211,29 +211,10 @@ def run_main():
     """
     Wrapper that runs _run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
     """
-    import cProfile
-
-    from immich_autotag.config._internal_types import ErrorHandlingMode
-    from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-
-    if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-        import datetime
-
-        from immich_autotag.utils.run_output_dir import get_run_output_dir
-
-        profiler = cProfile.Profile()
-        profiler.enable()
-
-        def _save_profile():
-            profiler.disable()
-            run_dir = get_run_output_dir()
-            ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-            pid = os.getpid()
-            profile_path = run_dir / f"profile_{ts}_PID{pid}.stats"
-            profiler.dump_stats(str(profile_path))
-            print(f"[PROFILE] cProfile stats saved to {profile_path}")
-
-        atexit.register(_save_profile)
+    from immich_autotag.config.internal_config import ENABLE_PROFILING
+    if ENABLE_PROFILING:
+        from immich_autotag.utils.perf.cprofile_profiler import setup_cprofile_profiler
+        setup_cprofile_profiler()
         _run_main_inner()
     else:
         _run_main_inner()
