@@ -43,26 +43,24 @@ def _yield_assets_from_page(
 
     # Use top-level imports where possible to avoid redefinition warnings.
     yielded = 0
+    # Import AssetManager here to avoid circular imports
+    from immich_autotag.assets.asset_manager import AssetManager
+    # Usar el getter explícito del contexto para obtener el asset_manager
+    asset_manager = context.get_asset_manager()
+    if asset_manager is None:
+        raise RuntimeError("[ERROR] ImmichContext.get_asset_manager() devolvió None. Refactor necesario.")
     for idx, asset in enumerate(assets_page):
         if idx < start_idx:
             continue
-        # Only enforce limit when max_assets is a non-negative integer (None or -1 means unlimited)
         if max_assets is not None and max_assets >= 0 and count + yielded >= max_assets:
             break
-        # OPTIMIZATION: Use asset_partial from search_assets instead of immediately fetching full asset.
-        # Full asset (with tags) will be lazy-loaded on first access to tags property.
-        # This defers get_asset_info API calls until tags are actually needed.
         if asset is not None:
             log_debug(
-                f"[BUG] Creating AssetResponseWrapper with asset_partial, asset_id={asset.id}"
+                f"[INFO] Usando AssetManager para obtener wrapper, asset_id={asset.id}"
             )
-            from immich_autotag.assets.asset_dto_state import (
-                AssetDtoState,
-                AssetDtoType,
-            )
-
-            state = AssetDtoState(asset, AssetDtoType.PARTIAL)
-            yield AssetResponseWrapper(context=context, state=state)
+            # Usar el método del manager para obtener el wrapper único
+            wrapper = asset_manager.get_wrapper_for_asset(asset, context)
+            yield wrapper
             yielded += 1
         else:
             log_debug(
