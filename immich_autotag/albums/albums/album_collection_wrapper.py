@@ -329,7 +329,7 @@ class AlbumCollectionWrapper:
                     level=LogLevel.WARNING,
                 )
                 # album_wrapper.reload_from_api(client)
-                if album_wrapper.get_asset_ids():
+                if album_wrapper.get_asset_uuids():
                     album_url = album_wrapper.get_immich_album_url().geturl()
                     raise RuntimeError(
                         f"[DEBUG] Anomalous behavior: Album "
@@ -355,7 +355,7 @@ class AlbumCollectionWrapper:
                 log(
                     f"[ALBUM-LOAD][API][{idx}/{total}] Album "
                     f"'{album_wrapper.get_album_name()}' reloaded with "
-                    f"{len(album_wrapper.get_asset_ids())} assets.",
+                    f"{len(album_wrapper.get_asset_uuids())} assets.",
                     level=LogLevel.INFO,
                 )
             asset_map.add_album_for_asset_ids(album_wrapper)
