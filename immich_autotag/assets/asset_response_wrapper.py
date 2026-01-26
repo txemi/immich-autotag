@@ -75,10 +75,17 @@ class AssetResponseWrapper:
     # Construction methods moved to AssetCacheEntry
 
     def get_tags(self) -> list[TagResponseDto] | Unset:
-        """Return TagResponseDto list, converting from TagWrapper if needed."""
-        wrappers = self._ensure_full_asset_loaded().get_tags()
-        # Convert TagWrapper to TagResponseDto
-        return [w.to_dto() for w in wrappers]
+        """Lazy-load tags if not present in the current asset.
+
+        Returns the tags list from the asset. If tags are not yet loaded (UNSET from search_assets),
+        this property triggers lazy-loading of the full asset via get_asset_info.
+
+        Returns:
+            list[TagResponseDto] | Unset: Tags from the asset, or UNSET if not available
+        """
+
+        # Use the public getter from AssetDtoState
+        return self._ensure_full_asset_loaded().get_tags()
 
     @typechecked
     def update_date(
@@ -344,7 +351,7 @@ class AssetResponseWrapper:
             )
             return False
         # Extra checks and logging before API call
-        if not tag or not hasattr(tag, "get_id"):
+        if not tag or tag.id is None:
             error_msg = (
                 f"[ERROR] Tag object for '{tag_name}' is missing or has no id. "
                 f"Tag: {tag}"
