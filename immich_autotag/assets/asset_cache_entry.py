@@ -1,4 +1,5 @@
 from immich_autotag.context.immich_context import ImmichContext
+from immich_client.models.asset_response_dto import AssetResponseDto
 
 ASSET_CACHE_KEY = "assets"
 import datetime
@@ -118,7 +119,7 @@ class AssetCacheEntry:
     def _from_dto_entry(
         cls,
         *,
-        dto: "AssetResponseDto",  # Use the real DTO type if available
+        dto: AssetResponseDto,
         dto_type: AssetDtoType,
         max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
@@ -145,7 +146,8 @@ class AssetCacheEntry:
         )
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        dto = proxy_get_asset_info(asset_id, context.get_client().get_client())
+        client_wrapper = context.get_client_wrapper()
+        dto = proxy_get_asset_info(asset_id, client_wrapper.get_client())
         if dto is None:
             raise RuntimeError(
                 f"proxy_get_asset_info returned None for asset id={asset_id}"
