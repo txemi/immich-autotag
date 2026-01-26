@@ -686,6 +686,11 @@ sencillo'
 	if [ -n "$spanish_matches" ]; then
 		echo '❌ Spanish language characters detected in the following files/lines:'
 		echo "$spanish_matches"
+		# Count matches and affected files
+		local match_count file_count
+		match_count=$(echo "$spanish_matches" | grep -c '^')
+		file_count=$(echo "$spanish_matches" | cut -d: -f1 | sort | uniq | wc -l)
+		echo "Total matches: $match_count | Files affected: $file_count"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
 		echo 'Build failed: Please remove all Spanish text and accents before publishing.'
 		return 1
