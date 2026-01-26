@@ -12,6 +12,11 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR" | xargs dirname)"
 SCRIPT_ABS_PATH="$(realpath "$0")"
 SCRIPT_REL_PATH="${SCRIPT_ABS_PATH#$PROJECT_ROOT/}"
 
+# Get the relative path for the Quality Gate script
+QUALITY_GATE_FILENAME="quality_gate.sh"
+QUALITY_GATE_REL_PATH="scripts/devtools/$QUALITY_GATE_FILENAME"
+
+
 
 # Set the target directory to project root unless overridden by argument
 TARGET_DIR="${1:-$PROJECT_ROOT}"
@@ -115,7 +120,9 @@ sencillo'
 # Build the Spanish word pattern for grep
 SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
 SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
-files_to_check=$(git ls-files | grep -v "$SCRIPT_REL_PATH")
+files_to_check=$(git ls-files \
+	| grep -v "$SCRIPT_REL_PATH" \
+	| grep -v "$QUALITY_GATE_REL_PATH")
 
 
 # Search for Spanish characters/words in the git-tracked files
