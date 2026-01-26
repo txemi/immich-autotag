@@ -1,9 +1,9 @@
-
 import atexit
 import datetime
 import os
 import threading
 import time
+
 from immich_autotag.utils.run_output_dir import get_run_output_dir
 
 
@@ -26,7 +26,9 @@ def setup_tracemalloc_snapshot():
     atexit.register(_save_snapshot)
 
     # Periodic snapshotting
-    interval = float(os.environ.get("TRACEMALLOC_SNAPSHOT_INTERVAL", 300))  # seconds, default 5 min
+    interval = float(
+        os.environ.get("TRACEMALLOC_SNAPSHOT_INTERVAL", 300)
+    )  # seconds, default 5 min
     stop_event = threading.Event()
 
     def periodic_snapshots():
