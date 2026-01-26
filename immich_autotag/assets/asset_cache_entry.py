@@ -177,3 +177,9 @@ class AssetCacheEntry:
         Returns the UUID of the asset. The asset ID is immutable, so we do not require a fresh state for this operation.
         """
         return self._state.get_uuid()
+
+    def get_original_file_name(self) -> str:
+        """
+        Returns the original file name of the asset. This value is immutable, so no freshness check is needed.
+        """
+        return self._ensure_fresh().get_original_file_name()
