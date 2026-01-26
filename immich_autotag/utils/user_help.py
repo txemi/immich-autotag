@@ -13,11 +13,12 @@ def _generate_links(config: UserConfig) -> List[str]:
     links: List[str] = [f"- [Albums](http://{host}:{port}/albums)"]
 
     # Collect all autotag values from the new configuration structure
-    tags_to_add = []
+    from typing import Set, Tuple
+    tags_to_add: List[Tuple[str, str]] = []
 
     # From classification rules (input tags)
     if config.classification and config.classification.rules:
-        seen_tags = set()
+        seen_tags: Set[str] = set()
         for rule in config.classification.rules:
             if rule.tag_names:
                 for tag in rule.tag_names:
@@ -122,7 +123,7 @@ def _print_links_to_console(config: UserConfig, links: List[str]) -> None:
 
 @typechecked
 def _write_links_markdown(links: List[str]) -> None:
-    from immich_autotag.utils.run_output_dir import get_run_output_dir
+    from immich_autotag.run_output.run_output_dir import get_run_output_dir
 
     try:
         out_dir = get_run_output_dir()
