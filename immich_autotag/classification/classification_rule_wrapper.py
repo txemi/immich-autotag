@@ -158,8 +158,8 @@ class ClassificationRuleWrapper:
         changes = []
         # Remove matched tags
         for tag in match_result.tags_matched:
-            if asset_wrapper.has_tag(tag):
-                asset_wrapper.remove_tag_by_name(tag)
+            if asset_wrapper.has_tag(tag_name=tag):
+                asset_wrapper.remove_tag_by_name(tag_name=tag)
                 changes.append(f"Removed matched tag '{tag}'")
         # Remove matched albums (if logic exists for it)
         # for album in match_result.albums_matched:
