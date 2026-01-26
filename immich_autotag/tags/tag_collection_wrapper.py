@@ -159,7 +159,10 @@ class TagCollectionWrapper:
         MAINTENANCE HACK: Deletes all tags whose name starts with the fixed conflict prefix.
         Returns the number of deleted tags.
         """
-        prefix = "autotag_output_duplicate_asset_album_conflict_"
+        prefixes = [
+            "autotag_output_duplicate_asset_album_conflict_",
+            "autotag_output_duplicate_album_conflict_",
+        ]
         from immich_autotag.api.immich_proxy.tags import (
             proxy_delete_tag,
             proxy_get_all_tags,
@@ -168,7 +171,7 @@ class TagCollectionWrapper:
         tags_dto = proxy_get_all_tags(client=client) or []
         count = 0
         for tag in tags_dto:
-            if tag.name.startswith(prefix):
+            if any(tag.name.startswith(prefix) for prefix in prefixes):
                 proxy_delete_tag(client=client, tag_id=tag.id)
                 print(f"[CLEANUP] Deleted tag: {tag.name} (id={tag.id})")
                 count += 1
