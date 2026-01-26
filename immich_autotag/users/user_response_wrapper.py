@@ -58,7 +58,7 @@ class UserResponseWrapper:
     @property
     @typechecked
     def uuid(self) -> UUID:
-        """Devuelve el UUID del usuario (objeto UUID, no string)."""
+        """Returns the user's UUID (UUID object, not string)."""
         return UUID(self.id)
 
     @classmethod

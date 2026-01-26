@@ -314,7 +314,7 @@ class PerformanceTracker:
             est_total_all_str = (
                 self._printable_value_fmt_time(est_total_all) + "(est_total_all)"
             )
-            # Si coincide con alguno de los anteriores, no mostrarlo
+            # If it matches any of the previous ones, do not show it
             if (
                 est_total_all_str != elapsed_str
                 and est_total_all_str != total_elapsed_str

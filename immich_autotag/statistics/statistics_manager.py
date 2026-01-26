@@ -35,16 +35,15 @@ _instance = None
 class StatisticsManager:
 
     #
-    # NOTA IMPORTANTE SOBRE attrs Y EL LINTER:
+    # IMPORTANT NOTE ABOUT attrs AND THE LINTER:
     #
-    # Por convención, los argumentos del constructor de clases con attrs deben ser públicos (sin barra baja),
-    # aunque los atributos internos sean privados (con barra baja). attrs requiere esto para funcionar correctamente.
-    # Si el linter (por ejemplo, flake8, pylint, mypy) se queja por la discrepancia entre argumentos públicos y atributos privados,
-    # se debe silenciar la advertencia con un noqa o configuración específica, ya que esta es la forma correcta con attrs.
-    # Ejemplo: pylint: disable=attribute-defined-outside-init
+    # By convention, the constructor arguments for classes using attrs should be public (no leading underscore),
+    # even if the internal attributes are private (with leading underscore). attrs requires this to function correctly.
+    # If the linter (e.g., flake8, pylint, mypy) complains about the mismatch between public arguments and private attributes,
+    # silence the warning with a noqa or specific configuration, as this is the correct pattern with attrs.
+    # Example: pylint: disable=attribute-defined-outside-init
     #
-    # Referencia: https://www.attrs.org/en/stable/init.html#private-attributes
-    #
+    # Reference: https://www.attrs.org/en/stable/init.html#private-attributes
     _perf_tracker: PerformanceTracker = attr.ib(
         default=None, init=False, repr=False
     )  # noqa
@@ -106,7 +105,7 @@ class StatisticsManager:
 
         self.get_or_create_run_stats().max_assets = max_assets
         self._save_to_file()
-        # Si el PerformanceTracker ya existe, actualiza su valor interno
+        # If the PerformanceTracker already exists, update its internal value
         perf_tracker = self._get_or_create_perf_tracker()
         assert isinstance(perf_tracker, PerformanceTracker)
         perf_tracker.set_max_assets(max_assets)
@@ -210,7 +209,7 @@ class StatisticsManager:
     def get_or_create_run_stats(
         self, initial_stats: Optional[RunStatistics] = None
     ) -> RunStatistics:
-        # TODO: refactorizar a get_s
+        # TODO: refactor to get_s
         with self._lock:
             if self._current_stats is not None:
                 return self._current_stats
