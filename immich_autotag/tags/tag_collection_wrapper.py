@@ -58,8 +58,8 @@ class TagCollectionWrapper:
         self._load_all_from_api()
     def _load_single_by_id_from_api(self, id_: str):
         """
-        Busca un tag por id usando el proxy eficiente y lo añade al índice si lo encuentra.
-        Devuelve el TagWrapper encontrado o None.
+        Fetch a tag by id using the efficient proxy and add it to the index if found.
+        Returns the found TagWrapper or None.
         """
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -79,8 +79,8 @@ class TagCollectionWrapper:
 
     def _load_single_by_name_from_api(self, name: str):
         """
-        Centraliza la carga completa: si no está fully_loaded, carga todos los tags y busca en el índice.
-        Así se evita duplicidad y se mantiene la lógica en un solo lugar.
+        Centralizes full loading: if not fully_loaded, loads all tags and searches in the index.
+        This avoids duplication and keeps the logic in one place.
         """
         if not self._fully_loaded:
             self._load_all_from_api()
@@ -117,8 +117,8 @@ class TagCollectionWrapper:
             raise
     def _load_all_from_api(self):
         """
-        Carga todos los tags desde la API y los añade al índice, marcando fully_loaded.
-        Si ya está fully_loaded, no hace nada.
+        Loads all tags from the API and adds them to the index, marking as fully_loaded.
+        If already fully_loaded, does nothing.
         """
         if self._fully_loaded:
             return
@@ -153,7 +153,7 @@ class TagCollectionWrapper:
         tag = self._index.get_by_name(name)
         if tag is not None:
             return tag
-        # Lazy-load individual tag si no está fully_loaded
+        # Lazy-load individual tag if not fully_loaded
         if not self._fully_loaded:
             return self._load_single_by_name_from_api(name)
         return None
@@ -164,7 +164,7 @@ class TagCollectionWrapper:
         tag = self._index.get_by_id(id_)
         if tag is not None:
             return tag
-        # Lazy-load individual tag si no está fully_loaded
+        # Lazy-load individual tag if not fully_loaded
         if not self._fully_loaded:
             return self._load_single_by_id_from_api(str(id_))
         return None
@@ -172,7 +172,7 @@ class TagCollectionWrapper:
 
     @typechecked
     def __iter__(self):
-        # Si no está fully_loaded, forzar carga completa
+        # If not fully_loaded, force full loading
         if not self._fully_loaded:
             self._load_all_from_api()
         return iter(self._index)
@@ -184,7 +184,7 @@ class TagCollectionWrapper:
 
     @typechecked
     def __len__(self) -> int:
-        # Si no está fully_loaded, forzar carga completa
+        # If not fully_loaded, force full loading
         if not self._fully_loaded:
             self._load_all_from_api()
         return len(self._index)
@@ -194,7 +194,7 @@ class TagCollectionWrapper:
     def get_instance(cls) -> "TagCollectionWrapper":
         """
         Returns the singleton instance of TagCollectionWrapper. If not initialized,
-        creates it vacía (sin cargar tags). La carga completa se hace bajo demanda.
+        creates it empty (without loading tags). Full loading is done on demand.
         """
         global _tag_collection_singleton
         if _tag_collection_singleton is not None:
