@@ -1,17 +1,21 @@
-from immich_autotag.types import ImmichClient
-from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+from __future__ import annotations
+
 from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.assets.asset_manager import AssetManager
-from immich_autotag.duplicates.load_duplicates_collection import load_duplicates_collection
+from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.duplicates.load_duplicates_collection import load_duplicates_collection
 from immich_autotag.tags.list_tags import list_tags
+from immich_autotag.types import ImmichClient
 
-def init_collections_and_context(
+
+def _init_collections_and_context(
     client: ImmichClient, client_wrapper: ImmichClientWrapper
 ) -> tuple[list, AlbumCollectionWrapper, ImmichContext]:
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client()
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
+
     perf_phase_tracker.mark(phase="lazy", event="start")
     albums_collection.log_lazy_load_timing()
     perf_phase_tracker.mark(phase="lazy", event="end")
@@ -26,6 +30,8 @@ def init_collections_and_context(
     )
     return tag_collection, albums_collection, context
 
-def force_full_album_loading(albums_collection: AlbumCollectionWrapper) -> None:
+
+def _force_full_album_loading(albums_collection: AlbumCollectionWrapper) -> None:
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
+
     albums_collection.ensure_all_full(perf_phase_tracker=perf_phase_tracker)
