@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,12 +15,17 @@ from immich_autotag.tags.tag_dual_map import TagDualMap
 from immich_autotag.types import ImmichClient
 
 _tag_collection_singleton: "TagCollectionWrapper | None" = None
-_loaded_tags: bool = False
+
+
+class TagCollectionWrapperLoadError(Exception):
+    pass
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
+
     _index: TagDualMap = attrs.field(factory=TagDualMap)
+    _fully_loaded: bool = attrs.field(default=False, init=False)
 
     def __attrs_post_init__(self):
         global _tag_collection_singleton
@@ -30,6 +36,11 @@ class TagCollectionWrapper:
             raise RuntimeError(
                 "TagCollectionWrapper singleton already exists. Use TagCollectionWrapper.get_instance()."
             )
+
+
+    def _set_fully_loaded(self):
+        self._fully_loaded = True
+
 
     def _sync_from_api(self, client: ImmichClient) -> None:
         """
@@ -43,11 +54,37 @@ class TagCollectionWrapper:
             "[TAG_CACHE] Detected out-of-sync tag cache, refreshing from API"
         )
 
-        refreshed = self.__class__._from_api()
-        self._index.clear()
-        for tag in refreshed._index.values():
-            self._index.add(tag)
+        self._fully_loaded = False
+        self._load_all_from_api()
+    def _load_single_by_id_from_api(self, id_: str):
+        """
+        Busca un tag por id usando el proxy eficiente y lo añade al índice si lo encuentra.
+        Devuelve el TagWrapper encontrado o None.
+        """
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        from immich_autotag.tags.tag_response_wrapper import TagWrapper
+        from immich_autotag.api.immich_proxy.tags import proxy_get_tag_by_id
+        import uuid
+        client_wrapper = ImmichClientWrapper.get_default_instance()
+        client = client_wrapper.get_client()
+        try:
+            tag_dto = proxy_get_tag_by_id(client=client, tag_id=uuid.UUID(id_))
+        except Exception:
+            tag_dto = None
+        if tag_dto is not None:
+            tag_obj = TagWrapper(tag_dto)
+            self._index.add(tag_obj)
+            return tag_obj
+        return None
 
+    def _load_single_by_name_from_api(self, name: str):
+        """
+        Centraliza la carga completa: si no está fully_loaded, carga todos los tags y busca en el índice.
+        Así se evita duplicidad y se mantiene la lógica en un solo lugar.
+        """
+        if not self._fully_loaded:
+            self._load_all_from_api()
+        return self._index.get_by_name(name)
     @typechecked
     def create_tag_if_not_exists(
         self, *, name: str, client: ImmichClient
@@ -78,6 +115,26 @@ class TagCollectionWrapper:
                 if tag is not None:
                     return tag
             raise
+    def _load_all_from_api(self):
+        """
+        Carga todos los tags desde la API y los añade al índice, marcando fully_loaded.
+        Si ya está fully_loaded, no hace nada.
+        """
+        if self._fully_loaded:
+            return
+        from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        from immich_autotag.tags.tag_response_wrapper import TagWrapper
+        client_wrapper = ImmichClientWrapper.get_default_instance()
+        client = client_wrapper.get_client()
+        tags_dto = proxy_get_all_tags(client=client)
+        if tags_dto is None:
+            raise RuntimeError("API returned None when fetching all tags")
+        self._index.clear()
+        for tag_dto in tags_dto:
+            tag = TagWrapper(tag_dto)
+            self._index.add(tag)
+        self._set_fully_loaded()
 
     @staticmethod
     @typechecked
@@ -86,56 +143,63 @@ class TagCollectionWrapper:
         Builds a TagCollectionWrapper instance by fetching tags from the Immich API.
         Uses the client from ImmichContext singleton.
         """
-        from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-        from immich_autotag.tags.tag_response_wrapper import TagWrapper
-
-        global _loaded_tags
-        if _loaded_tags:
-            raise RuntimeError("Tags have already been loaded once.")
-
-        client_wrapper = ImmichClientWrapper.get_default_instance()
-        client = client_wrapper.get_client()
-        tags_dto = proxy_get_all_tags(client=client)
-        if tags_dto is None:
-            raise RuntimeError("API returned None when fetching all tags")
-        tags = [TagWrapper(tag) for tag in tags_dto]
         wrapper = TagCollectionWrapper()
-        wrapper._index.clear()
-        for tag in tags:
-            wrapper._index.add(tag)
+        wrapper._load_all_from_api()
         return wrapper
+
 
     @typechecked
     def find_by_name(self, name: str) -> "TagWrapper | None":
-        return self._index.get_by_name(name)
+        tag = self._index.get_by_name(name)
+        if tag is not None:
+            return tag
+        # Lazy-load individual tag si no está fully_loaded
+        if not self._fully_loaded:
+            return self._load_single_by_name_from_api(name)
+        return None
+
 
     @typechecked
     def find_by_id(self, id_: "UUID") -> "TagWrapper | None":
-        return self._index.get_by_id(id_)
+        tag = self._index.get_by_id(id_)
+        if tag is not None:
+            return tag
+        # Lazy-load individual tag si no está fully_loaded
+        if not self._fully_loaded:
+            return self._load_single_by_id_from_api(str(id_))
+        return None
+
 
     @typechecked
     def __iter__(self):
+        # Si no está fully_loaded, forzar carga completa
+        if not self._fully_loaded:
+            self._load_all_from_api()
         return iter(self._index)
 
     @typechecked
     def __contains__(self, name: str) -> bool:
         return self.find_by_name(name) is not None
 
+
     @typechecked
     def __len__(self) -> int:
+        # Si no está fully_loaded, forzar carga completa
+        if not self._fully_loaded:
+            self._load_all_from_api()
         return len(self._index)
+
 
     @classmethod
     def get_instance(cls) -> "TagCollectionWrapper":
         """
         Returns the singleton instance of TagCollectionWrapper. If not initialized,
-        fetches from API using the client from ImmichContext singleton.
+        creates it vacía (sin cargar tags). La carga completa se hace bajo demanda.
         """
         global _tag_collection_singleton
         if _tag_collection_singleton is not None:
             return _tag_collection_singleton
-        _tag_collection_singleton = cls._from_api()
+        _tag_collection_singleton = TagCollectionWrapper()
         return _tag_collection_singleton
 
     def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper | None":
