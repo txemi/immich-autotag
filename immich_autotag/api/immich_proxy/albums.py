@@ -115,5 +115,7 @@ def proxy_add_assets_to_album(
         id=album_id, client=client, body=BulkIdsDto(ids=asset_ids)
     )
     if result is None:
-        raise RuntimeError(f"Failed to add assets to album {album_id}: API returned None")
+        raise RuntimeError(
+            f"Failed to add assets to album {album_id}: API returned None"
+        )
     return result
