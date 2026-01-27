@@ -7,7 +7,6 @@ import attrs
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
-
 from immich_autotag.utils.api_disk_cache import (
     get_entity_from_cache,
     save_entity_to_cache,
@@ -115,9 +114,13 @@ class AlbumCacheEntry:
         Does not expose DTOs directly.
         """
         return self._ensure_full_loaded()._get_dto().get_asset_uuids()
+
     @conditional_typechecked
     def has_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
         raise NotImplementedError("usar cache")
-        return asset_wrapper.get_id_as_uuid() in  self._ensure_full_loaded().get_asset_uuids()
+        return (
+            asset_wrapper.get_id_as_uuid()
+            in self._ensure_full_loaded().get_asset_uuids()
+        )
