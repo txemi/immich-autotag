@@ -77,11 +77,13 @@ class AlbumDtoState:
         self._loaded_at = now
 
     def get_album_users(self) -> "AlbumUserList":
+        from .album_user_list import AlbumUserList
+        from .album_user_wrapper import AlbumUserWrapper
         users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
         return AlbumUserList(users)
 
     def get_owner_uuid(self) -> "UUID":
-        return UUID(self._album_dto.owner_id)
+        return UUID(self._dto.owner_id)
 
     @staticmethod
     def create(
