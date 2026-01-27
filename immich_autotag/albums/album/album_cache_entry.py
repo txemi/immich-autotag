@@ -37,9 +37,8 @@ class AlbumCacheEntry:
         use_cache: bool = True,
     ) -> "AlbumCacheEntry":
         """
-        Attempts to load the album from cache. If it is stale or does not exist, reloads using fetch_album_func.
+        Attempts to load the album from cache. If it is stale or does not exist, this method must be completed with an API fetch implementation.
         """
-        # Always use string representation for cache keys, but require UUID type for album_id
         album_id_str = str(album_id)
         cache_data = get_entity_from_cache("albums", album_id_str, use_cache=use_cache)
         if cache_data is not None:
@@ -50,8 +49,14 @@ class AlbumCacheEntry:
                     return entry
             except Exception:
                 pass  # If the cache is corrupt, reload from API
-            # If not in cache or corrupt, reload from API
-        album_dto: AlbumResponseDto = fetch_album_func(album_id)
+        # API fetch logic: call proxy_get_album_info using the default Immich client
+        from immich_autotag.context.immich_context import ImmichContext
+        from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
+
+        client = ImmichContext.get_default_instance().get_client_wrapper().get_client()
+        album_dto = proxy_get_album_info(album_id=album_id, client=client, use_cache=False)
+        if album_dto is None:
+            raise RuntimeError(f"Could not fetch album info for album_id={album_id}")
         dto = AlbumDtoState.from_dto(album_dto)
         entry = cls(dto=dto, max_age_seconds=DEFAULT_CACHE_MAX_AGE_SECONDS)
         save_entity_to_cache("albums", album_id_str, dto.to_dict())
