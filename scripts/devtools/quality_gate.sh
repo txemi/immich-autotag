@@ -482,9 +482,11 @@ check_no_dynamic_attrs() {
 # Returns: 0 if passes, 1 if forbidden tuples detected
 ###############################################################################
 check_no_tuples() {
-	local result
+	local py_bin="$1"
+	local repo_root="$2"
+	local target_dir="$3"
 	echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
-	"$PY_BIN" "${REPO_ROOT}/scripts/devtools/check_no_tuples.py" "$TARGET_DIR" --exclude ".venv,immich-client,scripts" || {
+	"$py_bin" "${repo_root}/scripts/devtools/check_no_tuples.py" "$target_dir" --exclude ".venv,immich-client,scripts" || {
 		echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses."
 		return 1
 	}
