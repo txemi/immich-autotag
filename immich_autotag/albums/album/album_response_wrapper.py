@@ -48,6 +48,7 @@ class AssetAlreadyInAlbumError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
+
     # --- 1. Fields ---
     _cache_entry: AlbumCacheEntry = attrs.field(kw_only=True)
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
@@ -72,9 +73,8 @@ class AlbumResponseWrapper:
     @typechecked
     def owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
-        from uuid import UUID
 
-        return UUID(self._cache_entry.get_state().get_dto().owner_id)
+        return self._cache_entry.get_state().get_owner_uuid()
 
     # --- 4. Static Methods ---
     @staticmethod
@@ -166,7 +166,7 @@ class AlbumResponseWrapper:
         Returns the full AlbumResponseDto, loading it from the API if necessary.
         Ensures the album is in DETAIL/full mode.
         """
-        return self.ensure_full()._cache_entry.get_state().get_dto()
+        return self.get_uuid()
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
@@ -210,7 +210,7 @@ class AlbumResponseWrapper:
         # Assets are authoritative in the full DTO. Load the full DTO if
         # needed and return wrapped assets. This avoids relying on the
         # partial DTO for asset information.
-        assets = self._get_album_full_or_load().assets or []
+        assets = self._cache_entry.get_assets()
         return [context.asset_manager.get_wrapper_for_asset(a, context) for a in assets]
 
     @typechecked
@@ -322,31 +322,28 @@ class AlbumResponseWrapper:
     # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> AlbumResponseWrapper:
-        """Reloads the album DTO from the API and clears the cache."""
+        """Reloads the album DTO from the API and clears the cache, delegando el fetch pero gestionando errores y reporting aquí."""
         from immich_client import errors as immich_errors
-
-        from immich_autotag.albums.album.album_api_utils import get_album_info_by_id
-        from immich_autotag.albums.albums.album_api_exception_info import (
-            AlbumApiExceptionInfo,
-        )
-
-        album_dto = None
+        from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+        album_dto_before = self._cache_entry._dto
         try:
-            album_dto = get_album_info_by_id(self.get_album_uuid(), client)
-        except immich_errors.UnexpectedStatus as exc:
+            self._cache_entry.ensure_full_loaded()
+        except RuntimeError as exc:
+            # Aquí se puede distinguir por mensaje o tipo de error si se quiere lógica más fina
             api_exc = AlbumApiExceptionInfo(exc)
             partial = self._build_partial_repr()
+            # Ejemplo: si el error es asimilable a un 400, marcar como unavailable y reportar
             if api_exc.is_status(400):
-                self._handle_recoverable_400(api_exc, partial)
-                return
+                self._handle_recoverable_400(api_exc, partial)                return self
             self._log_and_raise_fatal_error(api_exc, partial)
-        if album_dto is None:
+        album_dto_after = self._cache_entry._dto
+        if album_dto_after is None:
             raise RuntimeError(
                 f"get_album_info.sync returned None for album id="
                 f"{self.get_album_uuid_no_cache()}"
             )
-        else:
-            self._set_album_full(album_dto)
+        if album_dto_after is not album_dto_before:
+            self.invalidate_cache()
         return self
 
     @typechecked
@@ -841,7 +838,7 @@ class AlbumResponseWrapper:
         log(
             (
                 f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} removed from album "
-                f"{self.get_album_id()} ('{self.get_album_name()}')."
+                f"{self.get_album_uuid()} ('{self.get_album_name()}')."
             ),
             level=LogLevel.FOCUS,
         )
@@ -863,7 +860,6 @@ class AlbumResponseWrapper:
         album_name = self.get_album_name()
         if album_name.startswith(" "):
             cleaned_name = album_name.strip()
-            from uuid import UUID
 
             from immich_client.models.update_album_dto import UpdateAlbumDto
 
@@ -871,7 +867,7 @@ class AlbumResponseWrapper:
 
             update_body = UpdateAlbumDto(album_name=cleaned_name)
             proxy_update_album_info(
-                album_id=UUID(self.get_album_id()),
+                album_id=self.get_album_uuid(),
                 client=client,
                 body=update_body,
             )
@@ -888,15 +884,13 @@ class AlbumResponseWrapper:
                 level=LogLevel.FOCUS,
             )
 
-    @typechecked
-    def _get_full(self) -> AlbumResponseDto:
-        return self._get_album_full_or_load()
+
 
     @classmethod
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
         from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
-
+        raise NotImplementedError("from_partial_dto has been removed.")
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         cache_entry = AlbumCacheEntry(dto=state)
         return cls(cache_entry=cache_entry)
@@ -906,7 +900,7 @@ class AlbumResponseWrapper:
         if not isinstance(other, AlbumResponseWrapper):
             return False
         try:
-            return self.get_album_id() == other.get_album_id()
+            return self.get_album_uuid() == other.get_album_uuid()
         except Exception:
             return False
 
@@ -917,6 +911,8 @@ class AlbumResponseWrapper:
         the album id (which is stable and unique per album).
         """
         try:
-            return hash(self.get_album_id())
+            return hash(self.get_album_uuid())
         except Exception:
             return object.__hash__(self)
+
+    # Eliminado: toda recarga de álbum debe pasar por AlbumCacheEntry.ensure_full_loaded
