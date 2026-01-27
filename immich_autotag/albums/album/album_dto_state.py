@@ -5,10 +5,11 @@ from uuid import UUID
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 
+from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 
 class AlbumLoadSource(enum.Enum):
     """
-    Enum to indicate the API call source for an AlbumResponseDto.
+     Enum to indicate the API call source for an AlbumResponseDto.
     SEARCH: Loaded from album list/search API (partial/summary info).
     DETAIL: Loaded from album detail API (full info).
     """
