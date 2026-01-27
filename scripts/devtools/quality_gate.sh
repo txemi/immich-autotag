@@ -509,7 +509,7 @@ check_jscpd() {
 	fi
 	# Run jscpd in check mode (non-zero exit if duplicates found)
 	# Use --ignore instead of --exclude for recent jscpd versions
-	$jscmd --silent --min-tokens 30 --max-lines 100 --format python --ignore "**/.venv/**,**/immich-client/**,**/scripts/**" "$TARGET_DIR"
+	$jscmd --silent --min-tokens 30 --max-lines 100 --format python --ignore "**/.venv/**,**/immich-client/**,**/scripts/**" "$1"
 	jscpd_exit=$?
 	if [ $jscpd_exit -ne 0 ]; then
 		echo "[ERROR] jscpd detected code duplication. Please refactor duplicate code."
@@ -567,7 +567,7 @@ check_mypy() {
 	local py_bin="$3"
 	local target_dir="$4"
 	local mypy_failed=0 mypy_output mypy_exit_code mypy_error_count mypy_files_count
-	ensure_tool mypy mypy
+	ensure_tool "$py_bin" mypy mypy
 	echo "[INFO] Running mypy (output below if any):"
 	set +e
 	mypy_output=$($py_bin -m mypy --ignore-missing-imports "$target_dir" 2>&1)
@@ -742,8 +742,8 @@ check_import_linter() {
 		echo "[INFO] import-linter not found in environment. Installing..."
 		"$py_bin" -m pip install import-linter
 	fi
-	# Ejecutar import-linter usando el entorno correcto
-	if ! "$py_bin" -m importlinter --config "$repo_root/importlinter.ini"; then
+	# Ejecutar import-linter usando el CLI 'lint-imports' (no 'python -m importlinter')
+	if ! "$repo_root/.venv/bin/lint-imports" --config "$repo_root/importlinter.ini"; then
 		echo "[ERROR] import-linter found contract violations."
 		return 1
 	fi
