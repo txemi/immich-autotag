@@ -15,7 +15,7 @@ from immich_autotag.utils.api_disk_cache import (
 
 if TYPE_CHECKING:
 
-    from immich_client.models.album_response_dto import AlbumResponseDto
+    pass
 
 
 class StaleAlbumCacheError(Exception):
@@ -50,11 +50,13 @@ class AlbumCacheEntry:
             except Exception:
                 pass  # If the cache is corrupt, reload from API
         # API fetch logic: call proxy_get_album_info using the default Immich client
-        from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
+        from immich_autotag.context.immich_context import ImmichContext
 
         client = ImmichContext.get_default_instance().get_client_wrapper().get_client()
-        album_dto = proxy_get_album_info(album_id=album_id, client=client, use_cache=False)
+        album_dto = proxy_get_album_info(
+            album_id=album_id, client=client, use_cache=False
+        )
         if album_dto is None:
             raise RuntimeError(f"Could not fetch album info for album_id={album_id}")
         dto = AlbumDtoState.from_dto(album_dto)
