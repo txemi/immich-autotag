@@ -59,11 +59,10 @@ set -o pipefail
 # Trap for unexpected errors to always print a clear message before exit
 trap 'if [ $? -ne 0 ]; then echo "[FATAL] Quality Gate aborted unexpectedly. Check the output above for details."; fi' EXIT
 
-SCRIPT_DIR="$(
-	cd -- "$(dirname "$0")" >/dev/null 2>&1
-	pwd -P
-)"
+# Ensure .venv/bin is in PATH for all subprocesses (import-linter, etc)
+SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+export PATH="$REPO_ROOT/.venv/bin:$PATH"
 PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
 
