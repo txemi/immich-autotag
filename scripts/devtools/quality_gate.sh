@@ -743,7 +743,7 @@ check_import_linter() {
 		"$py_bin" -m pip install import-linter
 	fi
 	# Ejecutar import-linter usando el entorno correcto (módulo: importlinter)
-	# alternativa: "$repo_root/.venv/bin/lint-imports" 
+	# alternativa: "$repo_root/.venv/bin/lint-imports"
 	if ! "$py_bin" -m importlinter --config "$repo_root/importlinter.ini"; then
 		echo "[ERROR] import-linter found contract violations."
 		return 1
