@@ -85,74 +85,77 @@ parse_args_and_globals() {
 	fi
 
 	# Local variables for parsing
-	local arg
+	local arg check_mode quality_level enforce_dynamic_attrs target_dir
 
-	CHECK_MODE="APPLY" # Possible values: APPLY, CHECK
-	QUALITY_LEVEL=""   # Possible values: STRICT, STANDARD, TARGET
-	ENFORCE_DYNAMIC_ATTRS=0
-	TARGET_DIR=""
+	check_mode="APPLY" # Possible values: APPLY, CHECK
+	quality_level=""   # Possible values: STRICT, STANDARD, TARGET
+	enforce_dynamic_attrs=0
+	target_dir=""
 	for arg in "$@"; do
 		if [[ "$arg" =~ ^--level= ]]; then
-			QUALITY_LEVEL="${arg#--level=}"
+			quality_level="${arg#--level=}"
 		elif [ "$arg" = "-l" ]; then
 			NEXT_IS_LEVEL=1
 		elif [ "$NEXT_IS_LEVEL" = "1" ]; then
-			QUALITY_LEVEL="$arg"
+			quality_level="$arg"
 			NEXT_IS_LEVEL=0
 		elif [[ "$arg" =~ ^--mode= ]]; then
-			CHECK_MODE="${arg#--mode=}"
+			check_mode="${arg#--mode=}"
 		elif [ "$arg" = "-m" ]; then
 			NEXT_IS_MODE=1
 		elif [ "$NEXT_IS_MODE" = "1" ]; then
-			CHECK_MODE="$arg"
+			check_mode="$arg"
 			NEXT_IS_MODE=0
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
-			ENFORCE_DYNAMIC_ATTRS=1
+			enforce_dynamic_attrs=1
 		elif [[ "$arg" != --* ]]; then
-			TARGET_DIR="$arg"
+			target_dir="$arg"
 		fi
 	done
-	# Validar QUALITY_LEVEL
-	case "$QUALITY_LEVEL" in
+	# Validar quality_level
+	case "$quality_level" in
 	STRICT | STANDARD | TARGET) ;;
 	*)
-		echo "[ERROR] Invalid --level: '$QUALITY_LEVEL'. Must be one of: STRICT, STANDARD, TARGET." >&2
+		echo "[ERROR] Invalid --level: '$quality_level'. Must be one of: STRICT, STANDARD, TARGET." >&2
 		exit 2
 		;;
 	esac
-	# Validar CHECK_MODE
-	case "$CHECK_MODE" in
+	# Validar check_mode
+	case "$check_mode" in
 	CHECK | APPLY) ;;
 	*)
-		echo "[ERROR] Invalid --mode: '$CHECK_MODE'. Must be one of: CHECK, APPLY." >&2
+		echo "[ERROR] Invalid --mode: '$check_mode'. Must be one of: CHECK, APPLY." >&2
 		exit 2
 		;;
 	esac
-	# Si el usuario no fuerza QUALITY_LEVEL, por defecto STANDARD
-	if [ -z "$QUALITY_LEVEL" ]; then
-		QUALITY_LEVEL="STANDARD"
+	# Si el usuario no fuerza quality_level, por defecto STANDARD
+	if [ -z "$quality_level" ]; then
+		quality_level="STANDARD"
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
-	if [ -z "$TARGET_DIR" ]; then
-		TARGET_DIR="$PACKAGE_NAME"
+	if [ -z "$target_dir" ]; then
+		target_dir="$PACKAGE_NAME"
 	fi
 
-	export QUALITY_LEVEL CHECK_MODE ENFORCE_DYNAMIC_ATTRS TARGET_DIR
-
-	if [ "$QUALITY_LEVEL" = "STRICT" ]; then
-		echo "[QUALITY_LEVEL] Running in STRICT mode (all checks enforced, fail on any error)."
-	elif [ "$QUALITY_LEVEL" = "STANDARD" ]; then
-		echo "[QUALITY_LEVEL] Running in STANDARD mode (official CI level, some checks are warnings only)."
-	elif [ "$QUALITY_LEVEL" = "TARGET" ]; then
-		echo "[QUALITY_LEVEL] Running in TARGET mode (selected errors block, rest warn only)."
+	# Mensajes informativos SOLO a stderr
+	if [ "$quality_level" = "STRICT" ]; then
+		echo "[QUALITY_LEVEL] Running in STRICT mode (all checks enforced, fail on any error)." >&2
+	elif [ "$quality_level" = "STANDARD" ]; then
+		echo "[QUALITY_LEVEL] Running in STANDARD mode (official CI level, some checks are warnings only)." >&2
+	elif [ "$quality_level" = "TARGET" ]; then
+		echo "[QUALITY_LEVEL] Running in TARGET mode (selected errors block, rest warn only)." >&2
 	fi
 
-	if [ "$CHECK_MODE" = "CHECK" ]; then
-		echo "[CHECK_MODE] Running in CHECK mode (no files will be modified)."
-	elif [ "$CHECK_MODE" = "APPLY" ]; then
-		echo "[CHECK_MODE] Running in APPLY mode (formatters may modify files)."
+	if [ "$check_mode" = "CHECK" ]; then
+		echo "[CHECK_MODE] Running in CHECK mode (no files will be modified)." >&2
+	elif [ "$check_mode" = "APPLY" ]; then
+		echo "[CHECK_MODE] Running in APPLY mode (formatters may modify files)." >&2
 	fi
+
+	# Devolver los valores como salida (en orden, SOLO datos)
+	echo "$check_mode $quality_level $target_dir $enforce_dynamic_attrs"
 }
+
 
 ###############################################################################
 # Function: check_shfmt
@@ -835,7 +838,10 @@ run_quality_gate_check_summary() {
 # Refactor: main usa solo variables locales y pasa los valores explícitamente
 main() {
 	# Argument and global variable initialization
-	parse_args_and_globals "$@"
+	# parse_args_and_globals ahora devuelve los valores como salida limpia
+	local check_mode quality_level target_dir enforce_dynamic_attrs repo_root
+	read -r check_mode quality_level target_dir enforce_dynamic_attrs < <(parse_args_and_globals "$@")
+	repo_root="$REPO_ROOT"
 
 	# Obtener max_line_length y py_bin directamente
 	local max_line_length py_bin
@@ -843,10 +849,10 @@ main() {
 	py_bin=$(setup_python_env)
 
 	# Pasar los valores explícitamente a las funciones de chequeo
-	if [ "$CHECK_MODE" = "CHECK" ]; then
-		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$TARGET_DIR" "$QUALITY_LEVEL" "$CHECK_MODE" "$REPO_ROOT" "$ENFORCE_DYNAMIC_ATTRS"
+	if [ "$check_mode" = "CHECK" ]; then
+		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
 	else
-		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$TARGET_DIR" "$QUALITY_LEVEL" "$CHECK_MODE" "$REPO_ROOT" "$ENFORCE_DYNAMIC_ATTRS"
+		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
 	fi
 
 	echo "🎉 Quality Gate completed successfully!"
