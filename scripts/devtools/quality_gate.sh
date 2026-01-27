@@ -550,12 +550,18 @@ check_flake8() {
 		flake_failed=1
 	fi
 	if [ $flake_failed -ne 0 ]; then
-		if [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
-			echo "[WARNING] flake8 failed, but STANDARD/TARGET mode is enabled. See output above."
-			echo "[STANDARD/TARGET MODE] Not blocking build on flake8 errors."
-		else
+		if [ "$quality_level" = "STRICT" ]; then
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
+		elif [ "$quality_level" = "STANDARD" ]; then
+			echo "[WARNING] flake8 failed, but STANDARD mode is enabled. See output above."
+			echo "[STANDARD MODE] Not blocking build on flake8 errors."
+		elif [ "$quality_level" = "TARGET" ]; then
+			echo "[WARNING] flake8 failed, but TARGET mode is enabled. See output above."
+			echo "[TARGET MODE] Not blocking build on flake8 errors."
+		else
+			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
+			return 2
 		fi
 	fi
 	return 0
