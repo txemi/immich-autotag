@@ -260,12 +260,20 @@ check_python_syntax() {
 	local target_dir="$2"
 	echo "Checking for syntax and indentation errors..."
 	echo "[CHECK] Byte-compiling Python sources in $target_dir..."
-	if ! "$py_bin" -m compileall -q "$target_dir"; then
+	# Buscar y compilar todos los .py fuera de carpetas ignoradas
+	local failed=0
+	find "$target_dir" \
+		\( -path "$target_dir/.venv" -o -path "$target_dir/immich-client" -o -path "$target_dir/scripts" -o -path "$target_dir/jenkins_logs" \) -prune -false -o -name "*.py" -print |
+		while read -r file; do
+			if ! "$py_bin" -m py_compile "$file"; then
+				echo "[ERROR] Syntax error in $file"
+				failed=1
+			fi
+		done
+	if [ "$failed" -ne 0 ]; then
 		echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
 		return 1
 	fi
-	# Fallback check per-file (keeps original behavior for precise messages)
-	find "$target_dir" -name "*.py" -exec "$py_bin" -m py_compile {} +
 	return 0
 }
 
