@@ -20,7 +20,6 @@ class StaleAssetCacheError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetCacheEntry:
- 
     """
     Encapsulates the cached state of an asset, with freshness and reload logic.
     Attributes are private; access only via public methods.
@@ -197,7 +196,6 @@ class AssetCacheEntry:
 
         return state.get_tags()
 
-
     def get_state(self):
         """
         Returns the internal AssetDtoState (for compatibility with wrappers).
@@ -222,6 +220,7 @@ class AssetCacheEntry:
         Returns the created_at date of the asset, if available.
         """
         return self._state.get_created_at()
+
     def get_original_path(self):
         """
         Returns the original file path of the asset, if available.
@@ -233,7 +232,6 @@ class AssetCacheEntry:
         Returns the duplicate id as UUID, if available.
         """
         return self._state.get_duplicate_id_as_uuid()
-
 
     def has_tag(self, tag_name: str) -> bool:
         """
