@@ -335,7 +335,6 @@ class AlbumResponseWrapper:
             # Here you can distinguish by message or error type if you want finer logic
             api_exc = AlbumApiExceptionInfo(exc)
             partial = self._build_partial_repr()
-            # Ejemplo: si el error es asimilable a un 400, marcar como unavailable y reportar
             if api_exc.is_status(400):
                 self._handle_recoverable_400(api_exc, partial)                return self
             self._log_and_raise_fatal_error(api_exc, partial)
