@@ -134,8 +134,9 @@ class StatisticsManager:
                 "StatisticsManager instance already exists. "
                 "Use StatisticsManager.get_instance() instead of creating a new one."
             )
-        # Logging assignment to reserved variable
+        # Logging assignment to reserved global variable
         print("[INFO] Assigning self to reserved global variable _instance.")
+        global _instance
         _instance = self
         # Initialize declared attributes
         self._checkpoint = CheckpointManager(stats_manager=self)
@@ -194,7 +195,7 @@ class StatisticsManager:
     @staticmethod
     def get_instance() -> "StatisticsManager":
         # Reserved global variable _instance is required for singleton pattern
-        global _instance  # noqa: F824
+        global _instance
         if _instance is None:
             # Logging the use of reserved variable
             print(

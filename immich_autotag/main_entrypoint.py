@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+
+install_typeguard_import_hook()
+
 from immich_autotag.entrypoint.assets import process_assets_or_filtered
 from immich_autotag.entrypoint.collections import (
     force_full_album_loading,
@@ -11,14 +15,9 @@ from immich_autotag.entrypoint.finalize import finalize
 from immich_autotag.entrypoint.init import init_client, init_config_and_logging
 from immich_autotag.entrypoint.maintenance import maintenance_cleanup_labels
 from immich_autotag.entrypoint.permissions import process_permissions
-from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
 
-install_typeguard_import_hook()  # noqa: E402
-from immich_autotag.utils.setup_runtime import (  # noqa: E402
-    setup_logging_and_exceptions,
-)
-
-setup_logging_and_exceptions()  # noqa: E402
+setup_logging_and_exceptions()
 if TYPE_CHECKING:
     pass
 
