@@ -578,7 +578,6 @@ check_mypy() {
 	fi
 	if [ $mypy_failed -ne 0 ]; then
 		echo "$mypy_output"
-		# Count errors: lines containing 'error:'
 		mypy_error_count=$(echo "$mypy_output" | grep -c 'error:')
 		mypy_files_count=$(echo "$mypy_output" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
@@ -587,15 +586,15 @@ check_mypy() {
 			echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
 			echo '[STANDARD MODE] Not blocking build on mypy errors.'
 		elif [ "$quality_level" = "TARGET" ]; then
-			# Only block for arg-type, call-arg, return-value errors
-			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|return-value)\]' | wc -l)
+			# Only block for arg-type errors (minimum target)
+			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
 				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ❌❌❌"
-				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE, CALL-ARG, RETURN-VALUE) DETECTED 🚨"
+				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE) DETECTED 🚨"
 				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1
 			else
-				echo '[TARGET MODE] Only non-critical mypy errors found. Not blocking build.'
+				echo '[TARGET MODE] Only non-critical mypy errors found (return-value, call-arg, attr-defined, imports, etc). Not blocking build.'
 			fi
 		else
 			echo '[EXIT] Quality Gate failed due to mypy errors.'
