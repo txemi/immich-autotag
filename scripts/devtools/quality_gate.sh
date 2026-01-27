@@ -729,13 +729,22 @@ ejemplo'
 # Returns: 0 if passes, 1 if contracts are broken
 ###############################################################################
 check_import_linter() {
-	echo "[CHECK] Running import-linter (lint-imports) for architectural contracts..."
-	if ! command -v lint-imports >/dev/null 2>&1; then
-		echo "[ERROR] lint-imports (import-linter) is not installed or not in PATH."
-		echo "Install it with: pip install import-linter"
-		return 1
+	local repo_root="$1"
+	local py_bin
+	# Detectar el binario de Python del entorno virtual
+	if [ -f "$repo_root/.venv/bin/python" ]; then
+		py_bin="$repo_root/.venv/bin/python"
+	else
+		py_bin="$(command -v python3 || command -v python)"
 	fi
-	if ! lint-imports --config "$REPO_ROOT/importlinter.ini"; then
+	echo "[CHECK] Running import-linter (lint-imports) for architectural contracts..."
+	# Asegurar que import-linter está instalado
+	if ! "$py_bin" -c "import importlinter" 2>/dev/null; then
+		echo "[INFO] import-linter not found in environment. Installing..."
+		"$py_bin" -m pip install import-linter
+	fi
+	# Ejecutar import-linter usando el entorno correcto
+	if ! "$py_bin" -m importlinter --config "$repo_root/importlinter.ini"; then
 		echo "[ERROR] import-linter found contract violations."
 		return 1
 	fi
