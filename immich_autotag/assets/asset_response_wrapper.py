@@ -493,7 +493,7 @@ class AssetResponseWrapper:
         return self._cache_entry.get_created_at()
 
     def get_id(self) -> UUID:
-        # Compatibilidad: usa get_uuid del cache_entry, que es el método correcto y seguro
+        # Use get_uuid from cache_entry, which is the correct and safe method
         return self._cache_entry.get_uuid()
 
     def get_original_path(self) -> "Path":
