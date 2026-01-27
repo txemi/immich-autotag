@@ -4,7 +4,7 @@
     {
       "label": "Format and Sort (apply)",
       "type": "shell",
-      "command": "bash scripts/devtools/quality_gate.sh --level=RELAXED --mode=APPLY",
+      "command": "bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=APPLY",
       "group": { "kind": "build", "isDefault": true },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
@@ -12,7 +12,7 @@
     {
       "label": "Format and Sort (check)",
       "type": "shell",
-      "command": "bash scripts/devtools/quality_gate.sh --level=RELAXED --mode=CHECK",
+      "command": "bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=CHECK",
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     },
