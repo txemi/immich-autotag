@@ -192,18 +192,8 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
-        # Assets are authoritative in the full DTO. Load the full DTO if
-        # needed and return wrapped assets. This avoids relying on the
-        # partial DTO for asset information.
-        asset = self._cache_entry.get_assets()
-
-        self.ensure_full_loaded(self.get_default_client())
-        state = self._cache_entry.get_state()
-        assets = getattr(state._dto, "assets", [])
-        asset_manager = getattr(context, "asset_manager", None)
-        if asset_manager is None:
-            raise AttributeError("ImmichContext missing asset_manager")
-        return [asset_manager.get_wrapper_for_asset(a, context) for a in assets]
+        # Ensure the album is fully loaded before accessing assets
+        return self._cache_entry.get_assets(context)
 
     @typechecked
     def is_empty(self) -> bool:

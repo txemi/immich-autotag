@@ -124,3 +124,11 @@ class AlbumCacheEntry:
             asset_wrapper.get_id_as_uuid()
             in self._ensure_full_loaded().get_asset_uuids()
         )
+
+    @conditional_typechecked
+    def get_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
+        # Ensure the album is fully loaded before accessing assets
+        self._e3nsure_full_loaded()
+        if asset_manager is None:
+            raise AttributeError("ImmichContext missing asset_manager")
+        return [asset_manager.get_wrapper_for_asset(a, context) for a in self._dto.assets]
