@@ -54,7 +54,7 @@ class TagCollectionWrapper:
         self._fully_loaded = False
         self._load_all_from_api()
 
-    def _load_single_by_id_from_api(self, id_: str):
+    def _load_single_by_id_from_api(self, id_: UUID):
         """
         Fetch a tag by id using the efficient proxy and add it to the index if found.
         Returns the found TagWrapper or None.
@@ -68,7 +68,7 @@ class TagCollectionWrapper:
         client_wrapper = ImmichClientWrapper.get_default_instance()
         client = client_wrapper.get_client()
         try:
-            tag_dto = proxy_get_tag_by_id(client=client, tag_id=uuid.UUID(id_))
+            tag_dto = proxy_get_tag_by_id(client=client, tag_id=id_)
         except Exception:
             tag_dto = None
         if tag_dto is not None:
@@ -152,9 +152,11 @@ class TagCollectionWrapper:
 
     @typechecked
     def find_by_name(self, name: str) -> "TagWrapper | None":
-        tag = self._index.get_by_name(name)
-        if tag is not None:
+        try:
+            tag = self._index.get_by_name(name)
             return tag
+        except Exception:
+            pass
         # Lazy-load individual tag if not fully_loaded
         if not self._fully_loaded:
             return self._load_single_by_name_from_api(name)
@@ -162,12 +164,14 @@ class TagCollectionWrapper:
 
     @typechecked
     def find_by_id(self, id_: "UUID") -> "TagWrapper | None":
-        tag = self._index.get_by_id(id_)
-        if tag is not None:
+        try:
+            tag = self._index.get_by_id(id_)
             return tag
+        except Exception:
+            pass
         # Lazy-load individual tag if not fully_loaded
         if not self._fully_loaded:
-            return self._load_single_by_id_from_api(str(id_))
+            return self._load_single_by_id_from_api(id_)
         return None
 
     @typechecked
@@ -232,9 +236,11 @@ class TagCollectionWrapper:
 
         tags_dto = proxy_get_all_tags(client=client) or []
         count = 0
+        from uuid import UUID
+
         for tag in tags_dto:
             if any(tag.name.startswith(prefix) for prefix in prefixes):
-                proxy_delete_tag(client=client, tag_id=tag.id)
+                proxy_delete_tag(client=client, tag_id=UUID(tag.id))
                 print(f"[CLEANUP] Deleted tag: {tag.name} (id={tag.id})")
                 count += 1
         return count
