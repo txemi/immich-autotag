@@ -534,9 +534,15 @@ check_flake8() {
 	local flake_failed=0 flake8_ignore
 	ensure_tool "$py_bin" flake8 flake8
 	flake8_ignore="E203,W503"
-	if [ "$quality_level" != "STRICT" ]; then
+	if [ "$quality_level" = "STRICT" ]; then
+		# En modo estricto, no se ignora E501
+		: # No se hace nada especial
+	elif [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
 		flake8_ignore="$flake8_ignore,E501"
 		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
+	else
+		echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
+		return 2
 	fi
 	echo "[INFO] Running flake8 (output below if any):"
 	"$py_bin" -m flake8 --max-line-length=$max_line_length --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$target_dir"
