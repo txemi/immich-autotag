@@ -742,7 +742,7 @@ check_import_linter() {
 		echo "[INFO] import-linter not found in environment. Installing..."
 		"$py_bin" -m pip install import-linter
 	fi
-	# Ejecutar import-linter usando el entorno correcto
+	# Ejecutar import-linter usando el entorno correcto (módulo: importlinter)
 	if ! "$py_bin" -m importlinter --config "$repo_root/importlinter.ini"; then
 		echo "[ERROR] import-linter found contract violations."
 		return 1
