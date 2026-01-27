@@ -6,12 +6,10 @@ from typeguard import typechecked
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
 )
-from immich_autotag.config.models import Conversion, ConversionMode
-from immich_autotag.conversions.destination_wrapper import DestinationWrapper
 
 # Error handling mode import
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-from immich_autotag.config._internal_types import ErrorHandlingMode
+from immich_autotag.config.models import Conversion, ConversionMode
+from immich_autotag.conversions.destination_wrapper import DestinationWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper

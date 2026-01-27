@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Generator
 
-from immich_client.models.metadata_search_dto import MetadataSearchDto
 from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.metadata_search_dto import MetadataSearchDto
 from immich_client.models.search_response_dto import SearchResponseDto
 from immich_client.types import Response
 from typeguard import typechecked

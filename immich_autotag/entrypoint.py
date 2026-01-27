@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
-from immich_autotag.albums.permissions.sync_all_album_permissions import sync_all_album_permissions
+from immich_autotag.albums.permissions.sync_all_album_permissions import (
+    sync_all_album_permissions,
+)
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
 
 install_typeguard_import_hook()  # noqa: E402

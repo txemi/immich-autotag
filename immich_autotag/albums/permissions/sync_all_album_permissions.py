@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
-from immich_autotag.config.models import UserConfig, AlbumPermissionsConfig, UserGroup
+from immich_autotag.config.models import AlbumPermissionsConfig, UserConfig, UserGroup
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.permissions import sync_album_permissions
 
