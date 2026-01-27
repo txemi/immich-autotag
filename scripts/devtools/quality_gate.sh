@@ -128,9 +128,9 @@ parse_args_and_globals() {
 		exit 2
 		;;
 	esac
-	       # Si el usuario no fuerza QUALITY_LEVEL, por defecto STANDARD
-	       if [ -z "$QUALITY_LEVEL" ]; then
-		       QUALITY_LEVEL="STANDARD"
+	# Si el usuario no fuerza QUALITY_LEVEL, por defecto STANDARD
+	if [ -z "$QUALITY_LEVEL" ]; then
+		QUALITY_LEVEL="STANDARD"
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
@@ -511,9 +511,9 @@ check_flake8() {
 		flake_failed=1
 	fi
 	if [ $flake_failed -ne 0 ]; then
-		       if [ "$QUALITY_LEVEL" = "STANDARD" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
-			       echo "[WARNING] flake8 failed, but STANDARD/TARGET mode is enabled. See output above."
-			       echo "[STANDARD/TARGET MODE] Not blocking build on flake8 errors."
+		if [ "$QUALITY_LEVEL" = "STANDARD" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			echo "[WARNING] flake8 failed, but STANDARD/TARGET mode is enabled. See output above."
+			echo "[STANDARD/TARGET MODE] Not blocking build on flake8 errors."
 		else
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
@@ -546,9 +546,9 @@ check_mypy() {
 		mypy_files_count=$(echo "$mypy_output" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
 		echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
-		       if [ "$QUALITY_LEVEL" = "STANDARD" ]; then
-			       echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
-			       echo '[STANDARD MODE] Not blocking build on mypy errors.'
+		if [ "$QUALITY_LEVEL" = "STANDARD" ]; then
+			echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
+			echo '[STANDARD MODE] Not blocking build on mypy errors.'
 		elif [ "$QUALITY_LEVEL" = "TARGET" ]; then
 			# Only block for arg-type, call-arg, return-value errors
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|return-value)\]' | wc -l)
