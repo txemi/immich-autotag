@@ -4,7 +4,9 @@ from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectio
 from immich_autotag.assets.asset_manager import AssetManager
 from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.duplicates.load_duplicates_collection import load_duplicates_collection
+from immich_autotag.duplicates.load_duplicates_collection import (
+    load_duplicates_collection,
+)
 from immich_autotag.tags.list_tags import list_tags
 from immich_autotag.types import ImmichClient
 

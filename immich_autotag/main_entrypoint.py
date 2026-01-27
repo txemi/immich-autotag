@@ -3,9 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from immich_autotag.entrypoint.assets import _process_assets_or_filtered
-from immich_autotag.entrypoint.collections import _init_collections_and_context, _force_full_album_loading
+from immich_autotag.entrypoint.collections import (
+    _force_full_album_loading,
+    _init_collections_and_context,
+)
 from immich_autotag.entrypoint.finalize import _finalize
-from immich_autotag.entrypoint.init import _init_config_and_logging, _init_client
+from immich_autotag.entrypoint.init import _init_client, _init_config_and_logging
 from immich_autotag.entrypoint.maintenance import _maintenance_cleanup_labels
 from immich_autotag.entrypoint.permissions import _process_permissions
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
