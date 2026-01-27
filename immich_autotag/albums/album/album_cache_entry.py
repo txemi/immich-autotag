@@ -42,11 +42,15 @@ class AlbumCacheEntry:
         album_id_str = str(album_id)
         cache_data = get_entity_from_cache("albums", album_id_str, use_cache=use_cache)
         from immich_client.models.album_response_dto import AlbumResponseDto
+
         from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+
         if cache_data is not None:
             try:
                 album_dto = AlbumResponseDto.from_dict(cache_data)
-                dto = AlbumDtoState.create(dto=album_dto, load_source=AlbumLoadSource.DETAIL)
+                dto = AlbumDtoState.create(
+                    dto=album_dto, load_source=AlbumLoadSource.DETAIL
+                )
                 # Check staleness using a temp AlbumCacheEntry
                 if not dto._is_stale(max_age_seconds=max_age_seconds):
                     return dto
@@ -55,6 +59,7 @@ class AlbumCacheEntry:
         # API fetch logic: call proxy_get_album_info using the default Immich client
         from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
         from immich_autotag.context.immich_context import ImmichContext
+
         client = ImmichContext.get_default_instance().get_client_wrapper().get_client()
         album_dto = proxy_get_album_info(
             album_id=album_id, client=client, use_cache=False
