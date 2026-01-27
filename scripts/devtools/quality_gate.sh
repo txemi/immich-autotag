@@ -5,39 +5,17 @@
 # ============================================================================
 #
 # Usage:
-#   ./quality_gate.sh [--check|-c] [--strict] [--target] [--relaxed] [target_dir]
+#   ./quality_gate.sh [--level=LEVEL|-l LEVEL] [--check|-c|--apply] [--enforce-dynamic-attrs] [target_dir]
+#
+#   --level=LEVEL or -l LEVEL: Set quality level (STRICT, STANDARD, TARGET)
+#   --mode=MODE or -m MODE: Set mode (CHECK, APPLY)
+#   --enforce-dynamic-attrs: Enforce dynamic attrs check
+#   target_dir: Directory to check (default: immich_autotag)
 #
 # Modes:
-#   --strict
-#     - Applies ALL checks strictly.
-#     - Any error or warning in any check BLOCKS the build.
-#     - No error is ignored (format, style, types, duplication, architecture, etc).
-#     - Not recommended for CI/pipelines unless code is perfect.
-#
-#   --relaxed
-#     - Applies all checks, but some only warn and DO NOT block the build.
-#     - Checks that DO NOT block in relaxed mode:
-#         * flake8: E501 (long lines) ignored, other errors may block.
-#         * ruff: E501 ignored.
-#         * mypy: only warns, does not block.
-#         * Spanish characters: only warns, does not block.
-#     - The rest of checks CAN block the build if they fail:
-#         * Python syntax errors
-#         * Code duplication (jscpd)
-#         * Architecture contracts (import-linter)
-#         * Forbidden tuples
-#         * getattr/hasattr (only if --enforce-dynamic-attrs)
-#         * Method order (ssort)
-#         * Bash formatting (shfmt)
-#         * isort, black, ruff (except E501)
-#
-#   --target
-#     - Intermediate mode for Quality Gate improvement branches.
-#     - Blocks the build ONLY for a selected subset of warnings/errors (currently: mypy arg-type, call-arg, return-value).
-#     - The rest behave as in relaxed mode (warn only).
-#     - Use this mode to progressively raise the bar in dedicated branches.
-#
-#   --check   Only check, do not modify files (default is apply/fix mode).
+#   STRICT: Applies ALL checks strictly. Any error or warning in any check BLOCKS the build. Not recommended for CI unless code is perfect.
+#   STANDARD: Official CI level. Applies all checks, but some only warn and DO NOT block the build (see below). El resto pueden bloquear si fallan.
+#   TARGET: Intermediate mode for Quality Gate improvement branches. Blocks the build ONLY for una subset de errores. El resto se comporta como en STANDARD (warn only).
 #   --enforce-dynamic-attrs  Enforce ban on getattr/hasattr (advanced).
 #
 # If no [target_dir] is given, defaults to the main package.
@@ -45,7 +23,7 @@
 # =====================
 # Quality Gate Checks Table (reference)
 # =====================
-# | Check                            | Description                                 | Strict   | Relaxed (CI) | Target (improvement) |
+# | Check                            | Description                                 | Strict   | Standard (CI) | Target (improvement) |
 # |-----------------------------------|---------------------------------------------|----------|--------------|---------------------|
 # | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |   ✔️                |
 # | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |   ✔️                |
@@ -61,7 +39,7 @@
 # | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |   ✔️                |
 # | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |   Warn              |
 # -----------------------------------------------------------------------------
-# * In relaxed mode, flake8/ruff ignore E501, and mypy only warns, does not block the build.
+# * In STANDARD mode, flake8/ruff ignore E501, and mypy only warns, does not block the build.
 # ** Only if --enforce-dynamic-attrs is used
 #
 # =====================
@@ -98,9 +76,11 @@ cd "$REPO_ROOT"
 ###############################################################################
 parse_args_and_globals() {
 	if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-		echo "Usage: $0 [--check|-c] [--strict] [target_dir]"
+		echo "Usage: $0 [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--enforce-dynamic-attrs] [target_dir]"
 		echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
-		echo "  --strict: Enforce all checks strictly, fail on any error."
+		echo "  --level=LEVEL or -l LEVEL: Set quality level (STRICT, STANDARD, TARGET)"
+		echo "  --mode=MODE or -m MODE: Set mode (CHECK, APPLY)"
+		echo "  --enforce-dynamic-attrs: Enforce dynamic attrs check"
 		exit 0
 	fi
 
@@ -108,29 +88,49 @@ parse_args_and_globals() {
 	local arg
 
 	CHECK_MODE="APPLY" # Possible values: APPLY, CHECK
-	QUALITY_LEVEL=""   # Possible values: STRICT, RELAXED
+	QUALITY_LEVEL=""   # Possible values: STRICT, STANDARD, TARGET
 	ENFORCE_DYNAMIC_ATTRS=0
 	TARGET_DIR=""
 	for arg in "$@"; do
-		if [ "$arg" = "--strict" ]; then
-			QUALITY_LEVEL="STRICT"
-		elif [ "$arg" = "--relaxed" ]; then
-			QUALITY_LEVEL="RELAXED"
-		elif [ "$arg" = "--target" ]; then
-			QUALITY_LEVEL="TARGET"
-		elif [ "$arg" = "--check" ] || [ "$arg" = "-c" ]; then
-			CHECK_MODE="CHECK"
-		elif [ "$arg" = "--apply" ]; then
-			CHECK_MODE="APPLY"
+		if [[ "$arg" =~ ^--level= ]]; then
+			QUALITY_LEVEL="${arg#--level=}"
+		elif [ "$arg" = "-l" ]; then
+			NEXT_IS_LEVEL=1
+		elif [ "$NEXT_IS_LEVEL" = "1" ]; then
+			QUALITY_LEVEL="$arg"
+			NEXT_IS_LEVEL=0
+		elif [[ "$arg" =~ ^--mode= ]]; then
+			CHECK_MODE="${arg#--mode=}"
+		elif [ "$arg" = "-m" ]; then
+			NEXT_IS_MODE=1
+		elif [ "$NEXT_IS_MODE" = "1" ]; then
+			CHECK_MODE="$arg"
+			NEXT_IS_MODE=0
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 			ENFORCE_DYNAMIC_ATTRS=1
 		elif [[ "$arg" != --* ]]; then
 			TARGET_DIR="$arg"
 		fi
 	done
-	# Si el usuario no fuerza QUALITY_LEVEL, por defecto RELAXED
-	if [ -z "$QUALITY_LEVEL" ]; then
-		QUALITY_LEVEL="RELAXED"
+	# Validar QUALITY_LEVEL
+	case "$QUALITY_LEVEL" in
+	STRICT | STANDARD | TARGET) ;;
+	*)
+		echo "[ERROR] Invalid --level: '$QUALITY_LEVEL'. Must be one of: STRICT, STANDARD, TARGET." >&2
+		exit 2
+		;;
+	esac
+	# Validar CHECK_MODE
+	case "$CHECK_MODE" in
+	CHECK | APPLY) ;;
+	*)
+		echo "[ERROR] Invalid --mode: '$CHECK_MODE'. Must be one of: CHECK, APPLY." >&2
+		exit 2
+		;;
+	esac
+	       # Si el usuario no fuerza QUALITY_LEVEL, por defecto STANDARD
+	       if [ -z "$QUALITY_LEVEL" ]; then
+		       QUALITY_LEVEL="STANDARD"
 	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
@@ -141,8 +141,8 @@ parse_args_and_globals() {
 
 	if [ "$QUALITY_LEVEL" = "STRICT" ]; then
 		echo "[QUALITY_LEVEL] Running in STRICT mode (all checks enforced, fail on any error)."
-	elif [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-		echo "[QUALITY_LEVEL] Running in RELAXED mode (some checks are warnings only)."
+	elif [ "$QUALITY_LEVEL" = "STANDARD" ]; then
+		echo "[QUALITY_LEVEL] Running in STANDARD mode (official CI level, some checks are warnings only)."
 	elif [ "$QUALITY_LEVEL" = "TARGET" ]; then
 		echo "[QUALITY_LEVEL] Running in TARGET mode (selected errors block, rest warn only)."
 	fi
@@ -367,7 +367,7 @@ check_ssort() {
 ###############################################################################
 # Function: check_ruff
 # Description: Lint and auto-fix Python style using ruff.
-# Globals: CHECK_MODE, RELAXED_MODE, PY_BIN, TARGET_DIR
+# Globals: CHECK_MODE, STANDARD_MODE, PY_BIN, TARGET_DIR
 # Returns: 0 if passes, 1 if style issues
 ###############################################################################
 check_ruff() {
@@ -494,7 +494,7 @@ check_jscpd() {
 ###############################################################################
 # Function: check_flake8
 # Description: Lint for Python style and errors using flake8.
-# Globals: RELAXED_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
+# Globals: STANDARD_MODE, PY_BIN, MAX_LINE_LENGTH, TARGET_DIR
 # Returns: 0 if passes, 1 if style errors
 ###############################################################################
 check_flake8() {
@@ -511,9 +511,9 @@ check_flake8() {
 		flake_failed=1
 	fi
 	if [ $flake_failed -ne 0 ]; then
-		if [ "$QUALITY_LEVEL" = "RELAXED" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
-			echo "[WARNING] flake8 failed, but relaxed/target mode is enabled. See output above."
-			echo "[RELAXED/TARGET MODE] Not blocking build on flake8 errors."
+		       if [ "$QUALITY_LEVEL" = "STANDARD" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+			       echo "[WARNING] flake8 failed, but STANDARD/TARGET mode is enabled. See output above."
+			       echo "[STANDARD/TARGET MODE] Not blocking build on flake8 errors."
 		else
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
@@ -546,9 +546,9 @@ check_mypy() {
 		mypy_files_count=$(echo "$mypy_output" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
 		echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
-		if [ "$QUALITY_LEVEL" = "RELAXED" ]; then
-			echo '[WARNING] mypy failed, but relaxed mode is enabled. See output above.'
-			echo '[RELAXED MODE] Not blocking build on mypy errors.'
+		       if [ "$QUALITY_LEVEL" = "STANDARD" ]; then
+			       echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
+			       echo '[STANDARD MODE] Not blocking build on mypy errors.'
 		elif [ "$QUALITY_LEVEL" = "TARGET" ]; then
 			# Only block for arg-type, call-arg, return-value errors
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|return-value)\]' | wc -l)
