@@ -742,9 +742,21 @@ check_import_linter() {
 		echo "[INFO] import-linter not found in environment. Installing..."
 		"$py_bin" -m pip install import-linter
 	fi
-	# Ejecutar import-linter usando el entorno correcto (módulo: importlinter)
-	# alternativa: "$repo_root/.venv/bin/lint-imports" 
-	if ! "$py_bin" -m importlinter --config "$repo_root/importlinter.ini"; then
+	# Ejecutar import-linter usando el binario real del entorno virtual o PATH
+	# alternativa: "$py_bin" -m importlinter 
+	local lint_imports_bin
+	if [ -n "$VIRTUAL_ENV" ] && [ -x "$VIRTUAL_ENV/bin/lint-imports" ]; then
+		lint_imports_bin="$VIRTUAL_ENV/bin/lint-imports"
+	elif [ -x "$repo_root/.venv/bin/lint-imports" ]; then
+		lint_imports_bin="$repo_root/.venv/bin/lint-imports"
+	else
+		lint_imports_bin="$(command -v lint-imports)"
+	fi
+	if [ -z "$lint_imports_bin" ]; then
+		echo "[ERROR] lint-imports binary not found in virtualenv or PATH."
+		return 1
+	fi
+	if ! "$lint_imports_bin" --config "$repo_root/importlinter.ini"; then
 		echo "[ERROR] import-linter found contract violations."
 		return 1
 	fi
