@@ -131,4 +131,6 @@ class AlbumCacheEntry:
         self._e3nsure_full_loaded()
         if asset_manager is None:
             raise AttributeError("ImmichContext missing asset_manager")
-        return [asset_manager.get_wrapper_for_asset(a, context) for a in self._dto.assets]
+        return [
+            asset_manager.get_wrapper_for_asset(a, context) for a in self._dto.assets
+        ]
