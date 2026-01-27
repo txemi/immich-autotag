@@ -738,16 +738,24 @@ check_import_linter() {
 
 # Run all quality checks in CHECK mode (fail fast on first error)
 run_quality_gate_check_mode() {
+	local py_bin="$1"
+	local max_line_length="$2"
+	local target_dir="$3"
+	local quality_level="$4"
+	local check_mode="$5"
+	local repo_root="$6"
+	local enforce_dynamic_attrs="$7"
+
 	# 1. Blocking checks (fail fast on first error)
-	check_python_syntax "$1" "$3" || exit 1
-	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || exit 1
-	check_jscpd "$TARGET_DIR" || exit 1
-	check_import_linter "$REPO_ROOT" || exit 1
-	check_no_dynamic_attrs "$ENFORCE_DYNAMIC_ATTRS" "$TARGET_DIR" || exit 2
-	check_no_tuples "$PY_BIN" "$REPO_ROOT" "$TARGET_DIR" || exit 3
-	check_no_spanish_chars "$TARGET_DIR" || exit 5
+	check_python_syntax "$py_bin" "$target_dir" || exit 1
+	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || exit 1
+	check_jscpd "$target_dir" || exit 1
+	check_import_linter "$repo_root" || exit 1
+	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || exit 2
+	check_no_tuples "$py_bin" "$repo_root" "$target_dir" || exit 3
+	check_no_spanish_chars "$target_dir" || exit 5
 	# 2. Formatters and style (run only if all blocking checks pass)
-	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || exit 1
+	check_shfmt "$check_mode" "$target_dir" || exit 1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
@@ -756,27 +764,34 @@ run_quality_gate_check_mode() {
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
 run_quality_gate_apply_mode() {
+	local py_bin="$1"
+	local max_line_length="$2"
+	local target_dir="$3"
+	local quality_level="$4"
+	local check_mode="$5"
+	local repo_root="$6"
+	local enforce_dynamic_attrs="$7"
 	local error_found=0
 	# 1. Auto-fixers and formatters
-	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || error_found=1
+	check_shfmt "$check_mode" "$target_dir" || error_found=1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	# 2. Fast/deterministic checks
-	check_python_syntax "$PY_BIN" "$TARGET_DIR" || error_found=1
+	check_python_syntax "$py_bin" "$target_dir" || error_found=1
 	# 3. Internal policy checks
-	check_no_dynamic_attrs "$ENFORCE_DYNAMIC_ATTRS" "$TARGET_DIR" || error_found=2
-	check_no_tuples "$PY_BIN" "$REPO_ROOT" "$TARGET_DIR" || error_found=3
-	check_no_spanish_chars "$TARGET_DIR" || error_found=5
+	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || error_found=2
+	check_no_tuples "$py_bin" "$repo_root" "$target_dir" || error_found=3
+	check_no_spanish_chars "$target_dir" || error_found=5
 	# 4. Heavy/informative checks
-	check_jscpd "$TARGET_DIR" || error_found=1
+	check_jscpd "$target_dir" || error_found=1
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
-	check_import_linter "$REPO_ROOT" || error_found=1
-	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || error_found=1
+	check_import_linter "$repo_root" || error_found=1
+	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || error_found=1
 	if [ "$error_found" -ne 0 ]; then
 		echo "[EXIT] Quality Gate failed (see errors above)."
 		# After APPLY fails, run summary check in priority order (most important errors first)
-		run_quality_gate_check_summary
+		run_quality_gate_check_summary "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
 		exit $error_found
 	fi
 }
@@ -784,28 +799,35 @@ run_quality_gate_apply_mode() {
 # Summary check: runs most important checks first, fails on first error.
 # This ensures the developer sees the most relevant actionable error at the end.
 run_quality_gate_check_summary() {
+	local py_bin="$1"
+	local max_line_length="$2"
+	local target_dir="$3"
+	local quality_level="$4"
+	local check_mode="$5"
+	local repo_root="$6"
+	local enforce_dynamic_attrs="$7"
 	echo "[SUMMARY] Running prioritized checks to show the most important remaining error."
 	# 1. Checks we have already passed (quality threshold):
 	#    We put first the checks that we have already passed (like the language check),
 	#    so that if they break, it is very obvious and immediately visible.
 	#    This way we avoid quality deterioration in aspects that are already under control.
-	check_no_spanish_chars "$TARGET_DIR" || exit 5
-	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || exit 1
+	check_no_spanish_chars "$target_dir" || exit 5
+	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || exit 1
 	# 2. Syntax errors
-	check_python_syntax "$PY_BIN" "$TARGET_DIR" || exit 1
+	check_python_syntax "$py_bin" "$target_dir" || exit 1
 	# 3. Ruff (lint/auto-fix)
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	# 4. Flake8 (style)
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
-	check_import_linter "$REPO_ROOT" || exit 1
+	check_import_linter "$repo_root" || exit 1
 	# 5. Policy checks
-	check_no_dynamic_attrs "$ENFORCE_DYNAMIC_ATTRS" "$TARGET_DIR" || exit 2
-	check_no_tuples "$PY_BIN" "$REPO_ROOT" "$TARGET_DIR" || exit 3
+	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || exit 2
+	check_no_tuples "$py_bin" "$repo_root" "$target_dir" || exit 3
 	# 6. Spanish character check
 	# 7. Code duplication (least urgent)
-	check_jscpd "$TARGET_DIR" || exit 1
+	check_jscpd "$target_dir" || exit 1
 	# 8. Formatters (least urgent in summary)
-	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || exit 1
+	check_shfmt "$check_mode" "$target_dir" || exit 1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 }
