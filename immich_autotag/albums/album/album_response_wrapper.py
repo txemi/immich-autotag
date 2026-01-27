@@ -324,7 +324,10 @@ class AlbumResponseWrapper:
     def reload_from_api(self, client: ImmichClient) -> AlbumResponseWrapper:
         """Reloads the album DTO from the API and clears the cache, delegando el fetch pero gestionando errores y reporting aquí."""
         from immich_client import errors as immich_errors
-        from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+
+        from immich_autotag.albums.albums.album_api_exception_info import (
+            AlbumApiExceptionInfo,
+        )
         album_dto_before = self._cache_entry._dto
         try:
             self._cache_entry.ensure_full_loaded()
