@@ -87,8 +87,7 @@ class ModificationReport:
                 "[INFO] Reserved global variable _instance is None, creating new ModificationReport instance."
             )
             _instance = ModificationReport()
-        # Explicit assignment to satisfy F824
-        _instance = _instance
+        # No explicit assignment needed for F824
         return _instance  # type: ignore[return-value]
 
     from typeguard import typechecked

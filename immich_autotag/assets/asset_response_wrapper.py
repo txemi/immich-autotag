@@ -858,7 +858,7 @@ class AssetResponseWrapper:
     def get_uuid(self) -> UUID:
         return self._cache_entry.get_uuid()
 
-    # Removed duplicate method get_album_names (F811)
+    # Removed duplicate method get_album_names
 
     @typechecked
     def get_duplicate_wrappers(self) -> list["AssetResponseWrapper"]:
