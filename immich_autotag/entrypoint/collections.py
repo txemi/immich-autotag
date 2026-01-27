@@ -40,3 +40,16 @@ def force_full_album_loading(albums_collection: AlbumCollectionWrapper) -> None:
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
     albums_collection.ensure_all_full(perf_phase_tracker=perf_phase_tracker)
+
+
+# New function: apply conversions to all assets before loading tags
+def apply_conversions_to_all_assets_early(context: ImmichContext) -> None:
+    """
+    Iterates over all assets and applies the configured conversions as early as possible,
+    before tags are accessed (lazy-load).
+    """
+    from immich_autotag.conversions.tag_conversions import TagConversions
+    tag_conversions = TagConversions.from_config_manager()
+    asset_manager = context.get_asset_manager()
+    for asset in asset_manager.iter_assets(context):
+        asset.apply_tag_conversions(tag_conversions=tag_conversions)

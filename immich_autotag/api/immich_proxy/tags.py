@@ -1,3 +1,6 @@
+from immich_client.api.tags import get_tag_by_id as _get_tag_by_id
+from immich_client.models.tag_response_dto import TagResponseDto
+# ...existing code...
 from typing import List
 from uuid import UUID
 
@@ -47,3 +50,8 @@ def proxy_delete_tag(*, client: ImmichClient, tag_id):
     """Proxy for delete_tag.sync_detailed con resultado parseado."""
     response = _delete_tag.sync_detailed(id=tag_id, client=client)
     return response.parsed
+
+
+def proxy_get_tag_by_id(*, client: ImmichClient, tag_id: UUID) -> TagResponseDto | None:
+    """Proxy for get_tag_by_id.sync with explicit keyword arguments."""
+    return _get_tag_by_id.sync(id=tag_id, client=client)
