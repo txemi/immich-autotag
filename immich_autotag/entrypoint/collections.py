@@ -12,8 +12,9 @@ from immich_autotag.types import ImmichClient
 
 
 def _init_collections_and_context(
-    client: ImmichClient, client_wrapper: ImmichClientWrapper
+    client_wrapper: ImmichClientWrapper
 ) -> tuple[list, AlbumCollectionWrapper, ImmichContext]:
+    client = client_wrapper.get_client()
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client()
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker

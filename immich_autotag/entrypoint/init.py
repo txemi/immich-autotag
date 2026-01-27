@@ -29,7 +29,7 @@ def _init_config_and_logging() -> ConfigManager:
     return manager
 
 
-def _init_client(manager: ConfigManager) -> tuple[ImmichClient, ImmichClientWrapper]:
+def _init_client(manager: ConfigManager) -> ImmichClientWrapper:
     api_key = manager.config.server.api_key
     client = ImmichClient(
         base_url=get_immich_base_url(),
@@ -41,4 +41,4 @@ def _init_client(manager: ConfigManager) -> tuple[ImmichClient, ImmichClientWrap
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
     client_wrapper = ImmichClientWrapper.create_default_instance(client)
-    return client, client_wrapper
+    return client_wrapper

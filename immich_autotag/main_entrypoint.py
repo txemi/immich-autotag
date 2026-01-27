@@ -27,10 +27,11 @@ if TYPE_CHECKING:
 
 def _run_main_inner() -> None:
     manager = _init_config_and_logging()
-    client, client_wrapper = _init_client(manager)
+    client_wrapper = _init_client(manager)
+    client = client_wrapper.get_client()
     _maintenance_cleanup_labels(client)
     tag_collection, albums_collection, context = _init_collections_and_context(
-        client, client_wrapper
+        client_wrapper
     )
     _force_full_album_loading(albums_collection)
     _process_permissions(manager, context)
