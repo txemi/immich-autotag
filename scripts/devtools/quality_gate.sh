@@ -209,10 +209,10 @@ setup_max_line_length() {
 	local max_line_length_local
 	max_line_length_local=$(extract_line_length "$REPO_ROOT/pyproject.toml")
 	if [ -z "$max_line_length_local" ]; then
-		echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default."
+		echo "[WARN] Could not extract line-length from pyproject.toml, using 88 by default." >&2
 		max_line_length_local=88
 	fi
-	export MAX_LINE_LENGTH="$max_line_length_local"
+	echo "$max_line_length_local"
 }
 
 ###############################################################################
@@ -231,19 +231,20 @@ setup_python_env() {
 		echo "[ERROR] setup_venv.sh not found at $REPO_ROOT. Cannot set up development environment."
 		exit 1
 	fi
+	local py_bin
 	if [ -f "$VENV_ACTIVATE" ]; then
 		# Use project venv when available
 		source "$VENV_ACTIVATE"
-		PY_BIN="$REPO_ROOT/.venv/bin/python"
+		py_bin="$REPO_ROOT/.venv/bin/python"
 	else
 		echo "[WARN] .venv not found at $REPO_ROOT/.venv — falling back to system python (this may install tools globally)."
-		PY_BIN="$(command -v python3 || command -v python)"
-		if [ -z "$PY_BIN" ]; then
+		py_bin="$(command -v python3 || command -v python)"
+		if [ -z "$py_bin" ]; then
 			echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3."
 			exit 1
 		fi
 	fi
-	export PY_BIN
+	echo "$py_bin"
 }
 
 ###############################################################################
@@ -725,10 +726,6 @@ check_import_linter() {
 # Description: Initializes Python environment and max line length.
 # Calls setup_max_line_length and setup_python_env.
 ###############################################################################
-setup_environment() {
-	setup_max_line_length
-	setup_python_env
-}
 
 # Run all quality checks in CHECK mode (fail fast on first error)
 run_quality_gate_check_mode() {
@@ -804,16 +801,21 @@ run_quality_gate_check_summary() {
 	check_black "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
 }
 
+# Refactor: main usa solo variables locales y pasa los valores explícitamente
 main() {
 	# Argument and global variable initialization
 	parse_args_and_globals "$@"
-	setup_environment
 
-	# See rationale above for check order
+	# Obtener max_line_length y py_bin directamente
+	local max_line_length py_bin
+	max_line_length=$(setup_max_line_length)
+	py_bin=$(setup_python_env)
+
+	# Pasar los valores explícitamente a las funciones de chequeo
 	if [ "$CHECK_MODE" = "CHECK" ]; then
-		run_quality_gate_check_mode
+		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$TARGET_DIR" "$QUALITY_LEVEL" "$CHECK_MODE" "$REPO_ROOT" "$ENFORCE_DYNAMIC_ATTRS"
 	else
-		run_quality_gate_apply_mode
+		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$TARGET_DIR" "$QUALITY_LEVEL" "$CHECK_MODE" "$REPO_ROOT" "$ENFORCE_DYNAMIC_ATTRS"
 	fi
 
 	echo "🎉 Quality Gate completed successfully!"
