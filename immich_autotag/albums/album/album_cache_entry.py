@@ -30,52 +30,42 @@ class AlbumCacheEntry:
     @classmethod
     def _from_cache_or_api(
         cls,
-        album_id: "UUID",
+        album_id: UUID,
         *,
         max_age_seconds: int = 3600,
         use_cache: bool = True,
-    ) -> "AlbumResponseDto":
+    ) -> AlbumDtoState:
         """
-        Attempts to load the album from cache. If it is stale or does not exist, this method must be completed with an API fetch implementation.
+        Attempts to load the album from cache. If it is stale or does not exist, fetches from API.
         Returns an AlbumDtoState directly.
         """
         album_id_str = str(album_id)
         cache_data = get_entity_from_cache("albums", album_id_str, use_cache=use_cache)
+        from immich_client.models.album_response_dto import AlbumResponseDto
+        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
         if cache_data is not None:
             try:
-                from immich_client.models.album_response_dto import AlbumResponseDto
-
                 album_dto = AlbumResponseDto.from_dict(cache_data)
-                from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
-
-                dto = AlbumDtoState(
-                    _dto=album_dto,
-                    _load_source=AlbumLoadSource.DETAIL,
-                )
+                dto = AlbumDtoState.create(dto=album_dto, load_source=AlbumLoadSource.DETAIL)
                 # Check staleness using a temp AlbumCacheEntry
-                if not dto.is_stale():
+                if not dto._is_stale(max_age_seconds=max_age_seconds):
                     return dto
             except Exception:
                 pass  # If the cache is corrupt, reload from API
         # API fetch logic: call proxy_get_album_info using the default Immich client
-        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
         from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
         from immich_autotag.context.immich_context import ImmichContext
-
         client = ImmichContext.get_default_instance().get_client_wrapper().get_client()
         album_dto = proxy_get_album_info(
             album_id=album_id, client=client, use_cache=False
         )
         if album_dto is None:
             raise RuntimeError(f"Could not fetch album info for album_id={album_id}")
-
-        # Use to_dict for serialization
         save_entity_to_cache("albums", album_id_str, album_dto.to_dict())
-        return album_dto
+        return AlbumDtoState.create(dto=album_dto, load_source=AlbumLoadSource.DETAIL)
 
     def is_stale(self) -> bool:
-        # _dto.get_loaded_at() is a datetime, convert to timestamp for comparison
-        return self._dto._is_stale()
+        return self._dto._is_stale(max_age_seconds=self._max_age_seconds)
 
     def get_state(self) -> AlbumDtoState:
         if self.is_stale():
@@ -91,13 +81,13 @@ class AlbumCacheEntry:
         """
         if self._dto.is_full():
             return self
-
         # Reload the DTO using the new DTO returned by _from_cache_or_api
-        new_dto: AlbumResponseDto = self._from_cache_or_api(
-            album_id=self._dto.get_album_id()
+        new_dto: AlbumDtoState = self._from_cache_or_api(
+            album_id=self._dto.get_album_id(),
+            max_age_seconds=self._max_age_seconds,
+            use_cache=False,
         )
-        # Use public API for update
-        self._dto.update(dto=new_dto, load_source=new_dto.get_load_source())
+        self._dto.update(dto=new_dto._dto, load_source=new_dto._load_source)
         return self
 
     def is_empty(self) -> bool:
