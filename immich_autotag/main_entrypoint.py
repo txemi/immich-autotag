@@ -32,7 +32,10 @@ def run_main_inner() -> None:
     maintenance_cleanup_labels(client)
     context = init_collections_and_context(client_wrapper)
     # Apply conversions to all assets before loading tags
-    from immich_autotag.entrypoint.collections import apply_conversions_to_all_assets_early
+    from immich_autotag.entrypoint.collections import (
+        apply_conversions_to_all_assets_early,
+    )
+
     apply_conversions_to_all_assets_early(context)
     albums_collection = context.get_albums_collection()
     force_full_album_loading(albums_collection)

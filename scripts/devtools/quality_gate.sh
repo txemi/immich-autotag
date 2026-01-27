@@ -225,12 +225,12 @@ setup_max_line_length() {
 ###############################################################################
 setup_python_env() {
 	VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
-	echo "[INFO] Ejecutando setup_venv.sh --dev para asegurar el entorno y dependencias..."
+	echo "[INFO] Ejecutando setup_venv.sh --dev para asegurar el entorno y dependencias..." >&2
 	if [ -f "$REPO_ROOT/setup_venv.sh" ]; then
 		chmod +x "$REPO_ROOT/setup_venv.sh"
-		bash "$REPO_ROOT/setup_venv.sh" --dev
+		bash "$REPO_ROOT/setup_venv.sh" --dev >&2
 	else
-		echo "[ERROR] setup_venv.sh not found at $REPO_ROOT. Cannot set up development environment."
+		echo "[ERROR] setup_venv.sh not found at $REPO_ROOT. Cannot set up development environment." >&2
 		exit 1
 	fi
 	local py_bin
@@ -239,10 +239,10 @@ setup_python_env() {
 		source "$VENV_ACTIVATE"
 		py_bin="$REPO_ROOT/.venv/bin/python"
 	else
-		echo "[WARN] .venv not found at $REPO_ROOT/.venv — falling back to system python (this may install tools globally)."
+		echo "[WARN] .venv not found at $REPO_ROOT/.venv — falling back to system python (this may install tools globally)." >&2
 		py_bin="$(command -v python3 || command -v python)"
 		if [ -z "$py_bin" ]; then
-			echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3."
+			echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3." >&2
 			exit 1
 		fi
 	fi

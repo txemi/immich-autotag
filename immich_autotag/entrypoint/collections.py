@@ -49,6 +49,7 @@ def apply_conversions_to_all_assets_early(context: ImmichContext) -> None:
     before tags are accessed (lazy-load).
     """
     from immich_autotag.conversions.tag_conversions import TagConversions
+
     tag_conversions = TagConversions.from_config_manager()
     asset_manager = context.get_asset_manager()
     for asset in asset_manager.iter_assets(context):

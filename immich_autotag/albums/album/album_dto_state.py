@@ -79,6 +79,7 @@ class AlbumDtoState:
     def get_album_users(self) -> "AlbumUserList":
         from .album_user_list import AlbumUserList
         from .album_user_wrapper import AlbumUserWrapper
+
         users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
         return AlbumUserList(users)
 

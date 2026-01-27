@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -37,10 +36,8 @@ class TagCollectionWrapper:
                 "TagCollectionWrapper singleton already exists. Use TagCollectionWrapper.get_instance()."
             )
 
-
     def _set_fully_loaded(self):
         self._fully_loaded = True
-
 
     def _sync_from_api(self, client: ImmichClient) -> None:
         """
@@ -56,15 +53,18 @@ class TagCollectionWrapper:
 
         self._fully_loaded = False
         self._load_all_from_api()
+
     def _load_single_by_id_from_api(self, id_: str):
         """
         Fetch a tag by id using the efficient proxy and add it to the index if found.
         Returns the found TagWrapper or None.
         """
+        import uuid
+
+        from immich_autotag.api.immich_proxy.tags import proxy_get_tag_by_id
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
-        from immich_autotag.api.immich_proxy.tags import proxy_get_tag_by_id
-        import uuid
+
         client_wrapper = ImmichClientWrapper.get_default_instance()
         client = client_wrapper.get_client()
         try:
@@ -85,6 +85,7 @@ class TagCollectionWrapper:
         if not self._fully_loaded:
             self._load_all_from_api()
         return self._index.get_by_name(name)
+
     @typechecked
     def create_tag_if_not_exists(
         self, *, name: str, client: ImmichClient
@@ -115,6 +116,7 @@ class TagCollectionWrapper:
                 if tag is not None:
                     return tag
             raise
+
     def _load_all_from_api(self):
         """
         Loads all tags from the API and adds them to the index, marking as fully_loaded.
@@ -125,6 +127,7 @@ class TagCollectionWrapper:
         from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
+
         client_wrapper = ImmichClientWrapper.get_default_instance()
         client = client_wrapper.get_client()
         tags_dto = proxy_get_all_tags(client=client)
@@ -147,7 +150,6 @@ class TagCollectionWrapper:
         wrapper._load_all_from_api()
         return wrapper
 
-
     @typechecked
     def find_by_name(self, name: str) -> "TagWrapper | None":
         tag = self._index.get_by_name(name)
@@ -158,7 +160,6 @@ class TagCollectionWrapper:
             return self._load_single_by_name_from_api(name)
         return None
 
-
     @typechecked
     def find_by_id(self, id_: "UUID") -> "TagWrapper | None":
         tag = self._index.get_by_id(id_)
@@ -168,7 +169,6 @@ class TagCollectionWrapper:
         if not self._fully_loaded:
             return self._load_single_by_id_from_api(str(id_))
         return None
-
 
     @typechecked
     def __iter__(self):
@@ -181,14 +181,12 @@ class TagCollectionWrapper:
     def __contains__(self, name: str) -> bool:
         return self.find_by_name(name) is not None
 
-
     @typechecked
     def __len__(self) -> int:
         # If not fully_loaded, force full loading
         if not self._fully_loaded:
             self._load_all_from_api()
         return len(self._index)
-
 
     @classmethod
     def get_instance(cls) -> "TagCollectionWrapper":
