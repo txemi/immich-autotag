@@ -29,29 +29,37 @@ class AlbumCacheEntry:
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
 
     @classmethod
-    def from_cache_or_api(
+    def _from_cache_or_api(
         cls,
         album_id: "UUID",
         *,
         max_age_seconds: int = 3600,
         use_cache: bool = True,
-    ) -> "AlbumCacheEntry":
+    ) -> "AlbumResponseDto":
         """
         Attempts to load the album from cache. If it is stale or does not exist, this method must be completed with an API fetch implementation.
+        Returns an AlbumDtoState directly.
         """
         album_id_str = str(album_id)
         cache_data = get_entity_from_cache("albums", album_id_str, use_cache=use_cache)
         if cache_data is not None:
             try:
-                dto = AlbumDtoState.from_dict(cache_data)
-                entry = cls(dto=dto, max_age_seconds=max_age_seconds)
-                if not entry.is_stale():
-                    return entry
+                from immich_client.models.album_response_dto import AlbumResponseDto
+                album_dto = AlbumResponseDto.from_dict(cache_data)
+                from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+                dto = AlbumDtoState(
+                    _dto=album_dto,
+                    _load_source=AlbumLoadSource.DETAIL,
+                )
+                # Check staleness using a temp AlbumCacheEntry
+                if not dto.is_stale():
+                    return dto
             except Exception:
                 pass  # If the cache is corrupt, reload from API
         # API fetch logic: call proxy_get_album_info using the default Immich client
         from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
         from immich_autotag.context.immich_context import ImmichContext
+        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
         client = ImmichContext.get_default_instance().get_client_wrapper().get_client()
         album_dto = proxy_get_album_info(
@@ -59,13 +67,14 @@ class AlbumCacheEntry:
         )
         if album_dto is None:
             raise RuntimeError(f"Could not fetch album info for album_id={album_id}")
-        dto = AlbumDtoState.from_dto(album_dto)
-        entry = cls(dto=dto, max_age_seconds=DEFAULT_CACHE_MAX_AGE_SECONDS)
-        save_entity_to_cache("albums", album_id_str, dto.to_dict())
-        return entry
+
+        # Use to_dict for serialization
+        save_entity_to_cache("albums", album_id_str, album_dto.to_dict())
+        return album_dto
 
     def is_stale(self) -> bool:
         # _dto.get_loaded_at() is a datetime, convert to timestamp for comparison
+        return self._dto._is_stale()
         return (
             time.time() - self._dto.get_loaded_at().timestamp()
         ) > self._max_age_seconds
@@ -77,18 +86,18 @@ class AlbumCacheEntry:
             )
         return self._dto
 
-    def ensure_full_loaded(self) -> AlbumCacheEntry:
+    def ensure_full_loaded(self) -> "AlbumCacheEntry":
         """
-        Ensures the DTO is of type DETAIL (full). If not, reloads using reload_func.
+        Ensures the DTO is of type DETAIL (full). If not, reloads using _from_cache_or_api.
         If already full, does nothing. If not full and no reload_func is provided, raises exception.
         """
         if self._dto.is_full():
             return self
 
-        # Reload the DTO using the provided function
-        album_dto = self.from_cache_or_api()
-        # Assumes album_dto is an AlbumResponseDto in DETAIL mode
-        self._dto.update(dto=album_dto, load_source=self._dto.get_load_source().DETAIL)
+        # Reload the DTO using the new DTO returned by _from_cache_or_api
+        new_dto: AlbumResponseDto = self._from_cache_or_api(album_id=self._dto.get_album_id())
+        # Use public API for update
+        self._dto.update(dto=new_dto, load_source=new_dto.get_load_source())
         return self
 
     def is_empty(self) -> bool:
