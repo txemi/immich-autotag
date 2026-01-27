@@ -20,6 +20,7 @@ class StaleAssetCacheError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetCacheEntry:
+ 
     """
     Encapsulates the cached state of an asset, with freshness and reload logic.
     Attributes are private; access only via public methods.
@@ -186,3 +187,57 @@ class AssetCacheEntry:
         Returns the original file name of the asset. This value is immutable, so no freshness check is needed.
         """
         return self._get_fresh_state().get_original_file_name()
+
+    def get_tags(self) -> list:
+        """
+        Returns the tags associated with this asset as TagWrapper objects, using the tag collection for central management.
+        """
+        state = self._get_fresh_state()
+        # Use the AssetDtoState logic to get TagWrapper objects via the tag collection
+
+        return state.get_tags()
+
+
+    def get_state(self):
+        """
+        Returns the internal AssetDtoState (for compatibility with wrappers).
+        """
+        return self._get_fresh_state()
+
+    def get_dates(self) -> list:
+        """
+        Returns a list of date fields (created_at, file_created_at, exif_created_at) if available.
+        """
+
+        return self._state.get_dates()
+
+    def get_is_favorite(self) -> bool:
+        """
+        Returns True if the asset is marked as favorite, False otherwise.
+        """
+        return self._state.get_is_favorite()
+
+    def get_created_at(self):
+        """
+        Returns the created_at date of the asset, if available.
+        """
+        return self._state.get_created_at()
+    def get_original_path(self):
+        """
+        Returns the original file path of the asset, if available.
+        """
+        return self._state.get_orginal_path()
+
+    def get_duplicate_id_as_uuid(self):
+        """
+        Returns the duplicate id as UUID, if available.
+        """
+        return self._state.get_duplicate_id_as_uuid()
+
+
+    def has_tag(self, tag_name: str) -> bool:
+        """
+        Returns True if the asset has a tag with the given name.
+        """
+        self._ensure_fresh(ImmichContext.get_default_instance())
+        return self._state.has_tag(tag_name)
