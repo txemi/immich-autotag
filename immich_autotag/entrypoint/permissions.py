@@ -8,6 +8,6 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.permissions import process_album_permissions
 
 
-def _process_permissions(manager: ConfigManager, context: ImmichContext) -> None:
+def process_permissions(manager: ConfigManager, context: ImmichContext) -> None:
     process_album_permissions(manager.config, context)
     sync_all_album_permissions(manager.config, context)

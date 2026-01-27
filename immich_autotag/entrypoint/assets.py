@@ -6,7 +6,7 @@ from immich_autotag.config.manager import ConfigManager
 from immich_autotag.context.immich_context import ImmichContext
 
 
-def _process_assets_or_filtered(manager: ConfigManager, context: ImmichContext) -> None:
+def process_assets_or_filtered(manager: ConfigManager, context: ImmichContext) -> None:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker

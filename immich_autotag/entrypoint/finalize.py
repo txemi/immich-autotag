@@ -4,7 +4,7 @@ from immich_autotag.config.manager import ConfigManager
 from immich_autotag.types import ImmichClient
 
 
-def _finalize(manager: ConfigManager, client: ImmichClient) -> None:
+def finalize(manager: ConfigManager, client: ImmichClient) -> None:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper

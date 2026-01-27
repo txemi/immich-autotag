@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from immich_autotag.entrypoint.assets import _process_assets_or_filtered
+from immich_autotag.entrypoint.assets import process_assets_or_filtered
 from immich_autotag.entrypoint.collections import (
-    _force_full_album_loading,
-    _init_collections_and_context,
+    force_full_album_loading,
+    init_collections_and_context,
 )
-from immich_autotag.entrypoint.finalize import _finalize
-from immich_autotag.entrypoint.init import _init_client, _init_config_and_logging
-from immich_autotag.entrypoint.maintenance import _maintenance_cleanup_labels
-from immich_autotag.entrypoint.permissions import _process_permissions
+from immich_autotag.entrypoint.finalize import finalize
+from immich_autotag.entrypoint.init import init_client, init_config_and_logging
+from immich_autotag.entrypoint.maintenance import maintenance_cleanup_labels
+from immich_autotag.entrypoint.permissions import process_permissions
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
 
 install_typeguard_import_hook()  # noqa: E402
@@ -25,17 +25,17 @@ if TYPE_CHECKING:
 # Typeguard import hook must be installed before any other imports!
 
 
-def _run_main_inner() -> None:
-    manager = _init_config_and_logging()
-    client_wrapper = _init_client(manager)
+def run_main_inner() -> None:
+    manager = init_config_and_logging()
+    client_wrapper = init_client(manager)
     client = client_wrapper.get_client()
-    _maintenance_cleanup_labels(client)
-    context = _init_collections_and_context(client_wrapper)
+    maintenance_cleanup_labels(client)
+    context = init_collections_and_context(client_wrapper)
     albums_collection = context.get_albums_collection()
-    _force_full_album_loading(albums_collection)
-    _process_permissions(manager, context)
-    _process_assets_or_filtered(manager, context)
-    _finalize(manager, client)
+    force_full_album_loading(albums_collection)
+    process_permissions(manager, context)
+    process_assets_or_filtered(manager, context)
+    finalize(manager, client)
 
 
 def run_main():
@@ -55,4 +55,4 @@ def run_main():
         from immich_autotag.utils.perf.cprofile_profiler import setup_cprofile_profiler
 
         setup_cprofile_profiler()
-    _run_main_inner()
+    run_main_inner()

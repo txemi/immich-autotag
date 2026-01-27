@@ -10,7 +10,7 @@ from immich_autotag.duplicates.load_duplicates_collection import (
 from immich_autotag.tags.list_tags import list_tags
 
 
-def _init_collections_and_context(
+def init_collections_and_context(
     client_wrapper: ImmichClientWrapper,
 ) -> ImmichContext:
     """
@@ -36,7 +36,7 @@ def _init_collections_and_context(
     return context
 
 
-def _force_full_album_loading(albums_collection: AlbumCollectionWrapper) -> None:
+def force_full_album_loading(albums_collection: AlbumCollectionWrapper) -> None:
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
     albums_collection.ensure_all_full(perf_phase_tracker=perf_phase_tracker)

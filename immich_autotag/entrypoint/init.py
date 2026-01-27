@@ -7,7 +7,7 @@ from immich_autotag.logging.init import initialize_logging
 from immich_autotag.types import ImmichClient
 
 
-def _init_config_and_logging() -> ConfigManager:
+def init_config_and_logging() -> ConfigManager:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.utils.user_help import print_welcome_links
@@ -29,7 +29,7 @@ def _init_config_and_logging() -> ConfigManager:
     return manager
 
 
-def _init_client(manager: ConfigManager) -> ImmichClientWrapper:
+def init_client(manager: ConfigManager) -> ImmichClientWrapper:
     api_key = manager.config.server.api_key
     client = ImmichClient(
         base_url=get_immich_base_url(),

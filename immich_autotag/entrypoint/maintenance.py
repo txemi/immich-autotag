@@ -3,7 +3,7 @@ from __future__ import annotations
 from immich_autotag.types import ImmichClient
 
 
-def _maintenance_cleanup_labels(client: ImmichClient) -> None:
+def maintenance_cleanup_labels(client: ImmichClient) -> None:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
