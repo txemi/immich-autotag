@@ -156,7 +156,6 @@ parse_args_and_globals() {
 	echo "$check_mode $quality_level $target_dir $enforce_dynamic_attrs"
 }
 
-
 ###############################################################################
 # Function: check_shfmt
 # Description: Checks and formats Bash scripts using shfmt.
