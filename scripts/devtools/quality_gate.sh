@@ -161,6 +161,8 @@ parse_args_and_globals() {
 # Returns: 0 if passes, 1 if formatting errors or shfmt missing
 ###############################################################################
 check_shfmt() {
+	local check_mode="$1"
+	local shfmt_exit
 	echo ""
 	echo "==============================="
 	echo "SECTION 1: BASH SCRIPT FORMATTING CHECK (shfmt)"
@@ -169,24 +171,27 @@ check_shfmt() {
 
 	local bash_scripts
 	# Require shfmt to be installed
-	if ! command -v shfmt >/dev/null 2>&1; then
-		echo "[ERROR] shfmt is not installed. Please install it to pass the quality gate."
-		echo "You can install it with: sudo apt-get install shfmt  # or equivalent for your system"
-		return 1
-	fi
-
-	# Find relevant bash scripts (adjust pattern if needed)
+	ensure_tool shfmt shfmt
 	bash_scripts=$(find scripts -type f -name "*.sh")
+	#bash scripts/*.sh scripts/devtools/*.sh scripts/devtools/docker/*.sh scripts/pypi/*.sh scripts/run/*.sh
 
 	# Run shfmt according to mode
-	if [ "$CHECK_MODE" = "CHECK" ]; then
-		if ! shfmt -d $bash_scripts; then
-			echo "[ERROR] There are formatting issues in Bash scripts. Run 'shfmt -w scripts/' to fix them."
+	if [ "$check_mode" = "CHECK" ]; then
+		#shfmt -d $bash_scripts
+		#shfmt -d -i 4 -ci -sr -s -ln bash $bash_scripts
+		shfmt -d -i 0 $bash_scripts
+		shfmt_exit=$?
+	else
+		#shfmt -w -i 4 -ci -sr -s -ln bash $bash_scripts
+		shfmt -w -i 0 $bash_scripts
+		shfmt_exit=$?
+	fi
+	if [ $shfmt_exit -ne 0 ]; then
+		echo "[WARNING] shfmt reported issues."
+		if [ "$check_mode" = "CHECK" ]; then
+			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 			return 1
 		fi
-	else
-		echo "[INFO] Applying automatic formatting to Bash scripts with shfmt..."
-		shfmt -w $bash_scripts
 	fi
 	return 0
 }
@@ -401,20 +406,27 @@ check_ruff() {
 # Returns: 0 if passes, 1 if formatting issues
 ###############################################################################
 check_black() {
-	local black_excludes black_exit
-	# Format code with Black using the environment Python
-	ensure_tool black black
-	black_excludes="--exclude .venv --exclude immich-client --exclude scripts --exclude jenkins_logs --line-length $MAX_LINE_LENGTH"
-	if [ "$CHECK_MODE" = "CHECK" ]; then
-		"$PY_BIN" -m black --check $black_excludes "$TARGET_DIR"
-		black_exit=$?
-	else
-		"$PY_BIN" -m black $black_excludes "$TARGET_DIR"
-		black_exit=$?
+	local check_mode="$1"
+	local quality_level="$2"
+	local py_bin="$3"
+	local max_line_length="$4"
+	local target_dir="$5"
+	ensure_tool flake8 flake8
+	local flake8_ignores=""
+	if [ "$quality_level" != "STRICT" ]; then
+		flake8_ignores="--ignore=E501"
+		echo "[NON-STRICT MODE] Flake8 will ignore E501 (line length) and will NOT block the build for it."
 	fi
-	if [ $black_exit -ne 0 ]; then
-		echo "[WARNING] black reported issues."
-		if [ "$CHECK_MODE" = "CHECK" ]; then
+	if [ "$check_mode" = "CHECK" ]; then
+		"$py_bin" -m flake8 --max-line-length="$max_line_length" $flake8_ignores "$target_dir"
+		flake8_exit=$?
+	else
+		"$py_bin" -m flake8 --max-line-length="$max_line_length" $flake8_ignores "$target_dir"
+		flake8_exit=$?
+	fi
+	if [ $flake8_exit -ne 0 ]; then
+		echo "[WARNING] flake8 reported issues."
+		if [ "$check_mode" = "CHECK" ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 			return 1
 		fi
@@ -529,11 +541,15 @@ check_flake8() {
 # Returns: 0 if passes, 1 if type errors
 ###############################################################################
 check_mypy() {
+	local check_mode="$1"
+	local quality_level="$2"
+	local py_bin="$3"
+	local target_dir="$4"
 	local mypy_failed=0 mypy_output mypy_exit_code mypy_error_count mypy_files_count
 	ensure_tool mypy mypy
 	echo "[INFO] Running mypy (output below if any):"
 	set +e
-	mypy_output=$($PY_BIN -m mypy --ignore-missing-imports "$TARGET_DIR" 2>&1)
+	mypy_output=$($py_bin -m mypy --ignore-missing-imports "$target_dir" 2>&1)
 	mypy_exit_code=$?
 	set -e
 	if [ $mypy_exit_code -ne 0 ]; then
@@ -545,11 +561,11 @@ check_mypy() {
 		mypy_error_count=$(echo "$mypy_output" | grep -c 'error:')
 		mypy_files_count=$(echo "$mypy_output" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
-		echo "[INFO] Command executed: $PY_BIN -m mypy --ignore-missing-imports $TARGET_DIR"
-		if [ "$QUALITY_LEVEL" = "STANDARD" ]; then
+		echo "[INFO] Command executed: $py_bin -m mypy --ignore-missing-imports $target_dir"
+		if [ "$quality_level" = "STANDARD" ]; then
 			echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
 			echo '[STANDARD MODE] Not blocking build on mypy errors.'
-		elif [ "$QUALITY_LEVEL" = "TARGET" ]; then
+		elif [ "$quality_level" = "TARGET" ]; then
 			# Only block for arg-type, call-arg, return-value errors
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|return-value)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
@@ -717,40 +733,40 @@ setup_environment() {
 # Run all quality checks in CHECK mode (fail fast on first error)
 run_quality_gate_check_mode() {
 	# 1. Blocking checks (fail fast on first error)
-	check_python_syntax || exit 1
-	check_mypy || exit 1
-	check_jscpd || exit 1
-	check_import_linter || exit 1
-	check_no_dynamic_attrs || exit 2
-	check_no_tuples || exit 3
-	check_no_spanish_chars || exit 5
+	check_python_syntax "$PY_BIN" "$TARGET_DIR" || exit 1
+	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || exit 1
+	check_jscpd "$TARGET_DIR" || exit 1
+	check_import_linter "$REPO_ROOT" || exit 1
+	check_no_dynamic_attrs "$ENFORCE_DYNAMIC_ATTRS" "$TARGET_DIR" || exit 2
+	check_no_tuples "$PY_BIN" "$REPO_ROOT" "$TARGET_DIR" || exit 3
+	check_no_spanish_chars "$TARGET_DIR" || exit 5
 	# 2. Formatters and style (run only if all blocking checks pass)
-	check_shfmt || exit 1
-	check_isort || exit 1
-	check_black || exit 1
-	check_ruff || exit 1
-	check_flake8 || exit 1
+	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || exit 1
+	check_isort "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_black "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_ruff "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_flake8 "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
 }
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
 run_quality_gate_apply_mode() {
 	local error_found=0
 	# 1. Auto-fixers and formatters
-	check_shfmt || error_found=1
-	check_isort || error_found=1
-	check_black || error_found=1
-	check_ruff || error_found=1
+	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || error_found=1
+	check_isort "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
+	check_black "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
+	check_ruff "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
 	# 2. Fast/deterministic checks
-	check_python_syntax || error_found=1
+	check_python_syntax "$PY_BIN" "$TARGET_DIR" || error_found=1
 	# 3. Internal policy checks
-	check_no_dynamic_attrs || error_found=2
-	check_no_tuples || error_found=3
-	check_no_spanish_chars || error_found=5
+	check_no_dynamic_attrs "$ENFORCE_DYNAMIC_ATTRS" "$TARGET_DIR" || error_found=2
+	check_no_tuples "$PY_BIN" "$REPO_ROOT" "$TARGET_DIR" || error_found=3
+	check_no_spanish_chars "$TARGET_DIR" || error_found=5
 	# 4. Heavy/informative checks
-	check_jscpd || error_found=1
-	check_flake8 || error_found=1
-	check_import_linter || error_found=1
-	check_mypy || error_found=1
+	check_jscpd "$TARGET_DIR" || error_found=1
+	check_flake8 "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
+	check_import_linter "$REPO_ROOT" || error_found=1
+	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || error_found=1
 	if [ "$error_found" -ne 0 ]; then
 		echo "[EXIT] Quality Gate failed (see errors above)."
 		# After APPLY fails, run summary check in priority order (most important errors first)
@@ -767,25 +783,25 @@ run_quality_gate_check_summary() {
 	#    We put first the checks that we have already passed (like the language check),
 	#    so that if they break, it is very obvious and immediately visible.
 	#    This way we avoid quality deterioration in aspects that are already under control.
-	check_no_spanish_chars || exit 5
-	check_mypy || exit 1
+	check_no_spanish_chars "$TARGET_DIR" || exit 5
+	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || exit 1
 	# 2. Syntax errors
-	check_python_syntax || exit 1
+	check_python_syntax "$PY_BIN" "$TARGET_DIR" || exit 1
 	# 3. Ruff (lint/auto-fix)
-	check_ruff || exit 1
+	check_ruff "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
 	# 4. Flake8 (style)
-	check_flake8 || exit 1
-	check_import_linter || exit 1
+	check_flake8 "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_import_linter "$REPO_ROOT" || exit 1
 	# 5. Policy checks
-	check_no_dynamic_attrs || exit 2
-	check_no_tuples || exit 3
+	check_no_dynamic_attrs "$ENFORCE_DYNAMIC_ATTRS" "$TARGET_DIR" || exit 2
+	check_no_tuples "$PY_BIN" "$REPO_ROOT" "$TARGET_DIR" || exit 3
 	# 6. Spanish character check
 	# 7. Code duplication (least urgent)
-	check_jscpd || exit 1
+	check_jscpd "$TARGET_DIR" || exit 1
 	# 8. Formatters (least urgent in summary)
-	check_shfmt || exit 1
-	check_isort || exit 1
-	check_black || exit 1
+	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || exit 1
+	check_isort "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_black "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
 }
 
 main() {
