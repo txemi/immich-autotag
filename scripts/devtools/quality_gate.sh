@@ -112,6 +112,10 @@ parse_args_and_globals() {
 			TARGET_DIR="$arg"
 		fi
 	done
+	# Si el usuario no fuerza QUALITY_LEVEL, por defecto STANDARD
+	if [ -z "$QUALITY_LEVEL" ]; then
+		QUALITY_LEVEL="STANDARD"
+	fi
 	# Validar QUALITY_LEVEL
 	case "$QUALITY_LEVEL" in
 	STRICT | STANDARD | TARGET) ;;
@@ -128,10 +132,6 @@ parse_args_and_globals() {
 		exit 2
 		;;
 	esac
-	# Si el usuario no fuerza QUALITY_LEVEL, por defecto STANDARD
-	if [ -z "$QUALITY_LEVEL" ]; then
-		QUALITY_LEVEL="STANDARD"
-	fi
 	# If no positional argument was given, default to PACKAGE_NAME
 	if [ -z "$TARGET_DIR" ]; then
 		TARGET_DIR="$PACKAGE_NAME"
