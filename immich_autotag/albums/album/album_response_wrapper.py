@@ -19,8 +19,8 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
     from immich_autotag.context.immich_context import ImmichContext
 
-from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
 from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
@@ -141,8 +141,6 @@ class AlbumResponseWrapper:
         collection = AlbumCollectionWrapper.get_instance()
         return collection.is_duplicated(self)
 
-
-
     @typechecked
     def get_album_users(self) -> "AlbumUserList":
         """
@@ -155,8 +153,6 @@ class AlbumResponseWrapper:
     def get_owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
         return self._cache_entry.get_state().get_owner_uuid()
-
-
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
@@ -199,13 +195,14 @@ class AlbumResponseWrapper:
         # Assets are authoritative in the full DTO. Load the full DTO if
         # needed and return wrapped assets. This avoids relying on the
         # partial DTO for asset information.
-        self.ensure_full_loaded(self.get_default_client())  
-        self._cache_entry.get_assets()
+        asset = self._cache_entry.get_assets()
+
+        self.ensure_full_loaded(self.get_default_client())
         state = self._cache_entry.get_state()
-        assets = getattr(state._dto, 'assets', [])
-        asset_manager = getattr(context, 'asset_manager', None)
+        assets = getattr(state._dto, "assets", [])
+        asset_manager = getattr(context, "asset_manager", None)
         if asset_manager is None:
-            raise AttributeError('ImmichContext missing asset_manager')
+            raise AttributeError("ImmichContext missing asset_manager")
         return [asset_manager.get_wrapper_for_asset(a, context) for a in assets]
 
     @typechecked
@@ -238,11 +235,10 @@ class AlbumResponseWrapper:
 
         album_name = self.get_album_name()
 
-
         dto_id = str(self.get_album_uuid())
 
         partial_repr = f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
-  
+
     def _handle_recoverable_400(
         self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
     ) -> None:
@@ -307,8 +303,6 @@ class AlbumResponseWrapper:
 
     # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
-
-
     @typechecked
     def merge_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
@@ -332,7 +326,6 @@ class AlbumResponseWrapper:
 
     def _is_full(self) -> bool:
         return self._cache_entry.get_state().is_full()
-
 
     @typechecked
     def has_loaded_assets(self) -> bool:
