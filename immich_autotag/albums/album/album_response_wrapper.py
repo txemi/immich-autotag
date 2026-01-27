@@ -323,11 +323,11 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> AlbumResponseWrapper:
         """Reloads the album DTO from the API and clears the cache, delegates fetch but handles errors and reporting here."""
-        from immich_client import errors as immich_errors
 
         from immich_autotag.albums.albums.album_api_exception_info import (
             AlbumApiExceptionInfo,
         )
+
         album_dto_before = self._cache_entry._dto
         try:
             self._cache_entry.ensure_full_loaded()
@@ -336,7 +336,8 @@ class AlbumResponseWrapper:
             api_exc = AlbumApiExceptionInfo(exc)
             partial = self._build_partial_repr()
             if api_exc.is_status(400):
-                self._handle_recoverable_400(api_exc, partial)                return self
+                self._handle_recoverable_400(api_exc, partial)
+                return self
             self._log_and_raise_fatal_error(api_exc, partial)
         album_dto_after = self._cache_entry._dto
         if album_dto_after is None:
@@ -886,12 +887,11 @@ class AlbumResponseWrapper:
                 level=LogLevel.FOCUS,
             )
 
-
-
     @classmethod
     @typechecked
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
         from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
+
         raise NotImplementedError("from_partial_dto has been removed.")
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         cache_entry = AlbumCacheEntry(dto=state)
