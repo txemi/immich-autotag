@@ -5,7 +5,6 @@ set -e
 SCRIPT_DIR="$(dirname "$0")"
 QGATE="$SCRIPT_DIR/quality_gate.sh"
 
-
 # Run STANDARD
 bash "$QGATE" --level=STANDARD --mode=CHECK "$@"
 
