@@ -492,8 +492,9 @@ class AssetResponseWrapper:
     def get_created_at(self) -> datetime | str | None:
         return self._cache_entry.get_created_at()
 
-    def get_id(self) -> str:
-        return self._cache_entry.get_id()
+    def get_id(self) -> UUID:
+        # Compatibilidad: usa get_uuid del cache_entry, que es el método correcto y seguro
+        return self._cache_entry.get_uuid()
 
     def get_original_path(self) -> "Path":
         return self._cache_entry.get_original_path()
