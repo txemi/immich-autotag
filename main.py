@@ -1,4 +1,4 @@
-from immich_autotag.entrypoint import run_main
+from immich_autotag.main_entrypoint import run_main
 
 if __name__ == "__main__":
 
