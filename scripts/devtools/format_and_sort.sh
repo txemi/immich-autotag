@@ -5,4 +5,12 @@ SCRIPT_DIR="$(
 	pwd -P
 )"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ "$*" != *--level=* ]] && [[ "$*" != *" -l "* ]]; then
+	echo "[ERROR] You must specify --level=LEVEL or -l LEVEL (STRICT, RELAXED, TARGET)"
+	exit 2
+fi
+if [[ "$*" != *--mode=* ]] && [[ "$*" != *" -m "* ]]; then
+	echo "[ERROR] You must specify --mode=MODE or -m MODE (CHECK, APPLY)"
+	exit 2
+fi
 "$SCRIPT_DIR/quality_gate.sh" "$@"
