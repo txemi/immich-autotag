@@ -55,7 +55,16 @@ def _run_main_inner() -> None:
 
 from typing import Any
 
-def _init_config_and_logging() -> Any:
+from immich_autotag.config.manager import ConfigManager
+from immich_autotag.types import ImmichClient
+from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.tags.list_tags import list_tags
+from immich_autotag.assets.asset_manager import AssetManager
+from immich_autotag.duplicates.load_duplicates_collection import load_duplicates_collection
+
+def _init_config_and_logging() -> ConfigManager:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.utils.user_help import print_welcome_links
@@ -79,7 +88,7 @@ def _init_config_and_logging() -> Any:
 
 from typing import Tuple
 
-def _init_client(manager: Any) -> Tuple[Any, Any]:
+def _init_client(manager: ConfigManager) -> tuple[ImmichClient, ImmichClientWrapper]:
     api_key = manager.config.server.api_key
     client = ImmichClient(
         base_url=get_immich_base_url(),
@@ -94,7 +103,7 @@ def _init_client(manager: Any) -> Tuple[Any, Any]:
     return client, client_wrapper
 
 
-def _maintenance_cleanup_labels(client: Any) -> None:
+def _maintenance_cleanup_labels(client: ImmichClient) -> None:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
@@ -107,7 +116,9 @@ def _maintenance_cleanup_labels(client: Any) -> None:
         )
 
 
-def _init_collections_and_context(client: Any, client_wrapper: Any) -> tuple[Any, Any, Any]:
+def _init_collections_and_context(
+    client: ImmichClient, client_wrapper: ImmichClientWrapper
+) -> tuple[list, AlbumCollectionWrapper, ImmichContext]:
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client()
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
@@ -127,18 +138,18 @@ def _init_collections_and_context(client: Any, client_wrapper: Any) -> tuple[Any
     return tag_collection, albums_collection, context
 
 
-def _force_full_album_loading(albums_collection: Any) -> None:
+def _force_full_album_loading(albums_collection: AlbumCollectionWrapper) -> None:
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
     albums_collection.ensure_all_full(perf_phase_tracker=perf_phase_tracker)
 
 
-def _process_permissions(manager: Any, context: Any) -> None:
+def _process_permissions(manager: ConfigManager, context: ImmichContext) -> None:
     process_album_permissions(manager.config, context)
     sync_all_album_permissions(manager.config, context)
 
 
-def _process_assets_or_filtered(manager: Any, context: Any) -> None:
+def _process_assets_or_filtered(manager: ConfigManager, context: ImmichContext) -> None:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
@@ -171,7 +182,7 @@ def _process_assets_or_filtered(manager: Any, context: Any) -> None:
         perf_phase_tracker.mark(phase="assets", event="end")
 
 
-def _finalize(manager: Any, client: Any) -> None:
+def _finalize(manager: ConfigManager, client: ImmichClient) -> None:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
