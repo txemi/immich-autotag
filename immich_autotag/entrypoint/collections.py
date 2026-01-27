@@ -12,7 +12,10 @@ from immich_autotag.tags.list_tags import list_tags
 
 def _init_collections_and_context(
     client_wrapper: ImmichClientWrapper,
-) -> tuple[list, AlbumCollectionWrapper, ImmichContext]:
+) -> ImmichContext:
+    """
+    Initializes all collections and returns the ImmichContext instance.
+    """
     client = client_wrapper.get_client()
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client()
@@ -30,7 +33,7 @@ def _init_collections_and_context(
         duplicates_collection=duplicates_collection,
         asset_manager=asset_manager,
     )
-    return tag_collection, albums_collection, context
+    return context
 
 
 def _force_full_album_loading(albums_collection: AlbumCollectionWrapper) -> None:
