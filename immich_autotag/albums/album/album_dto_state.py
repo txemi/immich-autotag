@@ -43,6 +43,7 @@ class AlbumDtoState:
     )
 
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
+
     def __attrs_post_init__(self):
         if self._dto is None:
             raise ValueError("_dto (AlbumResponseDto) cannot be None")
@@ -120,7 +121,6 @@ class AlbumDtoState:
         if self._load_source != AlbumLoadSource.DETAIL:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
         return set(UUID(a.id) for a in self._dto.assets)
+
     def _is_stale(self) -> bool:
-            return (
-            time.time() - self.get_loaded_at().timestamp()
-        ) > self._max_age_seconds
+        return (time.time() - self.get_loaded_at().timestamp()) > self._max_age_seconds

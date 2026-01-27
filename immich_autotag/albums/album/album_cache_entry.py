@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -45,8 +44,10 @@ class AlbumCacheEntry:
         if cache_data is not None:
             try:
                 from immich_client.models.album_response_dto import AlbumResponseDto
+
                 album_dto = AlbumResponseDto.from_dict(cache_data)
                 from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+
                 dto = AlbumDtoState(
                     _dto=album_dto,
                     _load_source=AlbumLoadSource.DETAIL,
@@ -57,9 +58,9 @@ class AlbumCacheEntry:
             except Exception:
                 pass  # If the cache is corrupt, reload from API
         # API fetch logic: call proxy_get_album_info using the default Immich client
+        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
         from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
         from immich_autotag.context.immich_context import ImmichContext
-        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
         client = ImmichContext.get_default_instance().get_client_wrapper().get_client()
         album_dto = proxy_get_album_info(
@@ -92,7 +93,9 @@ class AlbumCacheEntry:
             return self
 
         # Reload the DTO using the new DTO returned by _from_cache_or_api
-        new_dto: AlbumResponseDto = self._from_cache_or_api(album_id=self._dto.get_album_id())
+        new_dto: AlbumResponseDto = self._from_cache_or_api(
+            album_id=self._dto.get_album_id()
+        )
         # Use public API for update
         self._dto.update(dto=new_dto, load_source=new_dto.get_load_source())
         return self
