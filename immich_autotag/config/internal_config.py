@@ -16,7 +16,7 @@ DEFAULT_ERROR_MODE = ErrorHandlingMode.CRAZY_DEBUG
 # Enable cProfile CPU profiling regardless of error mode
 ENABLE_PROFILING = False  # Set to True to enable cProfile profiling
 # Enable tracemalloc memory profiling
-ENABLE_MEMORY_PROFILING = True  # Set to True to enable tracemalloc memory profiling
+ENABLE_MEMORY_PROFILING = False  # Set to False to disable tracemalloc memory profiling
 
 # ==================== ALBUM HANDLING / THRESHOLDS ====================
 # Number of errors in the window required to mark an album unavailable
