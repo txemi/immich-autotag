@@ -38,54 +38,58 @@ from immich_autotag.tags.list_tags import list_tags  # noqa: E402
 from immich_autotag.types import ImmichClient  # noqa: E402
 
 
-@typechecked
-def _run_main_inner():
 
+
+from immich_autotag.config.manager import ConfigManager
+
+def _run_main_inner():
+    manager = _init_config_and_logging()
+    client, client_wrapper = _init_client(manager)
+    _maintenance_cleanup_labels(client)
+    tag_collection, albums_collection, context = _init_collections_and_context(client, client_wrapper)
+    _force_full_album_loading(albums_collection)
+    _process_permissions(manager, context)
+    _process_assets_or_filtered(manager, context)
+    _finalize(manager, client)
+
+
+def _init_config_and_logging():
     from immich_autotag.config.manager import ConfigManager
     from immich_autotag.logging.levels import LogLevel
-
-    # Get config FIRST (constructor initializes it)
     from immich_autotag.logging.utils import log
     from immich_autotag.utils.user_help import print_welcome_links
-
-    log("Initializing ConfigManager...", level=LogLevel.INFO)
     manager = ConfigManager.get_instance()
-
-    # Verify config is actually loaded before doing anything else
+    log("Initializing ConfigManager...", level=LogLevel.INFO)
     if manager.config is None:
         log(
             "FATAL: ConfigManager.config is None after initialization. This suggests the config file failed to load properly. Check ~/.config/immich_autotag/config.py or config.yaml",
             level=LogLevel.ERROR,
         )
         raise RuntimeError("ConfigManager.config is None after initialization")
-
     log("ConfigManager initialized successfully", level=LogLevel.INFO)
-
-    # Now initialize logging (needs ConfigManager.config to be ready)
     initialize_logging()
-
     from immich_autotag.statistics.statistics_manager import StatisticsManager
-
-    StatisticsManager.get_instance().save()  # Force initial statistics file write
-
+    StatisticsManager.get_instance().save()
     print_welcome_links(manager.config)
-    api_key = manager.config.server.api_key
+    return manager
 
+def _init_client(manager):
+    api_key = manager.config.server.api_key
     client = ImmichClient(
         base_url=get_immich_base_url(),
         token=api_key,
-        prefix="",  # Immich uses x-api-key, not Bearer token
+        prefix="",
         auth_header_name="x-api-key",
         raise_on_unexpected_status=True,
     )
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-
     client_wrapper = ImmichClientWrapper.create_default_instance(client)
+    return client, client_wrapper
 
-    # Cleanup of duplicate/conflict autotag labels before any operation
+def _maintenance_cleanup_labels(client):
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
-
-    # MAINTENANCE HACK: delete conflict autotag labels before iterating over assets
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
     deleted_count = TagCollectionWrapper.maintenance_delete_conflict_tags(client)
     if deleted_count > 0:
         log(
@@ -93,11 +97,10 @@ def _run_main_inner():
             level=LogLevel.INFO,
         )
 
-    # Pass the wrapper class, not the raw client, to the context
+def _init_collections_and_context(client, client_wrapper):
     tag_collection = list_tags(client)
     albums_collection = AlbumCollectionWrapper.from_client()
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
-
     perf_phase_tracker.mark(phase="lazy", event="start")
     albums_collection.log_lazy_load_timing()
     perf_phase_tracker.mark(phase="lazy", event="end")
@@ -110,34 +113,29 @@ def _run_main_inner():
         duplicates_collection=duplicates_collection,
         asset_manager=asset_manager,
     )
+    return tag_collection, albums_collection, context
 
-    # --- FORCE FULL LOADING OF ALL ALBUMS BEFORE ASSET ITERATION ---
-    import time
-
-    from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.logging.utils import log
-
+def _force_full_album_loading(albums_collection):
+    from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
     albums_collection.ensure_all_full(perf_phase_tracker=perf_phase_tracker)
 
-    # --- ALBUM PERMISSIONS: Phase 1 & 2 (BEFORE processing assets)
+def _process_permissions(manager, context):
     process_album_permissions(manager.config, context)
     sync_all_album_permissions(manager.config, context)
 
-    # Asset filtering logic
+def _process_assets_or_filtered(manager, context):
+    from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
     filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
     if filter_wrapper.is_focused():
         ruleset = filter_wrapper.get_filter_in_ruleset()
         assets_to_process = ruleset.get_filtered_in_assets_by_uuid(context)
-
-        from immich_autotag.assets.process.process_single_asset import (
-            process_single_asset,
-        )
-
+        from immich_autotag.assets.process.process_single_asset import process_single_asset
         for wrapper in assets_to_process:
             process_single_asset(asset_wrapper=wrapper)
-
     else:
-        # You can change the max_assets value here or pass it as an external argument
+        import time
         perf_phase_tracker.mark(phase="assets", event="start")
         log(
             "[PROGRESS] [ASSET-PROCESS] Starting asset processing",
@@ -152,21 +150,22 @@ def _run_main_inner():
         )
         perf_phase_tracker.mark(phase="assets", event="end")
 
+def _finalize(manager, client):
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+    from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
     log("[OK] Main process completed successfully.", level=LogLevel.FOCUS)
+    from immich_autotag.utils.user_help import print_welcome_links
     print_welcome_links(manager.config)
-
-    # MAINTENANCE HACK: delete conflict autotag labels before iterating over assets
     deleted_count = TagCollectionWrapper.maintenance_delete_conflict_tags(client)
     if deleted_count > 0:
         log(
             f"[CLEANUP] Deleted {deleted_count} duplicate/conflict autotag labels.",
             level=LogLevel.INFO,
         )
-
-
 def run_main():
     """
-    Wrapper that runs _run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
+            Wrapper that runs _run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
     """
     from immich_autotag.config.internal_config import (
         ENABLE_MEMORY_PROFILING,
