@@ -75,9 +75,6 @@ class AlbumCacheEntry:
     def is_stale(self) -> bool:
         # _dto.get_loaded_at() is a datetime, convert to timestamp for comparison
         return self._dto._is_stale()
-        return (
-            time.time() - self._dto.get_loaded_at().timestamp()
-        ) > self._max_age_seconds
 
     def get_state(self) -> AlbumDtoState:
         if self.is_stale():
