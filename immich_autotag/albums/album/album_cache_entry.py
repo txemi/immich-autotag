@@ -26,6 +26,7 @@ class AlbumCacheEntry:
 
     _dto: AlbumDtoState
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
+    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
 
     @classmethod
     def _from_cache_or_api(
@@ -112,3 +113,9 @@ class AlbumCacheEntry:
         Does not expose DTOs directly.
         """
         return self._ensure_full_loaded()._get_dto().get_asset_uuids()
+    @conditional_typechecked
+    def has_asset_wrapper(
+        self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
+    ) -> bool:
+        raise NotImplementedError("usar cache")
+        return asset_wrapper.get_id_as_uuid() in  self._ensure_full_loaded().get_asset_uuids()

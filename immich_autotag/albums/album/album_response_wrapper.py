@@ -54,7 +54,6 @@ class AlbumResponseWrapper:
     _cache_entry: AlbumCacheEntry = attrs.field(kw_only=True)
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
 
-    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
     _unavailable: bool = attrs.field(default=False, init=False)
 
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
@@ -142,12 +141,7 @@ class AlbumResponseWrapper:
         collection = AlbumCollectionWrapper.get_instance()
         return collection.is_duplicated(self)
 
-    @conditional_typechecked
-    def _ensure_full_album_loaded(self, client: ImmichClient) -> AlbumResponseWrapper:
-        if self._cache_entry.get_state().get_load_source() == AlbumLoadSource.DETAIL:
-            return self
-        self.reload_from_api(client)
-        return self
+
 
     @typechecked
     def get_album_users(self) -> "AlbumUserList":
@@ -198,7 +192,7 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
         # Use get_id_as_uuid for correct type
-        return asset_wrapper.get_id_as_uuid() in self._get_or_build_asset_ids_cache()
+        return self._cache_entry.has_asset_wrapper(asset_wrapper)
 
     @conditional_typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
@@ -313,33 +307,7 @@ class AlbumResponseWrapper:
 
     # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
-    def reload_from_api(self, client: ImmichClient) -> "AlbumResponseWrapper":
-        """Reloads the album DTO from the API and clears the cache, delegates fetch but handles errors and reporting here."""
 
-        from immich_autotag.albums.albums.album_api_exception_info import (
-            AlbumApiExceptionInfo,
-        )
-
-        album_dto_before = self._cache_entry._dto
-        try:
-            self._cache_entry.ensure_full_loaded()
-        except RuntimeError as exc:
-            # Here you can distinguish by message or error type if you want finer logic
-            api_exc = AlbumApiExceptionInfo(exc)
-            partial = self._build_partial_repr()
-            if api_exc.is_status(400):
-                self._handle_recoverable_400(api_exc, partial)
-                return self
-            self._log_and_raise_fatal_error(api_exc, partial)
-        album_dto_after = self._cache_entry._dto
-        if album_dto_after is None:
-            raise RuntimeError(
-                f"get_album_info.sync returned None for album id="
-                f"{self.get_album_uuid_no_cache()}"
-            )
-        if album_dto_after is not album_dto_before:
-            self.invalidate_cache()
-        return self
 
     @typechecked
     def merge_from_dto(
@@ -365,15 +333,6 @@ class AlbumResponseWrapper:
     def _is_full(self) -> bool:
         return self._cache_entry.get_state().is_full()
 
-    @typechecked
-    def ensure_full(self) -> AlbumResponseWrapper:
-        if self._unavailable:
-            raise RuntimeError(
-                "Album is marked unavailable; cannot ensure full DTO for this album"
-            )
-        if not self._is_full():
-            self.reload_from_api(self.get_default_client())
-        return self
 
     @typechecked
     def has_loaded_assets(self) -> bool:
@@ -535,8 +494,7 @@ class AlbumResponseWrapper:
         import time
 
         for attempt in range(max_retries):
-            self.reload_from_api(client)
-            if self.has_asset_wrapper(asset_wrapper):
+            if self._cache_entry.has_asset_wrapper(asset_wrapper):
                 return  # Success - asset is in album
 
             if attempt < max_retries - 1:
@@ -774,7 +732,6 @@ class AlbumResponseWrapper:
         import time
 
         for attempt in range(max_retries):
-            self.reload_from_api(client)
             if not self.has_asset_wrapper(asset_wrapper):
                 return  # Success - asset is no longer in album
 
