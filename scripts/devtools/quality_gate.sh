@@ -743,7 +743,7 @@ check_import_linter() {
 		"$py_bin" -m pip install import-linter
 	fi
 	# Ejecutar import-linter usando el binario real del entorno virtual o PATH
-	# alternativa: "$py_bin" -m importlinter 
+	# alternativa: "$py_bin" -m importlinter
 	local lint_imports_bin
 	if [ -n "$VIRTUAL_ENV" ] && [ -x "$VIRTUAL_ENV/bin/lint-imports" ]; then
 		lint_imports_bin="$VIRTUAL_ENV/bin/lint-imports"
