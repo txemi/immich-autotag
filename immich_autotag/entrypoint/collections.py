@@ -8,11 +8,10 @@ from immich_autotag.duplicates.load_duplicates_collection import (
     load_duplicates_collection,
 )
 from immich_autotag.tags.list_tags import list_tags
-from immich_autotag.types import ImmichClient
 
 
 def _init_collections_and_context(
-    client_wrapper: ImmichClientWrapper
+    client_wrapper: ImmichClientWrapper,
 ) -> tuple[list, AlbumCollectionWrapper, ImmichContext]:
     client = client_wrapper.get_client()
     tag_collection = list_tags(client)
