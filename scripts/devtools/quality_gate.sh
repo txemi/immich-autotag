@@ -582,11 +582,16 @@ check_mypy() {
 		mypy_files_count=$(echo "$mypy_output" | grep -o '^[^:]*:' | cut -d: -f1 | sort | uniq | wc -l)
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
 		echo "[INFO] Command executed: $py_bin -m mypy --ignore-missing-imports $target_dir"
-		if [ "$quality_level" = "STANDARD" ]; then
+		if [ "$quality_level" = "STRICT" ]; then
+			# En modo estricto, cualquier error de mypy bloquea
+			echo '[STRICT MODE] Any mypy error blocks the build.'
+			echo '[EXIT] Quality Gate failed due to mypy errors.'
+			return 1
+		elif [ "$quality_level" = "STANDARD" ]; then
 			echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
 			echo '[STANDARD MODE] Not blocking build on mypy errors.'
 		elif [ "$quality_level" = "TARGET" ]; then
-			# Only block for arg-type errors (minimum target)
+			# Solo bloquea por errores arg-type (objetivo mínimo)
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
 				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ❌❌❌"
@@ -597,8 +602,8 @@ check_mypy() {
 				echo '[TARGET MODE] Only non-critical mypy errors found (return-value, call-arg, attr-defined, imports, etc). Not blocking build.'
 			fi
 		else
-			echo '[EXIT] Quality Gate failed due to mypy errors.'
-			return 1
+			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
+			return 2
 		fi
 	fi
 	echo "Static checks (ruff/flake8/mypy) completed successfully."
