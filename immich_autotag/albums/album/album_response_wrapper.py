@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
 
 from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
+from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
@@ -161,12 +162,7 @@ class AlbumResponseWrapper:
         """Returns the UUID of the album owner (UUID object, not string)."""
         return self._cache_entry.get_state().get_owner_uuid()
 
-    def _get_album_full_or_load_dto(self) -> AlbumResponseDto:
-        """
-        Returns the full AlbumResponseDto, loading it from the API if necessary.
-        Ensures the album is in DETAIL/full mode.
-        """
-        return self.get_uuid()
+
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
@@ -201,17 +197,22 @@ class AlbumResponseWrapper:
     def has_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
-        from uuid import UUID
-
-        return UUID(asset_wrapper.asset.id) in self._get_or_build_asset_ids_cache()
+        # Use get_id_as_uuid for correct type
+        return asset_wrapper.get_id_as_uuid() in self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
     def wrapped_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         # Assets are authoritative in the full DTO. Load the full DTO if
         # needed and return wrapped assets. This avoids relying on the
         # partial DTO for asset information.
-        assets = self._cache_entry.get_assets()
-        return [context.asset_manager.get_wrapper_for_asset(a, context) for a in assets]
+        self.ensure_full_loaded(self.get_default_client())  
+        self._cache_entry.get_assets()
+        state = self._cache_entry.get_state()
+        assets = getattr(state._dto, 'assets', [])
+        asset_manager = getattr(context, 'asset_manager', None)
+        if asset_manager is None:
+            raise AttributeError('ImmichContext missing asset_manager')
+        return [asset_manager.get_wrapper_for_asset(a, context) for a in assets]
 
     @typechecked
     def is_empty(self) -> bool:
@@ -240,23 +241,14 @@ class AlbumResponseWrapper:
     @typechecked
     def _build_partial_repr(self) -> AlbumPartialRepr:
         """Builds a safe partial representation of the album for error logs."""
-        try:
-            album_name: str | None = None
-            dto_id: str | None = None
-            try:
-                album_name = self.get_album_name()
-            except Exception:
-                album_name = None
-            try:
-                dto_id = self.get_album_uuid()
-            except Exception:
-                dto_id = None
-            partial_repr = f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
-        except Exception:
-            album_name = None
-            partial_repr = "<unrepresentable album_partial>"
-        return AlbumPartialRepr(album_name=album_name, partial_repr=partial_repr)
 
+        album_name = self.get_album_name()
+
+
+        dto_id = str(self.get_album_uuid())
+
+        partial_repr = f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
+  
     def _handle_recoverable_400(
         self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
     ) -> None:
@@ -321,7 +313,7 @@ class AlbumResponseWrapper:
 
     # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
-    def reload_from_api(self, client: ImmichClient) -> AlbumResponseWrapper:
+    def reload_from_api(self, client: ImmichClient) -> "AlbumResponseWrapper":
         """Reloads the album DTO from the API and clears the cache, delegates fetch but handles errors and reporting here."""
 
         from immich_autotag.albums.albums.album_api_exception_info import (
@@ -441,14 +433,10 @@ class AlbumResponseWrapper:
         from immich_autotag.api.immich_proxy.albums import proxy_add_assets_to_album
 
         result = proxy_add_assets_to_album(
-            album_id=self.get_album_uuid_no_cache(),
+            album_id=self.get_album_uuid(),
             client=client,
             asset_ids=[asset_wrapper.get_id_as_uuid()],
         )
-        if not isinstance(result, list):
-            raise RuntimeError(
-                f"add_assets_to_album did not return a list, got {type(result)}"
-            )
         return result
 
     @typechecked
@@ -635,14 +623,10 @@ class AlbumResponseWrapper:
         from immich_autotag.api.immich_proxy.albums import proxy_remove_asset_from_album
 
         result = proxy_remove_asset_from_album(
-            album_id=self.get_album_uuid_no_cache(),
+            album_id=self.get_album_uuid(),
             client=client,
             asset_ids=[asset_wrapper.get_id_as_uuid()],
         )
-        if not isinstance(result, list):
-            raise RuntimeError(
-                f"remove_assets_from_album did not return a list, got {type(result)}"
-            )
         return result
 
     @typechecked
