@@ -254,15 +254,16 @@ setup_python_env() {
 # Returns: 0 if passes, 1 if syntax errors
 ###############################################################################
 check_python_syntax() {
-	local result
+	local py_bin="$1"
+	local target_dir="$2"
 	echo "Checking for syntax and indentation errors..."
-	echo "[CHECK] Byte-compiling Python sources in $TARGET_DIR..."
-	if ! "$PY_BIN" -m compileall -q "$TARGET_DIR"; then
+	echo "[CHECK] Byte-compiling Python sources in $target_dir..."
+	if ! "$py_bin" -m compileall -q "$target_dir"; then
 		echo "[ERROR] Byte-compilation failed (syntax error or import-time failure). Aborting."
 		return 1
 	fi
 	# Fallback check per-file (keeps original behavior for precise messages)
-	find "$TARGET_DIR" -name "*.py" -exec "$PY_BIN" -m py_compile {} +
+	find "$target_dir" -name "*.py" -exec "$py_bin" -m py_compile {} +
 	return 0
 }
 
@@ -276,11 +277,12 @@ check_python_syntax() {
 # Returns: nothing, but installs the package if needed
 ###############################################################################
 ensure_tool() {
-	local tool_import_check="$1"
-	local tool_pkg="$2"
-	if ! "$PY_BIN" -c "import ${tool_import_check}" 2>/dev/null; then
-		echo "Installing ${tool_pkg} into environment ($PY_BIN)..."
-		"$PY_BIN" -m pip install "${tool_pkg}"
+	local py_bin="$1"
+	local tool_import_check="$2"
+	local tool_pkg="$3"
+	if ! "$py_bin" -c "import ${tool_import_check}" 2>/dev/null; then
+		echo "Installing ${tool_pkg} into environment ($py_bin)..."
+		"$py_bin" -m pip install "${tool_pkg}"
 	fi
 }
 
@@ -291,19 +293,23 @@ ensure_tool() {
 # Returns: 0 if passes, 1 if sorting issues
 ###############################################################################
 check_isort() {
+	local check_mode="$1"
+	local py_bin="$2"
+	local max_line_length="$3"
+	local target_dir="$4"
 	local isort_skips isort_exit
-	ensure_tool isort isort
-	isort_skips="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $MAX_LINE_LENGTH"
-	if [ "$CHECK_MODE" = "CHECK" ]; then
-		"$PY_BIN" -m isort $isort_skips --profile black --check-only "$TARGET_DIR"
+	ensure_tool "$py_bin" isort isort
+	isort_skips="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $max_line_length"
+	if [ "$check_mode" = "CHECK" ]; then
+		"$py_bin" -m isort $isort_skips --profile black --check-only "$target_dir"
 		isort_exit=$?
 	else
-		"$PY_BIN" -m isort $isort_skips --profile black "$TARGET_DIR"
+		"$py_bin" -m isort $isort_skips --profile black "$target_dir"
 		isort_exit=$?
 	fi
 	if [ $isort_exit -ne 0 ]; then
 		echo "[WARNING] isort reported issues."
-		if [ "$CHECK_MODE" -eq 1 ]; then
+		if [ "$check_mode" = "CHECK" ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 			return 1
 		fi
@@ -377,22 +383,26 @@ check_ssort() {
 # Returns: 0 if passes, 1 if style issues
 ###############################################################################
 check_ruff() {
+	local check_mode="$1"
+	local py_bin="$2"
+	local max_line_length="$3"
+	local target_dir="$4"
 	local ruff_ignore="" ruff_exit
-	ensure_tool ruff ruff
-	if [ "$QUALITY_LEVEL" != "STRICT" ]; then
+	ensure_tool "$py_bin" ruff ruff
+	if [ "$check_mode" != "STRICT" ]; then
 		ruff_ignore="--ignore E501"
 		echo "[NON-STRICT MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	fi
-	if [ "$CHECK_MODE" = "CHECK" ]; then
-		"$PY_BIN" -m ruff check --fix $ruff_ignore "$TARGET_DIR"
+	if [ "$check_mode" = "CHECK" ]; then
+		"$py_bin" -m ruff check --fix $ruff_ignore "$target_dir"
 		ruff_exit=$?
 	else
-		"$PY_BIN" -m ruff check --fix $ruff_ignore "$TARGET_DIR"
+		"$py_bin" -m ruff check --fix $ruff_ignore "$target_dir"
 		ruff_exit=$?
 	fi
 	if [ $ruff_exit -ne 0 ]; then
 		echo "[WARNING] ruff reported/fixed issues."
-		if [ "$CHECK_MODE" -eq 1 ]; then
+		if [ "$check_mode" = "CHECK" ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 			return 1
 		fi
@@ -408,25 +418,19 @@ check_ruff() {
 ###############################################################################
 check_black() {
 	local check_mode="$1"
-	local quality_level="$2"
-	local py_bin="$3"
-	local max_line_length="$4"
-	local target_dir="$5"
-	ensure_tool flake8 flake8
-	local flake8_ignores=""
-	if [ "$quality_level" != "STRICT" ]; then
-		flake8_ignores="--ignore=E501"
-		echo "[NON-STRICT MODE] Flake8 will ignore E501 (line length) and will NOT block the build for it."
-	fi
+	local py_bin="$2"
+	local max_line_length="$3"
+	local target_dir="$4"
+	ensure_tool "$py_bin" black black
 	if [ "$check_mode" = "CHECK" ]; then
-		"$py_bin" -m flake8 --max-line-length="$max_line_length" $flake8_ignores "$target_dir"
-		flake8_exit=$?
+		"$py_bin" -m black --check --line-length "$max_line_length" "$target_dir"
+		black_exit=$?
 	else
-		"$py_bin" -m flake8 --max-line-length="$max_line_length" $flake8_ignores "$target_dir"
-		flake8_exit=$?
+		"$py_bin" -m black --line-length "$max_line_length" "$target_dir"
+		black_exit=$?
 	fi
-	if [ $flake8_exit -ne 0 ]; then
-		echo "[WARNING] flake8 reported issues."
+	if [ $black_exit -ne 0 ]; then
+		echo "[WARNING] black reported issues."
 		if [ "$check_mode" = "CHECK" ]; then
 			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
 			return 1
@@ -511,20 +515,25 @@ check_jscpd() {
 # Returns: 0 if passes, 1 if style errors
 ###############################################################################
 check_flake8() {
+	local check_mode="$1"
+	local quality_level="$2"
+	local py_bin="$3"
+	local max_line_length="$4"
+	local target_dir="$5"
 	local flake_failed=0 flake8_ignore
-	ensure_tool flake8 flake8
+	ensure_tool "$py_bin" flake8 flake8
 	flake8_ignore="E203,W503"
-	if [ "$QUALITY_LEVEL" != "STRICT" ]; then
+	if [ "$quality_level" != "STRICT" ]; then
 		flake8_ignore="$flake8_ignore,E501"
 		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
 	fi
 	echo "[INFO] Running flake8 (output below if any):"
-	"$PY_BIN" -m flake8 --max-line-length=$MAX_LINE_LENGTH --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$TARGET_DIR"
+	"$py_bin" -m flake8 --max-line-length=$max_line_length --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$target_dir"
 	if [ $? -ne 0 ]; then
 		flake_failed=1
 	fi
 	if [ $flake_failed -ne 0 ]; then
-		if [ "$QUALITY_LEVEL" = "STANDARD" ] || [ "$QUALITY_LEVEL" = "TARGET" ]; then
+		if [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
 			echo "[WARNING] flake8 failed, but STANDARD/TARGET mode is enabled. See output above."
 			echo "[STANDARD/TARGET MODE] Not blocking build on flake8 errors."
 		else
@@ -730,7 +739,7 @@ check_import_linter() {
 # Run all quality checks in CHECK mode (fail fast on first error)
 run_quality_gate_check_mode() {
 	# 1. Blocking checks (fail fast on first error)
-	check_python_syntax "$PY_BIN" "$TARGET_DIR" || exit 1
+	check_python_syntax "$1" "$3" || exit 1
 	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || exit 1
 	check_jscpd "$TARGET_DIR" || exit 1
 	check_import_linter "$REPO_ROOT" || exit 1
@@ -739,10 +748,10 @@ run_quality_gate_check_mode() {
 	check_no_spanish_chars "$TARGET_DIR" || exit 5
 	# 2. Formatters and style (run only if all blocking checks pass)
 	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || exit 1
-	check_isort "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
-	check_black "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
-	check_ruff "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
-	check_flake8 "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 }
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
@@ -750,9 +759,9 @@ run_quality_gate_apply_mode() {
 	local error_found=0
 	# 1. Auto-fixers and formatters
 	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || error_found=1
-	check_isort "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
-	check_black "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
-	check_ruff "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
+	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
+	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	# 2. Fast/deterministic checks
 	check_python_syntax "$PY_BIN" "$TARGET_DIR" || error_found=1
 	# 3. Internal policy checks
@@ -761,7 +770,7 @@ run_quality_gate_apply_mode() {
 	check_no_spanish_chars "$TARGET_DIR" || error_found=5
 	# 4. Heavy/informative checks
 	check_jscpd "$TARGET_DIR" || error_found=1
-	check_flake8 "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || error_found=1
+	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	check_import_linter "$REPO_ROOT" || error_found=1
 	check_mypy "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$TARGET_DIR" || error_found=1
 	if [ "$error_found" -ne 0 ]; then
@@ -785,9 +794,9 @@ run_quality_gate_check_summary() {
 	# 2. Syntax errors
 	check_python_syntax "$PY_BIN" "$TARGET_DIR" || exit 1
 	# 3. Ruff (lint/auto-fix)
-	check_ruff "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	# 4. Flake8 (style)
-	check_flake8 "$CHECK_MODE" "$QUALITY_LEVEL" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	check_import_linter "$REPO_ROOT" || exit 1
 	# 5. Policy checks
 	check_no_dynamic_attrs "$ENFORCE_DYNAMIC_ATTRS" "$TARGET_DIR" || exit 2
@@ -797,8 +806,8 @@ run_quality_gate_check_summary() {
 	check_jscpd "$TARGET_DIR" || exit 1
 	# 8. Formatters (least urgent in summary)
 	check_shfmt "$CHECK_MODE" "$TARGET_DIR" || exit 1
-	check_isort "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
-	check_black "$CHECK_MODE" "$PY_BIN" "$MAX_LINE_LENGTH" "$TARGET_DIR" || exit 1
+	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 }
 
 # Refactor: main usa solo variables locales y pasa los valores explícitamente
