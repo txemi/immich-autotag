@@ -79,10 +79,11 @@ class AlbumCacheEntry:
             )
         return self._dto
 
-    def ensure_full_loaded(self) -> "AlbumCacheEntry":
+    def _ensure_full_loaded(self) -> "AlbumCacheEntry":
         """
         Ensures the DTO is of type DETAIL (full). If not, reloads using _from_cache_or_api.
         If already full, does nothing. If not full and no reload_func is provided, raises exception.
+        PRIVATE: Only AlbumCacheEntry should decide when to reload.
         """
         if self._dto.is_full():
             return self
@@ -100,7 +101,7 @@ class AlbumCacheEntry:
         Returns True if the album has no assets, False otherwise.
         Does not force reload, uses the current DTO.
         """
-        return self.ensure_full_loaded()._dto.is_empty()
+        return self._ensure_full_loaded()._dto.is_empty()
 
     def _get_dto(self) -> AlbumDtoState:
         return self._dto
@@ -110,4 +111,4 @@ class AlbumCacheEntry:
         Returns the set of asset UUIDs in the album, ensuring full DTO is loaded.
         Does not expose DTOs directly.
         """
-        return self.ensure_full_loaded()._get_dto().get_asset_uuids()
+        return self._ensure_full_loaded()._get_dto().get_asset_uuids()
