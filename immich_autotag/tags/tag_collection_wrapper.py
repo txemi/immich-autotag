@@ -59,7 +59,6 @@ class TagCollectionWrapper:
         Fetch a tag by id using the efficient proxy and add it to the index if found.
         Returns the found TagWrapper or None.
         """
-        import uuid
 
         from immich_autotag.api.immich_proxy.tags import proxy_get_tag_by_id
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
@@ -226,6 +225,7 @@ class TagCollectionWrapper:
         Returns the number of deleted tags.
         """
         from immich_autotag.config.manager import ConfigManager
+
         conf = ConfigManager.get_instance().get_config()
         prefixes = [
             conf.duplicate_processing.autotag_album_conflict,

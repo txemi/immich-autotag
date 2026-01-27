@@ -868,12 +868,10 @@ run_quality_gate_check_summary() {
 # Refactor: main usa solo variables locales y pasa los valores explícitamente
 main() {
 	# Argument and global variable initialization
-	# parse_args_and_globals ahora devuelve los valores como salida limpia
 	local check_mode quality_level target_dir enforce_dynamic_attrs repo_root
 	read -r check_mode quality_level target_dir enforce_dynamic_attrs < <(parse_args_and_globals "$@")
 	repo_root="$REPO_ROOT"
 
-	# Obtener max_line_length y py_bin directamente
 	local max_line_length py_bin
 	max_line_length=$(setup_max_line_length)
 	py_bin=$(setup_python_env)
