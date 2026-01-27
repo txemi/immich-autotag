@@ -134,7 +134,6 @@ class StatisticsManager:
                 "StatisticsManager instance already exists. "
                 "Use StatisticsManager.get_instance() instead of creating a new one."
             )
-        global _instance
         # Logging assignment to reserved global variable
         print("[INFO] Assigning self to reserved global variable _instance.")
         _instance = self
