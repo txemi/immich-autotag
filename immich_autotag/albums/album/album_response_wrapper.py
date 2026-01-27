@@ -322,7 +322,7 @@ class AlbumResponseWrapper:
     # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
     def reload_from_api(self, client: ImmichClient) -> AlbumResponseWrapper:
-        """Reloads the album DTO from the API and clears the cache, delegando el fetch pero gestionando errores y reporting aquí."""
+        """Reloads the album DTO from the API and clears the cache, delegates fetch but handles errors and reporting here."""
         from immich_client import errors as immich_errors
 
         from immich_autotag.albums.albums.album_api_exception_info import (
@@ -332,7 +332,7 @@ class AlbumResponseWrapper:
         try:
             self._cache_entry.ensure_full_loaded()
         except RuntimeError as exc:
-            # Aquí se puede distinguir por mensaje o tipo de error si se quiere lógica más fina
+            # Here you can distinguish by message or error type if you want finer logic
             api_exc = AlbumApiExceptionInfo(exc)
             partial = self._build_partial_repr()
             # Ejemplo: si el error es asimilable a un 400, marcar como unavailable y reportar
@@ -918,4 +918,4 @@ class AlbumResponseWrapper:
         except Exception:
             return object.__hash__(self)
 
-    # Eliminado: toda recarga de álbum debe pasar por AlbumCacheEntry.ensure_full_loaded
+    # Removed: all album reloads must go through AlbumCacheEntry.ensure_full_loaded
