@@ -12,6 +12,10 @@ from typeguard import typechecked
 
 from .asset_date_candidate import AssetDateCandidate
 from .asset_date_candidates import AssetDateCandidates
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .asset_date_candidates import AssetDateCandidates
 from .date_source_kind import DateSourceKind
 
 
@@ -33,7 +37,7 @@ class AssetDateSourcesList:
 
     asset_wrapper: "AssetResponseWrapper" = attrs.field()
     # Each element represents the date candidates of a duplicate asset
-    date_candidates_per_duplicate: list[AssetDateCandidates] = attrs.field(factory=list)
+    date_candidates_per_duplicate: list["AssetDateCandidates"] = attrs.field(factory=list)
 
     @typechecked
     def add(self, candidate_set: AssetDateCandidates) -> None:
