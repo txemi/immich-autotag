@@ -9,6 +9,14 @@ class RunExecution:
     """
     run_dir: Path = attrs.field(converter=Path)
 
+    def get_api_cache_dir(self, cache_type: str) -> Path:
+        """
+        Devuelve la ruta del directorio de caché de API para un tipo dado (e.g. 'albums', 'assets').
+        """
+        d = self.run_dir / "api_cache" / cache_type
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+
     def get_modification_report_path(self) -> Path:
         """
         Devuelve la ruta del fichero de reporte de modificaciones para esta ejecución.
