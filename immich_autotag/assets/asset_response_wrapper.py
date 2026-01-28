@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Callable
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from urllib.parse import ParseResult
@@ -139,7 +141,7 @@ class AssetResponseWrapper:
         )
         response = proxy_update_asset(
             asset_id=self.get_id_as_uuid(),
-            client=self.get_context().get_client().get_client(),
+            client=self.get_context().get_client_wrapper().get_client(),
             body=dto,
         )
         # Fail-fast: check response type and status directly, no dynamic attribute access
@@ -276,7 +278,7 @@ class AssetResponseWrapper:
             tag_uuid = tag.get_id()
             response = proxy_untag_assets(
                 tag_id=tag_uuid,
-                client=self.get_context().get_client().get_client(),
+                client=self.get_context().get_client_wrapper().get_client(),
                 asset_ids=[self.get_id_as_uuid()],
             )
             if is_log_level_enabled(LogLevel.DEBUG):
@@ -326,7 +328,7 @@ class AssetResponseWrapper:
                 self.get_context()
                 .get_tag_collection()
                 .create_tag_if_not_exists(
-                    name=tag_name, client=self.get_context().get_client().get_client()
+                    name=tag_name, client=self.get_context().get_client_wrapper().get_client()
                 )
             )
         # Check if the asset already has the tag
@@ -395,7 +397,7 @@ class AssetResponseWrapper:
         try:
             response = proxy_tag_assets(
                 tag_id=tag.get_id(),
-                client=self.get_context().get_client().get_client(),
+                client=self.get_context().get_client_wrapper().get_client(),
                 asset_ids=[self.get_id_as_uuid()],
             )
         except Exception as e:
@@ -497,7 +499,7 @@ class AssetResponseWrapper:
         # Use get_uuid from cache_entry, which is the correct and safe method
         return self._cache_entry.get_uuid()
 
-    def get_original_path(self) -> "Path":
+    def get_original_path(self) -> Path:
         return self._cache_entry.get_original_path()
 
     def get_duplicate_id_as_uuid(self) -> UUID:
@@ -558,7 +560,7 @@ class AssetResponseWrapper:
             return True
         return False
 
-    from typing import Callable
+    # Callable is now imported at the module level
 
     @typechecked
     def _ensure_tag_for_classification_status(
@@ -871,11 +873,11 @@ class AssetResponseWrapper:
         duplicate_id = self.get_duplicate_id_as_uuid()
         wrappers = []
         if duplicate_id is not None:
-            group = context.duplicates_collection.get_group(duplicate_id)
+            group = context.get_duplicates_collection().get_group(duplicate_id)
             for dup_id in group:
                 if dup_id == self.get_uuid():
                     continue
-                dup_asset = context.asset_manager.get_asset(dup_id, context)
+                dup_asset = context.get_asset_manager().get_asset(dup_id, context)
                 if dup_asset is not None:
                     wrappers.append(dup_asset)
         return wrappers
