@@ -12,8 +12,8 @@ from immich_autotag.albums.duplicates.duplicate_album_reports import (
 @typechecked
 def collect_duplicate(
     _collected_duplicates: DuplicateAlbumReports,
-    existing: Optional[AlbumResponseWrapper],
-    incoming: Optional[AlbumResponseWrapper],
+    existing: AlbumResponseWrapper,
+    incoming: AlbumResponseWrapper,
     reason: str = "duplicate_name",
 ) -> None:
     """Record a duplicate album occurrence for later operator inspection.
