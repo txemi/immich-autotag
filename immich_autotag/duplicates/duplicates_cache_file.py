@@ -4,18 +4,14 @@ from pathlib import Path
 import attr
 from typeguard import typechecked
 
-from immich_autotag.duplicates.duplicates_cache_constants import (
-    DUPLICATES_CACHE_FILENAME,
-)
-
-
-@attr.s(auto_attribs=True, slots=True, kw_only=True)
-
 from immich_autotag.run_output.execution import RunExecution
 
 
+@attr.s(auto_attribs=True, slots=True, kw_only=True)
 class DuplicatesCacheFile:
-    run_execution: RunExecution = attr.ib(validator=attr.validators.instance_of(RunExecution))
+    run_execution: RunExecution = attr.ib(
+        validator=attr.validators.instance_of(RunExecution)
+    )
     path: Path = attr.ib(init=False)
 
     @typechecked
@@ -53,13 +49,14 @@ class DuplicatesCacheFile:
     @typechecked
     def status_string(self) -> str:
         try:
+            dir_name = self.run_execution.path.name
             if self.exists():
                 file_age = self.age_hours()
-                return f"{self.directory.name} (dir_age={self.dir_age_hours:.2f}h, cache_age={file_age:.2f}h, found=YES)"
+                return f"{dir_name} (dir_age={self.dir_age_hours:.2f}h, cache_age={file_age:.2f}h, found=YES)"
             else:
-                return f"{self.directory.name} (dir_age={self.dir_age_hours:.2f}h, found=NO)"
+                return f"{dir_name} (dir_age={self.dir_age_hours:.2f}h, found=NO)"
         except Exception:
-            return f"{self.directory} (error checking stats)"
+            return f"{self.run_execution.path} (error checking stats)"
 
     @typechecked
     def is_fresh(self, max_age_hours: float) -> bool:
