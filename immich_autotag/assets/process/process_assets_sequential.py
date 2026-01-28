@@ -30,9 +30,12 @@ def process_assets_sequential(
     # Determine skip_n and clearly show its origin
     config_skip_n = 0
     config_resume_previous = True
-    if cm.config is not None and cm.config.skip is not None:
-        config_skip_n = cm.config.skip.skip_n or 0
-        config_resume_previous = cm.config.skip.resume_previous
+
+    config = cm.get_config_or_raise()
+    if config.skip is not None:
+        config_skip_n = config.skip.skip_n or 0
+        config_resume_previous = config.skip.resume_previous
+
     # Use the centralized logic of CheckpointManager to decide and log the origin
     skip_n = (
         StatisticsManager.get_instance()
