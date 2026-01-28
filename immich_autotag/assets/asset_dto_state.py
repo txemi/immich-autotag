@@ -138,7 +138,7 @@ class AssetDtoState:
     def get_uuid(self) -> UUID:
         return UUID(self._dto.id)
 
-    def get_original_file_name(self) -> str:
+    def get_original_file_name(self) -> Path:
         return Path(self._dto.original_file_name)
 
     def to_cache_dict(self) -> dict[str, object]:
