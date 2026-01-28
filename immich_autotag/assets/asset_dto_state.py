@@ -35,7 +35,7 @@ class TagsNotLoadedError(Exception):
 
 
 @attrs.define(auto_attribs=True, slots=True)
-class AssetDtoState:
+class AssetDtoState:    
     from typing import Any, Mapping, cast
 
     """
@@ -191,3 +191,23 @@ class AssetDtoState:
         Returns True if the asset is marked as favorite, False otherwise.
         """
         return self._dto.get_if_favorite()
+
+
+
+    def get_created_at(self) -> datetime:
+        """
+        Returns the created_at date of the asset, if available.
+        """
+        return self._dto.created_at
+
+    def get_original_path(self) -> str:
+        """
+        Returns the original file path of the asset.
+        """
+        return self._dto.original_path
+
+    def get_duplicate_id_as_uuid(self) -> UUID:
+        """
+        Returns the duplicate id as UUID.
+        """
+        return UUID(self._dto.duplicate_id)

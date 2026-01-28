@@ -1,3 +1,8 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
+
 from immich_client.models.asset_response_dto import AssetResponseDto
 
 from immich_autotag.context.immich_context import ImmichContext
@@ -29,17 +34,18 @@ class AssetCacheEntry:
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS  # Global default
 
     def is_stale(self) -> bool:
-        age = (datetime.datetime.now() - self._state.get_loaded_at()).total_seconds()
-        return age > self._max_age_seconds
+        loaded_at = self._state.get_loaded_at()  
+        age = (datetime.datetime.now() - loaded_at).total_seconds()  
+        return age > self._max_age_seconds  # type: ignore[operator]
 
     def _get_fresh_state(self) -> AssetDtoState:
         # Private: ensures freshness before returning the internal state
         self._ensure_fresh(ImmichContext.get_default_instance())
         return self._state
 
-    def get_loaded_at(self) -> datetime.datetime:
+                age = (datetime.datetime.now() - loaded_at).total_seconds()
         # Use the private _get_fresh_state to ensure freshness
-        return self._get_fresh_state().get_loaded_at()
+        return self._get_fresh_state().get_loaded_at()  
 
     @classmethod
     def from_cache_or_api(
@@ -57,19 +63,20 @@ class AssetCacheEntry:
         from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.utils.api_disk_cache import (
+            ApiCacheKey,
             get_entity_from_cache,
             save_entity_to_cache,
         )
 
         cache_data = get_entity_from_cache(
-            ASSET_CACHE_KEY, str(asset_id), use_cache=use_cache
+            entity=ApiCacheKey.ASSETS, key=str(asset_id), use_cache=use_cache
         )
         if cache_data is not None:
-            state = AssetDtoState.from_cache_dict(cache_data)
-            entry = cls(state=state, max_age_seconds=max_age_seconds)
+            state = AssetDtoState.from_cache_dict(cache_data)  
+            entry = cls._from_dto_entry(_state=state, _max_age_seconds=max_age_seconds)  # type: ignore[arg-type]
             if not entry.is_stale():
                 return entry
-        # If the cache is expired or does not exist, reload from API
+                    entry = cls._from_dto_entry(_state=state, _max_age_seconds=max_age_seconds)
         # If not in cache or corrupted, reload from API
         client = ImmichClientWrapper.get_default_instance().get_client()
         dto = proxy_get_asset_info(asset_id, client, use_cache=False)
@@ -79,9 +86,9 @@ class AssetCacheEntry:
             )
         state = AssetDtoState(dto=dto, api_endpoint_source=AssetDtoType.FULL)
         save_entity_to_cache(
-            entity=ASSET_CACHE_KEY, key=str(asset_id), data=state.to_cache_dict()
+            entity=ApiCacheKey.ASSETS, key=str(asset_id), data=state.to_cache_dict()  
         )
-        return cls(state=state, max_age_seconds=max_age_seconds)
+        return cls._from_dto(_state=state, _max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_state(
@@ -90,7 +97,7 @@ class AssetCacheEntry:
         """
         Creates an AssetCacheEntry from an existing state (private).
         """
-        return cls(state=state, max_age_seconds=max_age_seconds)
+        return cls(_state=state, _max_age_seconds=max_age_seconds)
 
     # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 
@@ -101,7 +108,7 @@ class AssetCacheEntry:
         state = self._get_fresh_state()
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        if state.get_type() == AssetDtoType.FULL:
+        if state.get_type() == AssetDtoType.FULL:  
             return state
 
         self._reload_from_api(context)
@@ -111,8 +118,8 @@ class AssetCacheEntry:
         """
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
-        asset_id = self._state.get_uuid()
-        refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
+        asset_id = self._state.get_uuid()  
+        refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)  # type: ignore[arg-type]
         self._state = refreshed_entry._state
         return self
 
@@ -129,9 +136,9 @@ class AssetCacheEntry:
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
-        state = AssetDtoState(dto=dto, api_endpoint_source=dto_type)
+        state = AssetDtoState(_dto=dto, _api_endpoint_source=dto_type)  
         return cls(state=state, max_age_seconds=max_age_seconds)
-
+                refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
     @classmethod
     def _from_api_entry(
         cls,
@@ -156,7 +163,7 @@ class AssetCacheEntry:
         return cls._from_dto_entry(
             dto=dto,
             dto_type=AssetDtoType.FULL,
-            max_age_seconds=max_age_seconds,
+                return state.get_tag_names()
         )
 
     def get_tag_names(self) -> list[str]:
@@ -164,7 +171,7 @@ class AssetCacheEntry:
         Returns the names of the tags associated with this asset, or an empty list if not available.
         """
         state = self._get_fresh_state()
-        return state.get_tag_names()
+        return state.get_tag_names()  
 
     def _ensure_fresh(self, context: "ImmichContext") -> "AssetCacheEntry":
         """
@@ -179,22 +186,22 @@ class AssetCacheEntry:
         """
         Returns the UUID of the asset. The asset ID is immutable, so we do not require a fresh state for this operation.
         """
-        return self._state.get_uuid()
+        return self._state.get_uuid()  
 
     def get_original_file_name(self) -> str:
         """
         Returns the original file name of the asset. This value is immutable, so no freshness check is needed.
         """
-        return self._get_fresh_state().get_original_file_name()
+        return self._get_fresh_state().get_original_file_name()  
 
-    def get_tags(self) -> list:
+    def get_tags(self) -> list["TagWrapper"]:
         """
         Returns the tags associated with this asset as TagWrapper objects, using the tag collection for central management.
         """
         state = self._get_fresh_state()
         # Use the AssetDtoState logic to get TagWrapper objects via the tag collection
 
-        return state.get_tags()
+        return state.get_tags()  
 
     def get_state(self):
         """
@@ -202,40 +209,40 @@ class AssetCacheEntry:
         """
         return self._get_fresh_state()
 
-    def get_dates(self) -> list:
+    def get_dates(self) -> list[datetime.datetime]:
         """
         Returns a list of date fields (created_at, file_created_at, exif_created_at) if available.
         """
 
-        return self._state.get_dates()
+        return self._state.get_dates()  
 
     def get_is_favorite(self) -> bool:
         """
         Returns True if the asset is marked as favorite, False otherwise.
         """
-        return self._state.get_is_favorite()
+        return self._state.get_is_favorite()  
 
-    def get_created_at(self):
+    def get_created_at(self) -> datetime.datetime:
         """
         Returns the created_at date of the asset, if available.
         """
-        return self._state.get_created_at()
+        return self._state.get_created_at()  
 
-    def get_original_path(self):
+    def get_original_path(self) -> str:
         """
         Returns the original file path of the asset, if available.
         """
-        return self._state.get_orginal_path()
+        return self._state.get_original_path()  
 
-    def get_duplicate_id_as_uuid(self):
+    def get_duplicate_id_as_uuid(self) -> UUID:
         """
         Returns the duplicate id as UUID, if available.
         """
-        return self._state.get_duplicate_id_as_uuid()
+        return self._state.get_duplicate_id_as_uuid()  
 
     def has_tag(self, tag_name: str) -> bool:
         """
         Returns True if the asset has a tag with the given name.
         """
         self._ensure_fresh(ImmichContext.get_default_instance())
-        return self._state.has_tag(tag_name)
+        return self._state.has_tag(tag_name)  
