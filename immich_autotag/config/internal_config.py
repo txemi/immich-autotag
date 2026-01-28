@@ -1,3 +1,10 @@
+# ==================== API CACHE CONTROL (PER TYPE) ====================
+# Control cache usage for each entity type (developer/debug only)
+USE_CACHE_ASSETS = True
+USE_CACHE_ALBUMS = True
+USE_CACHE_ALBUM_PAGES = True
+USE_CACHE_USERS = True
+
 # ==================== IMPORTS ====================
 from immich_autotag.logging.levels import LogLevel
 
