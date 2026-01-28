@@ -150,9 +150,6 @@ def add_members_to_album(
         level=LogLevel.PROGRESS,
     )
 
-    # Convert access_level string to AlbumUserRole
-    role = AlbumUserRole.EDITOR if access_level == "editor" else AlbumUserRole.VIEWER
-
     # Build AddUsersDto
     album_users_dto = [
         AlbumUserAddDto(
@@ -177,28 +174,37 @@ def add_members_to_album(
             f"members to {album_name}"
         )
     else:
-        log(
-            f"[ALBUM_PERMISSIONS] WARNING: add_users_to_album returned "
-            f"None for {album_name}",
-            level=LogLevel.IMPORTANT,
-        )
+        # Handle error or log as needed
+        # Calculate diff
+        users_to_add = target_user_ids - current_user_ids
+        users_to_remove = current_user_ids - target_user_ids
 
+        # Phase 2A: PONER (add members)
+        users_to_add_wrappers = [user_id_to_wrapper[uid] for uid in users_to_add if uid in user_id_to_wrapper]
+        if users_to_add_wrappers:
+            access_level_str = resolved_policy.access_level.lower()
+            if access_level_str == "editor":
+                access_level_enum = AlbumUserRole.EDITOR
+            elif access_level_str == "admin":
+                access_level_enum = AlbumUserRole.ADMIN
+            else:
+                access_level_enum = AlbumUserRole.VIEWER
 
-@typechecked
-def _remove_members_from_album(
-    album_id: str,
-    album_name: str,
-    user_ids: List[str],
-    context: ImmichContext,
-) -> None:
-    """
-    Remove members from album (QUITAR).
-
-    Args:
-        album_id: UUID of the album
-        album_name: Name of the album
-        user_ids: List of user IDs to remove
-        context: ImmichContext with API client
+            add_members_to_album(
+                album=album_wrapper,
+                users=users_to_add_wrappers,
+                access_level=access_level_enum,
+                context=context,
+            )
+            report.add_album_permission_modification(
+                kind=ModificationKind.ALBUM_PERMISSION_SHARED,
+                album=album_wrapper,
+                matched_rules=resolved_policy.matched_rules,
+                groups=resolved_policy.groups,
+                members=[user.id for user in users_to_add_wrappers],
+                access_level=resolved_policy.access_level,
+            )
+        # context: ImmichContext with API client
     """
     if not user_ids:
         return
@@ -257,13 +263,12 @@ def sync_album_permissions(
     users_to_remove = current_user_ids - target_user_ids
 
     # Phase 2A: PONER (add members)
-    if users_to_add:
+    if users_to_add_wrappers:
         add_members_to_album(
-            album_id,
-            album_name,
-            list(users_to_add),
-            resolved_policy.access_level,
-            context,
+            album=album_wrapper,
+            users=users_to_add_wrappers,
+            access_level=access_level_enum,
+            context=context,
         )
         report.add_album_permission_modification(
             kind=ModificationKind.ALBUM_PERMISSION_SHARED,
@@ -276,7 +281,12 @@ def sync_album_permissions(
 
     # Phase 2B: QUITAR (remove members)
     if users_to_remove:
-        _remove_members_from_album(album_id, album_name, list(users_to_remove), context)
+        _remove_members_from_album(
+        # context: ImmichContext with API client
+            album_name=album_name,
+            user_ids=list(users_to_remove),
+            context=context,
+        )
         report.add_album_permission_modification(
             kind=ModificationKind.ALBUM_PERMISSION_REMOVED,
             album=album_wrapper,
