@@ -52,6 +52,7 @@ class ImmichContext:
         using the same logic as RunOutputManager.get_run_output_dir().
         """
         from immich_autotag.run_output.manager import RunOutputManager
+
         return RunOutputManager.get_run_output_dir()
 
     def __attrs_post_init__(self):
