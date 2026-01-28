@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from .asset_date_candidates import AssetDateCandidates
 
 from datetime import datetime
 from typing import Optional
@@ -9,7 +10,8 @@ from typing import Optional
 import attrs
 from typeguard import typechecked
 
-from .asset_date_candidates import AssetDateCandidate, AssetDateCandidates
+from .asset_date_candidate import AssetDateCandidate
+from .asset_date_candidates import AssetDateCandidates
 from .date_source_kind import DateSourceKind
 
 
@@ -88,7 +90,7 @@ class AssetDateSourcesList:
         """
         Returns all FILENAME type candidates from all candidate sets.
         """
-        result = []
+        result: list[AssetDateCandidate] = []
         for candidate_set in self.date_candidates_per_duplicate:
             result.extend(candidate_set.filename_candidates())
         return result
@@ -105,11 +107,11 @@ class AssetDateSourcesList:
                 all_candidates.append(candidate)
         if not all_candidates:
             return None
-        return min(all_candidates)
+        return min(all_candidates, key=lambda c: c.get_aware_date())
 
     @typechecked
     def format_full_info(self) -> str:
-        lines = []
+        lines: list[str] = []
         lines.append("==== [AssetDateSourcesList] Complete diagnosis ====")
         lines.append(f"Main asset: {self.asset_wrapper.format_info()}")
         lines.append("")
@@ -124,7 +126,7 @@ class AssetDateSourcesList:
         self, kinds: list[DateSourceKind]
     ) -> list[AssetDateCandidate]:
         """Returns all candidates from all duplicates whose source_kind is in the kinds list."""
-        result = []
+        result: list[AssetDateCandidate] = []
         for candidate_set in self.date_candidates_per_duplicate:
             result.extend(candidate_set.candidates_by_kinds(kinds))
         return result
