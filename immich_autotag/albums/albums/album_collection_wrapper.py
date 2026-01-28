@@ -862,7 +862,7 @@ class AlbumCollectionWrapper:
         try:
             add_members_to_album(
                 album=album,
-                user=user,
+                users=[user],
                 access_level=AlbumUserRole.EDITOR,
                 context=context,
             )
