@@ -100,14 +100,16 @@ def process_single_asset(
     asset_name = asset_wrapper.get_original_file_name() or "[no name]"
     log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
 
-    # The following variables are reserved for future development.
-    # They are logged to avoid linter warnings and to document their intended future use.
+    # Ejecutar cada fase y almacenar resultados en el reporte tipado
+    from immich_autotag.assets.process.asset_process_report import AssetProcessReport
+
     tag_conversion_result = _apply_tag_conversions(asset_wrapper)
     date_correction_result = _correct_date_if_enabled(asset_wrapper)
     duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
     album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
-    # Log reserved variables
+    validate_result = asset_wrapper.validate_and_update_classification()
+
     log(
         f"[RESERVED] tag_conversion_result: {tag_conversion_result}",
         level=LogLevel.DEBUG,
@@ -124,10 +126,19 @@ def process_single_asset(
         f"[RESERVED] album_assignment_result: {album_assignment_result}",
         level=LogLevel.DEBUG,
     )
+
+    report = AssetProcessReport(
+        tag_conversion_result=tag_conversion_result,
+        date_correction_result=date_correction_result,
+        duplicate_tag_analysis_result=duplicate_tag_analysis_result,
+        album_assignment_result=album_assignment_result,
+        validate_result=validate_result,
+    )
+
+    log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.FOCUS)
+
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
         raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
-    # Reserved variable for future development: result of validate_and_update_classification
-    validate_result = asset_wrapper.validate_and_update_classification()
     log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.DEBUG)
     from immich_autotag.config.manager import ConfigManager
 
