@@ -66,3 +66,13 @@ class RunExecution:
 
     def __repr__(self):
         return f"<RunExecution {self.run_dir}>"
+
+    def get_duplicates_cache_path(self) -> Path:
+        """
+        Returns the path for the duplicates cache file for this run.
+        """
+        from immich_autotag.duplicates.duplicates_cache_constants import (
+            DUPLICATES_CACHE_FILENAME,
+        )
+
+        return self.path / DUPLICATES_CACHE_FILENAME
