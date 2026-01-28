@@ -35,8 +35,8 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
         try:
             from immich_autotag.config.manager import ConfigManager
 
-            config: UserConfig = ConfigManager.get_instance().config  # type: ignore
-            tz = ZoneInfo(config.date_correction.extraction_timezone)  # type: ignore[attr-defined]
+            config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
+            tz = ZoneInfo(config.date_correction.extraction_timezone)
             return datetime(
                 int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
             )
@@ -51,8 +51,8 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
         try:
             from immich_autotag.config.manager import ConfigManager
 
-            config: UserConfig = ConfigManager.get_instance().config  # type: ignore
-            tz = ZoneInfo(config.date_correction.extraction_timezone)  # type: ignore[attr-defined]
+            config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
+            tz = ZoneInfo(config.date_correction.extraction_timezone)
             return datetime(
                 int(m.group(1)),
                 int(m.group(2)),
