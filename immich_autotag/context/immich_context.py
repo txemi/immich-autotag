@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from immich_autotag.duplicates.duplicate_collection_wrapper import (
         DuplicateCollectionWrapper,
     )
+    from immich_autotag.run_output.execution import RunExecution
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
 _instance = None

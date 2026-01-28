@@ -70,6 +70,9 @@ skip = [".venv", "immich-client", "scripts"]
 extend-select = ["E", "F", "W"]
 line-length = 88
 
+[tool.ruff.per-file-ignores]
+"immich_autotag/main_entrypoint.py" = ["E402"]
+
 [project.optional-dependencies]
 dev = [
 	"ruff",
