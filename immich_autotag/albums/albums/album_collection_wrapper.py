@@ -1081,7 +1081,7 @@ class AlbumCollectionWrapper:
         # TODO: IMPLEMENTAR is_onwer CON LOGICA
         user_id = user_wrapper.get_uuid()
         owner_id = self.owner_uuid
-        return  user_id == owner_id:
+        return user_id == owner_id
         
 
 # Singleton instance storage
