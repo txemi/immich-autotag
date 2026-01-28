@@ -40,4 +40,3 @@ class FilterConfigWrapper:
             ClassificationRuleWrapper(rule) for rule in self.filter_config.filter_in
         ]
         return ClassificationRuleSet(rules=wrappers)
-

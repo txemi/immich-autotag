@@ -209,8 +209,7 @@ class ConfigManager:
             raise RuntimeError("No configuration loaded.")
         return self.config
 
-
-# --- Automatic loading at startup (usage example) ---
+    # --- Automatic loading at startup (usage example) ---
     def get_config_or_raise(self) -> UserConfig:
         if self.config is None:
             raise ValueError("No configuration loaded in ConfigManager.")
