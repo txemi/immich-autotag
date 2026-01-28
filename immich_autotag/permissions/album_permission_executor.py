@@ -290,6 +290,7 @@ def sync_album_permissions(
             # context: ImmichContext with API client
             album_name=album_name,
             user_ids=list(users_to_remove),
+            album_id=album_uuid,
             context=context,
         )
         report.add_album_permission_modification(
