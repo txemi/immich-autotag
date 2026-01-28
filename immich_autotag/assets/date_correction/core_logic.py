@@ -152,6 +152,12 @@ def correct_asset_date(
         return DateCorrectionStepResult.EXIT
 
     oldest_candidate = date_sources_list.oldest_candidate()
+    if oldest_candidate is None:
+        log(
+            f"[DATE CORRECTION] No valid oldest candidate found for asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()})",
+            level=LogLevel.FOCUS,
+        )
+        return DateCorrectionStepResult.EXIT
     oldest: datetime = oldest_candidate.get_aware_date()
 
     if immich_date <= oldest:

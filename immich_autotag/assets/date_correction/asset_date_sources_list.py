@@ -98,11 +98,11 @@ class AssetDateSourcesList:
         """
         Returns the oldest AssetDateCandidate among all duplicates.
         """
-        all_candidates = [
-            cset.oldest_candidate()
-            for cset in self.date_candidates_per_duplicate
-            if cset.oldest_candidate() is not None
-        ]
+        all_candidates: list[AssetDateCandidate] = []
+        for cset in self.date_candidates_per_duplicate:
+            candidate = cset.oldest_candidate()
+            if candidate is not None:
+                all_candidates.append(candidate)
         if not all_candidates:
             return None
         return min(all_candidates)

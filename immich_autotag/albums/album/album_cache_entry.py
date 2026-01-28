@@ -11,7 +11,8 @@ from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
 
-    pass
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.context.immich_context import ImmichContext
 
 
 class StaleAlbumCacheError(Exception):
@@ -125,7 +126,8 @@ class AlbumCacheEntry:
     def has_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
-        raise NotImplementedError("usar cache")
+        # Import here to avoid circular imports
+
         return (
             asset_wrapper.get_id_as_uuid()
             in self._ensure_full_loaded().get_asset_uuids()
@@ -135,6 +137,7 @@ class AlbumCacheEntry:
     def get_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         # Ensure the album is fully loaded before accessing assets
         self._ensure_full_loaded()
+        from immich_autotag.assets.asset_dto_state import AlbumDtoType
         from immich_autotag.context.immich_context import ImmichContext
 
         asset_manager = ImmichContext.get_default_instance().get_asset_manager()
