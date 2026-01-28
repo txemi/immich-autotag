@@ -1,5 +1,7 @@
+
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
 
 import attrs
 
@@ -10,6 +12,7 @@ from .date_source_kind import DateSourceKind
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidate:
+
     """
     Represents a candidate date offered by an asset (can be the main asset or a duplicate).
     Each instance corresponds to a possible date source for that asset, such as the Immich date, the date extracted from the filename, from the path, EXIF, etc.
@@ -22,16 +25,16 @@ class AssetDateCandidate:
     Example: An asset can have several candidate dates (Immich, filename, EXIF, etc.), each represented by an instance of this class.
     """
 
-    asset_wrapper: AssetResponseWrapper = attrs.field(
+    _asset_wrapper: AssetResponseWrapper = attrs.field(
         validator=attrs.validators.instance_of(AssetResponseWrapper)
     )
-    source_kind: DateSourceKind = attrs.field(
+    _source_kind: DateSourceKind = attrs.field(
         validator=attrs.validators.instance_of(DateSourceKind)
     )
     _date: datetime = attrs.field(validator=attrs.validators.instance_of(datetime))
-    file_path: Optional[str] = attrs.field(
+    _file_path: Optional[Path] = attrs.field(
         default=None,
-        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+        validator=attrs.validators.optional(attrs.validators.instance_of(Path)),
     )
 
     from typeguard import typechecked
@@ -78,12 +81,12 @@ class AssetDateCandidate:
 
     @typechecked
     def format_info(self) -> str:
-        aw = self.asset_wrapper
+        aw = self._asset_wrapper
         try:
             link = aw.get_immich_photo_url().geturl()
         except Exception:
             link = "(no link)"
-        return f"[{self.source_kind.name}] date={self.get_aware_date()} | file_path={self.file_path} | asset_id={aw.get_id()} | link={link}"
+        return f"[{self._source_kind.name}] date={self.get_aware_date()} | file_path={self._file_path} | asset_id={aw.get_id()} | link={link}"
 
     @typechecked
     def __lt__(self, other: object) -> bool:
@@ -100,7 +103,7 @@ class AssetDateCandidate:
     @typechecked
     def __str__(self) -> str:
         try:
-            asset_id = self.asset_wrapper.get_id()
+            asset_id = self._asset_wrapper.get_id()
         except Exception:
             asset_id = None
-        return f"AssetDateCandidate(source_kind={self.source_kind}, date={self.get_aware_date()}, file_path={self.file_path}, asset_id={asset_id})"
+        return f"AssetDateCandidate(source_kind={self._source_kind}, date={self.get_aware_date()}, file_path={self._file_path}, asset_id={asset_id})"
