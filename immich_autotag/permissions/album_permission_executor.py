@@ -137,15 +137,14 @@ def add_members_to_album(
 ) -> None:
     """
     Add members to album (PONER).
-
-  
     """
     if not user_objs:
         return
 
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
-    user_ids = [str(user.id) for u in user_objs]  # adaptar según el tipo real
+    user_id=user.get_id_as_str()
+    user_ids = [user_id]
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
