@@ -225,6 +225,10 @@ class AlbumResponseWrapper:
         dto_id = str(self.get_album_uuid())
 
         partial_repr = f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
+        return AlbumPartialRepr(
+            album_name=album_name,
+            partial_repr=partial_repr,
+        )
 
     def _handle_recoverable_400(
         self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
