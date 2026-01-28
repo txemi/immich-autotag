@@ -142,7 +142,7 @@ def add_members_to_album(
 
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
-    users_id = [user.get_id_as_str() for user in users]
+    user_ids = [user.get_id_as_str() for user in users]
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
@@ -154,7 +154,7 @@ def add_members_to_album(
     album_users_dto = [
         AlbumUserAddDto(
             user_id=UUID(user_id),
-            role=role,
+            role=access_level,
         )
         for user_id in user_ids
     ]
@@ -288,6 +288,7 @@ def sync_album_permissions(
             # context: ImmichContext with API client
             album_name=album_name,
             user_ids=list(users_to_remove),
+            album_id=album_uuid,
             context=context,
         )
         report.add_album_permission_modification(
