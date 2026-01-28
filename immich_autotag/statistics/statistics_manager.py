@@ -5,6 +5,8 @@ Core statistics management logic for tracking progress, statistics, and historic
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
+from uuid import UUID
+
 import time
 from pathlib import Path
 from threading import RLock
