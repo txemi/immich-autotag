@@ -150,9 +150,10 @@ class AssetDtoState:
             "loaded_at": self._loaded_at.isoformat(),
         }
 
-    def _from_dto(dto, api_endpoint_source, loaded_at):
+    @classmethod
+    def _from_dto(cls, dto, api_endpoint_source, loaded_at):
         return cls(
-            _dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at
+            dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
         )
 
     @classmethod

@@ -73,7 +73,7 @@ class AssetCacheEntry:
         )
         if cache_data is not None:
             state = AssetDtoState.from_cache_dict(cache_data)
-            entry = cls._from_dto_entry(_state=state, _max_age_seconds=max_age_seconds)
+            entry = cls._from_state(state=state, max_age_seconds=max_age_seconds)
             if not entry.is_stale():
                 return entry
         # If the cache is expired or does not exist, reload from API
@@ -100,7 +100,7 @@ class AssetCacheEntry:
         """
         Creates an AssetCacheEntry from an existing state (private).
         """
-        return cls(_state=state, _max_age_seconds=max_age_seconds)
+        return cls(state=state, max_age_seconds=max_age_seconds)
 
     # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 
