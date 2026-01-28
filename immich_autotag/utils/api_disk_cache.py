@@ -23,10 +23,7 @@ class ApiCacheKey(Enum):
     # Add more as needed
 
 
-import attrs
-
-
-@attrs.define(auto_attribs=True, slots=True)
+@attrs.define(auto_attribs=True,  kw_only=True, slots=True)
 class ApiCacheManager:
     _cache_type: ApiCacheKey
     use_cache: Optional[bool] = None
