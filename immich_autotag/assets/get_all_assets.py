@@ -12,6 +12,7 @@ from immich_autotag.api.immich_proxy.search import (
     SearchResponseDto,
     proxy_search_assets,
 )
+from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.logging.utils import log_debug
 
@@ -59,7 +60,7 @@ def _yield_assets_from_page(
             break
         # asset is always AssetResponseDto
         log_debug(f"[INFO] Using AssetManager to get wrapper, asset_id={asset.id}")
-        wrapper = asset_manager.get_wrapper_for_asset_dto(asset, context)
+        wrapper = asset_manager.get_wrapper_for_asset_dto(asset_dto=asset, dto_type=AssetDtoType.SEARCH, context=context)
         yield wrapper
         yielded += 1
 

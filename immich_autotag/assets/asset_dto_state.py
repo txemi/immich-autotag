@@ -26,6 +26,8 @@ class AssetDtoType(enum.Enum):
 
     PARTIAL_DEPRECATED = "partial"
     FULL_DEPRECATED = "full"
+    SEARCH = "search"
+    ALBUM = "album"
 
 
 # Exception for tags not loaded
