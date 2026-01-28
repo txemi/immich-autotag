@@ -36,14 +36,14 @@ class AssetCacheEntry:
     def is_stale(self) -> bool:
         loaded_at = self._state.get_loaded_at()  
         age = (datetime.datetime.now() - loaded_at).total_seconds()  
-        return age > self._max_age_seconds  # type: ignore[operator]
+        return age > self._max_age_seconds  
 
     def _get_fresh_state(self) -> AssetDtoState:
         # Private: ensures freshness before returning the internal state
         self._ensure_fresh(ImmichContext.get_default_instance())
         return self._state
 
-                age = (datetime.datetime.now() - loaded_at).total_seconds()
+    def get_loaded_at(self) -> datetime.datetime:
         # Use the private _get_fresh_state to ensure freshness
         return self._get_fresh_state().get_loaded_at()  
 
@@ -73,10 +73,10 @@ class AssetCacheEntry:
         )
         if cache_data is not None:
             state = AssetDtoState.from_cache_dict(cache_data)  
-            entry = cls._from_dto_entry(_state=state, _max_age_seconds=max_age_seconds)  # type: ignore[arg-type]
+            entry = cls._from_dto_entry(_state=state, _max_age_seconds=max_age_seconds)  
             if not entry.is_stale():
                 return entry
-                    entry = cls._from_dto_entry(_state=state, _max_age_seconds=max_age_seconds)
+        # If the cache is expired or does not exist, reload from API
         # If not in cache or corrupted, reload from API
         client = ImmichClientWrapper.get_default_instance().get_client()
         dto = proxy_get_asset_info(asset_id, client, use_cache=False)
@@ -119,7 +119,7 @@ class AssetCacheEntry:
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
         asset_id = self._state.get_uuid()  
-        refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)  # type: ignore[arg-type]
+        refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)  
         self._state = refreshed_entry._state
         return self
 
@@ -138,7 +138,7 @@ class AssetCacheEntry:
 
         state = AssetDtoState(_dto=dto, _api_endpoint_source=dto_type)  
         return cls(state=state, max_age_seconds=max_age_seconds)
-                refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
+
     @classmethod
     def _from_api_entry(
         cls,
@@ -163,7 +163,7 @@ class AssetCacheEntry:
         return cls._from_dto_entry(
             dto=dto,
             dto_type=AssetDtoType.FULL,
-                return state.get_tag_names()
+            max_age_seconds=max_age_seconds,
         )
 
     def get_tag_names(self) -> list[str]:
