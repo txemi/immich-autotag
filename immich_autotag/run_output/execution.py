@@ -18,7 +18,6 @@ class RunExecution:
         """
         return self.run_dir / "immich_autotag_links.md"
 
-
     """
     Encapsulates an execution path (subfolder of logs_local created by an app run).
     Allows access to logs, statistics, caches, etc. for that execution.
