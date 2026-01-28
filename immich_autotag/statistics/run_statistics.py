@@ -154,14 +154,11 @@ class RunStatistics(BaseModel):
             raise RuntimeError("RunStatistics.started_at is not set")
         return self.started_at.timestamp()
 
+
     @typechecked
     def save_to_file(self) -> None:
-
-        with open(
-            self.get_stats_dir() / RUN_STATISTICS_FILENAME, "w", encoding="utf-8"
-        ) as f:
+        run_execution = RunOutputManager.get_run_output_dir()
+        stats_path = run_execution.get_run_statistics_path()
+        with open(stats_path, "w", encoding="utf-8") as f:
             f.write(self.to_yaml())
 
-    @staticmethod
-    def get_stats_dir():
-        return RunOutputManager.get_run_output_dir()

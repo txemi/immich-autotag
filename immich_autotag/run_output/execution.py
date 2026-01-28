@@ -9,6 +9,14 @@ class RunExecution:
     """
     run_dir: Path = attrs.field(converter=Path)
 
+    def get_run_statistics_path(self) -> Path:
+        """
+        Devuelve la ruta del fichero de estadísticas de contadores para esta ejecución.
+        Usa el símbolo RUN_STATISTICS_FILENAME para mantener trazabilidad.
+        """
+        from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
+        return self.get_custom_path(RUN_STATISTICS_FILENAME)
+
     def get_user_config_dump_path(self) -> Path:
         """
         Devuelve la ruta del fichero de volcado de configuración de usuario para esta ejecución.
