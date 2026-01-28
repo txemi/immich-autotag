@@ -435,6 +435,17 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 - **Commit hash:** `75f3dd380d7d15ed4707d775ae231b9eaa050338` (Jenkins-tested, tag v0.74.0)
 
 
+## [0.74.1-qualitygate] - 2026-01-28
+**Status:** 🔖 Tagged (not published)
+**Description:** Quality Gate STANDARD passed. All blocking errors fixed after major refactor and stabilization.
+### Added
+- Quality Gate STANDARD fully passed: all blocking errors (formatting, linter, type, config) resolved after extensive refactor and stabilization.
+- E402 (import not at top of file) now ignored only for main_entrypoint.py as required by initialization logic.
+- pyproject.toml config cleaned and validated for all tools (ruff, isort, black).
+- All code auto-formatted and import-sorted; all CI/CD checks green.
+- This tag marks a milestone for maintainability and CI reliability.
+
+
 
 ## [Planned: Unmatched Albums Report]
 **Description:** Adds a report listing all albums that do not match any user-defined rule, helping users identify albums that may need new rules or manual review.
