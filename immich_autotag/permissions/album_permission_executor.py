@@ -64,8 +64,8 @@ def _resolve_emails_to_user_ids(
         return ResolveEmailsResult(resolved={}, unresolved=[])
 
     log_debug(f"[ALBUM_PERMISSIONS] Resolving {len(emails)} emails to user IDs")
-
-    client = context.get_client_wrapper()
+    client_wrapper = context.get_client_wrapper()
+    client = client_wrapper.get_client()  # AuthenticatedClient
 
     all_users = proxy_search_users(client=client)
     if all_users is None:
@@ -140,9 +140,10 @@ def add_members_to_album(
     Add members to album (PONER).
     """
 
+
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
-    users_id = [user.get_id_as_str() for user in users]
+    user_ids = [user.get_id_as_str() for user in users]
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
@@ -154,14 +155,15 @@ def add_members_to_album(
     album_users_dto = [
         AlbumUserAddDto(
             user_id=UUID(user_id),
-            role=role,
+            role=access_level,
         )
         for user_id in user_ids
     ]
     add_users_dto = AddUsersDto(album_users=album_users_dto)
 
     # Call API
-        client = context.get_client_wrapper()
+    client_wrapper = context.get_client_wrapper()
+    client = client_wrapper.get_client()  # AuthenticatedClient
     response = proxy_add_users_to_album(
         album_id=UUID(album_id),
         client=client,
