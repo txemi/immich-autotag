@@ -14,23 +14,19 @@ def init_config_and_logging() -> ConfigManager:
 
     manager = ConfigManager.get_instance()
     log("Initializing ConfigManager...", level=LogLevel.INFO)
-    if manager.config is None:
-        log(
-            "FATAL: ConfigManager.config is None after initialization. This suggests the config file failed to load properly. Check ~/.config/immich_autotag/config.py or config.yaml",
-            level=LogLevel.ERROR,
-        )
-        raise RuntimeError("ConfigManager.config is None after initialization")
+    manager.get_config_or_raise()
+
     log("ConfigManager initialized successfully", level=LogLevel.INFO)
     initialize_logging()
     from immich_autotag.statistics.statistics_manager import StatisticsManager
 
     StatisticsManager.get_instance().save()
-    print_welcome_links(manager.config)
+    print_welcome_links(manager.get_config_or_raise())
     return manager
 
 
 def init_client(manager: ConfigManager) -> ImmichClientWrapper:
-    api_key = manager.config.server.api_key
+    api_key = manager.get_config_or_raise().server.api_key
     client = ImmichClient(
         base_url=get_immich_base_url(),
         token=api_key,

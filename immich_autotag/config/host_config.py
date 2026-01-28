@@ -16,9 +16,9 @@ def _get_host_and_port() -> HostPort:
     )
 
     manager = ConfigManager.get_instance()
-    if not manager or not manager.config or not manager.config.server:
+    if not manager or not manager.get_config_or_raise() or not manager.get_config_or_raise().server:
         raise RuntimeError("ConfigManager or server config not initialized")
-    return HostPort(host=manager.config.server.host, port=manager.config.server.port)
+    return HostPort(host=manager.get_config_or_raise().server.host, port=manager.get_config_or_raise()  .server.port)
 
 
 @typechecked
