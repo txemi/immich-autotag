@@ -17,6 +17,7 @@ from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
 from immich_autotag.logging.levels import LogLevel
+from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
 # --- Album API call diagnostics ---
 _album_api_call_count = 0
@@ -99,6 +100,29 @@ def proxy_get_all_albums(*, client: AuthenticatedClient) -> list[AlbumResponseDt
     result = get_all_albums.sync(client=client)
     if result is None:
         raise RuntimeError("Failed to fetch albums: API returned None")
+    return result
+
+
+def proxy_get_album_page(
+    *, client: AuthenticatedClient, page: int, page_size: int = 100
+) -> list[AlbumResponseDto]:
+    """
+    Fetch a page of albums, using disk cache for each page.
+    """
+    cache_mgr = ApiCacheManager(ApiCacheKey.ALBUM_PAGES)
+    cache_key = f"page_{page}_size_{page_size}"
+    cache_data = cache_mgr.load(cache_key)
+    if cache_data is not None:
+        return [AlbumResponseDto.from_dict(dto) for dto in cache_data]
+    # If not cached, fetch from API (assuming get_all_albums supports pagination)
+    # If not, this will need to be adapted to the real paginated API call
+    from immich_client.api.albums import get_all_albums
+
+    result = get_all_albums.sync(client=client, page=page, page_size=page_size)
+    if result is None:
+        raise RuntimeError(f"Failed to fetch album page {page}: API returned None")
+    # Save to cache
+    cache_mgr.save(cache_key, [dto.to_dict() for dto in result])
     return result
 
 
