@@ -42,7 +42,8 @@ class AlbumCacheEntry:
         Returns an AlbumDtoState directly.
         """
         album_id_str = str(album_id)
-        cache_data = get_entity_from_cache("albums", album_id_str, use_cache=use_cache)
+        from immich_autotag.utils.api_disk_cache import ApiCacheKey
+        cache_data = get_entity_from_cache(entity=ApiCacheKey.ALBUMS, key=album_id_str, use_cache=use_cache)
         from immich_client.models.album_response_dto import AlbumResponseDto
 
         from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
