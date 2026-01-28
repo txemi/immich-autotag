@@ -41,7 +41,7 @@ class ApiCacheManager:
 
     def _get_cache_dir(self) -> Path:
         """
-        Obtiene el directorio de caché de la ejecución actual para el tipo de caché.
+        Gets the cache directory of the current execution for the cache type.
         """
         run_execution = RunOutputManager.get_run_output_dir()
         return run_execution.get_api_cache_dir(self._cache_type.value)

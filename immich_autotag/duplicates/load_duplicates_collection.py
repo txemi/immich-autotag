@@ -53,7 +53,10 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
         # Save the cache in the current execution directory.
         # Avoid writing extremely large caches in CI or when the collection is huge.
         from immich_autotag.context.immich_context import ImmichContext
-        cache_file = DuplicatesCacheFile(run_execution=ImmichContext.get_run_output_dir())
+
+        cache_file = DuplicatesCacheFile(
+            run_execution=ImmichContext.get_run_output_dir()
+        )
         cache_path = cache_file.path
         import pickle
 
