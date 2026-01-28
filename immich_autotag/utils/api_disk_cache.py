@@ -11,10 +11,6 @@ from immich_autotag.run_output.manager import RunOutputManager
 # Global config to enable/disable caching (can be overridden by parameter)
 
 
-
-import attrs
-
-
 class ApiCacheKey(Enum):
     ALBUMS = "albums"
     ASSETS = "assets"
@@ -23,18 +19,15 @@ class ApiCacheKey(Enum):
     # Add more as needed
 
 
-@attrs.define(auto_attribs=True,  kw_only=True, slots=True)
+@attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class ApiCacheManager:
     _cache_type: ApiCacheKey
-    use_cache: Optional[bool] = None
     _use_cache: bool = attrs.field(init=False)
     _cache_subdir: str = attrs.field(default="api_cache", init=False)
 
     def __attrs_post_init__(self):
         # Set _use_cache from internal_config per cache_type, unless overridden
-        if self.use_cache is not None:
-            self._use_cache = self.use_cache
-        elif self._cache_type.value == ApiCacheKey.ASSETS.value:
+        if self._cache_type.value == ApiCacheKey.ASSETS.value:
             self._use_cache = internal_config.USE_CACHE_ASSETS
         elif self._cache_type.value == ApiCacheKey.ALBUMS.value:
             self._use_cache = internal_config.USE_CACHE_ALBUMS
