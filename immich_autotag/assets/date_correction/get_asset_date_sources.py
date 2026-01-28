@@ -28,10 +28,10 @@ def get_asset_date_candidates(
     if immich_dt:
         candidates.add(
             AssetDateCandidate.from_internal_attrs(
-                source_kind=DateSourceKind.IMMICH,
-                date=immich_dt,
-                file_path=Path(asset_wrapper.get_original_path()),
-                asset_wrapper=asset_wrapper,
+                _source_kind=DateSourceKind.IMMICH,
+                _date=immich_dt,
+                _file_path=Path(asset_wrapper.get_original_path()),
+                _asset_wrapper=asset_wrapper,
             )
         )
 
@@ -41,10 +41,10 @@ def get_asset_date_candidates(
     if wa_filename_dt:
         candidates.add(
             AssetDateCandidate.from_internal_attrs(
-                source_kind=DateSourceKind.WHATSAPP_FILENAME,
-                date=wa_filename_dt,
-                file_path=filename,
-                asset_wrapper=asset_wrapper,
+                _source_kind=DateSourceKind.WHATSAPP_FILENAME,
+                _date=wa_filename_dt,
+                _file_path=filename,
+                _asset_wrapper=asset_wrapper,
             )
         )
 
@@ -54,10 +54,10 @@ def get_asset_date_candidates(
     if wa_path_dt:
         candidates.add(
             AssetDateCandidate.from_internal_attrs(
-                source_kind=DateSourceKind.WHATSAPP_PATH,
-                date=wa_path_dt,
-                file_path=path,
-                asset_wrapper=asset_wrapper,
+                _source_kind=DateSourceKind.WHATSAPP_PATH,
+                _date=wa_path_dt,
+                _file_path=path,
+                _asset_wrapper=asset_wrapper,
             )
         )
 
@@ -70,10 +70,10 @@ def get_asset_date_candidates(
     if filename_date:
         candidates.add(
             AssetDateCandidate.from_internal_attrs(
-                source_kind=DateSourceKind.FILENAME,
-                date=filename_date,
-                file_path=filename,
-                asset_wrapper=asset_wrapper,
+                _source_kind=DateSourceKind.FILENAME,
+                _date=filename_date,
+                _file_path=filename,
+                _asset_wrapper=asset_wrapper,
             )
         )
 

@@ -108,10 +108,10 @@ class AssetDateCandidate:
 
     @staticmethod
     def from_internal_attrs(
-        _source_kind: DateSourceKind,
-        _date: datetime,
-        _file_path: Optional[Path],
-        _asset_wrapper: AssetResponseWrapper,
+        source_kind: DateSourceKind,
+        date: datetime,
+        file_path: Optional[Path],
+        asset_wrapper: AssetResponseWrapper,
     ) -> "AssetDateCandidate":
         return AssetDateCandidate(
             _source_kind=_source_kind,
