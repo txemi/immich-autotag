@@ -44,7 +44,6 @@ class SyncState(Enum):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
-
     """
     Singleton class that manages the collection of all albums in the system.
 
@@ -849,7 +848,7 @@ class AlbumCollectionWrapper:
     def _add_user_to_album(
         self,
         album: AlbumResponseWrapper,
-        user:UserResponseWrapper,
+        user: UserResponseWrapper,
         context: ImmichContext,
         tag_mod_report: ModificationReport,
     ) -> None:
@@ -893,7 +892,6 @@ class AlbumCollectionWrapper:
         from immich_client.models.create_album_dto import CreateAlbumDto
 
         from immich_autotag.api.immich_proxy.albums import proxy_create_album
-        from immich_autotag.report.modification_kind import ModificationKind
 
         album = proxy_create_album(
             client=client,
@@ -947,9 +945,14 @@ class AlbumCollectionWrapper:
         if wrapper.is_owner(user):
             # TODO: IMPLEMENTAR is_onwer CON LOGICA
             #         user_id = user_wrapper.get_uuid()
-            #owner_id = wrapper.owner_uuid
-            #if user_id != owner_id:
-            self._add_user_to_album(album=wrapper, user=user_wrapper, context=context, tag_mod_report=tag_mod_report)
+            # owner_id = wrapper.owner_uuid
+            # if user_id != owner_id:
+            self._add_user_to_album(
+                album=wrapper,
+                user=user_wrapper,
+                context=context,
+                tag_mod_report=tag_mod_report,
+            )
         return wrapper
 
     @classmethod
@@ -1068,12 +1071,16 @@ class AlbumCollectionWrapper:
         """
         return len(self._albums)
 
-    def _album_wrapper_from_partial_dto(self, album: AlbumResponseDto) -> AlbumResponseWrapper:
+    def _album_wrapper_from_partial_dto(
+        self, album: AlbumResponseDto
+    ) -> AlbumResponseWrapper:
         """
         Centralized helper to create an AlbumResponseWrapper from a partial AlbumResponseDto.
         Use this method instead of calling AlbumResponseWrapper.from_partial_dto directly.
         """
         return AlbumResponseWrapper.from_partial_dto(album)
+
+
 # Singleton instance storage
 
 
