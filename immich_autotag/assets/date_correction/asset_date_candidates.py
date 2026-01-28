@@ -57,7 +57,9 @@ class AssetDateCandidates:
         """Return all candidates whose source_kind is FILENAME."""
         from .date_source_kind import DateSourceKind
 
-        return [c for c in self.candidates if c.get_source_kind() == DateSourceKind.FILENAME]
+        return [
+            c for c in self.candidates if c.get_source_kind() == DateSourceKind.FILENAME
+        ]
 
     @typechecked
     def all_candidates(self) -> List[AssetDateCandidate]:

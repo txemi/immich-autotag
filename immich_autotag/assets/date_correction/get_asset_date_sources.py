@@ -1,10 +1,11 @@
 # get_asset_date_sources.py
 # Function: get_asset_date_sources
+from pathlib import Path
+
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.date_correction.asset_date_candidate import (
     AssetDateCandidate,
 )
-from pathlib import Path
 from immich_autotag.assets.date_correction.asset_date_candidates import (
     AssetDateCandidates,
 )
