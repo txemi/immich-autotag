@@ -5,8 +5,11 @@ USE_CACHE_ALBUMS = True
 USE_CACHE_ALBUM_PAGES = True
 USE_CACHE_USERS = True
 
+
 from immich_autotag.logging.levels import LogLevel
+
 from ._internal_types import ErrorHandlingMode
+
 # ==================== MULTITHREADING / CONCURRENCY ====================
 # Control whether to use ThreadPoolExecutor for asset processing, regardless of MAX_WORKERS value.
 # If False, always use direct loop (sequential). If True, use thread pool even for MAX_WORKERS=1.

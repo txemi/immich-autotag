@@ -1,8 +1,14 @@
-# --- Diagnostics for asset API calls ---
 import atexit
+from uuid import UUID
+
+from immich_client.api.assets import get_asset_info as _get_asset_info
+from immich_client.api.assets import update_asset as _update_asset
+from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.update_asset_dto import UpdateAssetDto
 
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.types import ImmichClient
 
 _asset_api_call_count = 0
 _asset_api_ids: set[str] = set()
@@ -18,19 +24,6 @@ def _print_asset_api_call_summary():
 
 
 atexit.register(_print_asset_api_call_summary)
-"""
-Proxy/facade for all Immich asset API calls.
-This module is the ONLY authorized point to interact with immich_client.api.assets.
-"""
-
-from uuid import UUID
-
-from immich_client.api.assets import get_asset_info as _get_asset_info
-from immich_client.api.assets import update_asset as _update_asset
-from immich_client.models.asset_response_dto import AssetResponseDto
-from immich_client.models.update_asset_dto import UpdateAssetDto
-
-from immich_autotag.types import ImmichClient
 
 
 def proxy_get_asset_info(
