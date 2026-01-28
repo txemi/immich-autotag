@@ -816,7 +816,6 @@ class AlbumResponseWrapper:
     def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
         from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 
-        raise NotImplementedError("from_partial_dto has been removed.")
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         cache_entry = AlbumCacheEntry(dto=state)
         return cls(cache_entry=cache_entry)

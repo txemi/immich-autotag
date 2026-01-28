@@ -44,6 +44,7 @@ class SyncState(Enum):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCollectionWrapper:
+
     """
     Singleton class that manages the collection of all albums in the system.
 
@@ -729,11 +730,9 @@ class AlbumCollectionWrapper:
                     )
 
     @typechecked
-    def add_album_wrapper(
+    def _add_album_wrapper(
         self,
         wrapper: AlbumResponseWrapper,
-        client: ImmichClient | None = None,
-        tag_mod_report: ModificationReport | None = None,
     ) -> AlbumResponseWrapper:
         """Add a wrapper to this collection with centralized duplicate handling.
 
@@ -847,10 +846,10 @@ class AlbumCollectionWrapper:
         return survivors[0]
 
     @typechecked
-    def add_user_to_album(
+    def _add_user_to_album(
         self,
-        album: AlbumResponseDto,
-        user_id: UUID,
+        album: AlbumResponseWrapper,
+        user:UserResponseWrapper,
         context: ImmichContext,
         tag_mod_report: ModificationReport,
     ) -> None:
@@ -865,25 +864,24 @@ class AlbumCollectionWrapper:
             from immich_autotag.report.modification_kind import ModificationKind
 
             add_members_to_album(
-                album_id=album.id,
-                album_name=album.album_name,
-                user_ids=[str(user_id)],
+                album=album,
+                user,
                 access_level="editor",
                 context=context,
             )
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.ADD_USER_TO_ALBUM,
-                album=AlbumResponseWrapper.from_partial_dto(album),
+                album=album,
                 extra={"added_user": str(user_id)},
             )
         except Exception as e:
             raise RuntimeError(
                 f"Error adding user {user_id} as EDITOR to album {album.id} "
-                f"('{album.album_name}'): {e}"
+                f"('{album.get_album_name()}'): {e}"
             ) from e
 
     @typechecked
-    def _create_album(
+    def _create_album_dto(
         self,
         album_name: str,
         client: ImmichClient,
@@ -903,11 +901,7 @@ class AlbumCollectionWrapper:
         )
         if album is None:
             raise RuntimeError("Failed to create album: API returned None")
-        tag_mod_report.add_album_modification(
-            kind=ModificationKind.CREATE_ALBUM,
-            album=AlbumResponseWrapper.from_partial_dto(album),
-            extra={"created": True},
-        )
+
         return album
 
     @conditional_typechecked
@@ -937,20 +931,25 @@ class AlbumCollectionWrapper:
         from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
-        album = self._create_album(album_name, client, tag_mod_report)
+        album = self._create_album_dto(album_name, client, tag_mod_report)
 
         # Centralized user access
         context = ImmichContext.get_default_instance()
         user_wrapper: UserResponseWrapper = UserResponseWrapper.from_context(context)
-        user_id = user_wrapper.get_uuid()
-        wrapper = AlbumResponseWrapper.from_partial_dto(album)
-        owner_id = wrapper.owner_uuid
-        if user_id != owner_id:
-            self.add_user_to_album(album, user_id, context, tag_mod_report)
-        wrapper = AlbumResponseWrapper.from_partial_dto(album)
-        wrapper = self.add_album_wrapper(
-            wrapper, client=client, tag_mod_report=tag_mod_report
+
+        wrapper = self._album_wrapper_from_partial_dto(album)
+        tag_mod_report.add_album_modification(
+            kind=ModificationKind.CREATE_ALBUM,
+            album=wrapper,
+            extra={"created": True},
         )
+        self._add_album_wrapper(wrapper, client=client, tag_mod_report=tag_mod_report)
+        if wrapper.is_owner(user):
+            # TODO: IMPLEMENTAR is_onwer CON LOGICA
+            #         user_id = user_wrapper.get_uuid()
+            #owner_id = wrapper.owner_uuid
+            #if user_id != owner_id:
+            self._add_user_to_album(album=wrapper, user=user_wrapper context, tag_mod_report)
         return wrapper
 
     @classmethod
@@ -1013,7 +1012,7 @@ class AlbumCollectionWrapper:
             self._albums.clear()
         # Rebuild the collection same as from_client
         for idx, album in enumerate(albums, 1):
-            wrapper = AlbumResponseWrapper.from_partial_dto(album)
+            wrapper = self._album_wrapper_from_partial_dto(album)
             # If clear_first, just add; if not, only add if it does not exist
             if clear_first or not self.find_first_album_with_name(
                 wrapper.get_album_name()
@@ -1069,7 +1068,12 @@ class AlbumCollectionWrapper:
         """
         return len(self._albums)
 
-
+    def _album_wrapper_from_partial_dto(self, album: AlbumResponseDto) -> AlbumResponseWrapper:
+        """
+        Centralized helper to create an AlbumResponseWrapper from a partial AlbumResponseDto.
+        Use this method instead of calling AlbumResponseWrapper.from_partial_dto directly.
+        """
+        return AlbumResponseWrapper.from_partial_dto(album)
 # Singleton instance storage
 
 
