@@ -43,7 +43,7 @@ def get_asset_date_candidates(
             AssetDateCandidate.from_internal_attrs(
                 source_kind=DateSourceKind.WHATSAPP_FILENAME,
                 date=wa_filename_dt,
-                file_path=Path(filename),
+                file_path=filename,
                 asset_wrapper=asset_wrapper,
             )
         )
@@ -56,7 +56,7 @@ def get_asset_date_candidates(
             AssetDateCandidate.from_internal_attrs(
                 source_kind=DateSourceKind.WHATSAPP_PATH,
                 date=wa_path_dt,
-                file_path=Path(path),
+                file_path=path,
                 asset_wrapper=asset_wrapper,
             )
         )
@@ -72,7 +72,7 @@ def get_asset_date_candidates(
             AssetDateCandidate.from_internal_attrs(
                 source_kind=DateSourceKind.FILENAME,
                 date=filename_date,
-                file_path=Path(filename),
+                file_path=filename,
                 asset_wrapper=asset_wrapper,
             )
         )

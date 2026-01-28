@@ -62,7 +62,7 @@ class ConversionWrapper:
             result_action = self.get_destination_wrapper()
             changes.extend(result_action.apply_action(asset_wrapper))
             # Depending on the conversion mode, removes the source tags/albums
-            if self.conversion.mode == ConversionMode.MOVE:
+            if self.conversion.mode == ConversionMode.MOVE and match_result is not None:
                 changes.extend(
                     self.get_source_wrapper().remove_matches(
                         asset_wrapper, match_result
