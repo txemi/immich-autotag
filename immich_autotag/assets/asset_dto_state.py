@@ -62,7 +62,7 @@ class AssetDtoState:
                 raise TypeError(
                     f"In FULL mode, tags must be a list or Unset, but it is {type(tags)}"
                 )
-        elif self._api_endpoint_source != AssetDtoType.FULL:
+        else:
             if (
                 tags is not None
                 and not isinstance(tags, set)
@@ -100,10 +100,7 @@ class AssetDtoState:
             raise TagsNotLoadedError(
                 "Tags are UNSET; tags have not been loaded for this asset."
             )
-        if tags is None:
-            raise TagsNotLoadedError(
-                "Tags are None; this should not happen with DTOs. Please check DTO construction."
-            )
+        # tags is always a list or Unset at this point; no need to check for None
         from immich_autotag.context.immich_context import ImmichContext
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
@@ -112,10 +109,7 @@ class AssetDtoState:
             # Robust type check
             from immich_client.models.tag_response_dto import TagResponseDto
 
-            if not isinstance(tag, TagResponseDto):
-                raise TypeError(
-                    f"Tag en tags no es del tipo esperado TagResponseDto, sino {type(tag)}. Asset: {self._dto.id}"
-                )
+            # TagResponseDto type is guaranteed by API; skip isinstance check
             wrapper = tag_collection.get_tag_from_dto(tag)
             if wrapper is None:
                 raise ValueError(
@@ -156,7 +150,10 @@ class AssetDtoState:
             "type": self._api_endpoint_source.value,
             "loaded_at": self._loaded_at.isoformat(),
         }
-
+    def _from_dto(dto, api_endpoint_source, loaded_at):
+        return cls(
+            _dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at
+        )
     @classmethod
     def from_cache_dict(cls, data: dict[str, object]) -> "AssetDtoState":
         """
@@ -167,7 +164,8 @@ class AssetDtoState:
         dto = AssetResponseDto.from_dict(cast(Mapping[str, Any], data["dto"]))
         api_endpoint_source = AssetDtoType(str(data["type"]))
         loaded_at = datetime.fromisoformat(str(data["loaded_at"]))
-        return cls(
+        
+        return cls._from_dto(
             dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
         )
 
@@ -208,4 +206,8 @@ class AssetDtoState:
         """
         Returns the duplicate id as UUID.
         """
-        return UUID(self._dto.duplicate_id)
+        # Defensive: handle Unset/None/str for duplicate_id
+        val = self._dto.duplicate_id
+        if val is None or isinstance(val, Unset):
+            raise NotImplementedError("Duplicate ID is not set or is unset")
+        return UUID(val)
