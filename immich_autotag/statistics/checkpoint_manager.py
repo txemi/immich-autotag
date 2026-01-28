@@ -37,7 +37,9 @@ class CheckpointManager:
         Decides the value of skip_n and makes its origin clear in the log: previous checkpoint, config, or none.
         """
         enable_checkpoint_resume = ConfigManager.is_checkpoint_resume_enabled()
-        stats_dir = self.stats_manager.get_or_create_run_stats().get_stats_dir()
+        from immich_autotag.run_output.manager import RunOutputManager
+        run_execution = RunOutputManager.get_run_output_dir()
+        stats_dir = run_execution.get_run_statistics_path()
         skip_n = 0
         origen = None
         if enable_checkpoint_resume and config_resume_previous:
