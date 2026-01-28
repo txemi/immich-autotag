@@ -9,7 +9,6 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.get_all_assets import get_all_assets
 
 # Removed import: AssetCacheEntry is only used internally in AssetResponseWrapper
 
@@ -19,8 +18,6 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetManager:
-
-
 
     client: Client
     _assets: Dict[UUID, AssetResponseWrapper] = attrs.field(factory=dict, init=False)
@@ -36,8 +33,13 @@ class AssetManager:
         Iterates over all assets, using the original generator, and stores them in the internal cache.
         Supports skipping the first `skip_n` assets efficiently.
         """
+        from immich_autotag.assets.get_all_assets import get_all_assets
         for asset in get_all_assets(context, max_assets=max_assets, skip_n=skip_n):
-            asset_uuid = UUID(asset.get_id())
+            if not isinstance(asset, AssetResponseWrapper):
+                raise RuntimeError(
+                    f"Expected AssetResponseWrapper, got {type(asset)}"
+                )
+            asset_uuid = asset.get_uuid()
             self._assets[asset_uuid] = asset
             yield asset
 
@@ -60,23 +62,22 @@ class AssetManager:
 
     @typechecked
     def get_wrapper_for_asset_dto(
-        self, *, asset_dto: AssetResponseDto, dto_type: AssetDtoType, context: "ImmichContext"
+        self,
+        *,
+        asset_dto: AssetResponseDto,
+        dto_type: AssetDtoType,
+        context: "ImmichContext",
     ) -> AssetResponseWrapper:
         """
         Given an asset DTO, return the corresponding AssetResponseWrapper from cache or create it.
         """
-        if not dto_type in (AssetDtoType.ALBUM,AssetDtoType.SEARCH):
+        if dto_type not in (AssetDtoType.ALBUM, AssetDtoType.SEARCH):
             raise ValueError(f"Unsupported dto_type {dto_type} for album asset DTOs")
         asset_uuid = UUID(asset_dto.id)
         if asset_uuid in self._assets:
             return self._assets[asset_uuid]
-        from immich_autotag.assets.asset_dto_state import AssetDtoType
 
-        entry = AssetCacheEntry._from_dto_entry(
-            dto=asset_dto,  dto_type=dto_type
-        )
-        wrapper = entry.to_response_wrapper(context)
+        entry = AssetCacheEntry._from_dto_entry(dto=asset_dto, dto_type=dto_type)
+        wrapper = AssetResponseWrapper(context, entry)
         self._assets[asset_uuid] = wrapper
         return wrapper
-
-
