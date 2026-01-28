@@ -45,7 +45,7 @@ def process_assets_sequential(
     count = 0
     error_mode = DEFAULT_ERROR_MODE
     try:
-        for asset_wrapper in context.asset_manager.iter_assets(
+        for asset_wrapper in context.get_asset_manager().iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
         ):
             asset_id = asset_wrapper.get_id()
@@ -82,8 +82,8 @@ def process_assets_sequential(
                         )
                     count += 1
                     StatisticsManager.get_instance().update_checkpoint(
-                        asset_wrapper.get_id_as_uuid(),
-                        skip_n + count,
+                        last_processed_id=asset_wrapper.get_id_as_uuid(),
+                        count=skip_n + count,
                     )
                     continue
                 else:
@@ -105,8 +105,8 @@ def process_assets_sequential(
             )
             count += 1
             StatisticsManager.get_instance().update_checkpoint(
-                asset_wrapper.get_id_as_uuid(),
-                skip_n + count,
+                last_processed_id=asset_wrapper.get_id_as_uuid(),
+                count=skip_n + count,
             )
     except Exception as e:
         import traceback
