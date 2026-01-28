@@ -14,14 +14,14 @@ def init_config_and_logging() -> ConfigManager:
 
     manager = ConfigManager.get_instance()
     log("Initializing ConfigManager...", level=LogLevel.INFO)
-    manager.get_config_or_raise()
+    config = manager.get_config_or_raise()
 
     log("ConfigManager initialized successfully", level=LogLevel.INFO)
     initialize_logging()
     from immich_autotag.statistics.statistics_manager import StatisticsManager
 
     StatisticsManager.get_instance().save()
-    print_welcome_links(manager.get_config_or_raise())
+    print_welcome_links(config)
     return manager
 
 
