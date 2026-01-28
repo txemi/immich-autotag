@@ -128,7 +128,10 @@ class AlbumCacheEntry:
     @conditional_typechecked
     def get_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         # Ensure the album is fully loaded before accessing assets
-        self._e3nsure_full_loaded()
+        self._ensure_full_loaded()
+        from immich_autotag.context.immich_context import ImmichContext
+
+        asset_manager = ImmichContext.get_default_instance().get_asset_manager()
         if asset_manager is None:
             raise AttributeError("ImmichContext missing asset_manager")
         return [

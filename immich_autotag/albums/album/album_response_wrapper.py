@@ -201,10 +201,7 @@ class AlbumResponseWrapper:
         Returns True if the album has no assets, False otherwise.
         Optimized: does not force reload or cache construction if not needed.
         """
-        assets = self._ensure_full_album_loaded(
-            self.get_default_client()
-        )._cache_entry.is_empty()
-        return assets
+        return self._cache_entry.is_empty()
 
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
