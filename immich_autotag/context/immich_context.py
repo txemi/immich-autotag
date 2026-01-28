@@ -46,14 +46,13 @@ class ImmichContext:
 
     @staticmethod
     @typechecked
-    def get_run_output_dir():
+    def get_run_output_dir() -> "RunExecution":
         """
-        Returns the output directory for the current run (logs_local/<timestamp>_PID<pid>),
-        using the same logic as utils.run_output_dir.get_run_output_dir().
+        Returns the RunExecution object for the current run (logs_local/<timestamp>_PID<pid>),
+        using the same logic as RunOutputManager.get_run_output_dir().
         """
-        from immich_autotag.utils.run_output_dir import get_run_output_dir
-
-        return get_run_output_dir()
+        from immich_autotag.run_output.manager import RunOutputManager
+        return RunOutputManager.get_run_output_dir()
 
     def __attrs_post_init__(self):
         global _instance, _instance_created
@@ -152,7 +151,7 @@ class ImmichContext:
         return instance
 
     @staticmethod
-    def get_default_client():
+    def get_default_client() -> "ImmichClientWrapper":
         """Returns the ImmichClientWrapper from the global singleton context."""
         ctx = ImmichContext.get_default_instance()
         return ctx.get_client()
