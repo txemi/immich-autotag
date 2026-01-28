@@ -68,7 +68,8 @@ class AlbumCacheEntry:
         )
         if album_dto is None:
             raise RuntimeError(f"Could not fetch album info for album_id={album_id}")
-        save_entity_to_cache("albums", album_id_str, album_dto.to_dict())
+        from immich_autotag.utils.api_disk_cache import ApiCacheKey
+        save_entity_to_cache(entity=ApiCacheKey.ALBUMS, key=album_id_str, data=album_dto.to_dict())
         return AlbumDtoState.create(dto=album_dto, load_source=AlbumLoadSource.DETAIL)
 
     def is_stale(self) -> bool:
