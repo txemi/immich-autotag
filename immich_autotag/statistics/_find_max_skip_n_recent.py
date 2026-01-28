@@ -19,7 +19,7 @@ def get_max_skip_n_from_recent(
     Searches all run_statistics.yaml from the last max_age_hours hours and returns the maximum count minus overlap.
     """
     max_count = 0
-    for run_exec in RunOutputManager.find_recent_run_dirs(logs_dir=None, max_age_hours=max_age_hours):
+    for run_exec in RunOutputManager.find_recent_run_dirs(max_age_hours=max_age_hours):
         stats_path = run_exec.get_run_statistics_path()
         if stats_path.exists():
             try:
