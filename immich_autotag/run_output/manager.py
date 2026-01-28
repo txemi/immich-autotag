@@ -54,13 +54,15 @@ class RunOutputManager:
 
     @classmethod
     def find_recent_run_dirs(
-        cls, logs_dir: Path, max_age_hours: int = 3, exclude_current: bool = True
+        cls, *, logs_dir: Optional[Path] = None, max_age_hours: int = 3, exclude_current: bool = True
     ) -> list['RunExecution']:
         """
         Devuelve una lista de objetos RunExecution para las ejecuciones recientes (subcarpetas con 'PID' en el nombre y fecha válida),
         ordenadas de más reciente a más antigua, filtradas por edad (max_age_hours).
         Si exclude_current es True, excluye la carpeta de la ejecución actual.
         """
+        if logs_dir is None:
+            logs_dir = cls.LOGS_LOCAL_DIR
         now = datetime.now()
         current_run = cls.get_run_output_dir(logs_dir) if exclude_current else None
         current_run_dir = current_run.path if current_run else None

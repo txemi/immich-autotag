@@ -11,11 +11,7 @@ from typeguard import typechecked
 
 from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-from immich_autotag.run_output.run_output_dir import (
-    LOGS_LOCAL_DIR,
-    find_recent_run_dirs,
-    get_previous_run_output_dir,
-)
+from immich_autotag.run_output.manager import RunOutputManager
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
 
@@ -23,13 +19,14 @@ from immich_autotag.statistics.run_statistics import RunStatistics
 @typechecked
 def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
-    Searches for the maximum count of runs in the last hours.
+    Searches for the maximum count of runs in the last hours using RunOutputManager and RunExecution.
     Returns the calculated skip_n or None if there is no data.
+    logs_dir: Optional base directory for logs. Defaults to RunOutputManager.LOGS_LOCAL_DIR.
     """
     max_count = 0
     found = False
-    for d in find_recent_run_dirs(LOGS_LOCAL_DIR, max_age_hours=hours):
-        stats_path = d / RUN_STATISTICS_FILENAME
+    for run_exec in RunOutputManager.find_recent_run_dirs(logs_dir, max_age_hours=hours):
+        stats_path = run_exec.get_run_statistics_path()
         if stats_path.exists():
             try:
                 stats = RunStatistics.from_yaml(stats_path)
@@ -79,8 +76,8 @@ def get_previous_skip_n(
             return result
         # If there is no data, proceed with default mode
 
-    prev_dir = get_previous_run_output_dir()
-    if prev_dir is None:
+    prev_run = RunOutputManager.get_previous_run_output_dir()
+    if prev_run is None:
         return None
-    stats_path = prev_dir / RUN_STATISTICS_FILENAME
+    stats_path = prev_run.get_run_statistics_path()
     return _get_count_from_stats_path(stats_path, overlap)
