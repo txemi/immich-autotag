@@ -943,10 +943,7 @@ class AlbumCollectionWrapper:
         )
         self._add_album_wrapper(wrapper, client=client, tag_mod_report=tag_mod_report)
         if wrapper.is_owner(user):
-            # TODO: IMPLEMENTAR is_onwer CON LOGICA
-            #         user_id = user_wrapper.get_uuid()
-            # owner_id = wrapper.owner_uuid
-            # if user_id != owner_id:
+
             self._add_user_to_album(
                 album=wrapper,
                 user=user_wrapper,
@@ -1080,6 +1077,12 @@ class AlbumCollectionWrapper:
         """
         return AlbumResponseWrapper.from_partial_dto(album)
 
+    def is_owner(user_wrapper):
+        # TODO: IMPLEMENTAR is_onwer CON LOGICA
+        user_id = user_wrapper.get_uuid()
+        owner_id = self.owner_uuid
+        return  user_id == owner_id:
+        
 
 # Singleton instance storage
 
