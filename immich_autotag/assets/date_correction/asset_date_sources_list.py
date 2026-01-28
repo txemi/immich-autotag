@@ -37,7 +37,9 @@ class AssetDateSourcesList:
 
     _asset_wrapper: "AssetResponseWrapper" = attrs.field()
     # Each element represents the date candidates of a duplicate asset
-    _date_candidates_per_duplicate: list[AssetDateCandidates] = attrs.field(factory=list)
+    _date_candidates_per_duplicate: list[AssetDateCandidates] = attrs.field(
+        factory=list
+    )
 
     @typechecked
     def get_asset_wrapper(self) -> "AssetResponseWrapper":
@@ -46,6 +48,7 @@ class AssetDateSourcesList:
     @typechecked
     def get_date_candidates_per_duplicate(self) -> list[AssetDateCandidates]:
         return self._date_candidates_per_duplicate
+
     # Holds a list of AssetDateCandidates sets, one for each duplicate asset (AssetResponseWrapper).
     # Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
     # The asset_wrapper field indicates the asset that triggered this investigation.
