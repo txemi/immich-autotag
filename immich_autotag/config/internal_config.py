@@ -5,7 +5,7 @@ USE_CACHE_ALBUMS = True
 USE_CACHE_ALBUM_PAGES = True
 USE_CACHE_USERS = True
 
-# ==================== IMPORTS ====================
+
 from immich_autotag.logging.levels import LogLevel
 
 from ._internal_types import ErrorHandlingMode
