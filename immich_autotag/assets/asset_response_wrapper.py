@@ -7,7 +7,6 @@ from urllib.parse import ParseResult
 from uuid import UUID
 
 import attrs
-from immich_client.models.tag_response_dto import TagResponseDto
 from immich_client.models.update_asset_dto import (
     UpdateAssetDto,  # TODO: move to proxy if needed
 )
@@ -432,7 +431,6 @@ class AssetResponseWrapper:
     @typechecked
     def _get_current_tag_ids(self) -> list[UUID]:
         """Returns the IDs of the asset's current tags."""
-        from immich_client.types import Unset
 
         tags: list[TagWrapper] = self.get_tags()
         return [str(t.get_id()) for t in tags]
