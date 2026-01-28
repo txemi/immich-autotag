@@ -59,20 +59,15 @@ def proxy_get_album_info(
     global _album_api_call_count, _album_api_ids
     from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
-    cache_data = get_entity_from_cache(
-        entity=ApiCacheKey.ALBUMS, key=str(album_id), use_cache=use_cache
-    )
+    cache_mgr = ApiCacheManager(ApiCacheKey.ALBUMS, use_cache=use_cache)
+    cache_data = cache_mgr.load(str(album_id))
     if cache_data is not None:
         return AlbumResponseDto.from_dict(cache_data)
     _album_api_call_count += 1
     _album_api_ids.add(str(album_id))
     dto = get_album_info.sync(id=album_id, client=client)
     if dto is not None:
-        from immich_autotag.utils.api_disk_cache import ApiCacheKey
-
-        save_entity_to_cache(
-            entity=ApiCacheKey.ALBUMS, key=str(album_id), data=dto.to_dict()
-        )
+        cache_mgr.save(str(album_id), dto.to_dict())
     return dto
 
 

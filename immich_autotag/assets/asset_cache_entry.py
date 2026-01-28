@@ -62,15 +62,10 @@ class AssetCacheEntry:
 
         from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-        from immich_autotag.utils.api_disk_cache import (
-            ApiCacheKey,
-            get_entity_from_cache,
-            save_entity_to_cache,
-        )
+        from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
-        cache_data = get_entity_from_cache(
-            entity=ApiCacheKey.ASSETS, key=str(asset_id), use_cache=use_cache
-        )
+        cache_mgr = ApiCacheManager(ApiCacheKey.ASSETS, use_cache=use_cache)
+        cache_data = cache_mgr.load(str(asset_id))
         if cache_data is not None:
             state = AssetDtoState.from_cache_dict(cache_data)
             entry = cls._from_state(state=state, max_age_seconds=max_age_seconds)
@@ -85,9 +80,7 @@ class AssetCacheEntry:
                 f"proxy_get_asset_info returned None for asset id={asset_id}"
             )
         state = AssetDtoState(dto=dto, api_endpoint_source=AssetDtoType.FULL)
-        save_entity_to_cache(
-            entity=ApiCacheKey.ASSETS, key=str(asset_id), data=state.to_cache_dict()
-        )
+        cache_mgr.save(str(asset_id), state.to_cache_dict())
         return cls._from_state(state=state, max_age_seconds=max_age_seconds)
 
     @classmethod
