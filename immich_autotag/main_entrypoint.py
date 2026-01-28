@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
+# Typeguard import hook must be installed before any other imports!
+from immich_autotag.utils.typeguard_hook import (
+    install_typeguard_import_hook,
+)  # isort: skip
 
-# noqa: E402
-install_typeguard_import_hook()
-
+install_typeguard_import_hook()  # noqa: E402
 
 from immich_autotag.entrypoint.assets import process_assets_or_filtered
 from immich_autotag.entrypoint.collections import (
