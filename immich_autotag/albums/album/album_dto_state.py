@@ -1,11 +1,15 @@
 import datetime
 import enum
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
+
+if TYPE_CHECKING:
+    from .album_user_list import AlbumUserList
 
 
 class AlbumLoadSource(enum.Enum):
@@ -125,7 +129,9 @@ class AlbumDtoState:
         return set(UUID(a.id) for a in self._dto.assets)
 
     def _is_stale(self) -> bool:
+        import time
+
         return (time.time() - self.get_loaded_at().timestamp()) > self._max_age_seconds
 
-    def get_assets():
-        raise NotImplementedError("implementar")
+    def get_assets(self):
+        raise NotImplementedError("implement")
