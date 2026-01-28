@@ -81,8 +81,8 @@ def create_album_if_missing_classification(
     )
     from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
 
-    albums_collection = asset_wrapper.context.albums_collection
-    client = asset_wrapper.context.client
+    albums_collection = asset_wrapper.get_context().get_albums_collection()
+    client = asset_wrapper.get_context().get_client_wrapper().get_client()
     album_wrapper = albums_collection.create_or_get_album_with_user(
         album_name, client, tag_mod_report=tag_mod_report
     )
