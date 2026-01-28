@@ -43,7 +43,9 @@ class ApiCacheManager:
             self._use_cache = True
 
     @staticmethod
-    def create(cache_type: "ApiCacheKey", use_cache: Optional[bool] = None) -> "ApiCacheManager":
+    def create(
+        cache_type: "ApiCacheKey", use_cache: Optional[bool] = None
+    ) -> "ApiCacheManager":
         """
         Static constructor for ApiCacheManager to avoid linter/type checker issues with private attribute names.
         Use this instead of direct instantiation.

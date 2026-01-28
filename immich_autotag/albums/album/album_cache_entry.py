@@ -41,11 +41,10 @@ class AlbumCacheEntry:
         album_id_str = str(album_id)
         from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
-        cache_mgr = ApiCacheManager.create(
-            cache_type=ApiCacheKey.ALBUMS
-        )
+        cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS)
         cache_data = cache_mgr.load(album_id_str)
         from immich_client.models.album_response_dto import AlbumResponseDto
+
         from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
         if isinstance(cache_data, dict):
