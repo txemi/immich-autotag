@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Callable
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from pathlib import Path
+from typing import TYPE_CHECKING, Callable, Optional
 from urllib.parse import ParseResult
 from uuid import UUID
 
@@ -328,7 +327,8 @@ class AssetResponseWrapper:
                 self.get_context()
                 .get_tag_collection()
                 .create_tag_if_not_exists(
-                    name=tag_name, client=self.get_context().get_client_wrapper().get_client()
+                    name=tag_name,
+                    client=self.get_context().get_client_wrapper().get_client(),
                 )
             )
         # Check if the asset already has the tag
