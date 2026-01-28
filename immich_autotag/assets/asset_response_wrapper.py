@@ -627,7 +627,7 @@ class AssetResponseWrapper:
 
         from immich_autotag.config.models import ClassificationConfig
 
-        config: Optional[UserConfig] = ConfigManager.get_instance().config
+        config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
         tag_name = None
         if config is not None and config.classification is not None:
             classification: ClassificationConfig = config.classification
@@ -667,7 +667,7 @@ class AssetResponseWrapper:
 
         from immich_autotag.config.models import ClassificationConfig
 
-        config: Optional[UserConfig] = ConfigManager.get_instance().config
+        config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
         tag_name = None
         if config is not None and config.classification is not None:
             classification: ClassificationConfig = config.classification
@@ -767,7 +767,7 @@ class AssetResponseWrapper:
             ClassificationStatus,
         )
 
-        config: Optional[UserConfig] = ConfigManager.get_instance().config
+        config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
         if not (
             config
             and config.album_detection_from_folders is not None
@@ -895,7 +895,7 @@ class AssetResponseWrapper:
         """
         if disable:
             return
-        config: Optional[UserConfig] = ConfigManager.get_instance().config
+        config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
         tag_name = None
         # Use explicit type and direct access for duplicate_processing
         if config and config.duplicate_processing is not None:
@@ -959,7 +959,7 @@ class AssetResponseWrapper:
         If no conflict and tag is present, removes it.
         """
 
-        config: Optional[UserConfig] = ConfigManager.get_instance().config
+        config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
         tag_name = None
         # Use explicit type and direct access for duplicate_processing
         if config and config.duplicate_processing is not None:
