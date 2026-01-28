@@ -1,11 +1,10 @@
+
 """
 statistics_manager.py
 
 Core statistics management logic for tracking progress, statistics, and historical runs.
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
-
-from uuid import UUID
 
 import time
 from pathlib import Path
@@ -15,19 +14,19 @@ from typing import TYPE_CHECKING, Optional
 import attr
 import git
 from typeguard import typechecked
+from uuid import UUID
 
 from immich_autotag.config.models import UserConfig  # GitPython
-
-if TYPE_CHECKING:
-    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-    from immich_autotag.tags.tag_response_wrapper import TagWrapper
-    from immich_autotag.report.modification_kind import ModificationKind
-
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
 from .checkpoint_manager import CheckpointManager
 from .run_statistics import RunStatistics
 from .tag_stats_manager import TagStatsManager
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
+    from immich_autotag.report.modification_kind import ModificationKind
 
 # Module singleton
 _instance = None
