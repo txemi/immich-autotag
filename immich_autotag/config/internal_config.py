@@ -1,3 +1,7 @@
+from immich_autotag.logging.levels import LogLevel
+
+from ._internal_types import ErrorHandlingMode
+
 # ==================== API CACHE CONTROL (PER TYPE) ====================
 # Control cache usage for each entity type (developer/debug only)
 USE_CACHE_ASSETS = True
@@ -5,10 +9,6 @@ USE_CACHE_ALBUMS = True
 USE_CACHE_ALBUM_PAGES = True
 USE_CACHE_USERS = True
 
-
-from immich_autotag.logging.levels import LogLevel
-
-from ._internal_types import ErrorHandlingMode
 
 # ==================== MULTITHREADING / CONCURRENCY ====================
 # Control whether to use ThreadPoolExecutor for asset processing, regardless of MAX_WORKERS value.

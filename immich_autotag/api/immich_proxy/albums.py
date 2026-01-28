@@ -1,5 +1,5 @@
 import atexit
-from typing import List
+from typing import Callable, List, Optional
 from uuid import UUID
 
 from immich_client.api.albums import (
@@ -22,9 +22,6 @@ from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 # --- Album API call diagnostics ---
 _album_api_call_count = 0
 _album_api_ids: set[str] = set()
-
-
-from typing import Callable, Optional
 
 
 def print_album_api_call_summary(
