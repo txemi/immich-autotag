@@ -35,17 +35,18 @@ class AssetDateSourcesList:
     TODO: Consider renaming to AssetDateCandidatesList for clarity.
     """
 
-    asset_wrapper: "AssetResponseWrapper" = attrs.field()
+    _asset_wrapper: "AssetResponseWrapper" = attrs.field()
     # Each element represents the date candidates of a duplicate asset
-    date_candidates_per_duplicate: list["AssetDateCandidates"] = attrs.field(factory=list)
+    _date_candidates_per_duplicate: list = attrs.field(factory=list)
+
 
     @typechecked
     def add(self, candidate_set: AssetDateCandidates) -> None:
-        self.date_candidates_per_duplicate.append(candidate_set)
+        self._date_candidates_per_duplicate.append(candidate_set)
 
     @typechecked
     def extend(self, candidate_sets: list[AssetDateCandidates]) -> None:
-        self.date_candidates_per_duplicate.extend(candidate_sets)
+        self._date_candidates_per_duplicate.extend(candidate_sets)
 
     @staticmethod
     @typechecked
