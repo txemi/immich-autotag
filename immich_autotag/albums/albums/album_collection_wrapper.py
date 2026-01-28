@@ -220,12 +220,8 @@ class AlbumCollectionWrapper:
         Does not remove from the list.
         Returns True if marked. Raises if already deleted or not present.
         """
-        if (
-            self._ensure_fully_loaded()._albums.get_by_id(
-                album_wrapper.get_album_uuid()
-            )
-            is None
-        ):
+        album_id_str = str(album_wrapper.get_album_uuid())
+        if self._ensure_fully_loaded()._albums.get_by_id(album_id_str) is None:
             raise RuntimeError(
                 f"Album '{album_wrapper.get_album_name()}' "
                 f"(id={album_wrapper.get_album_uuid()}) is not present in the collection."
@@ -854,27 +850,27 @@ class AlbumCollectionWrapper:
         """
         Public helper to add a user as EDITOR to an album. Handles only user addition, error reporting, and event logging.
         """
+        from immich_client.models.album_user_role import AlbumUserRole
+
         from immich_autotag.permissions.album_permission_executor import (
             add_members_to_album,
         )
 
         try:
-            from immich_autotag.report.modification_kind import ModificationKind
-
             add_members_to_album(
                 album=album,
                 user=user,
-                access_level="editor",
+                access_level=AlbumUserRole.EDITOR,
                 context=context,
             )
             tag_mod_report.add_album_modification(
                 kind=ModificationKind.ADD_USER_TO_ALBUM,
                 album=album,
-                extra={"added_user": str(user_id)},
+                extra={"added_user": str(user.get_uuid())},
             )
         except Exception as e:
             raise RuntimeError(
-                f"Error adding user {user_id} as EDITOR to album {album.id} "
+                f"Error adding user {user.get_uuid()} as EDITOR to album {album.get_album_uuid()} "
                 f"('{album.get_album_name()}'): {e}"
             ) from e
 
@@ -940,9 +936,9 @@ class AlbumCollectionWrapper:
             album=wrapper,
             extra={"created": True},
         )
-        self._add_album_wrapper(wrapper, client=client, tag_mod_report=tag_mod_report)
-        if wrapper.is_owner(user):
-
+        self._add_album_wrapper(wrapper)
+        # Assign user as EDITOR if not already owner
+        if wrapper.get_owner_uuid() != user_wrapper.get_uuid():
             self._add_user_to_album(
                 album=wrapper,
                 user=user_wrapper,
@@ -1076,11 +1072,7 @@ class AlbumCollectionWrapper:
         """
         return AlbumResponseWrapper.from_partial_dto(album)
 
-    def is_owner(user_wrapper):
-        # TODO: IMPLEMENTAR is_onwer CON LOGICA
-        user_id = user_wrapper.get_uuid()
-        owner_id = self.owner_uuid
-        return user_id == owner_id
+    # Removed broken is_owner method (should be on AlbumResponseWrapper)
 
 
 # Singleton instance storage
