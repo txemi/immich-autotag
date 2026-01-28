@@ -72,7 +72,7 @@ class AlbumCacheEntry:
         return AlbumDtoState.create(dto=album_dto, load_source=AlbumLoadSource.DETAIL)
 
     def is_stale(self) -> bool:
-        return self._dto._is_stale(max_age_seconds=self._max_age_seconds)
+        return self._dto._is_stale()
 
     def get_state(self) -> AlbumDtoState:
         if self.is_stale():

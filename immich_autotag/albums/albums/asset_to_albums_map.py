@@ -39,6 +39,7 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
         If not full, remove the album from all AlbumLists in the map (slower, but
         avoids triggering a full load).
         """
+        raise NotImplementedError("revisar")
         if album_wrapper.has_loaded_assets():
             for asset_uuid in album_wrapper.get_asset_uuids():
                 if asset_uuid in self:

@@ -74,7 +74,7 @@ class AlbumResponseWrapper:
     def owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
 
-        return self._cache_entry.get_state().get_owner_uuid()
+        return self._cache_entry.get_owner_uuid()
 
     # --- 4. Static Methods ---
     @staticmethod
@@ -104,11 +104,11 @@ class AlbumResponseWrapper:
 
     @typechecked
     def get_album_uuid(self) -> "UUID":
-        return self._cache_entry.get_state().get_album_id()
+        return self._cache_entry.get_album_id()
 
     @typechecked
     def get_album_name(self) -> str:
-        return self._cache_entry.get_state().get_album_name()
+        return self._cache_entry.get_album_name()
 
     @conditional_typechecked
     def get_immich_album_url(self) -> "ParseResult":
@@ -147,12 +147,12 @@ class AlbumResponseWrapper:
         Returns an AlbumUserList encapsulating all users in the album (album_users).
         This provides a robust, consistent interface for album user access.
         """
-        return self._cache_entry.get_state().get_album_users()
+        return self._cache_entry.get_album_users()
 
     @typechecked
     def get_owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
-        return self._cache_entry.get_state().get_owner_uuid()
+        return self._cache_entry.get_owner_uuid()
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set[UUID]:
@@ -206,7 +206,7 @@ class AlbumResponseWrapper:
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> None:
-        self._cache_entry.get_state().update(dto=dto, load_source=load_source)
+        self._cache_entry.update(dto=dto, load_source=load_source)
         self.invalidate_cache()
 
     @typechecked
@@ -312,7 +312,7 @@ class AlbumResponseWrapper:
             self._update_from_dto(dto, load_source)
 
     def _is_full(self) -> bool:
-        return self._cache_entry.get_state().is_full()
+        return self._cache_entry.is_full()
 
     @typechecked
     def has_loaded_assets(self) -> bool:
