@@ -6,6 +6,32 @@ import attrs
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class RunExecution:
 
+    def get_albums_duplicates_summary_path(self) -> "Path":
+        """
+        Returns the path for the albums duplicates summary JSON file for this run.
+        """
+        return self.run_dir / "albums_duplicates_summary.json"
+
+    def get_cprofile_stats_path(self) -> Path:
+        """
+        Returns a unique path for a cProfile stats file for this run, including timestamp and PID.
+        """
+        import datetime
+        import os
+        ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+        pid = os.getpid()
+        return self.run_dir / f"profile_{ts}_PID{pid}.stats"
+
+    def get_tracemalloc_snapshot_path(self) -> Path:
+        """
+        Returns a unique path for a tracemalloc snapshot for this run, including timestamp and PID.
+        """
+        import datetime
+        import os
+        ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+        pid = os.getpid()
+        return self.run_dir / f"tracemalloc_{ts}_PID{pid}.dat"
+
     def get_full_output_log_path(self) -> Path:
         """
         Returns the path for the main tee log file for this run.
