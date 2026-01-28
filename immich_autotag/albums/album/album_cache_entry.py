@@ -42,24 +42,21 @@ class AlbumCacheEntry:
         from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
         cache_mgr = ApiCacheManager.create(
-            cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache
+            cache_type=ApiCacheKey.ALBUMS
         )
         cache_data = cache_mgr.load(album_id_str)
         from immich_client.models.album_response_dto import AlbumResponseDto
-
         from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
-        if cache_data is not None:
-            try:
-                album_dto = AlbumResponseDto.from_dict(cache_data)
-                dto = AlbumDtoState.create(
-                    dto=album_dto, load_source=AlbumLoadSource.DETAIL
-                )
-                # Check staleness using a temp AlbumCacheEntry
-                if not dto._is_stale(max_age_seconds=max_age_seconds):
-                    return dto
-            except Exception:
-                pass  # If the cache is corrupt, reload from API
+        if isinstance(cache_data, dict):
+            album_dto = AlbumResponseDto.from_dict(cache_data)
+            dto = AlbumDtoState.create(
+                dto=album_dto, load_source=AlbumLoadSource.DETAIL
+            )
+            # Check staleness using una temp AlbumCacheEntry
+            if not dto.is_stale(max_age_seconds=max_age_seconds):
+                return dto
+
         # API fetch logic: call proxy_get_album_info using the default Immich client
         from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
         from immich_autotag.context.immich_context import ImmichContext
