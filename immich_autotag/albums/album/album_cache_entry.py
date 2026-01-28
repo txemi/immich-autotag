@@ -26,6 +26,7 @@ class StaleAlbumCacheError(Exception):
 class AlbumCacheEntry:
 
 
+
     _dto: AlbumDtoState
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
@@ -144,3 +145,8 @@ class AlbumCacheEntry:
         Returns the album UUID by delegating to the DTO state.
         """
         return self._dto.get_album_id()
+    def get_album_name(self) -> str:
+        """
+        Returns the album name by delegating to the DTO state.
+        """
+        return self._dto.get_album_name()
