@@ -11,6 +11,8 @@ from .date_source_kind import DateSourceKind
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidate:
+
+
     """
     Represents a candidate date offered by an asset (can be the main asset or a duplicate).
     Each instance corresponds to a possible date source for that asset, such as the Immich date, the date extracted from the filename, from the path, EXIF, etc.
@@ -105,3 +107,21 @@ class AssetDateCandidate:
         except Exception:
             asset_id = None
         return f"AssetDateCandidate(source_kind={self._source_kind}, date={self.get_aware_date()}, file_path={self._file_path}, asset_id={asset_id})"
+
+
+    @staticmethod
+    def from_internal_attrs(
+        _source_kind: DateSourceKind,
+        _date: datetime,
+        _file_path: Optional[Path],
+        _asset_wrapper: AssetResponseWrapper,
+    ) -> "AssetDateCandidate":
+        return AssetDateCandidate(
+            _source_kind=_source_kind,
+            _date=_date,
+            _file_path=_file_path,
+            _asset_wrapper=_asset_wrapper,
+        )
+
+    def get_source_kind(self) -> DateSourceKind:
+        return self._source_kind
