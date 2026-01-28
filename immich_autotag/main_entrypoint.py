@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Typeguard import hook must be installed before any other imports!
-from immich_autotag.utils.typeguard_hook import (
+from immich_autotag.utils.typeguard_hook import (  # isort: skip
     install_typeguard_import_hook,
-)  # isort: skip
+)
 
 install_typeguard_import_hook()  # noqa: E402
 
