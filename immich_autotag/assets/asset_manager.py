@@ -55,7 +55,7 @@ class AssetManager:
         return asset
 
     @typechecked
-    def get_wrapper_for_asset(
+    def get_wrapper_for_asset_dto(
         self, asset_dto: AssetResponseDto, context: "ImmichContext"
     ) -> AssetResponseWrapper:
         """

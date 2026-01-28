@@ -126,3 +126,5 @@ class AlbumDtoState:
 
     def _is_stale(self) -> bool:
         return (time.time() - self.get_loaded_at().timestamp()) > self._max_age_seconds
+    def get_assets():
+        raise NotImplementedError("implementar")
