@@ -5,6 +5,14 @@ import attrs
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class RunExecution:
+
+    def get_links_markdown_path(self) -> Path:
+        """
+        Returns the path for the links markdown file for this run.
+        """
+        return self.run_dir / "immich_autotag_links.md"
+
+
     """
     Encapsula una ruta de ejecución (subcarpeta de logs_local creada por una ejecución de la app).
     Permite acceder a logs, estadísticas, cachés, etc. de esa ejecución.

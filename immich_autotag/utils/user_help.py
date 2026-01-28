@@ -127,8 +127,8 @@ def _write_links_markdown(links: List[str]) -> None:
     from immich_autotag.run_output.manager import RunOutputManager
 
     try:
-        out_dir = RunOutputManager.get_run_output_dir()
-        md_path = out_dir / "immich_autotag_links.md"
+        run_exec = RunOutputManager.get_run_output_dir()
+        md_path = run_exec.get_links_markdown_path()
         with open(md_path, "w", encoding="utf-8") as f:
             f.write("# Immich Autotagging Quick Links\n\n")
             f.write("\n".join(links))
