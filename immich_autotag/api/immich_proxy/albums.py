@@ -56,7 +56,8 @@ def proxy_get_album_info(
     global _album_api_call_count, _album_api_ids
     from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
-    cache_mgr = ApiCacheManager(_cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache)
+    from immich_autotag.utils.api_disk_cache import ApiCacheManager
+    cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache)
     cache_data = cache_mgr.load(str(album_id))
     if cache_data is not None:
         if isinstance(cache_data, dict):
@@ -118,7 +119,8 @@ def proxy_get_album_page(
     """
     Fetch a page of albums, using disk cache for each page.
     """
-    cache_mgr = ApiCacheManager(_cache_type=ApiCacheKey.ALBUM_PAGES)
+    from immich_autotag.utils.api_disk_cache import ApiCacheManager
+    cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUM_PAGES)
     cache_key = f"page_{page}_size_{page_size}"
     cache_data = cache_mgr.load(cache_key)
     if cache_data is not None:

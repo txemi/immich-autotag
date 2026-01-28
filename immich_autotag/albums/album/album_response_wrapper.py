@@ -814,7 +814,7 @@ class AlbumResponseWrapper:
         from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
-        cache_entry = AlbumCacheEntry(dto=state)
+        cache_entry = AlbumCacheEntry.create(dto=state)
         return cls(cache_entry=cache_entry)
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial

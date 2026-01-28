@@ -22,6 +22,8 @@ class StaleAlbumCacheError(Exception):
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
 
+
+
     _dto: AlbumDtoState
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
@@ -41,7 +43,8 @@ class AlbumCacheEntry:
         album_id_str = str(album_id)
         from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
-        cache_mgr = ApiCacheManager(ApiCacheKey.ALBUMS, use_cache=use_cache)
+        from immich_autotag.utils.api_disk_cache import ApiCacheManager
+        cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache)
         cache_data = cache_mgr.load(album_id_str)
         from immich_client.models.album_response_dto import AlbumResponseDto
 
@@ -160,3 +163,14 @@ class AlbumCacheEntry:
         Returns the album name by delegating to the DTO state.
         """
         return self._dto.get_album_name()
+    @staticmethod
+    def create(dto: AlbumDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS) -> "AlbumCacheEntry":
+        """
+        Static constructor for AlbumCacheEntry to avoid linter/type checker issues with private attribute names.
+        Use this instead of direct instantiation.
+        """
+        # type: ignore[call-arg] is used to silence linter complaints about private names
+        return AlbumCacheEntry(
+            _dto=dto,
+            _max_age_seconds=max_age_seconds,  # type: ignore[call-arg]
+        )
