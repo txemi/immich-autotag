@@ -9,6 +9,12 @@ class RunExecution:
     """
     run_dir: Path = attrs.field(converter=Path)
 
+    def get_user_config_dump_path(self) -> Path:
+        """
+        Devuelve la ruta del fichero de volcado de configuración de usuario para esta ejecución.
+        """
+        return self.get_custom_path("user_config_dump.yaml")
+
     def get_api_cache_dir(self, cache_type: str) -> Path:
         """
         Devuelve la ruta del directorio de caché de API para un tipo dado (e.g. 'albums', 'assets').

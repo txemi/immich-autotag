@@ -152,22 +152,14 @@ class ConfigManager:
         self.config = user_config
 
     @typechecked
-    def dump_to_yaml(self, path: "str | Path | None" = None):
+    def dump_to_yaml(self):
         """Dumps the current configuration to a YAML file in the default logs/output folder."""
         if self.config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
-        from pathlib import Path as _Path
-
         import yaml
-
-
         from immich_autotag.run_output.manager import RunOutputManager
-
-        if path is None:
-            out_dir = RunOutputManager.get_run_output_dir()
-            path = out_dir / "user_config_dump.yaml"
-        if not isinstance(path, (str, _Path)):
-            raise TypeError(f"path must be str, Path or None, got {type(path)}")
+        run_execution = RunOutputManager.get_run_output_dir()
+        path = run_execution.get_user_config_dump_path()
         import enum
 
         @typechecked
