@@ -114,10 +114,10 @@ class AssetDateCandidate:
         asset_wrapper: AssetResponseWrapper,
     ) -> "AssetDateCandidate":
         return AssetDateCandidate(
-            _source_kind=_source_kind,
-            _date=_date,
-            _file_path=_file_path,
-            _asset_wrapper=_asset_wrapper,
+            source_kind=source_kind,
+            date=date,
+            file_path=file_path,
+            asset_wrapper=asset_wrapper,
         )
 
     def get_source_kind(self) -> DateSourceKind:
