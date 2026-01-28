@@ -20,7 +20,7 @@ ENABLE_MEMORY_PROFILING = False  # Set to False to disable tracemalloc memory pr
 
 # ==================== MEMORY CONTROL ====================
 # Control whether assets are kept in memory (True = keep in memory, False = release after use)
-KEEP_ASSETS_IN_MEMORY = True  # Default True; set to False to release assets after use
+KEEP_ASSETS_IN_MEMORY = False  # Default False; set to True to keep assets in memory
 
 # ==================== ALBUM HANDLING / THRESHOLDS ====================
 # Number of errors in the window required to mark an album unavailable
