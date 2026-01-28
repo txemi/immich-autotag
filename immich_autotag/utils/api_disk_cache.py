@@ -51,7 +51,7 @@ class ApiCacheManager:
         Use this instead of direct instantiation.
         """
         return ApiCacheManager(
-            _cache_type=cache_type,
+            cache_type=cache_type,
             use_cache=use_cache,
         )
 
