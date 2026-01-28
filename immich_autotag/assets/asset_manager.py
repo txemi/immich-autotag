@@ -34,11 +34,10 @@ class AssetManager:
         Supports skipping the first `skip_n` assets efficiently.
         """
         from immich_autotag.assets.get_all_assets import get_all_assets
+
         for asset in get_all_assets(context, max_assets=max_assets, skip_n=skip_n):
             if not isinstance(asset, AssetResponseWrapper):
-                raise RuntimeError(
-                    f"Expected AssetResponseWrapper, got {type(asset)}"
-                )
+                raise RuntimeError(f"Expected AssetResponseWrapper, got {type(asset)}")
             asset_uuid = asset.get_uuid()
             self._assets[asset_uuid] = asset
             yield asset

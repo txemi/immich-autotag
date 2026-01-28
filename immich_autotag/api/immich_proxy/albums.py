@@ -59,7 +59,10 @@ def proxy_get_album_info(
     dto = get_album_info.sync(id=album_id, client=client)
     if dto is not None:
         from immich_autotag.utils.api_disk_cache import ApiCacheKey
-        save_entity_to_cache(entity=ApiCacheKey.ALBUMS, key=str(album_id), data=dto.to_dict())
+
+        save_entity_to_cache(
+            entity=ApiCacheKey.ALBUMS, key=str(album_id), data=dto.to_dict()
+        )
     return dto
 
 

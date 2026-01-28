@@ -1,14 +1,16 @@
-
 import json
+from enum import Enum
 from pathlib import Path
 from typing import Optional
-from enum import Enum
+
+
 # Global config to enable/disable caching (can be overridden by parameter)
 class ApiCacheKey(Enum):
     ALBUMS = "albums"
     ASSETS = "assets"
     USERS = "users"
     # Add more as needed
+
 
 from immich_autotag.run_output.run_output_dir import (
     find_recent_run_dirs,
@@ -31,7 +33,9 @@ def _get_cache_dir(entity: ApiCacheKey, run_dir: Optional[Path] = None) -> Path:
     return cache_dir
 
 
-def save_entity_to_cache(*, entity: ApiCacheKey, key: str, data: dict[str, object]) -> None:
+def save_entity_to_cache(
+    *, entity: ApiCacheKey, key: str, data: dict[str, object]
+) -> None:
     """Saves an object in the cache of the current run."""
     cache_dir = _get_cache_dir(entity)
     path = cache_dir / f"{key}.json"
@@ -39,7 +43,9 @@ def save_entity_to_cache(*, entity: ApiCacheKey, key: str, data: dict[str, objec
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def get_entity_from_cache(*, entity: ApiCacheKey, key: str, use_cache: Optional[bool] = None) -> Optional[dict[str, object]]:
+def get_entity_from_cache(
+    *, entity: ApiCacheKey, key: str, use_cache: Optional[bool] = None
+) -> Optional[dict[str, object]]:
     """
     Searches for an object in the cache (first in the current run, then in previous
     runs). If use_cache is False, never searches in cache.
