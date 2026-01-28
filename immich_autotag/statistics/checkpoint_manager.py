@@ -38,6 +38,7 @@ class CheckpointManager:
         """
         enable_checkpoint_resume = ConfigManager.is_checkpoint_resume_enabled()
         from immich_autotag.run_output.manager import RunOutputManager
+
         run_execution = RunOutputManager.get_run_output_dir()
         stats_dir = run_execution.get_run_statistics_path()
         skip_n = 0

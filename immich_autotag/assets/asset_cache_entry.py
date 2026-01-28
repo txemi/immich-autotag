@@ -70,7 +70,11 @@ class AssetCacheEntry:
         if cache_data is not None:
             if isinstance(cache_data, dict):
                 state = AssetDtoState.from_cache_dict(cache_data)
-            elif isinstance(cache_data, list) and cache_data and isinstance(cache_data[0], dict):
+            elif (
+                isinstance(cache_data, list)
+                and cache_data
+                and isinstance(cache_data[0], dict)
+            ):
                 state = AssetDtoState.from_cache_dict(cache_data[0])
             else:
                 state = None
