@@ -12,5 +12,3 @@ Contains:
 - RunOutputManager: main class to interact with the outputs of a specific run.
 - run_output_dir.py: utilities to locate and list previous runs.
 """
-
-from .manager import RunOutputManager
