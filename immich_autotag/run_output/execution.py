@@ -24,6 +24,7 @@ class RunExecution:
         """
         import datetime
         import os
+
         ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
         pid = os.getpid()
         return self.run_dir / f"profile_{ts}_PID{pid}.stats"
@@ -34,6 +35,7 @@ class RunExecution:
         """
         import datetime
         import os
+
         ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
         pid = os.getpid()
         return self.run_dir / f"tracemalloc_{ts}_PID{pid}.dat"
