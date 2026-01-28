@@ -12,4 +12,4 @@ def proxy_search_users(*, client: AuthenticatedClient) -> list[UserResponseDto]:
 
 
 def proxy_remove_user_from_album(*, client: AuthenticatedClient, album_id: str, user_id: str) -> Response[Any]:
-    return remove_user_from_album.sync(client=client, id=album_id, user_id=user_id)
+    return remove_user_from_album.sync_detailed(client=client, id=album_id, user_id=user_id)
