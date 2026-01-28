@@ -112,19 +112,19 @@ def process_single_asset(
 
     log(
         f"[RESERVED] tag_conversion_result: {tag_conversion_result}",
-        level=LogLevel.DEBUG,
+        level=LogLevel.FOCUS,
     )
     log(
         f"[RESERVED] date_correction_result: {date_correction_result}",
-        level=LogLevel.DEBUG,
+        level=LogLevel.FOCUS,
     )
     log(
         f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}",
-        level=LogLevel.DEBUG,
+        level=LogLevel.FOCUS,
     )
     log(
         f"[RESERVED] album_assignment_result: {album_assignment_result}",
-        level=LogLevel.DEBUG,
+        level=LogLevel.FOCUS,
     )
 
     report = AssetProcessReport(
