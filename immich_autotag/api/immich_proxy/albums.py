@@ -72,6 +72,7 @@ def proxy_get_album_info(
         save_entity_to_cache(
             entity=ApiCacheKey.ALBUMS, key=str(album_id), data=dto.to_dict()
         )
+    return dto
 
 
 def proxy_remove_asset_from_album(
