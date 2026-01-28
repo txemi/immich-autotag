@@ -39,9 +39,7 @@ def save_entity_to_cache(*, entity: ApiCacheKey, key: str, data: dict[str, objec
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def get_entity_from_cache(entity:
-    ApiCacheKey, key: str, use_cache: Optional[bool] = None
-) -> Optional[dict[str, object]]:
+def get_entity_from_cache(*, entity: ApiCacheKey, key: str, use_cache: Optional[bool] = None) -> Optional[dict[str, object]]:
     """
     Searches for an object in the cache (first in the current run, then in previous
     runs). If use_cache is False, never searches in cache.
