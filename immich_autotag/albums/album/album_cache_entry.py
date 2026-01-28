@@ -136,7 +136,7 @@ class AlbumCacheEntry:
             raise AttributeError("ImmichContext missing asset_manager")
         result=[]
         for a in self._dto.assets        :
-            b=asset_manager.get_wrapper_for_asset_dto(a, context)
+            b=asset_manager.get_wrapper_for_asset_dto(a, AlbumDtoType.ALBUM, context)
             result.append(b)
         return result
 

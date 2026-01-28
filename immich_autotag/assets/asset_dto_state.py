@@ -24,8 +24,8 @@ class AssetDtoType(enum.Enum):
     This distinction is important for knowing whether the DTO contains all available data or only a subset.
     """
 
-    PARTIAL = "partial"
-    FULL = "full"
+    PARTIAL_DEPRECATED = "partial"
+    FULL_DEPRECATED = "full"
 
 
 # Exception for tags not loaded
