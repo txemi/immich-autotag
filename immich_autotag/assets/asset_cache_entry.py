@@ -184,7 +184,7 @@ class AssetCacheEntry:
         """
         return self._state.get_uuid()
 
-    def get_original_file_name(self) -> str:
+    def get_original_file_name(self) -> Path:
         """
         Returns the original file name of the asset. This value is immutable, so no freshness check is needed.
         """

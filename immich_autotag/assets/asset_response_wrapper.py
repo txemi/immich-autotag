@@ -484,7 +484,7 @@ class AssetResponseWrapper:
         match_results = rule_set.matching_rules(self)
         return match_results.classification_status()
 
-    def get_original_file_name(self) -> str:
+    def get_original_file_name(self) -> Path:
         return self._cache_entry.get_original_file_name()
 
     def is_favorite(self) -> bool:
