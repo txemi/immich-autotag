@@ -205,7 +205,7 @@ def add_members_to_album(
                 access_level=resolved_policy.access_level,
             )
         # context: ImmichContext with API client
-    """
+
     if not user_ids:
         return
 
@@ -238,6 +238,7 @@ def sync_album_permissions(
         resolved_policy: Resolved policy with target members (emails)
         context: ImmichContext with API client
     """
+
     album_id = album_wrapper.get_album_uuid()
     album_name = album_wrapper.get_album_name()
     # Use the no-cache UUID accessor when interacting with APIs that expect a UUID
