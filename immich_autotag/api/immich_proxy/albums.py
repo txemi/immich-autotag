@@ -75,7 +75,7 @@ def proxy_get_album_info(
 
 
 def proxy_remove_asset_from_album(
-    *, album_id: UUID, client: Client, asset_ids: List[UUID]
+    *, album_id: UUID, client: AuthenticatedClient, asset_ids: List[UUID]
 ) -> list[BulkIdResponseDto]:
     return remove_asset_from_album.sync(
         id=album_id, client=client, body=BulkIdsDto(ids=asset_ids)
