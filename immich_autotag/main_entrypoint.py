@@ -31,10 +31,10 @@ def run_main_inner() -> None:
     maintenance_cleanup_labels(client)
     context = init_collections_and_context(client_wrapper)
     # Apply conversions to all assets before loading tags
+    from immich_autotag.config.internal_config import APPLY_CONVERSIONS_AT_START
     from immich_autotag.entrypoint.collections import (
         apply_conversions_to_all_assets_early,
     )
-    from immich_autotag.config.internal_config import APPLY_CONVERSIONS_AT_START
 
     if APPLY_CONVERSIONS_AT_START:
         apply_conversions_to_all_assets_early(context)
