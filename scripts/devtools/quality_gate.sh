@@ -53,7 +53,7 @@
 # | flake8/ruff E501                  | Future      | Ignored, will block in future    |
 #
 
-#set -x
+set -x
 set -e
 set -o pipefail
 # Trap for unexpected errors to always print a clear message before exit
@@ -187,7 +187,8 @@ check_shfmt() {
 	echo ""
 
 	local bash_scripts
-	# Asegúrate de que shfmt esté instalado manualmente en el sistema o en la imagen de CI
+	# Require shfmt to be installed
+	ensure_tool shfmt shfmt
 	bash_scripts=$(find scripts -type f -name "*.sh")
 	#bash scripts/*.sh scripts/devtools/*.sh scripts/devtools/docker/*.sh scripts/pypi/*.sh scripts/run/*.sh
 
@@ -618,15 +619,15 @@ check_mypy() {
 			echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
 			echo '[STANDARD MODE] Not blocking build on mypy errors.'
 		elif [ "$quality_level" = "TARGET" ]; then
-			# Solo bloquea por errores arg-type (objetivo mínimo)
-			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type)\]' | wc -l)
+			# Solo bloquea por errores arg-type y call-arg (objetivo mínimo)
+			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
 				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ❌❌❌"
-				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE) DETECTED 🚨"
+				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE/CALL-ARG) DETECTED 🚨"
 				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1
 			else
-				echo '[TARGET MODE] Only non-critical mypy errors found (return-value, call-arg, attr-defined, imports, etc). Not blocking build.'
+				echo '[TARGET MODE] Only non-critical mypy errors found (return-value, attr-defined, imports, etc). Not blocking build.'
 			fi
 		else
 			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
