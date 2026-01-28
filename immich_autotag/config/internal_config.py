@@ -18,6 +18,10 @@ ENABLE_PROFILING = False  # Set to True to enable cProfile profiling
 # Enable tracemalloc memory profiling
 ENABLE_MEMORY_PROFILING = False  # Set to False to disable tracemalloc memory profiling
 
+# ==================== MEMORY CONTROL ====================
+# Control whether assets are kept in memory (True = keep in memory, False = release after use)
+KEEP_ASSETS_IN_MEMORY = True  # Default True; set to False to release assets after use
+
 # ==================== ALBUM HANDLING / THRESHOLDS ====================
 # Number of errors in the window required to mark an album unavailable
 ALBUM_ERROR_THRESHOLD = 3
