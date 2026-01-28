@@ -21,13 +21,17 @@ class ApiCacheKey(Enum):
 
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class ApiCacheManager:
+
     _cache_type: ApiCacheKey
+    use_cache: Optional[bool] = None
     _use_cache: bool = attrs.field(init=False)
     _cache_subdir: str = attrs.field(default="api_cache", init=False)
 
     def __attrs_post_init__(self):
         # Set _use_cache from internal_config per cache_type, unless overridden
-        if self._cache_type.value == ApiCacheKey.ASSETS.value:
+        if self.use_cache is not None:
+            self._use_cache = self.use_cache
+        elif self._cache_type.value == ApiCacheKey.ASSETS.value:
             self._use_cache = internal_config.USE_CACHE_ASSETS
         elif self._cache_type.value == ApiCacheKey.ALBUMS.value:
             self._use_cache = internal_config.USE_CACHE_ALBUMS
@@ -37,6 +41,17 @@ class ApiCacheManager:
             self._use_cache = internal_config.USE_CACHE_USERS
         else:
             self._use_cache = True
+
+    @staticmethod
+    def create(cache_type: "ApiCacheKey", use_cache: Optional[bool] = None) -> "ApiCacheManager":
+        """
+        Static constructor for ApiCacheManager to avoid linter/type checker issues with private attribute names.
+        Use this instead of direct instantiation.
+        """
+        return ApiCacheManager(
+            _cache_type=cache_type,
+            use_cache=use_cache,
+        )
 
     def _get_cache_dir(self) -> Path:
         """
