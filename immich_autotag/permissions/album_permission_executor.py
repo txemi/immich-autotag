@@ -143,7 +143,7 @@ def add_members_to_album(
 
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
-    user_id=user.get_id_as_str()
+    user_id = user.get_id_as_str()
     user_ids = [user_id]
 
     log(
