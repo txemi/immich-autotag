@@ -7,10 +7,6 @@ import attrs
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
-from immich_autotag.utils.api_disk_cache import (
-    get_entity_from_cache,
-    save_entity_to_cache,
-)
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:

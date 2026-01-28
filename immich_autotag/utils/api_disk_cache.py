@@ -1,11 +1,15 @@
-from immich_autotag.run_output.run_output_dir import get_run_output_dir, find_recent_run_dirs
 import json
 from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+from immich_autotag.run_output.run_output_dir import (
+    find_recent_run_dirs,
+    get_run_output_dir,
+)
 
 # Global config to enable/disable caching (can be overridden by parameter)
+
 
 class ApiCacheKey(Enum):
     ALBUMS = "albums"
@@ -15,8 +19,8 @@ class ApiCacheKey(Enum):
     # Add more as needed
 
 
-
 import attrs
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class ApiCacheManager:
@@ -55,4 +59,3 @@ class ApiCacheManager:
                 self.save(key, data)
                 return data
         return None
-

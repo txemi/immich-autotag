@@ -17,10 +17,6 @@ from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
 from immich_autotag.logging.levels import LogLevel
-from immich_autotag.utils.api_disk_cache import (
-    get_entity_from_cache,
-    save_entity_to_cache,
-)
 
 # --- Album API call diagnostics ---
 _album_api_call_count = 0
