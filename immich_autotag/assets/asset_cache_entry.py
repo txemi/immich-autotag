@@ -68,10 +68,16 @@ class AssetCacheEntry:
         )
         cache_data = cache_mgr.load(str(asset_id))
         if cache_data is not None:
-            state = AssetDtoState.from_cache_dict(cache_data)
-            entry = cls._from_state(state=state, max_age_seconds=max_age_seconds)
-            if not entry.is_stale():
-                return entry
+            if isinstance(cache_data, dict):
+                state = AssetDtoState.from_cache_dict(cache_data)
+            elif isinstance(cache_data, list) and cache_data and isinstance(cache_data[0], dict):
+                state = AssetDtoState.from_cache_dict(cache_data[0])
+            else:
+                state = None
+            if state is not None:
+                entry = cls._from_state(state=state, max_age_seconds=max_age_seconds)
+                if not entry.is_stale():
+                    return entry
         # If the cache is expired or does not exist, reload from API
         # If not in cache or corrupted, reload from API
         client = ImmichClientWrapper.get_default_instance().get_client()
