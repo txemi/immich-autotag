@@ -35,7 +35,7 @@ class TagsNotLoadedError(Exception):
 
 
 @attrs.define(auto_attribs=True, slots=True)
-class AssetDtoState:    
+class AssetDtoState:
     from typing import Any, Mapping, cast
 
     """
@@ -191,8 +191,6 @@ class AssetDtoState:
         Returns True if the asset is marked as favorite, False otherwise.
         """
         return self._dto.get_if_favorite()
-
-
 
     def get_created_at(self) -> datetime:
         """
