@@ -6,6 +6,16 @@ import attrs
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class RunExecution:
 
+    def get_cprofile_stats_path(self) -> Path:
+        """
+        Returns a unique path for a cProfile stats file for this run, including timestamp and PID.
+        """
+        import datetime
+        import os
+        ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+        pid = os.getpid()
+        return self.run_dir / f"profile_{ts}_PID{pid}.stats"
+
     def get_tracemalloc_snapshot_path(self) -> Path:
         """
         Returns a unique path for a tracemalloc snapshot for this run, including timestamp and PID.
