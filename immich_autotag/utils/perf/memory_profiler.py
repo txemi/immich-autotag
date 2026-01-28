@@ -1,5 +1,4 @@
 import atexit
-import datetime
 import os
 import threading
 import time
@@ -17,10 +16,8 @@ def setup_tracemalloc_snapshot():
 
     def _save_snapshot():
         snapshot = tracemalloc.take_snapshot()
-        run_dir = RunOutputManager.get_run_output_dir()
-        ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-        pid = os.getpid()
-        snapshot_path = run_dir / f"tracemalloc_{ts}_PID{pid}.dat"
+        run_exec = RunOutputManager.get_run_output_dir()
+        snapshot_path = run_exec.get_tracemalloc_snapshot_path()
         snapshot.dump(str(snapshot_path))
         print(f"[MEMORY] tracemalloc snapshot saved to {snapshot_path}")
 
