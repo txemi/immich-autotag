@@ -76,7 +76,7 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
         if asset_uuid in self:
             return self[asset_uuid]
         else:
-            raise KeyError(f"Asset UUID {asset_uuid} not found in AssetToAlbumsMap.")
+            return AlbumList()
 
     def __getitem__(self, key: UUID) -> AlbumList:
         if not isinstance(key, UUID):
