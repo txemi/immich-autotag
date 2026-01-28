@@ -42,3 +42,7 @@ MERGE_DUPLICATE_ALBUMS_ENABLED = (
 FORCED_LOG_LEVEL = (
     LogLevel.DEBUG
 )  # Change to 'DEBUG' to force massive logging in development/CI
+
+# ==================== CONVERSIONS AT STARTUP ====================
+# Controls whether all conversions are applied to assets at application startup
+APPLY_CONVERSIONS_AT_START = True  # Set to False to disable mass processing at startup
