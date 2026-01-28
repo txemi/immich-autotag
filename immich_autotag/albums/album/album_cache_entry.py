@@ -173,6 +173,6 @@ class AlbumCacheEntry:
         """
         # type: ignore[call-arg] is used to silence linter complaints about private names
         return AlbumCacheEntry(
-            dto=dto, # type: ignore[call-arg]
+            dto=dto,  # type: ignore[call-arg]
             max_age_seconds=max_age_seconds,  # type: ignore[call-arg]
         )
