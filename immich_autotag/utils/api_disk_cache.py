@@ -46,13 +46,13 @@ class ApiCacheManager:
         run_execution = RunOutputManager.get_run_output_dir()
         return run_execution.get_api_cache_dir(self._cache_type.value)
 
-    def save(self, key: str, data: dict[str, object]) -> None:
+    def save(self, key: str, data: dict[str, object] | list[dict[str, object]]) -> None:
         cache_dir = self._get_cache_dir()
         path = cache_dir / f"{key}.json"
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-    def load(self, key: str) -> Optional[dict[str, object]]:
+    def load(self, key: str) -> Optional[dict[str, object] | list[dict[str, object]]]:
         if not self._use_cache:
             return None
         cache_dir = self._get_cache_dir()
