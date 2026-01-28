@@ -317,7 +317,7 @@ class StatisticsManager:
         )
 
         manager = ConfigManager.get_instance()
-        config = manager.get_config_or_raise(   )
+        config = manager.get_config_or_raise()
         try:
             return {
                 config.classification.autotag_unknown,
