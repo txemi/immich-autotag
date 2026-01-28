@@ -151,7 +151,6 @@ class AlbumCollectionWrapper:
                 f"[ALBUM-FULL-LOAD][DEBUG] Loading album {idx}/{total}: '{album.get_album_name()}'",
                 level=LogLevel.TRACE,
             )
-            album.ensure_full()
             # Delegate the logic of when to log to the tracker
             if tracker.should_log_progress(idx):
                 progress_msg = tracker.get_progress_description(idx)
