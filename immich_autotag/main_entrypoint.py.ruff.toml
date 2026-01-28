@@ -1,0 +1,2 @@
+# ruff configuration for main_entrypoint.py to ignore E402 only for this file
+ignore = ["E402"]
