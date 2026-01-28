@@ -53,7 +53,7 @@ class AlbumCacheEntry:
                 dto=album_dto, load_source=AlbumLoadSource.DETAIL
             )
             # Check staleness using una temp AlbumCacheEntry
-            if not dto.is_stale(max_age_seconds=max_age_seconds):
+            if not dto._is_stale(max_age_seconds=max_age_seconds):
                 return dto
 
         # API fetch logic: call proxy_get_album_info using the default Immich client
