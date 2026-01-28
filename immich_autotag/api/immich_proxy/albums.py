@@ -1,8 +1,7 @@
-import atexit
-from typing import List
-from uuid import UUID
 
-from immich_client import Client
+from typing import List
+import atexit
+from uuid import UUID
 from immich_client.api.albums import (
     add_assets_to_album,
     get_album_info,
@@ -21,13 +20,19 @@ from immich_autotag.utils.api_disk_cache import (
     get_entity_from_cache,
     save_entity_to_cache,
 )
+from immich_autotag.logging.levels import LogLevel
 
 # --- Album API call diagnostics ---
 _album_api_call_count = 0
 _album_api_ids: set[str] = set()
 
 
-def print_album_api_call_summary(log_func=None, loglevel=None):
+from typing import Callable, Optional
+
+def print_album_api_call_summary(
+    log_func: Optional[Callable[[str, LogLevel], None]] = None,
+    loglevel: Optional[LogLevel] = None,
+) -> None:
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
@@ -35,10 +40,10 @@ def print_album_api_call_summary(log_func=None, loglevel=None):
     lvl = loglevel or LogLevel.DEBUG
     log_fn(
         f"[DIAG] proxy_get_album_info: total calls={_album_api_call_count}, unique IDs={len(_album_api_ids)}",
-        level=lvl,
+        lvl,
     )
     if len(_album_api_ids) < 30:
-        log_fn(f"[DIAG] Unique IDs: {_album_api_ids}", level=lvl)
+        log_fn(f"[DIAG] Unique IDs: {_album_api_ids}", lvl)
 
 
 atexit.register(print_album_api_call_summary)
@@ -67,19 +72,6 @@ def proxy_get_album_info(
         save_entity_to_cache(
             entity=ApiCacheKey.ALBUMS, key=str(album_id), data=dto.to_dict()
         )
-    return dto
-
-
-def proxy_get_all_albums(*, client: Client) -> list[AlbumResponseDto]:
-    return get_all_albums.sync(client=client)
-
-
-def proxy_add_assets_to_album(
-    *, album_id: UUID, client: Client, asset_ids: List[UUID]
-) -> list[BulkIdResponseDto]:
-    return add_assets_to_album.sync(
-        id=album_id, client=client, body=BulkIdsDto(ids=asset_ids)
-    )
 
 
 def proxy_remove_asset_from_album(
