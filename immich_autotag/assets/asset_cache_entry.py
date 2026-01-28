@@ -88,11 +88,14 @@ class AssetCacheEntry:
         save_entity_to_cache(
             entity=ApiCacheKey.ASSETS, key=str(asset_id), data=state.to_cache_dict()
         )
-        return cls._from_dto(_state=state, _max_age_seconds=max_age_seconds)
+        return cls._from_state(state=state, max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_state(
-        cls, state: AssetDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
+        cls,
+        *,
+        state: AssetDtoState,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
         """
         Creates an AssetCacheEntry from an existing state (private).
