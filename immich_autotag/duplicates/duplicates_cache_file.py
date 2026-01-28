@@ -10,13 +10,17 @@ from immich_autotag.duplicates.duplicates_cache_constants import (
 
 
 @attr.s(auto_attribs=True, slots=True, kw_only=True)
+
+from immich_autotag.run_output.execution import RunExecution
+
+
 class DuplicatesCacheFile:
-    directory: Path = attr.ib(validator=attr.validators.instance_of(Path))
+    run_execution: RunExecution = attr.ib(validator=attr.validators.instance_of(RunExecution))
     path: Path = attr.ib(init=False)
 
     @typechecked
     def __attrs_post_init__(self):
-        self.path = self.directory / DUPLICATES_CACHE_FILENAME
+        self.path = self.run_execution.get_duplicates_cache_path()
 
     @typechecked
     def exists(self) -> bool:
@@ -39,7 +43,7 @@ class DuplicatesCacheFile:
     @property
     @typechecked
     def dir_mtime(self) -> datetime:
-        return datetime.fromtimestamp(self.directory.stat().st_mtime)
+        return datetime.fromtimestamp(self.run_execution.path.stat().st_mtime)
 
     @property
     @typechecked

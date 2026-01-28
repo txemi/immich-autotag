@@ -7,7 +7,7 @@ from immich_autotag.duplicates.duplicates_cache_constants import (
     DUPLICATES_CACHE_FILENAME,
 )
 from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
-from immich_autotag.run_output.run_output_dir import find_recent_run_dirs
+from immich_autotag.run_output.manager import RunOutputManager
 
 
 @typechecked
@@ -21,8 +21,8 @@ def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional
 
     checked_dirs: list[DuplicatesCacheFile] = []
     candidate_caches: list[DuplicatesCacheFile] = []
-    for subdir in find_recent_run_dirs(logs_dir, max_age_hours=max_age_hours):
-        cache = DuplicatesCacheFile(directory=subdir)
+    for run_exec in RunOutputManager.find_recent_run_dirs(max_age_hours=max_age_hours):
+        cache = DuplicatesCacheFile(run_execution=run_exec)
         checked_dirs.append(cache)
         if cache.exists():
             candidate_caches.append(cache)
