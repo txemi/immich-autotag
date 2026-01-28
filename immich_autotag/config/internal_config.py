@@ -45,4 +45,4 @@ FORCED_LOG_LEVEL = (
 
 # ==================== CONVERSIONS AT STARTUP ====================
 # Controls whether all conversions are applied to assets at application startup
-APPLY_CONVERSIONS_AT_START = True  # Set to False to disable mass processing at startup
+APPLY_CONVERSIONS_AT_START = False  # Set to False to disable mass processing at startup
