@@ -139,8 +139,7 @@ def add_members_to_album(
     """
     Add members to album (PONER).
     """
-    if not user_objs:
-        return
+
 
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
