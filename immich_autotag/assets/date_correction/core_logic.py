@@ -84,7 +84,7 @@ def _check_filename_candidate_and_fix(
         log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.FOCUS)
         log(best_candidate.format_info(), level=LogLevel.FOCUS)
         log(
-            f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})",
+            f"[DATE CORRECTION] Updating Immich date to the one from candidate: {candidate_date} (label: {best_candidate.get_source_kind()})",
             level=LogLevel.FOCUS,
         )
         asset_wrapper.update_date(new_date=candidate_date)
@@ -100,7 +100,7 @@ def _check_filename_candidate_and_fix(
         log("[DATE CORRECTION][SELECTED CANDIDATE]", level=LogLevel.FOCUS)
         log(best_candidate.format_info(), level=LogLevel.FOCUS)
         log(
-            f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.source_kind})",
+            f"[DATE CORRECTION] Updating Immich time to the one from candidate: {candidate_date} (label: {best_candidate.get_source_kind()})",
             level=LogLevel.FOCUS,
         )
         asset_wrapper.update_date(new_date=candidate_date)

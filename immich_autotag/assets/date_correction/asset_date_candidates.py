@@ -57,7 +57,7 @@ class AssetDateCandidates:
         """Return all candidates whose source_kind is FILENAME."""
         from .date_source_kind import DateSourceKind
 
-        return [c for c in self.candidates if c.source_kind == DateSourceKind.FILENAME]
+        return [c for c in self.candidates if c.get_source_kind() == DateSourceKind.FILENAME]
 
     @typechecked
     def all_candidates(self) -> List[AssetDateCandidate]:
@@ -77,7 +77,7 @@ class AssetDateCandidates:
     @typechecked
     def candidates_by_kind(self, kind: DateSourceKind) -> List[AssetDateCandidate]:
         """Return all candidates of a given DateSourceKind."""
-        return [c for c in self.candidates if c.source_kind == kind]
+        return [c for c in self.candidates if c.get_source_kind() == kind]
 
     @typechecked
     def oldest_by_kind(self, kind: DateSourceKind) -> Optional[AssetDateCandidate]:
@@ -88,7 +88,7 @@ class AssetDateCandidates:
     @typechecked
     def has_kind(self, kind: DateSourceKind) -> bool:
         """Return True if there is at least one candidate of the given kind."""
-        return any(c.source_kind == kind for c in self.candidates)
+        return any(c.get_source_kind() == kind for c in self.candidates)
 
     @typechecked
     def format_info(self) -> str:
@@ -120,7 +120,7 @@ class AssetDateCandidates:
         self, kinds: list[DateSourceKind]
     ) -> List[AssetDateCandidate]:
         """Returns all candidates whose source_kind is in the kinds list."""
-        return [c for c in self.candidates if c.source_kind in kinds]
+        return [c for c in self.candidates if c.get_source_kind() in kinds]
 
     @typechecked
     def __iter__(self) -> Iterator["AssetDateCandidate"]:
