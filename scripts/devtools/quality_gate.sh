@@ -187,8 +187,7 @@ check_shfmt() {
 	echo ""
 
 	local bash_scripts
-	# Require shfmt to be installed
-	ensure_tool shfmt shfmt
+	# Asegúrate de que shfmt esté instalado manualmente en el sistema o en la imagen de CI
 	bash_scripts=$(find scripts -type f -name "*.sh")
 	#bash scripts/*.sh scripts/devtools/*.sh scripts/devtools/docker/*.sh scripts/pypi/*.sh scripts/run/*.sh
 

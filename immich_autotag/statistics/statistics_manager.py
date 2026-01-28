@@ -1,4 +1,3 @@
-
 """
 statistics_manager.py
 
@@ -10,11 +9,11 @@ import time
 from pathlib import Path
 from threading import RLock
 from typing import TYPE_CHECKING, Optional
+from uuid import UUID
 
 import attr
 import git
 from typeguard import typechecked
-from uuid import UUID
 
 from immich_autotag.config.models import UserConfig  # GitPython
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
@@ -25,8 +24,8 @@ from .tag_stats_manager import TagStatsManager
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-    from immich_autotag.tags.tag_response_wrapper import TagWrapper
     from immich_autotag.report.modification_kind import ModificationKind
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 # Module singleton
 _instance = None
