@@ -71,7 +71,9 @@ class AlbumCacheEntry:
             album_id=album_id, client=client, use_cache=False
         )
         if album_dto is None:
-            raise RuntimeError(f"Could not fetch album info for album_id={album_id}")
+            from immich_autotag.utils.url_helpers import get_immich_album_url
+            album_url = get_immich_album_url(album_id).geturl()
+            raise RuntimeError(f"Could not fetch album info for album_id={album_id} (link: {album_url})")
         from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
         save_entity_to_cache(
