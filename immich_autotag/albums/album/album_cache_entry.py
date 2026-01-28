@@ -135,7 +135,7 @@ class AlbumCacheEntry:
         if asset_manager is None:
             raise AttributeError("ImmichContext missing asset_manager")
         return [
-            asset_manager.get_wrapper_for_asset(a, context) for a in self._dto.assets
+            asset_manager.get_wrapper_for_asset_dto(a, context) for a in self._dto.assets
         ]
 
     def get_album_id(self) -> UUID:
