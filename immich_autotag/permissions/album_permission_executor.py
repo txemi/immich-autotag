@@ -180,7 +180,9 @@ def add_members_to_album(
         users_to_remove = current_user_ids - target_user_ids
 
         # Phase 2A: PONER (add members)
-        users_to_add_wrappers = [user_id_to_wrapper[uid] for uid in users_to_add if uid in user_id_to_wrapper]
+        users_to_add_wrappers = [
+            user_id_to_wrapper[uid] for uid in users_to_add if uid in user_id_to_wrapper
+        ]
         if users_to_add_wrappers:
             access_level_str = resolved_policy.access_level.lower()
             if access_level_str == "editor":
@@ -283,7 +285,7 @@ def sync_album_permissions(
     # Phase 2B: QUITAR (remove members)
     if users_to_remove:
         _remove_members_from_album(
-        # context: ImmichContext with API client
+            # context: ImmichContext with API client
             album_name=album_name,
             user_ids=list(users_to_remove),
             context=context,

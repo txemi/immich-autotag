@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import attr
@@ -37,16 +36,12 @@ class CheckpointManager:
         Decides the value of skip_n and makes its origin clear in the log: previous checkpoint, config, or none.
         """
         enable_checkpoint_resume = ConfigManager.is_checkpoint_resume_enabled()
-        from immich_autotag.run_output.manager import RunOutputManager
 
-        run_execution = RunOutputManager.get_run_output_dir()
-        stats_dir = self.stats_manager.get_or_create_run_stats().get_stats_dir()
         skip_n = 0
         origen = None
         if enable_checkpoint_resume and config_resume_previous:
-            logs_dir = stats_dir.parent if stats_dir else Path("logs")
             max_skip_n = get_max_skip_n_from_recent(
-                logs_dir, max_age_hours=3, overlap=self.OVERLAP
+                max_age_hours=3, overlap=self.OVERLAP
             )
             if max_skip_n is not None and max_skip_n > 0:
                 skip_n = max_skip_n
