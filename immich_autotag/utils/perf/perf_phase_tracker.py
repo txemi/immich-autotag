@@ -1,8 +1,8 @@
 """
 perf_phase_tracker.py
 
-Permite registrar tiempos de inicio y fin de fases clave (lazy load, full load,
-asset process) y loguear un resumen en cualquier momento (incluyendo excepciones).
+Allows recording start and end times of key phases (lazy load, full load,
+asset process) and logging a summary at any time (including exceptions).
 """
 
 import time

@@ -1,4 +1,4 @@
-# Nueva importación: RunExecution está en execution.py
+# New import: RunExecution is in execution.py
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -57,9 +57,9 @@ class RunOutputManager:
         cls, max_age_hours: int = 3, exclude_current: bool = True
     ) -> list["RunExecution"]:
         """
-        Devuelve una lista de objetos RunExecution para las ejecuciones recientes (subcarpetas con 'PID' en el nombre y fecha válida),
-        ordenadas de más reciente a más antigua, filtradas por edad (max_age_hours).
-        Si exclude_current es True, excluye la carpeta de la ejecución actual.
+        Returns a list of RunExecution objects for recent executions (subfolders with 'PID' in the name and valid date),
+        ordered from most recent to oldest, filtered by age (max_age_hours).
+        If exclude_current is True, excludes the current execution folder.
         """
         logs_dir = cls.LOGS_LOCAL_DIR
         now = datetime.now()

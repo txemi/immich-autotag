@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class AssetManager:
 
     client: Client
-    # Si no se mantienen en memoria, _assets será None
+    # If not kept in memory, _assets will be None
     _assets: Optional[Dict[UUID, AssetResponseWrapper]] = attrs.field(
         default=None, init=False
     )
