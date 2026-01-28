@@ -39,8 +39,8 @@ def create_album_if_missing_classification(
     # Check feature flag
     from immich_autotag.config.manager import ConfigManager
 
-    config = ConfigManager.get_instance().config
-    if not config or not config.create_album_from_date_if_missing:
+    config = ConfigManager.get_instance().get_config_or_raise()
+    if not config.create_album_from_date_if_missing:
         return None
 
     # Safety check: this function should only be called when NO classification rules matched
