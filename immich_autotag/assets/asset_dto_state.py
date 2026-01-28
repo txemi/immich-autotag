@@ -107,7 +107,6 @@ class AssetDtoState:
         wrappers: list["TagWrapper"] = []
         for tag in tags:
             # Robust type check
-            from immich_client.models.tag_response_dto import TagResponseDto
 
             # TagResponseDto type is guaranteed by API; skip isinstance check
             wrapper = tag_collection.get_tag_from_dto(tag)
@@ -150,10 +149,12 @@ class AssetDtoState:
             "type": self._api_endpoint_source.value,
             "loaded_at": self._loaded_at.isoformat(),
         }
+
     def _from_dto(dto, api_endpoint_source, loaded_at):
         return cls(
             _dto=dto, _api_endpoint_source=api_endpoint_source, _loaded_at=loaded_at
         )
+
     @classmethod
     def from_cache_dict(cls, data: dict[str, object]) -> "AssetDtoState":
         """
@@ -164,7 +165,7 @@ class AssetDtoState:
         dto = AssetResponseDto.from_dict(cast(Mapping[str, Any], data["dto"]))
         api_endpoint_source = AssetDtoType(str(data["type"]))
         loaded_at = datetime.fromisoformat(str(data["loaded_at"]))
-        
+
         return cls._from_dto(
             dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
         )

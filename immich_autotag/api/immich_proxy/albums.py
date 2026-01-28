@@ -1,7 +1,7 @@
-
-from typing import List
 import atexit
+from typing import List
 from uuid import UUID
+
 from immich_client.api.albums import (
     add_assets_to_album,
     get_album_info,
@@ -16,11 +16,11 @@ from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
+from immich_autotag.logging.levels import LogLevel
 from immich_autotag.utils.api_disk_cache import (
     get_entity_from_cache,
     save_entity_to_cache,
 )
-from immich_autotag.logging.levels import LogLevel
 
 # --- Album API call diagnostics ---
 _album_api_call_count = 0
@@ -28,6 +28,7 @@ _album_api_ids: set[str] = set()
 
 
 from typing import Callable, Optional
+
 
 def print_album_api_call_summary(
     log_func: Optional[Callable[[str, LogLevel], None]] = None,

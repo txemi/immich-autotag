@@ -19,11 +19,14 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class AssetManager:
 
-
     client: Client
     # Si no se mantienen en memoria, _assets será None
-    _assets: Optional[Dict[UUID, AssetResponseWrapper]] = attrs.field(default=None, init=False)
-    _keep_assets_in_memory: bool = attrs.field(default=KEEP_ASSETS_IN_MEMORY, init=False)
+    _assets: Optional[Dict[UUID, AssetResponseWrapper]] = attrs.field(
+        default=None, init=False
+    )
+    _keep_assets_in_memory: bool = attrs.field(
+        default=KEEP_ASSETS_IN_MEMORY, init=False
+    )
 
     def __attrs_post_init__(self):
         self._keep_assets_in_memory = KEEP_ASSETS_IN_MEMORY
@@ -31,6 +34,7 @@ class AssetManager:
             self._assets = {}
         else:
             self._assets = None
+
     @typechecked
     def iter_assets(
         self,
