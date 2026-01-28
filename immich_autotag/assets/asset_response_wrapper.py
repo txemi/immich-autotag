@@ -209,7 +209,7 @@ class AssetResponseWrapper:
         context = self.get_context()
         duplicate_id = self.get_duplicate_id_as_uuid()
         wrappers: list[AssetResponseWrapper] = []
-        if duplicate_id is not None:
+        if duplicate_id:
             group = context.get_duplicates_collection().get_group(duplicate_id)
             for dup_id in group:
                 if (
@@ -346,7 +346,7 @@ class AssetResponseWrapper:
             )
             return False
         # Extra checks and logging before API call
-        if not tag or tag.id is None:
+        if not tag or tag.get_id() is None:
             error_msg = (
                 f"[ERROR] Tag object for '{tag_name}' is missing or has no id. "
                 f"Tag: {tag}"
@@ -430,14 +430,12 @@ class AssetResponseWrapper:
         return True
 
     @typechecked
-    def _get_current_tag_ids(self) -> list[str]:
+    def _get_current_tag_ids(self) -> list[UUID]:
         """Returns the IDs of the asset's current tags."""
         from immich_client.types import Unset
 
-        tags: list[TagResponseDto] | Unset = self.get_tags()
-        if isinstance(tags, Unset):
-            return []
-        return [t.id for t in tags]
+        tags: list[TagWrapper] = self.get_tags()
+        return [str(t.get_id()) for t in tags]
 
     @typechecked
     def get_album_names(self) -> list[str]:
