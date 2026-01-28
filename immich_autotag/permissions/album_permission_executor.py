@@ -30,6 +30,7 @@ from immich_autotag.report.modification_report import ModificationReport
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 import attrs
 
@@ -138,8 +139,7 @@ def add_members_to_album(
     """
     Add members to album (PONER).
     """
-    if not user_objs:
-        return
+
 
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
