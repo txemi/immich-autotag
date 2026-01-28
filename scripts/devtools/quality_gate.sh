@@ -73,13 +73,24 @@ cd "$REPO_ROOT"
 # Usage: parse_args_and_globals "$@"
 # Returns: Exports global variables and may terminate the script in help mode
 ###############################################################################
+
+# Print help/usage message (single source)
+print_help() {
+	echo "Usage: $0 [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--enforce-dynamic-attrs] [target_dir]"
+	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
+	echo "  --level=LEVEL or -l LEVEL: Set quality level (STRICT, STANDARD, TARGET)"
+	echo "  --mode=MODE or -m MODE: Set mode (CHECK, APPLY)"
+	echo "  --enforce-dynamic-attrs: Enforce dynamic attrs check"
+	echo "  target_dir: Directory to check (default: immich_autotag)"
+	echo ""
+	echo "Examples:"
+	echo "  bash scripts/devtools/quality_gate.sh --level=TARGET --mode=CHECK"
+	echo "  bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=APPLY"
+}
+
 parse_args_and_globals() {
 	if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-		echo "Usage: $0 [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--enforce-dynamic-attrs] [target_dir]"
-		echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
-		echo "  --level=LEVEL or -l LEVEL: Set quality level (STRICT, STANDARD, TARGET)"
-		echo "  --mode=MODE or -m MODE: Set mode (CHECK, APPLY)"
-		echo "  --enforce-dynamic-attrs: Enforce dynamic attrs check"
+		print_help
 		exit 0
 	fi
 
@@ -116,6 +127,9 @@ parse_args_and_globals() {
 	STRICT | STANDARD | TARGET) ;;
 	*)
 		echo "[ERROR] Invalid --level: '$quality_level'. Must be one of: STRICT, STANDARD, TARGET." >&2
+		echo "Example: bash scripts/devtools/quality_gate.sh --level=TARGET --mode=CHECK" >&2
+		echo "" >&2
+		print_help >&2
 		exit 2
 		;;
 	esac
@@ -124,6 +138,8 @@ parse_args_and_globals() {
 	CHECK | APPLY) ;;
 	*)
 		echo "[ERROR] Invalid --mode: '$check_mode'. Must be one of: CHECK, APPLY." >&2
+		echo "" >&2
+		print_help >&2
 		exit 2
 		;;
 	esac
