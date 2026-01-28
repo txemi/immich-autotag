@@ -500,7 +500,7 @@ class AssetResponseWrapper:
     def get_original_path(self) -> "Path":
         return self._cache_entry.get_original_path()
 
-    def get_duplicate_id_as_uuid(self) -> "UUID | None":
+    def get_duplicate_id_as_uuid(self) -> UUID:
         return self._cache_entry.get_duplicate_id_as_uuid()
 
     @typechecked
