@@ -56,10 +56,16 @@ def proxy_get_album_info(
     global _album_api_call_count, _album_api_ids
     from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
-    cache_mgr = ApiCacheManager(ApiCacheKey.ALBUMS, use_cache=use_cache)
+    cache_mgr = ApiCacheManager(_cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache)
     cache_data = cache_mgr.load(str(album_id))
     if cache_data is not None:
-        return AlbumResponseDto.from_dict(cache_data)
+        if isinstance(cache_data, dict):
+            return AlbumResponseDto.from_dict(cache_data)
+        elif cache_data:
+            # Defensive: if cache is a list, return the first
+            return AlbumResponseDto.from_dict(cache_data[0])
+        else:
+            raise RuntimeError(f"Invalid cache data for album_id={album_id}: {type(cache_data)}")
     _album_api_call_count += 1
     _album_api_ids.add(str(album_id))
     dto = get_album_info.sync(id=album_id, client=client)
@@ -71,9 +77,12 @@ def proxy_get_album_info(
 def proxy_remove_asset_from_album(
     *, album_id: UUID, client: AuthenticatedClient, asset_ids: List[UUID]
 ) -> list[BulkIdResponseDto]:
-    return remove_asset_from_album.sync(
+    result = remove_asset_from_album.sync(
         id=album_id, client=client, body=BulkIdsDto(ids=asset_ids)
     )
+    if result is None:
+        raise RuntimeError(f"Failed to remove assets from album {album_id}: API returned None")
+    return result
 
 
 def proxy_update_album_info(
@@ -109,21 +118,25 @@ def proxy_get_album_page(
     """
     Fetch a page of albums, using disk cache for each page.
     """
-    cache_mgr = ApiCacheManager(ApiCacheKey.ALBUM_PAGES)
+    cache_mgr = ApiCacheManager(_cache_type=ApiCacheKey.ALBUM_PAGES)
     cache_key = f"page_{page}_size_{page_size}"
     cache_data = cache_mgr.load(cache_key)
     if cache_data is not None:
-        return [AlbumResponseDto.from_dict(dto) for dto in cache_data]
-    # If not cached, fetch from API (assuming get_all_albums supports pagination)
-    # If not, this will need to be adapted to the real paginated API call
+        # Defensive: filter only dicts
+        return [AlbumResponseDto.from_dict(dto) for dto in cache_data if isinstance(dto, dict)]
+    # If not cached, fetch all albums and simulate pagination
     from immich_client.api.albums import get_all_albums
 
-    result = get_all_albums.sync(client=client, page=page, page_size=page_size)
-    if result is None:
-        raise RuntimeError(f"Failed to fetch album page {page}: API returned None")
+    all_albums = get_all_albums.sync(client=client)
+    if all_albums is None:
+        raise RuntimeError(f"Failed to fetch albums: API returned None")
+    # Simulate pagination
+    start = (page - 1) * page_size
+    end = start + page_size
+    page_albums = all_albums[start:end]
     # Save to cache
-    cache_mgr.save(cache_key, [dto.to_dict() for dto in result])
-    return result
+    cache_mgr.save(cache_key, [dto.to_dict() for dto in page_albums])
+    return page_albums
 
 
 def proxy_add_assets_to_album(
