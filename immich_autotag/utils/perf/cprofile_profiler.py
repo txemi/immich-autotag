@@ -3,7 +3,7 @@ import cProfile
 import datetime
 import os
 
-from immich_autotag.utils.run_output_dir import get_run_output_dir
+from immich_autotag.run_output.manager import RunOutputManager
 
 
 def setup_cprofile_profiler():
@@ -15,7 +15,7 @@ def setup_cprofile_profiler():
 
     def _save_profile():
         profiler.disable()
-        run_dir = get_run_output_dir()
+        run_dir = RunOutputManager.get_run_output_dir()
         ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
         pid = os.getpid()
         profile_path = run_dir / f"profile_{ts}_PID{pid}.stats"

@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from typeguard import typechecked
 
 from immich_autotag.report.modification_kind import ModificationKind
-from immich_autotag.run_output.run_output_dir import get_run_output_dir
+from immich_autotag.run_output.manager import RunOutputManager
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -164,4 +164,4 @@ class RunStatistics(BaseModel):
 
     @staticmethod
     def get_stats_dir():
-        return get_run_output_dir()
+        return RunOutputManager.get_run_output_dir()

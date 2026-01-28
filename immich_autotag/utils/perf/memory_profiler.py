@@ -5,7 +5,7 @@ import threading
 import time
 import tracemalloc
 
-from immich_autotag.run_output.run_output_dir import get_run_output_dir
+from immich_autotag.run_output.manager import RunOutputManager
 
 
 def setup_tracemalloc_snapshot():
@@ -17,7 +17,7 @@ def setup_tracemalloc_snapshot():
 
     def _save_snapshot():
         snapshot = tracemalloc.take_snapshot()
-        run_dir = get_run_output_dir()
+        run_dir = RunOutputManager.get_run_output_dir()
         ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
         pid = os.getpid()
         snapshot_path = run_dir / f"tracemalloc_{ts}_PID{pid}.dat"

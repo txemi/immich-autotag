@@ -160,10 +160,11 @@ class ConfigManager:
 
         import yaml
 
-        from immich_autotag.run_output.run_output_dir import get_run_output_dir
+
+        from immich_autotag.run_output.manager import RunOutputManager
 
         if path is None:
-            out_dir = get_run_output_dir()
+            out_dir = RunOutputManager.get_run_output_dir()
             path = out_dir / "user_config_dump.yaml"
         if not isinstance(path, (str, _Path)):
             raise TypeError(f"path must be str, Path or None, got {type(path)}")

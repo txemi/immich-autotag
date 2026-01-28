@@ -14,7 +14,8 @@ from urllib.parse import ParseResult
 
 import attrs
 
-from immich_autotag.run_output.run_output_dir import get_run_output_dir
+
+from immich_autotag.run_output.manager import RunOutputManager
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -42,10 +43,10 @@ class ModificationReport:
     )
 
     log_dir: Path = attrs.field(
-        default=get_run_output_dir(), validator=attrs.validators.instance_of(Path)
+        default=RunOutputManager.get_run_output_dir(), validator=attrs.validators.instance_of(Path)
     )
     report_path: Path = attrs.field(
-        factory=lambda: get_run_output_dir() / "modification_report.txt",
+        factory=lambda: RunOutputManager.get_run_output_dir() / "modification_report.txt",
         validator=attrs.validators.instance_of(Path),
     )
     batch_size: int = attrs.field(

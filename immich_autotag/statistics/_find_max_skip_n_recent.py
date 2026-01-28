@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from typeguard import typechecked
 
-from immich_autotag.run_output.run_output_dir import get_run_output_dir
+from immich_autotag.run_output.manager import RunOutputManager
 from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
 
@@ -16,7 +16,7 @@ def find_recent_statistics_dirs(logs_dir: Path, max_age_hours: int = 3) -> List[
     """
     now = datetime.now()
     recent_dirs: List[tuple[datetime, Path]] = []
-    current_run_dir = get_run_output_dir(logs_dir).resolve()
+    current_run_dir = RunOutputManager.get_run_output_dir(logs_dir).resolve()
     pid_dirs = [
         subdir
         for subdir in logs_dir.iterdir()
