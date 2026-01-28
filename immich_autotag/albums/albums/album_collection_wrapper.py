@@ -949,7 +949,7 @@ class AlbumCollectionWrapper:
             #         user_id = user_wrapper.get_uuid()
             #owner_id = wrapper.owner_uuid
             #if user_id != owner_id:
-            self._add_user_to_album(album=wrapper, user=user_wrapper context, tag_mod_report)
+            self._add_user_to_album(album=wrapper, user=user_wrapper, context=context, tag_mod_report=tag_mod_report)
         return wrapper
 
     @classmethod
