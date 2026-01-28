@@ -138,15 +138,14 @@ def add_members_to_album(
     """
     Add members to album (PONER).
 
-    Args:
-        album_id: UUID of the album
-        album_name: Name of the album
-        user_ids: List of user IDs to add
-        access_level: "editor" or "viewer" for access level
-        context: ImmichContext with API client
+  
     """
-    if not user_ids:
+    if not user_objs:
         return
+
+    album_id = album.get_album_uuid()
+    album_name = album.get_album_name()
+    user_ids = [str(user.id) for u in user_objs]  # adaptar según el tipo real
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
