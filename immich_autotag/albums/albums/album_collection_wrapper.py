@@ -31,8 +31,10 @@ from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types import ImmichClient
+from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.utils.decorators import conditional_typechecked
 
 

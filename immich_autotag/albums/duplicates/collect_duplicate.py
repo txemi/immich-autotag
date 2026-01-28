@@ -18,12 +18,7 @@ def collect_duplicate(
 
     Stores a small summary dict into `_collected_duplicates` (best-effort).
     """
-    entry = {
-        "timestamp": __import__("datetime").datetime.utcnow().isoformat() + "Z",
-        "reason": reason,
-        "existing": None,
-        "incoming": None,
-    }
+
     if existing is not None and incoming is not None:
         report = DuplicateAlbumReport(
             album_name=existing.get_album_name() if existing else "",
