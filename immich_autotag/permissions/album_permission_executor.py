@@ -65,7 +65,7 @@ def _resolve_emails_to_user_ids(
 
     log_debug(f"[ALBUM_PERMISSIONS] Resolving {len(emails)} emails to user IDs")
 
-    client = context.client
+    client = context.get_client_wrapper()
 
     all_users = proxy_search_users(client=client)
     if all_users is None:
@@ -161,7 +161,7 @@ def add_members_to_album(
     add_users_dto = AddUsersDto(album_users=album_users_dto)
 
     # Call API
-    client = context.client
+        client = context.get_client_wrapper()
     response = proxy_add_users_to_album(
         album_id=UUID(album_id),
         client=client,
