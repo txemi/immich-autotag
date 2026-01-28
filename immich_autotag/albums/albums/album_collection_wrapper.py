@@ -716,12 +716,13 @@ class AlbumCollectionWrapper:
                 else:
                     # Non-temporary duplicate
                     existing = self.find_first_album_with_name(name)
-                    self._handle_non_temporary_duplicate(
-                        existing=existing,
-                        incoming_album=wrapper,
-                        tag_mod_report=tag_mod_report,
-                        name=name,
-                    )
+                    if existing is not None:
+                        self._handle_non_temporary_duplicate(
+                            existing=existing,
+                            incoming_album=wrapper,
+                            tag_mod_report=tag_mod_report,
+                            name=name,
+                        )
 
     @typechecked
     def _add_album_wrapper(
