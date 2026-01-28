@@ -40,7 +40,7 @@ def _handle_duplicate_conflicts(
     Detects album conflicts across duplicate assets and applies the conflict tag logic.
     """
     conflict = album_decision.has_conflict()
-    duplicate_id = asset_wrapper._cache_entry.get_state().get_duplicate_id_as_uuid()
+    duplicate_id = asset_wrapper.get_duplicate_id_as_uuid()#._cache_entry.get_state().get_duplicate_id_as_uuid()
 
     # Handle Unset type from immich_client
     from immich_client.types import Unset
