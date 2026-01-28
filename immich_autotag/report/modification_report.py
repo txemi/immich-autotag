@@ -204,7 +204,8 @@ class ModificationReport:
 
     @typechecked
     def add_album_modification(
-        self,*,
+        self,
+        *,
         kind: ModificationKind,
         album: "AlbumResponseWrapper",
         old_value: Optional[str] = None,

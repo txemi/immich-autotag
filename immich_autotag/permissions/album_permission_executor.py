@@ -124,10 +124,10 @@ def _get_current_members(
 
 
 @typechecked
-def add_members_to_album(*,
-            album: AlbumResponseWrapper,
-        user:UserResponseWrapper,
-
+def add_members_to_album(
+    *,
+    album: AlbumResponseWrapper,
+    user: UserResponseWrapper,
     access_level: AlbumUserRole,
     context: ImmichContext,
 ) -> None:
