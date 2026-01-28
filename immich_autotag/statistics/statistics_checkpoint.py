@@ -12,7 +12,6 @@ from typeguard import typechecked
 from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.run_output.manager import RunOutputManager
-from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
 from immich_autotag.statistics.run_statistics import RunStatistics
 
 

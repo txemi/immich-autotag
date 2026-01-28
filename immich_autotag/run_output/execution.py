@@ -1,5 +1,7 @@
 from pathlib import Path
+
 import attrs
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class RunExecution:
@@ -7,6 +9,7 @@ class RunExecution:
     Encapsula una ruta de ejecución (subcarpeta de logs_local creada por una ejecución de la app).
     Permite acceder a logs, estadísticas, cachés, etc. de esa ejecución.
     """
+
     run_dir: Path = attrs.field(converter=Path)
 
     def get_run_statistics_path(self) -> Path:
@@ -15,6 +18,7 @@ class RunExecution:
         Usa el símbolo RUN_STATISTICS_FILENAME para mantener trazabilidad.
         """
         from immich_autotag.statistics.constants import RUN_STATISTICS_FILENAME
+
         return self.get_custom_path(RUN_STATISTICS_FILENAME)
 
     def get_user_config_dump_path(self) -> Path:

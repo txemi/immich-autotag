@@ -1,10 +1,10 @@
-
 # Nueva importación: RunExecution está en execution.py
-from .execution import RunExecution
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+
+from .execution import RunExecution
 
 
 class RunOutputManager:
@@ -55,7 +55,7 @@ class RunOutputManager:
     @classmethod
     def find_recent_run_dirs(
         cls, max_age_hours: int = 3, exclude_current: bool = True
-    ) -> list['RunExecution']:
+    ) -> list["RunExecution"]:
         """
         Devuelve una lista de objetos RunExecution para las ejecuciones recientes (subcarpetas con 'PID' en el nombre y fecha válida),
         ordenadas de más reciente a más antigua, filtradas por edad (max_age_hours).
@@ -79,7 +79,9 @@ class RunOutputManager:
         return [RunExecution(d) for _, d in recent_dirs]
 
     @classmethod
-    def get_previous_run_output_dir(cls, base_dir: Optional[Path] = None) -> Optional[RunExecution]:
+    def get_previous_run_output_dir(
+        cls, base_dir: Optional[Path] = None
+    ) -> Optional[RunExecution]:
         """
         Searches for the most recent previous execution folder in base_dir.
         Returns Path or None if there are no previous executions.

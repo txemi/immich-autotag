@@ -15,8 +15,6 @@ from urllib.parse import ParseResult
 import attrs
 
 from immich_autotag.run_output.execution import RunExecution
-
-
 from immich_autotag.run_output.manager import RunOutputManager
 
 if TYPE_CHECKING:
@@ -77,9 +75,6 @@ class ModificationReport:
         _instance_created = True
         print("[INFO] Assigning self to reserved global variable _instance.")
         _instance = self
-
-
-
 
     def _get_report_path(self) -> Path:
         return self.run_execution.get_modification_report_path()

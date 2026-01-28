@@ -157,7 +157,9 @@ class ConfigManager:
         if self.config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
         import yaml
+
         from immich_autotag.run_output.manager import RunOutputManager
+
         run_execution = RunOutputManager.get_run_output_dir()
         path = run_execution.get_user_config_dump_path()
         import enum

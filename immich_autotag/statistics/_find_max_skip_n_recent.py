@@ -1,14 +1,10 @@
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from typeguard import typechecked
 
 from immich_autotag.run_output.manager import RunOutputManager
 from immich_autotag.statistics.run_statistics import RunStatistics
-
-
-
 
 
 @typechecked
@@ -29,6 +25,7 @@ def get_max_skip_n_from_recent(
                     max_count = count
             except Exception as e:
                 import warnings
+
                 warnings.warn(f"Could not load {stats_path}: {e}")
     if max_count > 0:
         return max(0, max_count - overlap)
