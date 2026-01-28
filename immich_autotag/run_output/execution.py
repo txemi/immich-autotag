@@ -6,6 +6,12 @@ import attrs
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class RunExecution:
 
+    def get_full_output_log_path(self) -> Path:
+        """
+        Returns the path for the main tee log file for this run.
+        """
+        return self.run_dir / "immich_autotag_full_output.log"
+
     def get_links_markdown_path(self) -> Path:
         """
         Returns the path for the links markdown file for this run.

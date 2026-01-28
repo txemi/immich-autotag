@@ -68,7 +68,7 @@ class Tee:
 
 
 @typechecked
-def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
+def setup_tee_logging() -> None:
     """
     Duplicates stdout and stderr to a file in real time, without memory buffers.
     The file is created in the current run's log directory
@@ -77,8 +77,8 @@ def setup_tee_logging(basename: str = "immich_autotag_full_output.log") -> None:
     from immich_autotag.logging.utils import LogLevel, log
     from immich_autotag.run_output.manager import RunOutputManager
 
-    log_dir = RunOutputManager.get_run_output_dir()
-    log_path = log_dir / basename
+    run_exec = RunOutputManager.get_run_output_dir()
+    log_path = run_exec.get_full_output_log_path()
     Tee(filename=log_path, mode="a")
     log(
         f"[LOG] Tee logging initialized. Absolute log file path: {log_path.resolve()}",
