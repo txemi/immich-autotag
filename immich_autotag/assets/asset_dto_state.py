@@ -24,8 +24,7 @@ class AssetDtoType(enum.Enum):
     This distinction is important for knowing whether the DTO contains all available data or only a subset.
     """
 
-    PARTIAL_DEPRECATED = "partial"
-    FULL_DEPRECATED = "full"
+    FULL = "full"
     SEARCH = "search"
     ALBUM = "album"
 
@@ -63,7 +62,7 @@ class AssetDtoState:
                 raise TypeError(
                     f"In FULL mode, tags must be a list or Unset, but it is {type(tags)}"
                 )
-        elif self._api_endpoint_source == AssetDtoType.PARTIAL:
+        elif self._api_endpoint_source != AssetDtoType.FULL:
             if (
                 tags is not None
                 and not isinstance(tags, set)
