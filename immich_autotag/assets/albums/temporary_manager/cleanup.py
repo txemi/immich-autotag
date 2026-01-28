@@ -51,8 +51,8 @@ def remove_asset_from_autotag_temporary_albums(
             continue
 
         # Skip if asset not in album (idempotent check)
-        if not album_wrapper.has_asset(asset_wrapper):
-            continue
+            if not album_wrapper.has_asset_wrapper(asset_wrapper):
+                continue
 
         try:
             client = asset_wrapper.get_context().get_client()
