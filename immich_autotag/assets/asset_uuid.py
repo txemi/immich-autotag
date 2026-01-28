@@ -28,7 +28,7 @@ class AssetUUID:
 
     @classmethod
     def from_uuid(cls, value: uuid.UUID) -> "AssetUUID":
-        return cls(value)
+        return cls(str(value))
 
     @classmethod
     def from_str(cls, value: str) -> "AssetUUID":
