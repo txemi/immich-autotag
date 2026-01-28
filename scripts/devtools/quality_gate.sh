@@ -53,7 +53,7 @@
 # | flake8/ruff E501                  | Future      | Ignored, will block in future    |
 #
 
-set -x
+#set -x
 set -e
 set -o pipefail
 # Trap for unexpected errors to always print a clear message before exit
