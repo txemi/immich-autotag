@@ -9,8 +9,6 @@ from immich_autotag.classification.classification_rule_wrapper import (
 )
 from immich_autotag.classification.match_result import MatchResult
 from immich_autotag.classification.match_result_list import MatchResultList
-from immich_autotag.config._internal_types import ErrorHandlingMode
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.context.immich_context import ImmichContext
 
 # Example usage:
@@ -94,8 +92,7 @@ class ClassificationRuleSet:
             match = wrapper.matches_asset(asset_wrapper)
             if match is not None:
                 matches.append(match)
-        if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-            raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
+
         return MatchResultList(matches=matches)
 
     @typechecked
