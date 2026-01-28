@@ -53,8 +53,9 @@ def proxy_get_album_info(
     global _album_api_call_count, _album_api_ids
     from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
-    from immich_autotag.utils.api_disk_cache import ApiCacheManager
-    cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache)
+    cache_mgr = ApiCacheManager.create(
+        cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache
+    )
     cache_data = cache_mgr.load(str(album_id))
     if cache_data is not None:
         if isinstance(cache_data, dict):
@@ -63,7 +64,9 @@ def proxy_get_album_info(
             # Defensive: if cache is a list, return the first
             return AlbumResponseDto.from_dict(cache_data[0])
         else:
-            raise RuntimeError(f"Invalid cache data for album_id={album_id}: {type(cache_data)}")
+            raise RuntimeError(
+                f"Invalid cache data for album_id={album_id}: {type(cache_data)}"
+            )
     _album_api_call_count += 1
     _album_api_ids.add(str(album_id))
     dto = get_album_info.sync(id=album_id, client=client)
@@ -79,7 +82,9 @@ def proxy_remove_asset_from_album(
         id=album_id, client=client, body=BulkIdsDto(ids=asset_ids)
     )
     if result is None:
-        raise RuntimeError(f"Failed to remove assets from album {album_id}: API returned None")
+        raise RuntimeError(
+            f"Failed to remove assets from album {album_id}: API returned None"
+        )
     return result
 
 
@@ -116,19 +121,23 @@ def proxy_get_album_page(
     """
     Fetch a page of albums, using disk cache for each page.
     """
-    from immich_autotag.utils.api_disk_cache import ApiCacheManager
+
     cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUM_PAGES)
     cache_key = f"page_{page}_size_{page_size}"
     cache_data = cache_mgr.load(cache_key)
     if cache_data is not None:
         # Defensive: filter only dicts
-        return [AlbumResponseDto.from_dict(dto) for dto in cache_data if isinstance(dto, dict)]
+        return [
+            AlbumResponseDto.from_dict(dto)
+            for dto in cache_data
+            if isinstance(dto, dict)
+        ]
     # If not cached, fetch all albums and simulate pagination
     from immich_client.api.albums import get_all_albums
 
     all_albums = get_all_albums.sync(client=client)
     if all_albums is None:
-        raise RuntimeError(f"Failed to fetch albums: API returned None")
+        raise RuntimeError("Failed to fetch albums: API returned None")
     # Simulate pagination
     start = (page - 1) * page_size
     end = start + page_size

@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING
 
 from immich_autotag.utils.typeguard_hook import install_typeguard_import_hook
 
+# noqa: E402
 install_typeguard_import_hook()
+
 
 from immich_autotag.entrypoint.assets import process_assets_or_filtered
 from immich_autotag.entrypoint.collections import (

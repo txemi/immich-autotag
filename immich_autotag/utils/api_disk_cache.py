@@ -3,6 +3,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+import attrs
+
 from immich_autotag.config import internal_config
 from immich_autotag.run_output.manager import RunOutputManager
 
@@ -15,9 +17,6 @@ class ApiCacheKey(Enum):
     USERS = "users"
     ALBUM_PAGES = "album_pages"  # For caching paginated album results
     # Add more as needed
-
-
-import attrs
 
 
 @attrs.define(auto_attribs=True, slots=True)
