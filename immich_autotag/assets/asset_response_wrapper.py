@@ -35,6 +35,7 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.utils.deprecation import raise_deprecated_path
 from immich_autotag.utils.url_helpers import get_immich_photo_url
