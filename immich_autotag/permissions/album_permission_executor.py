@@ -18,6 +18,10 @@ from typeguard import typechecked
 
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.api.immich_proxy.albums import proxy_add_users_to_album
+from immich_autotag.api.immich_proxy.permissions import (
+    proxy_remove_user_from_album,
+    proxy_search_users,
+)
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
@@ -62,7 +66,7 @@ def _resolve_emails_to_user_ids(
 
     client = context.client
 
-    all_users = immich_search_users.sync(client=client)
+    all_users = proxy_search_users(client=client)
     if all_users is None:
         all_users = []
 
@@ -134,15 +138,14 @@ def add_members_to_album(
     """
     Add members to album (PONER).
 
-    Args:
-        album_id: UUID of the album
-        album_name: Name of the album
-        user_ids: List of user IDs to add
-        access_level: "editor" or "viewer" for access level
-        context: ImmichContext with API client
+  
     """
-    if not user_ids:
+    if not user_objs:
         return
+
+    album_id = album.get_album_uuid()
+    album_name = album.get_album_name()
+    user_ids = [str(user.id) for u in user_objs]  # adaptar según el tipo real
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
@@ -210,11 +213,7 @@ def _remove_members_from_album(
 
     client = context.client
     for user_id in user_ids:
-        immich_remove_user_from_album.sync_detailed(
-            id=UUID(album_id),
-            user_id=user_id,
-            client=client,
-        )
+        proxy_remove_user_from_album(client=client)
         log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
 
 
