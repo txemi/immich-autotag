@@ -140,7 +140,6 @@ def add_members_to_album(
     Add members to album (PONER).
     """
 
-
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
     user_id = user.get_id_as_str()
