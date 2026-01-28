@@ -1,3 +1,4 @@
+from immich_autotag.run_output.run_output_dir import get_run_output_dir, find_recent_run_dirs
 import json
 from enum import Enum
 from pathlib import Path
