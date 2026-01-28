@@ -52,7 +52,7 @@ def _handle_duplicate_conflicts(
         album_decision.duplicates_info.get_details().values()
     )
     for wrapper in all_wrappers:
-        wrapper.ensure_autotag_duplicate_album_conflict(conflict, duplicate_id=dup_id)
+        wrapper.ensure_autotag_duplicate_album_conflict(conflict=conflict, duplicate_id=dup_id, disable=False)
 
 
 @typechecked
