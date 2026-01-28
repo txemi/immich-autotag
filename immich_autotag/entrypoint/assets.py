@@ -11,7 +11,9 @@ def process_assets_or_filtered(manager: ConfigManager, context: ImmichContext) -
     from immich_autotag.logging.utils import log
     from immich_autotag.utils.perf.perf_phase_tracker import perf_phase_tracker
 
-    filter_wrapper = FilterConfigWrapper.from_filter_config(manager.config.filters)
+
+    filter_wrapper = FilterConfigWrapper.from_filter_config(manager.get_config_or_raise().filters)
+
     if filter_wrapper.is_focused():
         ruleset = filter_wrapper.get_filter_in_ruleset()
         assets_to_process = ruleset.get_filtered_in_assets_by_uuid(context)
