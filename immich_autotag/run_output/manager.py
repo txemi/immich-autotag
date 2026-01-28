@@ -1,3 +1,6 @@
+
+# Nueva importación: RunExecution está en execution.py
+from .execution import RunExecution
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -36,11 +39,10 @@ class RunOutputManager:
         return [d for d in base_dir.iterdir() if RunOutputManager._is_run_dir(d)]
 
     @classmethod
-    def get_run_output_dir(cls, base_dir: Path | None = None) -> Path:
+    def get_run_output_dir(cls, base_dir: Path | None = None) -> RunExecution:
         """
-        Returns the output directory for the current run. Argument must be a Path.
+        Returns a RunExecution object for the current run. Argument must be a Path.
         """
-
         if cls._RUN_OUTPUT_DIR is None:
             if base_dir is None:
                 base_dir = cls.LOGS_LOCAL_DIR
@@ -48,21 +50,20 @@ class RunOutputManager:
             pid = os.getpid()
             cls._RUN_OUTPUT_DIR = Path(base_dir) / f"{now}{cls._RUN_DIR_PID_SEP}{pid}"
             cls._RUN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        return cls._RUN_OUTPUT_DIR
+        return RunExecution(cls._RUN_OUTPUT_DIR)
 
     @classmethod
     def find_recent_run_dirs(
         cls, logs_dir: Path, max_age_hours: int = 3, exclude_current: bool = True
-    ) -> list[Path]:
+    ) -> list['RunExecution']:
         """
-        Returns a list of recent execution folders (subdirs with 'PID' in the name and a valid date),
-        sorted from most recent to oldest, filtered by age (max_age_hours).
-        If exclude_current is True, excludes the current execution folder.
+        Devuelve una lista de objetos RunExecution para las ejecuciones recientes (subcarpetas con 'PID' en el nombre y fecha válida),
+        ordenadas de más reciente a más antigua, filtradas por edad (max_age_hours).
+        Si exclude_current es True, excluye la carpeta de la ejecución actual.
         """
         now = datetime.now()
-        current_run_dir = (
-            cls.get_run_output_dir(logs_dir).resolve() if exclude_current else None
-        )
+        current_run = cls.get_run_output_dir(logs_dir) if exclude_current else None
+        current_run_dir = current_run.path if current_run else None
         recent_dirs: list[tuple[datetime, Path]] = []
         for subdir in cls._list_run_dirs(logs_dir):
             try:
@@ -74,10 +75,10 @@ class RunOutputManager:
             if dt is not None and now - dt < timedelta(hours=max_age_hours):
                 recent_dirs.append((dt, subdir))
         recent_dirs.sort(reverse=True)
-        return [d for _, d in recent_dirs]
+        return [RunExecution(d) for _, d in recent_dirs]
 
     @classmethod
-    def get_previous_run_output_dir(cls, base_dir: Path = None) -> Optional[Path]:
+    def get_previous_run_output_dir(cls, base_dir: Optional[Path] = None) -> Optional[RunExecution]:
         """
         Searches for the most recent previous execution folder in base_dir.
         Returns Path or None if there are no previous executions.
@@ -97,8 +98,8 @@ class RunOutputManager:
             reverse=True,
         )
         for d in dirs:
-            if d != current:
-                return d
+            if d != current.path:
+                return RunExecution(d)
         return None
 
     """

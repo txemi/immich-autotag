@@ -14,6 +14,8 @@ from urllib.parse import ParseResult
 
 import attrs
 
+from immich_autotag.run_output.execution import RunExecution
+
 
 from immich_autotag.run_output.manager import RunOutputManager
 
@@ -42,12 +44,9 @@ class ModificationReport:
         default=attrs.Factory(threading.Lock), init=False, repr=False
     )
 
-    log_dir: Path = attrs.field(
-        default=RunOutputManager.get_run_output_dir(), validator=attrs.validators.instance_of(Path)
-    )
-    report_path: Path = attrs.field(
-        factory=lambda: RunOutputManager.get_run_output_dir() / "modification_report.txt",
-        validator=attrs.validators.instance_of(Path),
+    run_execution: RunExecution = attrs.field(
+        factory=RunOutputManager.get_run_output_dir,
+        validator=attrs.validators.instance_of(RunExecution),
     )
     batch_size: int = attrs.field(
         default=1, validator=attrs.validators.instance_of(int)
@@ -78,6 +77,12 @@ class ModificationReport:
         _instance_created = True
         print("[INFO] Assigning self to reserved global variable _instance.")
         _instance = self
+
+
+
+
+    def _get_report_path(self) -> Path:
+        return self.run_execution.get_modification_report_path()
 
     @staticmethod
     def get_instance() -> "ModificationReport":
@@ -123,8 +128,9 @@ class ModificationReport:
         """
         if not self._cleared_report:
             try:
-                self.report_path.parent.mkdir(parents=True, exist_ok=True)
-                with self.report_path.open("w", encoding="utf-8"):
+                report_path = self._get_report_path()
+                report_path.parent.mkdir(parents=True, exist_ok=True)
+                with report_path.open("w", encoding="utf-8"):
                     pass  # Truncate the file
             except Exception as e:
                 from immich_autotag.logging.levels import LogLevel
@@ -380,8 +386,9 @@ class ModificationReport:
         import os
 
         with self._lock:
-            os.makedirs(os.path.dirname(self.report_path), exist_ok=True)
-            with open(self.report_path, "a", encoding="utf-8") as f:
+            report_path = self._get_report_path()
+            os.makedirs(os.path.dirname(report_path), exist_ok=True)
+            with open(report_path, "a", encoding="utf-8") as f:
                 for entry in self.modifications[-self._since_last_flush :]:
                     f.write(self._format_modification_entry(entry) + "\n")
             self._since_last_flush = 0
