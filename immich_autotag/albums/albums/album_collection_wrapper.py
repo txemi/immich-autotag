@@ -865,7 +865,7 @@ class AlbumCollectionWrapper:
 
             add_members_to_album(
                 album=album,
-                user,
+                user=user,
                 access_level="editor",
                 context=context,
             )
