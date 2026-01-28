@@ -11,7 +11,7 @@ from immich_autotag.duplicates.duplicate_collection_wrapper import (
 
 @attrs.define(auto_attribs=True, slots=True)
 class DuplicatesLoader:
-    client: Client
+    client: AuthenticatedClient
     duplicates: Optional[DuplicateCollectionWrapper] = None
 
     def load(self):
