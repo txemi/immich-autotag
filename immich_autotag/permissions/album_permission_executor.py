@@ -132,7 +132,7 @@ def _get_current_members(
 def add_members_to_album(
     *,
     album: AlbumResponseWrapper,
-    user: UserResponseWrapper,
+    users: List[UserResponseWrapper]    ,
     access_level: AlbumUserRole,
     context: ImmichContext,
 ) -> None:
@@ -142,7 +142,7 @@ def add_members_to_album(
 
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
-    user_id = user.get_id_as_str()
+    users_id =   [user.get_id_as_str() for user in users]
     user_ids = [user_id]
 
     log(
