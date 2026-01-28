@@ -20,8 +20,7 @@ _instance_created = False
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ConfigManager:
-
-    config: Optional[UserConfig] = None
+    _config: Optional[UserConfig] = None
 
     @typechecked
     def _try_load_dynamic(self):
@@ -50,17 +49,17 @@ class ConfigManager:
             )
             config_obj = load_python_config(config_location.path)
             if isinstance(config_obj, UserConfig):
-                self.config = config_obj
+                self._config = config_obj
             else:
                 print("[CONFIG] Validating config object as UserConfig...")
-                self.config = UserConfig.model_validate(config_obj)
+                self._config = UserConfig.model_validate(config_obj)
         elif config_type == config_type.__class__.YAML:
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
             log(f"Loading YAML config from {config_location.path}", level=LogLevel.INFO)
             config_data = load_yaml_config(config_location.path)
-            self.config = UserConfig.model_validate(config_data)
+            self._config = UserConfig.model_validate(config_data)
         else:
             from immich_autotag.utils.user_help import print_config_help
 
@@ -73,7 +72,7 @@ class ConfigManager:
     def _load(self):
         try:
             self.load_config_from_real_python()
-            if self.config:
+            if self._config:
                 return
         except Exception:
             pass  # Ignore and try dynamic loading
@@ -82,7 +81,7 @@ class ConfigManager:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        log(f"Config loaded successfully: {type(self.config)}", level=LogLevel.INFO)
+        log(f"Config loaded successfully: {type(self._config)}", level=LogLevel.INFO)
 
     def _construction(self):
         # --- New configuration search and loading logic ---
@@ -138,7 +137,7 @@ class ConfigManager:
     def load_config(self, config_path: Path):
         with open(config_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        self.config = UserConfig.model_validate(data)
+        self._config = UserConfig.model_validate(data)
         # Save a record of the loaded config to logs/output
         self.dump_to_yaml()
 
@@ -149,12 +148,12 @@ class ConfigManager:
         """
         from .user_config import user_config
 
-        self.config = user_config
+        self._config = user_config
 
     @typechecked
     def dump_to_yaml(self):
         """Dumps the current configuration to a YAML file in the default logs/output folder."""
-        if self.config is None:
+        if self._config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
         import yaml
 
@@ -175,7 +174,7 @@ class ConfigManager:
         yaml.add_representer(enum.Enum, enum_representer)
         # Standard dump only
         with open(str(path), "w", encoding="utf-8") as f:
-            yaml.dump(self.config.model_dump(), f, allow_unicode=True, sort_keys=False)
+            yaml.dump(self._config.model_dump(), f, allow_unicode=True, sort_keys=False)
 
     @typechecked
     def print_config(self):
@@ -183,17 +182,17 @@ class ConfigManager:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        if self.config is None:
+        if self._config is None:
             log("[WARN] No configuration loaded.", level=LogLevel.FOCUS)
             raise RuntimeError("No configuration loaded to print.")
         import pprint
 
-        config_str = pprint.pformat(self.config.model_dump())
+        config_str = pprint.pformat(self._config.model_dump())
         log(f"Loaded config:\n{config_str}", level=LogLevel.FOCUS)
 
     @staticmethod
     def is_checkpoint_resume_enabled() -> bool:
-        config = ConfigManager.get_instance().config
+        config = ConfigManager.get_instance()._config
         if config is None:
             return False
         # Prefer explicit access to known config fields. The skip/resume logic
@@ -205,12 +204,12 @@ class ConfigManager:
             return False
 
     def get_config(self) -> UserConfig:
-        if self.config is None:
+        if self._config is None:
             raise RuntimeError("No configuration loaded.")
-        return self.config
+        return self._config
 
     # --- Automatic loading at startup (usage example) ---
     def get_config_or_raise(self) -> UserConfig:
-        if self.config is None:
+        if self._config is None:
             raise ValueError("No configuration loaded in ConfigManager.")
-        return self.config
+        return self._config

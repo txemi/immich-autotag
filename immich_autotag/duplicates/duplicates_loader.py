@@ -1,7 +1,6 @@
 from typing import Optional
 
 import attrs
-from immich_client import Client
 
 from immich_autotag.api.immich_proxy.duplicates import proxy_get_asset_duplicates
 from immich_autotag.duplicates.duplicate_collection_wrapper import (
