@@ -6,6 +6,12 @@ import attrs
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class RunExecution:
 
+    def get_albums_unavailable_summary_path(self) -> "Path":
+        """
+        Returns the path for the albums unavailable summary JSON file for this run.
+        """
+        return self.run_dir / "albums_unavailable_summary.json"
+
     def get_albums_duplicates_summary_path(self) -> "Path":
         """
         Returns the path for the albums duplicates summary JSON file for this run.

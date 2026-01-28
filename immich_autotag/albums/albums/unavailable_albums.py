@@ -53,7 +53,7 @@ class UnavailableAlbums:
         # Import error-mode config so we can decide whether to swallow IO errors
         # Fail-fast: configuration symbols must exist; let ImportError propagate.
         from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
-        from immich_autotag.utils.run_output_dir import get_run_output_dir
+        from immich_autotag.run_output.manager import RunOutputManager
 
         summary_items: list[dict[str, str]] = []
 
@@ -77,9 +77,9 @@ class UnavailableAlbums:
             name: str = wrapper.get_album_name()
             summary_items.append({"id": album_id, "name": name})
 
-        out_dir = get_run_output_dir()
-        out_dir.mkdir(parents=True, exist_ok=True)
-        out_file = out_dir / "albums_unavailable_summary.json"
+        run_exec = RunOutputManager.get_run_output_dir()
+        out_file = run_exec.get_albums_unavailable_summary_path()
+        out_file.parent.mkdir(parents=True, exist_ok=True)
 
         try:
             with out_file.open("w", encoding="utf-8") as fh:
