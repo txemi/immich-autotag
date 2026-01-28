@@ -40,7 +40,7 @@ class CheckpointManager:
         from immich_autotag.run_output.manager import RunOutputManager
 
         run_execution = RunOutputManager.get_run_output_dir()
-            stats_dir = self.stats_manager.get_or_create_run_stats().get_stats_dir()
+        stats_dir = self.stats_manager.get_or_create_run_stats().get_stats_dir()
         skip_n = 0
         origen = None
         if enable_checkpoint_resume and config_resume_previous:
