@@ -700,7 +700,8 @@ etiquetas
 complejo
 sencillo
 referencia
-ejemplo'
+ejemplo
+inicio'
 
 	local SPANISH_WORD_PATTERN
 	SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)

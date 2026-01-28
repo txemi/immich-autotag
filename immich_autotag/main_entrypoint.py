@@ -34,8 +34,10 @@ def run_main_inner() -> None:
     from immich_autotag.entrypoint.collections import (
         apply_conversions_to_all_assets_early,
     )
+    from immich_autotag.config.internal_config import APPLY_CONVERSIONS_AT_START
 
-    apply_conversions_to_all_assets_early(context)
+    if APPLY_CONVERSIONS_AT_START:
+        apply_conversions_to_all_assets_early(context)
     albums_collection = context.get_albums_collection()
     force_full_album_loading(albums_collection)
     process_permissions(manager, context)

@@ -20,7 +20,20 @@ if TYPE_CHECKING:
 class AssetManager:
 
     client: Client
-    _assets: Dict[UUID, AssetResponseWrapper] = attrs.field(factory=dict, init=False)
+    # Si no se mantienen en memoria, _assets será None
+    _assets: Optional[Dict[UUID, AssetResponseWrapper]] = attrs.field(
+        default=None, init=False
+    )
+    _keep_assets_in_memory: bool = attrs.field(
+        default=KEEP_ASSETS_IN_MEMORY, init=False
+    )
+
+    def __attrs_post_init__(self):
+        self._keep_assets_in_memory = KEEP_ASSETS_IN_MEMORY
+        if self._keep_assets_in_memory:
+            self._assets = {}
+        else:
+            self._assets = None
 
     @typechecked
     def iter_assets(
@@ -39,7 +52,8 @@ class AssetManager:
             if not isinstance(asset, AssetResponseWrapper):
                 raise RuntimeError(f"Expected AssetResponseWrapper, got {type(asset)}")
             asset_uuid = asset.get_uuid()
-            self._assets[asset_uuid] = asset
+            if self._assets is not None:
+                self._assets[asset_uuid] = asset
             yield asset
 
     @typechecked
@@ -51,12 +65,13 @@ class AssetManager:
         or requesting it from the API and storing it if not.
         First checks the in-memory cache, then disk, and finally the API.
         """
-        if asset_id in self._assets:
+        if self._assets is not None and asset_id in self._assets:
             return self._assets[asset_id]
 
         # Centralizes the retrieval logic in AssetResponseWrapper
         asset = AssetResponseWrapper.from_id(asset_id, context)
-        self._assets[asset_id] = asset
+        if self._assets is not None:
+            self._assets[asset_id] = asset
         return asset
 
     @typechecked
@@ -73,10 +88,11 @@ class AssetManager:
         if dto_type not in (AssetDtoType.ALBUM, AssetDtoType.SEARCH):
             raise ValueError(f"Unsupported dto_type {dto_type} for album asset DTOs")
         asset_uuid = UUID(asset_dto.id)
-        if asset_uuid in self._assets:
+        if self._assets is not None and asset_uuid in self._assets:
             return self._assets[asset_uuid]
 
         entry = AssetCacheEntry._from_dto_entry(dto=asset_dto, dto_type=dto_type)
         wrapper = AssetResponseWrapper(context, entry)
-        self._assets[asset_uuid] = wrapper
+        if self._assets is not None:
+            self._assets[asset_uuid] = wrapper
         return wrapper

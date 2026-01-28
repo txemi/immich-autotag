@@ -18,6 +18,10 @@ ENABLE_PROFILING = False  # Set to True to enable cProfile profiling
 # Enable tracemalloc memory profiling
 ENABLE_MEMORY_PROFILING = False  # Set to False to disable tracemalloc memory profiling
 
+# ==================== MEMORY CONTROL ====================
+# Control whether assets are kept in memory (True = keep in memory, False = release after use)
+KEEP_ASSETS_IN_MEMORY = False  # Default False; set to True to keep assets in memory
+
 # ==================== ALBUM HANDLING / THRESHOLDS ====================
 # Number of errors in the window required to mark an album unavailable
 ALBUM_ERROR_THRESHOLD = 3
@@ -38,3 +42,7 @@ MERGE_DUPLICATE_ALBUMS_ENABLED = (
 FORCED_LOG_LEVEL = (
     LogLevel.DEBUG
 )  # Change to 'DEBUG' to force massive logging in development/CI
+
+# ==================== CONVERSIONS AT STARTUP ====================
+# Controls whether all conversions are applied to assets at application startup
+APPLY_CONVERSIONS_AT_START = True  # Set to False to disable mass processing at startup
