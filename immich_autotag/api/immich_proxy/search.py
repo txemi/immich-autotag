@@ -1,4 +1,3 @@
-
 from immich_client.api.search.search_assets import sync_detailed as search_assets
 from immich_client.client import AuthenticatedClient
 from immich_client.models.metadata_search_dto import MetadataSearchDto
