@@ -1,7 +1,6 @@
-
 from datetime import datetime
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 import attrs
 
@@ -12,7 +11,6 @@ from .date_source_kind import DateSourceKind
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDateCandidate:
-
     """
     Represents a candidate date offered by an asset (can be the main asset or a duplicate).
     Each instance corresponds to a possible date source for that asset, such as the Immich date, the date extracted from the filename, from the path, EXIF, etc.
