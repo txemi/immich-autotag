@@ -136,7 +136,7 @@ class AssetCacheEntry:
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
-        state = AssetDtoState(_dto=dto, _api_endpoint_source=dto_type)
+        state = AssetDtoState(dto=dto, api_endpoint_source=dto_type)
         return cls(state=state, max_age_seconds=max_age_seconds)
 
     @classmethod
