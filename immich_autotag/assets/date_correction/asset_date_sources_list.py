@@ -5,17 +5,17 @@ if TYPE_CHECKING:
     from .asset_date_candidates import AssetDateCandidates
 
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import attrs
 from typeguard import typechecked
 
 from .asset_date_candidate import AssetDateCandidate
 from .asset_date_candidates import AssetDateCandidates
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .asset_date_candidates import AssetDateCandidates
+
 from .date_source_kind import DateSourceKind
 
 
@@ -50,7 +50,6 @@ class AssetDateSourcesList:
     # Each entry in candidates_list is an AssetDateCandidates object for a specific asset/duplicate.
     # The asset_wrapper field indicates the asset that triggered this investigation.
     # TODO: Consider renaming to AssetDateCandidatesList for clarity.
-
 
     @typechecked
     def add(self, candidate_set: AssetDateCandidates) -> None:
