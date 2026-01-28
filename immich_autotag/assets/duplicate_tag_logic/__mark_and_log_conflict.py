@@ -26,7 +26,6 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
     log(msg, level=LogLevel.FOCUS)
     from immich_autotag.config.models import DuplicateProcessingConfig, UserConfig
 
-
     config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
     if config.duplicate_processing is None:
         log(

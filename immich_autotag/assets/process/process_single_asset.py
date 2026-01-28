@@ -42,7 +42,6 @@ def _correct_date_if_enabled(
 ) -> DateCorrectionStepResult | None:
     """Correct the asset date if the feature is enabled in config."""
 
-
     config = ConfigManager.get_instance().get_config_or_raise()
     if (
         config.duplicate_processing is not None
@@ -53,7 +52,6 @@ def _correct_date_if_enabled(
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
 
         return correct_asset_date(asset_wrapper)
-
 
 
 @typechecked
@@ -142,15 +140,10 @@ def process_single_asset(
     log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.DEBUG)
     from immich_autotag.config.manager import ConfigManager
 
-
     config = ConfigManager.get_instance().get_config_or_raise()
-    if (
-        config.album_date_consistency
-        and config.album_date_consistency.enabled
-    ):
+    if config.album_date_consistency and config.album_date_consistency.enabled:
         threshold_days = config.album_date_consistency.threshold_days
         check_album_date_consistency(asset_wrapper, tag_mod_report, threshold_days)
-
 
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
