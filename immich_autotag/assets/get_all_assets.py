@@ -60,7 +60,9 @@ def _yield_assets_from_page(
             break
         # asset is always AssetResponseDto
         log_debug(f"[INFO] Using AssetManager to get wrapper, asset_id={asset.id}")
-        wrapper = asset_manager.get_wrapper_for_asset_dto(asset_dto=asset, dto_type=AssetDtoType.SEARCH, context=context)
+        wrapper = asset_manager.get_wrapper_for_asset_dto(
+            asset_dto=asset, dto_type=AssetDtoType.SEARCH, context=context
+        )
         yield wrapper
         yielded += 1
 
