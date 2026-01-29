@@ -9,6 +9,7 @@ from immich_autotag.assets.albums.analyze_and_assign_album import (
     analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.assets.consistency_checks._album_date_consistency import (
     check_album_date_consistency,
 )
@@ -85,7 +86,7 @@ def process_single_asset(
 
     from typing import Optional
 
-    asset_id: Optional[UUID] = asset_wrapper.get_uuid()
+    asset_id: Optional[AssetUUID] = asset_wrapper.get_uuid()
 
     log_debug(f"[BUG] START process_single_asset {asset_id}")
 
