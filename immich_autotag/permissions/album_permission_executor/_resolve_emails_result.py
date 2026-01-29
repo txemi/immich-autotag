@@ -1,5 +1,5 @@
 """
-Este módulo es interno al paquete y no debe ser importado directamente.
+This module is internal to the package and should not be imported directly.
 """
 
 from typing import Dict, List
