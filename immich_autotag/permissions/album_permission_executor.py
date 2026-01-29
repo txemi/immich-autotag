@@ -1,17 +1,6 @@
 from __future__ import annotations
 
-from typing import Sequence
-
-# Helper to remove members from album
-
-"""
-Album Permission Executor - Phase 2
-
-Synchronizes album member permissions with configured rules.
-Implements complete synchronization: config is source of truth (add + remove).
-"""
-
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Sequence
 from uuid import UUID
 
 from immich_client.models.add_users_dto import AddUsersDto
@@ -37,6 +26,19 @@ if TYPE_CHECKING:
     from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 import attrs
+
+# Helper to remove members from album
+"""
+Album Permission Executor - Phase 2
+
+Synchronizes album member permissions with configured rules.
+Implements complete synchronization: config is source of truth (add + remove).
+"""
+
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 
 @attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
