@@ -45,7 +45,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-
 # Exception for date integrity
 class DateIntegrityError(Exception):
     pass
