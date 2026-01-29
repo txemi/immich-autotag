@@ -11,7 +11,9 @@ class TagWrapper:
     Wrapper for TagResponseDto that allows adding useful methods and properties.
     """
 
-    _tag: TagResponseDto = attrs.field(validator=attrs.validators.instance_of(TagResponseDto))
+    _tag: TagResponseDto = attrs.field(
+        validator=attrs.validators.instance_of(TagResponseDto)
+    )
 
     @typechecked
     def get_id(self) -> UUID:
