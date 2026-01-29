@@ -164,7 +164,7 @@ class AlbumResponseWrapper:
     # --- 6. Public Methods - Asset Management ---
 
     @conditional_typechecked
-    def get_asset_uuids(self) -> set[UUID]:
+    def get_asset_uuids(self) -> set[AssetUUID]:
         """
         Returns the asset IDs as a set of UUID objects using the AlbumCacheEntry logic.
         """
