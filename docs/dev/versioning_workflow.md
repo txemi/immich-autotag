@@ -1,5 +1,19 @@
 # Versioning and Release Workflow for immich-autotag
 
+## Versioning conventions (SemVer + Quality Gate)
+
+This project follows [Semantic Versioning (SemVer)](https://semver.org/) with the following conventions:
+
+- **MAJOR** (first digit): Incompatible changes or major functional jumps.
+- **MINOR** (second digit): New important features, significant refactors, or user-visible changes.
+- **PATCH** (third digit):
+    - Incremented for minor fixes, hotfixes, or to mark Quality Gate points (e.g., when the STANDARD Quality Gate is passed or CI/CD is stabilized), even if there are no relevant functional changes.
+    - The changelog only details functional or user-relevant changes (MAJOR/MINOR). PATCH increments for Quality Gate or maintenance do not require a detailed entry, unless you want to explicitly record the milestone.
+
+**Note:** If you want to record a Quality Gate milestone, you may add a brief entry in the changelog, but it is not required to detail every PATCH if there are no functional changes.
+
+For more details on how versions and Quality Gate milestones are reflected, see the header of [`../CHANGELOG.md`](../CHANGELOG.md).
+
 ## Workflow Consensus (2026-01-10)
 
 ### Source of Truth
