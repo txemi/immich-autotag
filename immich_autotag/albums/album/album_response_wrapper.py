@@ -13,6 +13,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
