@@ -28,7 +28,6 @@ def print_album_api_call_summary(
     log_func: Optional[Callable[[str, LogLevel], None]] = None,
     loglevel: Optional[LogLevel] = None,
 ) -> None:
-    from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
     log_fn = log_func or log
