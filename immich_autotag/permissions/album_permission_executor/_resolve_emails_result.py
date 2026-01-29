@@ -1,8 +1,11 @@
 """
 Este módulo es interno al paquete y no debe ser importado directamente.
 """
-import attrs
+
 from typing import Dict, List
+
+import attrs
+
 
 @attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
 class ResolveEmailsResult:

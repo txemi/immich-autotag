@@ -1,13 +1,18 @@
 """
 Este módulo es interno al paquete y no debe ser importado directamente.
 """
+
 from typing import List
+
 from typeguard import typechecked
-from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.logging.levels import LogLevel
+
 from immich_autotag.api.immich_proxy.permissions import proxy_search_users
+from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log, log_debug
+
 from ._resolve_emails_result import ResolveEmailsResult
+
 
 @typechecked
 def resolve_emails_to_user_ids(
@@ -40,7 +45,9 @@ def resolve_emails_to_user_ids(
 
     # Check which emails were resolved
     email_set = set(emails)
-    resolved = {email: email_to_id[email] for email in email_set if email in email_to_id}
+    resolved = {
+        email: email_to_id[email] for email in email_set if email in email_to_id
+    }
     unresolved = [email for email in email_set if email not in email_to_id]
 
     if unresolved:

@@ -1,12 +1,16 @@
 """
 Este módulo es interno al paquete y no debe ser importado directamente.
 """
+
 from typing import List
 from uuid import UUID
-from typeguard import typechecked
+
 from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+from typeguard import typechecked
+
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.utils import log_debug
+
 
 @typechecked
 def get_current_members(
@@ -18,7 +22,9 @@ def get_current_members(
     """
     log_debug(f"[ALBUM_PERMISSIONS] Fetching current members for album {album_id}")
 
-    from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
 
     # Try to get the album wrapper from the collection first
     collection = AlbumCollectionWrapper.get_instance()

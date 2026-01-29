@@ -1,21 +1,23 @@
 from typeguard import typechecked
-from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.logging.levels import LogLevel
-from immich_autotag.report.modification_kind import ModificationKind
-from ._resolve_emails_to_user_ids import resolve_emails_to_user_ids
-from ._get_current_members import get_current_members
-from .add_members_to_album import add_members_to_album
-from ._remove_members_from_album import remove_members_from_album
+
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log, log_debug
+from immich_autotag.report.modification_kind import ModificationKind
+from immich_autotag.report.modification_report import ModificationReport
+
+from ._get_current_members import get_current_members
+from ._remove_members_from_album import remove_members_from_album
+from ._resolve_emails_to_user_ids import resolve_emails_to_user_ids
 
 if True:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
+
 @typechecked
 def sync_album_permissions(
-    album_wrapper: 'AlbumResponseWrapper',
+    album_wrapper: "AlbumResponseWrapper",
     resolved_policy: ResolvedAlbumPolicy,
     context: ImmichContext,
 ) -> None:
