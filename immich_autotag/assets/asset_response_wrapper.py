@@ -884,7 +884,7 @@ class AssetResponseWrapper:
         *,
         conflict: bool,
         user: "UserResponseWrapper | None" = None,
-        duplicate_id: UUID 
+        duplicate_id: UUID,
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
@@ -898,12 +898,14 @@ class AssetResponseWrapper:
             tag_name = config.duplicate_processing.autotag_album_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
+
             log(
                 "[WARNING] autotag_album_conflict not set in config.duplicate_processing; skipping tag management."
             )
             return
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
+
         # Generic tag
         if conflict:
             if not self.has_tag(tag_name=tag_name):

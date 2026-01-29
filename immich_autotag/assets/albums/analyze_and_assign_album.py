@@ -42,6 +42,7 @@ def _handle_duplicate_conflicts(
     conflict = album_decision.has_conflict()
     duplicate_id = asset_wrapper.get_duplicate_id_as_uuid()
     from immich_client.types import Unset
+
     dup_id = None if isinstance(duplicate_id, Unset) else duplicate_id
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()

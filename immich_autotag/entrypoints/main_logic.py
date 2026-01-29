@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 
-
 def run_main_inner_logic():
     from immich_autotag.entrypoint.assets import process_assets_or_filtered
     from immich_autotag.entrypoint.collections import (
