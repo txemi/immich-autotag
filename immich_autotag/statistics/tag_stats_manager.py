@@ -41,7 +41,7 @@ class TagStatsManager:
 
     @typechecked
     def increment_tag_added(self, tag: "TagWrapper") -> None:
-        tag_name = tag.name
+        tag_name = tag.get_name()
         if tag_name in self.stats_manager.RELEVANT_TAGS:
             stats = self.stats_manager.get_stats()
             if tag_name not in stats.output_tag_counters:
@@ -54,7 +54,7 @@ class TagStatsManager:
     @typechecked
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
         try:
-            tag_name = tag.name
+            tag_name = tag.get_name()
         except AttributeError:
             raise TypeError(
                 f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}"
@@ -78,7 +78,7 @@ class TagStatsManager:
 
     @typechecked
     def _increment_tag_error(self, tag: "TagWrapper") -> None:
-        tag_name = tag.name
+        tag_name = tag.get_name()
         stats = self.stats_manager.get_stats()
         if tag_name not in stats.output_tag_counters:
             from .run_statistics import OutputTagCounter

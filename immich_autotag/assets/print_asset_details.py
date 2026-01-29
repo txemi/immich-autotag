@@ -22,7 +22,7 @@ def print_asset_details_with_tags(asset_id: AssetUUID, client: ImmichClient) -> 
     if asset_wrapper is None:
         raise RuntimeError(f"Asset with ID {asset_id} not found.")
     tag_list = asset_wrapper.get_tags()
-    tag_names = [tag.name for tag in tag_list] if tag_list else []
+    tag_names = [tag.get_name() for tag in tag_list] if tag_list else []
     print(
         f"Asset: {asset_wrapper.asset.get_original_file_name()} | Tags: {', '.join(tag_names) if tag_names else '-'}"
     )
