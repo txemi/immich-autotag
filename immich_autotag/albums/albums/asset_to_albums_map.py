@@ -42,7 +42,7 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
         raise NotImplementedError("revisar")
         if album_wrapper.has_loaded_assets():
             for asset_uuid in album_wrapper.get_asset_uuids():
-                asset_uuid = AssetUUID.from_uuid(asset_uuid) if not isinstance(asset_uuid, AssetUUID) else asset_uuid
+                asset_uuid = asset_uuid
                 if asset_uuid in self:
                     album_list = self[asset_uuid]
                     album_list.remove_album(album_wrapper)
