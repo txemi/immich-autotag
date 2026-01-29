@@ -430,11 +430,10 @@ class AssetResponseWrapper:
         return True
 
     @typechecked
-    def _get_current_tag_ids(self) -> list[UUID]:
-        """Returns the IDs of the asset's current tags."""
-
+    def _get_current_tag_ids(self) -> list[AssetUUID]:
+        """Returns the AssetUUIDs of the asset's current tags."""
         tags: list[TagWrapper] = self.get_tags()
-        return [str(t.get_id()) for t in tags]
+        return [t.get_id() for t in tags]
 
     @typechecked
     def get_album_names(self) -> list[str]:
