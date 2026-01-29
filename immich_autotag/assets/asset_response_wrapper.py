@@ -1048,12 +1048,14 @@ class AssetResponseWrapper:
 
     @classmethod
     def from_id(
-        cls, asset_id: UUID, context: "ImmichContext"
+        cls, asset_id: AssetUUID, context: "ImmichContext"
     ) -> "AssetResponseWrapper":
         """
         Gets an AssetResponseWrapper by ID, delegating the retrieval logic to AssetCacheEntry._from_cache_or_api.
         """
         from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
+        from immich_autotag.assets.asset_uuid import AssetUUID
+
 
         entry = AssetCacheEntry.from_cache_or_api(asset_id)
         return cls(context, entry)
