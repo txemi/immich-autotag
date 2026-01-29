@@ -1,6 +1,8 @@
+from __future__ import annotations
 import atexit
 from typing import Callable, List, Optional
 from uuid import UUID
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 from immich_client.api.albums import (
     add_assets_to_album,
