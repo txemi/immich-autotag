@@ -137,7 +137,7 @@ class ClassificationRuleWrapper:
         return len(self.extract_uuids_from_asset_links()) > 0
 
     @typechecked
-    def extract_uuids_from_asset_links(self) -> list["UUID"]:
+    def extract_uuids_from_asset_links(self) -> list["AssetUUID"]:
         """
         Extracts UUIDs from the asset_links of this rule.
         Accepts complete URLs or direct UUIDs.

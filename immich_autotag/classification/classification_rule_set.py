@@ -126,7 +126,7 @@ class ClassificationRuleSet:
         """
         from uuid import UUID
 
-        all_uuids: List[UUID] = []
+        all_uuids: List[AssetUUID] = []
         for wrapper in self.rules:
             all_uuids.extend(wrapper.extract_uuids_from_asset_links())
 

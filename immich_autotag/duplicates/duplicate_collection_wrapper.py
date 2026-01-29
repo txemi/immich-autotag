@@ -6,6 +6,8 @@ import attrs
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
 from typeguard import typechecked
 
+from immich_autotag.assets.asset_uuid import AssetUUID
+
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_manager import AssetManager
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -30,7 +32,7 @@ class DuplicateAssetGroup:
         def __iter__(self) -> "DuplicateAssetGroup.DuplicateAssetGroupIterator":
             return self
 
-    assets: list[UUID]
+    assets: list[AssetUUID]
 
     def as_str_list(self) -> list[str]:
         return [str(u) for u in self.assets]
