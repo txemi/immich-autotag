@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from immich_autotag.assets.asset_uuid import AssetUUID
+
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -135,8 +137,8 @@ class AssetDtoState:
         tag_names = self.get_tag_names()
         return any(tn.lower() == tag_name.lower() for tn in tag_names)
 
-    def get_uuid(self) -> UUID:
-        return UUID(self._dto.id)
+    def get_uuid(self) -> AssetUUID:
+        return AssetUUID(self._dto.id)
 
     def get_original_file_name(self) -> Path:
         return Path(self._dto.original_file_name)
