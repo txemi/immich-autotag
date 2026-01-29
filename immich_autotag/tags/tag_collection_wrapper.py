@@ -105,6 +105,7 @@ class TagCollectionWrapper:
             new_tag_dto = proxy_create_tag(client=client, name=name)
             if new_tag_dto is None:
                 raise ValueError("API returned None for new tag creation")
+            from immich_autotag.tags.tag_response_wrapper import TagWrapper
             new_tag = TagWrapper(new_tag_dto)
             self._index.add(new_tag)
             return new_tag
