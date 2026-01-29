@@ -9,8 +9,8 @@ VENV_DIR="$SCRIPT_DIR/.venv"
 PYTHON_SCRIPT="$SCRIPT_DIR/main.py"
 
 # Parse args for --profile / -p / --no-profile; remaining args are passed to the app
-# Default: profiling ON unless explicitly disabled by env or flag
-PROFILE=${RUN_PROFILING:-1}
+ # Default: profiling OFF unless explicitly enabled by env or flag
+PROFILE=${RUN_PROFILING:-0}
 ARGS=()
 for a in "$@"; do
   case "$a" in
