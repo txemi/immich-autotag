@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 # Helper to remove members from album
 
 """
@@ -9,8 +8,6 @@ Album Permission Executor - Phase 2
 Synchronizes album member permissions with configured rules.
 Implements complete synchronization: config is source of truth (add + remove).
 """
-
-
 
 
 # This file has been modularized into the album_permission_executor/ package.

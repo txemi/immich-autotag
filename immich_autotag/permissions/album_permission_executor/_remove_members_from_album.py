@@ -5,7 +5,6 @@ This module is internal to the package and should not be imported directly.
 from typing import Sequence
 from uuid import UUID
 
-
 from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.permissions import proxy_remove_user_from_album
