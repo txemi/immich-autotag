@@ -104,7 +104,7 @@ class DuplicateCollectionWrapper:
         group = self.get_group(duplicate_id)
         wrappers = []
         for asset_id in group:
-            wrapper = asset_manager.get_wrapper_for_asset_id(asset_id, context)
+            wrapper = asset_manager.get_asset(asset_id, context)
             if wrapper is not None:
                 wrappers.append(wrapper)
         return wrappers
