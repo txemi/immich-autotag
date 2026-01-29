@@ -205,7 +205,7 @@ class TagCollectionWrapper:
         _tag_collection_singleton = TagCollectionWrapper()
         return _tag_collection_singleton
 
-    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper | None":
+    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper":
         """
         Returns the TagWrapper corresponding to a TagResponseDto (dto), or None if it
         does not exist.
