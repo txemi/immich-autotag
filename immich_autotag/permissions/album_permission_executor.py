@@ -1,6 +1,7 @@
-
 from __future__ import annotations
+
 from typing import Sequence
+
 # Helper to remove members from album
 
 """
@@ -311,14 +312,16 @@ def sync_album_permissions(
         log_debug(f"[ALBUM_PERMISSIONS] {album_name}: No changes needed")
 
 
-
-
 @typechecked
-def _remove_members_from_album(*, album_name: str, user_ids: Sequence[str], album_id: UUID, context: ImmichContext) -> None:
+def _remove_members_from_album(
+    *, album_name: str, user_ids: Sequence[str], album_id: UUID, context: ImmichContext
+) -> None:
     """
     Remove users from album using the API. Logs each removal.
     """
     client = context.get_client_wrapper().get_client()
     for user_id in user_ids:
-        proxy_remove_user_from_album(client=client, album_id=album_id, user_id=UUID(user_id))
+        proxy_remove_user_from_album(
+            client=client, album_id=album_id, user_id=UUID(user_id)
+        )
         log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
