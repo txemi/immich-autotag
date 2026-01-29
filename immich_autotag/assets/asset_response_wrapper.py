@@ -1052,10 +1052,13 @@ class AssetResponseWrapper:
     ) -> "AssetResponseWrapper":
         """
         Gets an AssetResponseWrapper by ID, delegating the retrieval logic to AssetCacheEntry._from_cache_or_api.
+        Accepts either AssetUUID or uuid.UUID, but always converts to AssetUUID for type safety.
         """
         from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
         from immich_autotag.assets.asset_uuid import AssetUUID
 
 
+        if not isinstance(asset_id, AssetUUID):
+            asset_id = AssetUUID.from_uuid(asset_id)
         entry = AssetCacheEntry.from_cache_or_api(asset_id)
         return cls(context, entry)

@@ -59,17 +59,16 @@ class AssetManager:
 
     @typechecked
     def get_asset(
-        self, asset_id: UUID, context: "ImmichContext"
+        self, asset_id: "AssetUUID", context: "ImmichContext"
     ) -> Optional[AssetResponseWrapper]:
         """
-        Returns an asset by its UUID, using the cache if available,
+        Returns an asset by its AssetUUID, using the cache if available,
         or requesting it from the API and storing it if not.
         First checks the in-memory cache, then disk, and finally the API.
         """
         if self._assets is not None and asset_id in self._assets:
             return self._assets[asset_id]
 
-        # Centralizes the retrieval logic in AssetResponseWrapper
         asset = AssetResponseWrapper.from_id(asset_id, context)
         if self._assets is not None:
             self._assets[asset_id] = asset

@@ -10,12 +10,14 @@ from immich_autotag.config.host_config import (
 
 
 @typechecked
-def get_immich_photo_url(asset_id: uuid.UUID) -> ParseResult:
+from immich_autotag.assets.asset_uuid import AssetUUID
+
+def get_immich_photo_url(asset_id: AssetUUID) -> ParseResult:
     """
-    Returns the Immich web URL for an asset given its id (UUID) as ParseResult.
+    Returns the Immich web URL for an asset given its id (AssetUUID) as ParseResult.
     """
-    if not isinstance(asset_id, uuid.UUID):
-        raise TypeError(f"asset_id must be uuid.UUID, not {type(asset_id)}")
+    if not isinstance(asset_id, AssetUUID):
+        raise TypeError(f"asset_id must be AssetUUID, not {type(asset_id)}")
     asset_id_str = str(asset_id)
     url = (
         f"{get_immich_web_base_url()}"
