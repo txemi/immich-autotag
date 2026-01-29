@@ -113,12 +113,13 @@ class AlbumCacheEntry:
     def _get_dto(self) -> AlbumDtoState:
         return self._dto
 
-    def get_asset_uuids(self) -> set[UUID]:
+    def get_asset_uuids(self) -> set[AssetUUID]:
         """
         Returns the set of asset UUIDs in the album, ensuring full DTO is loaded.
         Does not expose DTOs directly.
         """
-        return self._ensure_full_loaded()._get_dto().get_asset_uuids()
+        # Convert all UUIDs to AssetUUID for type safety
+        uuids = self._ensure_full_loaded()._get_dto().get_asset_uuids()
 
     @conditional_typechecked
     def has_asset_wrapper(
