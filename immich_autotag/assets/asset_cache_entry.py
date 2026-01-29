@@ -57,7 +57,7 @@ class AssetCacheEntry:
     ) -> "AssetCacheEntry":
         """
         Attempts to load the asset from disk cache; if not present or corrupted, reloads from the API and saves to cache.
-        asset_id must be a UUID.
+        asset_id must be an AssetUUID (not a plain UUID).
         """
 
         from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
