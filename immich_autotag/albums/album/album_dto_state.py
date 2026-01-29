@@ -6,6 +6,7 @@ from uuid import UUID
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 
 if TYPE_CHECKING:
@@ -119,14 +120,14 @@ class AlbumDtoState:
             )
         return len(self._dto.assets) == 0
 
-    def get_asset_uuids(self) -> set[UUID]:
+    def get_asset_uuids(self) -> set[AssetUUID]:
         """
         Returns the set of asset UUIDs in the album.
         Only allowed in DETAIL/full mode.
         """
         if self._load_source != AlbumLoadSource.DETAIL:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
-        return set(UUID(a.id) for a in self._dto.assets)
+        return set(AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets)
 
     def _is_stale(self) -> bool:
         import time
