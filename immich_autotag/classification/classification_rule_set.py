@@ -144,6 +144,8 @@ class ClassificationRuleSet:
                 raise RuntimeError(
                     f"[ERROR] Asset with ID {asset_uuid} could not be loaded from API."
                 )
+            if not isinstance(wrapper, AssetResponseWrapper):
+                raise TypeError(f"Expected AssetResponseWrapper, got {type(wrapper).__name__} for asset ID {asset_uuid}")
             wrappers.append(wrapper)
 
         print(
