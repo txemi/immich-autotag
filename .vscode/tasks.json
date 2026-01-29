@@ -37,8 +37,17 @@
     {
       "label": "Run main.py (execute)",
       "type": "shell",
-      "command": "python3 main.py",
+      "command": "bash run_app.sh",
       "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Setup Virtual Environment",
+      "type": "shell",
+      "command": "bash setup_venv.sh",
+      "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     }
