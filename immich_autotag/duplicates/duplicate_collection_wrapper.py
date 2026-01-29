@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAssetGroup:
 
-
     class DuplicateAssetGroupIterator:
         def __init__(self, assets: list[AssetUUID]):
             self._assets: list[AssetUUID] = assets
@@ -33,17 +32,13 @@ class DuplicateAssetGroup:
         def __iter__(self) -> "DuplicateAssetGroup.DuplicateAssetGroupIterator":
             return self
 
-
     assets: list[AssetUUID]
-
 
     def as_str_list(self) -> list[str]:
         return [str(u) for u in self.assets]
 
-
     def __iter__(self) -> "DuplicateAssetGroup.DuplicateAssetGroupIterator":
         return DuplicateAssetGroup.DuplicateAssetGroupIterator(self.assets)
-
 
     def __len__(self) -> int:
         return len(self.assets)
@@ -56,13 +51,11 @@ class DuplicateCollectionWrapper:
     Holds a mapping from duplicate_id (UUID) to DuplicateAssetGroup.
     """
 
-
     groups_by_duplicate_id: dict[UUID, DuplicateAssetGroup]
 
     @classmethod
     @typechecked
     def from_api_response(
-
         cls: type["DuplicateCollectionWrapper"], data: list[DuplicateResponseDto]
     ) -> "DuplicateCollectionWrapper":
         """

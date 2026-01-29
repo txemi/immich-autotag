@@ -1,10 +1,10 @@
 from typing import Iterator, MutableMapping
-from immich_autotag.assets.asset_uuid import AssetUUID
 
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_list import AlbumList
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 
 class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
@@ -65,7 +65,11 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
         AlbumList if needed.
         """
         for asset_uuid in album_wrapper.get_asset_uuids():
-            asset_uuid = AssetUUID.from_uuid(asset_uuid) if not isinstance(asset_uuid, AssetUUID) else asset_uuid
+            asset_uuid = (
+                AssetUUID.from_uuid(asset_uuid)
+                if not isinstance(asset_uuid, AssetUUID)
+                else asset_uuid
+            )
             if asset_uuid not in self:
                 self[asset_uuid] = AlbumList()
             self[asset_uuid].append(album_wrapper)
@@ -75,7 +79,11 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
         """
         Returns the AlbumList for the given asset UUID, or an empty AlbumList if none.
         """
-        asset_uuid = AssetUUID.from_uuid(asset_uuid) if not isinstance(asset_uuid, AssetUUID) else asset_uuid
+        asset_uuid = (
+            AssetUUID.from_uuid(asset_uuid)
+            if not isinstance(asset_uuid, AssetUUID)
+            else asset_uuid
+        )
         if asset_uuid in self:
             return self[asset_uuid]
         else:

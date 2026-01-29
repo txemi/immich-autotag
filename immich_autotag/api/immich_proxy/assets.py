@@ -1,5 +1,4 @@
 import atexit
-from uuid import UUID
 
 from immich_client.api.assets import get_asset_info as _get_asset_info
 from immich_client.api.assets import update_asset as _update_asset

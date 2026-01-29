@@ -1,16 +1,16 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, Iterator, Optional
-from immich_autotag.assets.asset_uuid import AssetUUID
+
+from typing import TYPE_CHECKING, Iterator, Optional
 
 import attrs
 from immich_client import Client
 from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
-from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.internal_config import KEEP_ASSETS_IN_MEMORY
 
 # Removed import: AssetCacheEntry is only used internally in AssetResponseWrapper

@@ -1,6 +1,6 @@
+import uuid
 from typing import Any
 
-import uuid
 from immich_client.api.albums import remove_user_from_album
 from immich_client.api.users import search_users
 from immich_client.client import AuthenticatedClient

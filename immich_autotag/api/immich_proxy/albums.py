@@ -1,8 +1,8 @@
 from __future__ import annotations
+
 import atexit
 from typing import Callable, List, Optional
 from uuid import UUID
-from immich_autotag.assets.asset_uuid import AssetUUID
 
 from immich_client.api.albums import (
     add_assets_to_album,
@@ -18,6 +18,7 @@ from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
@@ -80,7 +81,7 @@ def proxy_remove_asset_from_album(
     *, album_id: UUID, client: AuthenticatedClient, asset_ids: List[AssetUUID]
 ) -> list[BulkIdResponseDto]:
     # Convert AssetUUIDs to UUIDs for API compatibility
-    uuid_ids = [a.to_uuid()  for a in asset_ids]
+    uuid_ids = [a.to_uuid() for a in asset_ids]
     result = remove_asset_from_album.sync(
         id=album_id, client=client, body=BulkIdsDto(ids=uuid_ids)
     )

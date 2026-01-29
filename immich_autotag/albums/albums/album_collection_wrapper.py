@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from enum import Enum, auto
 from typing import Iterable
-from immich_autotag.assets.asset_uuid import AssetUUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto

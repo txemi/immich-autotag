@@ -9,7 +9,6 @@ import time
 from pathlib import Path
 from threading import RLock
 from typing import TYPE_CHECKING, Optional
-from uuid import UUID
 
 import attr
 import git

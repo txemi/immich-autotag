@@ -2,15 +2,13 @@ from __future__ import annotations
 
 from typing import Dict
 
-from immich_autotag.assets.asset_uuid import AssetUUID
-
 import attrs
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
-
 class DuplicateAssetsInfo:
     # Maps asset AssetUUID to AssetResponseWrapper
     _mapping: Dict[AssetUUID, AssetResponseWrapper]

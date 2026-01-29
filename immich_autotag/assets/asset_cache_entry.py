@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -128,7 +129,7 @@ class AssetCacheEntry:
         """
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
-        from immich_autotag.assets.asset_uuid import AssetUUID
+
         asset_id = self._state.get_uuid()  # Already AssetUUID
         refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
         self._state = refreshed_entry._state

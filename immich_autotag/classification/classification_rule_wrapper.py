@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.config.models import ClassificationRule
 from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.config.models import ClassificationRule
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
@@ -144,7 +144,7 @@ class ClassificationRuleWrapper:
         Accepts complete URLs or direct UUIDs.
         """
         import re
-        from uuid import UUID
+
         from immich_autotag.assets.asset_uuid import AssetUUID
 
         if not self.rule.asset_links:

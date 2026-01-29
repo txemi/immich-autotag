@@ -76,9 +76,7 @@ class ModificationEntry:
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
             asset_id=(
-                self.asset_wrapper.get_id()
-                if self.asset_wrapper is not None
-                else None
+                self.asset_wrapper.get_id() if self.asset_wrapper is not None else None
             ),
             asset_name=(
                 self.asset_wrapper.original_file_name

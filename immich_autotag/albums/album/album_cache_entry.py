@@ -6,10 +6,9 @@ from uuid import UUID
 import attrs
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.utils.decorators import conditional_typechecked
-
-from immich_autotag.assets.asset_uuid import AssetUUID
 
 if TYPE_CHECKING:
 
@@ -129,10 +128,7 @@ class AlbumCacheEntry:
     ) -> bool:
         # Import here to avoid circular imports
 
-        return (
-            asset_wrapper.get_id()
-            in self._ensure_full_loaded().get_asset_uuids()
-        )
+        return asset_wrapper.get_id() in self._ensure_full_loaded().get_asset_uuids()
 
     @conditional_typechecked
     def get_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Dict
-from uuid import UUID
 
 from typeguard import typechecked
 

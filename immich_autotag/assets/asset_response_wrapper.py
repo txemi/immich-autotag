@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 from urllib.parse import ParseResult
 from uuid import UUID
-from immich_autotag.assets.asset_uuid import AssetUUID
 
 import attrs
 from immich_client.models.update_asset_dto import (
@@ -21,6 +20,7 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.assets.classification_update_result import (
     ClassificationUpdateResult,
 )
@@ -1055,7 +1055,6 @@ class AssetResponseWrapper:
         """
         from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
         from immich_autotag.assets.asset_uuid import AssetUUID
-
 
         if not isinstance(asset_id, AssetUUID):
             asset_id = AssetUUID.from_uuid(asset_id)

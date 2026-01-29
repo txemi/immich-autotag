@@ -180,7 +180,9 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
-        return AssetUUID.from_uuid(UUID(asset.id)) in self._get_or_build_asset_ids_cache()
+        return (
+            AssetUUID.from_uuid(UUID(asset.id)) in self._get_or_build_asset_ids_cache()
+        )
 
     @conditional_typechecked
     def has_asset_wrapper(
@@ -513,9 +515,7 @@ class AlbumResponseWrapper:
         result = self._execute_add_asset_api(asset_wrapper, client)
 
         # 3. Handle result
-        item = self._find_asset_result_in_response(
-            result, asset_wrapper.get_id()
-        )
+        item = self._find_asset_result_in_response(result, asset_wrapper.get_id())
         if item:
             if not item.success:
                 self._handle_add_asset_error(

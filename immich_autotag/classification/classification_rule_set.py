@@ -124,7 +124,6 @@ class ClassificationRuleSet:
         Extracts all UUIDs from asset_links of all rules,
         loads the assets from the API and returns the list of AssetResponseWrapper.
         """
-        from uuid import UUID
 
         all_uuids: List[AssetUUID] = []
         for wrapper in self.rules:
@@ -145,7 +144,9 @@ class ClassificationRuleSet:
                     f"[ERROR] Asset with ID {asset_uuid} could not be loaded from API."
                 )
             if not isinstance(wrapper, AssetResponseWrapper):
-                raise TypeError(f"Expected AssetResponseWrapper, got {type(wrapper).__name__} for asset ID {asset_uuid}")
+                raise TypeError(
+                    f"Expected AssetResponseWrapper, got {type(wrapper).__name__} for asset ID {asset_uuid}"
+                )
             wrappers.append(wrapper)
 
         print(
