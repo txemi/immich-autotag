@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -13,7 +14,6 @@ if TYPE_CHECKING:
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.models import ClassificationRule
 
 
@@ -138,14 +138,12 @@ class ClassificationRuleWrapper:
         return len(self.extract_uuids_from_asset_links()) > 0
 
     @typechecked
-    def extract_uuids_from_asset_links(self) -> list["AssetUUID"]:
+    def extract_uuids_from_asset_links(self) -> list[AssetUUID]:
         """
         Extracts UUIDs from the asset_links of this rule.
         Accepts complete URLs or direct UUIDs.
         """
         import re
-
-        from immich_autotag.assets.asset_uuid import AssetUUID
 
         if not self.rule.asset_links:
             return []

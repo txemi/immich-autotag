@@ -13,7 +13,6 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
-from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
@@ -91,9 +90,10 @@ class AlbumResponseWrapper:
     @staticmethod
     @typechecked
     def _find_asset_result_in_response(
-        result: list[BulkIdResponseDto], asset_id: AssetUUID
+        result: list[BulkIdResponseDto], asset_id: "AssetUUID"
     ) -> BulkIdResponseDto | None:
         """Finds the result item for a specific asset in the API response list."""
+        from immich_autotag.assets.asset_uuid import AssetUUID
         for item in result:
             if item.success is not True:
                 raise RuntimeError(
@@ -159,7 +159,7 @@ class AlbumResponseWrapper:
         return self._cache_entry.get_owner_uuid()
 
     @typechecked
-    def _get_or_build_asset_ids_cache(self) -> set[AssetUUID]:
+    def _get_or_build_asset_ids_cache(self) -> set["AssetUUID"]:
         """
         Returns the set of asset IDs as AssetUUIDs, using the AlbumCacheEntry logic.
         """
@@ -168,14 +168,14 @@ class AlbumResponseWrapper:
     # --- 6. Public Methods - Asset Management ---
 
     @conditional_typechecked
-    def get_asset_uuids(self) -> set[AssetUUID]:
+    def get_asset_uuids(self) -> set["AssetUUID"]:
         """
         Returns the asset IDs as a set of AssetUUID objects using the AlbumCacheEntry logic.
         """
         return self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
-    def get_asset_ids(self) -> set[AssetUUID]:
+    def get_asset_ids(self) -> set["AssetUUID"]:
         """
         Returns the set of asset IDs as AssetUUIDs using the AlbumCacheEntry logic.
         """
@@ -183,6 +183,7 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
+        from immich_autotag.assets.asset_uuid import AssetUUID
         return (
             AssetUUID.from_uuid(UUID(asset.id)) in self._get_or_build_asset_ids_cache()
         )
