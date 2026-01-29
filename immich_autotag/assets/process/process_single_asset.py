@@ -150,3 +150,4 @@ def process_single_asset(
         f"[DEBUG] [process_single_asset] END asset_id={asset_wrapper.get_uuid()}",
         level=LogLevel.FOCUS,
     )
+    return None
