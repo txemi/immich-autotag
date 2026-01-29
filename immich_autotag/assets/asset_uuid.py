@@ -12,7 +12,13 @@ class AssetUUID:
     Prevents accidental mixing/comparison with other UUID types.
     """
 
-    value: uuid.UUID = attr.ib(converter=uuid.UUID)
+    @staticmethod
+    def _uuid_converter(val):
+        if isinstance(val, uuid.UUID):
+            return val
+        return uuid.UUID(str(val))
+
+    value: uuid.UUID = attr.ib(converter=_uuid_converter)
 
     @value.validator
     def _check(self, attribute, value):
@@ -30,7 +36,7 @@ class AssetUUID:
 
     @classmethod
     def from_uuid(cls, value: uuid.UUID) -> "AssetUUID":
-        return cls(str(value))
+        return cls(value)
 
     @classmethod
     def from_str(cls, value: str) -> "AssetUUID":
