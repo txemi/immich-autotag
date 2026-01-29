@@ -17,14 +17,15 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class DuplicateAssetGroup:
 
+
     class DuplicateAssetGroupIterator:
-        def __init__(self, assets: list[UUID]):
-            self._assets: list[UUID] = assets
+        def __init__(self, assets: list[AssetUUID]):
+            self._assets: list[AssetUUID] = assets
             self._index: int = 0
 
-        def __next__(self) -> UUID:
+        def __next__(self) -> AssetUUID:
             if self._index < len(self._assets):
-                result: UUID = self._assets[self._index]
+                result: AssetUUID = self._assets[self._index]
                 self._index += 1
                 return result
             raise StopIteration
@@ -32,13 +33,17 @@ class DuplicateAssetGroup:
         def __iter__(self) -> "DuplicateAssetGroup.DuplicateAssetGroupIterator":
             return self
 
+
     assets: list[AssetUUID]
+
 
     def as_str_list(self) -> list[str]:
         return [str(u) for u in self.assets]
 
+
     def __iter__(self) -> "DuplicateAssetGroup.DuplicateAssetGroupIterator":
         return DuplicateAssetGroup.DuplicateAssetGroupIterator(self.assets)
+
 
     def __len__(self) -> int:
         return len(self.assets)
@@ -51,11 +56,13 @@ class DuplicateCollectionWrapper:
     Holds a mapping from duplicate_id (UUID) to DuplicateAssetGroup.
     """
 
+
     groups_by_duplicate_id: dict[UUID, DuplicateAssetGroup]
 
     @classmethod
     @typechecked
     def from_api_response(
+
         cls: type["DuplicateCollectionWrapper"], data: list[DuplicateResponseDto]
     ) -> "DuplicateCollectionWrapper":
         """
@@ -66,7 +73,7 @@ class DuplicateCollectionWrapper:
             if not isinstance(group, DuplicateResponseDto):
                 raise TypeError(f"Expected DuplicateResponseDto, got {type(group)}")
             duplicate_id = UUID(group.duplicate_id)
-            asset_ids = [UUID(asset.id) for asset in group.assets]
+            asset_ids = [AssetUUID.from_uuid(UUID(asset.id)) for asset in group.assets]
             mapping[duplicate_id] = DuplicateAssetGroup(asset_ids)
         return cls(groups_by_duplicate_id=mapping)
 
@@ -103,8 +110,8 @@ class DuplicateCollectionWrapper:
         """
         group = self.get_group(duplicate_id)
         wrappers = []
-        for dup_id in group:
-            wrapper = asset_manager.get_asset(dup_id, context)
+        for asset_id in group:
+            wrapper = asset_manager.get_wrapper_for_asset_id(asset_id, context)
             if wrapper is not None:
                 wrappers.append(wrapper)
         return wrappers
