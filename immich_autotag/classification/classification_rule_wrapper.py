@@ -14,6 +14,7 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.config.models import ClassificationRule
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)
@@ -144,6 +145,7 @@ class ClassificationRuleWrapper:
         """
         import re
         from uuid import UUID
+        from immich_autotag.assets.asset_uuid import AssetUUID
 
         if not self.rule.asset_links:
             return []
@@ -161,7 +163,7 @@ class ClassificationRuleWrapper:
                 )
             try:
                 asset_uuid = UUID(match.group(1))
-                uuids.append(asset_uuid)
+                uuids.append(AssetUUID(asset_uuid))
             except Exception:
                 raise RuntimeError(
                     f"[ERROR] Invalid asset ID (not a valid UUID): {match.group(1)}"
