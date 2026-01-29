@@ -1,13 +1,16 @@
+"""
+Este módulo es interno al paquete y no debe ser importado directamente.
+"""
 from typing import List
 from typeguard import typechecked
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.api.immich_proxy.permissions import proxy_search_users
-from .resolve_emails_result import ResolveEmailsResult
+from ._resolve_emails_result import ResolveEmailsResult
 
 @typechecked
-def _resolve_emails_to_user_ids(
+def resolve_emails_to_user_ids(
     emails: List[str], context: ImmichContext
 ) -> ResolveEmailsResult:
     """

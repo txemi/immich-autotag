@@ -1,3 +1,6 @@
+"""
+Este módulo es interno al paquete y no debe ser importado directamente.
+"""
 import attrs
 from typing import Dict, List
 

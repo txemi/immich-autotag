@@ -3,10 +3,10 @@ from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.report.modification_kind import ModificationKind
-from .resolve_emails_to_user_ids import _resolve_emails_to_user_ids
-from .get_current_members import _get_current_members
+from ._resolve_emails_to_user_ids import resolve_emails_to_user_ids
+from ._get_current_members import get_current_members
 from .add_members_to_album import add_members_to_album
-from .remove_members_from_album import _remove_members_from_album
+from ._remove_members_from_album import remove_members_from_album
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.context.immich_context import ImmichContext
 
@@ -39,11 +39,11 @@ def sync_album_permissions(
         return
 
     # Resolve configured member emails to user IDs
-    result = _resolve_emails_to_user_ids(resolved_policy.members, context)
+    result = resolve_emails_to_user_ids(resolved_policy.members, context)
     target_user_ids = set(result.resolved.values())
 
     # Get current members from API (pass UUID directly)
-    current_members = _get_current_members(album_uuid, context)
+    current_members = get_current_members(album_uuid, context)
     current_user_ids = {str(member.user.id) for member in current_members}
 
     # Calculate diff
@@ -58,7 +58,7 @@ def sync_album_permissions(
 
     # Phase 2B: QUITAR (remove members)
     if users_to_remove:
-        _remove_members_from_album(
+        remove_members_from_album(
             album=album_wrapper,
             user_ids=list(users_to_remove),
             context=context,

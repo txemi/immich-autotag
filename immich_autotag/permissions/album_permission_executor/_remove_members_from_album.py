@@ -1,3 +1,6 @@
+"""
+Este módulo es interno al paquete y no debe ser importado directamente.
+"""
 from typing import Sequence
 from uuid import UUID
 from typeguard import typechecked
@@ -9,7 +12,7 @@ if True:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 @typechecked
-def _remove_members_from_album(*, album: 'AlbumResponseWrapper', user_ids: Sequence[str], context: ImmichContext) -> None:
+def remove_members_from_album(*, album: 'AlbumResponseWrapper', user_ids: Sequence[str], context: ImmichContext) -> None:
     """
     Remove users from album using the API. Logs each removal.
     """

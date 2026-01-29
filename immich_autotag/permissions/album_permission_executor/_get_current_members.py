@@ -1,3 +1,6 @@
+"""
+Este módulo es interno al paquete y no debe ser importado directamente.
+"""
 from typing import List
 from uuid import UUID
 from typeguard import typechecked
@@ -6,7 +9,7 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.utils import log_debug
 
 @typechecked
-def _get_current_members(
+def get_current_members(
     album_id: UUID, context: ImmichContext
 ) -> List[AlbumUserResponseDto]:
     """
