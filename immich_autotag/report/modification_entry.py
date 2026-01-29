@@ -76,7 +76,7 @@ class ModificationEntry:
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
             asset_id=(
-                self.asset_wrapper.get_id_as_uuid()
+                self.asset_wrapper.get_id()
                 if self.asset_wrapper is not None
                 else None
             ),
@@ -92,6 +92,4 @@ class ModificationEntry:
             new_value=str(self.new_value) if self.new_value is not None else None,
             user_name=self.user.name if self.user is not None else None,
             asset_link=asset_link,
-            extra=self.extra,
-            progress=self.progress,
         )
