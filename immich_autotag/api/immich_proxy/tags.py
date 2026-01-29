@@ -1,3 +1,4 @@
+from __future__ import annotations
 # ...existing code...
 from typing import List
 from uuid import UUID
@@ -13,7 +14,6 @@ from immich_client.models.tag_create_dto import TagCreateDto
 from immich_client.models.tag_response_dto import TagResponseDto
 
 from immich_autotag.types import ImmichClient
-
 
 
 from immich_autotag.assets.asset_uuid import AssetUUID
@@ -33,7 +33,7 @@ def proxy_untag_assets(
             *, tag_id: UUID, client: ImmichClient, asset_ids: List[AssetUUID]
 ) -> list[BulkIdResponseDto]:
     """Proxy for untag_assets.sync with explicit keyword arguments. Accepts AssetUUIDs."""
-    uuid_ids = [a.to_uuid() if hasattr(a, 'to_uuid') else a for a in asset_ids]
+    uuid_ids = [a.to_uuid() for a in asset_ids]
     result = untag_assets.sync(id=tag_id, client=client, body=BulkIdsDto(ids=uuid_ids))
     if result is None:
         raise RuntimeError("untag_assets.sync returned None (unexpected)")
