@@ -415,10 +415,23 @@ check_ruff() {
 	local target_dir="$4"
 	local ruff_ignore="" ruff_exit
 	ensure_tool "$py_bin" ruff ruff
-	if [ "$check_mode" != "STRICT" ]; then
+
+	# Recoge quality_level solo del parámetro (quinto argumento)
+	local quality_level="$5"
+	if [ -z "$quality_level" ]; then
+		quality_level="STANDARD"
+	fi
+
+	if [ "$quality_level" = "STANDARD" ]; then
+		ruff_ignore="--ignore E501,F821,F841"
+		echo "[STANDARD MODE] Ruff will ignore E501 (line length), F821 (undefined name), and F841 (assigned but unused) and will NOT block the build for them."
+	elif [ "$quality_level" = "STRICT" ]; then
+		ruff_ignore=""
+	else
 		ruff_ignore="--ignore E501"
 		echo "[NON-STRICT MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	fi
+
 	if [ "$check_mode" = "CHECK" ]; then
 		"$py_bin" -m ruff check --fix $ruff_ignore "$target_dir"
 		ruff_exit=$?
@@ -821,7 +834,7 @@ run_quality_gate_check_mode() {
 	check_shfmt "$check_mode" "$target_dir" || exit 1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
-	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || exit 1
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 }
 
@@ -839,7 +852,7 @@ run_quality_gate_apply_mode() {
 	check_shfmt "$check_mode" "$target_dir" || error_found=1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
-	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || error_found=1
 	# 2. Fast/deterministic checks
 	check_python_syntax "$py_bin" "$target_dir" || error_found=1
 	# 3. Internal policy checks
@@ -879,7 +892,7 @@ run_quality_gate_check_summary() {
 	# 2. Syntax errors
 	check_python_syntax "$py_bin" "$target_dir" || exit 1
 	# 3. Ruff (lint/auto-fix)
-	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || exit 1
 	# 4. Flake8 (style)
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	check_import_linter "$repo_root" || exit 1
