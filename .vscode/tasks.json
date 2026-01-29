@@ -33,5 +33,14 @@
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     }
+    ,
+    {
+      "label": "Run main.py (execute)",
+      "type": "shell",
+      "command": "python3 main.py",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
   ]
 }
