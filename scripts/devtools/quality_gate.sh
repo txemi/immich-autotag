@@ -66,6 +66,12 @@ export PATH="$REPO_ROOT/.venv/bin:$PATH"
 PACKAGE_NAME="immich_autotag"
 cd "$REPO_ROOT"
 
+# ======================
+# INTERNAL CONFIGURATION
+# ======================
+# Controla si quality_gate.sh se autoformatea con shfmt (1=Sí, 0=No)
+FORMAT_SELF=1
+
 ###############################################################################
 # Function: parse_args_and_globals
 # Description: Parses command-line arguments and defines global variables.
@@ -186,21 +192,22 @@ check_shfmt() {
 	echo "==============================="
 	echo ""
 
-	local bash_scripts
-	# Require shfmt to be installed
-	# ensure_tool shfmt shfmt
-	# DISABLED, shfmt is not a Python tool!!!!
-	bash_scripts=$(find scripts -type f -name "*.sh")
-	#bash scripts/*.sh scripts/devtools/*.sh scripts/devtools/docker/*.sh scripts/pypi/*.sh scripts/run/*.sh
+	local bash_scripts script_self_abs script_self_rel
+	script_self_abs="$(realpath "$0")"
+	script_self_rel="${script_self_abs#$PWD/}"
+
+	# Buscar scripts, excluir quality_gate.sh si FORMAT_SELF=0
+	if [ "$FORMAT_SELF" = "1" ]; then
+		bash_scripts=$(find scripts -type f -name "*.sh")
+	else
+		bash_scripts=$(find scripts -type f -name "*.sh" | grep -v "$script_self_rel")
+	fi
 
 	# Run shfmt according to mode
 	if [ "$check_mode" = "CHECK" ]; then
-		#shfmt -d $bash_scripts
-		#shfmt -d -i 4 -ci -sr -s -ln bash $bash_scripts
 		shfmt -d -i 0 $bash_scripts
 		shfmt_exit=$?
 	else
-		#shfmt -w -i 4 -ci -sr -s -ln bash $bash_scripts
 		shfmt -w -i 0 $bash_scripts
 		shfmt_exit=$?
 	fi
