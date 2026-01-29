@@ -6,6 +6,7 @@ from immich_client.api.assets import update_asset as _update_asset
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
 
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.types import ImmichClient
@@ -27,7 +28,7 @@ atexit.register(_print_asset_api_call_summary)
 
 
 def proxy_get_asset_info(
-    asset_id: UUID, client: ImmichClient, use_cache: bool = True
+    asset_id: AssetUUID, client: ImmichClient, use_cache: bool = True
 ) -> AssetResponseDto | None:
     """
     Centralized wrapper for get_asset_info.sync. Now delegates all cache logic to AssetCacheEntry.
