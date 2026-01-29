@@ -1,3 +1,5 @@
+
+from __future__ import annotations
 from typing import Sequence
 # Helper to remove members from album
 
@@ -7,8 +9,6 @@ Album Permission Executor - Phase 2
 Synchronizes album member permissions with configured rules.
 Implements complete synchronization: config is source of truth (add + remove).
 """
-
-from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List
 from uuid import UUID
