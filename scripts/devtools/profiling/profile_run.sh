@@ -5,13 +5,17 @@
 
 set -euo pipefail
 
+
 # Add timestamp to the statistics file name to make it unique per run
 TS=$(date -u +"%Y%m%dT%H%M%SZ")
-OUTPUT_FILE="profile_${TS}.stats"
+ART_DIR="logs_local/profiling/$TS"
+mkdir -p "$ART_DIR"
+OUTPUT_FILE="$ART_DIR/profile_${TS}.stats"
 
 # Allow CI or local users to disable profiling by setting SKIP_PROFILING=1
 # Default to skipping profiling to avoid OOM in CI environments.
 SKIP_PROFILING="${SKIP_PROFILING:-0}"
+
 
 if [ "$SKIP_PROFILING" = "1" ] || [ "$SKIP_PROFILING" = "true" ]; then
 	echo "[profile_run] SKIP_PROFILING set -> running package without cProfile"
@@ -23,18 +27,13 @@ else
 	python -m cProfile -o "$OUTPUT_FILE" -s cumulative -m immich_autotag "$@"
 fi
 
+
 if [ ! -f "$OUTPUT_FILE" ]; then
 	echo "[profile_run] ERROR: profiling output not found: $OUTPUT_FILE" >&2
 	exit 1
 fi
 
-# Create an archive location that Jenkins already archives via `logs_local/**/*`
-TS=$(date -u +"%Y%m%dT%H%M%SZ")
-ART_DIR="logs_local/profiling/$TS"
-mkdir -p "$ART_DIR"
-mv "$OUTPUT_FILE" "$ART_DIR/"
-
-echo "[profile_run] Profile saved to $ART_DIR/$OUTPUT_FILE"
+echo "[profile_run] Profile saved to $OUTPUT_FILE"
 
 echo "[profile_run] Producing top-30 cumulative pstats summary (printed below)"
 python - <<PY
