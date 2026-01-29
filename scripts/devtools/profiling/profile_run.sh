@@ -5,7 +5,6 @@
 
 set -euo pipefail
 
-
 # Add timestamp to the statistics file name to make it unique per run
 TS=$(date -u +"%Y%m%dT%H%M%SZ")
 ART_DIR="logs_local/profiling/$TS"
@@ -16,7 +15,6 @@ OUTPUT_FILE="$ART_DIR/profile_${TS}.stats"
 # Default to skipping profiling to avoid OOM in CI environments.
 SKIP_PROFILING="${SKIP_PROFILING:-0}"
 
-
 if [ "$SKIP_PROFILING" = "1" ] || [ "$SKIP_PROFILING" = "true" ]; then
 	echo "[profile_run] SKIP_PROFILING set -> running package without cProfile"
 	# Run package as module to ensure imports resolve consistently in CI
@@ -26,7 +24,6 @@ else
 	# Profile the package module rather than the main.py script
 	python -m cProfile -o "$OUTPUT_FILE" -s cumulative -m immich_autotag "$@"
 fi
-
 
 if [ ! -f "$OUTPUT_FILE" ]; then
 	echo "[profile_run] ERROR: profiling output not found: $OUTPUT_FILE" >&2
