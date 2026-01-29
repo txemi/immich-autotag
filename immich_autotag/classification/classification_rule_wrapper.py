@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 from uuid import UUID
+
 from immich_autotag.assets.asset_uuid import AssetUUID
 
 if TYPE_CHECKING:
@@ -55,6 +57,7 @@ class ClassificationRuleWrapper:
         if not self.rule.album_name_patterns:
             return False
         import re
+
         # Asegurarse de que no hay import local de AssetUUID ni shadowing
 
         return any(
@@ -146,6 +149,7 @@ class ClassificationRuleWrapper:
         Accepts complete URLs or direct UUIDs.
         """
         import re
+
         from immich_autotag.assets.asset_uuid import AssetUUID
 
         if not self.rule.asset_links:
@@ -164,7 +168,6 @@ class ClassificationRuleWrapper:
                 )
             asset_uuid = UUID(match.group(1))
             uuids.append(AssetUUID.from_uuid(asset_uuid))
-            
 
         return uuids
 

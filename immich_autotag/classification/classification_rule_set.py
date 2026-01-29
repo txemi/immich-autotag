@@ -1,17 +1,18 @@
 from __future__ import annotations
+
 # Imports the MatchResult class from the new file
 from typing import TYPE_CHECKING, Dict, List
 
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
 )
 from immich_autotag.classification.match_result import MatchResult
 from immich_autotag.classification.match_result_list import MatchResultList
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.assets.asset_uuid import AssetUUID
 
 # Example usage:
 # rule_set = get_rule_set_from_config_manager()

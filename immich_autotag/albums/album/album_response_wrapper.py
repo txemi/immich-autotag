@@ -94,6 +94,7 @@ class AlbumResponseWrapper:
     ) -> BulkIdResponseDto | None:
         """Finds the result item for a specific asset in the API response list."""
         from immich_autotag.assets.asset_uuid import AssetUUID
+
         for item in result:
             if item.success is not True:
                 raise RuntimeError(
@@ -184,6 +185,7 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
         from immich_autotag.assets.asset_uuid import AssetUUID
+
         return (
             AssetUUID.from_uuid(UUID(asset.id)) in self._get_or_build_asset_ids_cache()
         )
