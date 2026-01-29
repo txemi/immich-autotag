@@ -429,15 +429,12 @@ check_ruff() {
 		quality_level="STANDARD"
 	fi
 
-	if [ "$quality_level" = "STANDARD" ]; then
-		ruff_ignore="--ignore E501,F821,F841"
-		echo "[STANDARD MODE] Ruff will ignore E501 (line length), F821 (undefined name), and F841 (assigned but unused) and will NOT block the build for them."
+	if [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
+		ruff_ignore="--ignore E501"
+		echo "[$quality_level MODE] Ruff will ignore E501 (line length) and will NOT block the build for it. Only F821 errors will block the build."
 	elif [ "$quality_level" = "STRICT" ]; then
 		ruff_ignore=""
 		echo "[STRICT MODE] Ruff will NOT ignore any errors. All errors will block the build."
-	elif [ "$quality_level" = "TARGET" ]; then
-		ruff_ignore="--ignore E501"
-		echo "[TARGET MODE] Ruff will ignore E501 (line length) and will NOT block the build for it. Only F821 errors will block the build."
 	else
 		echo "[ERROR] Invalid quality_level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
 		exit 2
@@ -452,18 +449,18 @@ check_ruff() {
 		ruff_exit=$?
 	fi
 
-	if [ "$quality_level" = "TARGET" ]; then
+	if [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
 		local f821_count
 		f821_count=$(echo "$ruff_output" | grep -c 'F821')
 		if [ "$f821_count" -gt 0 ]; then
-			echo "[TARGET MODE: F821 ONLY] Found $f821_count F821 (undefined name) errors:"
+			echo "[$quality_level MODE: F821 ONLY] Found $f821_count F821 (undefined name) errors:"
 			echo "$ruff_output" | grep 'F821'
 			return 1
 		else
-			echo "[TARGET MODE: F821 ONLY] No F821 errors found."
+			echo "[$quality_level MODE: F821 ONLY] No F821 errors found."
 			return 0
 		fi
-	elif [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "STRICT" ]; then
+	elif [ "$quality_level" = "STRICT" ]; then
 		if [ $ruff_exit -ne 0 ]; then
 			echo "$ruff_output"
 			echo "[WARNING] ruff reported/fixed issues."
@@ -659,10 +656,7 @@ check_mypy() {
 			echo '[STRICT MODE] Any mypy error blocks the build.'
 			echo '[EXIT] Quality Gate failed due to mypy errors.'
 			return 1
-		elif [ "$quality_level" = "STANDARD" ]; then
-			echo '[WARNING] mypy failed, but STANDARD mode is enabled. See output above.'
-			echo '[STANDARD MODE] Not blocking build on mypy errors.'
-		elif [ "$quality_level" = "TARGET" ]; then
+		elif [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
 			# Solo bloquea por errores arg-type y call-arg (objetivo mínimo)
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
@@ -671,7 +665,7 @@ check_mypy() {
 				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1
 			else
-				echo '[TARGET MODE] Only non-critical mypy errors found (return-value, attr-defined, imports, etc). Not blocking build.'
+				echo "[$quality_level MODE] Only non-critical mypy errors found (return-value, attr-defined, imports, etc). Not blocking build.'"
 			fi
 		else
 			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
