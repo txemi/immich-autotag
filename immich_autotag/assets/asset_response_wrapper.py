@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 from urllib.parse import ParseResult
 from uuid import UUID
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 import attrs
 from immich_client.models.update_asset_dto import (
@@ -810,7 +811,7 @@ class AssetResponseWrapper:
 
         return album_name
 
-    def get_id_as_uuid(self) -> "UUID":
+    def get_id_as_uuid(self) -> "AssetUUID":
         return self._cache_entry.get_uuid()
 
     @typechecked
