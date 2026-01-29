@@ -1,6 +1,6 @@
 [project]
 name = "immich-autotag"
-version = "0.74.1-qualitygate"
+version = "0.74.2"
 description = "Immich autotagging and album management system"
 authors = [
 	{ name = "txemi", email = "txemitron@gmail.com" }
