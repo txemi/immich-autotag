@@ -853,11 +853,9 @@ class AlbumCollectionWrapper:
         """
         Public helper to add a user as EDITOR to an album. Handles only user addition, error reporting, and event logging.
         """
-        from immich_client.models.album_user_role import AlbumUserRole
 
-        from immich_autotag.permissions.album_permission_executor import (
-            add_members_to_album,
-        )
+        from immich_client.models.album_user_role import AlbumUserRole
+        from immich_autotag.permissions.album_permission_executor.add_members_to_album import add_members_to_album
 
         try:
             add_members_to_album(
