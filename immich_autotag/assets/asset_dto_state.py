@@ -115,7 +115,7 @@ class AssetDtoState:
             wrapper = tag_collection.get_tag_from_dto(tag)
             if wrapper is None:
                 raise ValueError(
-                    f"Tag '{tag.name}' not found in TagCollectionWrapper for asset {self._dto.id}"
+                    f"Tag '{tag.get_name()}' not found in TagCollectionWrapper for asset {self._dto.id}"
                 )
             wrappers.append(wrapper)
         return wrappers

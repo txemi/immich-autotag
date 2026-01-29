@@ -7,9 +7,11 @@ from typeguard import typechecked
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagWrapper:
+
     """
     Wrapper for TagResponseDto that allows adding useful methods and properties.
     """
+
 
     tag: TagResponseDto
 
