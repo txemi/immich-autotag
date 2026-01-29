@@ -378,7 +378,7 @@ class AlbumResponseWrapper:
         result = proxy_add_assets_to_album(
             album_id=self.get_album_uuid(),
             client=client,
-            asset_ids=[asset_wrapper.get_id_as_uuid()],
+            asset_ids=[asset_wrapper.get_id()],
         )
         return result
 
@@ -516,7 +516,7 @@ class AlbumResponseWrapper:
 
         # 3. Handle result
         item = self._find_asset_result_in_response(
-            result, asset_wrapper.get_id_as_uuid()
+            result, asset_wrapper.get_id()
         )
         if item:
             if not item.success:
@@ -567,7 +567,7 @@ class AlbumResponseWrapper:
         result = proxy_remove_asset_from_album(
             album_id=self.get_album_uuid(),
             client=client,
-            asset_ids=[asset_wrapper.get_id_as_uuid()],
+            asset_ids=[asset_wrapper.get_id()],
         )
         return result
 

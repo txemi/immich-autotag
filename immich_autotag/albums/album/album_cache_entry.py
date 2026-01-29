@@ -127,7 +127,7 @@ class AlbumCacheEntry:
         # Import here to avoid circular imports
 
         return (
-            asset_wrapper.get_id_as_uuid()
+            asset_wrapper.get_id()
             in self._ensure_full_loaded().get_asset_uuids()
         )
 

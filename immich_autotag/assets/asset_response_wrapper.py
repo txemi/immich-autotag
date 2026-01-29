@@ -278,7 +278,7 @@ class AssetResponseWrapper:
             response = proxy_untag_assets(
                 tag_id=tag_uuid,
                 client=self.get_context().get_client_wrapper().get_client(),
-                asset_ids=[self.get_id_as_uuid()],
+                asset_ids=[self.get_id()],
             )
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
@@ -398,7 +398,7 @@ class AssetResponseWrapper:
             response = proxy_tag_assets(
                 tag_id=tag.get_id(),
                 client=self.get_context().get_client_wrapper().get_client(),
-                asset_ids=[self.get_id_as_uuid()],
+                asset_ids=[self.get_id()],
             )
         except Exception as e:
             error_msg = f"[ERROR] Exception during proxy_tag_assets: {e}"
@@ -540,7 +540,7 @@ class AssetResponseWrapper:
 
             # Get details for error message
             match_detail = self.get_classification_match_detail()
-            photo_url = get_immich_photo_url(self.get_id_as_uuid())
+            photo_url = get_immich_photo_url(self.get_id())
             n_rules_matched = len(match_result_list.rules())
             msg = (
                 f"[ERROR] Asset id={self.get_id()} ({self.get_original_file_name()}) is classified by "

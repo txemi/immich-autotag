@@ -69,7 +69,7 @@ class ClassificationRuleWrapper:
         from immich_autotag.classification.match_result import MatchResult
 
         # FOCUS log: asset link and rule info (direct attribute/method access)
-        asset_id = asset_wrapper.get_id_as_uuid()
+        asset_id = asset_wrapper.get_id()
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
@@ -92,7 +92,7 @@ class ClassificationRuleWrapper:
         # Check asset_links (UUIDs)
         asset_link_uuids = self.extract_uuids_from_asset_links()
         print(f"[DEBUG] asset_link_uuids: {asset_link_uuids}")
-        asset_uuid = asset_wrapper.get_id_as_uuid()
+        asset_uuid = asset_wrapper.get_id()
         print(f"[DEBUG] asset_uuid: {asset_uuid}")
         # Also show the URL as a string in debug mode
         print(f"[DEBUG] asset_url (string): {asset_url}")
@@ -105,7 +105,7 @@ class ClassificationRuleWrapper:
         print(f"[DEBUG] DEFAULT_ERROR_MODE: {DEFAULT_ERROR_MODE}")
 
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-            asset_id = asset_wrapper.get_id_as_uuid()
+            asset_id = asset_wrapper.get_id()
             asset_url = asset_wrapper.get_immich_photo_url().geturl()
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
