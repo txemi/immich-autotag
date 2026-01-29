@@ -88,7 +88,7 @@ class AlbumResponseWrapper:
     @staticmethod
     @typechecked
     def _find_asset_result_in_response(
-        result: list[BulkIdResponseDto], asset_id: UUID
+        result: list[BulkIdResponseDto], asset_id: AssetUUID
     ) -> BulkIdResponseDto | None:
         """Finds the result item for a specific asset in the API response list."""
         for item in result:
@@ -96,7 +96,7 @@ class AlbumResponseWrapper:
                 raise RuntimeError(
                     "API returned non-boolean success value in BulkIdResponseDto"
                 )
-            if UUID(item.id) == asset_id:
+            if AssetUUID.from_uuid(UUID(item.id)) == asset_id:
                 return item
 
         return None
@@ -156,9 +156,9 @@ class AlbumResponseWrapper:
         return self._cache_entry.get_owner_uuid()
 
     @typechecked
-    def _get_or_build_asset_ids_cache(self) -> set[UUID]:
+    def _get_or_build_asset_ids_cache(self) -> set[AssetUUID]:
         """
-        Returns the set of asset IDs as UUIDs, using the AlbumCacheEntry logic.
+        Returns the set of asset IDs as AssetUUIDs, using the AlbumCacheEntry logic.
         """
         return self._cache_entry.get_asset_uuids()
 
@@ -167,28 +167,25 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def get_asset_uuids(self) -> set[AssetUUID]:
         """
-        Returns the asset IDs as a set of UUID objects using the AlbumCacheEntry logic.
+        Returns the asset IDs as a set of AssetUUID objects using the AlbumCacheEntry logic.
         """
         return self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
-    def get_asset_ids(self) -> set[UUID]:
+    def get_asset_ids(self) -> set[AssetUUID]:
         """
-        Returns the set of asset IDs as UUIDs using the AlbumCacheEntry logic.
+        Returns the set of asset IDs as AssetUUIDs using the AlbumCacheEntry logic.
         """
         return self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
-        from uuid import UUID
-
-        return UUID(asset.id) in self._get_or_build_asset_ids_cache()
+        return AssetUUID.from_uuid(UUID(asset.id)) in self._get_or_build_asset_ids_cache()
 
     @conditional_typechecked
     def has_asset_wrapper(
         self, asset_wrapper: "AssetResponseWrapper", use_cache: bool = True
     ) -> bool:
-        # Use get_id_as_uuid for correct type
         return self._cache_entry.has_asset_wrapper(asset_wrapper)
 
     @conditional_typechecked
