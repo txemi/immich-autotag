@@ -114,8 +114,10 @@ class AssetDtoState:
             # TagResponseDto type is guaranteed by API; skip isinstance check
             wrapper = tag_collection.get_tag_from_dto(tag)
             if wrapper is None:
+                tag_name = wrapper.get_name()
+
                 raise ValueError(
-                    f"Tag '{tag.get_name()}' not found in TagCollectionWrapper for asset {self._dto.id}"
+                    f"Tag '{tag_name}' not found in TagCollectionWrapper for asset {self._dto.id}"
                 )
             wrappers.append(wrapper)
         return wrappers
