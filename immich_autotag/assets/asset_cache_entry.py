@@ -86,6 +86,7 @@ class AssetCacheEntry:
         # If the cache is expired or does not exist, reload from API
         # If not in cache or corrupted, reload from API
         client = ImmichClientWrapper.get_default_instance().get_client()
+        # Only convert to UUID when calling external Immich API
         dto = proxy_get_asset_info(asset_id, client, use_cache=False)
         if dto is None:
             raise RuntimeError(
@@ -126,7 +127,8 @@ class AssetCacheEntry:
         """
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
-        asset_id = self._state.get_uuid()
+        from immich_autotag.assets.asset_uuid import AssetUUID
+        asset_id = AssetUUID(self._state.get_uuid())
         refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
         self._state = refreshed_entry._state
         return self
@@ -150,7 +152,7 @@ class AssetCacheEntry:
     @classmethod
     def _from_api_entry(
         cls,
-        asset_id: UUID,
+        asset_id: AssetUUID,
         context: "ImmichContext",
         max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
