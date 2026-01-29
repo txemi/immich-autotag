@@ -22,6 +22,17 @@ class StaleAlbumCacheError(Exception):
 
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
+    def get_owner_uuid(self) -> "UUID":
+        return self._dto.get_owner_uuid()
+
+    def get_album_users(self) -> "AlbumUserList":
+        return self._dto.get_album_users()
+
+    def update(self, *, dto, load_source) -> None:
+        self._dto.update(dto=dto, load_source=load_source)
+
+    def is_full(self) -> bool:
+        return self._dto.is_full()
 
     _dto: AlbumDtoState
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
@@ -120,7 +131,6 @@ class AlbumCacheEntry:
         Does not expose DTOs directly.
         """
         # Import here to avoid circular import issues
-        from immich_autotag.assets.asset_uuid import AssetUUID
 
         uuids = self._ensure_full_loaded()._get_dto().get_asset_uuids()
         return uuids

@@ -1,5 +1,7 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.classification.match_result import MatchResult
@@ -13,7 +15,6 @@ if TYPE_CHECKING:
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.models import ClassificationRule
 
 
@@ -54,6 +55,7 @@ class ClassificationRuleWrapper:
         if not self.rule.album_name_patterns:
             return False
         import re
+        # Asegurarse de que no hay import local de AssetUUID ni shadowing
 
         return any(
             re.match(pattern, album_name) for pattern in self.rule.album_name_patterns
@@ -138,13 +140,12 @@ class ClassificationRuleWrapper:
         return len(self.extract_uuids_from_asset_links()) > 0
 
     @typechecked
-    def extract_uuids_from_asset_links(self) -> list["AssetUUID"]:
+    def extract_uuids_from_asset_links(self) -> list[AssetUUID]:
         """
         Extracts UUIDs from the asset_links of this rule.
         Accepts complete URLs or direct UUIDs.
         """
         import re
-
         from immich_autotag.assets.asset_uuid import AssetUUID
 
         if not self.rule.asset_links:
@@ -161,13 +162,9 @@ class ClassificationRuleWrapper:
                 raise RuntimeError(
                     f"[ERROR] Could not extract asset ID from link: {link}"
                 )
-            try:
-                asset_uuid = UUID(match.group(1))
-                uuids.append(AssetUUID.from_uuid(asset_uuid))
-            except Exception:
-                raise RuntimeError(
-                    f"[ERROR] Invalid asset ID (not a valid UUID): {match.group(1)}"
-                )
+            asset_uuid = UUID(match.group(1))
+            uuids.append(AssetUUID.from_uuid(asset_uuid))
+            
 
         return uuids
 
