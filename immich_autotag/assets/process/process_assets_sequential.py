@@ -67,7 +67,7 @@ def process_assets_sequential(
                     import traceback
 
                     tb = traceback.format_exc()
-                    asset_id = asset_wrapper.get_id_as_uuid()
+                    asset_id = asset_wrapper.get_id()
                     log(
                         f"[WARN] {category} - Skipping asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
@@ -85,7 +85,7 @@ def process_assets_sequential(
                         )
                     count += 1
                     StatisticsManager.get_instance().update_checkpoint(
-                        last_processed_id=asset_wrapper.get_id_as_uuid(),
+                        last_processed_id=asset_wrapper.get_id(),
                         count=skip_n + count,
                     )
                     continue
@@ -101,14 +101,14 @@ def process_assets_sequential(
                     )
                     raise
 
-            asset_id = asset_wrapper.get_id_as_uuid()
+            asset_id = asset_wrapper.get_id()
             log(
                 f"Iteration completed for asset: {asset_id}",
                 level=LogLevel.DEBUG,
             )
             count += 1
             StatisticsManager.get_instance().update_checkpoint(
-                last_processed_id=asset_wrapper.get_id_as_uuid(),
+                last_processed_id=asset_wrapper.get_id(),
                 count=skip_n + count,
             )
     except Exception as e:

@@ -35,7 +35,7 @@ def process_assets_threadpool(
             count += 1
             # Update count and checkpoint in StatisticsManager, which handles progress logging
             StatisticsManager.get_instance().update_checkpoint(
-                last_processed_id=asset_wrapper.get_id_as_uuid(), count=count
+                last_processed_id=asset_wrapper.get_id(), count=count
             )
         for future in concurrent.futures.as_completed(futures):
             try:
