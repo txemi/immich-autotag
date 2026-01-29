@@ -19,5 +19,5 @@ def proxy_remove_user_from_album(
     *, client: AuthenticatedClient, album_id: uuid.UUID, user_id: uuid.UUID
 ) -> Response[Any]:
     return remove_user_from_album.sync_detailed(
-        client=client, id=album_id, user_id=user_id
+        client=client, id=album_id, user_id=str(user_id)
     )
