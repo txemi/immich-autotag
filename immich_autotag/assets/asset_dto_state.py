@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 import enum
 from datetime import datetime
-from typing import Any, Iterator, Mapping, cast
+from typing import Any, Iterator, Mapping, Optional, cast
 from uuid import UUID
 
 import attrs
@@ -103,22 +103,12 @@ class AssetDtoState:
             raise TagsNotLoadedError(
                 "Tags are UNSET; tags have not been loaded for this asset."
             )
-        # tags is always a list or Unset at this point; no need to check for None
         from immich_autotag.context.immich_context import ImmichContext
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
         wrappers: list["TagWrapper"] = []
         for tag in tags:
-            # Robust type check
-
-            # TagResponseDto type is guaranteed by API; skip isinstance check
             wrapper = tag_collection.get_tag_from_dto(tag)
-            if wrapper is None:
-                tag_name = wrapper.get_name()
-
-                raise ValueError(
-                    f"Tag '{tag_name}' not found in TagCollectionWrapper for asset {self._dto.id}"
-                )
             wrappers.append(wrapper)
         return wrappers
 
@@ -191,11 +181,12 @@ class AssetDtoState:
             return self
         raise RuntimeError("AssetDtoState is not FULL; operation not allowed.")
 
-    def get_is_favorite(self) -> bool:
+    def get_is_favorite(self) -> Optional[bool]:
         """
-        Returns True if the asset is marked as favorite, False otherwise.
+        Returns True if the asset is marked as favorite, False if explicitly False, or None if not present.
         """
-        return self._dto.get_if_favorite()
+        # AssetResponseDto uses 'is_favorite' attribute, which may be missing or None
+        return getattr(self._dto, "is_favorite", None)
 
     def get_created_at(self) -> datetime:
         """
