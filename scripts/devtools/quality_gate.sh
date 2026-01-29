@@ -434,24 +434,47 @@ check_ruff() {
 		echo "[STANDARD MODE] Ruff will ignore E501 (line length), F821 (undefined name), and F841 (assigned but unused) and will NOT block the build for them."
 	elif [ "$quality_level" = "STRICT" ]; then
 		ruff_ignore=""
-	else
+		echo "[STRICT MODE] Ruff will NOT ignore any errors. All errors will block the build."
+	elif [ "$quality_level" = "TARGET" ]; then
 		ruff_ignore="--ignore E501"
-		echo "[NON-STRICT MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
+		echo "[TARGET MODE] Ruff will ignore E501 (line length) and will NOT block the build for it. Only F821 errors will block the build."
+	else
+		echo "[ERROR] Invalid quality_level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
+		exit 2
 	fi
 
+	local ruff_output ruff_exit
 	if [ "$check_mode" = "CHECK" ]; then
-		"$py_bin" -m ruff check --fix $ruff_ignore "$target_dir"
+		ruff_output=$("$py_bin" -m ruff check --fix $ruff_ignore "$target_dir" 2>&1)
 		ruff_exit=$?
 	else
-		"$py_bin" -m ruff check --fix $ruff_ignore "$target_dir"
+		ruff_output=$("$py_bin" -m ruff check --fix $ruff_ignore "$target_dir" 2>&1)
 		ruff_exit=$?
 	fi
-	if [ $ruff_exit -ne 0 ]; then
-		echo "[WARNING] ruff reported/fixed issues."
-		if [ "$check_mode" = "CHECK" ]; then
-			echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
+
+	if [ "$quality_level" = "TARGET" ]; then
+		local f821_count
+		f821_count=$(echo "$ruff_output" | grep -c 'F821')
+		if [ "$f821_count" -gt 0 ]; then
+			echo "[TARGET MODE: F821 ONLY] Found $f821_count F821 (undefined name) errors:"
+			echo "$ruff_output" | grep 'F821'
 			return 1
+		else
+			echo "[TARGET MODE: F821 ONLY] No F821 errors found."
+			return 0
 		fi
+	elif [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "STRICT" ]; then
+		if [ $ruff_exit -ne 0 ]; then
+			echo "$ruff_output"
+			echo "[WARNING] ruff reported/fixed issues."
+			if [ "$check_mode" = "CHECK" ]; then
+				echo "Run in apply mode to let the script attempt to fix formatting problems or run the command locally to see the diffs."
+				return 1
+			fi
+		fi
+	else
+		echo "[ERROR] Invalid quality_level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
+		return 2
 	fi
 	return 0
 }
