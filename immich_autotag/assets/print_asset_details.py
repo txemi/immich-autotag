@@ -18,6 +18,9 @@ def print_asset_details_with_tags(asset_id: UUID, client: ImmichClient) -> None:
 
     # Get the global context (singleton)
     context = ImmichContext.get_default_instance()
+    from immich_autotag.assets.asset_uuid import AssetUUID
+    if not isinstance(asset_id, AssetUUID):
+        asset_id = AssetUUID.from_uuid(asset_id)
     asset_wrapper = context.asset_manager.get_asset(asset_id, context)
     if asset_wrapper is None:
         raise RuntimeError(f"Asset with ID {asset_id} not found.")
