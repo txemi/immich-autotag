@@ -13,6 +13,7 @@ from typeguard import typechecked
 from .asset_date_candidate import AssetDateCandidate
 from .asset_date_candidates import AssetDateCandidates
 
+from immich_autotag.assets.validators import validate_asset_response_wrapper_not_none
 if TYPE_CHECKING:
     from .asset_date_candidates import AssetDateCandidates
 
@@ -35,7 +36,9 @@ class AssetDateSourcesList:
     TODO: Consider renaming to AssetDateCandidatesList for clarity.
     """
 
-    _asset_wrapper: "AssetResponseWrapper" = attrs.field()
+    _asset_wrapper: "AssetResponseWrapper" = attrs.field(
+        validator=validate_asset_response_wrapper_not_none
+    )
     # Each element represents the date candidates of a duplicate asset
     _date_candidates_per_duplicate: list[AssetDateCandidates] = attrs.field(
         factory=list
