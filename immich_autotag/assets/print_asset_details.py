@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_uuid import AssetUUID
