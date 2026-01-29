@@ -1,3 +1,6 @@
+from typing import Sequence
+# Helper to remove members from album
+
 """
 Album Permission Executor - Phase 2
 
@@ -142,7 +145,7 @@ def add_members_to_album(
 
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
-    user_ids = [user.get_id_as_str() for user in users]
+    user_ids = [user.id for user in users]
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
@@ -168,7 +171,6 @@ def add_members_to_album(
         client=client,
         body=add_users_dto,
     )
-
     if response is not None:
         log_debug(
             f"[ALBUM_PERMISSIONS] Successfully added {len(user_ids)} "
@@ -258,7 +260,6 @@ def sync_album_permissions(
     target_user_ids = set(result.resolved.values())
 
     # Get current members from API (pass UUID directly)
-    # current_members is assigned from _get_current_members, which is defined below. No import needed.
     current_members = _get_current_members(album_uuid, context)
     current_user_ids = {str(member.user.id) for member in current_members}
 
@@ -286,7 +287,6 @@ def sync_album_permissions(
     # Phase 2B: QUITAR (remove members)
     if users_to_remove:
         _remove_members_from_album(
-            # context: ImmichContext with API client
             album_name=album_name,
             user_ids=list(users_to_remove),
             album_id=album_uuid,
@@ -309,3 +309,16 @@ def sync_album_permissions(
         )
     else:
         log_debug(f"[ALBUM_PERMISSIONS] {album_name}: No changes needed")
+
+
+
+
+@typechecked
+def _remove_members_from_album(*, album_name: str, user_ids: Sequence[str], album_id: UUID, context: ImmichContext) -> None:
+    """
+    Remove users from album using the API. Logs each removal.
+    """
+    client = context.get_client_wrapper().get_client()
+    for user_id in user_ids:
+        proxy_remove_user_from_album(client=client, album_id=album_id, user_id=UUID(user_id))
+        log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
