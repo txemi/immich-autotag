@@ -205,20 +205,20 @@ class TagCollectionWrapper:
         _tag_collection_singleton = TagCollectionWrapper()
         return _tag_collection_singleton
 
-    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper":
+    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper | None":
         """
         Returns the TagWrapper corresponding to a TagResponseDto (dto), or None if it
         does not exist.
         """
+        raise NotImplementedError(
+            "TagResponseDto does not have valid id or name to search for the "
+            "TagWrapper. Hay que pensar si hacer merge"
+        )
         tag = self.find_by_id(UUID(dto.id))
         if tag is not None:
             return tag
         name = dto.name
         return self.find_by_name(name)
-        raise NotImplementedError(
-            "TagResponseDto does not have valid id or name to search for the "
-            "TagWrapper."
-        )
 
     @staticmethod
     def maintenance_delete_conflict_tags(client: ImmichClient) -> int:
