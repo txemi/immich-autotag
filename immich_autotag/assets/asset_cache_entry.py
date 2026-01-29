@@ -128,7 +128,7 @@ class AssetCacheEntry:
         Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
         """
         from immich_autotag.assets.asset_uuid import AssetUUID
-        asset_id = self._state.get_uuid()
+        asset_id = self._state.get_uuid()  # Already AssetUUID
         refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
         self._state = refreshed_entry._state
         return self
@@ -192,9 +192,9 @@ class AssetCacheEntry:
             self._reload_from_api(context)
         return self
 
-    def get_uuid(self) -> UUID:
+    def get_uuid(self) -> AssetUUID:
         """
-        Returns the UUID of the asset. The asset ID is immutable, so we do not require a fresh state for this operation.
+        Returns the UUID of the asset as a plain UUID (not AssetUUID).
         """
         return self._state.get_uuid()
 
