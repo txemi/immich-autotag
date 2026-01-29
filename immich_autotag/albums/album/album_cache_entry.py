@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.assets.asset_uuid import AssetUUID
     from immich_autotag.context.immich_context import ImmichContext
+    from immich_autotag.albums.album.album_user_list import AlbumUserList
 
 
 class StaleAlbumCacheError(Exception):
