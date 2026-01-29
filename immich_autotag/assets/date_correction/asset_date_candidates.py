@@ -5,6 +5,7 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.validators import validate_asset_response_wrapper_not_none
 
 from .asset_date_candidate import AssetDateCandidate
 from .date_source_kind import DateSourceKind
@@ -22,7 +23,9 @@ class AssetDateCandidates:
     Example: An asset can have dates from Immich, filename, path, EXIF, etc. All those dates are grouped here.
     """
 
-    asset_wrapper: AssetResponseWrapper = attrs.field()
+    asset_wrapper: AssetResponseWrapper = attrs.field(
+        validator=validate_asset_response_wrapper_not_none
+    )
     candidates: List[AssetDateCandidate] = attrs.field(factory=list)
 
     @typechecked

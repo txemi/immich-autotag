@@ -12,6 +12,7 @@ import attrs
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
+from immich_autotag.albums.album.validators import validate_album_response_wrapper
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.serializable_modification_entry import (
     SerializableModificationEntry,
@@ -36,14 +37,26 @@ class ModificationEntry:
     kind: ModificationKind = attrs.field(
         validator=attrs.validators.instance_of(ModificationKind)
     )
-    asset_wrapper: Any = attrs.field(default=None)
+    asset_wrapper: "AssetResponseWrapper | None" = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(validate_asset_response_wrapper),
+    )
     tag: Optional["TagWrapper"] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(TagWrapper)),
     )
-    album: Optional["AlbumResponseWrapper"] = attrs.field(default=None)
-    old_value: Any = attrs.field(default=None)
-    new_value: Any = attrs.field(default=None)
+    album: Optional["AlbumResponseWrapper"] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(validate_album_response_wrapper),
+    )
+    old_value: Any = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(object)),
+    )
+    new_value: Any = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(object)),
+    )
     user: Optional[UserResponseWrapper] = attrs.field(
         default=None,
         validator=attrs.validators.optional(

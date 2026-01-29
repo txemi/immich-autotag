@@ -1,0 +1,22 @@
+"""
+Validador de tipo para AssetResponseWrapper.
+"""
+
+
+def validate_asset_response_wrapper(instance, attribute, value):
+	"""
+	Permite None o AssetResponseWrapper.
+	"""
+	if value is not None:
+		from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+		if not isinstance(value, AssetResponseWrapper):
+			raise TypeError(f"{attribute.name} must be AssetResponseWrapper o...
+
+def validate_asset_response_wrapper_not_none(instance, attribute, value):
+	"""
+	No permite None, solo AssetResponseWrapper.
+	"""
+	from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+	if value is None or not isinstance(value, AssetResponseWrapper):
+		raise TypeError(f"{attribute.name} must be AssetResponseWrapper (not None), got {type(value)}")
+
