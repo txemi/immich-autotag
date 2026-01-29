@@ -12,15 +12,13 @@ import attrs
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
+from immich_autotag.albums.album.validators import validate_album_response_wrapper
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.serializable_modification_entry import (
     SerializableModificationEntry,
 )
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-
-
-from immich_autotag.albums.album.validators import validate_album_response_wrapper
 
 
 # class ModificationEntry: ...

@@ -10,10 +10,11 @@ from typing import TYPE_CHECKING, Optional
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.assets.validators import validate_asset_response_wrapper_not_none
+
 from .asset_date_candidate import AssetDateCandidate
 from .asset_date_candidates import AssetDateCandidates
 
-from immich_autotag.assets.validators import validate_asset_response_wrapper_not_none
 if TYPE_CHECKING:
     from .asset_date_candidates import AssetDateCandidates
 

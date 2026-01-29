@@ -4,7 +4,6 @@ from typing import Iterator, List, Optional
 import attrs
 from typeguard import typechecked
 
-
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.validators import validate_asset_response_wrapper_not_none
 

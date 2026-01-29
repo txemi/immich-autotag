@@ -4,9 +4,7 @@ from typing import Optional
 
 import attrs
 
-
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.validators import validate_asset_response_wrapper
 
 from .date_source_kind import DateSourceKind
 
