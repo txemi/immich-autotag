@@ -51,5 +51,14 @@
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     }
+    ,
+    {
+      "label": "Format and Sort (apply+check)",
+      "type": "shell",
+      "command": "bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=APPLY && bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=CHECK",
+      "group": { "kind": "build" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
   ]
 }
