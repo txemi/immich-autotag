@@ -43,13 +43,15 @@ def _handle_duplicate_conflicts(
     duplicate_id = asset_wrapper.get_duplicate_id_as_uuid()
     from immich_client.types import Unset
 
-    dup_id = None if isinstance(duplicate_id, Unset) else duplicate_id
+    if isinstance(duplicate_id, Unset) or duplicate_id is None:
+        # No valid duplicate_id, skip tagging
+        return
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()
     )
     for wrapper in all_wrappers:
         wrapper.ensure_autotag_duplicate_album_conflict(
-            conflict=conflict, duplicate_id=dup_id
+            conflict=conflict, duplicate_id=duplicate_id
         )
 
 
