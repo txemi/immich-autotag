@@ -79,7 +79,7 @@ class ModificationEntry:
                 self.asset_wrapper.get_id() if self.asset_wrapper is not None else None
             ),
             asset_name=(
-                self.asset_wrapper.original_file_name
+                self.asset_wrapper.get_original_file_name()
                 if self.asset_wrapper is not None
                 else None
             ),
