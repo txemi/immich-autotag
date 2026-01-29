@@ -149,7 +149,7 @@ def proxy_get_album_page(
 
 
 def proxy_add_assets_to_album(
-    *, album_id: UUID, client: AuthenticatedClient, asset_ids: List[UUID]
+    *, album_id: UUID, client: AuthenticatedClient, asset_ids: List[AssetUUID]
 ) -> list[BulkIdResponseDto]:
     result = add_assets_to_album.sync(
         id=album_id, client=client, body=BulkIdsDto(ids=asset_ids)
