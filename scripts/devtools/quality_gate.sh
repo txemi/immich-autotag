@@ -656,7 +656,7 @@ check_mypy() {
 			echo '[STRICT MODE] Any mypy error blocks the build.'
 			echo '[EXIT] Quality Gate failed due to mypy errors.'
 			return 1
-		elif [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
+		elif [ "$quality_level" = "STANDARD" ]; then
 			# Solo bloquea por errores arg-type y call-arg (objetivo mínimo)
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
@@ -665,7 +665,18 @@ check_mypy() {
 				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1
 			else
-				echo "[$quality_level MODE] Only non-critical mypy errors found (return-value, attr-defined, imports, etc). Not blocking build.'"
+				echo "[STANDARD MODE] Only non-critical mypy errors found (return-value, attr-defined, imports, etc). Not blocking build.'"
+			fi
+		elif [ "$quality_level" = "TARGET" ]; then
+			# Bloquea por errores arg-type, call-arg y attr-defined
+			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|attr-defined)\]' | wc -l)
+			if [ "$mypy_block_count" -gt 0 ]; then
+				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ❌❌❌"
+				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE/CALL-ARG/ATTR-DEFINED) DETECTED 🚨"
+				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
+				return 1
+			else
+				echo "[TARGET MODE] Only non-critical mypy errors found (return-value, imports, etc). Not blocking build.'"
 			fi
 		else
 			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
