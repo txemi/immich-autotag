@@ -9,6 +9,8 @@ from immich_autotag.albums.album.album_dto_state import AlbumDtoState
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.utils.decorators import conditional_typechecked
 
+from immich_autotag.assets.asset_uuid import AssetUUID
+
 if TYPE_CHECKING:
 
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
