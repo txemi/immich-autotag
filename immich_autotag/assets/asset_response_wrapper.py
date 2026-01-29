@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+
 # Exception for date integrity
 class DateIntegrityError(Exception):
     pass
@@ -430,7 +431,7 @@ class AssetResponseWrapper:
         return True
 
     @typechecked
-    def _get_current_tag_ids(self) -> list[AssetUUID]:
+    def _get_current_tag_ids(self) -> "list[AssetUUID]":
         """Returns the AssetUUIDs of the asset's current tags."""
         tags: list[TagWrapper] = self.get_tags()
         return [t.get_id() for t in tags]
@@ -491,7 +492,7 @@ class AssetResponseWrapper:
     def get_created_at(self) -> datetime | str | None:
         return self._cache_entry.get_created_at()
 
-    def get_id(self) -> AssetUUID:
+    def get_id(self) -> "AssetUUID":
         # Use get_uuid from cache_entry, which is the correct and safe method
         return self._cache_entry.get_uuid()
 
@@ -853,7 +854,7 @@ class AssetResponseWrapper:
         url = self.get_immich_photo_url()
         return url
 
-    def get_uuid(self) -> AssetUUID:
+    def get_uuid(self) -> "AssetUUID":
         return self.get_id()
 
     # Removed duplicate method get_album_names
@@ -1047,16 +1048,13 @@ class AssetResponseWrapper:
 
     @classmethod
     def from_id(
-        cls, asset_id: AssetUUID, context: "ImmichContext"
+        cls, asset_id: "AssetUUID", context: "ImmichContext"
     ) -> "AssetResponseWrapper":
         """
         Gets an AssetResponseWrapper by ID, delegating the retrieval logic to AssetCacheEntry._from_cache_or_api.
         Accepts either AssetUUID or uuid.UUID, but always converts to AssetUUID for type safety.
         """
         from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
-        from immich_autotag.assets.asset_uuid import AssetUUID
 
-        if not isinstance(asset_id, AssetUUID):
-            asset_id = AssetUUID.from_uuid(asset_id)
         entry = AssetCacheEntry.from_cache_or_api(asset_id)
         return cls(context, entry)
