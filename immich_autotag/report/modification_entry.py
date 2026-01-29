@@ -92,4 +92,6 @@ class ModificationEntry:
             new_value=str(self.new_value) if self.new_value is not None else None,
             user_name=self.user.name if self.user is not None else None,
             asset_link=asset_link,
+            extra=self.extra,
+            progress=self.progress,
         )
