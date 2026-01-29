@@ -17,6 +17,9 @@ from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.types import ImmichClient
 
 if TYPE_CHECKING:
+    from immich_autotag.assets.asset_uuid import AssetUUID
+
+if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
     from immich_autotag.context.immich_context import ImmichContext
 

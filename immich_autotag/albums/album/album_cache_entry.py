@@ -11,8 +11,8 @@ from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
-
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.assets.asset_uuid import AssetUUID
     from immich_autotag.context.immich_context import ImmichContext
 
 
@@ -119,8 +119,11 @@ class AlbumCacheEntry:
         Returns the set of asset UUIDs in the album, ensuring full DTO is loaded.
         Does not expose DTOs directly.
         """
-        # Convert all UUIDs to AssetUUID for type safety
+        # Import here to avoid circular import issues
+        from immich_autotag.assets.asset_uuid import AssetUUID
+
         uuids = self._ensure_full_loaded()._get_dto().get_asset_uuids()
+        return uuids
 
     @conditional_typechecked
     def has_asset_wrapper(
@@ -160,11 +163,12 @@ class AlbumCacheEntry:
 
     @staticmethod
     def create(
-        dto: AlbumDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
+        *, dto: AlbumDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
     ) -> "AlbumCacheEntry":
         """
         Static constructor for AlbumCacheEntry to avoid linter/type checker issues with private attribute names.
         Use this instead of direct instantiation.
+        Arguments must be passed by name (not positional).
         """
         return AlbumCacheEntry(
             dto=dto,
