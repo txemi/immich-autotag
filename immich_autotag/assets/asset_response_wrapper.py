@@ -883,18 +883,14 @@ class AssetResponseWrapper:
         self,
         *,
         conflict: bool,
-        # tag_mod_report parameter removed
         user: "UserResponseWrapper | None" = None,
-        duplicate_id: str | None = None,
-        disable=True,
+        duplicate_id: UUID 
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
         If there is conflict, adds the tag if not present. If no conflict and tag is present, removes it.
-        Also handles the per-duplicate-set tag if duplicate_id is provided.
+        Also handles the per-duplicate-set tag if duplicate_id is provided (UUID).
         """
-        if disable:
-            return
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
         tag_name = None
         # Use explicit type and direct access for duplicate_processing
@@ -902,15 +898,13 @@ class AssetResponseWrapper:
             tag_name = config.duplicate_processing.autotag_album_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
-
             log(
                 "[WARNING] autotag_album_conflict not set in config.duplicate_processing; skipping tag management."
             )
             return
-        # Generic tag
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
-
+        # Generic tag
         if conflict:
             if not self.has_tag(tag_name=tag_name):
                 self.add_tag_by_name(tag_name=tag_name)
@@ -929,7 +923,7 @@ class AssetResponseWrapper:
                 self.remove_tag_by_name(tag_name=tag_name, user=user)
         # Per-duplicate-set tag
         if duplicate_id:
-            tag_for_set = f"{tag_name}_{duplicate_id}"
+            tag_for_set = f"{tag_name}_{str(duplicate_id)}"
             if conflict:
                 if not self.has_tag(tag_name=tag_for_set):
                     self.add_tag_by_name(tag_name=tag_for_set)
