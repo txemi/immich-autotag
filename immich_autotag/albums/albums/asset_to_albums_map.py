@@ -1,5 +1,5 @@
 from typing import Iterator, MutableMapping
-from uuid import UUID
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 from typeguard import typechecked
 
@@ -7,7 +7,7 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 from immich_autotag.albums.albums.album_list import AlbumList
 
 
-class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
+class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
     """
     Map from asset_id (str) to AlbumList.
     The map key is the asset_id (string) of each asset.
@@ -16,7 +16,7 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
     """
 
     def __init__(self):
-        self._map: dict[UUID, AlbumList] = dict()
+        self._map: dict[AssetUUID, AlbumList] = dict()
 
     # Rely on MutableMapping.get implementation; avoid overriding overloaded signature.
 
@@ -42,6 +42,7 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
         raise NotImplementedError("revisar")
         if album_wrapper.has_loaded_assets():
             for asset_uuid in album_wrapper.get_asset_uuids():
+                asset_uuid = AssetUUID.from_uuid(asset_uuid) if not isinstance(asset_uuid, AssetUUID) else asset_uuid
                 if asset_uuid in self:
                     album_list = self[asset_uuid]
                     album_list.remove_album(album_wrapper)
@@ -64,48 +65,50 @@ class AssetToAlbumsMap(MutableMapping[UUID, AlbumList]):
         AlbumList if needed.
         """
         for asset_uuid in album_wrapper.get_asset_uuids():
+            asset_uuid = AssetUUID.from_uuid(asset_uuid) if not isinstance(asset_uuid, AssetUUID) else asset_uuid
             if asset_uuid not in self:
                 self[asset_uuid] = AlbumList()
             self[asset_uuid].append(album_wrapper)
 
     @typechecked
-    def get_from_uuid(self, asset_uuid: UUID) -> AlbumList:
+    def get_from_uuid(self, asset_uuid: AssetUUID) -> AlbumList:
         """
         Returns the AlbumList for the given asset UUID, or an empty AlbumList if none.
         """
+        asset_uuid = AssetUUID.from_uuid(asset_uuid) if not isinstance(asset_uuid, AssetUUID) else asset_uuid
         if asset_uuid in self:
             return self[asset_uuid]
         else:
             return AlbumList()
 
-    def __getitem__(self, key: UUID) -> AlbumList:
-        if not isinstance(key, UUID):
+    def __getitem__(self, key: AssetUUID) -> AlbumList:
+        if not isinstance(key, AssetUUID):
             raise TypeError(
-                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+                f"AssetToAlbumsMap keys must be AssetUUID, got {type(key).__name__}"
             )
         return self._map[key]
 
-    def __setitem__(self, key: UUID, value: AlbumList) -> None:
-        if not isinstance(key, UUID):
+    def __setitem__(self, key: AssetUUID, value: AlbumList) -> None:
+        if not isinstance(key, AssetUUID):
             raise TypeError(
-                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+                f"AssetToAlbumsMap keys must be AssetUUID, got {type(key).__name__}"
             )
         self._map[key] = value
 
-    def __delitem__(self, key: UUID) -> None:
-        if not isinstance(key, UUID):
+    def __delitem__(self, key: AssetUUID) -> None:
+        if not isinstance(key, AssetUUID):
             raise TypeError(
-                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+                f"AssetToAlbumsMap keys must be AssetUUID, got {type(key).__name__}"
             )
         del self._map[key]
 
-    def __iter__(self) -> Iterator[UUID]:
+    def __iter__(self) -> Iterator[AssetUUID]:
         return iter(self._map)
 
     def __contains__(self, key: object) -> bool:
-        if not isinstance(key, UUID):
+        if not isinstance(key, AssetUUID):
             raise TypeError(
-                f"AssetToAlbumsMap keys must be UUID, got {type(key).__name__}"
+                f"AssetToAlbumsMap keys must be AssetUUID, got {type(key).__name__}"
             )
         return key in self._map
 

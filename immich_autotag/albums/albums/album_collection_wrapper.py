@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum, auto
 from typing import Iterable
-from uuid import UUID
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
@@ -768,7 +768,7 @@ class AlbumCollectionWrapper:
         Returns an iterable of AlbumResponseWrapper objects for all albums
         the asset belongs to (O(1) lookup via map). Ensures all albums are loaded before proceeding.
         """
-        return self.get_asset_to_albums_map().get_from_uuid(asset.get_uuid())
+        return self.get_asset_to_albums_map().get_from_uuid(asset.get_id())
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseWrapper) -> list[str]:

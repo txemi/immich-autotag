@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Iterator, Optional
-from uuid import UUID
+from immich_autotag.assets.asset_uuid import AssetUUID
 
 import attrs
 from immich_client import Client
@@ -24,7 +24,7 @@ class AssetManager:
 
     client: Client
     # If not kept in memory, _assets will be None
-    _assets: Optional[Dict[UUID, AssetResponseWrapper]] = attrs.field(
+    _assets: Optional[dict[AssetUUID, AssetResponseWrapper]] = attrs.field(
         default=None, init=False
     )
     _keep_assets_in_memory: bool = attrs.field(
@@ -54,7 +54,7 @@ class AssetManager:
         for asset in get_all_assets(context, max_assets=max_assets, skip_n=skip_n):
             if not isinstance(asset, AssetResponseWrapper):
                 raise RuntimeError(f"Expected AssetResponseWrapper, got {type(asset)}")
-            asset_uuid = asset.get_uuid()
+            asset_uuid = asset.get_id()
             if self._assets is not None:
                 self._assets[asset_uuid] = asset
             yield asset
@@ -89,7 +89,7 @@ class AssetManager:
         """
         if dto_type not in (AssetDtoType.ALBUM, AssetDtoType.SEARCH):
             raise ValueError(f"Unsupported dto_type {dto_type} for album asset DTOs")
-        asset_uuid = UUID(asset_dto.id)
+        asset_uuid = AssetUUID.from_str(asset_dto.id)
         if self._assets is not None and asset_uuid in self._assets:
             return self._assets[asset_uuid]
 

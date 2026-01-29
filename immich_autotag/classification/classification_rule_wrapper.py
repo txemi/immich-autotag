@@ -163,7 +163,7 @@ class ClassificationRuleWrapper:
                 )
             try:
                 asset_uuid = UUID(match.group(1))
-                uuids.append(AssetUUID(asset_uuid))
+                uuids.append(AssetUUID.from_uuid(asset_uuid))
             except Exception:
                 raise RuntimeError(
                     f"[ERROR] Invalid asset ID (not a valid UUID): {match.group(1)}"

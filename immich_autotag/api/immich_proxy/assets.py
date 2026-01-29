@@ -46,4 +46,4 @@ def proxy_update_asset(
     """
     Centralized wrapper for update_asset.sync.
     """
-    return _update_asset.sync(id=asset_id, client=client, body=body)
+    return _update_asset.sync(id=asset_id.to_uuid(), client=client, body=body)
