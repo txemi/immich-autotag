@@ -25,7 +25,7 @@ def run_main_inner() -> None:
 
 def run_main():
     """
-    Wrapper que ejecuta run_main_inner, y si el modo de error es CRAZY_DEBUG, activa cProfile y guarda el resultado en profile_debug.stats.
+    Wrapper that runs run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
     """
     from immich_autotag.entrypoints.profiling_utils import setup_profiling_and_memory
 
