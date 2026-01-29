@@ -139,7 +139,7 @@ class AssetResponseWrapper:
             extra={"pre_update": True},
         )
         response = proxy_update_asset(
-            asset_id=self.get_id_as_uuid(),
+            asset_id=self.get_id(),
             client=self.get_context().get_client_wrapper().get_client(),
             body=dto,
         )
@@ -170,7 +170,7 @@ class AssetResponseWrapper:
         """
         from immich_autotag.utils.url_helpers import get_immich_photo_url
 
-        return get_immich_photo_url(self.get_id_as_uuid())
+        return get_immich_photo_url(self.get_id())
 
     @typechecked
     def get_best_date(self) -> datetime:
@@ -492,7 +492,7 @@ class AssetResponseWrapper:
     def get_created_at(self) -> datetime | str | None:
         return self._cache_entry.get_created_at()
 
-    def get_id(self) -> UUID:
+    def get_id(self) -> AssetUUID:
         # Use get_uuid from cache_entry, which is the correct and safe method
         return self._cache_entry.get_uuid()
 
@@ -811,8 +811,7 @@ class AssetResponseWrapper:
 
         return album_name
 
-    def get_id_as_uuid(self) -> "AssetUUID":
-        return self._cache_entry.get_uuid()
+    # REMOVED: get_id_as_uuid, use get_id() for AssetUUID
 
     @typechecked
     def has_same_classification_tags_as(self, *, other: "AssetResponseWrapper") -> bool:
@@ -855,8 +854,8 @@ class AssetResponseWrapper:
         url = self.get_immich_photo_url()
         return url
 
-    def get_uuid(self) -> UUID:
-        return self._cache_entry.get_uuid()
+    def get_uuid(self) -> AssetUUID:
+        return self.get_id()
 
     # Removed duplicate method get_album_names
 
