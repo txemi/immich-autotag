@@ -41,7 +41,7 @@ def proxy_get_asset_info(
 
 
 def proxy_update_asset(
-    asset_id: UUID, client: ImmichClient, body: UpdateAssetDto
+    asset_id: AssetUUID, client: ImmichClient, body: UpdateAssetDto
 ) -> AssetResponseDto | None:
     """
     Centralized wrapper for update_asset.sync.
