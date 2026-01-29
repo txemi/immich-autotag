@@ -164,7 +164,7 @@ def add_members_to_album(
     client_wrapper = context.get_client_wrapper()
     client = client_wrapper.get_client()  # AuthenticatedClient
     response = proxy_add_users_to_album(
-        album_id=UUID(album_id),
+        album_id=album_id,
         client=client,
         body=add_users_dto,
     )
@@ -219,7 +219,11 @@ def add_members_to_album(
 
     client = context.client
     for user_id in user_ids:
-        proxy_remove_user_from_album(client=client, album_id=album_id, user_id=user_id)
+        proxy_remove_user_from_album(
+            client=client,
+            album_id=album_id,
+            user_id=user_id
+        )
         log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
 
 

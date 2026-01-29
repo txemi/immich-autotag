@@ -1,5 +1,6 @@
 from typing import Any
 
+from click import UUID
 from immich_client.api.albums import remove_user_from_album
 from immich_client.api.users import search_users
 from immich_client.client import AuthenticatedClient
@@ -12,8 +13,8 @@ def proxy_search_users(*, client: AuthenticatedClient) -> list[UserResponseDto]:
 
 
 def proxy_remove_user_from_album(
-    *, client: AuthenticatedClient, album_id: str, user_id: str
+    *, client: AuthenticatedClient, album_id: UUID, user_id: UUID
 ) -> Response[Any]:
     return remove_user_from_album.sync_detailed(
-        client=client, id=album_id, user_id=user_id
+        client=client, id=str(album_id), user_id=str(user_id)
     )

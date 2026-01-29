@@ -7,6 +7,7 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 
 from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
+from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.context.immich_context import ImmichContext
 
@@ -49,7 +50,7 @@ class AssetCacheEntry:
     @classmethod
     def from_cache_or_api(
         cls,
-        asset_id: UUID,
+        asset_id: AssetUUID,
         *,
         max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
         use_cache: bool = True,
