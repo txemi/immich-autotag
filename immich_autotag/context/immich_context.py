@@ -54,7 +54,7 @@ class ImmichContext:
         """
         from immich_autotag.run_output.manager import RunOutputManager
 
-        return RunOutputManager.get_run_output_dir()
+        return RunOutputManager.current().get_run_output_dir()
 
     def __attrs_post_init__(self):
         global _instance, _instance_created
