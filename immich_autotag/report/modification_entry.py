@@ -10,7 +10,10 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
 
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper

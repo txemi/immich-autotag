@@ -34,7 +34,10 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.report.modification_report import ModificationReport
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
