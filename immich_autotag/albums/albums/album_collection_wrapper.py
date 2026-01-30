@@ -8,6 +8,8 @@ from typing import Iterable, Protocol, runtime_checkable
 @runtime_checkable
 class PerfPhaseTracker(Protocol):
     def mark(self, *, phase: str, event: str) -> None: ...
+
+
 from uuid import UUID
 
 import attrs
