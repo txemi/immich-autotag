@@ -29,7 +29,7 @@ def sync_all_album_permissions(user_config: Optional[UserConfig], context: Immic
         level=LogLevel.FOCUS,
     )
 
-    albums_collection = context.albums_collection
+    albums_collection = context.get_albums_collection()
     # Build user groups dictionary for quick lookup
     user_groups_dict: dict[str, "UserGroup"] = {}
     user_groups = album_perms_config.user_groups
