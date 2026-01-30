@@ -10,12 +10,13 @@ from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID, UserUUID
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
+    from immich_client.models.album_response_dto import AlbumResponseDto
+
+    from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
     from immich_autotag.albums.album.album_user_list import AlbumUserList
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.context.immich_context import ImmichContext
     from immich_autotag.types.uuid_wrappers import AssetUUID
-    from immich_client.models.album_response_dto import AlbumResponseDto
-    from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
 
 class StaleAlbumCacheError(Exception):
@@ -25,10 +26,8 @@ class StaleAlbumCacheError(Exception):
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
 
-
-
     def merge_from_dto(
-        self, dto: 'AlbumResponseDto', load_source: 'AlbumLoadSource'
+        self, dto: "AlbumResponseDto", load_source: "AlbumLoadSource"
     ) -> None:
         """
         Delegates to AlbumDtoState.merge_from_dto. See AlbumDtoState for logic.
@@ -45,7 +44,9 @@ class AlbumCacheEntry:
     def get_album_users(self) -> "AlbumUserList":
         return self._dto.get_album_users()
 
-    def update(self, *, dto: 'AlbumResponseDto', load_source: 'AlbumLoadSource') -> None:
+    def update(
+        self, *, dto: "AlbumResponseDto", load_source: "AlbumLoadSource"
+    ) -> None:
         self._dto.update(dto=dto, load_source=load_source)
 
     def is_full(self) -> bool:
