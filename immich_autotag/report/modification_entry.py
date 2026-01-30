@@ -101,7 +101,7 @@ class ModificationEntry:
         """
         Returns the user name if available, else None.
         """
-        return self.user.name if self.user is not None else None
+        return self.user.get_name() if self.user is not None else None
 
     def _get_asset_link(self) -> Optional[str]:
         """
