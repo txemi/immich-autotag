@@ -129,13 +129,13 @@ class AlbumDtoState:
 
     @staticmethod
     def create(
-        *, dto: AlbumResponseDto, load_source: AlbumLoadSource
+        dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> "AlbumDtoState":
         """
         Creates a new instance of AlbumDtoState safely to avoid issues with attrs and enums.
-        Arguments must be passed by name (not positional).
+        Arguments must be passed positionally to match attrs usage.
         """
-        return AlbumDtoState(_dto=dto, _load_source=load_source)
+        return AlbumDtoState(dto, load_source)
 
     def is_full(self) -> bool:
         if self._load_source == AlbumLoadSource.DETAIL:

@@ -190,14 +190,11 @@ class AlbumCacheEntry:
 
     @staticmethod
     def create(
-        *, dto: AlbumDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
+        dto: AlbumDtoState, max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
     ) -> "AlbumCacheEntry":
         """
         Static constructor for AlbumCacheEntry to avoid linter/type checker issues with private attribute names.
         Use this instead of direct instantiation.
-        Arguments must be passed by name (not positional).
+        Arguments must be passed positionally to match attrs usage.
         """
-        return AlbumCacheEntry(  # noqa
-            dto=dto,  # noqa
-            max_age_seconds=max_age_seconds,  # noqa
-        )  # noqa # type: ignore[call-arg,attr-defined]
+        return AlbumCacheEntry(dto=dto, max_age_seconds=max_age_seconds)
