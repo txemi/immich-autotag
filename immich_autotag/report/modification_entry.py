@@ -4,7 +4,6 @@ ModificationEntry class: represents a rich modification (with objects) in the sy
 
 from __future__ import annotations
 
-
 import datetime
 import uuid
 from typing import TYPE_CHECKING, Any, Optional
@@ -30,7 +29,6 @@ from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 # class ModificationEntry: ...
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class ModificationEntry:
-
     """
     Represents a modification in the system using rich objects (wrappers, DTOs, etc.).
     This class is intended for internal logic, validation, advanced formatting, and access to all high-level data.
@@ -85,8 +83,6 @@ class ModificationEntry:
         """
         return self.tag.get_name() if self.tag is not None else None
 
-
-
     def _get_old_value(self) -> Optional[str]:
         """
         Devuelve old_value como str si está disponible, o None.
@@ -104,6 +100,7 @@ class ModificationEntry:
         Devuelve el nombre del usuario si está disponible, o None.
         """
         return self.user.name if self.user is not None else None
+
     def _get_asset_link(self) -> Optional[str]:
         """
         Devuelve el enlace del asset (asset_link) como str, si está disponible, o None.
@@ -112,6 +109,7 @@ class ModificationEntry:
             return self.asset_wrapper.get_immich_photo_url().geturl()
 
         return None
+
     def _get_album_id(self) -> Optional[str]:
         """
         Devuelve el ID del álbum como str, si está disponible, o None.
@@ -127,6 +125,7 @@ class ModificationEntry:
         if self.album is not None:
             return self.album.get_album_name()
         return None
+
     def _get_asset_id(self) -> Optional[uuid.UUID]:
         """
         Devuelve el asset_id como UUID, si está disponible, o None.
@@ -135,6 +134,7 @@ class ModificationEntry:
             asset_id_val = self.asset_wrapper.get_id()
             return asset_id_val
         return None
+
     def _get_asset_name(self) -> Optional[str]:
         """
         Devuelve el nombre del asset como str, si está disponible, o None.
@@ -155,7 +155,6 @@ class ModificationEntry:
 
         asset_id = self._get_asset_id()
         asset_name = self._get_asset_name()
-
 
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
