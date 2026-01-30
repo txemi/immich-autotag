@@ -1,10 +1,6 @@
-# Refactor: process_single_asset
-
-Este documento describe la primera refactorización registrada sobre el proceso de asset en el sistema. Aquí se documentan los objetivos, el diseño y los cambios realizados para mejorar la mantenibilidad y robustez del flujo principal de procesamiento de assets.
-
----
-
+# This file has been moved to the subtask folder and is now empty.
 # Proposed Refactoring: `immich_autotag/assets/process_single_asset.py`
+
 
 # Mapping table: symbol, current file and destination
 
@@ -63,12 +59,9 @@ The goal is to move symbols one by one, testing after each move to minimize conf
 
 **Order strategy:**
 - First move classes and functions that don't depend on others (private and utility).
-
----
-
-Then, move functions that depend on the previous ones.
-Finally, move the main functions (`process_single_asset`, `process_assets_sequential`, `process_assets_threadpool`, `process_assets`).
-Test after each step to ensure the application never stops working.
+- Then, move functions that depend on the previous ones.
+- Finally, move the main functions (`process_single_asset`, `process_assets_sequential`, `process_assets_threadpool`, `process_assets`).
+- Test after each step to ensure the application never stops working.
 
 **Notes:**
 - Files marked as "Yes" in the "Private?" column should have an initial underscore in the file name and in the function/class name.
@@ -116,15 +109,15 @@ The `process_assets` method in `assets/process_assets.py` is too large and diffi
 
 ```python
 def process_assets(context: ImmichContext, max_assets: int | None = None) -> None:
-	log_execution_parameters()
-	total_assets = fetch_total_assets(context)
-	last_processed_id, skip_n = resolve_checkpoint()
-	register_execution_parameters(total_assets, max_assets, skip_n)
-	if USE_THREADPOOL:
-		process_assets_threadpool(context, max_assets)
-	else:
-		process_assets_sequential(context, max_assets, skip_n, last_processed_id)
-	log_final_summary()
+    log_execution_parameters()
+    total_assets = fetch_total_assets(context)
+    last_processed_id, skip_n = resolve_checkpoint()
+    register_execution_parameters(total_assets, max_assets, skip_n)
+    if USE_THREADPOOL:
+        process_assets_threadpool(context, max_assets)
+    else:
+        process_assets_sequential(context, max_assets, skip_n, last_processed_id)
+    log_final_summary()
 ```
 
 - Each sub-function can be defined as internal or external as appropriate.
@@ -134,4 +127,3 @@ def process_assets(context: ImmichContext, max_assets: int | None = None) -> Non
 **Recommendation:**
 - This refactor is complementary to the modularization plan for process_single_asset.py and can be addressed in parallel.
 - After applying both, the asset processing flow will be much more maintainable and scalable.
-
