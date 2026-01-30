@@ -6,12 +6,12 @@ from uuid import UUID
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_uuid import AssetUUID
+    from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from .album_user_list import AlbumUserList
@@ -133,7 +133,7 @@ class AlbumDtoState:
         """
         if self._load_source != AlbumLoadSource.DETAIL:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
-        from immich_autotag.assets.asset_uuid import AssetUUID
+        from immich_autotag.types.uuid_wrappers import AssetUUID
 
         return set(AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets)
 

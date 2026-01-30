@@ -14,7 +14,7 @@ import attr
 import git
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.config.models import UserConfig  # GitPython
 from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
