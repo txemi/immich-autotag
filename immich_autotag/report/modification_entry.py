@@ -9,6 +9,7 @@ import uuid
 from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
+
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 if TYPE_CHECKING:
