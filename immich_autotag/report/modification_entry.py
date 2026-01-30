@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
 
-
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
