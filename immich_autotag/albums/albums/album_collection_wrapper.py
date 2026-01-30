@@ -554,7 +554,8 @@ class AlbumCollectionWrapper:
         # Remove locally first to avoid errors if already deleted
         self.remove_album_local_public(wrapper)
         try:
-            # proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)  # Removed: function does not exist
+            proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)  # Removed: function does not exist
+            pass
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
