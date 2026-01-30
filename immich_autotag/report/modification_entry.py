@@ -5,8 +5,8 @@ ModificationEntry class: represents a rich modification (with objects) in the sy
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Optional
 import uuid
+from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
 
