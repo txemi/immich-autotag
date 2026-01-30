@@ -15,8 +15,6 @@ from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_
     DuplicateTagAnalysisResult,
     analyze_duplicate_classification_tags,
 )
-from immich_autotag.config._internal_types import ErrorHandlingMode
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
@@ -135,8 +133,6 @@ def process_single_asset(
 
     log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.FOCUS)
 
-    if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
-        raise Exception("CRAZY_DEBUG mode active - stopping after tag conversions")
     log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.DEBUG)
     from immich_autotag.config.manager import ConfigManager
 
