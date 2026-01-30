@@ -131,7 +131,8 @@ class ModificationEntry:
         Returns the asset_id as UUID if available, else None.
         """
         if self.asset_wrapper is not None:
-            return asset_id_val
+              asset_id_val = str(self.asset_wrapper.get_id().to_uuid())
+              return asset_id_val
         return None
 
     def _get_asset_name(self) -> Optional[str]:
