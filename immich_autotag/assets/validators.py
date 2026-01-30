@@ -3,7 +3,12 @@ Validador de tipo para AssetResponseWrapper.
 """
 
 
-def validate_asset_response_wrapper(instance, attribute, value):
+import attr
+from typing import Any
+
+def validate_asset_response_wrapper(
+    instance: Any, attribute: attr.Attribute[Any], value: Any
+) -> None:
     """
     Permite None o AssetResponseWrapper.
     """

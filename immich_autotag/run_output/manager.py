@@ -1,8 +1,46 @@
 # New import: RunExecution is in execution.py
 import os
+
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+import attrs
+
+
+
+
+import attr
+from typing import Any
+def _validate_is_dir(instance: Any, attribute: attr.Attribute[Path], value: Path) -> None:
+    if not value.is_dir():
+        raise ValueError(f"{attribute.name} must be a directory: {value}")
+
+@attrs.define(auto_attribs=True, slots=True, frozen=True)
+class RecentRunDir:
+    _subdir: Path = attrs.field(validator=[attrs.validators.instance_of(Path), _validate_is_dir])
+
+    def get_datetime(self: "RecentRunDir") -> Optional[datetime]:
+        """Extracts the datetime from the subdir name."""
+        try:
+            dt_str = self._subdir.name.split(RunOutputManager.get_run_dir_pid_sep())[0]
+            return datetime.strptime(dt_str, RunOutputManager.get_run_dir_date_format())
+        except Exception:
+            return None
+
+    def get_path(self: "RecentRunDir") -> Path:
+        """Returns the path of the run directory."""
+        return self._subdir
+
+    def is_recent(self: "RecentRunDir", now: datetime, max_age_hours: int) -> bool:
+        dt = self.get_datetime()
+        return dt is not None and now - dt < timedelta(hours=max_age_hours)
+
+    @classmethod
+    def from_path(cls: type["RecentRunDir"], subdir: Path) -> Optional["RecentRunDir"]:
+        """Create a RecentRunDir if the path is valid, else None."""
+        if not subdir.is_dir() or RunOutputManager.get_run_dir_pid_mark() not in subdir.name:
+            return None
+        return cls(_subdir=subdir)
 
 from .execution import RunExecution
 
@@ -14,6 +52,18 @@ class RunOutputManager:
     _RUN_DIR_PID_SEP = "_PID"
     _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
     _RUN_OUTPUT_DIR: Optional[RunExecution] = None
+
+    @classmethod
+    def get_run_dir_pid_sep(cls) -> str:
+        return cls._RUN_DIR_PID_SEP
+
+    @classmethod
+    def get_run_dir_date_format(cls) -> str:
+        return cls._RUN_DIR_DATE_FORMAT
+
+    @classmethod
+    def get_run_dir_pid_mark(cls) -> str:
+        return cls._RUN_DIR_PID_MARK
 
     @staticmethod
     def _is_run_dir(subdir: Path) -> bool:
@@ -65,18 +115,15 @@ class RunOutputManager:
         now = datetime.now()
         current_run = cls.get_run_output_dir() if exclude_current else None
         current_run_dir = current_run.path if current_run else None
-        recent_dirs: list[tuple[datetime, Path]] = []
+        recent_dirs: list[RecentRunDir] = []
         for subdir in cls._list_run_dirs(logs_dir):
-            try:
-                if exclude_current and subdir.resolve() == current_run_dir:
-                    continue
-            except Exception:
+            if exclude_current and subdir.resolve() == current_run_dir:
                 continue
-            dt = cls._extract_datetime_from_run_dir(subdir)
-            if dt is not None and now - dt < timedelta(hours=max_age_hours):
-                recent_dirs.append((dt, subdir))
-        recent_dirs.sort(reverse=True)
-        return [RunExecution(d) for _, d in recent_dirs]
+            rrd = RecentRunDir.from_path(subdir)
+            if rrd is not None and rrd.is_recent(now, max_age_hours):
+                recent_dirs.append(rrd)
+        recent_dirs.sort(key=lambda r: r.get_datetime() or datetime.min, reverse=True)
+        return [RunExecution(r.get_path()) for r in recent_dirs]
 
     @classmethod
     def get_previous_run_output_dir(
@@ -178,7 +225,7 @@ class RunOutputManager:
         d.mkdir(exist_ok=True)
         return d
 
-    def get_custom_path(self, *parts) -> Path:
+    def get_custom_path(self, *parts: str) -> Path:
         """Returns an arbitrary path inside the run_dir."""
         p = self.run_dir.joinpath(*parts)
         p.parent.mkdir(parents=True, exist_ok=True)
