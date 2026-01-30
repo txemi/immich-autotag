@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
 
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.utils.deprecation import raise_deprecated_path
