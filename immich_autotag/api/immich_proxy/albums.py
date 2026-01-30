@@ -81,7 +81,7 @@ def proxy_get_album_info(
 
 
 def proxy_remove_asset_from_album(
-    *, album_id: UUID, client: AuthenticatedClient, asset_ids: List[AssetUUID]
+    *, album_id: AlbumUUID, client: AuthenticatedClient, asset_ids: List[AssetUUID]
 ) -> list[BulkIdResponseDto]:
     # Convert AssetUUIDs to UUIDs for API compatibility
     uuid_ids = [a.to_uuid() for a in asset_ids]
@@ -96,7 +96,7 @@ def proxy_remove_asset_from_album(
 
 
 def proxy_update_album_info(
-    *, album_id: UUID, client: AuthenticatedClient, body: UpdateAlbumDto
+    *, album_id: AlbumUUID, client: AuthenticatedClient, body: UpdateAlbumDto
 ) -> AlbumResponseDto:
     result = update_album_info.sync(id=album_id, client=client, body=body)
     if result is None:
@@ -155,12 +155,12 @@ def proxy_get_album_page(
 
 
 def proxy_add_assets_to_album(
-    *, album_id: UUID, client: AuthenticatedClient, asset_ids: list[AssetUUID]
+    *, album_id: AlbumUUID, client: AuthenticatedClient, asset_ids: list[AssetUUID]
 ) -> list[BulkIdResponseDto]:
     # Convert AssetUUIDs to UUIDs for API compatibility
     uuid_ids = [a.to_uuid() for a in asset_ids]
     result = add_assets_to_album.sync(
-        id=album_id, client=client, body=BulkIdsDto(ids=uuid_ids)
+        id=album_id.to_uuid(), client=client, body=BulkIdsDto(ids=uuid_ids)
     )
     if result is None:
         raise RuntimeError(
