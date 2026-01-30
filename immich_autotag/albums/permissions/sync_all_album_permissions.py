@@ -45,8 +45,7 @@ def sync_all_album_permissions(user_config: Optional[UserConfig], context: Immic
     selection_rules = album_perms_config.selection_rules or []
     for album_wrapper in albums_collection.get_albums():
         resolved_policy = resolve_album_policy(
-            album_name=album_wrapper.get_album_name(),
-            album_id=album_wrapper.get_album_uuid(),
+            album=album_wrapper,
             user_groups=user_groups_dict,
             selection_rules=selection_rules or [],
         )

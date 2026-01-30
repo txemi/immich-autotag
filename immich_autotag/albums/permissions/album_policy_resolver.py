@@ -30,9 +30,14 @@ from immich_autotag.config.models import (
     UserGroup,
 )
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+
 
 @attrs.define(auto_attribs=True, slots=True)
 class ResolvedAlbumPolicy:
+    album: 'AlbumResponseWrapper' = attrs.field()
     """
     Result of resolving an album's permission policy.
 
@@ -110,8 +115,7 @@ def _match_keyword_in_album(album_name: str, keyword: str) -> bool:
 
 
 def resolve_album_policy(
-    album_name: str,
-    album_id: str,
+    album: "AlbumResponseWrapper",
     user_groups: Dict[str, UserGroup],
     selection_rules: List[AlbumSelectionRule],
 ) -> "ResolvedAlbumPolicy":
@@ -147,6 +151,9 @@ def resolve_album_policy(
     all_members: List[str] = []
     access_level = "view"  # Default
 
+    album_name = album.get_album_name()
+    album_id = str(album.get_album_uuid())
+
     # Iterate rules and accumulate all matches
     for rule in selection_rules:
         if _match_keyword_in_album(album_name, rule.keyword):
@@ -165,6 +172,7 @@ def resolve_album_policy(
     all_members_unique = list(set(all_members))
 
     return ResolvedAlbumPolicy(
+        album=album,
         album_name=album_name,
         album_id=album_id,
         matched_rules=matched_rules_names,
