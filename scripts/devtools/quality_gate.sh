@@ -885,6 +885,7 @@ run_quality_gate_check_mode() {
 	local repo_root="$6"
 	local enforce_dynamic_attrs="$7"
 
+	# All implemented check modules are called below. If a check is not called, it is either deprecated, not implemented, or not relevant for this mode. Add new checks here as needed.
 	# 1. Blocking checks (fail fast on first error)
 	check_python_syntax "$py_bin" "$target_dir" || exit 1
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || exit 1
@@ -912,6 +913,7 @@ run_quality_gate_apply_mode() {
 	local repo_root="$6"
 	local enforce_dynamic_attrs="$7"
 	local error_found=0
+	# All implemented check modules are called below. If a check is not called, it is either deprecated, not implemented, or not relevant for this mode. Add new checks here as needed.
 	# 1. Auto-fixers and formatters
 	check_shfmt "$check_mode" "$target_dir" || error_found=1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
@@ -948,6 +950,7 @@ run_quality_gate_check_summary() {
 	local repo_root="$6"
 	local enforce_dynamic_attrs="$7"
 	echo "[SUMMARY] Running prioritized checks to show the most important remaining error."
+	# All implemented check modules are called below in priority order. If a check is not called, it is either deprecated, not implemented, or not relevant for this summary mode. Add new checks here as needed.
 	# 1. Checks we have already passed (quality threshold):
 	#    We put first the checks that we have already passed (like the language check),
 	#    so that if they break, it is very obvious and immediately visible.
