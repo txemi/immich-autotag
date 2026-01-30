@@ -29,7 +29,5 @@ def remove_members_from_album(
     album_name = album.get_album_name()
     client = context.get_client_wrapper().get_client()
     for user_id in user_ids:
-        proxy_remove_user_from_album(
-            client=client, album_id=album_id, user_id=user_id
-        )
+        proxy_remove_user_from_album(client=client, album_id=album_id, user_id=user_id)
         log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
