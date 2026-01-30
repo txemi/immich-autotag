@@ -149,15 +149,10 @@ class ModificationEntry:
         Converts the rich entry to a serializable version (only simple types).
         Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         """
-        # Convert AssetUUID/AlbumUUID to uuid.UUID if needed
         asset_id = self._get_asset_id()
-
         album_id = self._get_album_id()
-
         tag_id = self.tag.get_name() if self.tag else None
-
         user_name = self._get_user_name()
-
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
