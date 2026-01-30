@@ -22,7 +22,8 @@ if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-from typing import TYPE_CHECKING
+
+from immich_autotag.report.modification_entry import ModificationEntry
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_entry import ModificationEntry

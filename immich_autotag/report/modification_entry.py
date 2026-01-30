@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
 
+from immich_autotag.types.uuid_wrappers import AssetUUID
+
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
@@ -127,7 +129,7 @@ class ModificationEntry:
             return self.album.get_album_name()
         return None
 
-    def _get_asset_id(self) -> Optional[uuid.UUID]:
+    def _get_asset_id(self) -> Optional[AssetUUID]:
         """
         Returns the asset_id as UUID if available, else None.
         """
