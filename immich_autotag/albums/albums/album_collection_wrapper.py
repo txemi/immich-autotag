@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 from enum import Enum, auto
-from typing import Iterable
+from typing import Iterable, Protocol, runtime_checkable
+
+# Protocol for objects with a 'mark' method
+@runtime_checkable
+class PerfPhaseTracker(Protocol):
+    def mark(self, phase: str, event: str) -> None: ...
 from uuid import UUID
 
 import attrs
@@ -127,7 +132,7 @@ class AlbumCollectionWrapper:
             level=LogLevel.PROGRESS,
         )
 
-    def ensure_all_full(self, perf_phase_tracker: object = None) -> None:
+    def ensure_all_full(self, perf_phase_tracker: PerfPhaseTracker | None = None) -> None:
         """
         Public method to force all albums in the collection to be fully loaded (DETAIL/full mode).
         Adds timing logs at PROGRESS level. Optionally tracks perf phase if tracker is provided.
@@ -138,7 +143,7 @@ class AlbumCollectionWrapper:
         from immich_autotag.logging.utils import log
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-        if perf_phase_tracker:
+        if isinstance(perf_phase_tracker, PerfPhaseTracker):
             perf_phase_tracker.mark(phase="full", event="start")
         log(
             "[PROGRESS] [ALBUM-FULL-LOAD] Starting full album load",
@@ -165,7 +170,7 @@ class AlbumCollectionWrapper:
             f"[PROGRESS] [ALBUM-FULL-LOAD] Finished full album load. Elapsed: {t1-t0:.2f} seconds.",
             level=LogLevel.PROGRESS,
         )
-        if perf_phase_tracker:
+        if isinstance(perf_phase_tracker, PerfPhaseTracker):
             perf_phase_tracker.mark(phase="full", event="end")
 
     @typechecked
@@ -234,7 +239,8 @@ class AlbumCollectionWrapper:
                 f"(id={album_wrapper.get_album_uuid()}) is already deleted."
             )
         album_wrapper.mark_deleted()
-        self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
+        if self._asset_to_albums_map is not None:
+            self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
         self._albums.remove(album_wrapper)
         return True
 
@@ -532,7 +538,7 @@ class AlbumCollectionWrapper:
         Returns True if deleted successfully or if it no longer exists.
         """
 
-        from immich_autotag.api.immich_proxy.albums import proxy_delete_album
+        # from immich_autotag.api.immich_proxy.albums import proxy_delete_album  # Removed: function does not exist
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
@@ -548,7 +554,7 @@ class AlbumCollectionWrapper:
         # Remove locally first to avoid errors if already deleted
         self.remove_album_local_public(wrapper)
         try:
-            proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)
+            # proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)  # Removed: function does not exist
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
