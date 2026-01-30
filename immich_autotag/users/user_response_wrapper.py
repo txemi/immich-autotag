@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Any, Optional
 
 import attrs
 from typeguard import typechecked
 
 from immich_autotag.types.uuid_wrappers import UserUUID
 
+from immich_autotag.types.email_address import EmailAddress
 if TYPE_CHECKING:
     from immich_client.models.user_admin_response_dto import UserAdminResponseDto
     from immich_client.models.user_response_dto import UserResponseDto
@@ -20,7 +21,7 @@ class UserResponseWrapper:
     def from_user(
         cls, user: Union["UserResponseDto", "UserAdminResponseDto"]
     ) -> "UserResponseWrapper":
-        return UserResponseWrapper(user=user)
+        return UserResponseWrapper(user=user)  # type: ignore[call-arg]
 
     @staticmethod
     def _validate_user(
@@ -42,7 +43,7 @@ class UserResponseWrapper:
             )
 
     _user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field(
-        validator=_validate_user, init=False
+        validator=_validate_user
     )
 
     @typechecked
@@ -50,15 +51,13 @@ class UserResponseWrapper:
         return self._user.name
 
     @typechecked
-    def get_email(self) -> "EmailWrapper":
-        from immich_autotag.types.email_wrapper import EmailWrapper
-        return EmailWrapper(self._user.email)
+    def get_email(self) -> EmailAddress:
+        return EmailAddress.from_string(self._user.email)
 
     @classmethod
-    @typechecked
-    def load_current_user(cls, context: "ImmichContext") -> "UserResponseWrapper":
+    def load_current_user(cls) -> Optional["UserResponseWrapper"]:
         """
-        Loads and wraps the current user from the context using the UserManager singleton.
+        Loads and wraps the current user from the UserManager singleton.
         The result is cached in a class variable (assumes immutable user in the session).
         """
         from immich_autotag.users.user_manager import UserManager
