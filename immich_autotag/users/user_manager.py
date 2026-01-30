@@ -5,14 +5,15 @@ from typing import Dict, List, Optional, Union
 import attrs
 from immich_client.client import AuthenticatedClient as ImmichClient
 
-from immich_autotag.api.immich_proxy.users import proxy_get_my_user, proxy_search_users
+from immich_autotag.api.immich_proxy.permissions import proxy_search_users
+from immich_autotag.api.immich_proxy.users import proxy_get_my_user
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 # Singleton instance variable (module-level, not attrs-managed)
-_USER_MANAGER_INSTANCE: "UserManager" = None
+_USER_MANAGER_INSTANCE: Optional[UserManager] = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
