@@ -5,8 +5,6 @@ from typing import Optional
 import attr
 from typeguard import typechecked
 
-from immich_autotag.config._internal_types import ErrorHandlingMode
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
@@ -69,7 +67,6 @@ class PerformanceTracker:
     )
 
     def __attrs_post_init__(self):
-        self._last_log_time = self._start_time
         # Strict validation: if something essential is missing, crash
         if self._estimation_mode == TimeEstimationMode.EWMA and self._estimator is None:
             raise ValueError(
@@ -77,8 +74,10 @@ class PerformanceTracker:
                 "Cannot initialize the tracker."
             )
         # --- CRAZY CONDITION IN CONSTRUCTOR ---
+        from immich_autotag.config.dev_mode import is_crazy_debug_mode
+
         if (
-            DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
+            is_crazy_debug_mode()
             and self._total_assets is not None
             and self._total_assets < 1000
         ):
@@ -104,8 +103,6 @@ class PerformanceTracker:
         if skip_n is not None:
             instance.set_skip_n(skip_n)
         return instance
-
-
 
     def set_total_assets(self, value: int) -> None:
         self._total_assets = value
@@ -145,11 +142,19 @@ class PerformanceTracker:
             return self._total_assets - skip_n
         return None
 
+    def _should_emit_log(self, now: float) -> bool:
+        """
+        Returns True if enough time has passed since the last log, or if never logged.
+        """
+        return (
+            self._last_log_time is not None
+            and now - self._last_log_time >= self._log_interval
+        ) or self._last_log_time is None
+
     @typechecked
     def update(self, count: int):
         now = time.time()
-        # If the tracker is not properly initialized, it should never reach here
-        if now - self._last_log_time >= self._log_interval:
+        if self._should_emit_log(now):
             self.print_progress(count=count)
             self._last_log_time = now
 
@@ -185,16 +190,10 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_previous_sessions_time(self) -> float:
-        try:
-            from immich_autotag.statistics.statistics_manager import StatisticsManager
+        from immich_autotag.statistics.statistics_manager import StatisticsManager
 
-            stats = StatisticsManager.get_instance().get_stats()
-            try:
-                return stats.previous_sessions_time
-            except AttributeError:
-                return 0.0
-        except Exception:
-            return 0.0
+        stats = StatisticsManager.get_instance().get_stats().previous_sessions_time
+        return stats if stats is not None else 0.0
 
     @typechecked
     def _printable_value_abs_count(self, count: int) -> int:
@@ -284,11 +283,9 @@ class PerformanceTracker:
         # --- CRAZY CONDITION ---
         # If mode is CRAZY_DEBUG, abs_total is not None and abs_total < 200000,
         # raise exception
-        if (
-            DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
-            and abs_total is not None
-            and abs_total < 1000
-        ):
+        from immich_autotag.config.dev_mode import is_crazy_debug_mode
+
+        if is_crazy_debug_mode() and abs_total is not None and abs_total < 1000:
             raise Exception("CRAZY_DEBUG mode: abs_total too low (<200000)")
 
         est_remaining_session = self._printable_value_est_remaining_session(
@@ -435,7 +432,7 @@ class PerformanceTracker:
         if count == 1 or (self._total_assets and count == self._total_assets):
             self._last_log_time = now
             return True
-        if now - self._last_log_time >= self._log_interval:
+        if self._should_emit_log(now):
             self._last_log_time = now
             return True
         return False
