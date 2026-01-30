@@ -109,7 +109,8 @@ class AssetDtoState:
         wrappers: list["TagWrapper"] = []
         for tag in tags:
             wrapper = tag_collection.get_tag_from_dto(tag)
-            wrappers.append(wrapper)
+            if wrapper is not None:
+                wrappers.append(wrapper)
         return wrappers
 
     def get_dates(self):

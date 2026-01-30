@@ -211,8 +211,7 @@ class TagCollectionWrapper:
         does not exist.
         """
         raise NotImplementedError(
-            "TagResponseDto does not have valid id or name to search for the "
-            "TagWrapper. Hay que pensar si hacer merge"
+            "TagResponseDto does not have valid id or name to search for the TagWrapper. Consider merging logic or revising this method."
         )
         tag = self.find_by_id(UUID(dto.id))
         if tag is not None:
