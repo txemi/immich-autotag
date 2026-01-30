@@ -42,7 +42,6 @@ class UserResponseWrapper:
         validator=_validate_user,
         init=False
     )
-    _cached_user_wrapper = None  # Class variable to cache the user
 
     @typechecked
     def get_name(self) -> str:
@@ -60,15 +59,10 @@ class UserResponseWrapper:
         Loads and wraps the current user from the context using the UserManager singleton.
         The result is cached in a class variable (assumes immutable user in the session).
         """
-        if cls._cached_user_wrapper is not None:
-            return cls._cached_user_wrapper  # type: ignore
         from immich_autotag.users.user_manager import UserManager
 
         manager = UserManager.get_instance()
-        manager.load_all(context)
-        user_wrapper = manager.get_current_user()
-        cls._cached_user_wrapper = user_wrapper
-        return cls._cached_user_wrapper  # type: ignore
+        return manager.get_current_user()
 
     @typechecked
     def get_uuid(self) -> UserUUID:
