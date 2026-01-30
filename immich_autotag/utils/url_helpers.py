@@ -9,7 +9,7 @@ from immich_autotag.config.host_config import (
     IMMICH_PHOTO_PATH_TEMPLATE,
     get_immich_web_base_url,
 )
-from immich_autotag.types.uuid_wrappers import AssetUUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
 
 
 def get_immich_photo_url(asset_id: AssetUUID) -> ParseResult:
@@ -27,7 +27,7 @@ def get_immich_photo_url(asset_id: AssetUUID) -> ParseResult:
 
 
 @typechecked
-def get_immich_album_url(album_id: uuid.UUID) -> ParseResult:
+def get_immich_album_url(album_id: AlbumUUID) -> ParseResult:
     """
     Returns the Immich web URL for an album given its id (UUID) as ParseResult.
     """
