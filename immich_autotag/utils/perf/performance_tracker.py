@@ -105,8 +105,7 @@ class PerformanceTracker:
             instance.set_skip_n(skip_n)
         return instance
 
-    def set_max_assets(self, value: int) -> None:
-        self._max_assets = value
+
 
     def set_total_assets(self, value: int) -> None:
         self._total_assets = value
@@ -374,7 +373,7 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_total_assets(self) -> Optional[int]:
-        return self.total_assets
+        return self._total_assets
 
     @typechecked
     def _printable_value_est_total_session(
