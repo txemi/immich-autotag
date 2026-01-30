@@ -89,7 +89,7 @@ class AssetManager:
         """
         if dto_type not in (AssetDtoType.ALBUM, AssetDtoType.SEARCH):
             raise ValueError(f"Unsupported dto_type {dto_type} for album asset DTOs")
-        asset_uuid = AssetUUID.from_str(asset_dto.id)
+        asset_uuid = AssetUUID.from_string(asset_dto.id)
         if self._assets is not None and asset_uuid in self._assets:
             return self._assets[asset_uuid]
 
