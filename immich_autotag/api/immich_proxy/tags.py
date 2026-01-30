@@ -57,6 +57,6 @@ def proxy_delete_tag(*, client: ImmichClient, tag_id: UUID) -> None:
     return response.parsed
 
 
-def proxy_get_tag_by_id(*, client: ImmichClient, tag_id: UUID) -> TagResponseDto | None:
+def proxy_get_tag_by_id(*, client: ImmichClient, tag_id: TagUUID) -> TagResponseDto | None:
     """Proxy for get_tag_by_id.sync with explicit keyword arguments."""
-    return _get_tag_by_id.sync(id=tag_id, client=client)
+    return _get_tag_by_id.sync(id=tag_id.to_uuid(), client=client)

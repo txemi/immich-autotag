@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from uuid import UUID
+from immich_autotag.types.uuid_wrappers import TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -54,7 +54,7 @@ class TagCollectionWrapper:
         self._fully_loaded = False
         self._load_all_from_api()
 
-    def _load_single_by_id_from_api(self, id_: UUID):
+    def _load_single_by_id_from_api(self, id_: TagUUID):
         """
         Fetch a tag by id using the efficient proxy and add it to the index if found.
         Returns the found TagWrapper or None.
@@ -67,7 +67,7 @@ class TagCollectionWrapper:
         client_wrapper = ImmichClientWrapper.get_default_instance()
         client = client_wrapper.get_client()
         try:
-            tag_dto = proxy_get_tag_by_id(client=client, tag_id=id_)
+            tag_dto = proxy_get_tag_by_id(client=client, tag_id=id_.to_uuid())
         except Exception:
             tag_dto = None
         if tag_dto is not None:
@@ -164,7 +164,7 @@ class TagCollectionWrapper:
         return None
 
     @typechecked
-    def find_by_id(self, id_: "UUID") -> "TagWrapper | None":
+    def find_by_id(self, id_: "TagUUID") -> "TagWrapper | None":
         try:
             tag = self._index.get_by_id(id_)
             return tag

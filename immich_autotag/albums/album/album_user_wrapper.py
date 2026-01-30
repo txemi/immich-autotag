@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from uuid import UUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 import attrs
 from typeguard import typechecked
@@ -42,10 +42,8 @@ class AlbumUserWrapper:
         return self.user.user.name
 
     @typechecked
-    def get_uuid(self) -> "UUID":
-        from uuid import UUID
-
-        return UUID(self.id)
+    def get_uuid(self) -> AlbumUUID:
+        return AlbumUUID.from_string(self.id)
 
     def __str__(self) -> str:
         return self.name or self.email or self.id or "<unknown user>"
