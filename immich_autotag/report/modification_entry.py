@@ -44,7 +44,7 @@ class ModificationEntry:
     kind: ModificationKind = attrs.field(
         validator=attrs.validators.instance_of(ModificationKind)
     )
-    asset_wrapper: "AssetResponseWrapper | None" = attrs.field(
+    asset_wrapper: Optional["AssetResponseWrapper"] = attrs.field(
         default=None,
         validator=attrs.validators.optional(validate_asset_response_wrapper),
     )
