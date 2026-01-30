@@ -56,17 +56,14 @@ class RunOutputManager:
 
 
 
-    def __init__(self, run_dir: Optional[Path] = None, base_dir: Optional[Path] = None):
-        if run_dir is not None:
-            self.run_dir = Path(run_dir).resolve()
-        else:
-            if base_dir is None:
-                base_dir = Path(__file__).resolve().parent.parent / "logs_local"
-            base_dir = Path(base_dir).resolve()
-            now = datetime.now().strftime("%Y%m%d_%H%M%S")
-            pid = os.getpid()
-            self.run_dir = base_dir / f"{now}_PID{pid}"
-            self.run_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, ):
+
+        base_dir = Path(__file__).resolve().parent.parent / "logs_local"
+        base_dir = Path(base_dir).resolve()
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        pid = os.getpid()
+        self.run_dir = base_dir / f"{now}_PID{pid}"
+        self.run_dir.mkdir(parents=True, exist_ok=True)
 
 
     @staticmethod
