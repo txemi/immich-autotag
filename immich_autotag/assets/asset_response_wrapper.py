@@ -718,7 +718,9 @@ class AssetResponseWrapper:
             f"Date: {self.get_created_at()} | original_path: {self.get_original_path()}",
             level=LogLevel.FOCUS,
         )
-        return ClassificationUpdateResult(has_tags=bool(tag_names), has_albums=bool(album_names))
+        return ClassificationUpdateResult(
+            has_tags=bool(tag_names), has_albums=bool(album_names)
+        )
 
     @typechecked
     def apply_tag_conversions(
