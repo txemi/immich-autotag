@@ -88,11 +88,10 @@ class UnavailableAlbums:
                 )
         except Exception:
             # In DEVELOPMENT we want to see IO problems; in PRODUCTION se traga el error
-            try:
-                if DEFAULT_ERROR_MODE.name == "DEVELOPMENT":
-                    raise
-            except AttributeError:
+
+            if DEFAULT_ERROR_MODE.name == "DEVELOPMENT":
                 raise
+
             # else: swallow in production
 
     def __contains__(self, album: AlbumResponseWrapper) -> bool:
