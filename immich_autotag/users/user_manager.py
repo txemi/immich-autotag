@@ -18,9 +18,15 @@ _user_manager_instance: Optional[UserManager] = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class UserManager:
-    _users: Dict[UserUUID, UserResponseWrapper] = attrs.field(init=False, factory=dict, metadata={"type": "Dict[UserUUID, UserResponseWrapper]"})
+    _users: Dict[UserUUID, UserResponseWrapper] = attrs.field(
+        init=False,
+        factory=dict,
+        metadata={"type": "Dict[UserUUID, UserResponseWrapper]"},
+    )
     _email_map: Dict[EmailAddress, UserResponseWrapper] = attrs.field(
-        init=False, factory=dict, metadata={"type": "Dict[EmailAddress, UserResponseWrapper]"}
+        init=False,
+        factory=dict,
+        metadata={"type": "Dict[EmailAddress, UserResponseWrapper]"},
     )
     _context: Optional[ImmichContext] = None
     _loaded: bool = attrs.field(init=False, default=False)
