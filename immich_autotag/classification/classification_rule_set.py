@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Dict, List
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
 )

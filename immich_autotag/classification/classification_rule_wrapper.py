@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.classification.match_result import MatchResult
@@ -150,7 +150,7 @@ class ClassificationRuleWrapper:
         """
         import re
 
-        from immich_autotag.assets.asset_uuid import AssetUUID
+        from immich_autotag.types.uuid_wrappers import AssetUUID
 
         if not self.rule.asset_links:
             return []
