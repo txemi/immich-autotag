@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, TYPE_CHECKING
 
 import attrs
 from immich_client.client import AuthenticatedClient as ImmichClient
@@ -8,13 +8,15 @@ from immich_client.client import AuthenticatedClient as ImmichClient
 from immich_autotag.api.immich_proxy.permissions import proxy_search_users
 from immich_autotag.api.immich_proxy.users import proxy_get_my_user
 from immich_autotag.context.immich_context import ImmichContext
+
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
-
-# Help mypy with explicit type annotations
-EmailAddress: type = EmailAddress
-UserUUID: type = UserUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+
+if TYPE_CHECKING:
+    from immich_autotag.types.email_address import EmailAddress
+    from immich_autotag.types.uuid_wrappers import UserUUID
+    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 # Singleton instance variable (module-level, not attrs-managed)
 _user_manager_instance: Optional[UserManager] = None
@@ -22,14 +24,14 @@ _user_manager_instance: Optional[UserManager] = None
 
 @attrs.define(auto_attribs=True, slots=True)
 class UserManager:
-    _users: Dict[UserUUID, UserResponseWrapper] = attrs.field(
+    _users: Dict["UserUUID", "UserResponseWrapper"] = attrs.field(
         init=False,
-        factory=dict,
+        factory=lambda: dict(),
         metadata={"type": "Dict[UserUUID, UserResponseWrapper]"},
     )
-    _email_map: Dict[EmailAddress, UserResponseWrapper] = attrs.field(
+    _email_map: Dict["EmailAddress", "UserResponseWrapper"] = attrs.field(
         init=False,
-        factory=dict,
+        factory=lambda: dict(),
         metadata={"type": "Dict[EmailAddress, UserResponseWrapper]"},
     )
     _context: Optional[ImmichContext] = None
@@ -79,29 +81,24 @@ class UserManager:
         else:
             self._current_user = None
 
-    def get_by_uuid(self, uuid: UserUUID) -> Optional[UserResponseWrapper]:
+    def get_by_uuid(self, uuid: "UserUUID") -> Optional["UserResponseWrapper"]:
         if not self._loaded and self._context:
             self.load_all(self._context)
         return self._users.get(uuid)
 
     def get_by_email(
-        self, email: Union[str, EmailAddress]
-    ) -> Optional[UserResponseWrapper]:
+        self, email: "EmailAddress"
+    ) -> Optional["UserResponseWrapper"]:
         if not self._loaded and self._context:
             self.load_all(self._context)
-        email_obj = (
-            email
-            if isinstance(email, EmailAddress)
-            else EmailAddress.from_string(email)
-        )
-        return self._email_map.get(email_obj)
+        return self._email_map.get(email)
 
-    def get_current_user(self) -> Optional[UserResponseWrapper]:
+    def get_current_user(self) -> Optional["UserResponseWrapper"]:
         if not self._loaded and self._context:
             self.load_all(self._context)
         return self._current_user
 
-    def all_users(self) -> List[UserResponseWrapper]:
+    def all_users(self) -> List["UserResponseWrapper"]:
         if not self._loaded and self._context:
             self.load_all(self._context)
         return list(self._users.values())
