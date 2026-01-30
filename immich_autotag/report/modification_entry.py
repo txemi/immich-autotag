@@ -8,6 +8,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -36,7 +37,10 @@ class ModificationEntry:
     kind: ModificationKind = attrs.field(
         validator=attrs.validators.instance_of(ModificationKind)
     )
-    asset_wrapper: Any = attrs.field(default=None)
+    asset_wrapper: Optional[AssetResponseWrapper] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(AssetResponseWrapper)),
+    )
     tag: Optional["TagWrapper"] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(TagWrapper)),
@@ -60,7 +64,9 @@ class ModificationEntry:
     )
 
     def _get_asset_id(self):
-        return self.asset_wrapper.get_id() if self.asset_wrapper is not None else None
+        if self.asset_wrapper is None:
+            return None
+        return self.asset_wrapper.get_id().to_uuid()
 
     def _get_asset_name(self):
         return (
