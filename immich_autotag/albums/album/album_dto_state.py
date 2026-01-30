@@ -7,7 +7,8 @@ import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
-from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
+
+from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID, UserUUID
 
 if TYPE_CHECKING:
     from immich_autotag.types.uuid_wrappers import AssetUUID
@@ -55,8 +56,8 @@ class AlbumDtoState:
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
 
     def __attrs_post_init__(self):
-        if self._dto is None:
-            raise ValueError("_dto (AlbumResponseDto) cannot be None")
+        # _dto is always required and validated by attrs; no need to check for None
+        pass
 
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: "AlbumLoadSource"
@@ -124,9 +125,7 @@ class AlbumDtoState:
         users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
         return AlbumUserList(users)
 
-    def get_owner_uuid(self) -> "UserUUID":
-        from immich_autotag.types.uuid_wrappers import UserUUID
-
+    def get_owner_uuid(self) -> UserUUID:
         return UserUUID.from_string(self._dto.owner_id)
 
     @staticmethod
@@ -137,7 +136,7 @@ class AlbumDtoState:
         Creates a new instance of AlbumDtoState safely to avoid issues with attrs and enums.
         Arguments must be passed by name (not positional).
         """
-        return AlbumDtoState(dto=dto, load_source=load_source)
+        return AlbumDtoState(_dto=dto, _load_source=load_source)
 
     def is_full(self) -> bool:
         if self._load_source == AlbumLoadSource.DETAIL:
@@ -145,7 +144,7 @@ class AlbumDtoState:
         elif self._load_source == AlbumLoadSource.SEARCH:
             return False
         else:
-            raise RuntimeError(f"Unknown AlbumLoadSource: {self._state.load_source!r}")
+            raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
 
     def is_empty(self) -> bool:
         if self._load_source == AlbumLoadSource.SEARCH:
