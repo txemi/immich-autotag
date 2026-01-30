@@ -932,7 +932,9 @@ class AlbumCollectionWrapper:
 
         # Centralized user access
         context = ImmichContext.get_default_instance()
-        user_wrapper: UserResponseWrapper = UserResponseWrapper.load_current_user(context)
+        user_wrapper: UserResponseWrapper = UserResponseWrapper.load_current_user(
+            context
+        )
 
         wrapper = self._album_wrapper_from_partial_dto(album)
         tag_mod_report.add_album_modification(

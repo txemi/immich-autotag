@@ -6,10 +6,10 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.types.email_address import EmailAddress
 
 from ._get_current_members import get_current_members
 from ._remove_members_from_album import remove_members_from_album
-from immich_autotag.types.email_address import EmailAddress
 from ._resolve_emails_result import ResolveEmailsResult
 
 if True:

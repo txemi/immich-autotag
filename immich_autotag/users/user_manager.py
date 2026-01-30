@@ -1,20 +1,25 @@
 from __future__ import annotations
-from typing import List, Dict, Optional, Union
+
+from typing import Dict, List, Optional, Union
+
 import attrs
+
+from immich_autotag.api.immich_proxy.users import proxy_get_my_user, proxy_search_users
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.api.immich_proxy.users import proxy_search_users, proxy_get_my_user
-from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
+from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 # Singleton instance variable (module-level, not attrs-managed)
 _USER_MANAGER_INSTANCE: "UserManager" = None
 
-@attrs.define(auto_attribs=True, slots=True)
 
+@attrs.define(auto_attribs=True, slots=True)
 class UserManager:
     _users: Dict[UserUUID, UserResponseWrapper] = attrs.field(init=False, factory=dict)
-    _email_map: Dict[EmailAddress, UserResponseWrapper] = attrs.field(init=False, factory=dict)
+    _email_map: Dict[EmailAddress, UserResponseWrapper] = attrs.field(
+        init=False, factory=dict
+    )
     _context: Optional[ImmichContext] = None
     _loaded: bool = attrs.field(init=False, default=False)
     _current_user: Optional[UserResponseWrapper] = attrs.field(init=False, default=None)
@@ -23,7 +28,9 @@ class UserManager:
         # Prevent direct instantiation
         global _USER_MANAGER_INSTANCE
         if _USER_MANAGER_INSTANCE is not None:
-            raise RuntimeError("Use UserManager.get_instance() instead of direct instantiation.")
+            raise RuntimeError(
+                "Use UserManager.get_instance() instead of direct instantiation."
+            )
 
     @classmethod
     def get_instance(cls) -> "UserManager":
@@ -65,10 +72,16 @@ class UserManager:
             self.load_all(self._context)
         return self._users.get(uuid)
 
-    def get_by_email(self, email: Union[str, EmailAddress]) -> Optional[UserResponseWrapper]:
+    def get_by_email(
+        self, email: Union[str, EmailAddress]
+    ) -> Optional[UserResponseWrapper]:
         if not self._loaded and self._context:
             self.load_all(self._context)
-        email_obj = email if isinstance(email, EmailAddress) else EmailAddress.from_string(email)
+        email_obj = (
+            email
+            if isinstance(email, EmailAddress)
+            else EmailAddress.from_string(email)
+        )
         return self._email_map.get(email_obj)
 
     def get_current_user(self) -> Optional[UserResponseWrapper]:

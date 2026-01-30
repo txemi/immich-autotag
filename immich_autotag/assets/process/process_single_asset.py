@@ -53,6 +53,7 @@ def _correct_date_if_enabled(
         return correct_asset_date(asset_wrapper)
     return None
 
+
 @typechecked
 def _analyze_duplicate_tags(
     asset_wrapper: AssetResponseWrapper,

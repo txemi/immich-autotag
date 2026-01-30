@@ -65,6 +65,7 @@ class UserResponseWrapper:
         if cls._cached_user_wrapper is not None:
             return cls._cached_user_wrapper  # type: ignore
         from immich_autotag.users.user_manager import UserManager
+
         manager = UserManager.get_instance()
         manager.load_all(context)
         user_wrapper = manager.get_current_user()
