@@ -77,6 +77,7 @@ class AlbumResponseWrapper:
     @typechecked
     def owner_uuid(self) -> UserUUID:
         """Returns the AlbumUUID of the album owner."""
+        # Return the UserUUID wrapper as expected by the type annotation
         return self._cache_entry.get_owner_uuid()
 
     # --- 4. Static Methods ---
@@ -157,7 +158,9 @@ class AlbumResponseWrapper:
     @typechecked
     def get_owner_uuid(self) -> "UUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
-        return self._cache_entry.get_owner_uuid()
+        # Return the raw UUID as expected by the type annotation
+        owner_uuid = self._cache_entry.get_owner_uuid()
+        return owner_uuid.value if hasattr(owner_uuid, 'value') else owner_uuid
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set["AssetUUID"]:
