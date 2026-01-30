@@ -558,6 +558,7 @@ class AlbumResponseWrapper:
                     error_msg, asset_url, album_url
                 )
                 from immich_autotag.config.dev_mode import raise_if_development_mode
+
                 log(
                     (
                         f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} could not be removed from "
