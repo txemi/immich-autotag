@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Union
 
 import attrs
-from immich_client.api.users import search_users as proxy_search_users
 
-from immich_autotag.api.immich_proxy.users import proxy_get_my_user
+from immich_autotag.api.immich_proxy.users import proxy_get_my_user, proxy_search_users
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
@@ -50,7 +49,7 @@ class UserManager:
         self._load_current_user(client)
         self._loaded = True
 
-    def _load_users(self, client) -> None:
+    def _load_users(self, client: ImmichClient) -> None:
         user_dtos = proxy_search_users(client=client) or []
         self._users.clear()
         self._email_map.clear()
@@ -61,7 +60,7 @@ class UserManager:
                 email_obj = EmailAddress.from_string(wrapper.email)
                 self._email_map[email_obj] = wrapper
 
-    def _load_current_user(self, client) -> None:
+    def _load_current_user(self, client: ImmichClient) -> None:
         user_dto = proxy_get_my_user(client=client)
         if user_dto:
             self._current_user = UserResponseWrapper(user=user_dto)
