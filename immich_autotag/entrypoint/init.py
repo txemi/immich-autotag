@@ -4,7 +4,7 @@ from immich_autotag.config.host_config import get_immich_base_url
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 from immich_autotag.logging.init import initialize_logging
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 def init_config_and_logging() -> ConfigManager:

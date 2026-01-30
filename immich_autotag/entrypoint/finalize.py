@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from immich_autotag.config.manager import ConfigManager
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 def finalize(manager: ConfigManager, client: ImmichClient) -> None:

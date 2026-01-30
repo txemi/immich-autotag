@@ -11,7 +11,7 @@ from immich_autotag.duplicates.duplicate_collection_wrapper import (
 )
 from immich_autotag.duplicates.duplicates_cache_file import DuplicatesCacheFile
 from immich_autotag.duplicates.duplicates_loader import DuplicatesLoader
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 @typechecked

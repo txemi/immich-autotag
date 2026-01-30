@@ -4,7 +4,7 @@ from typeguard import typechecked
 
 from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 @typechecked

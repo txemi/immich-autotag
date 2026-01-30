@@ -12,7 +12,7 @@ from immich_autotag.albums.album.album_response_wrapper import (
 )
 from immich_autotag.albums.duplicates.mover import move_assets_between_albums
 from immich_autotag.report.modification_report import ModificationReport
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 @typechecked

@@ -11,7 +11,7 @@ from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
 
 from immich_autotag.tags.tag_dual_map import TagDualMap
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 _tag_collection_singleton: "TagCollectionWrapper | None" = None
 

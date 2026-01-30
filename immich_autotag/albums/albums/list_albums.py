@@ -5,7 +5,7 @@ from typeguard import typechecked
 from immich_autotag.albums.albums.album_collection_wrapper import (
     AlbumCollectionWrapper,
 )
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 @typechecked

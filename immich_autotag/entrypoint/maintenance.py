@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 def maintenance_cleanup_labels(client: ImmichClient) -> None:

@@ -4,7 +4,7 @@ from typeguard import typechecked
 
 from immich_autotag.tags.print_tags import print_tags
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
-from immich_autotag.types import ImmichClient
+from immich_autotag.types.client_types import ImmichClient
 
 
 @typechecked
