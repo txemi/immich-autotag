@@ -2,17 +2,25 @@
 This module is internal to the package and should not be imported directly.
 """
 
-from typing import Dict, List
+
+from typing import TYPE_CHECKING, Dict, List
 
 import attrs
 
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
 from immich_autotag.types.email_address import EmailAddress
+from immich_autotag.types.uuid_wrappers import UserUUID
+
+if TYPE_CHECKING:
+    from immich_autotag.context.immich_context import ImmichContext
+    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 
 @attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
 class ResolveEmailsResult:
 
-    _resolved: Dict[EmailAddress, "UserUUID"] = attrs.field(
+    _resolved: Dict[EmailAddress, UserUUID] = attrs.field(
         validator=attrs.validators.instance_of(dict)
     )
     _unresolved: List[EmailAddress] = attrs.field(
@@ -32,8 +40,7 @@ class ResolveEmailsResult:
         Encapsulated logic to resolve emails to user IDs.
         Returns a ResolveEmailsResult instance.
         """
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log, log_debug
+        from immich_autotag.logging.utils import log_debug
         from immich_autotag.types.email_address import EmailAddress
 
         if not emails:
