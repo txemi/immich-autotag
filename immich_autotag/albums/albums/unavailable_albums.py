@@ -52,7 +52,7 @@ class UnavailableAlbums:
 
         # Import error-mode config so we can decide whether to swallow IO errors
         # Fail-fast: configuration symbols must exist; let ImportError propagate.
-        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+        from immich_autotag.config.internal_config import is_devel_mode
         from immich_autotag.run_output.manager import RunOutputManager
 
         summary_items: list[dict[str, str]] = []
@@ -81,18 +81,10 @@ class UnavailableAlbums:
         out_file = run_exec.get_albums_unavailable_summary_path()
         out_file.parent.mkdir(parents=True, exist_ok=True)
 
-        try:
-            with out_file.open("w", encoding="utf-8") as fh:
-                json.dump(
-                    {"count": len(summary_items), "albums": summary_items}, fh, indent=2
-                )
-        except Exception:
-            # In DEVELOPMENT we want to see IO problems; in PRODUCTION se traga el error
-
-            if DEFAULT_ERROR_MODE.name == "DEVELOPMENT":
-                raise
-
-            # else: swallow in production
+        with out_file.open("w", encoding="utf-8") as fh:
+            json.dump(
+                {"count": len(summary_items), "albums": summary_items}, fh, indent=2
+            )
 
     def __contains__(self, album: AlbumResponseWrapper) -> bool:
         return album in self._albums
