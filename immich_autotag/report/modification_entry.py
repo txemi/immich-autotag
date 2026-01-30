@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 from immich_autotag.albums.album.validators import validate_album_response_wrapper
 
 # Import for asset_wrapper type and validator
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.validators import validate_asset_response_wrapper
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.serializable_modification_entry import (
