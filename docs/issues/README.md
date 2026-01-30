@@ -25,7 +25,6 @@ To maintain consistency and avoid duplicate IDs, always use this command with yo
 
 > *"Based on this directory's protocol, create a new issue for [brief description]. Increment the ID based on the last existing one and update the `registry.md`."*
 
----
 *This system ensures that the project's knowledge is sovereign, does not depend on external SaaS tools, and is optimized for analysis by language models.*
 
 ## ⚠️ Performance Regression: Test Suite Duration
@@ -47,3 +46,28 @@ Immediate actions:
 3. Review critical paths that operate on albums and classification to search for repeated operations or costly queries.
 
 If you want, I can create the example `scripts/profiling/run_profile.sh` and add a minimal job for GitHub Actions or Jenkins that archives the artifacts.
+# Issue and Subtask Structure Conventions
+
+This document describes the conventions and best practices for organizing issues and subtasks in the `docs/issues/` directory.
+
+## Issue Structure
+- Each issue has its own folder: `00XX-issue-slug/`
+- Each issue folder contains a `README.md` summarizing the issue
+- Subtasks are placed in a `subtasks/` subfolder, each with its own folder and `README.md`
+- Design documents are placed in a `design/` subfolder or within subtasks as needed
+- Cross-references to related issues, subtasks, and design docs are included in each `README.md`
+
+## Naming Conventions
+- Use descriptive, specific slugs (e.g., `refactor-core-logic`, `release-cleanup`, `access-control-policies`)
+- Avoid generic or outdated names
+- Subtasks are numbered and named for clarity (e.g., `001-refactor-process-single-asset`)
+
+## Best Practices
+- Keep issues focused and split broad topics into subtasks
+- Update `README.md` files to reflect current structure and cross-links
+- Use summary tables for major reorganizations
+- Document rationale for major changes
+
+---
+
+*Maintained by the project documentation team. Last updated: 2026-01-30.*
