@@ -162,6 +162,7 @@ class AlbumCacheEntry:
         # Ensure the album is fully loaded before accessing assets
         self._ensure_full_loaded()
         from immich_autotag.assets.asset_dto_state import AssetDtoType
+
         asset_manager = context.get_asset_manager()
         if asset_manager is None:
             raise AttributeError("ImmichContext missing asset_manager")
@@ -196,8 +197,7 @@ class AlbumCacheEntry:
         Use this instead of direct instantiation.
         Arguments must be passed by name (not positional).
         """
-        # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields in factory
-        return AlbumCacheEntry(  # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields en factory, ver explicación en README
-            dto=dto,
-            max_age_seconds=max_age_seconds,
-        )  # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields en factory, ver explicación en README
+        return AlbumCacheEntry(  # noqa
+            dto=dto,  # noqa
+            max_age_seconds=max_age_seconds,  # noqa
+        )  # noqa # type: ignore[call-arg,attr-defined]
