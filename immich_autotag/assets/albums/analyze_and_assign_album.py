@@ -98,7 +98,7 @@ def _handle_classification_conflict(
     Handles assets that match multiple classification rules by removing them from temporary albums
     and reporting the conflict.
     """
-    from immich_autotag.assets.albums.remove_from_autotag_albums import (
+    from immich_autotag.assets.albums.temporary_manager.cleanup import (
         remove_asset_from_autotag_temporary_albums,
     )
 

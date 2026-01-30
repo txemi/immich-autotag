@@ -35,7 +35,7 @@ class MatchResultList:
         return albums
 
     @typechecked
-    def rules(self) -> list:
+    def rules(self) -> list[MatchResult]:
         return [m.rule for m in self.matches]
 
     @typechecked
