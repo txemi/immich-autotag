@@ -60,6 +60,7 @@ class PerformanceTracker:
     _total_assets: Optional[int] = attr.ib(init=True,
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
+        alias="total_assets"
     )
     _skip_n: Optional[int] = attr.ib(
         default=None,

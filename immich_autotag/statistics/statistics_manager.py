@@ -71,8 +71,8 @@ class StatisticsManager:
             TimeEstimationMode,
         )
 
-        self._perf_tracker = PerformanceTracker(
-            total_assets=total_assets,
+        self._perf_tracker = PerformanceTracker.from_total(
+            total_assets,
             max_assets=max_assets,
             skip_n=self.get_or_create_run_stats().skip_n,
         )
