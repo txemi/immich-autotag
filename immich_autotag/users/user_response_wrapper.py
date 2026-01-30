@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Union
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.types.uuid_wrappers import UserUUID
+
 if TYPE_CHECKING:
     from immich_client.models.user_admin_response_dto import UserAdminResponseDto
     from immich_client.models.user_response_dto import UserResponseDto

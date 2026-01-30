@@ -16,6 +16,7 @@ from immich_client.models.tag_response_dto import TagResponseDto
 
 from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.types.client_types import ImmichClient
+from immich_autotag.types.uuid_wrappers import TagUUID
 
 
 def proxy_tag_assets(

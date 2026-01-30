@@ -211,14 +211,17 @@ class TagCollectionWrapper:
         Returns the TagWrapper corresponding to a TagResponseDto (dto), or None if it
         does not exist.
         """
-        raise NotImplementedError(
-            "TagResponseDto does not have valid id or name to search for the TagWrapper. Consider merging logic or revising this method."
-        )
-        tag = self.find_by_id(UUID(dto.id))
+        from immich_autotag.types.uuid_wrappers import TagUUID
+
+        tag_id = TagUUID.from_string(dto.id)
+        tag = self.find_by_id(tag_id)
         if tag is not None:
             return tag
-        name = dto.name
-        return self.find_by_name(name)
+
+        name = getattr(dto, "name", None)
+        if name:
+            return self.find_by_name(name)
+        return None
 
     @staticmethod
     def maintenance_delete_conflict_tags(client: ImmichClient) -> int:

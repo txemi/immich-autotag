@@ -3,7 +3,6 @@ This module is internal to the package and should not be imported directly.
 """
 
 from typing import Sequence
-from uuid import UUID
 
 from typeguard import typechecked
 
@@ -18,7 +17,10 @@ if True:
 
 @typechecked
 def remove_members_from_album(
-    *, album: "AlbumResponseWrapper", user_ids: Sequence[UserUUID], context: ImmichContext
+    *,
+    album: "AlbumResponseWrapper",
+    user_ids: Sequence[UserUUID],
+    context: ImmichContext,
 ) -> None:
     """
     Remove users from album using the API. Logs each removal.
@@ -27,7 +29,7 @@ def remove_members_from_album(
     album_name = album.get_album_name()
     client = context.get_client_wrapper().get_client()
     for user_id in user_ids:
-          proxy_remove_user_from_album(
-                client=client, album_id=album_id, user_id=user_id.to_uuid()
+        proxy_remove_user_from_album(
+            client=client, album_id=album_id, user_id=user_id.to_uuid()
         )
         log_debug(f"[ALBUM_PERMISSIONS] Removed user {user_id} from {album_name}")
