@@ -11,7 +11,6 @@ from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 
 
-# --- Tuple replacement dataclasses ---
 @dataclass
 class AbsTotalAndAvg:
     abs_total: Optional[int]

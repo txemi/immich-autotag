@@ -1,4 +1,5 @@
 import webbrowser
+from dataclasses import dataclass
 from typing import List
 
 from typeguard import typechecked
@@ -13,9 +14,15 @@ def _generate_links(config: UserConfig) -> List[str]:
     links: List[str] = [f"- [Albums](http://{host}:{port}/albums)"]
 
     # Collect all autotag values from the new configuration structure
-    from typing import Set, Tuple
 
-    tags_to_add: List[Tuple[str, str]] = []
+    from typing import Set
+
+    @dataclass(frozen=True)
+    class TagLabelPair:
+        label: str
+        tag: str
+
+    tags_to_add: List[TagLabelPair] = []
 
     # From classification rules (input tags)
     if config.classification and config.classification.rules:
@@ -29,22 +36,24 @@ def _generate_links(config: UserConfig) -> List[str]:
                         label = (
                             tag.replace("autotag_input_", "").replace("_", " ").title()
                         )
-                        tags_to_add.append((f"Input: {label}", tag))
+                        tags_to_add.append(
+                            TagLabelPair(label=f"Input: {label}", tag=tag)
+                        )
 
     # From classification (output tags)
     if config.classification:
         if config.classification.autotag_unknown:
             tags_to_add.append(
-                (
-                    "Classification: Unknown",
-                    config.classification.autotag_unknown,
+                TagLabelPair(
+                    label="Classification: Unknown",
+                    tag=config.classification.autotag_unknown,
                 )
             )
         if config.classification.autotag_conflict:
             tags_to_add.append(
-                (
-                    "Classification: Conflict",
-                    config.classification.autotag_conflict,
+                TagLabelPair(
+                    label="Classification: Conflict",
+                    tag=config.classification.autotag_conflict,
                 )
             )
 
@@ -52,23 +61,23 @@ def _generate_links(config: UserConfig) -> List[str]:
     if config.duplicate_processing:
         if config.duplicate_processing.autotag_album_conflict:
             tags_to_add.append(
-                (
-                    "Duplicates: Album conflict",
-                    config.duplicate_processing.autotag_album_conflict,
+                TagLabelPair(
+                    label="Duplicates: Album conflict",
+                    tag=config.duplicate_processing.autotag_album_conflict,
                 )
             )
         if config.duplicate_processing.autotag_classification_conflict:
             tags_to_add.append(
-                (
-                    "Duplicates: Classification conflict",
-                    config.duplicate_processing.autotag_classification_conflict,
+                TagLabelPair(
+                    label="Duplicates: Classification conflict",
+                    tag=config.duplicate_processing.autotag_classification_conflict,
                 )
             )
         if config.duplicate_processing.autotag_album_detection_conflict:
             tags_to_add.append(
-                (
-                    "Duplicates: Album detection conflict",
-                    config.duplicate_processing.autotag_album_detection_conflict,
+                TagLabelPair(
+                    label="Duplicates: Album detection conflict",
+                    tag=config.duplicate_processing.autotag_album_detection_conflict,
                 )
             )
 
@@ -76,16 +85,16 @@ def _generate_links(config: UserConfig) -> List[str]:
     if config.album_date_consistency and config.album_date_consistency.enabled:
         if config.album_date_consistency.autotag_album_date_mismatch:
             tags_to_add.append(
-                (
-                    "Consistency: Album date mismatch",
-                    config.album_date_consistency.autotag_album_date_mismatch,
+                TagLabelPair(
+                    label="Consistency: Album date mismatch",
+                    tag=config.album_date_consistency.autotag_album_date_mismatch,
                 )
             )
 
     # Generate links for each tag
-    for label, tag_value in tags_to_add:
-        url = f"http://{host}:{port}/tags?path={tag_value}"
-        links.append(f"- [{label}]({url})")
+    for pair in tags_to_add:
+        url = f"http://{host}:{port}/tags?path={pair.tag}"
+        links.append(f"- [{pair.label}]({url})")
 
     links.append(
         (

@@ -660,7 +660,7 @@ check_mypy() {
 			# Solo bloquea por errores arg-type y call-arg (objetivo mínimo)
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
-				   echo "\n\n❌❌❌ QUALITY GATE BLOCKED ($quality_level) ❌❌❌"
+				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ($quality_level) ❌❌❌"
 				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE/CALL-ARG) DETECTED 🚨"
 				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1
@@ -671,7 +671,7 @@ check_mypy() {
 			# Bloquea por errores arg-type, call-arg y attr-defined
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|attr-defined)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
-				   echo "\n\n❌❌❌ QUALITY GATE BLOCKED ($quality_level) ❌❌❌"
+				echo "\n\n❌❌❌ QUALITY GATE BLOCKED ($quality_level) ❌❌❌"
 				echo "🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE/CALL-ARG/ATTR-DEFINED) DETECTED 🚨"
 				echo "[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
 				return 1

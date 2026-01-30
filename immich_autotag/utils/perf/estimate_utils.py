@@ -10,7 +10,7 @@ class AdjustEstimatesResult:
     est_remaining: float = attrs.field(validator=attrs.validators.instance_of(float))
 
     def __iter__(self):
-        # Allow tuple-like unpacking: est_total, est_remaining = adjust_estimates(...)
+        # Returns AdjustEstimatesResult dataclass with est_total and est_remaining fields.
         yield self.est_total
         yield self.est_remaining
 
