@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import atexit
@@ -166,3 +167,17 @@ def proxy_add_assets_to_album(
             f"Failed to add assets to album {album_id}: API returned None"
         )
     return result
+
+from uuid import UUID
+from immich_client.client import AuthenticatedClient
+
+def proxy_delete_album(album_id: AlbumUUID, client: AuthenticatedClient) -> None:
+    """
+    Deletes an album by UUID using the ImmichClient API.
+    Raises an exception if the operation fails.
+    """
+    from immich_client.api.albums import delete_album
+    response = delete_album.sync(id=album_id, client=client)
+    if hasattr(response, 'status_code') and response.status_code not in (200, 204):
+        raise RuntimeError(f"Failed to delete album {album_id}: {response.status_code} {getattr(response, 'text', '')}")
+    return None
