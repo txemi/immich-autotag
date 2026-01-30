@@ -67,10 +67,11 @@ class ResolvedAlbumPolicy:
         self.has_match = len(self.matched_rules) > 0
 
     def __str__(self) -> str:
+        album_name = self.album.get_album_name()
         if not self.has_match:
-            return f"Album '{self.album_name}': NO MATCH"
+            return f"Album '{album_name}': NO MATCH"
         return (
-            f"Album '{self.album_name}': "
+            f"Album '{album_name}': "
             f"Matched rules={self.matched_rules}, "
             f"Groups={self.groups}, "
             f"Members={self.members}, "
