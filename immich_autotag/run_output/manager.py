@@ -170,7 +170,7 @@ class RunOutputManager:
         return None
 
     @staticmethod
-    def current(base_dir: Optional[Path] = None):
+    def current(base_dir: Optional[Path] = None) -> "RunOutputManager":
         """
         Returns the singleton instance associated with the current execution.
         If it does not exist, it creates it.
