@@ -8,6 +8,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 
 from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_uuid import AssetUUID
@@ -58,9 +59,9 @@ class AlbumDtoState:
         if self._dto is None:
             raise ValueError("_dto (AlbumResponseDto) cannot be None")
 
-    def get_album_id(self) -> UUID:
-        """Returns the album ID (without exposing the full DTO)."""
-        return UUID(self._dto.id)
+    def get_album_id(self) -> AlbumUUID:
+        """Returns the album ID as strongly-typed AlbumUUID."""
+        return AlbumUUID.from_uuid(UUID(self._dto.id))
 
     def get_album_name(self) -> str:
         """Returns the album name (without exposing the full DTO)."""
@@ -95,8 +96,8 @@ class AlbumDtoState:
         users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
         return AlbumUserList(users)
 
-    def get_owner_uuid(self) -> "UUID":
-        return UUID(self._dto.owner_id)
+    def get_owner_uuid(self) -> AlbumUUID:
+        return AlbumUUID.from_uuid(UUID(self._dto.owner_id))
 
     @staticmethod
     def create(
