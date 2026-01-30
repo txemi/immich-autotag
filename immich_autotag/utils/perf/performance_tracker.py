@@ -44,12 +44,17 @@ class PerformanceTracker:
     def set_max_assets(self, value: int) -> None:
         self._max_assets = value
 
+    def set_total_assets(self, value: int) -> None:
+        self._total_assets = value
+
     @staticmethod
     def from_total(total_assets: int) -> "PerformanceTracker":
         """
-        Static constructor for PerformanceTracker with total_assets set.
+        Static constructor for PerformanceTracker with total_assets set, using setters for consistency.
         """
-        return PerformanceTracker(total_assets=total_assets)
+        instance = PerformanceTracker()
+        instance.set_total_assets(total_assets)
+        return instance
 
     _start_time: float = attr.ib(
         init=False,
@@ -109,11 +114,7 @@ class PerformanceTracker:
         """
         Public setter to update skip_n in a controlled way.
         """
-        self.skip_n = value
-
-    @typechecked
-    def set_total_assets(self, value: int):
-        self.total_assets = value
+        self._skip_n = value
 
     @typechecked
     def _printable_value_skip_n(self) -> int:
