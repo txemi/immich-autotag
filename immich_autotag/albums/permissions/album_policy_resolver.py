@@ -37,7 +37,6 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class ResolvedAlbumPolicy:
-    album: 'AlbumResponseWrapper' = attrs.field()
     """
     Result of resolving an album's permission policy.
 
@@ -56,8 +55,8 @@ class ResolvedAlbumPolicy:
         - Provides a string representation for logging and debugging.
     """
 
-    album_name: str = attrs.field(validator=attrs.validators.instance_of(str))
-    album_id: str = attrs.field(validator=attrs.validators.instance_of(str))
+    album: 'AlbumResponseWrapper' = attrs.field()
+    # album_name and album_id removed; use album.get_album_name() and album.get_album_uuid() instead
     matched_rules: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
     groups: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
     members: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
@@ -173,8 +172,6 @@ def resolve_album_policy(
 
     return ResolvedAlbumPolicy(
         album=album,
-        album_name=album_name,
-        album_id=album_id,
         matched_rules=matched_rules_names,
         groups=all_groups_unique,
         members=all_members_unique,
