@@ -51,7 +51,7 @@ def _correct_date_if_enabled(
         from immich_autotag.assets.date_correction.core_logic import correct_asset_date
 
         return correct_asset_date(asset_wrapper)
-
+    return None
 
 @typechecked
 def _analyze_duplicate_tags(
