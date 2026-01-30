@@ -194,9 +194,8 @@ class AlbumCacheEntry:
         Use this instead of direct instantiation.
         Arguments must be passed by name (not positional).
         """
-        # type: ignore[attr-defined]  # attrs: allow setting protected fields in factory
-        # attrs: allow setting protected fields in factory (see linter note)
-        return AlbumCacheEntry(
-            dto=dto,
-            max_age_seconds=max_age_seconds,
-        )
+        # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields in factory
+        return AlbumCacheEntry(  # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields en factory, ver explicación en README
+            _dto=dto,
+            _max_age_seconds=max_age_seconds,
+        )  # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields en factory, ver explicación en README
