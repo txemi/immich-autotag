@@ -52,7 +52,6 @@ class UnavailableAlbums:
 
         # Import error-mode config so we can decide whether to swallow IO errors
         # Fail-fast: configuration symbols must exist; let ImportError propagate.
-        from immich_autotag.config.internal_config import is_devel_mode
         from immich_autotag.run_output.manager import RunOutputManager
 
         summary_items: list[dict[str, str]] = []
