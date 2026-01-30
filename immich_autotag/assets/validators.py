@@ -8,7 +8,7 @@ import attr
 
 
 def validate_asset_response_wrapper(
-    instance: Any, attribute: attr.Attribute[Any], value: Any
+    instance: Any, attribute: Any, value: Any
 ) -> None:
     """
     Permite None o AssetResponseWrapper.

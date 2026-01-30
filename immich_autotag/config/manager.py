@@ -159,7 +159,7 @@ class ConfigManager:
 
         from immich_autotag.run_output.manager import RunOutputManager
 
-        run_execution = RunOutputManager.get_run_output_dir()
+        run_execution = RunOutputManager.current().get_run_output_dir()
         path = run_execution.get_user_config_dump_path()
         import enum
 

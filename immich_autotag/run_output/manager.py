@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+
+import attrs
 from ._recent_run_dir import RecentRunDir
 from .execution import RunExecution
 
@@ -162,14 +164,14 @@ class RunOutputManager:
         return None
 
     @staticmethod
-    def current(base_dir: Optional[Path] = None) -> "RunOutputManager":
+    def current() -> "RunOutputManager":
         """
         Returns the singleton instance associated with the current execution.
         If it does not exist, it creates it.
         """
         global _current_instance
         if _current_instance is None:
-            _current_instance = RunOutputManager(base_dir=base_dir)
+            _current_instance = RunOutputManager()
         return _current_instance
 
     def get_log_path(self, name: str) -> Path:

@@ -77,7 +77,7 @@ def setup_tee_logging() -> None:
     from immich_autotag.logging.utils import LogLevel, log
     from immich_autotag.run_output.manager import RunOutputManager
 
-    run_exec = RunOutputManager.get_run_output_dir()
+    run_exec = RunOutputManager.current().get_run_output_dir()
     log_path = run_exec.get_full_output_log_path()
     Tee(filename=log_path, mode="a")
     log(

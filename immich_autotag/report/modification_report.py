@@ -47,7 +47,7 @@ class ModificationReport:
     )
 
     run_execution: RunExecution = attrs.field(
-        factory=RunOutputManager.get_run_output_dir,
+        factory=lambda: RunOutputManager.current().get_run_output_dir(),
         validator=attrs.validators.instance_of(RunExecution),
     )
     batch_size: int = attrs.field(

@@ -20,11 +20,11 @@ def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
     Searches for the maximum count of runs in the last hours using RunOutputManager and RunExecution.
     Returns the calculated skip_n or None if there is no data.
-    logs_dir: Optional base directory for logs. Defaults to RunOutputManager.LOGS_LOCAL_DIR.
+    logs_dir: Optional base directory for logs. Defaults to Path('logs_local').
     """
     max_count = 0
     found = False
-    for run_exec in RunOutputManager.find_recent_run_dirs(max_age_hours=hours):
+    for run_exec in RunOutputManager.current().find_recent_run_dirs(max_age_hours=hours):
         stats_path = run_exec.get_run_statistics_path()
         if stats_path.exists():
             try:

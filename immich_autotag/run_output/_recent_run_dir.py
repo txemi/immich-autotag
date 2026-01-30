@@ -7,7 +7,7 @@ import attrs
 
 
 def _validate_is_dir(
-    instance: Any, attribute: attr.Attribute[Path], value: Path
+    instance: Any, attribute: Any, value: Path
 ) -> None:
     if not value.is_dir():
         raise ValueError(f"{attribute.name} must be a directory: {value}")
