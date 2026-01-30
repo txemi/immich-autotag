@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING, Dict, List
-from immich_autotag.types.uuid_wrappers import TagUUID
 
 import attrs
 from typeguard import typechecked
+
+from immich_autotag.types.uuid_wrappers import TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper

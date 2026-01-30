@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
 from immich_autotag.types.uuid_wrappers import TagUUID
 
 if TYPE_CHECKING:

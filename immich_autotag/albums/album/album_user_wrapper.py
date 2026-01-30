@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 import attrs
 from typeguard import typechecked
+
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 if TYPE_CHECKING:
     from immich_client.models.album_user_response_dto import AlbumUserResponseDto

@@ -1,8 +1,8 @@
-from immich_autotag.types.uuid_wrappers import TagUUID
-
 import attrs
 from immich_client.models.tag_response_dto import TagResponseDto
 from typeguard import typechecked
+
+from immich_autotag.types.uuid_wrappers import TagUUID
 
 
 @attrs.define(auto_attribs=True, slots=True)
