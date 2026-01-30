@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
 
-from immich_autotag.types.email_address import EmailAddress
 if TYPE_CHECKING:
     from immich_client.models.user_admin_response_dto import UserAdminResponseDto
     from immich_client.models.user_response_dto import UserResponseDto
 
-    from immich_autotag.context.immich_context import ImmichContext
 
 
 @attrs.define(slots=True, frozen=True)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import attrs
 from immich_client.client import AuthenticatedClient as ImmichClient
@@ -8,7 +8,6 @@ from immich_client.client import AuthenticatedClient as ImmichClient
 from immich_autotag.api.immich_proxy.permissions import proxy_search_users
 from immich_autotag.api.immich_proxy.users import proxy_get_my_user
 from immich_autotag.context.immich_context import ImmichContext
-
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
@@ -86,9 +85,7 @@ class UserManager:
             self.load_all(self._context)
         return self._users.get(uuid)
 
-    def get_by_email(
-        self, email: "EmailAddress"
-    ) -> Optional["UserResponseWrapper"]:
+    def get_by_email(self, email: "EmailAddress") -> Optional["UserResponseWrapper"]:
         if not self._loaded and self._context:
             self.load_all(self._context)
         return self._email_map.get(email)

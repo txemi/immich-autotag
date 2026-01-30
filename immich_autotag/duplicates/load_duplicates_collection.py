@@ -23,7 +23,6 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
 
     cache_fresh_hours = 3
 
-
     cache_path = find_recent_duplicates_cache(cache_fresh_hours)
     duplicates_collection = None
     if cache_path:

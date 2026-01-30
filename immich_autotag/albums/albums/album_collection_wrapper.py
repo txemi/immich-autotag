@@ -925,16 +925,12 @@ class AlbumCollectionWrapper:
             )
 
         # If it doesn't exist, create it and assign user
-        from immich_autotag.context.immich_context import ImmichContext
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         album = self._create_album_dto(album_name, client, tag_mod_report)
 
         # Centralized user access
-        context = ImmichContext.get_default_instance()
-        user_wrapper: UserResponseWrapper = UserResponseWrapper.load_current_user(
-            context
-        )
+        user_wrapper: UserResponseWrapper = UserResponseWrapper.load_current_user()
 
         wrapper = self._album_wrapper_from_partial_dto(album)
         tag_mod_report.add_album_modification(

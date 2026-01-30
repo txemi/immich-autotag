@@ -174,23 +174,19 @@ class RunOutputManager:
             _current_instance = RunOutputManager()
         return _current_instance
 
-
     def get_log_path(self, name: str) -> Path:
         """Returns the path for a specific log of this run."""
         return self.get_run_output_dir().path / f"{name}.log"
 
-
     def get_stats_path(self, name: str) -> Path:
         """Returns the path for a statistics file."""
         return self.get_run_output_dir().path / f"{name}.stats"
-
 
     def get_cache_dir(self, name: str) -> Path:
         """Returns the path for a cache subdirectory."""
         d = self.get_run_output_dir().path / f"cache_{name}"
         d.mkdir(exist_ok=True)
         return d
-
 
     def get_custom_path(self, *parts: str) -> Path:
         """Returns an arbitrary path inside the run_dir."""
