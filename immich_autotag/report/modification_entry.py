@@ -8,6 +8,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
+
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 if TYPE_CHECKING:
@@ -39,7 +40,9 @@ class ModificationEntry:
     )
     asset_wrapper: Optional[AssetResponseWrapper] = attrs.field(
         default=None,
-        validator=attrs.validators.optional(attrs.validators.instance_of(AssetResponseWrapper)),
+        validator=attrs.validators.optional(
+            attrs.validators.instance_of(AssetResponseWrapper)
+        ),
     )
     tag: Optional["TagWrapper"] = attrs.field(
         default=None,
