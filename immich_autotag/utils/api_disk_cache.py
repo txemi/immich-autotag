@@ -59,7 +59,7 @@ class ApiCacheManager:
         """
         Gets the cache directory of the current execution for the cache type.
         """
-        run_execution = RunOutputManager.get_run_output_dir()
+        run_execution = RunOutputManager.current().get_run_output_dir()
         return run_execution.get_api_cache_dir(self._cache_type.value)
 
     def save(self, key: str, data: dict[str, object] | list[dict[str, object]]) -> None:
