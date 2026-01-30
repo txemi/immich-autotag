@@ -328,7 +328,7 @@ class AlbumCollectionWrapper:
         if total > 0:
             from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-            tracker = PerformanceTracker(total_assets=total)
+            tracker = PerformanceTracker.from_total(total_assets=total)
         for idx, album_wrapper in enumerate(albums, 1):
             # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
