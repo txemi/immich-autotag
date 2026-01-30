@@ -68,7 +68,7 @@ class TagCollectionWrapper:
         client_wrapper = ImmichClientWrapper.get_default_instance()
         client = client_wrapper.get_client()
         try:
-            tag_dto = proxy_get_tag_by_id(client=client, tag_id=id_.to_uuid())
+            tag_dto = proxy_get_tag_by_id(client=client, tag_id=id_)
         except Exception:
             tag_dto = None
         if tag_dto is not None:
@@ -241,11 +241,11 @@ class TagCollectionWrapper:
 
         tags_dto = proxy_get_all_tags(client=client) or []
         count = 0
-        from uuid import UUID
+        from immich_autotag.types.uuid_wrappers import TagUUID
 
         for tag in tags_dto:
             if any(tag.name.startswith(prefix) for prefix in prefixes):
-                proxy_delete_tag(client=client, tag_id=UUID(tag.id))
+                proxy_delete_tag(client=client, tag_id=TagUUID.from_string(tag.id))
                 print(f"[CLEANUP] Deleted tag: {tag.name} (id={tag.id})")
                 count += 1
         return count
