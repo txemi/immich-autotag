@@ -13,14 +13,14 @@ from immich_autotag.types.uuid_wrappers import UserUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 # Singleton instance variable (module-level, not attrs-managed)
-_USER_MANAGER_INSTANCE: Optional[UserManager] = None
+_user_manager_instance: Optional[UserManager] = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class UserManager:
-    _users: Dict[UserUUID, UserResponseWrapper] = attrs.field(init=False, factory=dict)
+    _users: Dict[UserUUID, UserResponseWrapper] = attrs.field(init=False, factory=dict, metadata={"type": "Dict[UserUUID, UserResponseWrapper]"})
     _email_map: Dict[EmailAddress, UserResponseWrapper] = attrs.field(
-        init=False, factory=dict
+        init=False, factory=dict, metadata={"type": "Dict[EmailAddress, UserResponseWrapper]"}
     )
     _context: Optional[ImmichContext] = None
     _loaded: bool = attrs.field(init=False, default=False)
@@ -28,18 +28,18 @@ class UserManager:
 
     def __attrs_post_init__(self):
         # Prevent direct instantiation
-        global _USER_MANAGER_INSTANCE
-        if _USER_MANAGER_INSTANCE is not None:
+        global _user_manager_instance
+        if _user_manager_instance is not None:
             raise RuntimeError(
                 "Use UserManager.get_instance() instead of direct instantiation."
             )
 
     @classmethod
     def get_instance(cls) -> "UserManager":
-        global _USER_MANAGER_INSTANCE
-        if _USER_MANAGER_INSTANCE is None:
-            _USER_MANAGER_INSTANCE = cls()
-        return _USER_MANAGER_INSTANCE
+        global _user_manager_instance
+        if _user_manager_instance is None:
+            _user_manager_instance = cls()
+        return _user_manager_instance
 
     def load_all(self, context: ImmichContext) -> None:
         """
