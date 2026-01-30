@@ -13,6 +13,10 @@ if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 from immich_autotag.albums.album.validators import validate_album_response_wrapper
+
+# Import for asset_wrapper type and validator
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.validators import validate_asset_response_wrapper
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.serializable_modification_entry import (
     SerializableModificationEntry,
@@ -85,17 +89,29 @@ class ModificationEntry:
                 asset_link = self.asset_wrapper.get_immich_photo_url().geturl()
             except Exception:
                 asset_link = None
+        asset_id = None
+        if self.asset_wrapper is not None:
+            asset_id_val = self.asset_wrapper.get_id()
+            # Convert AssetUUID to uuid.UUID if needed
+            if hasattr(asset_id_val, "to_uuid"):
+                asset_id = asset_id_val.to_uuid()
+            else:
+                asset_id = asset_id_val
+
+        asset_name = None
+        if self.asset_wrapper is not None:
+            asset_name_val = self.asset_wrapper.get_original_file_name()
+            # Convert Path to str if needed
+            if hasattr(asset_name_val, "__fspath__"):
+                asset_name = str(asset_name_val)
+            else:
+                asset_name = asset_name_val
+
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
-            asset_id=(
-                self.asset_wrapper.get_id() if self.asset_wrapper is not None else None
-            ),
-            asset_name=(
-                self.asset_wrapper.get_original_file_name()
-                if self.asset_wrapper is not None
-                else None
-            ),
+            asset_id=asset_id,
+            asset_name=asset_name,
             tag_name=self.tag.get_name() if self.tag is not None else None,
             album_id=album_id,
             album_name=album_name,
