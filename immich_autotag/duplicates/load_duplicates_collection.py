@@ -89,7 +89,7 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
             # containing counts and a limited sample of group ids to help diagnostics.
             try:
                 import json
-                from typing import Dict, Any
+                from typing import Any, Dict
 
                 sample_limit = 100
                 sample_group_ids = list(

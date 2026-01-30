@@ -16,8 +16,6 @@ from typing import TYPE_CHECKING
 from typeguard import typechecked
 
 from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
-from immich_autotag.config._internal_types import ErrorHandlingMode
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
@@ -74,6 +72,7 @@ def remove_asset_from_autotag_temporary_albums(
         except Exception as e:
             # <-- HERE the message '[WARNING] Failed to remove asset ...' is printed if an error occurs while removing the asset from the temporary album.
             from immich_autotag.config.dev_mode import is_development_mode
+
             if is_development_mode():
                 raise
             log(

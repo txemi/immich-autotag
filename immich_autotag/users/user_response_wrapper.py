@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from immich_client.models.user_response_dto import UserResponseDto
 
 
-
 @attrs.define(slots=True, frozen=True)
 class UserResponseWrapper:
     @classmethod
