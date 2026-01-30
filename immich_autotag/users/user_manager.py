@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Union
 
 import attrs
+from immich_client.client import AuthenticatedClient as ImmichClient
 
 from immich_autotag.api.immich_proxy.users import proxy_get_my_user, proxy_search_users
 from immich_autotag.context.immich_context import ImmichContext
