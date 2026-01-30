@@ -8,6 +8,7 @@ import attrs
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
 from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
@@ -160,7 +161,7 @@ class AlbumCacheEntry:
             result.append(b)
         return result
 
-    def get_album_id(self) -> UUID:
+    def get_album_id(self) -> AlbumUUID:
         """
         Returns the album UUID by delegating to the DTO state.
         """
