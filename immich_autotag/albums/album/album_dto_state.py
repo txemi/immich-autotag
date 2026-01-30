@@ -29,42 +29,13 @@ class AlbumLoadSource(enum.Enum):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumDtoState:
-
-        def _update_from_dto(
-            self, dto: AlbumResponseDto, load_source: 'AlbumLoadSource'
-        ) -> None:
-            self.update(dto=dto, load_source=load_source)
-
-        def _set_album_full(self, value: AlbumResponseDto) -> None:
-            self._update_from_dto(value, AlbumLoadSource.DETAIL)
-
-        def merge_from_dto(
-            self, dto: AlbumResponseDto, load_source: 'AlbumLoadSource'
-        ) -> None:
-            """
-            Unifies DTO update logic. Updates the state with the new DTO and load_source if:
-                    - The new load_source is DETAIL (always update to full)
-                    - The current load_source is SEARCH (allow update from SEARCH to SEARCH or
-                        DETAIL)
-            - Ensures loaded_at is monotonic (never decreases)
-            - Updates asset ID cache as UUIDs
-            If the current is DETAIL and the new is SEARCH, ignores the update.
-            """
-            should_update = False
-            current_load_source = getattr(self, "_load_source", None)
-            if load_source == AlbumLoadSource.DETAIL:
-                should_update = True
-            elif current_load_source == AlbumLoadSource.SEARCH:
-                should_update = True
-            if should_update:
-                self._update_from_dto(dto, load_source)
     """
     Encapsulates the state of an AlbumResponseDto retrieved from the API.
 
     This class groups three attributes that are always obtained together when querying an album:
-        - The album DTO (private, not exposed directly)
-        - The AlbumLoadSource enum indicating the API source
-        - The loaded_at timestamp
+    - The album DTO (private, not exposed directly)
+    - The AlbumLoadSource enum indicating the API source
+    - The loaded_at timestamp
 
     The DTO is not exposed directly. Access must be through public methods
     that return only the necessary information.
@@ -86,6 +57,35 @@ class AlbumDtoState:
     def __attrs_post_init__(self):
         if self._dto is None:
             raise ValueError("_dto (AlbumResponseDto) cannot be None")
+
+    def _update_from_dto(
+        self, dto: AlbumResponseDto, load_source: "AlbumLoadSource"
+    ) -> None:
+        self.update(dto=dto, load_source=load_source)
+
+    def _set_album_full(self, value: AlbumResponseDto) -> None:
+        self._update_from_dto(value, AlbumLoadSource.DETAIL)
+
+    def merge_from_dto(
+        self, dto: AlbumResponseDto, load_source: "AlbumLoadSource"
+    ) -> None:
+        """
+        Unifies DTO update logic. Updates the state with the new DTO and load_source if:
+                - The new load_source is DETAIL (always update to full)
+                - The current load_source is SEARCH (allow update from SEARCH to SEARCH or
+                    DETAIL)
+        - Ensures loaded_at is monotonic (never decreases)
+        - Updates asset ID cache as UUIDs
+        If the current is DETAIL and the new is SEARCH, ignores the update.
+        """
+        should_update = False
+        current_load_source = self._load_source
+        if load_source == AlbumLoadSource.DETAIL:
+            should_update = True
+        elif current_load_source == AlbumLoadSource.SEARCH:
+            should_update = True
+        if should_update:
+            self._update_from_dto(dto, load_source)
 
     def get_album_id(self) -> AlbumUUID:
         """Returns the album ID as strongly-typed AlbumUUID."""
