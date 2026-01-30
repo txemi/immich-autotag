@@ -145,10 +145,7 @@ class ModificationReport:
         # If user is None, obtain it from the singleton ImmichContext
         user_instance = user
         if user_instance is None:
-            from immich_autotag.context.immich_context import ImmichContext
-
-            context = ImmichContext.get_default_instance()
-            user_instance = UserResponseWrapper.load_current_user(context)
+            user_instance = UserResponseWrapper.load_current_user()
 
         # Calculate progress using StatisticsManager (without try/except)
         from immich_autotag.statistics.statistics_manager import StatisticsManager
