@@ -14,9 +14,10 @@ _LOGS_LOCAL_DIR = Path("logs_local")
 _RUN_DIR_PID_MARK = "PID"
 _RUN_DIR_PID_SEP = "_PID"
 _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
-_RUN_OUTPUT_DIR: Optional[RunExecution] = None
 _current_instance = None
 
+
+@attrs.define(auto_attribs=True, slots=True)
 class RunOutputManager:
     """
     RunOutputManager centralizes and abstracts the management of output paths and persistence (logs, statistics, caches, reports, etc.)
@@ -55,15 +56,10 @@ class RunOutputManager:
     """
 
 
+    _RUN_OUTPUT_DIR: Optional[RunExecution] = None
 
-    def __init__(self, ):
 
-        base_dir = Path(__file__).resolve().parent.parent / "logs_local"
-        base_dir = Path(base_dir).resolve()
-        now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        pid = os.getpid()
-        self.run_dir = base_dir / f"{now}_PID{pid}"
-        self.run_dir.mkdir(parents=True, exist_ok=True)
+
 
 
     @staticmethod
@@ -101,20 +97,20 @@ class RunOutputManager:
         """Returns all valid execution subfolders in base_dir."""
         return [d for d in base_dir.iterdir() if RunOutputManager._is_run_dir(d)]
 
-    @staticmethod
-    def get_run_output_dir() -> RunExecution:
+
+    def get_run_output_dir(self) -> RunExecution:
         """
         Returns a RunExecution object for the current run. Argument must be a Path.
         """
-        global _RUN_OUTPUT_DIR
-        if _RUN_OUTPUT_DIR is None:
+
+        if self._RUN_OUTPUT_DIR is None:
             base_dir = _LOGS_LOCAL_DIR
             now = datetime.now().strftime(_RUN_DIR_DATE_FORMAT)
             pid = os.getpid()
             run_dir = Path(base_dir) / f"{now}{_RUN_DIR_PID_SEP}{pid}"
             run_dir.mkdir(parents=True, exist_ok=True)
-            _RUN_OUTPUT_DIR = RunExecution(run_dir)
-        return _RUN_OUTPUT_DIR
+            self._RUN_OUTPUT_DIR = RunExecution(run_dir)
+        return self._RUN_OUTPUT_DIR
 
     @staticmethod
     def find_recent_run_dirs(
