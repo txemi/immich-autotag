@@ -24,7 +24,9 @@ def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
     max_count = 0
     found = False
-    for run_exec in RunOutputManager.current().find_recent_run_dirs(max_age_hours=hours):
+    for run_exec in RunOutputManager.current().find_recent_run_dirs(
+        max_age_hours=hours
+    ):
         stats_path = run_exec.get_run_statistics_path()
         if stats_path.exists():
             try:

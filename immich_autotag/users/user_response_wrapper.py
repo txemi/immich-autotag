@@ -17,7 +17,9 @@ if TYPE_CHECKING:
 @attrs.define(slots=True, frozen=True)
 class UserResponseWrapper:
     @classmethod
-    def from_user(cls, user: Union["UserResponseDto", "UserAdminResponseDto"]) -> "UserResponseWrapper":
+    def from_user(
+        cls, user: Union["UserResponseDto", "UserAdminResponseDto"]
+    ) -> "UserResponseWrapper":
         return UserResponseWrapper(user=user)
 
     @staticmethod
@@ -32,6 +34,7 @@ class UserResponseWrapper:
             UserAdminResponseDto,
         )
         from immich_client.models.user_response_dto import UserResponseDto
+
         if not isinstance(value, (UserResponseDto, UserAdminResponseDto)):
             raise TypeError(
                 f"user must be a UserResponseDto or UserAdminResponseDto, got "
@@ -39,8 +42,7 @@ class UserResponseWrapper:
             )
 
     _user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field(
-        validator=_validate_user,
-        init=False
+        validator=_validate_user, init=False
     )
 
     @typechecked
@@ -50,6 +52,7 @@ class UserResponseWrapper:
     @typechecked
     def get_email(self):
         from immich_autotag.types.email_wrapper import EmailWrapper
+
         return EmailWrapper(self._user.email)
 
     @classmethod
@@ -70,4 +73,4 @@ class UserResponseWrapper:
 
     @typechecked
     def __str__(self) -> str:
-        return self.get_name() or getattr(self._user, 'id', None) or "<unknown user>"
+        return self.get_name() or getattr(self._user, "id", None) or "<unknown user>"

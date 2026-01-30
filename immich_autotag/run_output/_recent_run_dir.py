@@ -2,16 +2,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
-import attr
 import attrs
 
 
-def _validate_is_dir(
-    instance: Any, attribute: Any, value: Path
-) -> None:
+def _validate_is_dir(instance: Any, attribute: Any, value: Path) -> None:
     if not value.is_dir():
         raise ValueError(f"{attribute.name} must be a directory: {value}")
-
 
 
 @attrs.define(slots=True, frozen=True)
@@ -21,7 +17,7 @@ class RecentRunDir:
         repr=False,
         eq=False,
         metadata={"private": True},
-        alias="subdir"
+        alias="subdir",
     )
 
     def get_datetime(self: "RecentRunDir") -> Optional[datetime]:

@@ -22,9 +22,8 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
     import time
 
     cache_fresh_hours = 3
-    from immich_autotag.run_output.manager import RunOutputManager
 
-    from pathlib import Path
+
     cache_path = find_recent_duplicates_cache(cache_fresh_hours)
     duplicates_collection = None
     if cache_path:
