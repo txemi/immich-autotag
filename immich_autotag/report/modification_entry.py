@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import datetime
 from typing import TYPE_CHECKING, Any, Optional
+import uuid
 
 import attrs
 
