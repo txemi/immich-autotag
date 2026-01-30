@@ -9,8 +9,6 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
-
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
@@ -128,12 +126,12 @@ class ModificationEntry:
             return self.album.get_album_name()
         return None
 
-    def _get_asset_id(self) -> Optional[AssetUUID]:
+    def _get_asset_id(self) -> Optional[str]:
         """
         Returns the asset_id as UUID if available, else None.
         """
         if self.asset_wrapper is not None:
-            asset_id_val = self.asset_wrapper.get_id()
+            asset_id_val = str(self.asset_wrapper.get_id().to_uuid())
             return asset_id_val
         return None
 
@@ -151,17 +149,26 @@ class ModificationEntry:
         Converts the rich entry to a serializable version (only simple types).
         Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         """
+        # Convert AssetUUID/AlbumUUID to uuid.UUID if needed
+        asset_id = self._get_asset_id()
+
+        album_id = self._get_album_id()
+
+        tag_id = self.tag.get_name() if self.tag else None
+
+        user_name = self._get_user_name()
+
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
-            asset_id=self._get_asset_id(),
+            asset_id=asset_id,
             asset_name=self._get_asset_name(),
-            tag_name=self._get_tag_name(),
-            album_id=self._get_album_id(),
+            tag_name=tag_id,
+            album_id=album_id,
             album_name=self._get_album_name(),
             old_value=self._get_old_value(),
             new_value=self._get_new_value(),
-            user_name=self._get_user_name(),
+            user_name=user_name,
             asset_link=self._get_asset_link(),
             extra=self.extra,
             progress=self.progress,
