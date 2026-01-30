@@ -124,9 +124,11 @@ class AlbumDtoState:
         users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
         return AlbumUserList(users)
 
-    def get_owner_uuid(self) -> "UserUUID":
+    def get_owner_uuid(self) -> "UserUUID":  # type: ignore[valid-type]
+        from typing import TYPE_CHECKING
+        if TYPE_CHECKING:
+            from immich_autotag.types.uuid_wrappers import UserUUID
         from immich_autotag.types.uuid_wrappers import UserUUID
-
         return UserUUID.from_string(self._dto.owner_id)
 
     @staticmethod
