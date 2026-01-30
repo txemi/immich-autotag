@@ -128,9 +128,7 @@ class AlbumDtoState:
         return UserUUID.from_string(self._dto.owner_id)
 
     @staticmethod
-    def create(
-        dto: AlbumResponseDto, load_source: AlbumLoadSource
-    ) -> "AlbumDtoState":
+    def create(dto: AlbumResponseDto, load_source: AlbumLoadSource) -> "AlbumDtoState":
         """
         Creates a new instance of AlbumDtoState safely to avoid issues with attrs and enums.
         Arguments must be passed positionally to match attrs usage.
