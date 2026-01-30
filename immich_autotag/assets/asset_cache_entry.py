@@ -231,8 +231,10 @@ class AssetCacheEntry:
     def get_is_favorite(self) -> bool:
         """
         Returns True if the asset is marked as favorite, False otherwise.
+        Defensive: always returns a bool, never None.
         """
-        return self._state.get_is_favorite()
+        value = self._state.get_is_favorite()
+        return value
 
     def get_created_at(self) -> datetime.datetime:
         """

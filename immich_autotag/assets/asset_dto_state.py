@@ -182,12 +182,11 @@ class AssetDtoState:
             return self
         raise RuntimeError("AssetDtoState is not FULL; operation not allowed.")
 
-    def get_is_favorite(self) -> Optional[bool]:
+    def get_is_favorite(self) -> bool:
         """
-        Returns True if the asset is marked as favorite, False if explicitly False, or None if not present.
+        Returns True if the asset is marked as favorite, False otherwise. Defensive: always returns a bool.
         """
-        # AssetResponseDto uses 'is_favorite' attribute, which may be missing or None
-        return getattr(self._dto, "is_favorite", None)
+        return self._dto.is_favorite
 
     def get_created_at(self) -> datetime:
         """
