@@ -1,4 +1,7 @@
+
 from __future__ import annotations
+# Add proxy_create_album import
+from immich_autotag.api.immich_proxy.proxy_create_album import proxy_create_album
 
 import atexit
 from typing import Callable, List, Optional
