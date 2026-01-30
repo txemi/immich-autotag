@@ -76,7 +76,7 @@ class ApiCacheManager:
         if path.exists() and path.stat().st_size > 0:
             with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)
-        for run_execution in RunOutputManager.find_recent_run_dirs(
+        for run_execution in RunOutputManager.current().find_recent_run_dirs(
             exclude_current=True
         ):
             prev_cache_dir = run_execution.get_api_cache_dir(self._cache_type.value)

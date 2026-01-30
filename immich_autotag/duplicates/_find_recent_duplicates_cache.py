@@ -11,7 +11,7 @@ from immich_autotag.run_output.manager import RunOutputManager
 
 
 @typechecked
-def find_recent_duplicates_cache(logs_dir: Path, max_age_hours: int) -> Optional[Path]:
+def find_recent_duplicates_cache( max_age_hours: int) -> Optional[Path]:
     """
     Searches for the most recent and valid duplicates cache file in the logs subfolders.
     Returns the path if it exists and is within the age threshold, or None.
