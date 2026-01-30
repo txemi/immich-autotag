@@ -47,7 +47,7 @@ def process_album_permissions(
     )
 
     report = ModificationReport.get_instance()
-    albums_collection = context.albums_collection
+    albums_collection = context.get_albums_collection()
 
     # Build user groups dictionary for quick lookup
     user_groups_dict = {}
