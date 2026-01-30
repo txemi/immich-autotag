@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Union
 
 import attrs
 
-from immich_autotag.api.immich_proxy.users import proxy_get_my_user, proxy_search_users
+from immich_autotag.api.immich_proxy.users import proxy_get_my_user
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
