@@ -28,33 +28,6 @@ class AvgAndTotals:
 @typechecked
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class PerformanceTracker:
-    @staticmethod
-    def from_args(
-        total_assets: int, max_assets: int, skip_n: int = 0
-    ) -> "PerformanceTracker":
-        """
-        Constructor estático que inicializa la instancia con setters.
-        """
-        instance = PerformanceTracker()
-        instance.set_total_assets(total_assets)
-        instance.set_max_assets(max_assets)
-        instance.set_skip_n(skip_n)
-        return instance
-
-    def set_max_assets(self, value: int) -> None:
-        self._max_assets = value
-
-    def set_total_assets(self, value: int) -> None:
-        self._total_assets = value
-
-    @staticmethod
-    def from_total(total_assets: int) -> "PerformanceTracker":
-        """
-        Static constructor for PerformanceTracker with total_assets set, using setters for consistency.
-        """
-        instance = PerformanceTracker()
-        instance.set_total_assets(total_assets)
-        return instance
 
     _start_time: float = attr.ib(
         init=False,
@@ -108,6 +81,39 @@ class PerformanceTracker:
                 "CRAZY_DEBUG mode: total_assets too low (<100000) during "
                 "PerformanceTracker initialization"
             )
+
+    @staticmethod
+    def from_args(
+        total_assets: Optional[int],
+        max_assets: Optional[int],
+        skip_n: Optional[int] = 0,
+    ) -> "PerformanceTracker":
+        """
+        Constructor estático que inicializa la instancia con setters, con guardas para None.
+        """
+        instance = PerformanceTracker()
+        if total_assets is not None:
+            instance.set_total_assets(total_assets)
+        if max_assets is not None:
+            instance.set_max_assets(max_assets)
+        if skip_n is not None:
+            instance.set_skip_n(skip_n)
+        return instance
+
+    def set_max_assets(self, value: int) -> None:
+        self._max_assets = value
+
+    def set_total_assets(self, value: int) -> None:
+        self._total_assets = value
+
+    @staticmethod
+    def from_total(total_assets: int) -> "PerformanceTracker":
+        """
+        Static constructor for PerformanceTracker with total_assets set, using setters for consistency.
+        """
+        instance = PerformanceTracker()
+        instance.set_total_assets(total_assets)
+        return instance
 
     @typechecked
     def set_skip_n(self, value: int) -> None:
