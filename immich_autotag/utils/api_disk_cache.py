@@ -50,8 +50,9 @@ class ApiCacheManager:
         Static constructor for ApiCacheManager to avoid linter/type checker issues with private attribute names.
         Use this instead of direct instantiation.
         """
+        # Use 'cache_type' (not '_cache_type') to avoid linter/type checker warnings with attrs auto_attribs
         return ApiCacheManager(
-            _cache_type=cache_type,
+            cache_type=cache_type,
             use_cache=use_cache,
         )
 
