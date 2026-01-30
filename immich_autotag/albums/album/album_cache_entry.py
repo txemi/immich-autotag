@@ -25,6 +25,16 @@ class StaleAlbumCacheError(Exception):
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
 
+
+
+    def merge_from_dto(
+        self, dto: 'AlbumResponseDto', load_source: 'AlbumLoadSource'
+    ) -> None:
+        """
+        Delegates to AlbumDtoState.merge_from_dto. See AlbumDtoState for logic.
+        """
+        self._dto.merge_from_dto(dto, load_source)
+
     _dto: AlbumDtoState
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)

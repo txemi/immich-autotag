@@ -53,15 +53,13 @@ class AssetAlreadyInAlbumError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
+    # (No manual __slots__ definition; rely on attrs fields only)
 
     # --- 1. Fields ---
     _cache_entry: AlbumCacheEntry = attrs.field(kw_only=True)
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
-
     _unavailable: bool = attrs.field(default=False, init=False)
-
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
-
     _error_history: AlbumErrorHistory = attrs.field(
         factory=AlbumErrorHistory,
         init=False,
@@ -162,14 +160,9 @@ class AlbumResponseWrapper:
         owner_uuid = self._cache_entry.get_owner_uuid()
         return owner_uuid
 
-    @typechecked
-    def _get_or_build_asset_ids_cache(self) -> set["AssetUUID"]:
-        """
-        Returns the set of asset IDs as AssetUUIDs, using the AlbumCacheEntry logic.
-        """
-        return self._cache_entry.get_asset_uuids()
 
     # --- 6. Public Methods - Asset Management ---
+
 
     @conditional_typechecked
     def get_asset_uuids(self) -> set["AssetUUID"]:
@@ -186,12 +179,9 @@ class AlbumResponseWrapper:
         return self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
-    def has_asset(self, asset: AssetResponseDto) -> bool:
+    def has_asset(self, asset: "AssetResponseDto") -> bool:
         from immich_autotag.types.uuid_wrappers import AssetUUID
-
-        return (
-            AssetUUID.from_uuid(UUID(asset.id)) in self._get_or_build_asset_ids_cache()
-        )
+        return AssetUUID.from_uuid(UUID(asset.id)) in self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
     def has_asset_wrapper(
@@ -212,94 +202,11 @@ class AlbumResponseWrapper:
         """
         return self._cache_entry.is_empty()
 
-    def _update_from_dto(
-        self, dto: AlbumResponseDto, load_source: AlbumLoadSource
-    ) -> None:
-        self._cache_entry.update(dto=dto, load_source=load_source)
-        self.invalidate_cache()
 
-    @typechecked
-    def _set_album_full(self, value: AlbumResponseDto) -> None:
-        self._update_from_dto(value, AlbumLoadSource.DETAIL)
+    # --- Moved: _update_from_dto and _set_album_full are now in AlbumCacheEntry ---
 
-        self.invalidate_cache()
 
     # --- 10. Private Methods - Error Handling and Verification ---
-    @typechecked
-    def _build_partial_repr(self) -> AlbumPartialRepr:
-        """Builds a safe partial representation of the album for error logs."""
-
-        album_name = self.get_album_name()
-
-        dto_id = str(self.get_album_uuid())
-
-        partial_repr = f"AlbumDTO(id={dto_id!r}, name={album_name!r})"
-        return AlbumPartialRepr(
-            album_name=album_name,
-            partial_repr=partial_repr,
-        )
-
-    def _handle_recoverable_400(
-        self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
-    ) -> None:
-        """Handles 400 error (not found/no access) in a recoverable way."""
-        self._error_history.append_api_exc(api_exc)
-        current_count = self._error_history.count_in_window()
-        # Include the album link in the log for diagnostics
-        album_url = self.get_immich_album_url().geturl()
-        log_msg = (
-            f"[WARN] get_album_info returned 400 for album id="
-            f"{self.get_album_uuid()!r} name={partial.album_name!r}. "
-            f"Recorded recoverable error (count={current_count}). "
-            f"album_partial={partial.partial_repr} album_link={album_url}"
-        )
-        log(
-            log_msg,
-            level=LogLevel.WARNING,
-        )
-        from immich_autotag.config.internal_config import (
-            ALBUM_ERROR_THRESHOLD,
-            ALBUM_ERROR_WINDOW_SECONDS,
-        )
-
-        if self.should_mark_unavailable(
-            ALBUM_ERROR_THRESHOLD, ALBUM_ERROR_WINDOW_SECONDS
-        ):
-            self._unavailable = True
-            self.invalidate_cache()
-            from immich_autotag.report.modification_kind import (
-                ModificationKind,
-            )
-            from immich_autotag.report.modification_report import (
-                ModificationReport,
-            )
-
-            tag_mod_report = ModificationReport.get_instance()
-            extra = {"recent_errors": len(self._error_history), "album": self}
-            tag_mod_report.add_error_modification(
-                kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-                error_message=partial.partial_repr,
-                error_category="HTTP_400",
-                extra=extra,
-            )
-            from immich_autotag.albums.albums.album_collection_wrapper import (
-                AlbumCollectionWrapper,
-            )
-
-            AlbumCollectionWrapper.get_instance().notify_album_marked_unavailable(self)
-
-    def _log_and_raise_fatal_error(
-        self, api_exc: AlbumApiExceptionInfo, partial: AlbumPartialRepr
-    ) -> None:
-        log(
-            (
-                f"[FATAL] get_album_info failed for album id={self.get_album_uuid()!r} "
-                f"name={partial.album_name!r}. Exception: {api_exc.exc!r}. "
-                f"album_partial={partial.partial_repr}"
-            ),
-            level=LogLevel.ERROR,
-        )
-        raise api_exc.exc
 
     # --- 7. Public Methods - Lifecycle and State ---
     @conditional_typechecked
@@ -308,21 +215,9 @@ class AlbumResponseWrapper:
         self, dto: AlbumResponseDto, load_source: AlbumLoadSource
     ) -> None:
         """
-        Unifies DTO update logic. Updates the wrapper with the new DTO and load_source if:
-                - The new load_source is DETAIL (always update to full)
-                - The current load_source is SEARCH (allow update from SEARCH to SEARCH or
-                    DETAIL)
-        - Ensures loaded_at is monotonic (never decreases)
-        - Updates asset ID cache as UUIDs
-        If the current is DETAIL and the new is SEARCH, ignores the update.
+        Delegates to AlbumCacheEntry.merge_from_dto. See AlbumCacheEntry for logic.
         """
-        should_update = False
-        if load_source == AlbumLoadSource.DETAIL:
-            should_update = True
-        elif self._load_source == AlbumLoadSource.SEARCH:
-            should_update = True
-        if should_update:
-            self._update_from_dto(dto, load_source)
+        self._cache_entry.merge_from_dto(dto, load_source)
 
     def _is_full(self) -> bool:
         return self._cache_entry.is_full()
@@ -353,9 +248,7 @@ class AlbumResponseWrapper:
         """
         self._mark_deleted()
 
-    @typechecked
-    def invalidate_cache(self) -> None:
-        self._asset_ids_cache = None
+
 
     @typechecked
     def should_mark_unavailable(
@@ -408,17 +301,13 @@ class AlbumResponseWrapper:
 
     def _handle_add_asset_error(
         self,
-        item: object,
+        item: BulkIdResponseDto,
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
         tag_mod_report: "ModificationReport",
     ) -> None:
         """Handles non-success results from addition API."""
-        try:
-            error_msg = item.error
-        except AttributeError:
-            error_msg = None
-
+        error_msg =item.error
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
         album_url = self.get_immich_album_url().geturl()
 
@@ -433,7 +322,9 @@ class AlbumResponseWrapper:
                 ),
                 level=LogLevel.FOCUS,
             )
-            self.reload_from_api(client)
+            # Instead of self.reload_from_api, use _cache_entry.ensure_full_loaded if available
+            # AlbumCacheEntry._ensure_full_loaded is protected; use get_asset_uuids to force reload
+            self._cache_entry.get_asset_uuids()
 
             from immich_autotag.report.modification_kind import ModificationKind
 
@@ -655,22 +546,18 @@ class AlbumResponseWrapper:
         )
 
     def _handle_remove_asset_error(
-        self, item: object, asset_wrapper: "AssetResponseWrapper"
+        self, item: BulkIdResponseDto, asset_wrapper: "AssetResponseWrapper"
     ) -> None:
         """Handles non-success results from removal API."""
-        from immich_autotag.config._internal_types import ErrorHandlingMode
-        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+        # Removed unused imports of ErrorHandlingMode and DEFAULT_ERROR_MODE
 
-        try:
-            error_msg = item.error
-        except AttributeError:
-            error_msg = None
+        error_msg:item.error
 
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
         album_url = self.get_immich_album_url().geturl()
 
         # Handle known recoverable errors
-        if error_msg and (str(error_msg).lower() in ("not_found", "no_permission")):
+        if error_msg is not None and (str(error_msg).lower() in ("not_found", "no_permission")):
             if str(error_msg).lower() == "not_found":
                 self._handle_album_not_found_during_removal(
                     error_msg, asset_url, album_url
@@ -826,7 +713,7 @@ class AlbumResponseWrapper:
 
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         cache_entry = AlbumCacheEntry.create(dto=state)
-        return cls(cache_entry=cache_entry)
+        return cls(cache_entry=cache_entry)  # noqa: E501, W292
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible."""
@@ -848,4 +735,3 @@ class AlbumResponseWrapper:
         except Exception:
             return object.__hash__(self)
 
-    # Removed: all album reloads must go through AlbumCacheEntry.ensure_full_loaded
