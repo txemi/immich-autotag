@@ -3,6 +3,7 @@ from __future__ import annotations
 import atexit
 from typing import Callable, List, Optional
 from uuid import UUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 from immich_client.api.albums import (
     add_assets_to_album,
@@ -18,7 +19,7 @@ from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
@@ -47,7 +48,7 @@ atexit.register(print_album_api_call_summary)
 
 
 def proxy_get_album_info(
-    *, album_id: UUID, client: AuthenticatedClient, use_cache: bool = True
+    *, album_id: AlbumUUID, client: AuthenticatedClient, use_cache: bool = True
 ) -> AlbumResponseDto | None:
     """
     Centralized wrapper for get_album_info.sync. Includes disk cache.
@@ -58,7 +59,10 @@ def proxy_get_album_info(
     cache_mgr = ApiCacheManager.create(
         cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache
     )
-    cache_data = cache_mgr.load(str(album_id))
+    # Only accept AlbumUUID
+    album_id_val = album_id.to_uuid()
+    cache_key = str(album_id_val)
+    cache_data = cache_mgr.load(cache_key)
     if cache_data is not None:
         if isinstance(cache_data, dict):
             return AlbumResponseDto.from_dict(cache_data)
@@ -67,13 +71,13 @@ def proxy_get_album_info(
             return AlbumResponseDto.from_dict(cache_data[0])
         else:
             raise RuntimeError(
-                f"Invalid cache data for album_id={album_id}: {type(cache_data)}"
+                f"Invalid cache data for album_id={album_id_val}: {type(cache_data)}"
             )
     _album_api_call_count += 1
-    _album_api_ids.add(str(album_id))
-    dto = get_album_info.sync(id=album_id, client=client)
+    _album_api_ids.add(cache_key)
+    dto = get_album_info.sync(id=album_id_val, client=client)
     if dto is not None:
-        cache_mgr.save(str(album_id), dto.to_dict())
+        cache_mgr.save(cache_key, dto.to_dict())
     return dto
 
 
