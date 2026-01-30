@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 import enum
 from datetime import datetime
-from typing import Any, Iterator, Mapping, Optional, cast
+from typing import Any, Iterator, Mapping, cast
 from uuid import UUID
 
 import attrs
