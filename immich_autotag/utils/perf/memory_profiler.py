@@ -16,7 +16,7 @@ def setup_tracemalloc_snapshot():
 
     def _save_snapshot():
         snapshot = tracemalloc.take_snapshot()
-        run_exec = RunOutputManager.get_run_output_dir()
+        run_exec = RunOutputManager.current().get_run_output_dir()
         snapshot_path = run_exec.get_tracemalloc_snapshot_path()
         snapshot.dump(str(snapshot_path))
         print(f"[MEMORY] tracemalloc snapshot saved to {snapshot_path}")

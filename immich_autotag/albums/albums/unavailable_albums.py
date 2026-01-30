@@ -77,7 +77,7 @@ class UnavailableAlbums:
             name: str = wrapper.get_album_name()
             summary_items.append({"id": album_id, "name": name})
 
-        run_exec = RunOutputManager.get_run_output_dir()
+        run_exec = RunOutputManager.current().get_run_output_dir()
         out_file = run_exec.get_albums_unavailable_summary_path()
         out_file.parent.mkdir(parents=True, exist_ok=True)
 
