@@ -36,7 +36,7 @@ class MatchResultList:
 
     @typechecked
     def rules(self) -> list[MatchResult]:
-        return [m.rule for m in self.matches]
+        return list(self.matches)
 
     @typechecked
     def classification_status(self) -> "ClassificationStatus":
