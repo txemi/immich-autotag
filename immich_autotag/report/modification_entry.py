@@ -79,40 +79,39 @@ class ModificationEntry:
 
     def _get_tag_name(self) -> Optional[str]:
         """
-        Devuelve el nombre del tag si está disponible, o None.
+        Returns the tag name if available, else None.
         """
         return self.tag.get_name() if self.tag is not None else None
 
     def _get_old_value(self) -> Optional[str]:
         """
-        Devuelve old_value como str si está disponible, o None.
+        Returns old_value as str if available, else None.
         """
         return str(self.old_value) if self.old_value is not None else None
 
     def _get_new_value(self) -> Optional[str]:
         """
-        Devuelve new_value como str si está disponible, o None.
+        Returns new_value as str if available, else None.
         """
         return str(self.new_value) if self.new_value is not None else None
 
     def _get_user_name(self) -> Optional[str]:
         """
-        Devuelve el nombre del usuario si está disponible, o None.
+        Returns the user name if available, else None.
         """
         return self.user.name if self.user is not None else None
 
     def _get_asset_link(self) -> Optional[str]:
         """
-        Devuelve el enlace del asset (asset_link) como str, si está disponible, o None.
+        Returns the asset link (asset_link) as str if available, else None.
         """
         if self.asset_wrapper is not None:
             return self.asset_wrapper.get_immich_photo_url().geturl()
-
         return None
 
     def _get_album_id(self) -> Optional[str]:
         """
-        Devuelve el ID del álbum como str, si está disponible, o None.
+        Returns the album ID as str if available, else None.
         """
         if self.album is not None:
             return str(self.album.get_album_uuid())
@@ -120,7 +119,7 @@ class ModificationEntry:
 
     def _get_album_name(self) -> Optional[str]:
         """
-        Devuelve el nombre del álbum como str, si está disponible, o None.
+        Returns the album name as str if available, else None.
         """
         if self.album is not None:
             return self.album.get_album_name()
@@ -128,7 +127,7 @@ class ModificationEntry:
 
     def _get_asset_id(self) -> Optional[uuid.UUID]:
         """
-        Devuelve el asset_id como UUID, si está disponible, o None.
+        Returns the asset_id as UUID if available, else None.
         """
         if self.asset_wrapper is not None:
             asset_id_val = self.asset_wrapper.get_id()
@@ -137,7 +136,7 @@ class ModificationEntry:
 
     def _get_asset_name(self) -> Optional[str]:
         """
-        Devuelve el nombre del asset como str, si está disponible, o None.
+        Returns the asset name as str if available, else None.
         """
         if self.asset_wrapper is not None:
             asset_name_val = self.asset_wrapper.get_original_file_name()
