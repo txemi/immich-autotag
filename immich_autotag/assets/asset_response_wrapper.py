@@ -495,7 +495,7 @@ class AssetResponseWrapper:
     def get_created_at(self) -> datetime | str | None:
         return self._cache_entry.get_created_at()
 
-    def get_id(self) -> "AssetUUID":
+    def get_id(self) -> AssetUUID:
         # Use get_uuid from cache_entry, which is the correct and safe method
         return self._cache_entry.get_uuid()
 
