@@ -28,6 +28,16 @@ class AvgAndTotals:
 @typechecked
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class PerformanceTracker:
+    @staticmethod
+    def from_args(total_assets: int, max_assets: int = None, skip_n: int = None) -> "PerformanceTracker":
+        """
+        Static constructor for PerformanceTracker with all main arguments.
+        """
+        return PerformanceTracker(
+            total_assets=total_assets,
+            max_assets=max_assets,
+            skip_n=skip_n
+        )
 
     @staticmethod
     def from_total(total_assets: int) -> "PerformanceTracker":
