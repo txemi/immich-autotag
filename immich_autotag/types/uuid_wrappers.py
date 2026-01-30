@@ -1,6 +1,7 @@
-
 import uuid
+
 import attrs
+
 
 def _uuid_converter(val):
     if isinstance(val, uuid.UUID):
@@ -11,9 +12,11 @@ def _uuid_converter(val):
         return uuid.UUID(bytes=val)
     raise TypeError("Value must be uuid.UUID, str, or bytes")
 
+
 def _uuid_validator(instance, attribute, value):
     if not isinstance(value, uuid.UUID):
         raise TypeError(f"{attribute.name} must be a uuid.UUID, got {type(value)}")
+
 
 @attrs.define(frozen=True, auto_attribs=True)
 class BaseUUIDWrapper:
@@ -44,11 +47,14 @@ class BaseUUIDWrapper:
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value})"
 
+
 class AssetUUID(BaseUUIDWrapper):
     pass
 
+
 class TagUUID(BaseUUIDWrapper):
     pass
+
 
 class AlbumUUID(BaseUUIDWrapper):
     pass
