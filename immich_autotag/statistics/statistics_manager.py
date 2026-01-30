@@ -72,8 +72,6 @@ class StatisticsManager:
         )
 
         self._perf_tracker = PerformanceTracker(
-            start_time=time.time(),
-            log_interval=5,
             estimator=AdaptiveTimeEstimator(),
             estimation_mode=TimeEstimationMode.LINEAR,
             total_assets=total_assets,
