@@ -538,7 +538,7 @@ class AlbumCollectionWrapper:
         Returns True if deleted successfully or if it no longer exists.
         """
 
-        # from immich_autotag.api.immich_proxy.albums import proxy_delete_album  # Removed: function does not exist
+        from immich_autotag.api.immich_proxy.albums import proxy_delete_album  # Removed: function does not exist
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
@@ -555,7 +555,6 @@ class AlbumCollectionWrapper:
         self.remove_album_local_public(wrapper)
         try:
             proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)  # Removed: function does not exist
-            pass
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
