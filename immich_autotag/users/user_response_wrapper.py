@@ -50,9 +50,8 @@ class UserResponseWrapper:
         return self._user.name
 
     @typechecked
-    def get_email(self):
+    def get_email(self) -> "EmailWrapper":
         from immich_autotag.types.email_wrapper import EmailWrapper
-
         return EmailWrapper(self._user.email)
 
     @classmethod

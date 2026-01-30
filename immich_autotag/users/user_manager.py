@@ -66,16 +66,16 @@ class UserManager:
         self._users.clear()
         self._email_map.clear()
         for user_dto in user_dtos:
-            wrapper = UserResponseWrapper(user=user_dto)
+            wrapper = UserResponseWrapper.from_user(user_dto)
             self._users[wrapper.get_uuid()] = wrapper
-            if wrapper.email:
-                email_obj = EmailAddress.from_string(wrapper.email)
-                self._email_map[email_obj] = wrapper
+            email = wrapper.get_email()
+            if email:
+                self._email_map[email] = wrapper
 
     def _load_current_user(self, client: ImmichClient) -> None:
         user_dto = proxy_get_my_user(client=client)
         if user_dto:
-            self._current_user = UserResponseWrapper(user=user_dto)
+            self._current_user = UserResponseWrapper.from_user(user_dto)
         else:
             self._current_user = None
 
