@@ -479,10 +479,9 @@ class AlbumResponseWrapper:
             ),
             level=LogLevel.WARNING,
         )
-        from immich_autotag.config._internal_types import ErrorHandlingMode
-        from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+        from immich_autotag.config.dev_mode import is_development_mode
 
-        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+        if is_development_mode():
             raise RuntimeError(
                 f"Asset {asset_wrapper.get_id()} not found in removal response for album "
                 f"{self.get_album_uuid()}."
@@ -546,10 +545,7 @@ class AlbumResponseWrapper:
         self, item: BulkIdResponseDto, asset_wrapper: "AssetResponseWrapper"
     ) -> None:
         """Handles non-success results from removal API."""
-        # Removed unused imports of ErrorHandlingMode and DEFAULT_ERROR_MODE
-
-        error_msg: item.error
-
+        error_msg = getattr(item, "error", None)
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
         album_url = self.get_immich_album_url().geturl()
 
@@ -561,18 +557,8 @@ class AlbumResponseWrapper:
                 self._handle_album_not_found_during_removal(
                     error_msg, asset_url, album_url
                 )
-                return
+                from immich_autotag.config.dev_mode import raise_if_development_mode
 
-            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
-                raise RuntimeError(
-                    (
-                        f"Asset {asset_wrapper.get_id()} was not successfully removed from "
-                        f"album {self.get_album_uuid()}: {error_msg}\n"
-                        f"Asset link: {asset_url}\n"
-                        f"Album link: {album_url}"
-                    )
-                )
-            else:
                 log(
                     (
                         f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} could not be removed from "
@@ -581,6 +567,11 @@ class AlbumResponseWrapper:
                         f"Album link: {album_url}"
                     ),
                     level=LogLevel.WARNING,
+                )
+                raise_if_development_mode(
+                    f"[DEV MODE] Asset {asset_wrapper.get_id()} could not be removed from album {self.get_album_uuid()}: {error_msg}\n"
+                    f"Asset link: {asset_url}\n"
+                    f"Album link: {album_url}"
                 )
                 return
 
