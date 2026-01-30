@@ -217,11 +217,8 @@ class TagCollectionWrapper:
         tag = self.find_by_id(tag_id)
         if tag is not None:
             return tag
-
-        name = getattr(dto, "name", None)
-        if name:
-            return self.find_by_name(name)
-        return None
+        name = dto.name
+        return self.find_by_name(name)
 
     @staticmethod
     def maintenance_delete_conflict_tags(client: ImmichClient) -> int:
