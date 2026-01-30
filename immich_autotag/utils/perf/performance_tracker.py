@@ -29,14 +29,14 @@ class AvgAndTotals:
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class PerformanceTracker:
     @staticmethod
-    def from_args(total_assets: int, max_assets: int = None, skip_n: int = None) -> "PerformanceTracker":
+    def from_args(
+        total_assets: int, max_assets: int = None, skip_n: int = None
+    ) -> "PerformanceTracker":
         """
         Static constructor for PerformanceTracker with all main arguments.
         """
         return PerformanceTracker(
-            total_assets=total_assets,
-            max_assets=max_assets,
-            skip_n=skip_n
+            total_assets=total_assets, max_assets=max_assets, skip_n=skip_n
         )
 
     @staticmethod
@@ -49,35 +49,40 @@ class PerformanceTracker:
     _start_time: float = attr.ib(
         init=False,
         factory=lambda: time.time(),
-        validator=attr.validators.instance_of(float)
+        validator=attr.validators.instance_of(float),
     )
     _log_interval: int = attr.ib(default=5, validator=attr.validators.instance_of(int))
-    _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(init=False,
+    _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(
+        init=False,
         default=None,
         validator=attr.validators.optional(
             attr.validators.instance_of(AdaptiveTimeEstimator)
         ),
     )
-    _estimation_mode: TimeEstimationMode = attr.ib(init=False,
+    _estimation_mode: TimeEstimationMode = attr.ib(
+        init=False,
         default=TimeEstimationMode.LINEAR,
         validator=attr.validators.instance_of(TimeEstimationMode),
     )
     # total_to_process is now always calculated dynamically
-    _max_assets: Optional[int] = attr.ib(init=True,
+    _max_assets: Optional[int] = attr.ib(
+        init=True,
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
-    _total_assets: Optional[int] = attr.ib(init=True,
-        default=None,
-        validator=attr.validators.optional(attr.validators.instance_of(int)),
-        alias="total_assets"
-    )
-    _skip_n: Optional[int] = attr.ib(
+    max_assets: Optional[int] = attr.ib(
+        init=True,
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
-    _last_log_time: float = attr.ib(
-        init=False, validator=attr.validators.instance_of(float)
+    total_assets: Optional[int] = attr.ib(
+        init=True,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
+    )
+    skip_n: Optional[int] = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
 
     def __attrs_post_init__(self):
@@ -104,15 +109,15 @@ class PerformanceTracker:
         """
         Public setter to update skip_n in a controlled way.
         """
-        self._skip_n = value
+        self.skip_n = value
 
     @typechecked
     def set_total_assets(self, value: int):
-        self._total_assets = value
+        self.total_assets = value
 
     @typechecked
     def _printable_value_skip_n(self) -> int:
-        return self._skip_n or 0
+        return self.skip_n or 0
 
     @typechecked
     def _calc_total_to_process(self) -> Optional[int]:
@@ -121,12 +126,12 @@ class PerformanceTracker:
         (total_assets - skip_n) if both are set.
         """
         skip_n = self._printable_value_skip_n()
-        if self._max_assets is not None and self._total_assets is not None:
-            return min(self._max_assets, self._total_assets - skip_n)
-        if self._max_assets is not None:
-            return self._max_assets
-        if self._total_assets is not None:
-            return self._total_assets - skip_n
+        if self.max_assets is not None and self.total_assets is not None:
+            return min(self.max_assets, self.total_assets - skip_n)
+        if self.max_assets is not None:
+            return self.max_assets
+        if self.total_assets is not None:
+            return self.total_assets - skip_n
         return None
 
     @typechecked
@@ -143,8 +148,8 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_abs_total(self) -> Optional[int]:
-        if self._total_assets and self._total_assets > 0:
-            return self._total_assets
+        if self.total_assets and self.total_assets > 0:
+            return self.total_assets
         return None
 
     @typechecked
@@ -357,7 +362,7 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_total_assets(self) -> Optional[int]:
-        return self._total_assets
+        return self.total_assets
 
     @typechecked
     def _printable_value_est_total_session(
@@ -415,7 +420,7 @@ class PerformanceTracker:
         get_progress_description can be used externally).
         """
         now = time.time()
-        if count == 1 or (self._total_assets and count == self._total_assets):
+        if count == 1 or (self.total_assets and count == self.total_assets):
             self._last_log_time = now
             return True
         if now - self._last_log_time >= self._log_interval:

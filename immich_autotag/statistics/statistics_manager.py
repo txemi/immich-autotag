@@ -5,7 +5,6 @@ Core statistics management logic for tracking progress, statistics, and historic
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
-import time
 from pathlib import Path
 from threading import RLock
 from typing import TYPE_CHECKING, Optional
@@ -66,10 +65,6 @@ class StatisticsManager:
         total_assets = self.get_or_create_run_stats().total_assets
         max_assets = self.get_or_create_run_stats().max_assets
 
-        from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
-        from immich_autotag.utils.perf.time_estimation_mode import (
-            TimeEstimationMode,
-        )
 
         self._perf_tracker = PerformanceTracker.from_args(
             total_assets,
