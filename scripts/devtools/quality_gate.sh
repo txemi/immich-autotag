@@ -101,27 +101,29 @@ parse_args_and_globals() {
 	fi
 
 	# Local variables for parsing
-	local arg check_mode quality_level enforce_dynamic_attrs target_dir
+	local arg check_mode quality_level enforce_dynamic_attrs target_dir next_is_level next_is_mode
 
 	check_mode="APPLY" # Possible values: APPLY, CHECK
 	quality_level=""   # Possible values: STRICT, STANDARD, TARGET
 	enforce_dynamic_attrs=0
 	target_dir=""
+	next_is_level=0
+	next_is_mode=0
 	for arg in "$@"; do
 		if [[ "$arg" =~ ^--level= ]]; then
 			quality_level="${arg#--level=}"
 		elif [ "$arg" = "-l" ]; then
-			NEXT_IS_LEVEL=1
-		elif [ "$NEXT_IS_LEVEL" = "1" ]; then
+			next_is_level=1
+		elif [ "$next_is_level" = "1" ]; then
 			quality_level="$arg"
-			NEXT_IS_LEVEL=0
+			next_is_level=0
 		elif [[ "$arg" =~ ^--mode= ]]; then
 			check_mode="${arg#--mode=}"
 		elif [ "$arg" = "-m" ]; then
-			NEXT_IS_MODE=1
-		elif [ "$NEXT_IS_MODE" = "1" ]; then
+			next_is_mode=1
+		elif [ "$next_is_mode" = "1" ]; then
 			check_mode="$arg"
-			NEXT_IS_MODE=0
+			next_is_mode=0
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 			enforce_dynamic_attrs=1
 		elif [[ "$arg" != --* ]]; then
@@ -139,6 +141,7 @@ parse_args_and_globals() {
 		exit 2
 		;;
 	esac
+
 	# Validar check_mode
 	case "$check_mode" in
 	CHECK | APPLY) ;;
@@ -149,6 +152,7 @@ parse_args_and_globals() {
 		exit 2
 		;;
 	esac
+
 	# Si el usuario no fuerza quality_level, por defecto STANDARD
 	if [ -z "$quality_level" ]; then
 		quality_level="STANDARD"
@@ -165,12 +169,18 @@ parse_args_and_globals() {
 		echo "[QUALITY_LEVEL] Running in STANDARD mode (official CI level, some checks are warnings only)." >&2
 	elif [ "$quality_level" = "TARGET" ]; then
 		echo "[QUALITY_LEVEL] Running in TARGET mode (selected errors block, rest warn only)." >&2
+	else
+		echo "[DEFENSIVE-FAIL] Unexpected quality_level value: '$quality_level'. Exiting for safety." >&2
+		exit 99
 	fi
 
 	if [ "$check_mode" = "CHECK" ]; then
 		echo "[CHECK_MODE] Running in CHECK mode (no files will be modified)." >&2
 	elif [ "$check_mode" = "APPLY" ]; then
 		echo "[CHECK_MODE] Running in APPLY mode (formatters may modify files)." >&2
+	else
+		echo "[DEFENSIVE-FAIL] Unexpected check_mode value: '$check_mode'. Exiting for safety." >&2
+		exit 98
 	fi
 
 	# Devolver los valores como salida (en orden, SOLO datos)
@@ -203,13 +213,16 @@ check_shfmt() {
 		bash_scripts=$(find scripts -type f -name "*.sh" | grep -v "$script_self_rel")
 	fi
 
-	# Run shfmt according to mode
+	# Run shfmt according to mode (defensive: enumerate all expected values)
 	if [ "$check_mode" = "CHECK" ]; then
 		shfmt -d -i 0 $bash_scripts
 		shfmt_exit=$?
-	else
+	elif [ "$check_mode" = "APPLY" ]; then
 		shfmt -w -i 0 $bash_scripts
 		shfmt_exit=$?
+	else
+		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in check_shfmt: '$check_mode'. Exiting for safety." >&2
+		exit 97
 	fi
 	if [ $shfmt_exit -ne 0 ]; then
 		echo "[WARNING] shfmt reported issues."
@@ -246,8 +259,8 @@ setup_max_line_length() {
 # Globals set: PY_BIN
 # Returns: nothing, but exports PY_BIN or exits if no Python is available
 ###############################################################################
-setup_python_env() {
-	VENV_ACTIVATE="$REPO_ROOT/.venv/bin/activate"
+setup_python_venv_env() {
+	local venv_activate="$REPO_ROOT/.venv/bin/activate"
 	echo "[INFO] Ejecutando setup_venv.sh --dev para asegurar el entorno y dependencias..." >&2
 	if [ -f "$REPO_ROOT/setup_venv.sh" ]; then
 		chmod +x "$REPO_ROOT/setup_venv.sh"
@@ -257,9 +270,9 @@ setup_python_env() {
 		exit 1
 	fi
 	local py_bin
-	if [ -f "$VENV_ACTIVATE" ]; then
+	if [ -f "$venv_activate" ]; then
 		# Use project venv when available
-		source "$VENV_ACTIVATE"
+		source "$venv_activate"
 		py_bin="$REPO_ROOT/.venv/bin/python"
 	else
 		echo "[WARN] .venv not found at $REPO_ROOT/.venv — falling back to system python (this may install tools globally)." >&2
@@ -309,7 +322,7 @@ check_python_syntax() {
 # Usage: ensure_tool <import_name> <package_name>
 # Returns: nothing, but installs the package if needed
 ###############################################################################
-ensure_tool() {
+ensure_python_tool() {
 	local py_bin="$1"
 	local tool_import_check="$2"
 	local tool_pkg="$3"
@@ -331,14 +344,17 @@ check_isort() {
 	local max_line_length="$3"
 	local target_dir="$4"
 	local isort_skips isort_exit
-	ensure_tool "$py_bin" isort isort
+	ensure_python_tool "$py_bin" isort isort
 	isort_skips="--skip .venv --skip immich-client --skip scripts --skip jenkins_logs --line-length $max_line_length"
 	if [ "$check_mode" = "CHECK" ]; then
 		"$py_bin" -m isort $isort_skips --profile black --check-only "$target_dir"
 		isort_exit=$?
-	else
+	elif [ "$check_mode" = "APPLY" ]; then
 		"$py_bin" -m isort $isort_skips --profile black "$target_dir"
 		isort_exit=$?
+	else
+		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in check_isort: '$check_mode'. Exiting for safety." >&2
+		exit 96
 	fi
 	if [ $isort_exit -ne 0 ]; then
 		echo "[WARNING] isort reported issues."
@@ -392,14 +408,19 @@ ensure_ssort() {
 # Returns: 0 if passes, 1 if unsorted methods
 ###############################################################################
 check_ssort() {
+	local check_mode="$1"
+	local target_dir="$2"
 	local ssort_failed=0
 	ensure_ssort
-	if [ "$CHECK_MODE" -eq 1 ]; then
+	if [ "$check_mode" = "CHECK" ]; then
 		echo "[FORMAT] Running ssort in CHECK mode..."
-		ssort --check "$TARGET_DIR" || ssort_failed=1
-	else
+		ssort --check "$target_dir" || ssort_failed=1
+	elif [ "$check_mode" = "APPLY" ]; then
 		echo "[FORMAT] Running ssort in APPLY mode..."
-		ssort "$TARGET_DIR" || ssort_failed=1
+		ssort "$target_dir" || ssort_failed=1
+	else
+		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in check_ssort: '$check_mode'. Exiting for safety." >&2
+		exit 95
 	fi
 	if [ $ssort_failed -ne 0 ]; then
 		echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
@@ -421,7 +442,7 @@ check_ruff() {
 	local max_line_length="$3"
 	local target_dir="$4"
 	local ruff_ignore="" ruff_exit
-	ensure_tool "$py_bin" ruff ruff
+	ensure_python_tool "$py_bin" ruff ruff
 
 	# Recoge quality_level solo del parámetro (quinto argumento)
 	local quality_level="$5"
@@ -487,7 +508,7 @@ check_black() {
 	local py_bin="$2"
 	local max_line_length="$3"
 	local target_dir="$4"
-	ensure_tool "$py_bin" black black
+	ensure_python_tool "$py_bin" black black
 	if [ "$check_mode" = "CHECK" ]; then
 		"$py_bin" -m black --check --line-length "$max_line_length" "$target_dir"
 		black_exit=$?
@@ -589,7 +610,7 @@ check_flake8() {
 	local max_line_length="$4"
 	local target_dir="$5"
 	local flake_failed=0 flake8_ignore
-	ensure_tool "$py_bin" flake8 flake8
+	ensure_python_tool "$py_bin" flake8 flake8
 	flake8_ignore="E203,W503"
 	if [ "$quality_level" = "STRICT" ]; then
 		# En modo estricto, no se ignora E501
@@ -636,7 +657,7 @@ check_mypy() {
 	local py_bin="$3"
 	local target_dir="$4"
 	local mypy_failed=0 mypy_output mypy_exit_code mypy_error_count mypy_files_count
-	ensure_tool "$py_bin" mypy mypy
+	ensure_python_tool "$py_bin" mypy mypy
 	echo "[INFO] Running mypy (output below if any):"
 	set +e
 	mypy_output=$($py_bin -m mypy --ignore-missing-imports "$target_dir" 2>&1)
@@ -868,6 +889,7 @@ run_quality_gate_check_mode() {
 	# 2. Formatters and style (run only if all blocking checks pass)
 	check_shfmt "$check_mode" "$target_dir" || exit 1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_ssort "$check_mode" "$target_dir" || exit 1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || exit 1
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
@@ -886,6 +908,7 @@ run_quality_gate_apply_mode() {
 	# 1. Auto-fixers and formatters
 	check_shfmt "$check_mode" "$target_dir" || error_found=1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
+	check_ssort "$check_mode" "$target_dir" || error_found=1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || error_found=1
 	# 2. Fast/deterministic checks
@@ -940,19 +963,17 @@ run_quality_gate_check_summary() {
 	# 8. Formatters (least urgent in summary)
 	check_shfmt "$check_mode" "$target_dir" || exit 1
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_ssort "$check_mode" "$target_dir" || exit 1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 }
 
 # Refactor: main usa solo variables locales y pasa los valores explícitamente
 main() {
 	# Argument and global variable initialization
-	local check_mode quality_level target_dir enforce_dynamic_attrs repo_root
+	local check_mode quality_level target_dir enforce_dynamic_attrs max_line_length py_bin
 	read -r check_mode quality_level target_dir enforce_dynamic_attrs < <(parse_args_and_globals "$@")
-	repo_root="$REPO_ROOT"
-
-	local max_line_length py_bin
 	max_line_length=$(setup_max_line_length)
-	py_bin=$(setup_python_env)
+	py_bin=$(setup_python_venv_env)
 
 	# Pasar los valores explícitamente a las funciones de chequeo
 	if [ "$check_mode" = "CHECK" ]; then
