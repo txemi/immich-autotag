@@ -36,8 +36,10 @@ class PerformanceTracker:
         """
         return PerformanceTracker(total_assets=total_assets)
 
-    _start_time: float = attr.ib(init=False
-        factory=lambda: time.time(), validator=attr.validators.instance_of(float)
+    _start_time: float = attr.ib(
+        init=False,
+        factory=lambda: time.time(),
+        validator=attr.validators.instance_of(float)
     )
     _log_interval: int = attr.ib(default=5, validator=attr.validators.instance_of(int))
     _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(init=False,
@@ -63,7 +65,7 @@ class PerformanceTracker:
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
-    _last_log_time: float = attr.ib(init=False,
+    _last_log_time: float = attr.ib(
         init=False, validator=attr.validators.instance_of(float)
     )
 
