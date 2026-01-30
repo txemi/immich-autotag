@@ -78,8 +78,8 @@ class AlbumCacheEntry:
             dto = AlbumDtoState.create(
                 dto=album_dto, load_source=AlbumLoadSource.DETAIL
             )
-            # Check staleness using una temp AlbumCacheEntry
-            if not dto._is_stale():
+            # Use public is_stale method
+            if not dto.is_stale():
                 return dto
 
         # API fetch logic: call proxy_get_album_info using the default Immich client
@@ -103,7 +103,7 @@ class AlbumCacheEntry:
         return AlbumDtoState.create(dto=album_dto, load_source=AlbumLoadSource.DETAIL)
 
     def is_stale(self) -> bool:
-        return self._dto._is_stale()
+        return self._dto.is_stale()
 
     def get_state(self) -> AlbumDtoState:
         if self.is_stale():
@@ -126,7 +126,11 @@ class AlbumCacheEntry:
             max_age_seconds=self._max_age_seconds,
             use_cache=False,
         )
-        self._dto.update(dto=new_dto._dto, load_source=new_dto._load_source)
+        # Use only public API: update with the new AlbumResponseDto and load_source
+        self._dto.update(
+            dto=new_dto._dto,  # _dto is AlbumResponseDto, allowed for update()
+            load_source=new_dto.get_load_source()
+        )
         return self
 
     def is_empty(self) -> bool:
@@ -136,18 +140,14 @@ class AlbumCacheEntry:
         """
         return self._ensure_full_loaded()._dto.is_empty()
 
-    def _get_dto(self) -> AlbumDtoState:
-        return self._dto
+    # Removed unused _get_dto method (was exposing internal state)
 
     def get_asset_uuids(self) -> set[AssetUUID]:
         """
         Returns the set of asset UUIDs in the album, ensuring full DTO is loaded.
         Does not expose DTOs directly.
         """
-        # Import here to avoid circular import issues
-
-        uuids = self._ensure_full_loaded()._get_dto().get_asset_uuids()
-        return uuids
+        return self._ensure_full_loaded()._dto.get_asset_uuids()
 
     @conditional_typechecked
     def has_asset_wrapper(
@@ -168,7 +168,7 @@ class AlbumCacheEntry:
         if asset_manager is None:
             raise AttributeError("ImmichContext missing asset_manager")
         result = []
-        for a in self._dto.assets:
+        for a in  self._ensure_full_loaded()._dto.get_assets():
             b = asset_manager.get_wrapper_for_asset_dto(a, AlbumDtoType.ALBUM, context)
             result.append(b)
         return result
@@ -194,6 +194,8 @@ class AlbumCacheEntry:
         Use this instead of direct instantiation.
         Arguments must be passed by name (not positional).
         """
+        # type: ignore[attr-defined]  # attrs: allow setting protected fields in factory
+        # attrs: allow setting protected fields in factory (see linter note)
         return AlbumCacheEntry(
             dto=dto,
             max_age_seconds=max_age_seconds,
