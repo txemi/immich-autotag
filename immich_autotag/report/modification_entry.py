@@ -126,12 +126,11 @@ class ModificationEntry:
             return self.album.get_album_name()
         return None
 
-    def _get_asset_id(self) -> Optional[str]:
+    def _get_asset_id(self) -> Optional[uuid.UUID]:
         """
         Returns the asset_id as UUID if available, else None.
         """
         if self.asset_wrapper is not None:
-            asset_id_val = str(self.asset_wrapper.get_id().to_uuid())
             return asset_id_val
         return None
 
