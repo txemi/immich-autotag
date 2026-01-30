@@ -1,5 +1,6 @@
 from typing import Iterator
 from uuid import UUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 import attrs
 from typeguard import typechecked
@@ -13,13 +14,15 @@ class AlbumList:
     _albums: list[AlbumResponseWrapper] = attrs.field(factory=list)
 
     @typechecked
-    def get_by_uuid(self, uuid: UUID) -> AlbumResponseWrapper | None:
+    def get_by_uuid(self, uuid:  AlbumUUID) -> AlbumResponseWrapper | None:
         """
-        Returns the album with the given UUID (str or UUID), or None if not found.
+        Returns the album with the given UUID (UUID or AlbumUUID), or None if not found.
         """
+        # Always compare as UUID
+        uuid_val = uuid.to_uuid()
 
         for album in self._albums:
-            if album.get_album_uuid() == uuid:
+            if album.get_album_uuid() == uuid_val:
                 return album
         return None
 
