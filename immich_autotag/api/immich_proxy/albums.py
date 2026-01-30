@@ -168,9 +168,6 @@ def proxy_add_assets_to_album(
     return result
 
 
-
-
-
 def proxy_delete_album(album_id: AlbumUUID, client: AuthenticatedClient) -> None:
     """
     Deletes an album by UUID using the ImmichClient API.

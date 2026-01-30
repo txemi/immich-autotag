@@ -65,7 +65,6 @@ class StatisticsManager:
         total_assets = self.get_or_create_run_stats().total_assets
         max_assets = self.get_or_create_run_stats().max_assets
 
-
         self._perf_tracker = PerformanceTracker.from_args(
             total_assets,
             max_assets=max_assets,

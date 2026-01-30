@@ -30,14 +30,19 @@ class AvgAndTotals:
 class PerformanceTracker:
     @staticmethod
     def from_args(
-        total_assets: int, max_assets: int = None, skip_n: int = None
+        total_assets: int, max_assets: int, skip_n: int = 0
     ) -> "PerformanceTracker":
         """
-        Static constructor for PerformanceTracker with all main arguments.
+        Constructor estático que inicializa la instancia con setters.
         """
-        return PerformanceTracker(
-            total_assets=total_assets, max_assets=max_assets, skip_n=skip_n
-        )
+        instance = PerformanceTracker()
+        instance.set_total_assets(total_assets)
+        instance.set_max_assets(max_assets)
+        instance.set_skip_n(skip_n)
+        return instance
+
+    def set_max_assets(self, value: int) -> None:
+        self._max_assets = value
 
     @staticmethod
     def from_total(total_assets: int) -> "PerformanceTracker":
