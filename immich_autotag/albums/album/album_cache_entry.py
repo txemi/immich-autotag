@@ -43,7 +43,7 @@ class AlbumCacheEntry:
     @classmethod
     def _from_cache_or_api(
         cls,
-        album_id: UUID,
+        album_id: AlbumUUID,
         *,
         max_age_seconds: int = 3600,
         use_cache: bool = True,

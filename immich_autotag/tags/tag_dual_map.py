@@ -1,10 +1,11 @@
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, List
 
 import attrs
 from typeguard import typechecked
 
 from immich_autotag.tags.tag_id_map import TagIdMap
 from immich_autotag.tags.tag_name_map import TagNameMap
+from immich_autotag.types.uuid_wrappers import TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -31,7 +32,7 @@ class TagDualMap:
         self._name_map.remove(tag)
 
     @typechecked
-    def get_by_id(self, tag_id: Any) -> "TagWrapper":
+    def get_by_id(self, tag_id: TagUUID) -> "TagWrapper":
         return self._id_map.get_by_id(tag_id)
 
     @typechecked

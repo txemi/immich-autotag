@@ -14,6 +14,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
 from immich_autotag.types.client_types import ImmichClient
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_uuid import AssetUUID
@@ -108,7 +109,7 @@ class AlbumResponseWrapper:
     # --- 5. Public Methods - Metadata and Identification ---
 
     @typechecked
-    def get_album_uuid(self) -> "UUID":
+    def get_album_uuid(self) -> AlbumUUID:
         return self._cache_entry.get_album_id()
 
     @typechecked

@@ -1,4 +1,4 @@
-from uuid import UUID
+from immich_autotag.types.uuid_wrappers import TagUUID
 
 import attrs
 from immich_client.models.tag_response_dto import TagResponseDto
@@ -16,9 +16,9 @@ class TagWrapper:
     )
 
     @typechecked
-    def get_id(self) -> UUID:
+    def get_id(self) -> TagUUID:
         id_val = self._tag.id
-        return UUID(id_val)
+        return TagUUID.from_string(id_val)
 
     @typechecked
     def get_name(self) -> str:

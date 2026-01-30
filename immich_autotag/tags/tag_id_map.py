@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Dict, List
-from uuid import UUID
+from immich_autotag.types.uuid_wrappers import TagUUID
 
 import attrs
 from typeguard import typechecked
@@ -14,7 +14,7 @@ class TagIdMap:
     Mapa eficiente de id (UUID o str) a TagWrapper.
     """
 
-    _id_to_tag: Dict[UUID, "TagWrapper"] = attrs.field(factory=dict)
+    _id_to_tag: Dict[TagUUID, "TagWrapper"] = attrs.field(factory=dict)
 
     @typechecked
     def append(self, tag: "TagWrapper"):
@@ -32,7 +32,7 @@ class TagIdMap:
             raise ValueError(f"Tag con id {tag_id} no encontrada en TagIdMap")
 
     @typechecked
-    def get_by_id(self, tag_id: UUID) -> "TagWrapper":
+    def get_by_id(self, tag_id: TagUUID) -> "TagWrapper":
         if tag_id not in self._id_to_tag:
             raise RuntimeError(f"Tag con id {tag_id} no existe en TagIdMap")
         return self._id_to_tag[tag_id]
