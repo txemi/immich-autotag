@@ -151,7 +151,7 @@ def resolve_album_policy(
     access_level = "view"  # Default
 
     album_name = album.get_album_name()
-    album_id = str(album.get_album_uuid())
+    # album_id = str(album.get_album_uuid())  # removed unused variable
 
     # Iterate rules and accumulate all matches
     for rule in selection_rules:
