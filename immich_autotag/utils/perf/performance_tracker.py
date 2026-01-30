@@ -70,17 +70,12 @@ class PerformanceTracker:
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
-    max_assets: Optional[int] = attr.ib(
+    _total_assets: Optional[int] = attr.ib(
         init=True,
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
-    total_assets: Optional[int] = attr.ib(
-        init=True,
-        default=None,
-        validator=attr.validators.optional(attr.validators.instance_of(int)),
-    )
-    skip_n: Optional[int] = attr.ib(
+    _skip_n: Optional[int] = attr.ib(
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
