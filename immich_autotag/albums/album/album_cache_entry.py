@@ -161,15 +161,17 @@ class AlbumCacheEntry:
     def get_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
         # Ensure the album is fully loaded before accessing assets
         self._ensure_full_loaded()
-        from immich_autotag.assets.asset_dto_state import AlbumDtoType
-        from immich_autotag.context.immich_context import ImmichContext
-
-        asset_manager = ImmichContext.get_default_instance().get_asset_manager()
+        from immich_autotag.assets.asset_dto_state import AssetDtoType
+        asset_manager = context.get_asset_manager()
         if asset_manager is None:
             raise AttributeError("ImmichContext missing asset_manager")
         result = []
         for a in self._ensure_full_loaded()._dto.get_assets():
-            b = asset_manager.get_wrapper_for_asset_dto(a, AlbumDtoType.ALBUM, context)
+            b = asset_manager.get_wrapper_for_asset_dto(
+                asset_dto=a,
+                dto_type=AssetDtoType.ALBUM,
+                context=context,
+            )
             result.append(b)
         return result
 
@@ -196,6 +198,6 @@ class AlbumCacheEntry:
         """
         # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields in factory
         return AlbumCacheEntry(  # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields en factory, ver explicación en README
-            _dto=dto,
-            _max_age_seconds=max_age_seconds,
+            dto=dto,
+            max_age_seconds=max_age_seconds,
         )  # type: ignore[call-arg,attr-defined]  # attrs: allow setting protected fields en factory, ver explicación en README
