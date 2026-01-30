@@ -1,4 +1,3 @@
-import uuid
 from typing import Any
 
 from immich_client.api.albums import remove_user_from_album
@@ -7,7 +6,7 @@ from immich_client.client import AuthenticatedClient
 from immich_client.models.user_response_dto import UserResponseDto
 from immich_client.types import Response
 
-from immich_autotag.types.uuid_wrappers import UserUUID, AlbumUUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
 
 
 def proxy_search_users(*, client: AuthenticatedClient) -> list[UserResponseDto]:

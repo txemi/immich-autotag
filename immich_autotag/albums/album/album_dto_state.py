@@ -6,9 +6,8 @@ from uuid import UUID
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
-from immich_autotag.types.uuid_wrappers import AlbumUUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.types.uuid_wrappers import AssetUUID

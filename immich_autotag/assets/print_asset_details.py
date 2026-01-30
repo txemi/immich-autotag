@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.client_types import ImmichClient
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 @typechecked

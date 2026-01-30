@@ -7,7 +7,6 @@ from immich_autotag.assets.albums.analyze_and_assign_album import (
     analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.assets.consistency_checks._album_date_consistency import (
     check_album_date_consistency,
 )
@@ -24,6 +23,7 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 @typechecked

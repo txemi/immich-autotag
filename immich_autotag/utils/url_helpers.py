@@ -5,11 +5,11 @@ from urllib.parse import ParseResult, urlparse
 
 from typeguard import typechecked
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.config.host_config import (
     IMMICH_PHOTO_PATH_TEMPLATE,
     get_immich_web_base_url,
 )
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 def get_immich_photo_url(asset_id: AssetUUID) -> ParseResult:

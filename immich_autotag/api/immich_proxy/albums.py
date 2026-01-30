@@ -3,7 +3,6 @@ from __future__ import annotations
 import atexit
 from typing import Callable, List, Optional
 from uuid import UUID
-from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 from immich_client.api.albums import (
     add_assets_to_album,
@@ -19,8 +18,8 @@ from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.logging.levels import LogLevel
+from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
 from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
 # --- Album API call diagnostics ---

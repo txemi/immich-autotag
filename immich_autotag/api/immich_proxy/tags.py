@@ -14,9 +14,8 @@ from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.tag_create_dto import TagCreateDto
 from immich_client.models.tag_response_dto import TagResponseDto
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.types.client_types import ImmichClient
-from immich_autotag.types.uuid_wrappers import TagUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID, TagUUID
 
 
 def proxy_tag_assets(

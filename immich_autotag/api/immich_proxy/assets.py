@@ -5,10 +5,10 @@ from immich_client.api.assets import update_asset as _update_asset
 from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.types.client_types import ImmichClient
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 _asset_api_call_count = 0
 _asset_api_ids: set[str] = set()

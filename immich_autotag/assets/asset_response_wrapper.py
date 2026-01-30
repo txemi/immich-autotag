@@ -20,7 +20,6 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.assets.classification_update_result import (
     ClassificationUpdateResult,
 )
@@ -34,6 +33,7 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport

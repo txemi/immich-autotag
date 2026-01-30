@@ -10,8 +10,8 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.config.internal_config import KEEP_ASSETS_IN_MEMORY
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 # Removed import: AssetCacheEntry is only used internally in AssetResponseWrapper
 

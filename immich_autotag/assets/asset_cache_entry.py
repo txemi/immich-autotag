@@ -9,9 +9,9 @@ import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
 
 from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper

@@ -5,16 +5,15 @@ from typing import TYPE_CHECKING
 import attrs
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
-from immich_autotag.types.uuid_wrappers import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
-from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID, UserUUID
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_user_list import AlbumUserList
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from immich_autotag.types.uuid_wrappers import AssetUUID
     from immich_autotag.context.immich_context import ImmichContext
+    from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 class StaleAlbumCacheError(Exception):
