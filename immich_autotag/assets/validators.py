@@ -2,9 +2,10 @@
 Validador de tipo para AssetResponseWrapper.
 """
 
+from typing import Any
 
 import attr
-from typing import Any
+
 
 def validate_asset_response_wrapper(
     instance: Any, attribute: attr.Attribute[Any], value: Any
