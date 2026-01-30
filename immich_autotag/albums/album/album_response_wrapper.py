@@ -14,7 +14,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
 from immich_autotag.types.client_types import ImmichClient
-from immich_autotag.types.uuid_wrappers import AlbumUUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_uuid import AssetUUID
@@ -75,10 +75,9 @@ class AlbumResponseWrapper:
     # --- 3. Properties ---
     @property
     @typechecked
-    def owner_uuid(self) -> "UUID":
-        """Returns the UUID of the album owner (UUID object, not string)."""
-
-        return self._cache_entry.get_owner_uuid()
+    def owner_uuid(self) -> UserUUID:
+        """Returns the AlbumUUID of the album owner."""
+        return self._cache_entry.get_owner_uuid()  
 
     # --- 4. Static Methods ---
     @staticmethod

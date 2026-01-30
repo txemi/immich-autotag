@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.types.uuid_wrappers import AlbumUUID
+from immich_autotag.types.uuid_wrappers import UserUUID
 
 if TYPE_CHECKING:
     from immich_client.models.album_user_response_dto import AlbumUserResponseDto
@@ -43,8 +43,8 @@ class AlbumUserWrapper:
         return self.user.user.name
 
     @typechecked
-    def get_uuid(self) -> AlbumUUID:
-        return AlbumUUID.from_string(self.id)
+    def get_uuid(self) -> UserUUID:
+        return UserUUID.from_string(self.id)
 
     def __str__(self) -> str:
         return self.name or self.email or self.id or "<unknown user>"

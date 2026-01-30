@@ -29,7 +29,7 @@ def add_members_to_album(
     """
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
-    user_ids = [user.id for user in users]
+    user_ids = [user.get_uuid() for user in users]
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
@@ -40,7 +40,7 @@ def add_members_to_album(
     # Build AddUsersDto
     album_users_dto = [
         AlbumUserAddDto(
-            user_id=UUID(user_id),
+            user_id=user_id.to_uuid(),
             role=access_level,
         )
         for user_id in user_ids

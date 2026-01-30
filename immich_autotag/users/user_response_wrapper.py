@@ -44,10 +44,7 @@ class UserResponseWrapper:
     )
     _cached_user_wrapper = None  # Class variable to cache the user
 
-    @property
-    @typechecked
-    def id(self) -> str:
-        return self.user.id
+
 
     @property
     @typechecked
@@ -59,11 +56,6 @@ class UserResponseWrapper:
     def email(self) -> str:
         return self.user.email
 
-    @property
-    @typechecked
-    def uuid(self) -> UUID:
-        """Returns the user's UUID (UUID object, not string)."""
-        return UUID(self.id)
 
     @classmethod
     @typechecked
@@ -83,8 +75,8 @@ class UserResponseWrapper:
         return cls._cached_user_wrapper  # type: ignore
 
     @typechecked
-    def get_uuid(self) -> UUID:
-        return UUID(self.id)
+    def get_uuid(self) -> UserUUID:
+        return UserUUID.from_string(self.user.id)
 
     @typechecked
     def __str__(self) -> str:

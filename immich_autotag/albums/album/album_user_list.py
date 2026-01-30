@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterator
-from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 import attrs
 from typeguard import typechecked
+
+from immich_autotag.types.uuid_wrappers import UserUUID
 
 if TYPE_CHECKING:
     from .album_user_wrapper import AlbumUserWrapper
@@ -29,7 +30,7 @@ class AlbumUserList:
         return [u.id for u in self._users]
 
     @typechecked
-    def to_uuid_list(self) -> list[AlbumUUID]:
+    def to_uuid_list(self) -> list[UserUUID]:
         return [u.get_uuid() for u in self._users]
 
     @typechecked

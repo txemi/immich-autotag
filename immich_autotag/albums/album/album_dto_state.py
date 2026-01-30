@@ -96,8 +96,9 @@ class AlbumDtoState:
         users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
         return AlbumUserList(users)
 
-    def get_owner_uuid(self) -> AlbumUUID:
-        return AlbumUUID.from_uuid(UUID(self._dto.owner_id))
+    def get_owner_uuid(self) -> "UserUUID":
+        from immich_autotag.types.uuid_wrappers import UserUUID
+        return UserUUID.from_uuid(UUID(self._dto.owner_id))
 
     @staticmethod
     def create(

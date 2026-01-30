@@ -8,7 +8,7 @@ import attrs
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
 from immich_autotag.assets.asset_uuid import AssetUUID
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
-from immich_autotag.types.uuid_wrappers import AlbumUUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
 from immich_autotag.utils.decorators import conditional_typechecked
 
 if TYPE_CHECKING:
@@ -24,8 +24,13 @@ class StaleAlbumCacheError(Exception):
 
 @attrs.define(auto_attribs=True, kw_only=True, slots=True)
 class AlbumCacheEntry:
-    def get_owner_uuid(self) -> "UUID":
-        return self._dto.get_owner_uuid()
+
+    _dto: AlbumDtoState
+    _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
+    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
+
+    def get_owner_uuid(self) -> "UserUUID":
+        return self._dto.get_owner_uuid()  
 
     def get_album_users(self) -> "AlbumUserList":
         return self._dto.get_album_users()
@@ -35,10 +40,6 @@ class AlbumCacheEntry:
 
     def is_full(self) -> bool:
         return self._dto.is_full()
-
-    _dto: AlbumDtoState
-    _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
-    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
 
     @classmethod
     def _from_cache_or_api(
