@@ -9,6 +9,7 @@ import uuid
 from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -148,25 +149,18 @@ class ModificationEntry:
         Converts the rich entry to a serializable version (only simple types).
         Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         """
-        album_id = self._get_album_id()
-        album_name = self._get_album_name()
-        asset_link = self._get_asset_link()
-
-        asset_id = self._get_asset_id()
-        asset_name = self._get_asset_name()
-
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
-            asset_id=asset_id,
-            asset_name=asset_name,
+            asset_id=self._get_asset_id(),
+            asset_name=self._get_asset_name(),
             tag_name=self._get_tag_name(),
-            album_id=album_id,
-            album_name=album_name,
+            album_id=self._get_album_id(),
+            album_name=self._get_album_name(),
             old_value=self._get_old_value(),
             new_value=self._get_new_value(),
             user_name=self._get_user_name(),
-            asset_link=asset_link,
+            asset_link=self._get_asset_link(),
             extra=self.extra,
             progress=self.progress,
         )
