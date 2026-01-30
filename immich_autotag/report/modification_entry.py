@@ -4,7 +4,9 @@ ModificationEntry class: represents a rich modification (with objects) in the sy
 
 from __future__ import annotations
 
+
 import datetime
+import uuid
 from typing import TYPE_CHECKING, Any, Optional
 
 import attrs
@@ -28,6 +30,9 @@ from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 # class ModificationEntry: ...
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class ModificationEntry:
+
+
+
     """
     Represents a modification in the system using rich objects (wrappers, DTOs, etc.).
     This class is intended for internal logic, validation, advanced formatting, and access to all high-level data.
@@ -75,37 +80,58 @@ class ModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
+    def _get_asset_link(self) -> Optional[str]:
+        """
+        Devuelve el enlace del asset (asset_link) como str, si está disponible, o None.
+        """
+        if self.asset_wrapper is not None:
+            return self.asset_wrapper.get_immich_photo_url().geturl()
+
+        return None
+    def _get_album_id(self) -> Optional[str]:
+        """
+        Devuelve el ID del álbum como str, si está disponible, o None.
+        """
+        if self.album is not None:
+            return str(self.album.get_album_uuid())
+        return None
+
+    def _get_album_name(self) -> Optional[str]:
+        """
+        Devuelve el nombre del álbum como str, si está disponible, o None.
+        """
+        if self.album is not None:
+            return self.album.get_album_name()
+        return None
+    def _get_asset_id(self) -> Optional[uuid.UUID]:
+        """
+        Devuelve el asset_id como UUID, si está disponible, o None.
+        """
+        if self.asset_wrapper is not None:
+            asset_id_val = self.asset_wrapper.get_id()
+            return asset_id_val
+        return None
+    def _get_asset_name(self) -> Optional[str]:
+        """
+        Devuelve el nombre del asset como str, si está disponible, o None.
+        """
+        if self.asset_wrapper is not None:
+            asset_name_val = self.asset_wrapper.get_original_file_name()
+            return str(asset_name_val)
+        return None
 
     def to_serializable(self) -> "SerializableModificationEntry":
         """
         Converts the rich entry to a serializable version (only simple types).
         Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         """
-        album_id = str(self.album.get_album_uuid()) if self.album is not None else None
-        album_name = self.album.get_album_name() if self.album is not None else None
-        asset_link = None
-        if self.asset_wrapper is not None:
-            try:
-                asset_link = self.asset_wrapper.get_immich_photo_url().geturl()
-            except Exception:
-                asset_link = None
-        asset_id = None
-        if self.asset_wrapper is not None:
-            asset_id_val = self.asset_wrapper.get_id()
-            # Convert AssetUUID to uuid.UUID if needed
-            if hasattr(asset_id_val, "to_uuid"):
-                asset_id = asset_id_val.to_uuid()
-            else:
-                asset_id = asset_id_val
+        album_id = self._get_album_id()
+        album_name = self._get_album_name()
+        asset_link = self._get_asset_link()
 
-        asset_name = None
-        if self.asset_wrapper is not None:
-            asset_name_val = self.asset_wrapper.get_original_file_name()
-            # Convert Path to str if needed
-            if hasattr(asset_name_val, "__fspath__"):
-                asset_name = str(asset_name_val)
-            else:
-                asset_name = asset_name_val
+        asset_id = self._get_asset_id()
+        asset_name = self._get_asset_name()
+
 
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
