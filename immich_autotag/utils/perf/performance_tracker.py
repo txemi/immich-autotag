@@ -29,26 +29,33 @@ class AvgAndTotals:
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class PerformanceTracker:
 
-    _start_time: float = attr.ib(
+    @staticmethod
+    def from_total(total_assets: int) -> "PerformanceTracker":
+        """
+        Static constructor for PerformanceTracker with total_assets set.
+        """
+        return PerformanceTracker(total_assets=total_assets)
+
+    _start_time: float = attr.ib(init=False
         factory=lambda: time.time(), validator=attr.validators.instance_of(float)
     )
     _log_interval: int = attr.ib(default=5, validator=attr.validators.instance_of(int))
-    _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(
+    _estimator: Optional[AdaptiveTimeEstimator] = attr.ib(init=False,
         default=None,
         validator=attr.validators.optional(
             attr.validators.instance_of(AdaptiveTimeEstimator)
         ),
     )
-    _estimation_mode: TimeEstimationMode = attr.ib(
+    _estimation_mode: TimeEstimationMode = attr.ib(init=False,
         default=TimeEstimationMode.LINEAR,
         validator=attr.validators.instance_of(TimeEstimationMode),
     )
     # total_to_process is now always calculated dynamically
-    _max_assets: Optional[int] = attr.ib(
+    _max_assets: Optional[int] = attr.ib(init=True,
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
-    _total_assets: Optional[int] = attr.ib(
+    _total_assets: Optional[int] = attr.ib(init=True,
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
@@ -56,7 +63,7 @@ class PerformanceTracker:
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
-    _last_log_time: float = attr.ib(
+    _last_log_time: float = attr.ib(init=False,
         init=False, validator=attr.validators.instance_of(float)
     )
 

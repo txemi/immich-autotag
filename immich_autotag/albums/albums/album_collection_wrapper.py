@@ -3,10 +3,13 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import Iterable, Protocol, runtime_checkable
 
+
 # Protocol for objects with a 'mark' method
 @runtime_checkable
 class PerfPhaseTracker(Protocol):
     def mark(self, phase: str, event: str) -> None: ...
+
+
 from uuid import UUID
 
 import attrs
@@ -132,7 +135,9 @@ class AlbumCollectionWrapper:
             level=LogLevel.PROGRESS,
         )
 
-    def ensure_all_full(self, perf_phase_tracker: PerfPhaseTracker | None = None) -> None:
+    def ensure_all_full(
+        self, perf_phase_tracker: PerfPhaseTracker | None = None
+    ) -> None:
         """
         Public method to force all albums in the collection to be fully loaded (DETAIL/full mode).
         Adds timing logs at PROGRESS level. Optionally tracks perf phase if tracker is provided.
@@ -152,7 +157,7 @@ class AlbumCollectionWrapper:
         t0 = time.time()
         albums = self.get_albums()
         total = len(albums)
-        tracker = PerformanceTracker(total_assets=total)
+        tracker = PerformanceTracker(total_assets=total)  # noqa: E501, W292
         for idx, album in enumerate(albums, 1):
             log(
                 f"[ALBUM-FULL-LOAD][DEBUG] Loading album {idx}/{total}: '{album.get_album_name()}'",
@@ -323,7 +328,7 @@ class AlbumCollectionWrapper:
         if total > 0:
             from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-            tracker = PerformanceTracker(total_assets=total)
+            tracker = PerformanceTracker(_total_assets=total)
         for idx, album_wrapper in enumerate(albums, 1):
             # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
@@ -555,6 +560,7 @@ class AlbumCollectionWrapper:
         self.remove_album_local_public(wrapper)
         try:
             # proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)  # Removed: function does not exist
+            pass
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
@@ -1008,7 +1014,7 @@ class AlbumCollectionWrapper:
         # Integrar PerformanceTracker para progreso y tiempo estimado
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-        tracker = PerformanceTracker(total_assets=len(albums))
+        tracker = PerformanceTracker(_total_assets=len(albums))
 
         if clear_first:
             # Clear the current collection
