@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
-from immich_autotag.assets.albums.temporary_albums import is_temporary_album
+from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
 from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.logging.levels import LogLevel
