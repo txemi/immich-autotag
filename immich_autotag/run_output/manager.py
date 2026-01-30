@@ -8,6 +8,15 @@ from ._recent_run_dir import RecentRunDir
 from .execution import RunExecution
 
 
+
+# --- Private module-level constants and variables for execution management ---
+_LOGS_LOCAL_DIR = Path("logs_local")
+_RUN_DIR_PID_MARK = "PID"
+_RUN_DIR_PID_SEP = "_PID"
+_RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
+_RUN_OUTPUT_DIR: Optional[RunExecution] = None
+_current_instance = None
+
 class RunOutputManager:
     """
     RunOutputManager centralizes and abstracts the management of output paths and persistence (logs, statistics, caches, reports, etc.)
@@ -45,13 +54,7 @@ class RunOutputManager:
     If you need to save or find any data related to a run, always use this object.
     """
 
-    # --- Class constants and variables for execution management ---
-    LOGS_LOCAL_DIR = Path("logs_local")
-    _RUN_DIR_PID_MARK = "PID"
-    _RUN_DIR_PID_SEP = "_PID"
-    _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
-    _RUN_OUTPUT_DIR: Optional[RunExecution] = None
-    _current_instance = None
+
 
     def __init__(self, run_dir: Optional[Path] = None, base_dir: Optional[Path] = None):
         if run_dir is not None:
@@ -65,24 +68,25 @@ class RunOutputManager:
             self.run_dir = base_dir / f"{now}_PID{pid}"
             self.run_dir.mkdir(parents=True, exist_ok=True)
 
-    @classmethod
-    def get_run_dir_pid_sep(cls) -> str:
-        return cls._RUN_DIR_PID_SEP
 
-    @classmethod
-    def get_run_dir_date_format(cls) -> str:
-        return cls._RUN_DIR_DATE_FORMAT
+    @staticmethod
+    def get_run_dir_pid_sep() -> str:
+        return _RUN_DIR_PID_SEP
 
-    @classmethod
-    def get_run_dir_pid_mark(cls) -> str:
-        return cls._RUN_DIR_PID_MARK
+    @staticmethod
+    def get_run_dir_date_format() -> str:
+        return _RUN_DIR_DATE_FORMAT
+
+    @staticmethod
+    def get_run_dir_pid_mark() -> str:
+        return _RUN_DIR_PID_MARK
 
     @staticmethod
     def _is_run_dir(subdir: Path) -> bool:
         """
         Returns True if the subfolder is an execution folder (contains _RUN_DIR_PID_MARK in the name).
         """
-        return subdir.is_dir() and RunOutputManager._RUN_DIR_PID_MARK in subdir.name
+        return subdir.is_dir() and _RUN_DIR_PID_MARK in subdir.name
 
     @staticmethod
     def _extract_datetime_from_run_dir(subdir: Path) -> Optional[datetime]:
@@ -90,8 +94,8 @@ class RunOutputManager:
         Extracts the date from the execution folder (YYYYMMDD_HHMMSS before _RUN_DIR_PID_SEP).
         """
         try:
-            dt_str = subdir.name.split(RunOutputManager._RUN_DIR_PID_SEP)[0]
-            return datetime.strptime(dt_str, RunOutputManager._RUN_DIR_DATE_FORMAT)
+            dt_str = subdir.name.split(_RUN_DIR_PID_SEP)[0]
+            return datetime.strptime(dt_str, _RUN_DIR_DATE_FORMAT)
         except Exception:
             return None
 
@@ -100,35 +104,36 @@ class RunOutputManager:
         """Returns all valid execution subfolders in base_dir."""
         return [d for d in base_dir.iterdir() if RunOutputManager._is_run_dir(d)]
 
-    @classmethod
-    def get_run_output_dir(cls) -> RunExecution:
+    @staticmethod
+    def get_run_output_dir() -> RunExecution:
         """
         Returns a RunExecution object for the current run. Argument must be a Path.
         """
-        if cls._RUN_OUTPUT_DIR is None:
-            base_dir = cls.LOGS_LOCAL_DIR
-            now = datetime.now().strftime(cls._RUN_DIR_DATE_FORMAT)
+        global _RUN_OUTPUT_DIR
+        if _RUN_OUTPUT_DIR is None:
+            base_dir = _LOGS_LOCAL_DIR
+            now = datetime.now().strftime(_RUN_DIR_DATE_FORMAT)
             pid = os.getpid()
-            run_dir = Path(base_dir) / f"{now}{cls._RUN_DIR_PID_SEP}{pid}"
+            run_dir = Path(base_dir) / f"{now}{_RUN_DIR_PID_SEP}{pid}"
             run_dir.mkdir(parents=True, exist_ok=True)
-            cls._RUN_OUTPUT_DIR = RunExecution(run_dir)
-        return cls._RUN_OUTPUT_DIR
+            _RUN_OUTPUT_DIR = RunExecution(run_dir)
+        return _RUN_OUTPUT_DIR
 
-    @classmethod
+    @staticmethod
     def find_recent_run_dirs(
-        cls, max_age_hours: int = 3, exclude_current: bool = True
+        max_age_hours: int = 3, exclude_current: bool = True
     ) -> list["RunExecution"]:
         """
         Returns a list of RunExecution objects for recent executions (subfolders with 'PID' in the name and valid date),
         ordered from most recent to oldest, filtered by age (max_age_hours).
         If exclude_current is True, excludes the current execution folder.
         """
-        logs_dir = cls.LOGS_LOCAL_DIR
+        logs_dir = _LOGS_LOCAL_DIR
         now = datetime.now()
-        current_run = cls.get_run_output_dir() if exclude_current else None
+        current_run = RunOutputManager.get_run_output_dir() if exclude_current else None
         current_run_dir = current_run.path if current_run else None
         recent_dirs: list[RecentRunDir] = []
-        for subdir in cls._list_run_dirs(logs_dir):
+        for subdir in RunOutputManager._list_run_dirs(logs_dir):
             if exclude_current and subdir.resolve() == current_run_dir:
                 continue
             rrd = RecentRunDir.from_path(subdir)
@@ -137,26 +142,26 @@ class RunOutputManager:
         recent_dirs.sort(key=lambda r: r.get_datetime() or datetime.min, reverse=True)
         return [RunExecution(r.get_path()) for r in recent_dirs]
 
-    @classmethod
+    @staticmethod
     def get_previous_run_output_dir(
-        cls, base_dir: Optional[Path] = None
+        base_dir: Optional[Path] = None
     ) -> Optional[RunExecution]:
         """
         Searches for the most recent previous execution folder in base_dir.
         Returns Path or None if there are no previous executions.
         """
         if base_dir is None:
-            base = cls.LOGS_LOCAL_DIR
+            base = _LOGS_LOCAL_DIR
         else:
             base = Path(base_dir)
         if not base.exists() or not base.is_dir():
             return None
-        dirs = cls._list_run_dirs(base)
+        dirs = RunOutputManager._list_run_dirs(base)
         if not dirs:
             return None
-        current = cls.get_run_output_dir()
+        current = RunOutputManager.get_run_output_dir()
         dirs.sort(
-            key=lambda d: cls._extract_datetime_from_run_dir(d) or datetime.min,
+            key=lambda d: RunOutputManager._extract_datetime_from_run_dir(d) or datetime.min,
             reverse=True,
         )
         for d in dirs:
@@ -164,15 +169,16 @@ class RunOutputManager:
                 return RunExecution(d)
         return None
 
-    @classmethod
-    def current(cls, base_dir: Optional[Path] = None):
+    @staticmethod
+    def current(base_dir: Optional[Path] = None):
         """
         Returns the singleton instance associated with the current execution.
         If it does not exist, it creates it.
         """
-        if cls._current_instance is None:
-            cls._current_instance = cls(base_dir=base_dir)
-        return cls._current_instance
+        global _current_instance
+        if _current_instance is None:
+            _current_instance = RunOutputManager(base_dir=base_dir)
+        return _current_instance
 
     def get_log_path(self, name: str) -> Path:
         """Returns the path for a specific log of this run."""
