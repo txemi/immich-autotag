@@ -32,7 +32,7 @@ def sync_album_permissions(
         resolved_policy: Resolved policy with target members (emails)
         context: ImmichContext with API client
     """
-    album_id = album_wrapper.get_album_uuid()
+    # album_id = album_wrapper.get_album_uuid()  # removed unused variable
     album_name = album_wrapper.get_album_name()
     album_uuid = album_wrapper.get_album_uuid_no_cache()
     report = ModificationReport.get_instance()
@@ -48,7 +48,11 @@ def sync_album_permissions(
 
     # Get current members from API (pass UUID directly)
     current_members = get_current_members(album_uuid, context)
-    current_user_ids = {str(member.user.id) for member in current_members}
+    from immich_autotag.types.uuid_wrappers import UserUUID
+
+    current_user_ids = {
+        UserUUID.from_string(str(member.user.id)) for member in current_members
+    }
 
     # Calculate diff
     users_to_add = target_user_ids - current_user_ids
