@@ -13,10 +13,15 @@ def _validate_is_dir(
         raise ValueError(f"{attribute.name} must be a directory: {value}")
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+
+@attrs.define(slots=True, frozen=True)
 class RecentRunDir:
     _subdir: Path = attrs.field(
-        validator=[attrs.validators.instance_of(Path), _validate_is_dir]
+        validator=[attrs.validators.instance_of(Path), _validate_is_dir],
+        repr=False,
+        eq=False,
+        metadata={"private": True},
+        alias="subdir"
     )
 
     def get_datetime(self: "RecentRunDir") -> Optional[datetime]:
@@ -46,4 +51,4 @@ class RecentRunDir:
             or RunOutputManager.get_run_dir_pid_mark() not in subdir.name
         ):
             return None
-        return cls(_subdir=subdir)
+        return cls(subdir=subdir)
