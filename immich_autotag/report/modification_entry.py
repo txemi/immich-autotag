@@ -23,6 +23,7 @@ from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 # class ModificationEntry: ...
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class ModificationEntry:
+
     """
     Represents a modification in the system using rich objects (wrappers, DTOs, etc.).
     This class is intended for internal logic, validation, advanced formatting, and access to all high-level data.
@@ -58,38 +59,54 @@ class ModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
+    def _get_asset_id(self):
+        return self.asset_wrapper.get_id() if self.asset_wrapper is not None else None
 
+    def _get_asset_name(self):
+        return str(self.asset_wrapper.get_original_file_name()) if self.asset_wrapper is not None else None
+
+    def _get_tag_name(self):
+        return self.tag.get_name() if self.tag is not None else None
+
+    def _get_album_id(self):
+        return str(self.album.get_album_uuid()) if self.album is not None else None
+
+    def _get_album_name(self):
+        return self.album.get_album_name() if self.album is not None else None
+
+    def _get_old_value(self):
+        return str(self.old_value) if self.old_value is not None else None
+
+    def _get_new_value(self):
+        return str(self.new_value) if self.new_value is not None else None
+
+    def _get_user_name(self):
+        return self.user.name if self.user is not None else None
+
+    def _get_asset_link(self):
+        if self.asset_wrapper is not None:
+            try:
+                return self.asset_wrapper.get_immich_photo_url().geturl()
+            except Exception:
+                return None
+        return None
     def to_serializable(self) -> "SerializableModificationEntry":
         """
         Converts the rich entry to a serializable version (only simple types).
         Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         """
-        album_id = str(self.album.get_album_uuid()) if self.album is not None else None
-        album_name = self.album.get_album_name() if self.album is not None else None
-        asset_link = None
-        if self.asset_wrapper is not None:
-            try:
-                asset_link = self.asset_wrapper.get_immich_photo_url().geturl()
-            except Exception:
-                asset_link = None
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
-            asset_id=(
-                self.asset_wrapper.get_id() if self.asset_wrapper is not None else None
-            ),
-            asset_name=(
-                self.asset_wrapper.original_file_name
-                if self.asset_wrapper is not None
-                else None
-            ),
-            tag_name=self.tag.get_name() if self.tag is not None else None,
-            album_id=album_id,
-            album_name=album_name,
-            old_value=str(self.old_value) if self.old_value is not None else None,
-            new_value=str(self.new_value) if self.new_value is not None else None,
-            user_name=self.user.name if self.user is not None else None,
-            asset_link=asset_link,
+            asset_id=self._get_asset_id(),
+            asset_name=self._get_asset_name(),
+            tag_name=self._get_tag_name(),
+            album_id=self._get_album_id(),
+            album_name=self._get_album_name(),
+            old_value=self._get_old_value(),
+            new_value=self._get_new_value(),
+            user_name=self._get_user_name(),
+            asset_link=self._get_asset_link(),
             extra=self.extra,
             progress=self.progress,
         )
