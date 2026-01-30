@@ -84,7 +84,7 @@ def proxy_remove_asset_from_album(
     # Convert AssetUUIDs to UUIDs for API compatibility
     uuid_ids = [a.to_uuid() for a in asset_ids]
     result = remove_asset_from_album.sync(
-        id=album_id, client=client, body=BulkIdsDto(ids=uuid_ids)
+        id=album_id.to_uuid(), client=client, body=BulkIdsDto(ids=uuid_ids)
     )
     if result is None:
         raise RuntimeError(
@@ -96,7 +96,7 @@ def proxy_remove_asset_from_album(
 def proxy_update_album_info(
     *, album_id: AlbumUUID, client: AuthenticatedClient, body: UpdateAlbumDto
 ) -> AlbumResponseDto:
-    result = update_album_info.sync(id=album_id, client=client, body=body)
+    result = update_album_info.sync(id=album_id.to_uuid(), client=client, body=body)
     if result is None:
         raise RuntimeError("Failed to update album info")
     return result
@@ -107,7 +107,7 @@ def proxy_add_users_to_album(
 ) -> AlbumResponseDto:
     from immich_client.api.albums import add_users_to_album
 
-    result = add_users_to_album.sync(id=album_id.to_uuid, client=client, body=body)
+    result = add_users_to_album.sync(id=album_id.to_uuid(), client=client, body=body)
     if result is None:
         raise RuntimeError("Failed to add users to album")
     return result
