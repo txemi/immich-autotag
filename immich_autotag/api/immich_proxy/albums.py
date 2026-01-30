@@ -58,8 +58,7 @@ def proxy_get_album_info(
         cache_type=ApiCacheKey.ALBUMS, use_cache=use_cache
     )
     # Only accept AlbumUUID
-    album_id_val = album_id.to_uuid()
-    cache_key = str(album_id_val)
+    cache_key = str(album_id)
     cache_data = cache_mgr.load(cache_key)
     if cache_data is not None:
         if isinstance(cache_data, dict):
@@ -69,11 +68,11 @@ def proxy_get_album_info(
             return AlbumResponseDto.from_dict(cache_data[0])
         else:
             raise RuntimeError(
-                f"Invalid cache data for album_id={album_id_val}: {type(cache_data)}"
+                f"Invalid cache data for album_id={album_id}: {type(cache_data)}"
             )
     _album_api_call_count += 1
     _album_api_ids.add(cache_key)
-    dto = get_album_info.sync(id=album_id_val, client=client)
+    dto = get_album_info.sync(id=album_id.to_uuid(), client=client)
     if dto is not None:
         cache_mgr.save(cache_key, dto.to_dict())
     return dto

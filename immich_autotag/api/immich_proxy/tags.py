@@ -19,22 +19,22 @@ from immich_autotag.types.uuid_wrappers import AssetUUID, TagUUID
 
 
 def proxy_tag_assets(
-    *, tag_id: UUID, client: ImmichClient, asset_ids: List[AssetUUID]
+    *, tag_id: TagUUID, client: ImmichClient, asset_ids: List[AssetUUID]
 ) -> list[BulkIdResponseDto]:
-    """Proxy for tag_assets.sync with explicit keyword arguments. Accepts AssetUUIDs."""
+    """Proxy for tag_assets.sync with explicit keyword arguments. Recibe TagUUID y AssetUUIDs."""
     uuid_ids = [a.to_uuid() for a in asset_ids]
-    result = tag_assets.sync(id=tag_id, client=client, body=BulkIdsDto(ids=uuid_ids))
+    result = tag_assets.sync(id=tag_id.to_uuid(), client=client, body=BulkIdsDto(ids=uuid_ids))
     if result is None:
         raise RuntimeError("tag_assets.sync returned None (unexpected)")
     return result
 
 
 def proxy_untag_assets(
-    *, tag_id: UUID, client: ImmichClient, asset_ids: List[AssetUUID]
+    *, tag_id: TagUUID, client: ImmichClient, asset_ids: List[AssetUUID]
 ) -> list[BulkIdResponseDto]:
-    """Proxy for untag_assets.sync with explicit keyword arguments. Accepts AssetUUIDs."""
+    """Proxy for untag_assets.sync with explicit keyword arguments. Recibe TagUUID y AssetUUIDs."""
     uuid_ids = [a.to_uuid() for a in asset_ids]
-    result = untag_assets.sync(id=tag_id, client=client, body=BulkIdsDto(ids=uuid_ids))
+    result = untag_assets.sync(id=tag_id.to_uuid(), client=client, body=BulkIdsDto(ids=uuid_ids))
     if result is None:
         raise RuntimeError("untag_assets.sync returned None (unexpected)")
     return result
@@ -51,9 +51,9 @@ def proxy_get_all_tags(*, client: ImmichClient):
     return _get_all_tags.sync(client=client)
 
 
-def proxy_delete_tag(*, client: ImmichClient, tag_id: UUID) -> None:
+def proxy_delete_tag(*, client: ImmichClient, tag_id: TagUUID) -> None:
     """Proxy for delete_tag.sync_detailed con resultado parseado."""
-    response = _delete_tag.sync_detailed(id=tag_id, client=client)
+    response = _delete_tag.sync_detailed(id=tag_id.to_uuid(), client=client)
     return response.parsed
 
 
