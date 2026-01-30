@@ -58,7 +58,7 @@ def process_album_permissions(
     # Process each album
     matched_count = 0
     unmatched_count = 0
-    for album_wrapper in albums_collection.albums:
+    for album_wrapper in albums_collection.get_albums():
         resolved_policy = resolve_album_policy(
             album=album_wrapper,
             user_groups=user_groups_dict,
