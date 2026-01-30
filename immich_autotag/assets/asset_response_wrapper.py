@@ -570,7 +570,6 @@ class AssetResponseWrapper:
         should_have_tag_fn: Callable[[], bool],
         tag_present_reason: str,
         tag_absent_reason: str,
-        user: UserResponseWrapper | None = None,
     ) -> None:
         """
         Generic method to manage classification-related tags.
@@ -656,7 +655,6 @@ class AssetResponseWrapper:
         self,
         *,
         status: "ClassificationStatus",
-        user: UserResponseWrapper | None = None,
     ) -> None:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to classification status.
@@ -688,7 +686,6 @@ class AssetResponseWrapper:
             should_have_tag_fn=status.is_conflict,
             tag_present_reason="is in classification conflict",
             tag_absent_reason=f"classification status is {status.value}",
-            user=user,
         )
 
     @typechecked

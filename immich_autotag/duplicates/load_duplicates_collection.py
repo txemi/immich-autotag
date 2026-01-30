@@ -89,12 +89,13 @@ def load_duplicates_collection(client: ImmichClient) -> DuplicateCollectionWrapp
             # containing counts and a limited sample of group ids to help diagnostics.
             try:
                 import json
+                from typing import Dict, Any
 
                 sample_limit = 100
                 sample_group_ids = list(
                     duplicates_collection.groups_by_duplicate_id.keys()
                 )[:sample_limit]
-                summary = {
+                summary: Dict[str, Any] = {
                     "groups": total_groups,
                     "assets": total_assets,
                     "sample_group_ids": sample_group_ids,

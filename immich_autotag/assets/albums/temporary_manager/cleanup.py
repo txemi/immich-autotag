@@ -54,12 +54,7 @@ def remove_asset_from_autotag_temporary_albums(
             if not album_wrapper.has_asset_wrapper(asset_wrapper):
                 continue
 
-        try:
-            client = asset_wrapper.get_context().get_client_wrapper().get_client()
-        except Exception:
-            from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-
-            client = ImmichClientWrapper.get_default_instance().get_client()
+        client = asset_wrapper.get_context().get_client_wrapper().get_client()
 
         try:
             # Remove asset from album
@@ -78,7 +73,8 @@ def remove_asset_from_autotag_temporary_albums(
 
         except Exception as e:
             # <-- HERE the message '[WARNING] Failed to remove asset ...' is printed if an error occurs while removing the asset from the temporary album.
-            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+            from immich_autotag.config.dev_mode import is_development_mode
+            if is_development_mode():
                 raise
             log(
                 f"Failed to remove asset {asset_wrapper.get_id()} from temporary album {album_wrapper.get_album_name()}: {e}",
