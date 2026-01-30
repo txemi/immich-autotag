@@ -9,7 +9,8 @@ from immich_autotag.report.modification_report import ModificationReport
 
 from ._get_current_members import get_current_members
 from ._remove_members_from_album import remove_members_from_album
-from ._resolve_emails_to_user_ids import resolve_emails_to_user_ids
+from immich_autotag.types.email_address import EmailAddress
+from ._resolve_emails_result import ResolveEmailsResult
 
 if True:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -41,8 +42,9 @@ def sync_album_permissions(
         return
 
     # Resolve configured member emails to user IDs
-    result = resolve_emails_to_user_ids(resolved_policy.members, context)
-    target_user_ids = set(result.resolved.values())
+    email_objs = [EmailAddress.from_string(e) for e in resolved_policy.members]
+    result = ResolveEmailsResult.resolve_emails_to_user_ids(email_objs, context)
+    target_user_ids = set(result._resolved.values())
 
     # Get current members from API (pass UUID directly)
     current_members = get_current_members(album_uuid, context)

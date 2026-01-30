@@ -57,19 +57,18 @@ class UserResponseWrapper:
 
     @classmethod
     @typechecked
-    def from_context(cls, context: "ImmichContext") -> "UserResponseWrapper":
+    def load_current_user(cls, context: "ImmichContext") -> "UserResponseWrapper":
         """
-        Gets the current user using the client/context and returns a UserResponseWrapper.
-        The result is cached in a class variable (assumes immutable user in the
-        session).
+        Loads and wraps the current user from the context using the UserManager singleton.
+        The result is cached in a class variable (assumes immutable user in the session).
         """
         if cls._cached_user_wrapper is not None:
             return cls._cached_user_wrapper  # type: ignore
-        from immich_autotag.utils.user_helpers import get_current_user
-
-        # get_current_user expects an AuthenticatedClient, not ImmichContext
-        user_dto = get_current_user(context.get_client_wrapper().get_client())
-        cls._cached_user_wrapper = cls(user=user_dto)
+        from immich_autotag.users.user_manager import UserManager
+        manager = UserManager.get_instance()
+        manager.load_all(context)
+        user_wrapper = manager.get_current_user()
+        cls._cached_user_wrapper = user_wrapper
         return cls._cached_user_wrapper  # type: ignore
 
     @typechecked

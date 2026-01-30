@@ -131,7 +131,7 @@ class AssetResponseWrapper:
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
-        user_wrapper = UserResponseWrapper.from_context(self.get_context())
+        user_wrapper = UserResponseWrapper.load_current_user(self.get_context())
         # asset_url = self.get_immich_photo_url().geturl()  # Unused variable removed
 
         tag_mod_report.add_modification(
@@ -323,7 +323,7 @@ class AssetResponseWrapper:
         tag_mod_report = ModificationReport.get_instance()
 
         # Get the UserWrapper in a clean and encapsulated way
-        user_wrapper = UserResponseWrapper.from_context(self.get_context())
+        user_wrapper = UserResponseWrapper.load_current_user(self.get_context())
 
         tag = self.get_context().get_tag_collection().find_by_name(tag_name)
         if tag is None:
@@ -607,7 +607,7 @@ class AssetResponseWrapper:
                     level=LogLevel.FOCUS,
                 )
                 if user is None:
-                    user = UserResponseWrapper.from_context(self.get_context())
+                    user = UserResponseWrapper.load_current_user(self.get_context())
                 self.remove_tag_by_name(tag_name=tag_name, user=user)
             else:
                 log(
