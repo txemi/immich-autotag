@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.context.immich_context import ImmichContext
     from immich_autotag.types.uuid_wrappers import AssetUUID
+    from immich_client.models.album_response_dto import AlbumResponseDto
+    from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
 
 class StaleAlbumCacheError(Exception):
@@ -33,7 +35,7 @@ class AlbumCacheEntry:
     def get_album_users(self) -> "AlbumUserList":
         return self._dto.get_album_users()
 
-    def update(self, *, dto, load_source) -> None:
+    def update(self, *, dto: 'AlbumResponseDto', load_source: 'AlbumLoadSource') -> None:
         self._dto.update(dto=dto, load_source=load_source)
 
     def is_full(self) -> bool:
