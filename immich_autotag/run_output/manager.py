@@ -7,8 +7,6 @@ from typing import Optional
 from ._recent_run_dir import RecentRunDir
 from .execution import RunExecution
 
-
-
 # --- Private module-level constants and variables for execution management ---
 _LOGS_LOCAL_DIR = Path("logs_local")
 _RUN_DIR_PID_MARK = "PID"
@@ -55,12 +53,14 @@ class RunOutputManager:
     If you need to save or find any data related to a run, always use this object.
     """
 
-
     _RUN_OUTPUT_DIR: Optional[RunExecution] = None
 
-
-
-
+    def __attrs_post_init__(self):
+        global _current_instance
+        if _current_instance is not None:
+            raise RuntimeError(
+                "RunOutputManager is a singleton. Use RunOutputManager.current() to get the instance."
+            )
 
     @staticmethod
     def get_run_dir_pid_sep() -> str:
@@ -96,7 +96,6 @@ class RunOutputManager:
     def _list_run_dirs(base_dir: Path) -> list[Path]:
         """Returns all valid execution subfolders in base_dir."""
         return [d for d in base_dir.iterdir() if RunOutputManager._is_run_dir(d)]
-
 
     def get_run_output_dir(self) -> RunExecution:
         """
@@ -137,7 +136,7 @@ class RunOutputManager:
 
     @staticmethod
     def get_previous_run_output_dir(
-        base_dir: Optional[Path] = None
+        base_dir: Optional[Path] = None,
     ) -> Optional[RunExecution]:
         """
         Searches for the most recent previous execution folder in base_dir.
@@ -154,7 +153,8 @@ class RunOutputManager:
             return None
         current = RunOutputManager.get_run_output_dir()
         dirs.sort(
-            key=lambda d: RunOutputManager._extract_datetime_from_run_dir(d) or datetime.min,
+            key=lambda d: RunOutputManager._extract_datetime_from_run_dir(d)
+            or datetime.min,
             reverse=True,
         )
         for d in dirs:
