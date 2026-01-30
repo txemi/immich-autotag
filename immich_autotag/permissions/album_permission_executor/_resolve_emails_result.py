@@ -2,7 +2,6 @@
 This module is internal to the package and should not be imported directly.
 """
 
-
 from typing import TYPE_CHECKING, Dict, List
 
 import attrs
