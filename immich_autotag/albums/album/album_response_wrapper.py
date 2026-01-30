@@ -156,11 +156,11 @@ class AlbumResponseWrapper:
         return self._cache_entry.get_album_users()
 
     @typechecked
-    def get_owner_uuid(self) -> "UUID":
+    def get_owner_uuid(self) -> "UserUUID":
         """Returns the UUID of the album owner (UUID object, not string)."""
         # Return the raw UUID as expected by the type annotation
         owner_uuid = self._cache_entry.get_owner_uuid()
-        return owner_uuid.value if hasattr(owner_uuid, 'value') else owner_uuid
+        return owner_uuid
 
     @typechecked
     def _get_or_build_asset_ids_cache(self) -> set["AssetUUID"]:
