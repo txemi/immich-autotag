@@ -130,24 +130,24 @@ parse_args_and_globals() {
 			target_dir="$arg"
 		fi
 	done
-	# Validar quality_level
+	# Validar quality_level (defensive: all enum cases, fail on unknown)
 	case "$quality_level" in
-	STRICT | STANDARD | TARGET) ;;
+	STRICT) ;;
+	STANDARD) ;;
+	TARGET) ;;
 	*)
-		echo "[ERROR] Invalid --level: '$quality_level'. Must be one of: STRICT, STANDARD, TARGET." >&2
-		echo "Example: bash scripts/devtools/quality_gate.sh --level=TARGET --mode=CHECK" >&2
-		echo "" >&2
+		echo "[DEFENSIVE-FAIL] Unexpected quality_level value: '$quality_level'. Must be one of: STRICT, STANDARD, TARGET." >&2
 		print_help >&2
 		exit 2
 		;;
 	esac
 
-	# Validar check_mode
+	# Validar check_mode (defensive: all enum cases, fail on unknown)
 	case "$check_mode" in
-	CHECK | APPLY) ;;
+	CHECK) ;;
+	APPLY) ;;
 	*)
-		echo "[ERROR] Invalid --mode: '$check_mode'. Must be one of: CHECK, APPLY." >&2
-		echo "" >&2
+		echo "[DEFENSIVE-FAIL] Unexpected check_mode value: '$check_mode'. Must be one of: CHECK, APPLY." >&2
 		print_help >&2
 		exit 2
 		;;
@@ -450,15 +450,18 @@ check_ruff() {
 		quality_level="STANDARD"
 	fi
 
-	if [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
+	if [ "$quality_level" = "STANDARD" ]; then
+		ruff_ignore="--ignore E501"
+		echo "[$quality_level MODE] Ruff will ignore E501 (line length) and will NOT block the build for it. Only F821 errors will block the build."
+	elif [ "$quality_level" = "TARGET" ]; then
 		ruff_ignore="--ignore E501"
 		echo "[$quality_level MODE] Ruff will ignore E501 (line length) and will NOT block the build for it. Only F821 errors will block the build."
 	elif [ "$quality_level" = "STRICT" ]; then
 		ruff_ignore=""
 		echo "[STRICT MODE] Ruff will NOT ignore any errors. All errors will block the build."
 	else
-		echo "[ERROR] Invalid quality_level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
-		exit 2
+		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_ruff: '$quality_level'. Exiting for safety."
+		exit 94
 	fi
 
 	local ruff_output ruff_exit
@@ -591,6 +594,7 @@ check_jscpd() {
 	jscpd_exit=$?
 	if [ $jscpd_exit -ne 0 ]; then
 		echo "[ERROR] jscpd detected code duplication. Please refactor duplicate code."
+		echo "🤔 Déjà vu? jscpd saw something twice... Time to refactor!"
 		return 1
 	fi
 	echo "jscpd check passed: no significant code duplication detected."
@@ -613,14 +617,16 @@ check_flake8() {
 	ensure_python_tool "$py_bin" flake8 flake8
 	flake8_ignore="E203,W503"
 	if [ "$quality_level" = "STRICT" ]; then
-		# En modo estricto, no se ignora E501
 		: # No se hace nada especial
-	elif [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
+	elif [ "$quality_level" = "STANDARD" ]; then
+		flake8_ignore="$flake8_ignore,E501"
+		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
+	elif [ "$quality_level" = "TARGET" ]; then
 		flake8_ignore="$flake8_ignore,E501"
 		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
 	else
-		echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
-		return 2
+		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_flake8: '$quality_level'. Exiting for safety."
+		return 93
 	fi
 	echo "[INFO] Running flake8 (output below if any):"
 	"$py_bin" -m flake8 --max-line-length=$max_line_length --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$target_dir"
@@ -813,6 +819,7 @@ viejos'
 		echo "Total matches: $match_count | Files affected: $file_count"
 		echo '[EXIT] Quality Gate failed due to forbidden Spanish characters.'
 		echo 'Build failed: Please remove all Spanish text and accents before publishing.'
+		echo "¡Ay caramba! Spanish detected. Let's keep it English, amigos!"
 		return 1
 	else
 		echo "✅ No Spanish language characters detected."
@@ -976,13 +983,19 @@ main() {
 	py_bin=$(setup_python_venv_env)
 
 	# Pasar los valores explícitamente a las funciones de chequeo
+	# All quality gate modules/checks are called via run_quality_gate_check_mode and run_quality_gate_apply_mode.
+	# If a check is not called, it is either deprecated or not implemented yet. Add new checks to those functions.
 	if [ "$check_mode" = "CHECK" ]; then
 		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
-	else
+	elif [ "$check_mode" = "APPLY" ]; then
 		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
+	else
+		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in main: '$check_mode'. Exiting for safety." >&2
+		exit 92
 	fi
 
 	echo "🎉 Quality Gate completed successfully!"
+	echo "All checks passed! Your code is cleaner than a robot's hard drive."
 }
 
 # Entrypoint
