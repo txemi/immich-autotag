@@ -1,5 +1,4 @@
 from typing import List
-from uuid import UUID
 
 from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_user_add_dto import AlbumUserAddDto

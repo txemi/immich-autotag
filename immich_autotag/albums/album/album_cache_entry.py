@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from uuid import UUID
 
 import attrs
 
@@ -30,7 +29,7 @@ class AlbumCacheEntry:
     _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
 
     def get_owner_uuid(self) -> "UserUUID":
-        return self._dto.get_owner_uuid()  
+        return self._dto.get_owner_uuid()
 
     def get_album_users(self) -> "AlbumUserList":
         return self._dto.get_album_users()

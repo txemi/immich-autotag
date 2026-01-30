@@ -77,7 +77,7 @@ class AlbumResponseWrapper:
     @typechecked
     def owner_uuid(self) -> UserUUID:
         """Returns the AlbumUUID of the album owner."""
-        return self._cache_entry.get_owner_uuid()  
+        return self._cache_entry.get_owner_uuid()
 
     # --- 4. Static Methods ---
     @staticmethod

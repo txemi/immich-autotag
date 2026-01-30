@@ -48,15 +48,17 @@ class BaseUUIDWrapper:
         return f"{self.__class__.__name__}({self.value})"
 
 
-
 class AssetUUID(BaseUUIDWrapper):
     pass
+
 
 class TagUUID(BaseUUIDWrapper):
     pass
 
+
 class AlbumUUID(BaseUUIDWrapper):
     pass
+
 
 # New: UserUUID for user identifiers
 class UserUUID(BaseUUIDWrapper):

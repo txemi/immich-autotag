@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
-from uuid import UUID
 
 import attrs
 from typeguard import typechecked
@@ -44,8 +43,6 @@ class UserResponseWrapper:
     )
     _cached_user_wrapper = None  # Class variable to cache the user
 
-
-
     @property
     @typechecked
     def name(self) -> str:
@@ -55,7 +52,6 @@ class UserResponseWrapper:
     @typechecked
     def email(self) -> str:
         return self.user.email
-
 
     @classmethod
     @typechecked

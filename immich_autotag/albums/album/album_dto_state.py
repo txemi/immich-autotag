@@ -98,6 +98,7 @@ class AlbumDtoState:
 
     def get_owner_uuid(self) -> "UserUUID":
         from immich_autotag.types.uuid_wrappers import UserUUID
+
         return UserUUID.from_uuid(UUID(self._dto.owner_id))
 
     @staticmethod
