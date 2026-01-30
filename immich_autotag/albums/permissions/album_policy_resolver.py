@@ -21,7 +21,7 @@ Admin users (system operators) should not appear in member lists to avoid accide
 """
 
 import re
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import attrs
 
@@ -30,7 +30,6 @@ from immich_autotag.config.models import (
     UserGroup,
 )
 
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
@@ -55,7 +54,7 @@ class ResolvedAlbumPolicy:
         - Provides a string representation for logging and debugging.
     """
 
-    album: 'AlbumResponseWrapper' = attrs.field()
+    album: "AlbumResponseWrapper" = attrs.field()
     # album_name and album_id removed; use album.get_album_name() and album.get_album_uuid() instead
     matched_rules: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
     groups: list[str] = attrs.field(validator=attrs.validators.instance_of(list))

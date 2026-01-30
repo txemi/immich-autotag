@@ -23,7 +23,6 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
     from immich_autotag.context.immich_context import ImmichContext
 
-from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
 from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
 from immich_autotag.utils.decorators import conditional_typechecked
 
@@ -60,6 +59,7 @@ class AlbumResponseWrapper:
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
     _unavailable: bool = attrs.field(default=False, init=False)
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
+
     _error_history: AlbumErrorHistory = attrs.field(
         factory=AlbumErrorHistory,
         init=False,
@@ -160,9 +160,7 @@ class AlbumResponseWrapper:
         owner_uuid = self._cache_entry.get_owner_uuid()
         return owner_uuid
 
-
     # --- 6. Public Methods - Asset Management ---
-
 
     @conditional_typechecked
     def get_asset_uuids(self) -> set["AssetUUID"]:
@@ -181,7 +179,10 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def has_asset(self, asset: "AssetResponseDto") -> bool:
         from immich_autotag.types.uuid_wrappers import AssetUUID
-        return AssetUUID.from_uuid(UUID(asset.id)) in self._cache_entry.get_asset_uuids()
+
+        return (
+            AssetUUID.from_uuid(UUID(asset.id)) in self._cache_entry.get_asset_uuids()
+        )
 
     @conditional_typechecked
     def has_asset_wrapper(
@@ -202,9 +203,7 @@ class AlbumResponseWrapper:
         """
         return self._cache_entry.is_empty()
 
-
     # --- Moved: _update_from_dto and _set_album_full are now in AlbumCacheEntry ---
-
 
     # --- 10. Private Methods - Error Handling and Verification ---
 
@@ -247,8 +246,6 @@ class AlbumResponseWrapper:
         Public method to logically mark this album as deleted.
         """
         self._mark_deleted()
-
-
 
     @typechecked
     def should_mark_unavailable(
@@ -307,7 +304,7 @@ class AlbumResponseWrapper:
         tag_mod_report: "ModificationReport",
     ) -> None:
         """Handles non-success results from addition API."""
-        error_msg =item.error
+        error_msg = item.error
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
         album_url = self.get_immich_album_url().geturl()
 
@@ -551,13 +548,15 @@ class AlbumResponseWrapper:
         """Handles non-success results from removal API."""
         # Removed unused imports of ErrorHandlingMode and DEFAULT_ERROR_MODE
 
-        error_msg:item.error
+        error_msg: item.error
 
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
         album_url = self.get_immich_album_url().geturl()
 
         # Handle known recoverable errors
-        if error_msg is not None and (str(error_msg).lower() in ("not_found", "no_permission")):
+        if error_msg is not None and (
+            str(error_msg).lower() in ("not_found", "no_permission")
+        ):
             if str(error_msg).lower() == "not_found":
                 self._handle_album_not_found_during_removal(
                     error_msg, asset_url, album_url
@@ -734,4 +733,3 @@ class AlbumResponseWrapper:
             return hash(self.get_album_uuid())
         except Exception:
             return object.__hash__(self)
-
