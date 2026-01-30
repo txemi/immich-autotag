@@ -16,3 +16,7 @@ class EmailAddress:
 
     def __repr__(self):
         return f"EmailAddress({self._value!r})"
+
+    @classmethod
+    def from_string(cls, value: str) -> "EmailAddress":
+        return cls(value)
