@@ -167,6 +167,7 @@ class AlbumDtoState:
 
     def is_stale(self) -> bool:
         import time
+
         return (time.time() - self.get_loaded_at().timestamp()) > self._max_age_seconds
 
     def get_assets(self):

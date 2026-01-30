@@ -129,7 +129,7 @@ class AlbumCacheEntry:
         # Use only public API: update with the new AlbumResponseDto and load_source
         self._dto.update(
             dto=new_dto._dto,  # _dto is AlbumResponseDto, allowed for update()
-            load_source=new_dto.get_load_source()
+            load_source=new_dto.get_load_source(),
         )
         return self
 
@@ -168,7 +168,7 @@ class AlbumCacheEntry:
         if asset_manager is None:
             raise AttributeError("ImmichContext missing asset_manager")
         result = []
-        for a in  self._ensure_full_loaded()._dto.get_assets():
+        for a in self._ensure_full_loaded()._dto.get_assets():
             b = asset_manager.get_wrapper_for_asset_dto(a, AlbumDtoType.ALBUM, context)
             result.append(b)
         return result
