@@ -195,11 +195,11 @@ class AssetDtoState:
         """
         return self._dto.created_at
 
-    def get_original_path(self) -> str:
+    def get_original_path(self) -> Path:
         """
         Returns the original file path of the asset.
         """
-        return self._dto.original_path
+        return Path(self._dto.original_path)
 
     def get_duplicate_id_as_uuid(self) -> UUID:
         """

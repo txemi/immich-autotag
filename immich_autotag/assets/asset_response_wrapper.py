@@ -323,7 +323,7 @@ class AssetResponseWrapper:
         tag_mod_report = ModificationReport.get_instance()
 
         # Get the UserWrapper in a clean and encapsulated way
-        user_wrapper = UserResponseWrapper.load_current_user(self.get_context())
+        user_wrapper = UserResponseWrapper.load_current_user()
 
         tag = self.get_context().get_tag_collection().find_by_name(tag_name)
         if tag is None:
@@ -434,7 +434,7 @@ class AssetResponseWrapper:
         return True
 
     @typechecked
-    def _get_current_tag_ids(self) -> "list[AssetUUID]":
+    def _get_current_tag_ids(self) -> "list[TagUUID]":
         """Returns the AssetUUIDs of the asset's current tags."""
         tags: list[TagWrapper] = self.get_tags()
         return [t.get_id() for t in tags]
@@ -500,7 +500,11 @@ class AssetResponseWrapper:
         return self._cache_entry.get_uuid()
 
     def get_original_path(self) -> Path:
-        return self._cache_entry.get_original_path()
+        # Ensure the return is a Path object
+        orig = self._cache_entry.get_original_path()
+        if isinstance(orig, Path):
+            return orig
+        return Path(orig)
 
     def get_duplicate_id_as_uuid(self) -> UUID:
         return self._cache_entry.get_duplicate_id_as_uuid()

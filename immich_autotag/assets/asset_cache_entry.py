@@ -240,7 +240,7 @@ class AssetCacheEntry:
         """
         return self._state.get_created_at()
 
-    def get_original_path(self) -> str:
+    def get_original_path(self) -> Path:
         """
         Returns the original file path of the asset, if available.
         """
