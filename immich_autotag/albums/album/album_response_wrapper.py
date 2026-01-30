@@ -17,7 +17,7 @@ from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_uuid import AssetUUID
+    from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
@@ -93,7 +93,7 @@ class AlbumResponseWrapper:
         result: list[BulkIdResponseDto], asset_id: "AssetUUID"
     ) -> BulkIdResponseDto | None:
         """Finds the result item for a specific asset in the API response list."""
-        from immich_autotag.assets.asset_uuid import AssetUUID
+        from immich_autotag.types.uuid_wrappers import AssetUUID
 
         for item in result:
             if item.success is not True:
@@ -184,7 +184,7 @@ class AlbumResponseWrapper:
 
     @conditional_typechecked
     def has_asset(self, asset: AssetResponseDto) -> bool:
-        from immich_autotag.assets.asset_uuid import AssetUUID
+        from immich_autotag.types.uuid_wrappers import AssetUUID
 
         return (
             AssetUUID.from_uuid(UUID(asset.id)) in self._get_or_build_asset_ids_cache()

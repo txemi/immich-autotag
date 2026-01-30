@@ -6,7 +6,7 @@ import attrs
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_manager import AssetManager

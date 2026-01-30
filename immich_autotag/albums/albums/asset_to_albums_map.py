@@ -4,7 +4,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_list import AlbumList
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):

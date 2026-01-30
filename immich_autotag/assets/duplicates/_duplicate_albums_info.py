@@ -5,7 +5,7 @@ from typing import Dict
 import attrs
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.asset_uuid import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)

@@ -7,7 +7,7 @@ from immich_client.client import AuthenticatedClient
 from immich_client.models.user_response_dto import UserResponseDto
 from immich_client.types import Response
 
-from immich_autotag.types.uuid_wrappers import UserUUID
+from immich_autotag.types.uuid_wrappers import UserUUID, AlbumUUID
 
 
 def proxy_search_users(*, client: AuthenticatedClient) -> list[UserResponseDto]:
