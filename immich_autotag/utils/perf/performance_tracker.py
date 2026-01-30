@@ -62,6 +62,11 @@ class PerformanceTracker:
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(int)),
     )
+    _last_log_time: Optional[float] = attr.ib(
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(float)),
+    )
 
     def __attrs_post_init__(self):
         self._last_log_time = self._start_time
@@ -124,7 +129,7 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_skip_n(self) -> int:
-        return self.skip_n or 0
+        return self._skip_n or 0
 
     @typechecked
     def _calc_total_to_process(self) -> Optional[int]:
@@ -133,12 +138,12 @@ class PerformanceTracker:
         (total_assets - skip_n) if both are set.
         """
         skip_n = self._printable_value_skip_n()
-        if self.max_assets is not None and self.total_assets is not None:
-            return min(self.max_assets, self.total_assets - skip_n)
-        if self.max_assets is not None:
-            return self.max_assets
-        if self.total_assets is not None:
-            return self.total_assets - skip_n
+        if self._max_assets is not None and self._total_assets is not None:
+            return min(self._max_assets, self._total_assets - skip_n)
+        if self._max_assets is not None:
+            return self._max_assets
+        if self._total_assets is not None:
+            return self._total_assets - skip_n
         return None
 
     @typechecked
@@ -155,8 +160,8 @@ class PerformanceTracker:
 
     @typechecked
     def _printable_value_abs_total(self) -> Optional[int]:
-        if self.total_assets and self.total_assets > 0:
-            return self.total_assets
+        if self._total_assets and self._total_assets > 0:
+            return self._total_assets
         return None
 
     @typechecked
@@ -427,7 +432,7 @@ class PerformanceTracker:
         get_progress_description can be used externally).
         """
         now = time.time()
-        if count == 1 or (self.total_assets and count == self.total_assets):
+        if count == 1 or (self._total_assets and count == self._total_assets):
             self._last_log_time = now
             return True
         if now - self._last_log_time >= self._log_interval:
