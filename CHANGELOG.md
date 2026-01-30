@@ -1,4 +1,3 @@
-
 # Changelog
 
 All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md).
@@ -454,6 +453,16 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 **Description:** Lowered Quality Gate strictness to unblock development and CI. This is a temporary change; stricter checks will be restored in a future version.
 ### Changed
 - Quality Gate STANDARD requirements relaxed to allow progress on other features and fixes. All other code and configuration remain unchanged.
+
+
+## [0.74.3-qualitygate] - 2026-01-30
+**Status:** 🔖 Tagged (not published)
+**Description:** Quality Gate STANDARD passed. All blocking errors fixed after strong-typed IDs migration and maintainability improvements.
+### Added
+- Quality Gate STANDARD fully passed: all blocking errors (formatting, linter, type, config) resolved after strong-typed IDs migration and maintainability improvements.
+- All code auto-formatted and import-sorted; all CI/CD checks green.
+- This tag marks a milestone for maintainability, type safety, and CI reliability.
+
 
 
 ## [Planned: Unmatched Albums Report]
