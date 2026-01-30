@@ -23,7 +23,6 @@ from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 # class ModificationEntry: ...
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class ModificationEntry:
-
     """
     Represents a modification in the system using rich objects (wrappers, DTOs, etc.).
     This class is intended for internal logic, validation, advanced formatting, and access to all high-level data.
@@ -59,11 +58,16 @@ class ModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
+
     def _get_asset_id(self):
         return self.asset_wrapper.get_id() if self.asset_wrapper is not None else None
 
     def _get_asset_name(self):
-        return str(self.asset_wrapper.get_original_file_name()) if self.asset_wrapper is not None else None
+        return (
+            str(self.asset_wrapper.get_original_file_name())
+            if self.asset_wrapper is not None
+            else None
+        )
 
     def _get_tag_name(self):
         return self.tag.get_name() if self.tag is not None else None
@@ -90,6 +94,7 @@ class ModificationEntry:
             except Exception:
                 return None
         return None
+
     def to_serializable(self) -> "SerializableModificationEntry":
         """
         Converts the rich entry to a serializable version (only simple types).
