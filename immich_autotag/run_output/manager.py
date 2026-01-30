@@ -8,7 +8,7 @@ from ._recent_run_dir import RecentRunDir
 from .execution import RunExecution
 
 # --- Private module-level constants and variables for execution management ---
-_LOGS_LOCAL_DIR = Path("logs_local")
+
 _RUN_DIR_PID_MARK = "PID"
 _RUN_DIR_PID_SEP = "_PID"
 _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
@@ -53,7 +53,13 @@ class RunOutputManager:
     If you need to save or find any data related to a run, always use this object.
     """
 
-    _RUN_OUTPUT_DIR: Optional[RunExecution] = None
+    _run_output_dir: Optional[RunExecution] = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(RunExecution)),
+    )
+    _logs_local_dir: Path = attrs.field(
+        default=Path("logs_local"), validator=attrs.validators.instance_of(Path)
+    )
 
     def __attrs_post_init__(self):
         global _current_instance
@@ -92,40 +98,37 @@ class RunOutputManager:
         except Exception:
             return None
 
-    @staticmethod
-    def _list_run_dirs(base_dir: Path) -> list[Path]:
+    def _list_run_dirs(self, base_dir: Path) -> list[Path]:
         """Returns all valid execution subfolders in base_dir."""
-        return [d for d in base_dir.iterdir() if RunOutputManager._is_run_dir(d)]
+        return [d for d in base_dir.iterdir() if self._is_run_dir(d)]
 
     def get_run_output_dir(self) -> RunExecution:
         """
         Returns a RunExecution object for the current run. Argument must be a Path.
         """
-
-        if self._RUN_OUTPUT_DIR is None:
-            base_dir = _LOGS_LOCAL_DIR
+        if self._run_output_dir is None:
+            base_dir = self._logs_local_dir
             now = datetime.now().strftime(_RUN_DIR_DATE_FORMAT)
             pid = os.getpid()
             run_dir = Path(base_dir) / f"{now}{_RUN_DIR_PID_SEP}{pid}"
             run_dir.mkdir(parents=True, exist_ok=True)
-            self._RUN_OUTPUT_DIR = RunExecution(run_dir)
-        return self._RUN_OUTPUT_DIR
+            self._run_output_dir = RunExecution(run_dir)
+        return self._run_output_dir
 
-    @staticmethod
     def find_recent_run_dirs(
-        max_age_hours: int = 3, exclude_current: bool = True
+        self, max_age_hours: int = 3, exclude_current: bool = True
     ) -> list["RunExecution"]:
         """
         Returns a list of RunExecution objects for recent executions (subfolders with 'PID' in the name and valid date),
         ordered from most recent to oldest, filtered by age (max_age_hours).
         If exclude_current is True, excludes the current execution folder.
         """
-        logs_dir = _LOGS_LOCAL_DIR
+        logs_dir = self._logs_local_dir
         now = datetime.now()
-        current_run = RunOutputManager.get_run_output_dir() if exclude_current else None
+        current_run = self.get_run_output_dir() if exclude_current else None
         current_run_dir = current_run.path if current_run else None
         recent_dirs: list[RecentRunDir] = []
-        for subdir in RunOutputManager._list_run_dirs(logs_dir):
+        for subdir in self._list_run_dirs(logs_dir):
             if exclude_current and subdir.resolve() == current_run_dir:
                 continue
             rrd = RecentRunDir.from_path(subdir)
@@ -134,32 +137,28 @@ class RunOutputManager:
         recent_dirs.sort(key=lambda r: r.get_datetime() or datetime.min, reverse=True)
         return [RunExecution(r.get_path()) for r in recent_dirs]
 
-    @staticmethod
-    def get_previous_run_output_dir(
-        base_dir: Optional[Path] = None,
-    ) -> Optional[RunExecution]:
+    def get_previous_run_output_dir(self) -> Optional[RunExecution]:
         """
-        Searches for the most recent previous execution folder in base_dir.
+        Searches for the most recent previous execution folder in the default logs directory.
         Returns Path or None if there are no previous executions.
         """
-        if base_dir is None:
-            base = _LOGS_LOCAL_DIR
-        else:
-            base = Path(base_dir)
+        base = self._logs_local_dir
         if not base.exists() or not base.is_dir():
-            return None
-        dirs = RunOutputManager._list_run_dirs(base)
+            raise RuntimeError(
+                f"Logs directory does not exist or is not a directory: {base}"
+            )
+        dirs = self._list_run_dirs(base)
         if not dirs:
-            return None
-        current = RunOutputManager.get_run_output_dir()
+            raise RuntimeError(f"No run directories found in logs directory: {base}")
+        current = self.get_run_output_dir()
         dirs.sort(
-            key=lambda d: RunOutputManager._extract_datetime_from_run_dir(d)
-            or datetime.min,
+            key=lambda d: self._extract_datetime_from_run_dir(d) or datetime.min,
             reverse=True,
         )
         for d in dirs:
             if d != current.path:
                 return RunExecution(d)
+        # No previous run directory found; returning None is expected and not an error.
         return None
 
     @staticmethod
