@@ -608,9 +608,9 @@ class AssetResponseWrapper:
                     f"({self.get_original_file_name()}) because {tag_absent_reason}.",
                     level=LogLevel.FOCUS,
                 )
-                if user is None:
-                    user = UserResponseWrapper.load_current_user()
-                self.remove_tag_by_name(tag_name=tag_name, user=user)
+
+                user_obj = UserResponseWrapper.load_current_user()
+                self.remove_tag_by_name(tag_name=tag_name, user=user_obj)
             else:
                 log(
                     f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) {tag_absent_reason}. Tag '{tag_name}' not present.",
