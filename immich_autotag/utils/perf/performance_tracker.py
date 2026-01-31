@@ -93,7 +93,7 @@ class PerformanceTracker:
         skip_n: Optional[int] = 0,
     ) -> "PerformanceTracker":
         """
-        Constructor estático que inicializa la instancia con setters, con guardas para None.
+        Static constructor that initializes the instance with setters, with guards for None values.
         """
         instance = PerformanceTracker()
         if total_assets is not None:
