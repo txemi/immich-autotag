@@ -64,7 +64,7 @@
     {
       "label": "Quality Gate: Python (CHECK)",
       "type": "shell",
-      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode CHECK",
+      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode CHECK --level STANDARD",
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
@@ -73,7 +73,7 @@
     {
       "label": "Quality Gate: Python (APPLY)",
       "type": "shell",
-      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode APPLY",
+      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode APPLY --level STANDARD",
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
