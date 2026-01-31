@@ -66,7 +66,9 @@ class AssetDateCandidates:
         from .date_source_kind import DateSourceKind
 
         return [
-            c for c in self._candidates if c.get_source_kind() == DateSourceKind.FILENAME
+            c
+            for c in self._candidates
+            if c.get_source_kind() == DateSourceKind.FILENAME
         ]
 
     @typechecked
