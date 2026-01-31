@@ -41,7 +41,8 @@ def sync_album_permissions(
 
     # Resolve configured member emails to user IDs
     email_objs = [EmailAddress.from_string(e) for e in resolved_policy.members]
-    result = ResolveEmailsResult.resolve_emails_to_user_ids(email_objs, context)
+    result = ResolveEmailsResult()
+    result.resolve_emails_to_user_ids(email_objs, context)
     target_user_ids = set(result._resolved.values())
 
     # Get current members from API (pass album_wrapper directly)
