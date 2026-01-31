@@ -1,22 +1,28 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import attr
 from typeguard import typechecked
+
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.report.modification_kind import ModificationKind
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-    from .statistics_manager import StatisticsManager
 
 
 @typechecked
 @attr.s(auto_attribs=True, kw_only=True)
 class TagStatsManager:
-    stats_manager: "StatisticsManager" = attr.ib(
-        validator=attr.validators.instance_of(StatisticsManager)
-    )
+    stats_manager: "StatisticsManager" = attr.ib()
+
+    def __attrs_post_init__(self):
+        # Runtime type check to enforce type safety without circular import
+        from .statistics_manager import StatisticsManager as SM
+        if not isinstance(self.stats_manager, SM):
+            raise TypeError(f"stats_manager must be a StatisticsManager, got {type(self.stats_manager)}")
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
