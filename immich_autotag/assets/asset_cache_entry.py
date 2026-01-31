@@ -76,7 +76,7 @@ class AssetCacheEntry:
             else:
                 state = None
             if state is not None:
-                entry = cls._from_state(_state=state, _max_age_seconds=max_age_seconds)
+                entry = cls._from_state(state=state, max_age_seconds=max_age_seconds)
                 if not entry.is_stale():
                     return entry
         # If the cache is expired or does not exist, reload from API
