@@ -15,17 +15,8 @@ if TYPE_CHECKING:
 @attr.s(auto_attribs=True, kw_only=True)
 class TagStatsManager:
     stats_manager: "StatisticsManager" = attr.ib(
-        validator=attr.validators.instance_of(object)
+        validator=attr.validators.instance_of("StatisticsManager")
     )
-
-    @stats_manager.validator
-    def _validate_stats_manager(self, attribute, value):
-        from .statistics_manager import StatisticsManager
-
-        if not isinstance(value, StatisticsManager):
-            raise TypeError(
-                f"stats_manager must be a StatisticsManager, got {type(value)}"
-            )
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
@@ -37,7 +28,7 @@ class TagStatsManager:
 
                     stats.output_tag_counters[tag] = OutputTagCounter()
                 stats.output_tag_counters[tag].total += 1
-        self.stats_manager._save_to_file()
+        self.stats_manager.save_to_file()
 
     @typechecked
     def increment_tag_added(self, tag: "TagWrapper") -> None:
