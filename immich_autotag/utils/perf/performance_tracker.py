@@ -23,7 +23,6 @@ class AvgAndTotals:
     estimation_mode: TimeEstimationMode
 
 
-@typechecked
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class PerformanceTracker:
 
