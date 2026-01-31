@@ -206,7 +206,10 @@ class AssetCacheEntry:
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
         state = AssetDtoState.from_dto(dto, dto_type)
-        return cls(_state=state, _max_age_seconds=max_age_seconds)
+        self = cls()
+        self._state = state
+        self._max_age_seconds = max_age_seconds
+        return self
 
     @classmethod
     def _from_api_entry(
