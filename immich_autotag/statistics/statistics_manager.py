@@ -72,7 +72,7 @@ class StatisticsManager:
         )
         return self._perf_tracker
 
-    def _save_to_file(self) -> None:
+    def save_to_file(self) -> None:
         if self._current_stats and self._current_file:
             # Always update progress_description before saving
             self.get_or_create_run_stats().progress_description = (
@@ -94,7 +94,7 @@ class StatisticsManager:
         max_assets = config.skip.max_items
 
         self.get_or_create_run_stats().max_assets = max_assets
-        self._save_to_file()
+        self.save_to_file()
         # If the PerformanceTracker already exists, update its internal value
         perf_tracker = self._get_or_create_perf_tracker()
         assert isinstance(perf_tracker, PerformanceTracker)
@@ -107,7 +107,7 @@ class StatisticsManager:
         with self._lock:
 
             self.get_or_create_run_stats().skip_n = skip_n
-            self._save_to_file()
+            self.save_to_file()
             self._get_or_create_perf_tracker().set_skip_n(skip_n)
 
     # Event counters are now stored in self._current_stats.event_counters
@@ -166,7 +166,7 @@ class StatisticsManager:
     def set_total_assets(self, total_assets: int) -> None:
         with self._lock:
             self.get_or_create_run_stats().total_assets = total_assets
-            self._save_to_file()
+            self.save_to_file()
             self._get_or_create_perf_tracker()
 
     def maybe_print_progress(self, count: int) -> None:
@@ -257,14 +257,14 @@ class StatisticsManager:
             self.get_or_create_run_stats().count = count
             # Only save to disk every 100 assets (not every asset) for performance
             if count % 100 == 0:
-                self._save_to_file()
+                self.save_to_file()
         self.maybe_print_progress(count)
         return self.get_or_create_run_stats()
 
     @typechecked
     def save(self) -> None:
         with self._lock:
-            self._save_to_file()
+            self.save_to_file()
 
     @typechecked
     def delete_all(self) -> None:
@@ -294,7 +294,7 @@ class StatisticsManager:
                 self.get_or_create_run_stats().previous_sessions_time = (
                     prev + session_time
                 )
-            self._save_to_file()
+            self.save_to_file()
 
     @typechecked
     def abrupt_exit(self) -> None:
