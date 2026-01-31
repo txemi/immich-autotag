@@ -861,15 +861,15 @@ class AssetResponseWrapper:
 
         context = self.get_context()
         duplicate_id = self.get_duplicate_id_as_uuid()
-        wrappers = []
-        if duplicate_id is not None:
-            group = context.get_duplicates_collection().get_group(duplicate_id)
-            for dup_id in group:
-                if dup_id == self.get_uuid():
-                    continue
-                dup_asset = context.get_asset_manager().get_asset(dup_id, context)
-                if dup_asset is not None:
-                    wrappers.append(dup_asset)
+        # duplicate_id is always a UUID, never None
+        wrappers: list[AssetResponseWrapper] = []
+        group = context.get_duplicates_collection().get_group(duplicate_id)
+        for dup_id in group:
+            if dup_id == self.get_uuid():
+                continue
+            dup_asset = context.get_asset_manager().get_asset(dup_id, context)
+            if dup_asset is not None:
+                wrappers.append(dup_asset)
         return wrappers
 
     @typechecked
@@ -1023,13 +1023,9 @@ class AssetResponseWrapper:
         lines.append(f"  file_created_at: {file_created_at}")
         # exif_created_at is not present in AssetResponseDto
         lines.append("  exif_created_at: (not available)")
-        try:
-            updated_at = None
-            # If AssetDtoState has a get_updated_at method, use it; otherwise, skip
-            state = self._cache_entry.get_state()
-            updated_at = state.get_updated_at()
-        except Exception:
-            updated_at = None
+        # Print the correct updated_at value from AssetDtoState
+        state = self._cache_entry.get_state()
+        updated_at = state.get_loaded_at()
         lines.append(f"  updated_at: {updated_at}")
         lines.append(f"  Tags: {self.get_tag_names()}")
         lines.append(f"  Albums: {self.get_album_names()}")
