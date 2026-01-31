@@ -8,7 +8,6 @@ from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.email_address import EmailAddress
 
-from ._get_current_members import get_current_members
 from ._remove_members_from_album import remove_members_from_album
 from ._resolve_emails_result import ResolveEmailsResult
 
@@ -46,12 +45,10 @@ def sync_album_permissions(
     target_user_ids = set(result._resolved.values())
 
     # Get current members from API (pass album_wrapper directly)
-    current_members =album_wrapper.get_album_users()
-    from immich_autotag.types.uuid_wrappers import UserUUID
+    current_members = album_wrapper.get_album_users()
 
-    current_user_ids = {
-        UserUUID.from_string(str(member.user.id)) for member in current_members
-    }
+    # current_members is AlbumUserList; iterate and use .id property of AlbumUserWrapper
+    current_user_ids = {member.get_uuid() for member in current_members}
 
     # Calculate diff
     users_to_add = target_user_ids - current_user_ids

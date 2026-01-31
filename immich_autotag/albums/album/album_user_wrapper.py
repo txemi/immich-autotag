@@ -17,34 +17,35 @@ class AlbumUserWrapper:
     Wrapper for AlbumUserResponseDto to provide a consistent interface for album users.
     """
 
-    user: "AlbumUserResponseDto"
+    _user: "AlbumUserResponseDto" = attrs.field()
 
     def __attrs_post_init__(self):
-        # Runtime type check for AlbumUserResponseDto
-        # noinspection PyUnresolvedReferences,PyTypeHints
+        # Runtime validator for AlbumUserResponseDto
         from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+        if not isinstance(self._user, AlbumUserResponseDto):
+            raise TypeError(f"_user must be AlbumUserResponseDto, got {type(self._user)}")
 
-        if not isinstance(self.user, AlbumUserResponseDto):  # type: ignore[unnecessary-isinstance]
-            raise TypeError(f"user must be AlbumUserResponseDto, got {type(self.user)}")
 
-    @property
+
+
+
     @typechecked
-    def id(self) -> str:
-        return self.user.user.id
+    def get_email(self) -> object:
+        from immich_autotag.types.email_address import EmailAddress
+        return EmailAddress.from_string(self._user.user.email)
 
-    @property
     @typechecked
-    def email(self) -> str:
-        return self.user.user.email
+    def get_name(self) -> str:
+        return self._user.user.name
 
-    @property
-    @typechecked
-    def name(self) -> str:
-        return self.user.user.name
 
     @typechecked
     def get_uuid(self) -> UserUUID:
-        return UserUUID.from_string(self.id)
+        # Try to extract the user id from the wrapped DTO
+        return UserUUID.from_string(self._user.user.id)
 
     def __str__(self) -> str:
-        return self.name or self.email or self.id or "<unknown user>"
+        try:
+            return self.get_name() or str(self.get_email()) or str(self.get_uuid())
+        except Exception:
+            return "<unknown user>"
