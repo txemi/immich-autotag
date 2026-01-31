@@ -1,9 +1,8 @@
-import attr
+
 from typing import Any
 
-@attr.define(auto_attribs=True, slots=True)
 class Check:
-    name: str
+    name: str = ''  # Should be overridden as a class variable in subclasses
 
     def check(self, args: Any) -> int:
         raise NotImplementedError
