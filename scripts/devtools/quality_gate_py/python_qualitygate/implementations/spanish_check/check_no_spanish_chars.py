@@ -74,11 +74,7 @@ class CheckNoSpanishChars(Check):
         findings: List[Finding] = []
         EXCLUDE_PATTERNS = [
             'SPANISH_PATTERN',
-            'regex generado para español',
-            'Resultados de grep español',
-            'Archivos a revisar por español',
-            'palabra prohibida',
-            'DEBUG',
+
         ]
         EXCLUDE_FILES = [
             'quality_gate.sh',

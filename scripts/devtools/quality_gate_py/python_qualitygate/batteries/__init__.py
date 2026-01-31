@@ -1,1 +1,1 @@
-# Subpaquete para la definición y almacenamiento de baterías de checks
+# Subpackage for the definition and storage of check batteries
