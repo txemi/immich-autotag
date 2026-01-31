@@ -20,7 +20,7 @@ class CheckPythonSyntax(Check):
             try:
                 py_compile.compile(str(f), doraise=True)
             except py_compile.PyCompileError as e:
-                # Extraer mensaje y línea si es posible
+                # Extract message and line if possible
                 msg = str(e)
                 lineno = 0
                 if hasattr(e, 'exc_value') and hasattr(e.exc_value, 'lineno'):

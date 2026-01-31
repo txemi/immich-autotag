@@ -12,7 +12,7 @@ class Finding:
 @attr.define(auto_attribs=True, slots=True)
 class CheckResult:
     findings: List[Finding]
-    # Puedes añadir más campos si quieres (por ejemplo, success, summary, etc)
+    # You can add more fields if you want (for example, success, summary, etc)
 
     def is_success(self) -> bool:
         return len(self.findings) == 0

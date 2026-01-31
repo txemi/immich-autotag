@@ -1,1 +1,1 @@
-# Subpaquete para lógica de CLI, parseo de argumentos, etc.
+# Subpackage for CLI logic, argument parsing, etc.
