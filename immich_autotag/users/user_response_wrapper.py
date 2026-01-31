@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from immich_client.models.user_response_dto import UserResponseDto
 
 
-
 @attrs.define(slots=True, frozen=True)
 class UserResponseWrapper:
     _user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field()
@@ -24,6 +23,7 @@ class UserResponseWrapper:
             raise ValueError("user cannot be None")
         from immich_client.models.user_admin_response_dto import UserAdminResponseDto
         from immich_client.models.user_response_dto import UserResponseDto
+
         if not isinstance(user, (UserResponseDto, UserAdminResponseDto)):
             raise TypeError(
                 f"user must be a UserResponseDto or UserAdminResponseDto, got {type(user)}"
