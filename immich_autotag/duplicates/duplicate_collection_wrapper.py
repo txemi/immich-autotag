@@ -6,7 +6,7 @@ import attrs
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
 from typeguard import typechecked
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_manager import AssetManager
@@ -51,7 +51,7 @@ class DuplicateCollectionWrapper:
     Holds a mapping from duplicate_id (UUID) to DuplicateAssetGroup.
     """
 
-    groups_by_duplicate_id: dict[UUID, DuplicateAssetGroup]
+    groups_by_duplicate_id: dict[DuplicateUUID, DuplicateAssetGroup]
 
     @classmethod
     @typechecked
@@ -71,7 +71,7 @@ class DuplicateCollectionWrapper:
         return cls(groups_by_duplicate_id=mapping)
 
     @typechecked
-    def get_group(self, duplicate_id: UUID) -> DuplicateAssetGroup:
+    def get_group(self, duplicate_id: DuplicateUUID) -> DuplicateAssetGroup:
         """Return the DuplicateAssetGroup for a given duplicate_id. Empty if not found."""
         return self.groups_by_duplicate_id.get(duplicate_id, DuplicateAssetGroup([]))
 

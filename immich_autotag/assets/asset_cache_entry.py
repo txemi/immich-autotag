@@ -11,7 +11,7 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.types.uuid_wrappers import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -215,7 +215,7 @@ class AssetCacheEntry:
 
         return state.get_tags()
 
-    def get_state(self):
+    def get_state(self) -> AssetDtoState:
         """
         Returns the internal AssetDtoState (for compatibility with wrappers).
         """
@@ -248,10 +248,11 @@ class AssetCacheEntry:
         """
         return self._state.get_original_path()
 
-    def get_duplicate_id_as_uuid(self) -> UUID:
+    def get_duplicate_id_as_uuid(self) -> DuplicateUUID:
         """
-        Returns the duplicate id as UUID, if available.
+        Returns the duplicate id as DuplicateUUID, if available.
         """
+        from immich_autotag.types.uuid_wrappers import DuplicateUUID
         return self._state.get_duplicate_id_as_uuid()
 
     def has_tag(self, tag_name: str) -> bool:

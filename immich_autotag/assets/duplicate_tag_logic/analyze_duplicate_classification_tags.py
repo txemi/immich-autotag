@@ -33,13 +33,8 @@ def analyze_duplicate_classification_tags(
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
-    duplicate_id = asset_wrapper.get_duplicate_id_as_uuid()
-    if not duplicate_id:
-        log(
-            f"[DUPLICATE TAGS] Asset {asset_wrapper.get_id()} ({asset_wrapper.get_original_file_name()}) has no duplicates. Nothing to check.",
-            level=LogLevel.FOCUS,
-        )
-        return DuplicateTagAnalysisResult.NO_DUPLICATES
+    from immich_autotag.types.uuid_wrappers import DuplicateUUID
+    duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
     duplicate_wrappers = get_duplicate_wrappers(asset_wrapper)
     any_autofix = False
     all_equal = True

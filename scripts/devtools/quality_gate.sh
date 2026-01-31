@@ -831,8 +831,8 @@ viejos'
 		file_count=$(echo "$spanish_matches" | cut -d: -f1 | sort | uniq | wc -l)
 		echo "Total matches: $match_count | Files affected: $file_count"
 		quality_gate_status_message "[EXIT] Quality Gate failed due to forbidden Spanish characters.\n" \
-		"Build failed: Please remove all Spanish text and accents before publishing.\n" \
-		"¡Ay caramba! Spanish detected. Let's keep it English, amigos!"
+			"Build failed: Please remove all Spanish text and accents before publishing.\n" \
+			"¡Ay caramba! Spanish detected. Let's keep it English, amigos!"
 		return 1
 	else
 		echo "✅ No Spanish language characters detected."

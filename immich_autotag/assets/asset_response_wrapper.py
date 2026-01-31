@@ -33,7 +33,7 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.types.uuid_wrappers import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID, TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
@@ -350,10 +350,9 @@ class AssetResponseWrapper:
             )
             return False
         # Extra checks and logging before API call
-        if not tag or tag.get_id() is None:
+        if not tag:
             error_msg = (
-                f"[ERROR] Tag object for '{tag_name}' is missing or has no id. "
-                f"Tag: {tag}"
+                f"[ERROR] Tag object for '{tag_name}' is missing. " f"Tag: {tag}"
             )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
@@ -434,7 +433,7 @@ class AssetResponseWrapper:
         return True
 
     @typechecked
-    def _get_current_tag_ids(self) -> "list[TagUUID]":
+    def _get_current_tag_ids(self) -> list[TagUUID]:
         """Returns the AssetUUIDs of the asset's current tags."""
         tags: list[TagWrapper] = self.get_tags()
         return [t.get_id() for t in tags]
@@ -502,11 +501,10 @@ class AssetResponseWrapper:
     def get_original_path(self) -> Path:
         # Ensure the return is a Path object
         orig = self._cache_entry.get_original_path()
-        if isinstance(orig, Path):
-            return orig
-        return Path(orig)
+        return orig
 
-    def get_duplicate_id_as_uuid(self) -> UUID:
+    def get_duplicate_id_as_uuid(self) -> DuplicateUUID:
+        from immich_autotag.types.uuid_wrappers import DuplicateUUID
         return self._cache_entry.get_duplicate_id_as_uuid()
 
     @typechecked
@@ -610,9 +608,9 @@ class AssetResponseWrapper:
                     f"({self.get_original_file_name()}) because {tag_absent_reason}.",
                     level=LogLevel.FOCUS,
                 )
-                if user is None:
-                    user = UserResponseWrapper.load_current_user()
-                self.remove_tag_by_name(tag_name=tag_name, user=user)
+
+                user_obj = UserResponseWrapper.load_current_user()
+                self.remove_tag_by_name(tag_name=tag_name, user=user_obj)
             else:
                 log(
                     f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) {tag_absent_reason}. Tag '{tag_name}' not present.",
@@ -636,10 +634,8 @@ class AssetResponseWrapper:
         from immich_autotag.config.models import ClassificationConfig
 
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
-        tag_name = None
-        if config is not None and config.classification is not None:
-            classification: ClassificationConfig = config.classification
-            tag_name = classification.autotag_unknown
+        classification: ClassificationConfig = config.classification
+        tag_name = classification.autotag_unknown
         if tag_name is None:
             from immich_autotag.logging.utils import log
 
@@ -675,10 +671,8 @@ class AssetResponseWrapper:
         from immich_autotag.config.models import ClassificationConfig
 
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
-        tag_name = None
-        if config is not None and config.classification is not None:
-            classification: ClassificationConfig = config.classification
-            tag_name = classification.autotag_conflict
+        classification: ClassificationConfig = config.classification
+        tag_name = classification.autotag_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
 
@@ -739,9 +733,9 @@ class AssetResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        changes = []
+        changes: list[str] = []
         for conv in tag_conversions:
-            result = conv.apply_to_asset(self)
+            result: list[str] | None = conv.apply_to_asset(self)
             if result:
                 changes.extend(result)
         if changes:
@@ -776,11 +770,7 @@ class AssetResponseWrapper:
         )
 
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
-        if not (
-            config
-            and config.album_detection_from_folders is not None
-            and config.album_detection_from_folders.enabled
-        ):
+        if not config.album_detection_from_folders.enabled:
             return None
 
         # If already classified or conflicted by tag or album, skip
@@ -873,16 +863,16 @@ class AssetResponseWrapper:
         """
 
         context = self.get_context()
-        duplicate_id = self.get_duplicate_id_as_uuid()
-        wrappers = []
-        if duplicate_id is not None:
-            group = context.get_duplicates_collection().get_group(duplicate_id)
-            for dup_id in group:
-                if dup_id == self.get_uuid():
-                    continue
-                dup_asset = context.get_asset_manager().get_asset(dup_id, context)
-                if dup_asset is not None:
-                    wrappers.append(dup_asset)
+        duplicate_id :DuplicateUUID= self.get_duplicate_id_as_uuid()
+        # duplicate_id is always a DuplicateUUID, never None
+        wrappers: list[AssetResponseWrapper] = []
+        group = context.get_duplicates_collection().get_group(duplicate_id)
+        for dup_id in group:
+            if dup_id == self.get_uuid():
+                continue
+            dup_asset = context.get_asset_manager().get_asset(dup_id, context)
+            if dup_asset is not None:
+                wrappers.append(dup_asset)
         return wrappers
 
     @typechecked
@@ -1036,13 +1026,9 @@ class AssetResponseWrapper:
         lines.append(f"  file_created_at: {file_created_at}")
         # exif_created_at is not present in AssetResponseDto
         lines.append("  exif_created_at: (not available)")
-        try:
-            updated_at = None
-            # If AssetDtoState has a get_updated_at method, use it; otherwise, skip
-            state = self._cache_entry.get_state()
-            updated_at = state.get_updated_at()
-        except Exception:
-            updated_at = None
+        # Print the correct updated_at value from AssetDtoState
+        state = self._cache_entry.get_state()
+        updated_at = state.get_loaded_at()
         lines.append(f"  updated_at: {updated_at}")
         lines.append(f"  Tags: {self.get_tag_names()}")
         lines.append(f"  Albums: {self.get_album_names()}")

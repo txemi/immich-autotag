@@ -40,12 +40,9 @@ def _handle_duplicate_conflicts(
     Detects album conflicts across duplicate assets and applies the conflict tag logic.
     """
     conflict = album_decision.has_conflict()
-    duplicate_id = asset_wrapper.get_duplicate_id_as_uuid()
-    from immich_client.types import Unset
-
-    if isinstance(duplicate_id, Unset) or duplicate_id is None:
-        # No valid duplicate_id, skip tagging
-        return
+    from immich_autotag.types.uuid_wrappers import DuplicateUUID
+    duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
+    # duplicate_id is always a UUID; no need to check for None/Unset
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()
     )

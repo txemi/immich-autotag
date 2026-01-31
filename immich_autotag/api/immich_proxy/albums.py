@@ -55,9 +55,7 @@ def proxy_get_album_info(
     global _album_api_call_count, _album_api_ids
     from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
-    cache_mgr = ApiCacheManager.create(
-        cache_type=ApiCacheKey.ALBUMS
-    )
+    cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS)
     # Only accept AlbumUUID
     cache_key = str(album_id)
     cache_data = cache_mgr.load(cache_key)
