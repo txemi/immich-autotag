@@ -790,7 +790,7 @@ check_no_spanish_chars() {
 
 	# Get git-tracked files and exclude this script, quality_gate.sh, and ONLY the spanish_words.txt file
 	local files_to_check
-	files_to_check=$(git ls-files | grep -v 'scripts/devtools/spanish_words.txt')
+	files_to_check=$(git ls-files | grep -v 'scripts/devtools/spanish_words.txt' | grep -v 'scripts/devtools/quality_gate_py/python_qualitygate/implementations/spanish_check/check_no_spanish_chars.py')
 
 	# Search for Spanish characters/words in the selected files
 	echo "[DEBUG] Archivos a revisar por español:" >&2
