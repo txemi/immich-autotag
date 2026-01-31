@@ -22,22 +22,21 @@ class AlbumUserWrapper:
     def __attrs_post_init__(self):
         # Runtime validator for AlbumUserResponseDto
         from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+
         if not isinstance(self._user, AlbumUserResponseDto):
-            raise TypeError(f"_user must be AlbumUserResponseDto, got {type(self._user)}")
-
-
-
-
+            raise TypeError(
+                f"_user must be AlbumUserResponseDto, got {type(self._user)}"
+            )
 
     @typechecked
     def get_email(self) -> object:
         from immich_autotag.types.email_address import EmailAddress
+
         return EmailAddress.from_string(self._user.user.email)
 
     @typechecked
     def get_name(self) -> str:
         return self._user.user.name
-
 
     @typechecked
     def get_uuid(self) -> UserUUID:
