@@ -795,7 +795,7 @@ check_no_spanish_chars() {
 	# Search for Spanish characters/words in the selected files
 	echo "[DEBUG] Files to check for Spanish:" >&2
 	echo "$files_to_check" >&2
-	spanish_matches=$(echo "$files_to_check" | xargs -r grep -n -I -i -P "$SPANISH_PATTERN" || true)
+	spanish_matches=$(echo "$files_to_check" | xargs -r grep -n -I -i -P "$SPANISH_PATTERN" | grep -v '^.*SPANISH_PATTERN=.*$' || true)
 	echo "[DEBUG] Results of Spanish grep:" >&2
 	echo "$spanish_matches" >&2
 
