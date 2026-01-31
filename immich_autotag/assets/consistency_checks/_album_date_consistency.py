@@ -16,10 +16,15 @@ from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_kind import ModificationKind
 
 
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.report.modification_report import ModificationReport
+
 @typechecked
 def check_album_date_consistency(
-    asset_wrapper, tag_mod_report, threshold_days: int = 180
-):
+    asset_wrapper: AssetResponseWrapper,
+    tag_mod_report: ModificationReport,
+    threshold_days: int = 180
+) -> None:
     """
     For each album whose name starts with a date (YYYY-MM-DD, YYYY-MM, or YYYY),
     compare the album date to the asset's best date. If the difference is greater than
@@ -77,7 +82,7 @@ def check_album_date_consistency(
         diff_days = abs((asset_date - album_date).days)
         if diff_days > threshold_days:
             mismatch_found = True
-            asset_wrapper.add_tag_by_name(autotag_name)
+            asset_wrapper.add_tag_by_name(tag_name=autotag_name)
             tag_mod_report.add_modification(
                 kind=ModificationKind.ALBUM_DATE_MISMATCH,
                 asset_wrapper=asset_wrapper,
@@ -93,13 +98,13 @@ def check_album_date_consistency(
                 },
             )
             log(
-                f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} in album '{album_name}' has date mismatch: asset {asset_date.date()} vs album {album_date.date()} (diff {diff_days} days) -- autotagged as '{autotag_name}'",
+                f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.get_id()} in album '{album_name}' has date mismatch: asset {asset_date.date()} vs album {album_date.date()} (diff {diff_days} days) -- autotagged as '{autotag_name}'",
                 level=LogLevel.FOCUS,
             )
     # Remove the autotag if no mismatch is found and the tag is present
     if not mismatch_found and asset_wrapper.has_tag(tag_name=autotag_name):
-        asset_wrapper.remove_tag_by_name(autotag_name)
+        asset_wrapper.remove_tag_by_name(tag_name=autotag_name)
         log(
-            f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} no longer has a date mismatch. Removed autotag '{autotag_name}'.",
+            f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.get_id()} no longer has a date mismatch. Removed autotag '{autotag_name}'.",
             level=LogLevel.FOCUS,
         )
