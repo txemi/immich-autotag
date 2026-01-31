@@ -14,7 +14,7 @@
 #
 # Modes:
 #   STRICT: Applies ALL checks strictly. Any error or warning in any check BLOCKS the build. Not recommended for CI unless code is perfect.
-#   STANDARD: Official CI level. Applies all checks, but some only warn and DO NOT block the build (see below). El resto pueden bloquear si fallan.
+#   STANDARD: Official CI level. Applies all checks, but some only warn and DO NOT block the build (see below). The rest may block if they fail.
 #   TARGET: Intermediate mode for Quality Gate improvement branches. Blocks the build ONLY for una subset de errores. El resto se comporta como en STANDARD (warn only).
 #   --enforce-dynamic-attrs  Enforce ban on getattr/hasattr (advanced).
 #
@@ -96,7 +96,7 @@ cd "$REPO_ROOT"
 # ======================
 # INTERNAL CONFIGURATION
 # ======================
-# Controla si quality_gate.sh se autoformatea con shfmt (1=Sí, 0=No)
+# Controls if quality_gate.sh is autoformatted with shfmt (1=Yes, 0=No)
 FORMAT_SELF=1
 
 ###############################################################################
@@ -193,7 +193,7 @@ parse_args_and_globals() {
 		;;
 	esac
 
-	# Si el usuario no fuerza quality_level, por defecto STANDARD
+	# If the user does not force quality_level, default to STANDARD
 	if [ -z "$quality_level" ]; then
 		quality_level="STANDARD"
 	fi
@@ -250,7 +250,7 @@ check_shfmt() {
 	script_self_abs="$(realpath "$0")"
 	script_self_rel="${script_self_abs#$PWD/}"
 
-	# Buscar scripts, excluir quality_gate.sh si FORMAT_SELF=0
+	# Find scripts, exclude quality_gate.sh if FORMAT_SELF=0
 	if [ "$FORMAT_SELF" = "1" ]; then
 		bash_scripts=$(find scripts -type f -name "*.sh")
 	else
@@ -488,7 +488,7 @@ check_ruff() {
 	local ruff_ignore="" ruff_exit
 	ensure_python_tool "$py_bin" ruff ruff
 
-	# Recoge quality_level solo del parámetro (quinto argumento)
+	# Collects quality_level only from the parameter (fifth argument)
 	local quality_level="$5"
 	if [ -z "$quality_level" ]; then
 		quality_level="STANDARD"
@@ -638,7 +638,7 @@ check_jscpd() {
 	jscpd_exit=$?
 	if [ $jscpd_exit -ne 0 ]; then
 		echo "[ERROR] jscpd detected code duplication. Please refactor duplicate code."
-		echo "🤔 Déjà vu? jscpd saw something twice... Time to refactor!"
+		echo "🤔 Already seen? jscpd saw something twice... Time to refactor!"
 		return 1
 	fi
 	echo "jscpd check passed: no significant code duplication detected."
@@ -728,7 +728,7 @@ check_mypy() {
 			echo '[EXIT] Quality Gate failed due to mypy errors.'
 			return 1
 		elif [ "$quality_level" = "STANDARD" ]; then
-			# Solo bloquea por errores arg-type y call-arg (objetivo mínimo)
+			# Only blocks for arg-type and call-arg errors (minimum target)
 			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg)\]' | wc -l)
 			if [ "$mypy_block_count" -gt 0 ]; then
 				quality_gate_status_message "\n\n❌❌❌ QUALITY GATE BLOCKED ($quality_level) ❌❌❌
@@ -774,7 +774,7 @@ check_no_spanish_chars() {
 	if [[ -f "$SPANISH_WORDS_FILE" ]]; then
 		SPANISH_WORD_PATTERN=$(grep -v '^#' "$SPANISH_WORDS_FILE" | grep -v '^$' | paste -sd '|' -)
 	fi
-	local SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]"
+	local SPANISH_PATTERN="[\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00cd\u00d3\u00da\u00f1\u00d1\u00fc\u00dc\u00bf\u00a1]" # Spanish accented characters (pattern, unicode escapes)
 	if [[ -n "$SPANISH_WORD_PATTERN" ]]; then
 		SPANISH_PATTERN="$SPANISH_PATTERN|\\b($SPANISH_WORD_PATTERN)\\b"
 	fi
@@ -803,7 +803,7 @@ check_no_spanish_chars() {
 		echo "Total matches: $match_count | Files affected: $file_count"
 		quality_gate_status_message "[EXIT] Quality Gate failed due to forbidden Spanish characters.\n" \
 			"Build failed: Please remove all Spanish text and accents before publishing.\n" \
-			"¡Ay caramba! Spanish detected. Let's keep it English, amigos!"
+			"Oops! Spanish detected. Let's keep it English, friends!"
 		return 1
 	else
 		echo "✅ No Spanish language characters detected."
@@ -827,7 +827,7 @@ check_import_linter() {
 		py_bin="$(command -v python3 || command -v python)"
 	fi
 	echo "[CHECK] Running import-linter (lint-imports) for architectural contracts..."
-	# Asegurar que import-linter está instalado
+	# Ensure import-linter is installed
 	if ! "$py_bin" -c "import importlinter" 2>/dev/null; then
 		echo "[INFO] import-linter not found in environment. Installing..."
 		"$py_bin" -m pip install import-linter
@@ -961,7 +961,7 @@ run_quality_gate_check_summary() {
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
 }
 
-# Refactor: main usa solo variables locales y pasa los valores explícitamente
+# Refactor: main uses only local variables and passes values explicitly
 main() {
 	# Argument and global variable initialization
 	local check_mode quality_level target_dir enforce_dynamic_attrs only_check max_line_length py_bin
@@ -989,7 +989,7 @@ main() {
 		fi
 	fi
 
-	# Pasar los valores explícitamente a las funciones de chequeo
+	# Pass values explicitly to the check functions
 	# All quality gate modules/checks are called via run_quality_gate_check_mode and run_quality_gate_apply_mode.
 	# If a check is not called, it is either deprecated or not implemented yet. Add new checks to those functions.
 	if [ "$check_mode" = "CHECK" ]; then
