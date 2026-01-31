@@ -40,6 +40,28 @@ class TagCollectionWrapper:
     def _set_fully_loaded(self):
         self._fully_loaded = True
 
+    def _load_all_from_api(self):
+        """
+        Loads all tags from the API and adds them to the index, marking as fully_loaded.
+        If already fully_loaded, does nothing.
+        """
+        if self._fully_loaded:
+            return
+        from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+        from immich_autotag.tags.tag_response_wrapper import TagWrapper
+
+        client_wrapper = ImmichClientWrapper.get_default_instance()
+        client = client_wrapper.get_client()
+        tags_dto = proxy_get_all_tags(client=client)
+        if tags_dto is None:
+            raise RuntimeError("API returned None when fetching all tags")
+        self._index.clear()
+        for tag_dto in tags_dto:
+            tag = TagWrapper(tag_dto)
+            self._index.add(tag)
+        self._set_fully_loaded()
+
     def _sync_from_api(self, client: ImmichClient) -> None:
         """
         Refresh tag cache from the API to handle external changes or race conditions.
@@ -119,28 +141,6 @@ class TagCollectionWrapper:
                     return tag
             raise
 
-    def _load_all_from_api(self):
-        """
-        Loads all tags from the API and adds them to the index, marking as fully_loaded.
-        If already fully_loaded, does nothing.
-        """
-        if self._fully_loaded:
-            return
-        from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-        from immich_autotag.tags.tag_response_wrapper import TagWrapper
-
-        client_wrapper = ImmichClientWrapper.get_default_instance()
-        client = client_wrapper.get_client()
-        tags_dto = proxy_get_all_tags(client=client)
-        if tags_dto is None:
-            raise RuntimeError("API returned None when fetching all tags")
-        self._index.clear()
-        for tag_dto in tags_dto:
-            tag = TagWrapper(tag_dto)
-            self._index.add(tag)
-        self._set_fully_loaded()
-
     @staticmethod
     @typechecked
     def _from_api() -> "TagCollectionWrapper":
@@ -175,24 +175,6 @@ class TagCollectionWrapper:
         if not self._fully_loaded:
             return self._load_single_by_id_from_api(id_)
         return None
-
-    @typechecked
-    def __iter__(self):
-        # If not fully_loaded, force full loading
-        if not self._fully_loaded:
-            self._load_all_from_api()
-        return iter(self._index)
-
-    @typechecked
-    def __contains__(self, name: str) -> bool:
-        return self.find_by_name(name) is not None
-
-    @typechecked
-    def __len__(self) -> int:
-        # If not fully_loaded, force full loading
-        if not self._fully_loaded:
-            self._load_all_from_api()
-        return len(self._index)
 
     @classmethod
     def get_instance(cls) -> "TagCollectionWrapper":
@@ -249,3 +231,21 @@ class TagCollectionWrapper:
                 print(f"[CLEANUP] Deleted tag: {tag.name} (id={tag.id})")
                 count += 1
         return count
+
+    @typechecked
+    def __iter__(self):
+        # If not fully_loaded, force full loading
+        if not self._fully_loaded:
+            self._load_all_from_api()
+        return iter(self._index)
+
+    @typechecked
+    def __contains__(self, name: str) -> bool:
+        return self.find_by_name(name) is not None
+
+    @typechecked
+    def __len__(self) -> int:
+        # If not fully_loaded, force full loading
+        if not self._fully_loaded:
+            self._load_all_from_api()
+        return len(self._index)

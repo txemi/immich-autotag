@@ -1,3 +1,4 @@
+ssort @ git+https://github.com/bwhmather/ssort.git
 
 ruff
 black

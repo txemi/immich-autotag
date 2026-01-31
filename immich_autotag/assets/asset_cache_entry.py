@@ -46,6 +46,25 @@ class AssetCacheEntry:
         age = (datetime.datetime.now() - loaded_at).total_seconds()
         return age > self._max_age_seconds
 
+    def _reload_from_api(self, context: "ImmichContext") -> "AssetCacheEntry":
+        """
+        Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
+        """
+
+        asset_id = self._state.get_uuid()  # Already AssetUUID
+        refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
+        self._state = refreshed_entry._state
+        return self
+
+    def _ensure_fresh(self, context: "ImmichContext") -> "AssetCacheEntry":
+        """
+        Ensures the cache entry is fresh. If stale, reloads from API and updates self.
+        Always returns self for convenience. Intended for internal use only.
+        """
+        if self.is_stale():
+            self._reload_from_api(context)
+        return self
+
     def _get_fresh_state(self) -> AssetDtoState:
         # Private: ensures freshness before returning the internal state
         self._ensure_fresh(ImmichContext.get_default_instance())
@@ -54,6 +73,21 @@ class AssetCacheEntry:
     def get_loaded_at(self) -> datetime.datetime:
         # Use the private _get_fresh_state to ensure freshness
         return self._get_fresh_state().get_loaded_at()
+
+    @classmethod
+    def _from_state(
+        cls,
+        *,
+        state: AssetDtoState,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
+    ) -> "AssetCacheEntry":
+        """
+        Creates an AssetCacheEntry from an existing state (private).
+        """
+        self = cls()
+        self._state = state
+        self._max_age_seconds = max_age_seconds
+        return self
 
     @classmethod
     def from_cache_or_api(
@@ -156,21 +190,6 @@ class AssetCacheEntry:
         cache_mgr.save(str(asset_id), state.to_cache_dict())
         return cls._from_state(state=state, max_age_seconds=max_age_seconds)
 
-    @classmethod
-    def _from_state(
-        cls,
-        *,
-        state: AssetDtoState,
-        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
-    ) -> "AssetCacheEntry":
-        """
-        Creates an AssetCacheEntry from an existing state (private).
-        """
-        self = cls()
-        self._state = state
-        self._max_age_seconds = max_age_seconds
-        return self
-
     # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 
     def ensure_full_asset_loaded(self, context: "ImmichContext") -> AssetDtoState:
@@ -185,16 +204,6 @@ class AssetCacheEntry:
 
         self._reload_from_api(context)
         return self._state
-
-    def _reload_from_api(self, context: "ImmichContext") -> "AssetCacheEntry":
-        """
-        Reloads the asset state from the API and updates the cache entry. Returns self for convenience.
-        """
-
-        asset_id = self._state.get_uuid()  # Already AssetUUID
-        refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
-        self._state = refreshed_entry._state
-        return self
 
     @classmethod
     def _from_dto_entry(
@@ -248,15 +257,6 @@ class AssetCacheEntry:
         """
         state = self._get_fresh_state()
         return state.get_tag_names()
-
-    def _ensure_fresh(self, context: "ImmichContext") -> "AssetCacheEntry":
-        """
-        Ensures the cache entry is fresh. If stale, reloads from API and updates self.
-        Always returns self for convenience. Intended for internal use only.
-        """
-        if self.is_stale():
-            self._reload_from_api(context)
-        return self
 
     def get_uuid(self) -> AssetUUID:
         """

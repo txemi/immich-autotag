@@ -82,6 +82,20 @@ class AssetDateCandidate:
             link = "(no link)"
         return f"[{self._source_kind.name}] date={self.get_aware_date()} | file_path={self._file_path} | asset_id={aw.get_id()} | link={link}"
 
+    @staticmethod
+    def from_internal_attrs(
+        source_kind: DateSourceKind,
+        date: datetime,
+        file_path: Optional[Path],
+        asset_wrapper: AssetResponseWrapper,
+    ) -> "AssetDateCandidate":
+        # Use positional arguments to avoid issues with private attribute names
+        # Order: _asset_wrapper, _source_kind, _date, _file_path
+        return AssetDateCandidate(asset_wrapper, source_kind, date, file_path)
+
+    def get_source_kind(self) -> DateSourceKind:
+        return self._source_kind
+
     @typechecked
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, AssetDateCandidate):
@@ -101,17 +115,3 @@ class AssetDateCandidate:
         except Exception:
             asset_id = None
         return f"AssetDateCandidate(source_kind={self._source_kind}, date={self.get_aware_date()}, file_path={self._file_path}, asset_id={asset_id})"
-
-    @staticmethod
-    def from_internal_attrs(
-        source_kind: DateSourceKind,
-        date: datetime,
-        file_path: Optional[Path],
-        asset_wrapper: AssetResponseWrapper,
-    ) -> "AssetDateCandidate":
-        # Use positional arguments to avoid issues with private attribute names
-        # Order: _asset_wrapper, _source_kind, _date, _file_path
-        return AssetDateCandidate(asset_wrapper, source_kind, date, file_path)
-
-    def get_source_kind(self) -> DateSourceKind:
-        return self._source_kind

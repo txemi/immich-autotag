@@ -47,8 +47,8 @@ class TagDualMap:
         self._id_map._id_to_tag.clear()
         self._name_map._name_to_tag.clear()
 
-    def __len__(self):
-        return len(self._id_map._id_to_tag)
-
     def __iter__(self):
         return iter(self._id_map._id_to_tag.values())
+
+    def __len__(self):
+        return len(self._id_map._id_to_tag)

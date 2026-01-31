@@ -8,14 +8,6 @@ def is_crazy_debug_mode() -> bool:
     return DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG
 
 
-def raise_if_development_mode(msg: str) -> None:
-    """
-    Raise RuntimeError with msg if in development mode.
-    """
-    if is_development_mode():
-        raise RuntimeError(msg)
-
-
 from immich_autotag.config._internal_types import ErrorHandlingMode
 from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 
@@ -29,3 +21,11 @@ def is_development_mode() -> bool:
         ErrorHandlingMode.DEVELOPMENT,
         ErrorHandlingMode.CRAZY_DEBUG,
     )
+
+
+def raise_if_development_mode(msg: str) -> None:
+    """
+    Raise RuntimeError with msg if in development mode.
+    """
+    if is_development_mode():
+        raise RuntimeError(msg)

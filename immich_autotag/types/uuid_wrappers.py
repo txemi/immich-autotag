@@ -41,11 +41,11 @@ class BaseUUIDWrapper:
     def to_uuid(self) -> uuid.UUID:
         return self.value
 
-    def __str__(self):
-        return str(self.value)
-
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value})"
+
+    def __str__(self):
+        return str(self.value)
 
 
 class AssetUUID(BaseUUIDWrapper):

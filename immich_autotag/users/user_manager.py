@@ -52,16 +52,6 @@ class UserManager:
             _user_manager_instance = cls()
         return _user_manager_instance
 
-    def load_all(self, context: ImmichContext) -> None:
-        """
-        Loads all users from Immich and caches them as UserResponseWrapper instances.
-        """
-        self._context = context
-        client = context.get_client_wrapper().get_client()
-        self._load_users(client)
-        self._load_current_user(client)
-        self._loaded = True
-
     def _load_users(self, client: ImmichClient) -> None:
         user_dtos = proxy_search_users(client=client) or []
         self._users.clear()
@@ -79,6 +69,16 @@ class UserManager:
             self._current_user = UserResponseWrapper.from_user(user_dto)
         else:
             self._current_user = None
+
+    def load_all(self, context: ImmichContext) -> None:
+        """
+        Loads all users from Immich and caches them as UserResponseWrapper instances.
+        """
+        self._context = context
+        client = context.get_client_wrapper().get_client()
+        self._load_users(client)
+        self._load_current_user(client)
+        self._loaded = True
 
     def get_by_uuid(self, uuid: "UserUUID") -> Optional["UserResponseWrapper"]:
         if not self._loaded and self._context:

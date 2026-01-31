@@ -21,10 +21,6 @@ class ResolveEmailsResult:
     _resolved: Dict[EmailAddress, UserUUID] = attrs.field(init=False, factory=dict)  # type: ignore[type-arg]
     _unresolved: List[EmailAddress] = attrs.field(init=False, factory=list)  # type: ignore[type-arg]
 
-    def __iter__(self):
-        yield self._resolved
-        yield self._unresolved
-
     def resolve(
         self, emails: List[EmailAddress], all_users: List["UserResponseWrapper"]
     ) -> None:
@@ -76,3 +72,7 @@ class ResolveEmailsResult:
         manager.load_all(context)
         all_users = manager.all_users()
         self.resolve(emails, all_users)
+
+    def __iter__(self):
+        yield self._resolved
+        yield self._unresolved

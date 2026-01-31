@@ -31,9 +31,6 @@ class ApiCacheManager:
         default="api_cache", init=False, validator=attrs.validators.instance_of(str)
     )
 
-    def __attrs_post_init__(self):
-        self._set_use_cache()
-
     def _set_use_cache(self):
         # Set _use_cache from internal_config per cache_type
         if self._cache_type.value == ApiCacheKey.ASSETS.value:
@@ -46,6 +43,9 @@ class ApiCacheManager:
             self._use_cache = internal_config.USE_CACHE_USERS
         else:
             self._use_cache = True
+
+    def __attrs_post_init__(self):
+        self._set_use_cache()
 
     @staticmethod
     def create(cache_type: "ApiCacheKey") -> "ApiCacheManager":

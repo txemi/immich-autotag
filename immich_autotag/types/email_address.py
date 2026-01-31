@@ -11,12 +11,12 @@ class EmailAddress:
         if not re.match(r"^[^@]+@[^@]+\.[^@]+$", self._value):
             raise ValueError(f"Invalid email address: {self._value}")
 
-    def __str__(self):
-        return self._value
+    @classmethod
+    def from_string(cls, value: str) -> "EmailAddress":
+        return cls(value)
 
     def __repr__(self):
         return f"EmailAddress({self._value!r})"
 
-    @classmethod
-    def from_string(cls, value: str) -> "EmailAddress":
-        return cls(value)
+    def __str__(self):
+        return self._value

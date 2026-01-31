@@ -5,6 +5,11 @@ import attrs
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class RunExecution:
+    """
+    Encapsulates an execution path (subfolder of logs_local created by an app run).
+    Allows access to logs, statistics, caches, etc. for that execution.
+    """
+    run_dir: Path = attrs.field(converter=Path)
 
     def get_albums_unavailable_summary_path(self) -> "Path":
         """
@@ -52,12 +57,7 @@ class RunExecution:
         """
         return self.run_dir / "immich_autotag_links.md"
 
-    """
-    Encapsulates an execution path (subfolder of logs_local created by an app run).
-    Allows access to logs, statistics, caches, etc. for that execution.
-    """
 
-    run_dir: Path = attrs.field(converter=Path)
 
     def get_run_statistics_path(self) -> Path:
         """
@@ -108,12 +108,6 @@ class RunExecution:
     def path(self) -> Path:
         return self.run_dir
 
-    def __str__(self):
-        return str(self.run_dir)
-
-    def __repr__(self):
-        return f"<RunExecution {self.run_dir}>"
-
     def get_duplicates_cache_path(self) -> Path:
         """
         Returns the path for the duplicates cache file for this run.
@@ -123,3 +117,9 @@ class RunExecution:
         )
 
         return self.path / DUPLICATES_CACHE_FILENAME
+
+    def __repr__(self):
+        return f"<RunExecution {self.run_dir}>"
+
+    def __str__(self):
+        return str(self.run_dir)

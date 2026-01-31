@@ -66,12 +66,6 @@ class AssetDtoState:
             raise RuntimeError("DTO is None")
         return self._dto
 
-    def __attrs_post_init__(self):
-        # Defensive check: only run if all required fields are set
-        if self._dto is None or self._api_endpoint_source is None:
-            return
-        self._check_tag_type_integrity()
-
     def _check_tag_type_integrity(self):
         tags = self._dto.tags if self._dto is not None else None
         if self._api_endpoint_source == AssetDtoType.FULL:
@@ -84,6 +78,12 @@ class AssetDtoState:
                 raise TypeError(
                     f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}"
                 )
+
+    def __attrs_post_init__(self):
+        # Defensive check: only run if all required fields are set
+        if self._dto is None or self._api_endpoint_source is None:
+            return
+        self._check_tag_type_integrity()
         # If more types are added, add more checks here
 
     def get_type(self) -> AssetDtoType:
