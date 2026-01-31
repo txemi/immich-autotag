@@ -13,25 +13,9 @@ from python_qualitygate.implementations.check_import_linter import CheckImportLi
 from python_qualitygate.implementations.check_no_dynamic_attrs import CheckNoDynamicAttrs
 from python_qualitygate.implementations.check_ssort import CheckSsort
 
-# BATTERY_ORDER must be defined before CHECKS and validation
-BATTERY_ORDER = [
-    'check_python_syntax',
-    'check_mypy',
-    'check_jscpd',
-    'check_import_linter',
-    'check_no_dynamic_attrs',
-    'check_no_tuples',
-    'check_no_spanish_chars',
-    'check_shfmt',
-    'check_isort',
-    'check_ssort',
-    'check_black',
-    'check_ruff',
-    'check_flake8',
-]
 
-# List of all check classes (order does not matter for CHECKS, but must match BATTERY_ORDER for correctness)
-CHECK_CLASSES = [
+# BATTERY_ORDER is now a list of check classes, defining the execution order statically and robustly
+BATTERY_ORDER = [
     CheckPythonSyntax,
     CheckMypy,
     CheckJscpd,
@@ -47,13 +31,8 @@ CHECK_CLASSES = [
     CheckFlake8,
 ]
 
-# Build the CHECKS map dynamically from the class 'name' property
-CHECKS = {cls.name: cls for cls in CHECK_CLASSES}
 
-# DEBUG: Print the keys of CHECKS to diagnose registry population
-print("[DEBUG] CHECKS keys:", list(CHECKS.keys()))
+# CHECKS map for lookup by name
+CHECKS = {cls.name: cls for cls in BATTERY_ORDER}
 
-# Validate that all BATTERY_ORDER names are present in CHECKS
-missing = [name for name in BATTERY_ORDER if name not in CHECKS]
-if missing:
-    raise KeyError(f"Missing checks in CHECKS for BATTERY_ORDER: {missing}")
+# No need for validation: BATTERY_ORDER is the single source of truth for order and membership

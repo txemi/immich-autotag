@@ -18,6 +18,6 @@ def main():
         rc = check.check(args) if args.mode == QualityGateMode.CHECK else check.apply(args)
         sys.exit(rc)
     # Battery
-    battery = Battery([CHECKS[name]() for name in BATTERY_ORDER])
+    battery = Battery([cls() for cls in BATTERY_ORDER])
     rc = battery.run(args.mode, args)
     sys.exit(rc)
