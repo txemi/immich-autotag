@@ -63,6 +63,19 @@ pipeline {
             }
         }
 
+        stage('Python Quality Gate') {
+            steps {
+                script {
+                    echo "Running Python Quality Gate (modular OO version)..."
+                    sh '''
+                        chmod +x scripts/devtools/quality_gate_py/venv_launcher.sh
+                        bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK
+                    '''
+                    '''
+                }
+            }
+        }
+
         stage('Run Application') {
             steps {
                 script {
