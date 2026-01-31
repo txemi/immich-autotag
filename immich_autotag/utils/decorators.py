@@ -5,10 +5,10 @@ Conditional decorators that respect configuration settings.
 Used to enable/disable expensive runtime checks like type checking.
 """
 
-from typing import Callable, TypeVar
+from typing import Callable, TypeVar, Any
 
 # Type variable for decorator
-F = TypeVar("F", bound=Callable)
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 def conditional_typechecked(func: F) -> F:
@@ -43,15 +43,14 @@ def conditional_typechecked(func: F) -> F:
         config_manager: ConfigManager = ConfigManager.get_instance()
         config: UserConfig = config_manager.get_config_or_raise()
         enable_type_checking: bool = True
-        if config is not None:
-            performance: PerformanceConfig | None = config.performance
-            if performance is not None:
-                enable_type_checking = performance.enable_type_checking
+        # config is never None
+        performance: PerformanceConfig | None = config.performance
+        # performance is never None
+        enable_type_checking = performance.enable_type_checking
 
         if enable_type_checking:
             # Use real typechecked from typeguard
             from typeguard import typechecked as real_typechecked
-
             return real_typechecked(func)
         else:
             # No-op: return function unchanged
