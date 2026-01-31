@@ -15,11 +15,6 @@ if TYPE_CHECKING:
 
 @attrs.define(slots=True, frozen=True)
 class UserResponseWrapper:
-    @classmethod
-    def from_user(
-        cls, user: Union["UserResponseDto", "UserAdminResponseDto"]
-    ) -> "UserResponseWrapper":
-        return UserResponseWrapper(user=user)  # type: ignore[call-arg]
 
     @staticmethod
     def _validate_user(
@@ -41,8 +36,21 @@ class UserResponseWrapper:
             )
 
     _user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field(
-        validator=_validate_user
+        init=False, validator=_validate_user
     )
+
+    def _set_user(self, user: Union["UserResponseDto", "UserAdminResponseDto"]) -> None:
+        # Llama al validador antes de asignar
+        self._validate_user(self, UserResponseWrapper.__attrs_attrs__[0], user)
+        self._user = user
+
+    @classmethod
+    def from_user(
+        cls, user: Union["UserResponseDto", "UserAdminResponseDto"]
+    ) -> "UserResponseWrapper":
+        obj = cls()
+        obj._set_user(user)
+        return obj
 
     @typechecked
     def get_name(self) -> str:
