@@ -215,7 +215,7 @@ class AssetCacheEntry:
 
         return state.get_tags()
 
-    def get_state(self):
+    def get_state(self) -> AssetDtoState:
         """
         Returns the internal AssetDtoState (for compatibility with wrappers).
         """

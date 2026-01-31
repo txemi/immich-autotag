@@ -147,7 +147,12 @@ class AssetDtoState:
         }
 
     @classmethod
-    def _from_dto(cls, dto, api_endpoint_source, loaded_at):
+    def _from_dto(
+        cls,
+        dto: AssetResponseDto,
+        api_endpoint_source: AssetDtoType,
+        loaded_at: datetime,
+    ) -> "AssetDtoState":
         return cls(
             dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
         )
