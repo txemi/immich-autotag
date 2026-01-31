@@ -43,7 +43,7 @@ class StatisticsManager:
     # Example: pylint: disable=attribute-defined-outside-init
     #
     # Reference: https://www.attrs.org/en/stable/init.html#private-attributes
-    _perf_tracker: PerformanceTracker = attr.ib(
+    _perf_tracker: Optional[PerformanceTracker] = attr.ib(
         default=None, init=False, repr=False
     )  # noqa
     _lock: RLock = attr.ib(factory=RLock, init=False, repr=False)  # noqa
