@@ -680,7 +680,7 @@ class AlbumCollectionWrapper:
         client: ImmichClient,
         tag_mod_report: ModificationReport,
         old_tested_mode: bool = True,
-    ) -> None:
+    ) -> AlbumResponseWrapper | None:
         """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
 
         If a duplicate name exists and it's a temporary album,
@@ -905,15 +905,14 @@ class AlbumCollectionWrapper:
         """
         from immich_client.models.create_album_dto import CreateAlbumDto
 
-        from immich_autotag.api.immich_proxy.albums import proxy_create_album
+        from immich_autotag.api.immich_proxy.proxy_create_album import (
+            proxy_create_album,
+        )
 
         album = proxy_create_album(
             client=client,
             body=CreateAlbumDto(album_name=album_name),
         )
-        if album is None:
-            raise RuntimeError("Failed to create album: API returned None")
-
         return album
 
     @conditional_typechecked
@@ -961,6 +960,9 @@ class AlbumCollectionWrapper:
         self._add_album_wrapper(wrapper)
         # Assign user as EDITOR if not already owner
         if wrapper.get_owner_uuid() != user_wrapper.get_uuid():
+            from immich_autotag.context.immich_context import ImmichContext
+
+            context = ImmichContext.get_default_instance()
             self._add_user_to_album(
                 album=wrapper,
                 user=user_wrapper,
@@ -1008,11 +1010,7 @@ class AlbumCollectionWrapper:
         assert isinstance(tag_mod_report, ModificationReport)
 
         albums = proxy_get_all_albums(client=client)
-        if albums is None:
-            self._sync_state = SyncState.NOT_STARTED
-            raise RuntimeError("Failed to fetch albums: API returned None")
-
-            # Clear previous duplicates before reloading
+        # Clear previous duplicates before reloading
         self._collected_duplicates.clear()
 
         log(
@@ -1022,7 +1020,7 @@ class AlbumCollectionWrapper:
         # Integrar PerformanceTracker para progreso y tiempo estimado
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-        tracker = PerformanceTracker.empty(
+        tracker = PerformanceTracker.from_args(
             total_assets=len(albums), max_assets=len(albums), skip_n=0
         )
 
