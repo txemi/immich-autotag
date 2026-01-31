@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Iterator, Mapping, cast
 
 from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
+
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 import enum
+
 from datetime import datetime
-from typing import Any, Iterator, Mapping, cast
 
 import attrs
 from immich_client.types import Unset
@@ -38,8 +40,6 @@ class TagsNotLoadedError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDtoState:
-    from typing import Any, Mapping, cast
-
     """
     Encapsulates the current DTO, its type (partial/full), and the loaded_at timestamp.
     This class never performs API calls or business logic—just holds and exposes data.
@@ -60,6 +60,15 @@ class AssetDtoState:
         validator=attrs.validators.optional(attrs.validators.instance_of(datetime)),
     )
 
+    def _require_dto(self) -> AssetResponseDto:
+        """
+        Returns the internal DTO if present, otherwise raises a RuntimeError.
+        Centralizes the defensive check for DTO presence.
+        """
+        if self._dto is None:
+            raise RuntimeError("DTO is None")
+        return self._dto
+
     def __attrs_post_init__(self):
         # Defensive check: only run if all required fields are set
         if self._dto is None or self._api_endpoint_source is None:
@@ -69,29 +78,25 @@ class AssetDtoState:
     def _check_tag_type_integrity(self):
         tags = self._dto.tags if self._dto is not None else None
         if self._api_endpoint_source == AssetDtoType.FULL:
-            if (
-                tags is not None
-                and not isinstance(tags, list)
-                and not isinstance(tags, Unset)
-            ):
+            if tags is not None and not isinstance(tags, list):
                 raise TypeError(
                     f"In FULL mode, tags must be a list or Unset, but it is {type(tags)}"
                 )
         else:
-            if (
-                tags is not None
-                and not isinstance(tags, set)
-                and not isinstance(tags, Unset)
-            ):
+            if tags is not None and not isinstance(tags, set):
                 raise TypeError(
                     f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}"
                 )
         # If more types are added, add more checks here
 
     def get_type(self) -> AssetDtoType:
+        if self._api_endpoint_source is None:
+            raise RuntimeError("AssetDtoState: _api_endpoint_source is None")
         return self._api_endpoint_source
 
     def get_loaded_at(self) -> datetime:
+        if self._loaded_at is None:
+            raise RuntimeError("AssetDtoState: _loaded_at is None")
         return self._loaded_at
 
     def update(
@@ -110,7 +115,8 @@ class AssetDtoState:
         """
 
         full = self.get_self_if_full()
-        tags = full._dto.tags
+        dto = full._require_dto()
+        tags = dto.tags
         if isinstance(tags, Unset):
             raise TagsNotLoadedError(
                 "Tags are UNSET; tags have not been loaded for this asset."
@@ -125,14 +131,15 @@ class AssetDtoState:
                 wrappers.append(wrapper)
         return wrappers
 
-    def get_dates(self):
+    def get_dates(self) -> list[datetime]:
         def _get_dates(asset__: AssetResponseDto) -> Iterator[datetime]:
             yield asset__.created_at
             yield asset__.file_created_at
             yield asset__.file_modified_at
             yield asset__.local_date_time
 
-        date_candidates = list(_get_dates(self._dto))
+        dto = self._require_dto()
+        date_candidates = list(_get_dates(dto))
         return date_candidates
 
     def has_tag(self, tag_name: str) -> bool:
@@ -143,17 +150,26 @@ class AssetDtoState:
         return any(tn.lower() == tag_name.lower() for tn in tag_names)
 
     def get_uuid(self) -> AssetUUID:
-        return AssetUUID(self._dto.id)
+        dto = self._require_dto()
+        if not dto.id:
+            raise RuntimeError("DTO is missing id")
+        return AssetUUID(dto.id)
 
     def get_original_file_name(self) -> Path:
-        return Path(self._dto.original_file_name)
+        dto = self._require_dto()
+        if not dto.original_file_name:
+            raise RuntimeError("DTO is missing original_file_name")
+        return Path(dto.original_file_name)
 
     def to_cache_dict(self) -> dict[str, object]:
         """
         Serializes the state to a dictionary, including loaded_at in ISO format.
         """
+        dto = self._require_dto()
+        if self._api_endpoint_source is None or self._loaded_at is None:
+            raise RuntimeError("Cannot serialize AssetDtoState: missing required fields")
         return {
-            "dto": self._dto.to_dict() if hasattr(self._dto, "to_dict") else self._dto,
+            "dto": dto.to_dict() if hasattr(dto, "to_dict") else dto,
             "type": self._api_endpoint_source.value,
             "loaded_at": self._loaded_at.isoformat(),
         }
@@ -206,27 +222,34 @@ class AssetDtoState:
         """
         Returns True if the asset is marked as favorite, False otherwise. Defensive: always returns a bool.
         """
-        return self._dto.is_favorite
+        dto = self._require_dto()
+        return bool(dto.is_favorite)
 
     def get_created_at(self) -> datetime:
         """
         Returns the created_at date of the asset, if available.
         """
-        return self._dto.created_at
+        dto = self._require_dto()
+        if not dto.created_at:
+            raise RuntimeError("DTO is missing created_at")
+        return dto.created_at
 
     def get_original_path(self) -> Path:
         """
         Returns the original file path of the asset.
         """
-        return Path(self._dto.original_path)
+        dto = self._require_dto()
+        if not dto.original_path:
+            raise RuntimeError("DTO is missing original_path")
+        return Path(dto.original_path)
 
     def get_duplicate_id_as_uuid(self) -> DuplicateUUID:
         """
         Returns the duplicate id as DuplicateUUID (custom wrapper).
         """
         from immich_autotag.types.uuid_wrappers import DuplicateUUID
-
-        val = self._dto.duplicate_id
-        if val is None or isinstance(val, Unset):
+        dto = self._require_dto()
+        val = dto.duplicate_id
+        if not val or isinstance(val, Unset):
             raise NotImplementedError("Duplicate ID is not set or is unset")
         return DuplicateUUID(val)
