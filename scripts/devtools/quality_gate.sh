@@ -772,7 +772,8 @@ check_no_spanish_chars() {
 	local SPANISH_WORDS_FILE="$SCRIPT_DIR/spanish_words.txt"
 	local SPANISH_WORD_PATTERN=""
 	if [[ -f "$SPANISH_WORDS_FILE" ]]; then
-		SPANISH_WORD_PATTERN=$(grep -v '^#' "$SPANISH_WORDS_FILE" | grep -v '^$' | paste -sd '|' -)
+		# Filtra líneas vacías o solo espacios
+		SPANISH_WORD_PATTERN=$(grep -v '^#' "$SPANISH_WORDS_FILE" | grep -v '^[[:space:]]*$' | paste -sd '|' -)
 	fi
 	local SPANISH_PATTERN="[\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00CD\u00D3\u00DA\u00f1\u00d1\u00fc\u00DC\u00bf\u00a1]" # Spanish accented characters (pattern, unicode escapes)
 	if [[ -n "$SPANISH_WORD_PATTERN" ]]; then
