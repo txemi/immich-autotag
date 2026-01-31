@@ -45,19 +45,29 @@ class AssetDtoState:
     This class never performs API calls or business logic—just holds and exposes data.
     """
 
-    _dto: AssetResponseDto = attrs.field(
-        init=False, validator=attrs.validators.instance_of(AssetResponseDto)
+    _dto: AssetResponseDto | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.instance_of(AssetResponseDto)
+        ),
     )
-    _api_endpoint_source: AssetDtoType = attrs.field(
-        init=False, validator=attrs.validators.instance_of(AssetDtoType)
+    _api_endpoint_source: AssetDtoType | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(AssetDtoType)),
     )
-    _loaded_at: datetime = attrs.field(
-        factory=datetime.now, validator=attrs.validators.instance_of(datetime)
+    _loaded_at: datetime | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(attrs.validators.instance_of(datetime)),
     )
 
     def __attrs_post_init__(self):
-        # Defensive check of the type of tags according to the API endpoint used
-        tags = getattr(self._dto, "tags", None)
+        # Defensive check: only run if all required fields are set
+        if self._dto is None or self._api_endpoint_source is None:
+            return
+        self._check_tag_type_integrity()
+
+    def _check_tag_type_integrity(self):
+        tags = self._dto.tags if self._dto is not None else None
         if self._api_endpoint_source == AssetDtoType.FULL:
             if (
                 tags is not None
@@ -155,10 +165,14 @@ class AssetDtoState:
         api_endpoint_source: AssetDtoType,
         loaded_at: datetime | None = None,
     ) -> "AssetDtoState":
+        # We use manual field assignment here to ensure validators and post-init logic are respected,
+        # and to avoid issues with attrs' __init__ signature when using private fields.
+        # See docs/dev/architecture.md#assetdtostate-constructor for rationale and details.
         self = cls()
         self._dto = dto
         self._api_endpoint_source = api_endpoint_source
         self._loaded_at = loaded_at if loaded_at is not None else datetime.now()
+        self._check_tag_type_integrity()
         return self
 
     @classmethod
