@@ -23,21 +23,25 @@
 # =====================
 # Quality Gate Checks Table (reference)
 # =====================
-# | Check                            | Description                                 | Strict   | Standard (CI) | Target (improvement) |
-# |-----------------------------------|---------------------------------------------|----------|--------------|---------------------|
-# | Syntax/Indent (compileall)        | Python syntax errors                        |   ✔️     |   ✔️         |   ✔️                |
-# | ruff (lint/auto-fix)              | Linter and auto-format                      |   ✔️     |   ✔️         |   ✔️                |
-# | isort (import sorting)            | Sorts imports                               |   ✔️     |   ✔️         |   ✔️                |
-# | black (formatter)                 | Code formatter                              |   ✔️     |   ✔️         |   ✔️                |
-# | flake8 (style)                    | Style linter                                |   ✔️     |   ✔️         |   ✔️                |
-# | flake8 (E501 long lines)          | Line length                                 |   ✔️     |   Ignored    |   Ignored           |
-# | ruff (E501 long lines)            | Line length                                 |   ✔️     |   Ignored    |   Ignored           |
-# | mypy (type check)                 | Type checking                               |   ✔️     |   Warn only  |   Warn only         |
-# | mypy (arg-type/call-arg/return-value) | Type errors (subset)                   |   ✔️     |   Warn only  |   ✔️                |
-# | uvx ssort (method order)          | Class method ordering                       |   ✔️**   |   ✔️**       |   ✔️**              |
-# | tuple return/type policy          | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |   ✔️                |
-# | jscpd (code duplication)          | Detects code duplication                    |   ✔️     |   ✔️         |   ✔️                |
-# | Spanish character check           | Forbids Spanish text/accents                |   ✔️     |   Warn       |   Warn              |
+# | Check                                 | Description                                 | Strict   | Standard (CI) | Target (improvement) | Origin                |
+# |----------------------------------------|---------------------------------------------|----------|--------------|---------------------|-----------------------|
+# | Syntax/Indent (compileall)             | Python syntax errors                        |   ✔️     |   ✔️         |   ✔️                | stdlib (python)       |
+# | ruff (lint/auto-fix)                   | Linter and auto-format                      |   ✔️     |   ✔️         |   ✔️                | pip (ruff)            |
+# | isort (import sorting)                 | Sorts imports                               |   ✔️     |   ✔️         |   ✔️                | pip (isort)           |
+# | black (formatter)                      | Code formatter                              |   ✔️     |   ✔️         |   ✔️                | pip (black)           |
+# | flake8 (style)                         | Style linter                                |   ✔️     |   ✔️         |   ✔️                | pip (flake8)          |
+# | flake8 (E501 long lines)               | Line length                                 |   ✔️     |   Ignored    |   Ignored           | pip (flake8)          |
+# | ruff (E501 long lines)                 | Line length                                 |   ✔️     |   Ignored    |   Ignored           | pip (ruff)            |
+# | mypy (type check)                      | Type checking                               |   ✔️     |   Warn only  |   Warn only         | pip (mypy)            |
+# | mypy (arg-type/call-arg/return-value)  | Type errors (subset)                        |   ✔️     |   Warn only  |   ✔️                | pip (mypy)            |
+# | ssort (method order)                   | Class method ordering                       |   ✔️**   |   ✔️**       |   ✔️**              | pip (ssort, github)   |
+# | tuple return/type policy               | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |   ✔️                | custom (python)       |
+# | jscpd (code duplication)               | Detects code duplication                    |   ✔️     |   ✔️         |   ✔️                | npx (jscpd)           |
+# | Spanish character check                | Forbids Spanish text/accents                |   ✔️     |   Warn       |   Warn              | custom (bash/grep)    |
+# | import-linter (contracts)              | Architectural import contracts              |   ✔️     |   ✔️         |   ✔️                | pip (import-linter)   |
+# | no dynamic attrs (getattr/hasattr)     | Forbids getattr/hasattr for static typing   |   ✔️     |   ✔️         |   ✔️                | custom (bash/grep)    |
+# | no tuples (returns/attributes)         | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |   ✔️                | custom (python)       |
+# | shfmt (bash formatting)                | Bash script formatting                      |   ✔️     |   ✔️         |   ✔️                | debian/pip (shfmt)    |
 # -----------------------------------------------------------------------------
 # * In STANDARD mode, flake8/ruff ignore E501, and mypy only warns, does not block the build.
 # ** Only if --enforce-dynamic-attrs is used
