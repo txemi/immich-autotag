@@ -52,12 +52,12 @@ class ResolveEmailsResult:
 
         email_to_id: Dict[EmailAddress, UserUUID] = {}
         for user in all_users:
-            if user.email:
-                email_obj = EmailAddress.from_string(user.email)
+            email_obj = user.get_email()
+            if email_obj:
                 email_to_id[email_obj] = user.get_uuid()
 
-        email_objs = [EmailAddress.from_string(e) for e in emails]
-        email_set = set(email_objs)
+        # If emails are already EmailAddress objects, use them directly
+        email_set = set(emails)
         resolved = {
             email: email_to_id[email] for email in email_set if email in email_to_id
         }
