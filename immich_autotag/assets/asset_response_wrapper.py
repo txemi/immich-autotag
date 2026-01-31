@@ -33,7 +33,7 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.types.uuid_wrappers import AssetUUID, TagUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID, TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
@@ -503,7 +503,8 @@ class AssetResponseWrapper:
         orig = self._cache_entry.get_original_path()
         return orig
 
-    def get_duplicate_id_as_uuid(self) -> UUID:
+    def get_duplicate_id_as_uuid(self) -> DuplicateUUID:
+        from immich_autotag.types.uuid_wrappers import DuplicateUUID
         return self._cache_entry.get_duplicate_id_as_uuid()
 
     @typechecked
@@ -862,8 +863,8 @@ class AssetResponseWrapper:
         """
 
         context = self.get_context()
-        duplicate_id = self.get_duplicate_id_as_uuid()
-        # duplicate_id is always a UUID, never None
+        duplicate_id :DuplicateUUID= self.get_duplicate_id_as_uuid()
+        # duplicate_id is always a DuplicateUUID, never None
         wrappers: list[AssetResponseWrapper] = []
         group = context.get_duplicates_collection().get_group(duplicate_id)
         for dup_id in group:

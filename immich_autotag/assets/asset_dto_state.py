@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from immich_autotag.types.uuid_wrappers import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -205,12 +205,12 @@ class AssetDtoState:
         """
         return Path(self._dto.original_path)
 
-    def get_duplicate_id_as_uuid(self) -> UUID:
+    def get_duplicate_id_as_uuid(self) -> DuplicateUUID:
         """
-        Returns the duplicate id as UUID.
+        Returns the duplicate id as DuplicateUUID (custom wrapper).
         """
-        # Defensive: handle Unset/None/str for duplicate_id
+        from immich_autotag.types.uuid_wrappers import DuplicateUUID
         val = self._dto.duplicate_id
         if val is None or isinstance(val, Unset):
             raise NotImplementedError("Duplicate ID is not set or is unset")
-        return UUID(val)
+        return DuplicateUUID(val)
