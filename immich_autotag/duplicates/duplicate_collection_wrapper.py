@@ -94,7 +94,7 @@ class DuplicateCollectionWrapper:
     @typechecked
     def get_duplicate_asset_wrappers(
         self,
-        duplicate_id: "DuplicateUUID",
+        duplicate_id: DuplicateUUID,
         asset_manager: "AssetManager",
         context: "ImmichContext",
     ) -> list["AssetResponseWrapper"]:
