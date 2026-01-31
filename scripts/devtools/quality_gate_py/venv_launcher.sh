@@ -19,12 +19,6 @@ if [ ! -x "$VENV_PY" ]; then
 fi
 
 
-# If no script is provided, default to main.py in this directory
-if [ $# -lt 1 ]; then
-	PY_SCRIPT="$SCRIPT_DIR/main.py"
-else
-	PY_SCRIPT="$1"
-	shift
-fi
-
+# Always run main.py in this directory, pass all arguments to it
+PY_SCRIPT="$SCRIPT_DIR/main.py"
 exec "$VENV_PY" "$PY_SCRIPT" "$@"
