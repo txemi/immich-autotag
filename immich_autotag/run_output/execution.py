@@ -9,6 +9,7 @@ class RunExecution:
     Encapsulates an execution path (subfolder of logs_local created by an app run).
     Allows access to logs, statistics, caches, etc. for that execution.
     """
+
     run_dir: Path = attrs.field(converter=Path)
 
     def get_albums_unavailable_summary_path(self) -> "Path":
@@ -56,8 +57,6 @@ class RunExecution:
         Returns the path for the links markdown file for this run.
         """
         return self.run_dir / "immich_autotag_links.md"
-
-
 
     def get_run_statistics_path(self) -> Path:
         """
