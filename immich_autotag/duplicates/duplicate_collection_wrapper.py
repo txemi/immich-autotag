@@ -61,11 +61,9 @@ class DuplicateCollectionWrapper:
         """
         Builds the duplicate mapping from the API response, using duplicate_id as key and the asset list as DuplicateAssetGroup.
         """
-        mapping: Dict[UUID, DuplicateAssetGroup] = {}
+        mapping: Dict[DuplicateUUID, DuplicateAssetGroup] = {}
         for group in data:
-            if not isinstance(group, DuplicateResponseDto):
-                raise TypeError(f"Expected DuplicateResponseDto, got {type(group)}")
-            duplicate_id = UUID(group.duplicate_id)
+            duplicate_id = DuplicateUUID(group.duplicate_id)
             asset_ids = [AssetUUID.from_uuid(UUID(asset.id)) for asset in group.assets]
             mapping[duplicate_id] = DuplicateAssetGroup(asset_ids)
         return cls(groups_by_duplicate_id=mapping)
@@ -77,11 +75,11 @@ class DuplicateCollectionWrapper:
 
     @typechecked
     def get_duplicate_asset_links(
-        self, duplicate_id: Optional[UUID]
+        self, duplicate_id: Optional[DuplicateUUID]
     ) -> list[ParseResult]:
         """
         Returns a list of ParseResult (standard URL objects) for all assets in the duplicate group.
-        duplicate_id: UUID
+        duplicate_id: DuplicateUUID
         """
         from immich_autotag.utils.url_helpers import get_immich_photo_url
 
@@ -102,7 +100,7 @@ class DuplicateCollectionWrapper:
         Returns a list of AssetResponseWrapper objects for all assets in the duplicate group.
         """
         group = self.get_group(duplicate_id)
-        wrappers = []
+        wrappers: list["AssetResponseWrapper"] = []
         for asset_id in group:
             wrapper = asset_manager.get_asset(asset_id, context)
             if wrapper is not None:

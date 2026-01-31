@@ -68,18 +68,15 @@ class AssetCacheEntry:
         cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ASSETS)
         cache_data = cache_mgr.load(str(asset_id))
         if cache_data is not None:
+            # Defensive: handle both dict and list[dict] for legacy cache
             if isinstance(cache_data, dict):
                 state = AssetDtoState.from_cache_dict(cache_data)
-            elif (
-                isinstance(cache_data, list)
-                and cache_data
-                and isinstance(cache_data[0], dict)
-            ):
+            elif cache_data and isinstance(cache_data[0], dict):
                 state = AssetDtoState.from_cache_dict(cache_data[0])
             else:
                 state = None
             if state is not None:
-                entry = cls._from_state(state=state, max_age_seconds=max_age_seconds)
+                entry = cls._from_state(_state=state, _max_age_seconds=max_age_seconds)
                 if not entry.is_stale():
                     return entry
         # If the cache is expired or does not exist, reload from API
@@ -91,21 +88,21 @@ class AssetCacheEntry:
             raise RuntimeError(
                 f"proxy_get_asset_info returned None for asset id={asset_id}"
             )
-        state = AssetDtoState(dto=dto, api_endpoint_source=AssetDtoType.FULL)
+        state = AssetDtoState(_dto=dto, _api_endpoint_source=AssetDtoType.FULL)
         cache_mgr.save(str(asset_id), state.to_cache_dict())
-        return cls._from_state(state=state, max_age_seconds=max_age_seconds)
+        return cls._from_state(_state=state, _max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_state(
         cls,
         *,
-        state: AssetDtoState,
-        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
+        _state: AssetDtoState,
+        _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
         """
         Creates an AssetCacheEntry from an existing state (private).
         """
-        return cls(state=state, max_age_seconds=max_age_seconds)
+        return cls(_state=_state, _max_age_seconds=_max_age_seconds)
 
     # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 
@@ -145,8 +142,8 @@ class AssetCacheEntry:
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
-        state = AssetDtoState(dto=dto, api_endpoint_source=dto_type)
-        return cls(state=state, max_age_seconds=max_age_seconds)
+        state = AssetDtoState(_dto=dto, _api_endpoint_source=dto_type)
+        return cls(_state=state, _max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_api_entry(

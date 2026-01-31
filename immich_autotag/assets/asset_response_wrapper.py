@@ -881,7 +881,7 @@ class AssetResponseWrapper:
         *,
         conflict: bool,
         user: "UserResponseWrapper | None" = None,
-        duplicate_id: UUID,
+        duplicate_id: "DuplicateUUID",
     ) -> None:
         """
         Adds or removes the AUTOTAG_DUPLICATE_ALBUM_CONFLICT tag according to duplicate album conflict state.
