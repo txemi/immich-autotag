@@ -52,18 +52,7 @@ class AssetAlreadyInAlbumError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumResponseWrapper:
-    def get_start_date(self) -> str | None:
-        """
-        Returns the album's start date as an ISO string, or None if not available.
-        """
-        # Access the underlying AlbumResponseDto via the cache entry and dto state
-        return self._cache_entry.get_start_date()
 
-    def get_end_date(self) -> str | None:
-        """
-        Returns the album's end date as an ISO string, or None if not available.
-        """
-        return self._cache_entry.get_end_date()
     # (No manual __slots__ definition; rely on attrs fields only)
 
     # --- 1. Fields ---
@@ -81,6 +70,18 @@ class AlbumResponseWrapper:
     # --- 2. Special Methods ---
     def __attrs_post_init__(self) -> None:
         pass
+
+    def get_start_date(self) -> datetime.datetime | None:
+        """
+        Returns the album's start date as a datetime object, or None if not available.
+        """
+        return self._cache_entry.get_start_date()
+
+    def get_end_date(self) -> datetime.datetime | None:
+        """
+        Returns the album's end date as a datetime object, or None if not available.
+        """
+        return self._cache_entry.get_end_date()
 
     # --- 3. Properties ---
     @property

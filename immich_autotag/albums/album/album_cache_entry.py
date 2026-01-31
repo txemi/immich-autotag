@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING
 
 import attrs
@@ -37,6 +38,12 @@ class AlbumCacheEntry:
         Delegates to AlbumDtoState.merge_from_dto. See AlbumDtoState for logic.
         """
         self._dto.merge_from_dto(dto, load_source)
+
+    def get_start_date(self) -> datetime.datetime | None:
+        return self._dto.get_start_date()
+
+    def get_end_date(self) -> datetime.datetime | None:
+        return self._dto.get_end_date()
 
     def get_owner_uuid(self) -> "UserUUID":
         return self._dto.get_owner_uuid()
