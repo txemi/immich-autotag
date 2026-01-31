@@ -32,8 +32,12 @@ class AssetCacheEntry:
     Attributes are private; access only via public methods.
     """
 
-    _state: AssetDtoState
-    _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS  # Global default
+    _state: AssetDtoState = attrs.field(init=False, validator=attrs.validators.instance_of(AssetDtoState))
+    _max_age_seconds: int = attrs.field(
+        init=False,
+        validator=attrs.validators.instance_of(int),
+        default=DEFAULT_CACHE_MAX_AGE_SECONDS
+    )
 
     def is_stale(self) -> bool:
         loaded_at = self._state.get_loaded_at()
