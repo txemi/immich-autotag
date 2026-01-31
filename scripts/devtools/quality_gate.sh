@@ -779,7 +779,7 @@ check_no_spanish_chars() {
 	if [[ -n "$SPANISH_WORD_PATTERN" ]]; then
 		SPANISH_PATTERN="$SPANISH_PATTERN|\\b($SPANISH_WORD_PATTERN)\\b"
 	fi
-	echo "[DEBUG] Patrón regex generado para español: $SPANISH_PATTERN" >&2
+	echo "[DEBUG] Generated regex pattern for Spanish: $SPANISH_PATTERN" >&2
 
 	# Get relative paths for exclusion
 	local SCRIPT_ABS_PATH QUALITY_GATE_ABS_PATH SCRIPT_REL_PATH QUALITY_GATE_REL_PATH

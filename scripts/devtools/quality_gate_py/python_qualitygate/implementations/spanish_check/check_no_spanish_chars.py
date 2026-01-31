@@ -74,7 +74,7 @@ class CheckNoSpanishChars(Check):
     def _analyze_file(self, file_path: Path, forbidden_bytes: List[bytes], spanish_words: List[str]) -> List[Finding]:
         findings: List[Finding] = []
         EXCLUDE_PATTERNS = [
-            'SPANISH_PATTERN',
+            'SPANISH_PATTERN=',
 
         ]
         EXCLUDE_FILES = [
