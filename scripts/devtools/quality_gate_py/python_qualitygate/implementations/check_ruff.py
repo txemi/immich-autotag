@@ -1,5 +1,5 @@
 import subprocess
-from typing import Any
+from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
 
@@ -8,7 +8,7 @@ from python_qualitygate.core.base import Check
 class CheckRuff(Check):
     name = 'check_ruff'
 
-    def check(self, args: Any) -> int:
+    def check(self, args: QualityGateArgs) -> int:
         cmd = [args.py_bin, '-m', 'ruff', 'check', args.target_dir]
         if args.level in ('STANDARD', 'TARGET'):
             cmd += ['--ignore', 'E501']
@@ -20,7 +20,7 @@ class CheckRuff(Check):
             print(result.stdout)
         return result.returncode
 
-    def apply(self, args: Any) -> int:
+    def apply(self, args: QualityGateArgs) -> int:
         cmd = [args.py_bin, '-m', 'ruff', 'check', args.target_dir, '--fix', '--unsafe-fixes']
         if args.level in ('STANDARD', 'TARGET'):
             cmd += ['--ignore', 'E501']

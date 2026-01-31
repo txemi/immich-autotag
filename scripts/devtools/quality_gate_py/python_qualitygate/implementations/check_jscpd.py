@@ -1,5 +1,5 @@
 import subprocess
-from typing import Any
+from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
 
@@ -8,10 +8,10 @@ from python_qualitygate.core.base import Check
 class CheckJscpd(Check):
     name = 'check_jscpd'
 
-    def check(self, args: Any) -> int:
+    def check(self, args: QualityGateArgs) -> int:
         cmd = ['jscpd', '--silent', '--min-tokens', '30', '--max-lines', '100', '--format', 'python', '--ignore', '**/.venv/**,**/immich-client/**,**/scripts/**', args.target_dir]
         print(f"[RUN] {' '.join(cmd)}")
         return subprocess.call(cmd)
 
-    def apply(self, args: Any) -> int:
+    def apply(self, args: QualityGateArgs) -> int:
         return self.check(args)

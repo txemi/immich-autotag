@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any
+from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
 
@@ -9,7 +9,7 @@ from python_qualitygate.core.base import Check
 class CheckNoDynamicAttrs(Check):
     name = 'check_no_dynamic_attrs'
 
-    def check(self, args: Any) -> int:
+    def check(self, args: QualityGateArgs) -> int:
         failed = False
         for pyfile in Path(args.target_dir).rglob('*.py'):
             with open(pyfile, encoding='utf-8', errors='ignore') as f:
@@ -19,5 +19,5 @@ class CheckNoDynamicAttrs(Check):
                         failed = True
         return 1 if failed else 0
 
-    def apply(self, args: Any) -> int:
+    def apply(self, args: QualityGateArgs) -> int:
         return self.check(args)

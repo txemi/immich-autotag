@@ -1,5 +1,6 @@
 
-from typing import Any, List
+from typing import List
+from python_qualitygate.cli.args import QualityGateArgs
 from git import Repo, InvalidGitRepositoryError
 from pathlib import Path
 from python_qualitygate.core.base import Check
@@ -11,7 +12,7 @@ import attr
 class CheckNoSpanishChars(Check):
     name = 'check_no_spanish_chars'
 
-    def check(self, args: Any) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> CheckResult:
         findings: List[Finding] = []
         repo, repo_root = self._get_repo_and_root(findings)
         if repo is None or repo_root is None:
@@ -25,7 +26,7 @@ class CheckNoSpanishChars(Check):
             findings.extend(self._analyze_file(file_path, forbidden_bytes, spanish_words))
         return CheckResult(findings=findings)
 
-    def apply(self, args: Any) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> CheckResult:
         return self.check(args)
 
     def _get_repo_and_root(self, findings: List[Finding]):

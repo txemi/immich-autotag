@@ -1,5 +1,5 @@
 import subprocess
-from typing import Any
+from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
 
@@ -8,12 +8,12 @@ from python_qualitygate.core.base import Check
 class CheckShfmt(Check):
     name = 'check_shfmt'
 
-    def check(self, args: Any) -> int:
+    def check(self, args: QualityGateArgs) -> int:
         cmd = ['shfmt', '-d', '-i', '0']
         print(f"[RUN] {' '.join(cmd)} scripts/")
         return subprocess.call(cmd + ['scripts/'])
 
-    def apply(self, args: Any) -> int:
+    def apply(self, args: QualityGateArgs) -> int:
         cmd = ['shfmt', '-w', '-i', '0']
         print(f"[RUN] {' '.join(cmd)} scripts/")
         return subprocess.call(cmd + ['scripts/'])

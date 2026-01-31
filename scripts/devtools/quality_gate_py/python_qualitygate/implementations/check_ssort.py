@@ -1,5 +1,5 @@
 import subprocess
-from typing import Any
+from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
 
@@ -8,12 +8,12 @@ from python_qualitygate.core.base import Check
 class CheckSsort(Check):
     name = 'check_ssort'
 
-    def check(self, args: Any) -> int:
+    def check(self, args: QualityGateArgs) -> int:
         cmd = ['ssort', '--check', args.target_dir]
         print(f"[RUN] {' '.join(cmd)}")
         return subprocess.call(cmd)
 
-    def apply(self, args: Any) -> int:
+    def apply(self, args: QualityGateArgs) -> int:
         cmd = ['ssort', args.target_dir]
         print(f"[RUN] {' '.join(cmd)}")
         return subprocess.call(cmd)
