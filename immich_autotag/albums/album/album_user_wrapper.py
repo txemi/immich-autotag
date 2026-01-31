@@ -21,8 +21,13 @@ class AlbumUserWrapper:
     _user: "AlbumUserResponseDto" = attrs.field()
 
     def __attrs_post_init__(self):
-        # No runtime validation needed; type is enforced by attrs and static typing
-        pass
+        # Runtime validator for AlbumUserResponseDto
+        from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+
+        if not isinstance(self._user, AlbumUserResponseDto):
+            raise TypeError(
+                f"_user must be AlbumUserResponseDto, got {type(self._user)}"
+            )
 
     @typechecked
     def get_email(self) -> EmailAddress:
