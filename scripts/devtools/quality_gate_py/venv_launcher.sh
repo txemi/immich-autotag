@@ -18,7 +18,6 @@ if [ ! -x "$VENV_PY" ]; then
 	exit 2
 fi
 
-
 # Always run main.py in this directory, pass all arguments to it
 PY_SCRIPT="$SCRIPT_DIR/main.py"
 exec "$VENV_PY" "$PY_SCRIPT" "$@"
