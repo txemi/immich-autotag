@@ -846,7 +846,7 @@ check_import_linter() {
 		echo "[ERROR] lint-imports binary not found in virtualenv or PATH."
 		return 1
 	fi
-	if ! "$lint_imports_bin" --config "$repo_root/importlinter.ini"; then
+	if ! "$lint_imports_bin" --config "$REPO_ROOT/importlinter.ini"; then
 		echo "[ERROR] import-linter found contract violations."
 		return 1
 	fi
