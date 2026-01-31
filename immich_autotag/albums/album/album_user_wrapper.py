@@ -29,7 +29,7 @@ class AlbumUserWrapper:
             )
 
     @typechecked
-    def get_email(self) -> object:
+    def get_email(self) -> "EmailAddress":
         from immich_autotag.types.email_address import EmailAddress
 
         return EmailAddress.from_string(self._user.user.email)

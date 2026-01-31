@@ -108,7 +108,7 @@ def cleanup_unhealthy_album(
 
     collection.delete_album(
         wrapper=album_wrapper,
-        client=client.get_authenticated_client(),
+        client=client.get_client(),
         tag_mod_report=tag_mod_report,
         reason="Unhealthy temporary album deleted automatically",
     )

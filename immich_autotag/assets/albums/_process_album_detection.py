@@ -24,7 +24,7 @@ def process_album_detection(
     )
 
     context = asset_wrapper.get_context()
-    client = context.get_client().get_client()
+    client = context.get_client_wrapper().get_client()
     albums_collection = context.get_albums_collection()
     album_wrapper = albums_collection.create_or_get_album_with_user(
         album_name=detected_album,

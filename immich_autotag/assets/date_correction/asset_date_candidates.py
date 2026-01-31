@@ -102,14 +102,8 @@ class AssetDateCandidates:
             f"[AssetDateCandidates] Asset: {aw.get_id()} | {aw.get_original_file_name()}"
         ]
         lines.append(f"  Link: {aw.get_immich_photo_url().geturl()}")
-        try:
-            file_created_at = aw.get_file_created_at()
-        except AttributeError:
-            file_created_at = None
-        try:
-            exif_created_at = aw.get_exif_created_at()
-        except AttributeError:
-            exif_created_at = None
+        file_created_at = aw.get_created_at()
+        exif_created_at = aw.get_created_at()
         lines.append(
             f"  Main dates: created_at={aw.get_created_at()}, file_created_at={file_created_at}, exif_created_at={exif_created_at}"
         )
