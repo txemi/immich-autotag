@@ -772,7 +772,7 @@ check_no_spanish_chars() {
 	local SPANISH_WORDS_FILE="$SCRIPT_DIR/spanish_words.txt"
 	local SPANISH_WORD_PATTERN=""
 	if [[ -f "$SPANISH_WORDS_FILE" ]]; then
-		# Filtra líneas vacías o solo espacios
+		# Filters empty lines or lines with only spaces
 		SPANISH_WORD_PATTERN=$(grep -v '^#' "$SPANISH_WORDS_FILE" | grep -v '^[[:space:]]*$' | paste -sd '|' -)
 	fi
 	local SPANISH_PATTERN='[áéíóúñÁÉÍÓÚÑüÜ¿¡]'
@@ -793,10 +793,10 @@ check_no_spanish_chars() {
 	files_to_check=$(git ls-files | grep -v 'scripts/devtools/spanish_words.txt')
 
 	# Search for Spanish characters/words in the selected files
-	echo "[DEBUG] Archivos a revisar por español:" >&2
+	echo "[DEBUG] Files to check for Spanish:" >&2
 	echo "$files_to_check" >&2
 	spanish_matches=$(echo "$files_to_check" | xargs -r grep -n -I -i -P "$SPANISH_PATTERN" || true)
-	echo "[DEBUG] Resultados de grep español:" >&2
+	echo "[DEBUG] Results of Spanish grep:" >&2
 	echo "$spanish_matches" >&2
 
 	if [ -n "$spanish_matches" ]; then
