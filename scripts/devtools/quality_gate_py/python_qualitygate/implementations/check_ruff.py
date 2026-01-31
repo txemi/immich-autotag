@@ -3,9 +3,10 @@ from typing import Any
 import attr
 from python_qualitygate.core.base import Check
 
+
 @attr.define(auto_attribs=True, slots=True)
 class CheckRuff(Check):
-    name: str = 'check_ruff'
+    name = 'check_ruff'
 
     def check(self, args: Any) -> int:
         cmd = [args.py_bin, '-m', 'ruff', 'check', args.target_dir]

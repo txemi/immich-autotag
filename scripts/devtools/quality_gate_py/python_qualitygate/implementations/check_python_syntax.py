@@ -4,9 +4,10 @@ from typing import Any
 import attr
 from python_qualitygate.core.base import Check
 
+
 @attr.define(auto_attribs=True, slots=True)
 class CheckPythonSyntax(Check):
-    name: str = 'check_python_syntax'
+    name = 'check_python_syntax'
 
     def check(self, args: Any) -> int:
         py_files = list(Path(args.target_dir).rglob('*.py'))

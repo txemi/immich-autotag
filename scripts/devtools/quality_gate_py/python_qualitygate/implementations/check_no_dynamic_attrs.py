@@ -4,9 +4,10 @@ from typing import Any
 import attr
 from python_qualitygate.core.base import Check
 
+
 @attr.define(auto_attribs=True, slots=True)
 class CheckNoDynamicAttrs(Check):
-    name: str = 'check_no_dynamic_attrs'
+    name = 'check_no_dynamic_attrs'
 
     def check(self, args: Any) -> int:
         failed = False

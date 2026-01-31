@@ -4,9 +4,10 @@ from typing import Any
 import attr
 from python_qualitygate.core.base import Check
 
+
 @attr.define(auto_attribs=True, slots=True)
 class CheckNoSpanishChars(Check):
-    name: str = 'check_no_spanish_chars'
+    name = 'check_no_spanish_chars'
 
     def check(self, args: Any) -> int:
         import os

@@ -3,9 +3,10 @@ from typing import Any
 import attr
 from python_qualitygate.core.base import Check
 
+
 @attr.define(auto_attribs=True, slots=True)
 class CheckNoTuples(Check):
-    name: str = 'check_no_tuples'
+    name = 'check_no_tuples'
 
     def check(self, args: Any) -> int:
         script = 'scripts/devtools/check_no_tuples.py'
