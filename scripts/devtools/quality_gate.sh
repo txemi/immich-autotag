@@ -109,15 +109,16 @@ FORMAT_SELF=1
 
 # Print help/usage message (single source)
 print_help() {
-	echo "Usage: $0 [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--enforce-dynamic-attrs] [target_dir]"
+	echo "Usage: $0 [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--enforce-dynamic-attrs] [--only-check=FUNC] [target_dir]"
 	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
 	echo "  --level=LEVEL or -l LEVEL: Set quality level (STRICT, STANDARD, TARGET)"
 	echo "  --mode=MODE or -m MODE: Set mode (CHECK, APPLY)"
 	echo "  --enforce-dynamic-attrs: Enforce dynamic attrs check"
+	echo "  --only-check=FUNC: Run only the specified check function (e.g., check_black, check_mypy, etc.)"
 	echo "  target_dir: Directory to check (default: immich_autotag)"
 	echo ""
 	echo "Examples:"
-	echo "  bash scripts/devtools/quality_gate.sh --level=TARGET --mode=CHECK"
+	echo "  bash scripts/devtools/quality_gate.sh --level=TARGET --mode=CHECK --only-check=check_black"
 	echo "  bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=APPLY"
 }
 
@@ -128,12 +129,13 @@ parse_args_and_globals() {
 	fi
 
 	# Local variables for parsing
-	local arg check_mode quality_level enforce_dynamic_attrs target_dir next_is_level next_is_mode
+	local arg check_mode quality_level enforce_dynamic_attrs target_dir only_check next_is_level next_is_mode
 
 	check_mode="APPLY" # Possible values: APPLY, CHECK
 	quality_level=""   # Possible values: STRICT, STANDARD, TARGET
 	enforce_dynamic_attrs=0
 	target_dir=""
+	only_check=""
 	next_is_level=0
 	next_is_mode=0
 	for arg in "$@"; do
@@ -153,6 +155,8 @@ parse_args_and_globals() {
 			next_is_mode=0
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 			enforce_dynamic_attrs=1
+		elif [[ "$arg" =~ ^--only-check= ]]; then
+			only_check="${arg#--only-check=}"
 		elif [[ "$arg" != --* ]]; then
 			# Only allow a single positional argument (target_dir)
 			if [ -z "$target_dir" ]; then
@@ -220,7 +224,7 @@ parse_args_and_globals() {
 	fi
 
 	# Devolver los valores como salida (en orden, SOLO datos)
-	echo "$check_mode $quality_level $target_dir $enforce_dynamic_attrs"
+	echo "$check_mode $quality_level $target_dir $enforce_dynamic_attrs $only_check"
 }
 # Prints a status message with common Quality Gate context (level, mode, script path)
 quality_gate_status_message() {
@@ -1020,10 +1024,30 @@ run_quality_gate_check_summary() {
 # Refactor: main usa solo variables locales y pasa los valores explícitamente
 main() {
 	# Argument and global variable initialization
-	local check_mode quality_level target_dir enforce_dynamic_attrs max_line_length py_bin
-	read -r check_mode quality_level target_dir enforce_dynamic_attrs < <(parse_args_and_globals "$@")
+	local check_mode quality_level target_dir enforce_dynamic_attrs only_check max_line_length py_bin
+	read -r check_mode quality_level target_dir enforce_dynamic_attrs only_check < <(parse_args_and_globals "$@")
 	max_line_length=$(setup_max_line_length)
 	py_bin=$(setup_python_venv_env)
+
+	# If --only-check is provided, run only that check and exit
+	if [ -n "$only_check" ]; then
+		if ! declare -f "$only_check" >/dev/null; then
+			echo "[DEFENSIVE-FAIL] Unknown check function: $only_check" >&2
+			exit 90
+		fi
+		# Defensive: try to call with all possible argument sets, fail if not accepted
+		set +e
+		"$only_check" "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$repo_root" "$enforce_dynamic_attrs"
+		rc=$?
+		set -e
+		if [ $rc -eq 0 ]; then
+			quality_gate_status_message "[ONLY-CHECK] $only_check passed."
+			exit 0
+		else
+			quality_gate_status_message "[ONLY-CHECK] $only_check failed."
+			exit $rc
+		fi
+	fi
 
 	# Pasar los valores explícitamente a las funciones de chequeo
 	# All quality gate modules/checks are called via run_quality_gate_check_mode and run_quality_gate_apply_mode.
