@@ -11,6 +11,7 @@ from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
+from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -63,7 +64,6 @@ class AssetCacheEntry:
 
         from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-        from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
         cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ASSETS)
         cache_data = cache_mgr.load(str(asset_id))
@@ -71,7 +71,7 @@ class AssetCacheEntry:
             # Defensive: handle both dict and list[dict] for legacy cache
             if isinstance(cache_data, dict):
                 state = AssetDtoState.from_cache_dict(cache_data)
-            elif cache_data and isinstance(cache_data[0], dict):
+            elif cache_data:
                 state = AssetDtoState.from_cache_dict(cache_data[0])
             else:
                 state = None
@@ -88,21 +88,75 @@ class AssetCacheEntry:
             raise RuntimeError(
                 f"proxy_get_asset_info returned None for asset id={asset_id}"
             )
-        state = AssetDtoState(_dto=dto, _api_endpoint_source=AssetDtoType.FULL)
+        state = AssetDtoState.from_dto(dto, AssetDtoType.FULL)
         cache_mgr.save(str(asset_id), state.to_cache_dict())
-        return cls._from_state(_state=state, _max_age_seconds=max_age_seconds)
+        return cls._from_state(state=state, max_age_seconds=max_age_seconds)
+
+    @classmethod
+    def from_cache_dict(
+        cls,
+        cache_data: dict[str, object] | None,
+        *,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
+    ) -> "AssetCacheEntry | None":
+        """
+        Create an AssetCacheEntry from a cache dict, or None if not valid.
+        """
+        if cache_data is not None:
+            # Defensive: handle both dict and list[dict] for legacy cache
+            if cache_data:
+                # If it's a list, use the first element
+                if isinstance(cache_data, list):
+                    # Defensive: only use if first element is a dict
+                    first = None
+                    try:
+                        # Use next(iter(...)) to avoid type checker complaints
+                        first = next(iter(cache_data))
+                    except Exception:
+                        first = None
+                    if isinstance(first, dict):
+                        state = AssetDtoState.from_cache_dict(first)  # type: ignore[arg-type]
+                    else:
+                        state = None
+                elif isinstance(cache_data, dict):  # type: ignore[redundant-expr]
+                    state = AssetDtoState.from_cache_dict(cache_data)
+                else:
+                    state = None
+            else:
+                state = None
+            if state is not None:
+                entry = cls._from_state(state=state, max_age_seconds=max_age_seconds)
+                if not entry.is_stale():
+                    return entry
+        return None
+
+    @classmethod
+    def from_dto_and_cache(
+        cls,
+        *,
+        asset_id: AssetUUID,
+        dto: AssetResponseDto,
+        cache_mgr: ApiCacheManager,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
+    ) -> "AssetCacheEntry":
+        """
+        Create an AssetCacheEntry from a DTO and save to cache.
+        """
+        state = AssetDtoState.from_dto(dto, AssetDtoType.FULL)
+        cache_mgr.save(str(asset_id), state.to_cache_dict())
+        return cls._from_state(state=state, max_age_seconds=max_age_seconds)
 
     @classmethod
     def _from_state(
         cls,
         *,
-        _state: AssetDtoState,
-        _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
+        state: AssetDtoState,
+        max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS,
     ) -> "AssetCacheEntry":
         """
         Creates an AssetCacheEntry from an existing state (private).
         """
-        return cls(_state=_state, _max_age_seconds=_max_age_seconds)
+        return cls(state=state, max_age_seconds=max_age_seconds)
 
     # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 
@@ -142,7 +196,7 @@ class AssetCacheEntry:
         """
         from immich_autotag.assets.asset_dto_state import AssetDtoState
 
-        state = AssetDtoState(_dto=dto, _api_endpoint_source=dto_type)
+        state = AssetDtoState.from_dto(dto, dto_type)
         return cls(_state=state, _max_age_seconds=max_age_seconds)
 
     @classmethod
