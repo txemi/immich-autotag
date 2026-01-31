@@ -66,7 +66,7 @@ def create_album_if_missing_classification(
     if not album_date:
         log(
             f"[ALBUM CREATION] Could not extract date from asset "
-            f"'{asset_wrapper.original_file_name}', skipping auto-album creation.",
+            f"'{asset_wrapper.get_original_file_name()}', skipping auto-album creation.",
             level=LogLevel.ERROR,
         )
         return None

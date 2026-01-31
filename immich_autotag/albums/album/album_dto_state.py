@@ -58,6 +58,27 @@ class AlbumDtoState:
         # _dto is always required and validated by attrs; no need to check for None
         pass
 
+    def get_start_date(self) -> datetime.datetime | None:
+        """
+        Returns the album's start date as a datetime object, or None if not available.
+        """
+        value = self._dto.start_date
+        if value is None or str(value) == "Unset":
+            return None
+        if isinstance(value, datetime.datetime):
+            return value
+        return value
+
+    def get_end_date(self) -> datetime.datetime | None:
+        """
+        Returns the album's end date as a datetime object, or None if not available.
+        """
+        value = self._dto.end_date
+        if value is None or str(value) == "Unset":
+            return None
+            return value
+
+
     def get_dto(self) -> AlbumResponseDto:
         """Returns the underlying AlbumResponseDto (for internal use only)."""
         return self._dto

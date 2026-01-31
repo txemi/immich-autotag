@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
 
 if TYPE_CHECKING:
@@ -29,9 +30,7 @@ class AlbumUserWrapper:
             )
 
     @typechecked
-    def get_email(self) -> object:
-        from immich_autotag.types.email_address import EmailAddress
-
+    def get_email(self) -> EmailAddress:
         return EmailAddress.from_string(self._user.user.email)
 
     @typechecked

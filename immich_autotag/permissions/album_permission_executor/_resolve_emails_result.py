@@ -18,73 +18,65 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
 class ResolveEmailsResult:
-
     _resolved: Dict[EmailAddress, UserUUID] = attrs.field(
-        validator=attrs.validators.instance_of(dict)
+        init=False, factory=dict, metadata={"type": "Dict[EmailAddress, UserUUID]"}
     )
     _unresolved: List[EmailAddress] = attrs.field(
-        validator=attrs.validators.instance_of(list)
+        init=False, factory=list, metadata={"type": "List[EmailAddress]"}
     )
 
     def __iter__(self):
-        # allow unpacking: resolved, unresolved = func(...)
         yield self._resolved
         yield self._unresolved
 
-    @staticmethod
     def resolve(
-        emails: List[str], all_users: List["UserResponseWrapper"]
-    ) -> "ResolveEmailsResult":
+        self, emails: List[EmailAddress], all_users: List["UserResponseWrapper"]
+    ) -> None:
         """
-        Encapsulated logic to resolve emails to user IDs.
-        Returns a ResolveEmailsResult instance.
+        Fills this instance with resolved and unresolved emails.
         """
         from immich_autotag.logging.utils import log_debug
-        from immich_autotag.types.email_address import EmailAddress
+
+        self._resolved.clear()
+        self._unresolved.clear()
 
         if not emails:
-            return ResolveEmailsResult(resolved={}, unresolved=[])
+            return
 
         log_debug(f"[ALBUM_PERMISSIONS] Resolving {len(emails)} emails to user IDs")
 
-        # Build email → user_id map using EmailAddress
-        from immich_autotag.types.uuid_wrappers import UserUUID
-
         email_to_id: Dict[EmailAddress, UserUUID] = {}
         for user in all_users:
-            if user.email:
-                email_obj = EmailAddress.from_string(user.email)
+            email_obj = user.get_email()
+            if email_obj:
                 email_to_id[email_obj] = user.get_uuid()
 
-        email_objs = [EmailAddress.from_string(e) for e in emails]
-        email_set = set(email_objs)
-        resolved = {
-            email: email_to_id[email] for email in email_set if email in email_to_id
-        }
-        unresolved = [email for email in email_set if email not in email_to_id]
+        email_set = set(emails)
+        for email in email_set:
+            if email in email_to_id:
+                self._resolved[email] = email_to_id[email]
+            else:
+                self._unresolved.append(email)
 
-        if unresolved:
+        if self._unresolved:
             log(
-                f"[ALBUM_PERMISSIONS] Warning: Could not resolve {len(unresolved)} emails to user IDs: {unresolved}",
+                f"[ALBUM_PERMISSIONS] Warning: Could not resolve {len(self._unresolved)} emails to user IDs: {self._unresolved}",
                 level=LogLevel.IMPORTANT,
             )
 
         log_debug(
-            f"[ALBUM_PERMISSIONS] Resolved {len(resolved)}/{len(email_set)} emails to user IDs"
+            f"[ALBUM_PERMISSIONS] Resolved {len(self._resolved)}/{len(email_set)} emails to user IDs"
         )
-        return ResolveEmailsResult(resolved=resolved, unresolved=unresolved)
 
-    @staticmethod
     def resolve_emails_to_user_ids(
-        emails: List["EmailAddress"], context: "ImmichContext"
-    ) -> "ResolveEmailsResult":
+        self, emails: list[EmailAddress], context: "ImmichContext"
+    ) -> None:
         """
-        Static method to resolve EmailAddress objects to user IDs using the UserManager.
-        Returns a ResolveEmailsResult instance.
+        Fills this instance with resolved and unresolved emails using the UserManager.
         """
         from immich_autotag.users.user_manager import UserManager
 
         manager = UserManager.get_instance()
         manager.load_all(context)
         all_users = manager.all_users()
-        return ResolveEmailsResult.resolve([str(e) for e in emails], all_users)
+        self.resolve(emails, all_users)
