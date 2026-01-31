@@ -637,6 +637,7 @@ class AssetResponseWrapper:
         tag_name = classification.autotag_unknown
         if tag_name is None:
             from immich_autotag.logging.utils import log
+
             log(
                 "[WARNING] autotag_unknown not set in config.classification; skipping tag management."
             )
@@ -673,6 +674,7 @@ class AssetResponseWrapper:
         tag_name = classification.autotag_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
+
             log(
                 "[WARNING] autotag_conflict not set in config.classification; skipping tag management."
             )
