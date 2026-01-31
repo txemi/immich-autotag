@@ -10,20 +10,19 @@ from datetime import datetime
 
 from typeguard import typechecked
 
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.config.models import AlbumDateConsistencyConfig, UserConfig
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_kind import ModificationKind
-
-
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.report.modification_report import ModificationReport
+
 
 @typechecked
 def check_album_date_consistency(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
-    threshold_days: int = 180
+    threshold_days: int = 180,
 ) -> None:
     """
     For each album whose name starts with a date (YYYY-MM-DD, YYYY-MM, or YYYY),
