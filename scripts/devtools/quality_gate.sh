@@ -994,9 +994,13 @@ main() {
 			echo "[DEFENSIVE-FAIL] Unknown check function: $only_check" >&2
 			exit 90
 		fi
-		# Defensive: try to call with all possible argument sets, fail if not accepted
+		# Defensive: call with correct argument order for check_mypy
 		set +e
-		"$only_check" "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$repo_root" "$enforce_dynamic_attrs"
+		if [ "$only_check" = "check_mypy" ]; then
+			"$only_check" "$check_mode" "$quality_level" "$py_bin" "$target_dir"
+		else
+			"$only_check" "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$repo_root" "$enforce_dynamic_attrs"
+		fi
 		rc=$?
 		set -e
 		if [ $rc -eq 0 ]; then
