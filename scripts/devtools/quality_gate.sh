@@ -786,9 +786,9 @@ check_no_spanish_chars() {
 	SCRIPT_REL_PATH="${SCRIPT_ABS_PATH#$PWD/}"
 	QUALITY_GATE_REL_PATH="${QUALITY_GATE_ABS_PATH#$PWD/}"
 
-	# Get git-tracked files and exclude this script and quality_gate.sh
+	# Get git-tracked files and exclude this script, quality_gate.sh, and ONLY the spanish_words.txt file
 	local files_to_check
-	files_to_check=$(git ls-files | grep -v "$SCRIPT_REL_PATH" | grep -v "$QUALITY_GATE_REL_PATH")
+	files_to_check=$(git ls-files | grep -v 'scripts/devtools/spanish_words.txt')
 
 	# Search for Spanish characters/words in the selected files
 	spanish_matches=$(echo "$files_to_check" | xargs grep -n -I -i -E "$SPANISH_PATTERN" || true)

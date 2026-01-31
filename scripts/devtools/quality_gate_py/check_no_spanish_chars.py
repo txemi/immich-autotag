@@ -14,7 +14,12 @@ class CheckNoSpanishChars(Check):
         words_path = os.path.join(script_dir, '../spanish_words.txt')
         with open(words_path, encoding='utf-8') as f:
             SPANISH_WORDS = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-        SPANISH_PATTERN = re.compile(r"[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(" + '|'.join(map(re.escape, SPANISH_WORDS)) + ")\\b", re.IGNORECASE)
+        # Use Unicode escape sequences to avoid direct accented characters
+        SPANISH_PATTERN = re.compile(
+            r"[\u00e1\u00e9\u00ed\u00f3\u00fa\u00c1\u00c9\u00cd\u00d3\u00da\u00f1\u00d1\u00fc\u00dc\u00bf\u00a1]"
+            r"|\\b(" + '|'.join(map(re.escape, SPANISH_WORDS)) + ")\\b",
+            re.IGNORECASE
+        )
         failed = False
         for pyfile in Path(args.target_dir).rglob('*.py'):
             # Exclude the spanish_words.txt file from the check
