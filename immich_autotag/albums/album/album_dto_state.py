@@ -61,22 +61,27 @@ class AlbumDtoState:
     def get_start_date(self) -> datetime.datetime | None:
         """
         Returns the album's start date as a datetime object, or None if not available.
+        Handles Unset/null robustly.
         """
         value = self._dto.start_date
-        if value is None or str(value) == "Unset":
+        # Unset/null handling
+        if getattr(value, "__class__", None) and value.__class__.__name__ == "Unset":
             return None
         if isinstance(value, datetime.datetime):
             return value
-        return value
+        return None
 
     def get_end_date(self) -> datetime.datetime | None:
         """
         Returns the album's end date as a datetime object, or None if not available.
+        Handles Unset/null robustly.
         """
         value = self._dto.end_date
-        if value is None or str(value) == "Unset":
+        if getattr(value, "__class__", None) and value.__class__.__name__ == "Unset":
             return None
+        if isinstance(value, datetime.datetime):
             return value
+        return None
 
     def get_dto(self) -> AlbumResponseDto:
         """Returns the underlying AlbumResponseDto (for internal use only)."""
@@ -145,7 +150,7 @@ class AlbumDtoState:
         from .album_user_list import AlbumUserList
         from .album_user_wrapper import AlbumUserWrapper
 
-        users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
+        users = [AlbumUserWrapper(u) for u in self._dto.album_users]
         return AlbumUserList(users)
 
     def get_owner_uuid(self) -> UserUUID:

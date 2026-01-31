@@ -19,7 +19,7 @@ def collect_duplicate(
     Stores a small summary dict into `_collected_duplicates` (best-effort).
     """
 
-    if existing is not None and incoming is not None:
+    if True:
         report = DuplicateAlbumReport(
             album_name=existing.get_album_name() if existing else "",
             existing_album=existing,

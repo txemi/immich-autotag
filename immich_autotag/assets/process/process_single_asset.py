@@ -42,7 +42,7 @@ def _correct_date_if_enabled(
     config = ConfigManager.get_instance().get_config_or_raise()
     if (
         config.duplicate_processing is not None
-        and config.duplicate_processing.date_correction is not None
+        # config.duplicate_processing.date_correction is never None
         and config.duplicate_processing.date_correction.enabled
     ):
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)

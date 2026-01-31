@@ -46,15 +46,6 @@ class ClassificationRuleSet:
         log(f"Loaded classification rules:\n{rules_str}", level=LogLevel.FOCUS)
 
     # Add more utility methods as needed for rule matching, filtering, etc.
-    @typechecked
-    def __has_tag(self, tag_name: str) -> bool:
-        """
-        Returns True if the given tag_name exists in any rule's tag_names list.
-        """
-        for wrapper in self.rules:
-            if wrapper.has_tag(tag_name):
-                return True
-        return False
 
     @staticmethod
     @typechecked
@@ -136,7 +127,7 @@ class ClassificationRuleSet:
             return []
 
         # Load assets from the API
-        from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+        # from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper  # unused
 
         wrappers: List[AssetResponseWrapper] = []
 
@@ -145,10 +136,6 @@ class ClassificationRuleSet:
             if wrapper is None:
                 raise RuntimeError(
                     f"[ERROR] Asset with ID {asset_uuid} could not be loaded from API."
-                )
-            if not isinstance(wrapper, AssetResponseWrapper):
-                raise TypeError(
-                    f"Expected AssetResponseWrapper, got {type(wrapper).__name__} for asset ID {asset_uuid}"
                 )
             wrappers.append(wrapper)
 

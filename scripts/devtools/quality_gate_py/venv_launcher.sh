@@ -1,28 +1,26 @@
 #!/bin/bash
-# venv_launcher.sh: Lanza un script Python usando el virtualenv del proyecto, sin importar desde dónde se invoque.
-# Uso: ./venv_launcher.sh <script_python> [args...]
+# venv_launcher.sh: Launches a Python script using the project's virtualenv, regardless of where it is called from.
+# Usage: ./venv_launcher.sh <python_script> [args...]
 
 set -e
 set -o pipefail
 
-
-
-# Localiza la raíz del proyecto (dos niveles arriba de este script)
+# Locate the project root (two levels up from this script)
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 VENV_PY="$REPO_ROOT/.venv/bin/python"
 
-# Añade la raíz del repo al PYTHONPATH para imports absolutos
+# Add the repo root to PYTHONPATH for absolute imports
 export PYTHONPATH="$REPO_ROOT"
 
 if [ ! -x "$VENV_PY" ]; then
-  echo "[FATAL] No se encontró el virtualenv en $VENV_PY" >&2
-  exit 2
+	echo "[FATAL] Virtualenv not found at $VENV_PY" >&2
+	exit 2
 fi
 
 if [ $# -lt 1 ]; then
-  echo "Uso: $0 <script_python> [args...]" >&2
-  exit 1
+	echo "Usage: $0 <python_script> [args...]" >&2
+	exit 1
 fi
 
 PY_SCRIPT="$1"

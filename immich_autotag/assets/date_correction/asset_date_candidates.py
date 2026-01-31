@@ -23,37 +23,42 @@ class AssetDateCandidates:
     Example: An asset can have dates from Immich, filename, path, EXIF, etc. All those dates are grouped here.
     """
 
-    asset_wrapper: AssetResponseWrapper = attrs.field(
+    _asset_wrapper: AssetResponseWrapper = attrs.field(
         validator=validate_asset_response_wrapper_not_none
     )
-    candidates: List[AssetDateCandidate] = attrs.field(factory=list)
+    _candidates: List[AssetDateCandidate] = attrs.field(factory=list)
+
+    @staticmethod
+    def create(asset_wrapper: "AssetResponseWrapper") -> "AssetDateCandidates":
+        # Always use positional arguments to avoid issues with attrs private fields
+        return AssetDateCandidates(asset_wrapper)
 
     @typechecked
     def add(self, candidate: AssetDateCandidate) -> None:
-        self.candidates.append(candidate)
+        self._candidates.append(candidate)
 
     @typechecked
     def extend(self, other: "AssetDateCandidates") -> None:
-        self.candidates.extend(other.candidates)
+        self._candidates.extend(other._candidates)
 
     @typechecked
     def is_empty(self) -> bool:
-        return not self.candidates
+        return not self._candidates
 
     @typechecked
     def oldest(self) -> Optional[datetime]:
-        return min((c.get_aware_date() for c in self.candidates), default=None)
+        return min((c.get_aware_date() for c in self._candidates), default=None)
 
     @typechecked
     def all_dates(self) -> List[datetime]:
-        return [c.get_aware_date() for c in self.candidates]
+        return [c.get_aware_date() for c in self._candidates]
 
     @typechecked
     def immich_date_is_oldest_or_equal(self, immich_date: datetime) -> bool:
         """
         Returns True if immich_date is less than or equal to all candidate dates.
         """
-        return all(immich_date <= c.get_aware_date() for c in self.candidates)
+        return all(immich_date <= c.get_aware_date() for c in self._candidates)
 
     @typechecked
     def filename_candidates(self) -> list[AssetDateCandidate]:
@@ -61,13 +66,15 @@ class AssetDateCandidates:
         from .date_source_kind import DateSourceKind
 
         return [
-            c for c in self.candidates if c.get_source_kind() == DateSourceKind.FILENAME
+            c
+            for c in self._candidates
+            if c.get_source_kind() == DateSourceKind.FILENAME
         ]
 
     @typechecked
     def all_candidates(self) -> List[AssetDateCandidate]:
         """Return all AssetDateCandidate objects (alias for list(self))."""
-        return list(self.candidates)
+        return list(self._candidates)
 
     # Simplified and robust version, using AssetDateCandidate comparison
     @typechecked
@@ -75,14 +82,14 @@ class AssetDateCandidates:
         """
         Returns the AssetDateCandidate with the oldest date for this asset.
         """
-        if not self.candidates:
+        if not self._candidates:
             return None
-        return min(self.candidates)
+        return min(self._candidates)
 
     @typechecked
     def candidates_by_kind(self, kind: DateSourceKind) -> List[AssetDateCandidate]:
         """Return all candidates of a given DateSourceKind."""
-        return [c for c in self.candidates if c.get_source_kind() == kind]
+        return [c for c in self._candidates if c.get_source_kind() == kind]
 
     @typechecked
     def oldest_by_kind(self, kind: DateSourceKind) -> Optional[AssetDateCandidate]:
@@ -93,11 +100,11 @@ class AssetDateCandidates:
     @typechecked
     def has_kind(self, kind: DateSourceKind) -> bool:
         """Return True if there is at least one candidate of the given kind."""
-        return any(c.get_source_kind() == kind for c in self.candidates)
+        return any(c.get_source_kind() == kind for c in self._candidates)
 
     @typechecked
     def format_info(self) -> str:
-        aw = self.asset_wrapper
+        aw = self._asset_wrapper
         lines = [
             f"[AssetDateCandidates] Asset: {aw.get_id()} | {aw.get_original_file_name()}"
         ]
@@ -110,7 +117,7 @@ class AssetDateCandidates:
         lines.append(f"  Tags: {aw.get_tag_names()}")
         lines.append(f"  Albums: {aw.get_album_names()}")
         lines.append("  Date candidates:")
-        for c in self.candidates:
+        for c in self._candidates:
             lines.append("    " + c.format_info())
         return "\n".join(lines)
 
@@ -119,12 +126,12 @@ class AssetDateCandidates:
         self, kinds: list[DateSourceKind]
     ) -> List[AssetDateCandidate]:
         """Returns all candidates whose source_kind is in the kinds list."""
-        return [c for c in self.candidates if c.get_source_kind() in kinds]
+        return [c for c in self._candidates if c.get_source_kind() in kinds]
 
     @typechecked
     def __iter__(self) -> Iterator["AssetDateCandidate"]:
-        return iter(self.candidates)
+        return iter(self._candidates)
 
     @typechecked
     def __len__(self) -> int:
-        return len(self.candidates)
+        return len(self._candidates)

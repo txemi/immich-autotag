@@ -60,19 +60,15 @@ class AssetDateCandidate:
             manager = ConfigManager.get_instance()
             config: UserConfig = manager.get_config_or_raise()
             tz: str = "UTC"  # Default fallback
-            if config is not None:
-                duplicate_processing: Optional[DuplicateProcessingConfig] = (
-                    config.duplicate_processing
+            duplicate_processing: Optional[DuplicateProcessingConfig] = (
+                config.duplicate_processing
+            )
+            if duplicate_processing is not None:
+                date_correction: Optional[DateCorrectionConfig] = (
+                    duplicate_processing.date_correction
                 )
-                if duplicate_processing is not None:
-                    date_correction: Optional[DateCorrectionConfig] = (
-                        duplicate_processing.date_correction
-                    )
-                    if (
-                        date_correction is not None
-                        and date_correction.extraction_timezone
-                    ):
-                        tz = date_correction.extraction_timezone
+                if date_correction and date_correction.extraction_timezone:
+                    tz = date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 
         return dt.replace(tzinfo=ZoneInfo(tz))
@@ -113,12 +109,9 @@ class AssetDateCandidate:
         file_path: Optional[Path],
         asset_wrapper: AssetResponseWrapper,
     ) -> "AssetDateCandidate":
-        return AssetDateCandidate(
-            source_kind=source_kind,
-            date=date,
-            file_path=file_path,
-            asset_wrapper=asset_wrapper,
-        )
+        # Use positional arguments to avoid issues with private attribute names
+        # Order: _asset_wrapper, _source_kind, _date, _file_path
+        return AssetDateCandidate(asset_wrapper, source_kind, date, file_path)
 
     def get_source_kind(self) -> DateSourceKind:
         return self._source_kind

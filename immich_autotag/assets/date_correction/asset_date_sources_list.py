@@ -92,7 +92,7 @@ class AssetDateSourcesList:
         dates = [
             c.get_aware_date()
             for candidate_set in self.get_date_candidates_per_duplicate()
-            for c in candidate_set.candidates
+            for c in candidate_set.all_candidates()
             if c.get_source_kind() == DateSourceKind.WHATSAPP_FILENAME
         ]
         return min(dates) if dates else None
@@ -105,7 +105,7 @@ class AssetDateSourcesList:
         return [
             c
             for candidate_set in self.get_date_candidates_per_duplicate()
-            for c in candidate_set.candidates
+            for c in candidate_set.all_candidates()
         ]
 
     @typechecked

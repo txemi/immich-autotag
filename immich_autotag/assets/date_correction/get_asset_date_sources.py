@@ -22,7 +22,7 @@ def get_asset_date_candidates(
     Extract all relevant date candidates for a given asset.
     Returns an AssetDateCandidates object with all found AssetDateCandidate objects.
     """
-    candidates = AssetDateCandidates(asset_wrapper=asset_wrapper)
+    candidates = AssetDateCandidates.create(asset_wrapper)
     # IMMICH date
     immich_dt = asset_wrapper.get_best_date()
     if immich_dt:
