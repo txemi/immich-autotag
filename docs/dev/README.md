@@ -1,16 +1,16 @@
-# Developer Resources
 
-This folder contains internal resources for project maintainers and contributors.
+# Developer Documentation
 
-## Documentation
+This folder contains all internal documentation and resources for project maintainers and contributors.
 
-- **[branches.md](./branches.md)** — Branch strategy, special-purpose branches (develop, docs-track), and when/how to manage branches
-- **[versioning_workflow.md](./versioning_workflow.md)** — Versioning policy, release workflow, and tag creation process
+## Structure
 
-## Other Resources
+- **style/** — Coding style guides and conventions for Python and static factory patterns.
+- **prompts/** — Prompts for translation, automation, or other developer tasks (not for end users)
+- **architecture.md** — System architecture and high-level design decisions
+- **branches.md** — Branch strategy and management
+- **versioning_workflow.md** — Versioning policy and release workflow
 
-- `prompts/`: Prompts for translation, automation, or other developer tasks. Not for end users.
+Other subfolders or files may be added as the project evolves. If you add a new area of documentation, please update this README to keep it current.
 
-Other subfolders may be added for scripts, templates, or advanced developer tools.
-
-End users can ignore this folder entirely.
+**End users can ignore this folder entirely.**
