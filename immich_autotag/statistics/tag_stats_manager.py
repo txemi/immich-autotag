@@ -7,6 +7,9 @@ import attr
 from typeguard import typechecked
 
 if TYPE_CHECKING:
+    from .statistics_manager import StatisticsManager
+
+if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.report.modification_kind import ModificationKind
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
