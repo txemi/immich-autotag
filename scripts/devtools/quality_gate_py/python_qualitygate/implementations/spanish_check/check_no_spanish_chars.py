@@ -1,37 +1,54 @@
-import re
-from pathlib import Path
-from typing import Any
-import attr
-from python_qualitygate.core.base import Check
 
+from typing import Any, List
+from git import Repo, InvalidGitRepositoryError
+from pathlib import Path
+from python_qualitygate.core.base import Check
+from python_qualitygate.core.result import CheckResult, Finding
+
+import attr
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckNoSpanishChars(Check):
     name = 'check_no_spanish_chars'
 
-    def check(self, args: Any) -> int:
-        import os
-        from git import Repo, InvalidGitRepositoryError
-        # Detecta la raíz del repo git desde cualquier subcarpeta
-        repo = None
-        repo_root = None
+    def check(self, args: Any) -> CheckResult:
+        findings: List[Finding] = []
+        repo, repo_root = self._get_repo_and_root(findings)
+        if repo is None or repo_root is None:
+            return CheckResult(findings=findings)
+
+        words_path, spanish_words = self._get_spanish_words(repo_root, findings)
+        forbidden_bytes = self._get_forbidden_bytes()
+        files_to_check = self._get_files_to_check(repo, repo_root)
+
+        for file_path in files_to_check:
+            findings.extend(self._analyze_file(file_path, forbidden_bytes, spanish_words))
+        return CheckResult(findings=findings)
+
+    def apply(self, args: Any) -> CheckResult:
+        return self.check(args)
+
+    def _get_repo_and_root(self, findings: List[Finding]):
         try:
-            repo = Repo(os.getcwd(), search_parent_directories=True)
-            repo_root = repo.working_tree_dir
+            repo = Repo(Path.cwd(), search_parent_directories=True)
+            repo_root = Path(repo.working_tree_dir)
+            return repo, repo_root
         except InvalidGitRepositoryError:
-            print("[ERROR] No se encontró un repositorio git en el árbol de directorios actual.")
-            return 1
+            findings.append(Finding(file_path=Path.cwd(), line_number=0, message="No se encontró un repositorio git en el árbol de directorios actual.", code="git-error"))
+            return None, None
 
-        words_path = os.path.join(repo_root, 'scripts', 'spanish_words.txt')
-        SPANISH_WORDS = []
-        if os.path.exists(words_path):
-            with open(words_path, encoding='utf-8') as f:
-                SPANISH_WORDS = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    def _get_spanish_words(self, repo_root: Path, findings: List[Finding]):
+        words_path = repo_root / 'scripts' / 'spanish_words.txt'
+        spanish_words = []
+        if words_path.exists():
+            with words_path.open(encoding='utf-8') as f:
+                spanish_words = [line.strip() for line in f if line.strip() and not line.startswith('#')]
         else:
-            print(f"[WARN] spanish_words.txt not found at {words_path}. Only accents will be checked.")
+            findings.append(Finding(file_path=words_path, line_number=0, message="spanish_words.txt not found. Only accents will be checked.", code="warn"))
+        return words_path, spanish_words
 
-        # Lista de bytes de acentos/caracteres españoles
-        forbidden_bytes = [
+    def _get_forbidden_bytes(self) -> List[bytes]:
+        return [
             b'\xc3\xa1', b'\xc3\xa9', b'\xc3\xad', b'\xc3\xb3', b'\xc3\xba', # á é í ó ú
             b'\xc3\x81', b'\xc3\x89', b'\xc3\x8d', b'\xc3\x93', b'\xc3\x9a', # Á É Í Ó Ú
             b'\xc3\xb1', b'\xc3\x91', # ñ Ñ
@@ -39,33 +56,35 @@ class CheckNoSpanishChars(Check):
             b'\xc2\xbf', b'\xc2\xa1'  # ¿ ¡
         ]
 
-        # Usar GitPython para obtener archivos rastreados por git
-        files_to_check = [os.path.join(repo_root, f) for f in repo.git.ls_files().splitlines()]
-        # Excluir spanish_words.txt y este script
-        files_to_check = [f for f in files_to_check if not f.endswith('spanish_words.txt') and not f.endswith('check_no_spanish_chars.py')]
+    def _get_files_to_check(self, repo, repo_root: Path) -> List[Path]:
+        files = [repo_root / Path(f) for f in repo.git.ls_files().splitlines()]
+        return [f for f in files if not str(f).endswith('spanish_words.txt') and not str(f).endswith('check_no_spanish_chars.py')]
 
-        failed = False
-        for file_path in files_to_check:
+    def _analyze_file(self, file_path: Path, forbidden_bytes: List[bytes], spanish_words: List[str]) -> List[Finding]:
+        findings: List[Finding] = []
+        try:
+            with file_path.open('rb') as f:
+                for i, line in enumerate(f, 1):
+                    findings.extend(self._find_spanish_chars(file_path, i, line, forbidden_bytes))
+                    findings.extend(self._find_spanish_words(file_path, i, line, spanish_words))
+        except Exception as e:
+            findings.append(Finding(file_path=file_path, line_number=0, message=f"No se pudo analizar: {e}", code="file-error"))
+        return findings
+
+    def _find_spanish_chars(self, file_path: Path, line_number: int, line: bytes, forbidden_bytes: List[bytes]) -> List[Finding]:
+        findings = []
+        if any(b in line for b in forbidden_bytes):
+            findings.append(Finding(file_path=file_path, line_number=line_number, message=line.decode(errors='ignore').strip(), code="spanish-char"))
+        return findings
+
+    def _find_spanish_words(self, file_path: Path, line_number: int, line: bytes, spanish_words: List[str]) -> List[Finding]:
+        findings = []
+        if spanish_words:
             try:
-                with open(file_path, 'rb') as f:
-                    for i, line in enumerate(f, 1):
-                        # Busca acentos por bytes
-                        if any(b in line for b in forbidden_bytes):
-                            print(f"[ERROR] {file_path}:{i}: {line.decode(errors='ignore').strip()}")
-                            failed = True
-                        # Busca palabras prohibidas si hay lista
-                        if SPANISH_WORDS:
-                            try:
-                                decoded_line = line.decode('utf-8', errors='ignore')
-                            except Exception:
-                                continue
-                            for word in SPANISH_WORDS:
-                                if word and word.lower() in decoded_line.lower():
-                                    print(f"[ERROR] {file_path}:{i}: {decoded_line.strip()} (palabra prohibida: {word})")
-                                    failed = True
-            except Exception as e:
-                print(f"[WARN] No se pudo analizar {file_path}: {e}")
-        return 1 if failed else 0
-
-    def apply(self, args: Any) -> int:
-        return self.check(args)
+                decoded_line = line.decode('utf-8', errors='ignore')
+            except Exception:
+                return findings
+            for word in spanish_words:
+                if word and word.lower() in decoded_line.lower():
+                    findings.append(Finding(file_path=file_path, line_number=line_number, message=f"{decoded_line.strip()} (palabra prohibida: {word})", code="spanish-word"))
+        return findings
