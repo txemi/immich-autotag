@@ -129,7 +129,7 @@ class StatisticsManager:
         _instance = self
         # Initialize declared attributes
         self._checkpoint = CheckpointManager(stats_manager=self)
-        self._tags = TagStatsManager(stats_manager=self)
+        self._tags = TagStatsManager(self)
         self._set_max_assets()
         self._set_skip_n()
 

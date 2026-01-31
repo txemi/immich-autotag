@@ -5,16 +5,19 @@ from typeguard import typechecked
 
 
 @typechecked
-@attr.s(auto_attribs=True, kw_only=True)
+@attr.s(auto_attribs=True, slots=True)
 class TagStatsManager:
-    _stats_manager: "StatisticsManager" = attr.ib()
+    stats_manager: "StatisticsManager" = attr.ib(repr=False)
+    _stats_manager: "StatisticsManager" = attr.ib(init=False, repr=False)
+
     def __attrs_post_init__(self):
         # Runtime type check to enforce type safety without circular import
         from .statistics_manager import StatisticsManager as SM
 
+        self._stats_manager = self.stats_manager
         if not isinstance(self._stats_manager, SM):
             raise TypeError(
-                f"stats_manager must be a StatisticsManager, got {type(self._stats_manager)}"
+                f"_stats_manager must be a StatisticsManager, got {type(self._stats_manager)}"
             )
 
     @typechecked
