@@ -150,7 +150,7 @@ class AlbumDtoState:
         from .album_user_list import AlbumUserList
         from .album_user_wrapper import AlbumUserWrapper
 
-        users = [AlbumUserWrapper(user=u) for u in self._dto.album_users]
+        users = [AlbumUserWrapper(u) for u in self._dto.album_users]
         return AlbumUserList(users)
 
     def get_owner_uuid(self) -> UserUUID:

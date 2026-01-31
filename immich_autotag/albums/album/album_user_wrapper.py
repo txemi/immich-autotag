@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=False)
 class AlbumUserWrapper:
     """
     Wrapper for AlbumUserResponseDto to provide a consistent interface for album users.

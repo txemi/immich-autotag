@@ -5,8 +5,6 @@
 set -e
 set -o pipefail
 
-
-
 # Localiza la raíz del proyecto (dos niveles arriba de este script)
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
@@ -16,13 +14,13 @@ VENV_PY="$REPO_ROOT/.venv/bin/python"
 export PYTHONPATH="$REPO_ROOT"
 
 if [ ! -x "$VENV_PY" ]; then
-  echo "[FATAL] No se encontró el virtualenv en $VENV_PY" >&2
-  exit 2
+	echo "[FATAL] No se encontró el virtualenv en $VENV_PY" >&2
+	exit 2
 fi
 
 if [ $# -lt 1 ]; then
-  echo "Uso: $0 <script_python> [args...]" >&2
-  exit 1
+	echo "Uso: $0 <script_python> [args...]" >&2
+	exit 1
 fi
 
 PY_SCRIPT="$1"
