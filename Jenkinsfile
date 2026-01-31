@@ -51,7 +51,7 @@ pipeline {
             }
         }
         
-        stage('Quality Gate') {
+        stage('Quality Gate (Shell Script)') {
             steps {
                 script {
                     echo "Running Quality Gate (relaxed mode)..."
@@ -63,14 +63,14 @@ pipeline {
             }
         }
 
-        stage('Python Quality Gate') {
+        stage('Quality Gate (Python OO)') {
             steps {
                 script {
-                    echo "Running Python Quality Gate (modular OO version)..."
+                    echo "================ PYTHON QUALITY GATE (MODULAR OO VERSION) ================"
+                    echo "[PYTHON QUALITY GATE] Ejecutando Quality Gate Python (modular OO, attrs, enum, subprocess, type-safe)"
                     sh '''
                         chmod +x scripts/devtools/quality_gate_py/venv_launcher.sh
                         bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK
-                    '''
                     '''
                 }
             }
