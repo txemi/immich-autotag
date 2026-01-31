@@ -10,11 +10,7 @@ def run_quality_gate():
     args = parse_args()
     print(f"[INFO] Usando Python: {args.py_bin}")
     if args.only_check:
-        check_cls = CHECKS.get(args.only_check)
-        if not check_cls:
-            print(f"[DEFENSIVE-FAIL] Unknown check: {args.only_check}", file=sys.stderr)
-            sys.exit(90)
-        check = check_cls()
+        check = args.only_check()
         rc = check.check(args) if args.mode == QualityGateMode.CHECK else check.apply(args)
         sys.exit(rc)
     # Battery

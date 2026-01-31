@@ -1,5 +1,5 @@
 
-import subprocess
+
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
@@ -11,13 +11,13 @@ class CheckMypy(Check):
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         import re
-        cmd: list[str] = [args.py_bin, '-m', 'mypy', '--ignore-missing-imports', args.target_dir]
-        print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        from mypy import api as mypy_api
+        print(f"[RUN] mypy API on {args.target_dir}")
+        # Run mypy using its API
+        stdout, stderr, exit_status = mypy_api.run(['--ignore-missing-imports', str(args.target_dir)])
         findings = []
-        # Parse mypy output and extract error type
         error_re = re.compile(r"^(.*?):(\d+): (error): (.*?)(?:\s*\[(.*?)\])?$")
-        for line in result.stdout.splitlines():
+        for line in stdout.splitlines():
             m = error_re.match(line.strip())
             if m:
                 file_path, line_number, _, message, code = m.groups()
@@ -28,28 +28,24 @@ class CheckMypy(Check):
                     code=code or ""
                 ))
         # Determine which findings are blocking based on profile
+        from python_qualitygate.core.enums_level import QualityGateLevel
         blocking = []
         nonblocking = []
-        level = args.level.value if hasattr(args.level, 'value') else str(args.level)
         for f in findings:
-            # STRICT: any error blocks
-            # STANDARD: only arg-type/call-arg block
-            # TARGET: arg-type/call-arg/attr-defined block
-            if level == "STRICT":
+            if args.level == QualityGateLevel.STRICT:
                 blocking.append(f)
-            elif level == "STANDARD":
+            elif args.level == QualityGateLevel.STANDARD:
                 if f.code in ("arg-type", "call-arg"):
                     blocking.append(f)
                 else:
                     nonblocking.append(f)
-            elif level == "TARGET":
+            elif args.level == QualityGateLevel.TARGET:
                 if f.code in ("arg-type", "call-arg", "attr-defined"):
                     blocking.append(f)
                 else:
                     nonblocking.append(f)
             else:
                 blocking.append(f)  # Defensive: treat as STRICT
-        # Only blocking findings are returned as errors
         return CheckResult(findings=blocking)
 
     def apply(self, args: QualityGateArgs) -> CheckResult:

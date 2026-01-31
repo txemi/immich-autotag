@@ -10,7 +10,7 @@ class CheckIsort(Check):
     name = 'check_isort'
 
     def check(self, args: QualityGateArgs) -> CheckResult:
-        cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--check-only', '--line-length', str(args.max_line_length), args.target_dir]
+        cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--check-only', '--line-length', str(args.line_length), args.target_dir]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []
@@ -22,7 +22,7 @@ class CheckIsort(Check):
         return CheckResult(findings=findings)
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
-        cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--line-length', str(args.max_line_length), args.target_dir]
+        cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--line-length', str(args.line_length), args.target_dir]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []

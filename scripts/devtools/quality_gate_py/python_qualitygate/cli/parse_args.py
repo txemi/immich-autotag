@@ -24,11 +24,19 @@ def parse_args():
     args = parser.parse_args()
     # Detect venv if py-bin is not provided
     py_bin = args.py_bin if args.py_bin else detect_venv_python()
+    from pathlib import Path
+    # Map only_check string to Check class if provided
+    from python_qualitygate.batteries.registry import CHECKS
+    only_check_cls = None
+    if args.only_check:
+        only_check_cls = CHECKS.get(args.only_check)
+        if only_check_cls is None:
+            raise ValueError(f"Unknown check: {args.only_check}")
     return QualityGateArgs(
         level=QualityGateLevel(args.level),
         mode=QualityGateMode(args.mode),
         py_bin=py_bin,
-        max_line_length=args.max_line_length,
-        target_dir=args.target_dir,
-        only_check=args.only_check,
+        line_length=args.max_line_length,
+        target_dir=Path(args.target_dir),
+        only_check=only_check_cls,
     )
