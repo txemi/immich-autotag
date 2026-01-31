@@ -730,9 +730,9 @@ class AssetResponseWrapper:
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        changes = []
+        changes: list[str] = []
         for conv in tag_conversions:
-            result = conv.apply_to_asset(self)
+            result: list[str] | None = conv.apply_to_asset(self)
             if result:
                 changes.extend(result)
         if changes:
