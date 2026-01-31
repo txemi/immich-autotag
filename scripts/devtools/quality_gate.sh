@@ -610,7 +610,7 @@ check_no_tuples() {
 	local repo_root="$2"
 	local target_dir="$3"
 	echo "[CHECK] Disallow tuple returns and tuple-typed class members (project policy)"
-	"$py_bin" "${repo_root}/scripts/devtools/check_no_tuples.py" "$target_dir" --exclude ".venv,immich-client,scripts" || {
+	"$py_bin" "$repo_root/scripts/devtools/check_no_tuples.py" "$target_dir" --exclude ".venv,immich-client,scripts" || {
 		echo "[ERROR] Tuple usage policy violations detected. Replace tuples with typed classes/dataclasses."
 		return 1
 	}
@@ -861,6 +861,7 @@ check_import_linter() {
 
 # Run all quality checks in CHECK mode (fail fast on first error)
 run_quality_gate_check_mode() {
+
 	local py_bin="$1"
 	local max_line_length="$2"
 	local target_dir="$3"
@@ -868,15 +869,19 @@ run_quality_gate_check_mode() {
 	local check_mode="$5"
 	local repo_root="$6"
 	local enforce_dynamic_attrs="$7"
-
+	# Defensive: Ensure local repo_root matches global REPO_ROOT
+	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
+		echo "[DEFENSIVE-FAIL] repo_root argument ('$repo_root') does not match global REPO_ROOT ('$REPO_ROOT'). Exiting for safety." >&2
+		exit 99
+	fi
 	# All implemented check modules are called below. If a check is not called, it is either deprecated, not implemented, or not relevant for this mode. Add new checks here as needed.
 	# 1. Blocking checks (fail fast on first error)
 	check_python_syntax "$py_bin" "$target_dir" || exit 1
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || exit 1
 	check_jscpd "$target_dir" || exit 1
-	check_import_linter "$repo_root" || exit 1
+	check_import_linter "$REPO_ROOT" || exit 1
 	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || exit 2
-	check_no_tuples "$py_bin" "$repo_root" "$target_dir" || exit 3
+	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || exit 3
 	check_no_spanish_chars "$target_dir" || exit 5
 	# 2. Formatters and style (run only if all blocking checks pass)
 	check_shfmt "$check_mode" "$target_dir" || exit 1
@@ -889,6 +894,7 @@ run_quality_gate_check_mode() {
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
 run_quality_gate_apply_mode() {
+
 	local py_bin="$1"
 	local max_line_length="$2"
 	local target_dir="$3"
@@ -897,6 +903,12 @@ run_quality_gate_apply_mode() {
 	local repo_root="$6"
 	local enforce_dynamic_attrs="$7"
 	local error_found=0
+
+	# Defensive: Ensure local repo_root matches global REPO_ROOT
+	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
+		echo "[DEFENSIVE-FAIL] repo_root argument ('$repo_root') does not match global REPO_ROOT ('$REPO_ROOT'). Exiting for safety." >&2
+		exit 99
+	fi
 	# All implemented check modules are called below. If a check is not called, it is either deprecated, not implemented, or not relevant for this mode. Add new checks here as needed.
 	# 1. Auto-fixers and formatters
 	check_shfmt "$check_mode" "$target_dir" || error_found=1
@@ -908,12 +920,12 @@ run_quality_gate_apply_mode() {
 	check_python_syntax "$py_bin" "$target_dir" || error_found=1
 	# 3. Internal policy checks
 	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || error_found=2
-	check_no_tuples "$py_bin" "$repo_root" "$target_dir" || error_found=3
+	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || error_found=3
 	check_no_spanish_chars "$target_dir" || error_found=5
 	# 4. Heavy/informative checks
 	check_jscpd "$target_dir" || error_found=1
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
-	check_import_linter "$repo_root" || error_found=1
+	check_import_linter "$REPO_ROOT" || error_found=1
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || error_found=1
 	if [ "$error_found" -ne 0 ]; then
 		quality_gate_status_message "[EXIT] Quality Gate failed (see errors above)."
@@ -926,6 +938,7 @@ run_quality_gate_apply_mode() {
 # Summary check: runs most important checks first, fails on first error.
 # This ensures the developer sees the most relevant actionable error at the end.
 run_quality_gate_check_summary() {
+
 	local py_bin="$1"
 	local max_line_length="$2"
 	local target_dir="$3"
@@ -933,6 +946,12 @@ run_quality_gate_check_summary() {
 	local check_mode="$5"
 	local repo_root="$6"
 	local enforce_dynamic_attrs="$7"
+
+	# Defensive: Ensure local repo_root matches global REPO_ROOT
+	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
+		echo "[DEFENSIVE-FAIL] repo_root argument ('$repo_root') does not match global REPO_ROOT ('$REPO_ROOT'). Exiting for safety." >&2
+		exit 99
+	fi
 	echo "[SUMMARY] Running prioritized checks to show the most important remaining error."
 	# All implemented check modules are called below in priority order. If a check is not called, it is either deprecated, not implemented, or not relevant for this summary mode. Add new checks here as needed.
 	# 1. Checks we have already passed (quality threshold):
@@ -947,10 +966,10 @@ run_quality_gate_check_summary() {
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || exit 1
 	# 4. Flake8 (style)
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
-	check_import_linter "$repo_root" || exit 1
+	check_import_linter "$REPO_ROOT" || exit 1
 	# 5. Policy checks
 	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || exit 2
-	check_no_tuples "$py_bin" "$repo_root" "$target_dir" || exit 3
+	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || exit 3
 	# 6. Spanish character check
 	# 7. Code duplication (least urgent)
 	check_jscpd "$target_dir" || exit 1
@@ -993,9 +1012,9 @@ main() {
 	# All quality gate modules/checks are called via run_quality_gate_check_mode and run_quality_gate_apply_mode.
 	# If a check is not called, it is either deprecated or not implemented yet. Add new checks to those functions.
 	if [ "$check_mode" = "CHECK" ]; then
-		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
+		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT" "$enforce_dynamic_attrs"
 	elif [ "$check_mode" = "APPLY" ]; then
-		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
+		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT" "$enforce_dynamic_attrs"
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in main: '$check_mode'. Exiting for safety." >&2
 		exit 92
