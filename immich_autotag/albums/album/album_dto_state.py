@@ -58,6 +58,10 @@ class AlbumDtoState:
         # _dto is always required and validated by attrs; no need to check for None
         pass
 
+    def get_dto(self) -> AlbumResponseDto:
+        """Returns the underlying AlbumResponseDto (for internal use only)."""
+        return self._dto
+
     def _update_from_dto(
         self, dto: AlbumResponseDto, load_source: "AlbumLoadSource"
     ) -> None:
@@ -128,7 +132,9 @@ class AlbumDtoState:
         return UserUUID.from_string(self._dto.owner_id)
 
     @staticmethod
-    def create(dto: AlbumResponseDto, load_source: AlbumLoadSource) -> "AlbumDtoState":
+    def create(
+        *, dto: AlbumResponseDto, load_source: AlbumLoadSource
+    ) -> "AlbumDtoState":
         """
         Creates a new instance of AlbumDtoState safely to avoid issues with attrs and enums.
         Arguments must be passed positionally to match attrs usage.
