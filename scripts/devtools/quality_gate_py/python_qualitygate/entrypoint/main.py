@@ -2,7 +2,7 @@
 import sys
 
 # Install typeguard import hook before any project imports
-from python_qualitygate.typeguard_hook import install_typeguard_import_hook
+from python_qualitygate.utils.typeguard_hook import install_typeguard_import_hook
 install_typeguard_import_hook("python_qualitygate")
 
 
@@ -21,21 +21,9 @@ from python_qualitygate.core.enums_level import QualityGateLevel
 from python_qualitygate.cli.parse_args import parse_args
 
 
-def run_quality_gate():
-    args = parse_args()
-    print(f"[INFO] Usando Python: {args.py_bin}")
-    if args.only_check:
-        check_cls = CHECKS.get(args.only_check)
-        if not check_cls:
-            print(f"[DEFENSIVE-FAIL] Unknown check: {args.only_check}", file=sys.stderr)
-            sys.exit(90)
-        check = check_cls()
-        rc = check.check(args) if args.mode == QualityGateMode.CHECK else check.apply(args)
-        sys.exit(rc)
-    # Battery
-    battery = Battery([cls() for cls in BATTERY_ORDER])
-    rc = battery.run(args.mode, args)
-    sys.exit(rc)
+
+# Move run_quality_gate to a separate module
+from python_qualitygate.entrypoint.run_quality_gate import run_quality_gate
 
 def main():
     run_quality_gate()
