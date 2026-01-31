@@ -67,7 +67,7 @@ class AssetCacheEntry:
         from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
         cache_mgr = ApiCacheManager.create(
-            cache_type=ApiCacheKey.ASSETS, use_cache=use_cache
+            cache_type=ApiCacheKey.ASSETS
         )
         cache_data = cache_mgr.load(str(asset_id))
         if cache_data is not None:
