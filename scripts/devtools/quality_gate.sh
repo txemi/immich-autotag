@@ -186,7 +186,11 @@ parse_args_and_globals() {
 	# Devolver los valores como salida (en orden, SOLO datos)
 	echo "$check_mode $quality_level $target_dir $enforce_dynamic_attrs"
 }
-
+# Prints a status message with common Quality Gate context (level, mode, script path)
+quality_gate_status_message() {
+	local msg="$1"
+	echo "$msg [LEVEL: $quality_level | MODE: $check_mode | SCRIPT: $(realpath "$0")]"
+}
 ###############################################################################
 # Function: check_shfmt
 # Description: Checks and formats Bash scripts using shfmt.
@@ -817,9 +821,9 @@ viejos'
 		match_count=$(echo "$spanish_matches" | grep -c '^')
 		file_count=$(echo "$spanish_matches" | cut -d: -f1 | sort | uniq | wc -l)
 		echo "Total matches: $match_count | Files affected: $file_count"
-		echo "[EXIT] Quality Gate failed due to forbidden Spanish characters. [LEVEL: $quality_level | MODE: $check_mode]"
-		echo "Build failed: Please remove all Spanish text and accents before publishing. [LEVEL: $quality_level | MODE: $check_mode]"
-		echo "¡Ay caramba! Spanish detected. Let's keep it English, amigos! [LEVEL: $quality_level | MODE: $check_mode]"
+		quality_gate_status_message "[EXIT] Quality Gate failed due to forbidden Spanish characters."
+		quality_gate_status_message "Build failed: Please remove all Spanish text and accents before publishing."
+		quality_gate_status_message "¡Ay caramba! Spanish detected. Let's keep it English, amigos!"
 		return 1
 	else
 		echo "✅ No Spanish language characters detected."
@@ -932,7 +936,7 @@ run_quality_gate_apply_mode() {
 	check_import_linter "$repo_root" || error_found=1
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || error_found=1
 	if [ "$error_found" -ne 0 ]; then
-		echo "[EXIT] Quality Gate failed (see errors above). [LEVEL: $quality_level | MODE: $check_mode]"
+		quality_gate_status_message "[EXIT] Quality Gate failed (see errors above)."
 		# After APPLY fails, run summary check in priority order (most important errors first)
 		run_quality_gate_check_summary "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
 		exit $error_found
@@ -997,8 +1001,8 @@ main() {
 		exit 92
 	fi
 
-	echo "🎉 Quality Gate completed successfully! [LEVEL: $quality_level | MODE: $check_mode]"
-	echo "All checks passed! Your code is cleaner than a robot's hard drive. [LEVEL: $quality_level | MODE: $check_mode]"
+	quality_gate_status_message "🎉 Quality Gate completed successfully!"
+	quality_gate_status_message "All checks passed! Your code is cleaner than a robot's hard drive."
 }
 
 # Entrypoint
