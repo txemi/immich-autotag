@@ -127,9 +127,18 @@ parse_args_and_globals() {
 		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
 			enforce_dynamic_attrs=1
 		elif [[ "$arg" != --* ]]; then
-			target_dir="$arg"
+			# Only allow a single positional argument (target_dir)
+			if [ -z "$target_dir" ]; then
+				target_dir="$arg"
+			else
+				echo "[DEFENSIVE-FAIL] Unexpected extra positional argument: '$arg'. Only one target_dir is allowed." >&2
+				exit 3
+			fi
+		else
+			echo "[DEFENSIVE-FAIL] Unexpected argument: '$arg'. Exiting for safety." >&2
+			exit 3
 		fi
-	done
+		done
 	# Validar quality_level (defensive: all enum cases, fail on unknown)
 	case "$quality_level" in
 	STRICT) ;;
