@@ -76,10 +76,10 @@ class ResolveEmailsResult:
 
     @staticmethod
     def resolve_emails_to_user_ids(
-        emails: List["EmailAddress"], context: "ImmichContext"
+        emails: list[EmailAddress], context: "ImmichContext"
     ) -> "ResolveEmailsResult":
         """
-        Static method to resolve EmailAddress objects to user IDs using the UserManager.
+        Static method to resolve a list of EmailAddress objects to user IDs using the UserManager.
         Returns a ResolveEmailsResult instance.
         """
         from immich_autotag.users.user_manager import UserManager
@@ -87,4 +87,4 @@ class ResolveEmailsResult:
         manager = UserManager.get_instance()
         manager.load_all(context)
         all_users = manager.all_users()
-        return ResolveEmailsResult.resolve([str(e) for e in emails], all_users)
+        return ResolveEmailsResult.resolve(emails, all_users)
