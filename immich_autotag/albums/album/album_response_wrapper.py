@@ -703,17 +703,22 @@ class AlbumResponseWrapper:
 
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         cache_entry = AlbumCacheEntry.create(dto=state)
-        # Use correct kw_only field name for attrs: _cache_entry
-        return cls(cache_entry)  # noqa: E501, W292
+        # See docs/dev/style/python_static_factory_pattern.md for why we use this pattern:
+        # attrs with kw_only fields and validators are incompatible with direct kwarg construction in some cases.
+        # So we use a no-argument constructor and assign the field directly.
+        # See: docs/dev/style/python_static_factory_pattern.md#attrs-single-argument-constructor-pattern
+        obj = cls()
+        obj._cache_entry = cache_entry
+        return obj  # noqa: E501, W292
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
-        """Equality based on album id when possible."""
+        """Equality based on album id when possible.
+
+        If 'other' is not an AlbumResponseWrapper, raise TypeError to signal improper comparison usage.
+        """
         if not isinstance(other, AlbumResponseWrapper):
-            return False
-        try:
-            return self.get_album_uuid() == other.get_album_uuid()
-        except Exception:
-            return False
+            raise TypeError(f"Cannot compare AlbumResponseWrapper with {type(other).__name__}")
+        return self.get_album_uuid() == other.get_album_uuid()
 
     def __hash__(self) -> int:  # pragma: no cover - trivial
         """Hash by album id when available; fallback to object id.
