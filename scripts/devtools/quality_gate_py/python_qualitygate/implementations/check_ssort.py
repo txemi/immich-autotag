@@ -1,16 +1,18 @@
 import subprocess
-from python_qualitygate.base import Check
+from typing import Any
+import attr
+from python_qualitygate.core.base import Check
 
+@attr.define(auto_attribs=True, slots=True)
 class CheckSsort(Check):
-    def __init__(self):
-        super().__init__('check_ssort')
+    name: str = 'check_ssort'
 
-    def check(self, args):
+    def check(self, args: Any) -> int:
         cmd = ['ssort', '--check', args.target_dir]
         print(f"[RUN] {' '.join(cmd)}")
         return subprocess.call(cmd)
 
-    def apply(self, args):
+    def apply(self, args: Any) -> int:
         cmd = ['ssort', args.target_dir]
         print(f"[RUN] {' '.join(cmd)}")
         return subprocess.call(cmd)

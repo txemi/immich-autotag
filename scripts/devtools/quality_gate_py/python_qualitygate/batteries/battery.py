@@ -1,11 +1,11 @@
+from dataclasses import dataclass
 from typing import List
 from python_qualitygate.base import Check
 
-
+@dataclass(slots=True)
 class Battery:
     """A battery is an ordered list of checks to execute."""
-    def __init__(self, checks: List[Check]):
-        self.checks = checks
+    checks: List[Check]
 
     def run(self, mode, args) -> int:
         """Executes all checks in order. Returns the first error code !=0 or 0 if all OK."""

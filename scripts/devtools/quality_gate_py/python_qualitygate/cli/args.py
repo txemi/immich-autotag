@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from python_qualitygate.enums_mode import QualityGateMode
-from python_qualitygate.enums_level import QualityGateLevel
+from python_qualitygate.core.enums_mode import QualityGateMode
+from python_qualitygate.core.enums_level import QualityGateLevel
 
-@dataclass
+@dataclass(slots=True, frozen=True)
 class QualityGateArgs:
     level: QualityGateLevel = QualityGateLevel.STANDARD
     mode: QualityGateMode = QualityGateMode.APPLY
