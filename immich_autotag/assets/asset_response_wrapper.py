@@ -504,7 +504,7 @@ class AssetResponseWrapper:
         return orig
 
     def get_duplicate_id_as_uuid(self) -> DuplicateUUID:
-        from immich_autotag.types.uuid_wrappers import DuplicateUUID
+
         return self._cache_entry.get_duplicate_id_as_uuid()
 
     @typechecked
@@ -863,7 +863,7 @@ class AssetResponseWrapper:
         """
 
         context = self.get_context()
-        duplicate_id :DuplicateUUID= self.get_duplicate_id_as_uuid()
+        duplicate_id: DuplicateUUID = self.get_duplicate_id_as_uuid()
         # duplicate_id is always a DuplicateUUID, never None
         wrappers: list[AssetResponseWrapper] = []
         group = context.get_duplicates_collection().get_group(duplicate_id)

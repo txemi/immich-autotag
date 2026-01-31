@@ -62,8 +62,10 @@ class AlbumUUID(BaseUUIDWrapper):
 
 # New: UserUUID for user identifiers
 
+
 class UserUUID(BaseUUIDWrapper):
     pass
+
 
 # New: DuplicateUUID for duplicate identifiers
 class DuplicateUUID(BaseUUIDWrapper):

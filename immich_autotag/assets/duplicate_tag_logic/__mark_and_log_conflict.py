@@ -36,8 +36,11 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
     duplicate_processing: DuplicateProcessingConfig = config.duplicate_processing
 
     from immich_autotag.types.uuid_wrappers import DuplicateUUID
+
     duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
-    group_tag = f"{duplicate_processing.autotag_classification_conflict_prefix}{duplicate_id}"
+    group_tag = (
+        f"{duplicate_processing.autotag_classification_conflict_prefix}{duplicate_id}"
+    )
     for w in duplicate_wrappers:
         if duplicate_processing.autotag_classification_conflict is not None:
             w.add_tag_by_name(

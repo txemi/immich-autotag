@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 import enum
 from datetime import datetime
 from typing import Any, Iterator, Mapping, cast
-from uuid import UUID
 
 import attrs
 from immich_client.types import Unset
@@ -210,6 +209,7 @@ class AssetDtoState:
         Returns the duplicate id as DuplicateUUID (custom wrapper).
         """
         from immich_autotag.types.uuid_wrappers import DuplicateUUID
+
         val = self._dto.duplicate_id
         if val is None or isinstance(val, Unset):
             raise NotImplementedError("Duplicate ID is not set or is unset")

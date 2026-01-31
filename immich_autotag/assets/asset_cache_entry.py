@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
-from uuid import UUID
 
 import attrs
 from immich_client.models.asset_response_dto import AssetResponseDto
@@ -66,9 +65,7 @@ class AssetCacheEntry:
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
-        cache_mgr = ApiCacheManager.create(
-            cache_type=ApiCacheKey.ASSETS
-        )
+        cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ASSETS)
         cache_data = cache_mgr.load(str(asset_id))
         if cache_data is not None:
             if isinstance(cache_data, dict):
@@ -252,7 +249,7 @@ class AssetCacheEntry:
         """
         Returns the duplicate id as DuplicateUUID, if available.
         """
-        from immich_autotag.types.uuid_wrappers import DuplicateUUID
+
         return self._state.get_duplicate_id_as_uuid()
 
     def has_tag(self, tag_name: str) -> bool:

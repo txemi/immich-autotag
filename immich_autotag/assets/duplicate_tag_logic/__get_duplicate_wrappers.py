@@ -12,6 +12,7 @@ def get_duplicate_wrappers(
     """
     context = asset_wrapper.get_context()
     from immich_autotag.types.uuid_wrappers import DuplicateUUID
+
     duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
 
     return context.get_duplicates_collection().get_duplicate_asset_wrappers(
