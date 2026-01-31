@@ -128,7 +128,7 @@ class AlbumCacheEntry:
         )
         # Use only public API: update with the new AlbumResponseDto and load_source
         self._dto.update(
-            dto=new_dto._dto,  # _dto is AlbumResponseDto, allowed for update()
+            dto=new_dto.get_dto(),
             load_source=new_dto.get_load_source(),
         )
         return self
