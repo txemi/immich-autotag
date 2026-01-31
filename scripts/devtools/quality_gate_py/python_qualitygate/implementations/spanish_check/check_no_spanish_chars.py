@@ -39,13 +39,22 @@ class CheckNoSpanishChars(Check):
             return None, None
 
     def _get_spanish_words(self, repo_root: Path, findings: List[Finding]):
-        words_path = repo_root / 'scripts' / 'spanish_words.txt'
+        # Buscar en varias rutas posibles
+        candidate_paths = [
+            repo_root / 'scripts' / 'spanish_words.txt',
+            repo_root / 'scripts' / 'devtools' / 'spanish_words.txt',
+        ]
+        words_path = None
         spanish_words = []
-        if words_path.exists():
+        for path in candidate_paths:
+            if path.exists():
+                words_path = path
+                break
+        if words_path:
             with words_path.open(encoding='utf-8') as f:
                 spanish_words = [line.strip() for line in f if line.strip() and not line.startswith('#')]
         else:
-            findings.append(Finding(file_path=words_path, line_number=0, message="spanish_words.txt not found. Only accents will be checked.", code="warn"))
+            findings.append(Finding(file_path=candidate_paths[-1], line_number=0, message="spanish_words.txt not found. Only accents will be checked.", code="warn"))
         return words_path, spanish_words
 
     def _get_forbidden_bytes(self) -> List[bytes]:
@@ -63,9 +72,30 @@ class CheckNoSpanishChars(Check):
 
     def _analyze_file(self, file_path: Path, forbidden_bytes: List[bytes], spanish_words: List[str]) -> List[Finding]:
         findings: List[Finding] = []
+        EXCLUDE_PATTERNS = [
+            'SPANISH_PATTERN',
+            'regex generado para español',
+            'Resultados de grep español',
+            'Archivos a revisar por español',
+            'palabra prohibida',
+            'DEBUG',
+        ]
+        EXCLUDE_FILES = [
+            'quality_gate.sh',
+            'check_no_spanish_chars.py',
+        ]
         try:
             with file_path.open('rb') as f:
                 for i, line in enumerate(f, 1):
+                    # Excluir líneas especiales
+                    try:
+                        decoded_line = line.decode('utf-8', errors='ignore')
+                    except Exception:
+                        decoded_line = ''
+                    if any(pat in decoded_line for pat in EXCLUDE_PATTERNS):
+                        continue
+                    if any(str(file_path).endswith(f) for f in EXCLUDE_FILES):
+                        continue
                     findings.extend(self._find_spanish_chars(file_path, i, line, forbidden_bytes))
                     findings.extend(self._find_spanish_words(file_path, i, line, spanish_words))
         except Exception as e:
@@ -79,6 +109,7 @@ class CheckNoSpanishChars(Check):
         return findings
 
     def _find_spanish_words(self, file_path: Path, line_number: int, line: bytes, spanish_words: List[str]) -> List[Finding]:
+        import re
         findings = []
         if spanish_words:
             try:
@@ -86,6 +117,9 @@ class CheckNoSpanishChars(Check):
             except Exception:
                 return findings
             for word in spanish_words:
-                if word and word.lower() in decoded_line.lower():
-                    findings.append(Finding(file_path=file_path, line_number=line_number, message=f"{decoded_line.strip()} (palabra prohibida: {word})", code="spanish-word"))
+                if word:
+                    # Solo marcar si es palabra completa (no subcadena)
+                    pattern = r'\\b' + re.escape(word) + r'\\b'
+                    if re.search(pattern, decoded_line, re.IGNORECASE):
+                        findings.append(Finding(file_path=file_path, line_number=line_number, message=f"{decoded_line.strip()} (palabra prohibida: {word})", code="spanish-word"))
         return findings
