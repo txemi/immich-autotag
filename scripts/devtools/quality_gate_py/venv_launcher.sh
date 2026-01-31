@@ -18,12 +18,13 @@ if [ ! -x "$VENV_PY" ]; then
 	exit 2
 fi
 
-if [ $# -lt 1 ]; then
-	echo "Usage: $0 <python_script> [args...]" >&2
-	exit 1
-fi
 
-PY_SCRIPT="$1"
-shift
+# If no script is provided, default to main.py in this directory
+if [ $# -lt 1 ]; then
+	PY_SCRIPT="$SCRIPT_DIR/main.py"
+else
+	PY_SCRIPT="$1"
+	shift
+fi
 
 exec "$VENV_PY" "$PY_SCRIPT" "$@"

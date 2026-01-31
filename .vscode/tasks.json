@@ -60,5 +60,23 @@
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     }
+    ,
+    {
+      "label": "Quality Gate: Python (CHECK)",
+      "type": "shell",
+      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh CHECK",
+      "group": { "kind": "build" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Quality Gate: Python (APPLY)",
+      "type": "shell",
+      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh APPLY",
+      "group": { "kind": "build" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
   ]
 }
