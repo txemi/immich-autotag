@@ -1,12 +1,14 @@
 import subprocess
 from pathlib import Path
-from scripts.devtools.quality_gate_py.base import Check
+from typing import Any
+import attr
+from python_qualitygate.core.base import Check
 
+@attr.define(auto_attribs=True, slots=True)
 class CheckPythonSyntax(Check):
-    def __init__(self):
-        super().__init__('check_python_syntax')
+    name: str = 'check_python_syntax'
 
-    def check(self, args):
+    def check(self, args: Any) -> int:
         py_files = list(Path(args.target_dir).rglob('*.py'))
         failed = False
         for f in py_files:
@@ -17,6 +19,5 @@ class CheckPythonSyntax(Check):
                 failed = True
         return 1 if failed else 0
 
-    def apply(self, args):
-        # No modifica nada, igual que check
+    def apply(self, args: Any) -> int:
         return self.check(args)

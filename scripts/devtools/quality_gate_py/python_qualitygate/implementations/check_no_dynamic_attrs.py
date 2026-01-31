@@ -1,13 +1,14 @@
-import subprocess
 import re
 from pathlib import Path
-from scripts.devtools.quality_gate_py.base import Check
+from typing import Any
+import attr
+from python_qualitygate.core.base import Check
 
+@attr.define(auto_attribs=True, slots=True)
 class CheckNoDynamicAttrs(Check):
-    def __init__(self):
-        super().__init__('check_no_dynamic_attrs')
+    name: str = 'check_no_dynamic_attrs'
 
-    def check(self, args):
+    def check(self, args: Any) -> int:
         failed = False
         for pyfile in Path(args.target_dir).rglob('*.py'):
             with open(pyfile, encoding='utf-8', errors='ignore') as f:
@@ -17,6 +18,5 @@ class CheckNoDynamicAttrs(Check):
                         failed = True
         return 1 if failed else 0
 
-    def apply(self, args):
-        # Solo reporta
+    def apply(self, args: Any) -> int:
         return self.check(args)

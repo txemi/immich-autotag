@@ -32,9 +32,8 @@ def analyze_duplicate_classification_tags(
     """
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
-    from immich_autotag.types.uuid_wrappers import DuplicateUUID
 
-    duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
+    asset_wrapper.get_duplicate_id_as_uuid()
     duplicate_wrappers = get_duplicate_wrappers(asset_wrapper)
     any_autofix = False
     all_equal = True

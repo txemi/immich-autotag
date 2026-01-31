@@ -1,16 +1,18 @@
 import subprocess
-from scripts.devtools.quality_gate_py.base import Check
+from typing import Any
+import attr
+from python_qualitygate.core.base import Check
 
+@attr.define(auto_attribs=True, slots=True)
 class CheckShfmt(Check):
-    def __init__(self):
-        super().__init__('check_shfmt')
+    name: str = 'check_shfmt'
 
-    def check(self, args):
+    def check(self, args: Any) -> int:
         cmd = ['shfmt', '-d', '-i', '0']
         print(f"[RUN] {' '.join(cmd)} scripts/")
         return subprocess.call(cmd + ['scripts/'])
 
-    def apply(self, args):
+    def apply(self, args: Any) -> int:
         cmd = ['shfmt', '-w', '-i', '0']
         print(f"[RUN] {' '.join(cmd)} scripts/")
         return subprocess.call(cmd + ['scripts/'])
