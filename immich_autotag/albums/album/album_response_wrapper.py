@@ -703,7 +703,8 @@ class AlbumResponseWrapper:
 
         state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
         cache_entry = AlbumCacheEntry.create(dto=state)
-        return cls(cache_entry=cache_entry)  # noqa: E501, W292
+        # Use correct kw_only field name for attrs: _cache_entry
+        return cls(cache_entry)  # noqa: E501, W292
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible."""

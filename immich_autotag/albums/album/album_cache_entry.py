@@ -23,7 +23,7 @@ class StaleAlbumCacheError(Exception):
     """Raised when a cache entry is stale and cannot be used."""
 
 
-@attrs.define(auto_attribs=True, kw_only=True, slots=True)
+@attrs.define(auto_attribs=True, slots=True)
 class AlbumCacheEntry:
 
     def merge_from_dto(
@@ -195,6 +195,13 @@ class AlbumCacheEntry:
         """
         Static constructor for AlbumCacheEntry to avoid linter/type checker issues with private attribute names.
         Use this instead of direct instantiation.
-        Arguments must be passed positionally to match attrs usage.
+        This pattern uses a single-argument constructor for attrs compatibility, then sets additional fields via a private setter.
+        See docs/dev/style.md for details.
         """
-        return AlbumCacheEntry(dto=dto, max_age_seconds=max_age_seconds)
+        entry = AlbumCacheEntry(dto)
+        entry._set_max_age_seconds(max_age_seconds)
+        return entry
+
+    def _set_max_age_seconds(self, value: int) -> None:
+        """Private setter for _max_age_seconds to support single-argument construction pattern."""
+        self._max_age_seconds = value
