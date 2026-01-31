@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, Mapping, cast
 
 from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
 
-
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 import enum
-
 from datetime import datetime
 
 import attrs
@@ -167,7 +164,9 @@ class AssetDtoState:
         """
         dto = self._require_dto()
         if self._api_endpoint_source is None or self._loaded_at is None:
-            raise RuntimeError("Cannot serialize AssetDtoState: missing required fields")
+            raise RuntimeError(
+                "Cannot serialize AssetDtoState: missing required fields"
+            )
         return {
             "dto": dto.to_dict() if hasattr(dto, "to_dict") else dto,
             "type": self._api_endpoint_source.value,
@@ -248,6 +247,7 @@ class AssetDtoState:
         Returns the duplicate id as DuplicateUUID (custom wrapper).
         """
         from immich_autotag.types.uuid_wrappers import DuplicateUUID
+
         dto = self._require_dto()
         val = dto.duplicate_id
         if not val or isinstance(val, Unset):
