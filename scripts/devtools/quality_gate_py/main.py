@@ -39,18 +39,18 @@ CHECKS = {
 
 BATTERY_ORDER = [
     'check_python_syntax',
-    'check_black',
-    'check_isort',
-    'check_ruff',
-    'check_flake8',
     'check_mypy',
-    'check_shfmt',
-    'check_no_spanish_chars',
     'check_jscpd',
-    'check_no_tuples',
     'check_import_linter',
     'check_no_dynamic_attrs',
+    'check_no_tuples',
+    'check_no_spanish_chars',
+    'check_shfmt',
+    'check_isort',
     'check_ssort',
+    'check_black',
+    'check_ruff',
+    'check_flake8',
 ]
 
 def detect_venv_python():
