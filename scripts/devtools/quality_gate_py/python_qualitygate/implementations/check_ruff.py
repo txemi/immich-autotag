@@ -10,7 +10,7 @@ class CheckRuff(Check):
     name = 'check_ruff'
 
     def check(self, args: QualityGateArgs) -> CheckResult:
-        cmd = [args.py_bin, '-m', 'ruff', 'check', args.target_dir]
+        cmd = [args.py_bin, '-m', 'ruff', 'check', str(args.target_dir)]
         if args.level in ('STANDARD', 'TARGET'):
             cmd += ['--ignore', 'E501']
         print(f"[RUN] {' '.join(cmd)}")
@@ -23,7 +23,7 @@ class CheckRuff(Check):
         return CheckResult(findings=findings)
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
-        cmd = [args.py_bin, '-m', 'ruff', 'check', args.target_dir, '--fix', '--unsafe-fixes']
+        cmd = [args.py_bin, '-m', 'ruff', 'check', str(args.target_dir), '--fix', '--unsafe-fixes']
         if args.level in ('STANDARD', 'TARGET'):
             cmd += ['--ignore', 'E501']
         print(f"[RUN] {' '.join(cmd)}")

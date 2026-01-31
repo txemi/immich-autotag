@@ -10,7 +10,7 @@ class CheckSsort(Check):
     name = 'check_ssort'
 
     def check(self, args: QualityGateArgs) -> CheckResult:
-        cmd = ['ssort', '--check', args.target_dir]
+        cmd = ['ssort', '--check', str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []
@@ -21,7 +21,7 @@ class CheckSsort(Check):
         return CheckResult(findings=findings)
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
-        cmd = ['ssort', args.target_dir]
+        cmd = ['ssort', str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []
