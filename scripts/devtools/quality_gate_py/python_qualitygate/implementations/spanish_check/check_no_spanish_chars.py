@@ -1,10 +1,15 @@
-"""
-Check para detectar caracteres y palabras españolas en archivos rastreados por git.
-"""
-from python_qualitygate.core.check import Check
+import re
+from pathlib import Path
+from typing import Any
+import attr
+from python_qualitygate.core.base import Check
 
+
+@attr.define(auto_attribs=True, slots=True)
 class CheckNoSpanishChars(Check):
-    def check(self, args: object) -> int:
+    name = 'check_no_spanish_chars'
+
+    def check(self, args: Any) -> int:
         import os
         from git import Repo, InvalidGitRepositoryError
         # Detecta la raíz del repo git desde cualquier subcarpeta
@@ -61,3 +66,6 @@ class CheckNoSpanishChars(Check):
             except Exception as e:
                 print(f"[WARN] No se pudo analizar {file_path}: {e}")
         return 1 if failed else 0
+
+    def apply(self, args: Any) -> int:
+        return self.check(args)

@@ -6,7 +6,7 @@ from python_qualitygate.implementations.check_ruff import CheckRuff
 from python_qualitygate.implementations.check_flake8 import CheckFlake8
 from python_qualitygate.implementations.check_mypy import CheckMypy
 from python_qualitygate.implementations.check_shfmt import CheckShfmt
-from python_qualitygate.implementations.check_no_spanish_chars import CheckNoSpanishChars
+from scripts.devtools.quality_gate_py.python_qualitygate.implementations.spanish_check.check_no_spanish_chars import CheckNoSpanishChars
 from python_qualitygate.implementations.check_jscpd import CheckJscpd
 from python_qualitygate.implementations.check_no_tuples import CheckNoTuples
 from python_qualitygate.implementations.check_import_linter import CheckImportLinter
