@@ -39,7 +39,7 @@ class PerfPhaseTracker:
             "assets": {"start": None, "end": None},
         }
 
-    def mark(self, *, phase: str, event: str) -> None:
+    def mark(self, phase: str, event: str) -> None:
         assert phase in self.phases and event in ("start", "end")
         self.phases[phase][event] = time.time()
 
