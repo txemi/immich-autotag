@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import atexit
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
 
 from immich_client.api.albums import (
     add_assets_to_album,
@@ -172,6 +172,14 @@ def proxy_delete_album(
     """
     Deletes an album by UUID using the ImmichClient API.
     Raises an exception if the operation fails.
+
+        NOTE: This function intentionally returns the Response[Any] object from the Immich client.
+        Do NOT change the return type to None. The contract is:
+            - If the operation fails, an exception is raised.
+            - If the operation succeeds, the response object is returned for advanced inspection.
+        This is required by design and for full control of the flow in higher layers.
+        If any linting, formatting, or refactoring tool suggests removing the return,
+        IGNORE IT and keep this contract. Documented by explicit user request.
     """
     from immich_client.api.albums.delete_album import (
         sync_detailed as delete_album_sync_detailed,
