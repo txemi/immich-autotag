@@ -40,7 +40,7 @@ class TagStatsManager:
 
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].added += 1
-            self.stats_manager._save_to_file()
+            self.stats_manager.save_to_file()
 
     @typechecked
     def increment_tag_removed(self, tag: "TagWrapper") -> None:
@@ -57,7 +57,7 @@ class TagStatsManager:
 
                 stats.output_tag_counters[tag_name] = OutputTagCounter()
             stats.output_tag_counters[tag_name].removed += 1
-            self.stats_manager._save_to_file()
+            self.stats_manager.save_to_file()
 
     @typechecked
     def _increment_album_date_mismatch(self) -> None:
@@ -76,13 +76,13 @@ class TagStatsManager:
 
             stats.output_tag_counters[tag_name] = OutputTagCounter()
         stats.output_tag_counters[tag_name].errors += 1
-        self.stats_manager._save_to_file()
+        self.stats_manager.save_to_file()
 
     @typechecked
     def _increment_asset_date_update(self) -> None:
         stats = self.stats_manager.get_stats()
         stats.update_asset_date_count += 1
-        self.stats_manager._save_to_file()
+        self.stats_manager.save_to_file()
 
     @typechecked
     def _increment_album_assignment(self, album: "AlbumResponseWrapper | None") -> None:
@@ -100,7 +100,7 @@ class TagStatsManager:
                 stats.output_album_counters[album_name] = OutputAlbumCounter()
             stats.output_album_counters[album_name].assigned += 1
             stats.output_album_counters[album_name].total += 1
-            self.stats_manager._save_to_file()
+            self.stats_manager.save_to_file()
         else:
             raise RuntimeError(
                 "AlbumResponseWrapper is required to count ASSIGN_ASSET_TO_ALBUM"
