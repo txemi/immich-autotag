@@ -138,7 +138,7 @@ parse_args_and_globals() {
 			echo "[DEFENSIVE-FAIL] Unexpected argument: '$arg'. Exiting for safety." >&2
 			exit 3
 		fi
-		done
+	done
 	# Validar quality_level (defensive: all enum cases, fail on unknown)
 	case "$quality_level" in
 	STRICT) ;;
