@@ -176,5 +176,7 @@ def proxy_delete_album(album_id: AlbumUUID, client: AuthenticatedClient) -> None
     result = delete_album_sync(id=album_id.to_uuid(), client=client)
     if result is not None:
         # If the API returns anything but None, treat as error (should be None on success)
-        raise RuntimeError(f"Failed to delete album {album_id}: unexpected response {result}")
+        raise RuntimeError(
+            f"Failed to delete album {album_id}: unexpected response {result}"
+        )
     return None
