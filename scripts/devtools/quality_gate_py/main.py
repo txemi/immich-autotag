@@ -22,6 +22,7 @@ BATTERY_ORDER = [
 ]
 
 def detect_venv_python():
+    # Detect the virtual environment Python binary
     repo_root = Path(__file__).resolve().parent.parent.parent.parent
     venv_python = repo_root / '.venv' / 'bin' / 'python'
     if venv_python.exists():
@@ -37,7 +38,7 @@ def parse_args():
     parser.add_argument('--only-check', default='')
     parser.add_argument('target_dir', nargs='?', default='immich_autotag')
     args = parser.parse_args()
-    # Detectar venv si no se pasa py-bin
+    # Detect venv if py-bin is not provided
     py_bin = args.py_bin if args.py_bin else detect_venv_python()
     return QualityGateArgs(
         level=args.level,
