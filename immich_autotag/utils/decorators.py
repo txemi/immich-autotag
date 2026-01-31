@@ -5,7 +5,7 @@ Conditional decorators that respect configuration settings.
 Used to enable/disable expensive runtime checks like type checking.
 """
 
-from typing import Callable, TypeVar, Any
+from typing import Any, Callable, TypeVar
 
 # Type variable for decorator
 F = TypeVar("F", bound=Callable[..., Any])
@@ -51,6 +51,7 @@ def conditional_typechecked(func: F) -> F:
         if enable_type_checking:
             # Use real typechecked from typeguard
             from typeguard import typechecked as real_typechecked
+
             return real_typechecked(func)
         else:
             # No-op: return function unchanged

@@ -3,8 +3,7 @@ from __future__ import annotations
 from typeguard import typechecked
 
 from immich_autotag.assets.process.process_single_asset import process_single_asset
-from immich_autotag.config._internal_types import ErrorHandlingMode
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+from immich_autotag.config.dev_mode import is_development_mode
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.errors.recoverable_error import categorize_error
@@ -32,9 +31,9 @@ def process_assets_sequential(
     config_resume_previous = True
 
     config = cm.get_config_or_raise()
-    if config.skip is not None:
-        config_skip_n = config.skip.skip_n or 0
-        config_resume_previous = config.skip.resume_previous
+    # config.skip is never None
+    config_skip_n = config.skip.skip_n or 0
+    config_resume_previous = config.skip.resume_previous
 
     # Use the centralized logic of CheckpointManager to decide and log the origin
     skip_n = (
@@ -46,7 +45,6 @@ def process_assets_sequential(
     )
     max_assets = stats.max_assets
     count = 0
-    error_mode = DEFAULT_ERROR_MODE
     try:
         for asset_wrapper in context.get_asset_manager().iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
@@ -63,7 +61,7 @@ def process_assets_sequential(
                 category = categorized.category_name
 
                 # If recoverable, or not recoverable but we are in BATCH mode, treat the same
-                if is_recoverable or error_mode == ErrorHandlingMode.USER:
+                if is_recoverable and not is_development_mode():
                     import traceback
 
                     tb = traceback.format_exc()
