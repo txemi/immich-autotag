@@ -11,7 +11,7 @@ class CheckNoTuples(Check):
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         script = 'scripts/devtools/check_no_tuples.py'
-        cmd: list[str] = [args.py_bin, script, args.target_dir, '--exclude', '.venv,immich-client,scripts']
+        cmd = [str(args.py_bin), str(script), str(args.target_dir), '--exclude', '.venv,immich-client,scripts']
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []
