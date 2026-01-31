@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 from urllib.parse import ParseResult
-from uuid import UUID
 
 import attrs
 from immich_client.models.update_asset_dto import (

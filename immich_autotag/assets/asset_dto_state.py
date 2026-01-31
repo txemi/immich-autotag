@@ -45,12 +45,9 @@ class AssetDtoState:
     This class never performs API calls or business logic—just holds and exposes data.
     """
 
-    _dto: AssetResponseDto
-    # Indicates which API endpoint was used to load this DTO (e.g., 'search' for bulk/partial, 'get_by_id' for full detail).
-    # This allows consumers to know if the DTO contains all fields (FULL) or only a subset (PARTIAL).
-    # See AssetDtoType for details.
-    _api_endpoint_source: AssetDtoType
-    _loaded_at: datetime = attrs.field(factory=datetime.now)
+    _dto: AssetResponseDto = attrs.field(init=False, validator=attrs.validators.instance_of(AssetResponseDto))
+    _api_endpoint_source: AssetDtoType = attrs.field(init=False, validator=attrs.validators.instance_of(AssetDtoType))
+    _loaded_at: datetime = attrs.field(factory=datetime.now, validator=attrs.validators.instance_of(datetime))
 
     def __attrs_post_init__(self):
         # Defensive check of the type of tags according to the API endpoint used
@@ -146,15 +143,17 @@ class AssetDtoState:
         }
 
     @classmethod
-    def _from_dto(
+    def from_dto(
         cls,
         dto: AssetResponseDto,
         api_endpoint_source: AssetDtoType,
-        loaded_at: datetime,
+        loaded_at: datetime | None = None,
     ) -> "AssetDtoState":
-        return cls(
-            dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
-        )
+        self = cls()
+        self._dto = dto
+        self._api_endpoint_source = api_endpoint_source
+        self._loaded_at = loaded_at if loaded_at is not None else datetime.now()
+        return self
 
     @classmethod
     def from_cache_dict(cls, data: dict[str, object]) -> "AssetDtoState":
@@ -166,10 +165,7 @@ class AssetDtoState:
         dto = AssetResponseDto.from_dict(cast(Mapping[str, Any], data["dto"]))
         api_endpoint_source = AssetDtoType(str(data["type"]))
         loaded_at = datetime.fromisoformat(str(data["loaded_at"]))
-
-        return cls._from_dto(
-            dto=dto, api_endpoint_source=api_endpoint_source, loaded_at=loaded_at
-        )
+        return cls.from_dto(dto, api_endpoint_source, loaded_at)
 
     def get_tag_names(self) -> list[str]:
         """
