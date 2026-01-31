@@ -97,7 +97,7 @@ def check_album_date_consistency(
                 level=LogLevel.FOCUS,
             )
     # Remove the autotag if no mismatch is found and the tag is present
-    if not mismatch_found and asset_wrapper.has_tag(autotag_name):
+    if not mismatch_found and asset_wrapper.has_tag(tag_name=autotag_name):
         asset_wrapper.remove_tag_by_name(autotag_name)
         log(
             f"[ALBUM_DATE_CONSISTENCY] Asset {asset_wrapper.id} no longer has a date mismatch. Removed autotag '{autotag_name}'.",
