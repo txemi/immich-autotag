@@ -17,12 +17,12 @@ from python_qualitygate.implementations.check_ssort import CheckSsort
 # BATTERY_ORDER is now a list of check classes, defining the execution order statically and robustly
 BATTERY_ORDER = [
     CheckPythonSyntax,
+    CheckNoSpanishChars,
     CheckMypy,
     CheckJscpd,
     CheckImportLinter,
     CheckNoDynamicAttrs,
     CheckNoTuples,
-    CheckNoSpanishChars,
     CheckShfmt,
     CheckIsort,
     CheckSsort,
