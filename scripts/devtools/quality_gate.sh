@@ -21,28 +21,47 @@
 # If no [target_dir] is given, defaults to the main package.
 #
 # =====================
+# Quality Gate Bash Functions Table (reference)
+# =====================
+# | Nº | Bash Function           | Origin                |
+# |----|-------------------------|-----------------------|
+# | 1  | check_python_syntax     | stdlib (python)       |
+# | 2  | check_ruff              | pip (ruff)            |
+# | 3  | check_isort             | pip (isort)           |
+# | 4  | check_black             | pip (black)           |
+# | 5  | check_flake8            | pip (flake8)          |
+# | 6  | check_mypy              | pip (mypy)            |
+# | 7  | check_ssort             | pip (ssort, github)   |
+# | 8  | check_no_tuples         | custom (python)       |
+# | 9  | check_jscpd             | npx (jscpd)           |
+# | 10 | check_no_spanish_chars  | custom (bash/grep)    |
+# | 11 | check_import_linter     | pip (import-linter)   |
+# | 12 | check_no_dynamic_attrs  | custom (bash/grep)    |
+# | 13 | check_shfmt             | debian/pip (shfmt)    |
+#
+# =====================
 # Quality Gate Checks Table (reference)
 # =====================
-# | Check                                 | Description                                 | Strict   | Standard (CI)                | Target (improvement)         | Origin                |
-# |----------------------------------------|---------------------------------------------|----------|------------------------------|------------------------------|-----------------------|
-# | Syntax/Indent (compileall)             | Python syntax errors                        |   ✔️     |   ✔️                         |   ✔️                        | stdlib (python)       |
-# | ruff (lint/auto-fix)                   | Linter and auto-format                      |   ✔️     |   F821 only (E501 ignored)   |   F821 only (E501 ignored)   | pip (ruff)            |
-# | isort (import sorting)                 | Sorts imports                               |   ✔️     |   ✔️                         |   ✔️                        | pip (isort)           |
-# | black (formatter)                      | Code formatter                              |   ✔️     |   ✔️                         |   ✔️                        | pip (black)           |
-# | flake8 (style)                         | Style linter                                |   ✔️     |   Warn only (E501 ignored)  |   Warn only (E501 ignored)  | pip (flake8)          |
-# | flake8 (E501 long lines)               | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   | pip (flake8)          |
-# | ruff (E501 long lines)                 | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   | pip (ruff)            |
-# | mypy (type check)                      | Type checking (all errors)                  |   ✔️     |   Warn only                 |   Warn only                 | pip (mypy)            |
-# | mypy (arg-type/call-arg/return-value)  | Type errors (arg-type/call-arg/return-value)|   ✔️     |   Warn only                 |   ✔️                        | pip (mypy)            |
-# | mypy (attr-defined)                    | Attribute defined errors                    |   ✔️     |   Warn only                 |   ✔️                        | pip (mypy)            |
-# | ssort (method order)                   | Class method ordering                       |   ✔️**   |   ✔️**                       |   ✔️**                      | pip (ssort, github)   |
-# | tuple return/type policy               | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        | custom (python)       |
-# | jscpd (code duplication)               | Detects code duplication                    |   ✔️     |   ✔️                         |   ✔️                        | npx (jscpd)           |
-# | Spanish character check                | Forbids Spanish text/accents                |   ✔️     |   ✔️                         |   ✔️                        | custom (bash/grep)    |
-# | import-linter (contracts)              | Architectural import contracts              |   ✔️     |   ✔️                         |   ✔️                        | pip (import-linter)   |
-# | no dynamic attrs (getattr/hasattr)     | Forbids getattr/hasattr for static typing   |   ✔️**   |   ✔️**                       |   ✔️**                      | custom (bash/grep)    |
-# | no tuples (returns/attributes)         | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        | custom (python)       |
-# | shfmt (bash formatting)                | Bash script formatting                      |   ✔️     |   ✔️                         |   ✔️                        | debian/pip (shfmt)    |
+# | Check                                 | Description                                 | Strict   | Standard (CI)                | Target (improvement)         | Origin                | Bash Function           |
+# |----------------------------------------|---------------------------------------------|----------|------------------------------|------------------------------|-----------------------|-------------------------|
+# | Syntax/Indent (compileall)             | Python syntax errors                        |   ✔️     |   ✔️                         |   ✔️                        | stdlib (python)       | check_python_syntax     |
+# | ruff (lint/auto-fix)                   | Linter and auto-format                      |   ✔️     |   F821 only (E501 ignored)   |   F821 only (E501 ignored)   | pip (ruff)            | check_ruff              |
+# | isort (import sorting)                 | Sorts imports                               |   ✔️     |   ✔️                         |   ✔️                        | pip (isort)           | check_isort             |
+# | black (formatter)                      | Code formatter                              |   ✔️     |   ✔️                         |   ✔️                        | pip (black)           | check_black             |
+# | flake8 (style)                         | Style linter                                |   ✔️     |   Warn only (E501 ignored)  |   Warn only (E501 ignored)  | pip (flake8)          | check_flake8            |
+# | flake8 (E501 long lines)               | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   | pip (flake8)          | check_flake8            |
+# | ruff (E501 long lines)                 | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   | pip (ruff)            | check_ruff              |
+# | mypy (type check)                      | Type checking (all errors)                  |   ✔️     |   Warn only                 |   Warn only                 | pip (mypy)            | check_mypy              |
+# | mypy (arg-type/call-arg/return-value)  | Type errors (arg-type/call-arg/return-value)|   ✔️     |   Warn only                 |   ✔️                        | pip (mypy)            | check_mypy              |
+# | mypy (attr-defined)                    | Attribute defined errors                    |   ✔️     |   Warn only                 |   ✔️                        | pip (mypy)            | check_mypy              |
+# | ssort (method order)                   | Class method ordering                       |   ✔️**   |   ✔️**                       |   ✔️**                      | pip (ssort, github)   | check_ssort             |
+# | tuple return/type policy               | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        | custom (python)       | check_no_tuples         |
+# | jscpd (code duplication)               | Detects code duplication                    |   ✔️     |   ✔️                         |   ✔️                        | npx (jscpd)           | check_jscpd             |
+# | Spanish character check                | Forbids Spanish text/accents                |   ✔️     |   ✔️                         |   ✔️                        | custom (bash/grep)    | check_no_spanish_chars  |
+# | import-linter (contracts)              | Architectural import contracts              |   ✔️     |   ✔️                         |   ✔️                        | pip (import-linter)   | check_import_linter     |
+# | no dynamic attrs (getattr/hasattr)     | Forbids getattr/hasattr for static typing   |   ✔️**   |   ✔️**                       |   ✔️**                      | custom (bash/grep)    | check_no_dynamic_attrs  |
+# | no tuples (returns/attributes)         | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        | custom (python)       | check_no_tuples         |
+# | shfmt (bash formatting)                | Bash script formatting                      |   ✔️     |   ✔️                         |   ✔️                        | debian/pip (shfmt)    | check_shfmt             |
 # -----------------------------------------------------------------------------
 # * In STANDARD and TARGET mode, flake8/ruff ignore E501, and mypy only warns except for arg-type/call-arg (STANDARD) or arg-type/call-arg/attr-defined (TARGET).
 # ** Only if --enforce-dynamic-attrs is used
