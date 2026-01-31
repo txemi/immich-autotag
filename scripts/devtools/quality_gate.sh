@@ -37,7 +37,7 @@
 # | ssort (method order)                   | Class method ordering                       |   ✔️**   |   ✔️**       |   ✔️**              | pip (ssort, github)   |
 # | tuple return/type policy               | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |   ✔️                | custom (python)       |
 # | jscpd (code duplication)               | Detects code duplication                    |   ✔️     |   ✔️         |   ✔️                | npx (jscpd)           |
-# | Spanish character check                | Forbids Spanish text/accents                |   ✔️     |   Warn       |   Warn              | custom (bash/grep)    |
+# | Spanish character check                | Forbids Spanish text/accents                |   ✔️     |   ✔️         |   ✔️                | custom (bash/grep)    |
 # | import-linter (contracts)              | Architectural import contracts              |   ✔️     |   ✔️         |   ✔️                | pip (import-linter)   |
 # | no dynamic attrs (getattr/hasattr)     | Forbids getattr/hasattr for static typing   |   ✔️     |   ✔️         |   ✔️                | custom (bash/grep)    |
 # | no tuples (returns/attributes)         | Forbids tuples as return/attribute          |   ✔️     |   ✔️         |   ✔️                | custom (python)       |
