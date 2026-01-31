@@ -300,23 +300,24 @@ class StatisticsManager:
     def abrupt_exit(self) -> None:
         self.finish_run()
 
-    @property
-    def RELEVANT_TAGS(self):
-        from immich_autotag.config.manager import (
-            ConfigManager,
-        )
+    def get_relevant_tags(self) -> set[str]:
+        from immich_autotag.config.manager import ConfigManager
 
-        manager = ConfigManager.get_instance()
-        config = manager.get_config_or_raise()
-        try:
-            return {
-                config.classification.autotag_unknown,
-                config.classification.autotag_conflict,
-                config.duplicate_processing.autotag_album_conflict,
-                config.duplicate_processing.autotag_classification_conflict,
-            }
-        except AttributeError as e:
-            raise RuntimeError(f"Missing expected autotag category in config: {e}")
+        manager: ConfigManager = ConfigManager.get_instance()
+        config: UserConfig = manager.get_config_or_raise()
+        tags: set[str] = set()
+        # Always add classification tags if not None
+        if config.classification.autotag_unknown is not None:
+            tags.add(config.classification.autotag_unknown)
+        if config.classification.autotag_conflict is not None:
+            tags.add(config.classification.autotag_conflict)
+        # Defensive: duplicate_processing may be None, but if present, we know its type
+        if config.duplicate_processing is not None:
+            if config.duplicate_processing.autotag_album_conflict is not None:
+                tags.add(config.duplicate_processing.autotag_album_conflict)
+            if config.duplicate_processing.autotag_classification_conflict is not None:
+                tags.add(config.duplicate_processing.autotag_classification_conflict)
+        return tags
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:

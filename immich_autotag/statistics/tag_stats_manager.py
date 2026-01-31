@@ -30,7 +30,7 @@ class TagStatsManager:
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
         stats = self.stats_manager.get_stats()
-        for tag in self.stats_manager.RELEVANT_TAGS:
+        for tag in self.stats_manager.get_relevant_tags():
             if tag in tag_names:
                 if tag not in stats.output_tag_counters:
                     from .run_statistics import OutputTagCounter
@@ -42,7 +42,7 @@ class TagStatsManager:
     @typechecked
     def increment_tag_added(self, tag: "TagWrapper") -> None:
         tag_name = tag.get_name()
-        if tag_name in self.stats_manager.RELEVANT_TAGS:
+        if tag_name in self.stats_manager.get_relevant_tags():
             stats = self.stats_manager.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
@@ -59,7 +59,7 @@ class TagStatsManager:
             raise TypeError(
                 f"increment_tag_removed expects TagWrapper, got {type(tag)}: {tag}"
             )
-        if tag_name in self.stats_manager.RELEVANT_TAGS:
+        if tag_name in self.stats_manager.get_relevant_tags():
             stats = self.stats_manager.get_stats()
             if tag_name not in stats.output_tag_counters:
                 from .run_statistics import OutputTagCounter
