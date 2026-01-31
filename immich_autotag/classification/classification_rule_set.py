@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 # Imports the MatchResult class from the new file
+
 from typing import TYPE_CHECKING, Dict, List
 
 import attrs
@@ -20,8 +21,8 @@ from immich_autotag.types.uuid_wrappers import AssetUUID
 #     print("Tag exists in rules!")
 
 
-if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
@@ -131,13 +132,14 @@ class ClassificationRuleSet:
 
         wrappers: List[AssetResponseWrapper] = []
 
+
         for asset_uuid in all_uuids:
-            wrapper = context.get_asset_manager().get_asset(asset_uuid, context)
-            if wrapper is None:
+            asset_wrapper = context.get_asset_manager().get_asset(asset_uuid, context)
+            if asset_wrapper is None:
                 raise RuntimeError(
                     f"[ERROR] Asset with ID {asset_uuid} could not be loaded from API."
                 )
-            wrappers.append(wrapper)
+            wrappers.append(asset_wrapper)
 
         print(
             f"[INFO] Filtered mode: Only processing {len(wrappers)} asset(s) from filter rules."
