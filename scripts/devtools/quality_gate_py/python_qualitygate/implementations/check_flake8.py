@@ -11,19 +11,19 @@ class CheckFlake8(Check):
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         from python_qualitygate.core.enums_level import QualityGateLevel
+        from pathlib import Path
         findings = []
-        base_ignore = 'E203,W503'
+        base_ignore = ['E203', 'W503']
         match args.level:
             case QualityGateLevel.STRICT:
                 flake8_ignore = base_ignore
             case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
-                flake8_ignore = base_ignore + ',E501'
+                flake8_ignore = base_ignore + ['E501']
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
-        cmd = [args.py_bin, '-m', 'flake8', '--max-line-length', str(args.line_length), '--extend-ignore', flake8_ignore, '--exclude', '.venv,immich-client,scripts,jenkins_logs', str(args.target_dir)]
+        cmd = [args.py_bin, '-m', 'flake8', '--max-line-length', str(args.line_length), '--extend-ignore', ','.join(flake8_ignore), '--exclude', '.venv,immich-client,scripts,jenkins_logs', str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
-        from pathlib import Path
         if result.returncode != 0:
             for line in result.stdout.splitlines():
                 parts = line.split(':', 3)
@@ -40,7 +40,7 @@ class CheckFlake8(Check):
             case QualityGateLevel.STRICT:
                 return CheckResult(findings=findings)
             case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
-                # Solo advertencia, nunca bloquea
+                # Only warning, never blocks
                 return CheckResult(findings=[])
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
