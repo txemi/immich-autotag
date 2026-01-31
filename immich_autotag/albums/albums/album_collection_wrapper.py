@@ -3,11 +3,13 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import Iterable, Protocol, runtime_checkable
 
+from immich_autotag.config.dev_mode import is_development_mode
+
 
 # Protocol for objects with a 'mark' method
 @runtime_checkable
 class PerfPhaseTracker(Protocol):
-    def mark(self, *, phase: str, event: str) -> None: ...
+    def mark(self, phase: str, event: str) -> None: ...
 
 
 from uuid import UUID
@@ -32,10 +34,6 @@ from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_a
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.config._internal_types import ErrorHandlingMode
-
-# Import config for error mode
-from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
@@ -157,7 +155,7 @@ class AlbumCollectionWrapper:
         t0 = time.time()
         albums = self.get_albums()
         total = len(albums)
-        tracker = PerformanceTracker(total_assets=total)  # noqa: E501, W292
+        tracker = PerformanceTracker.from_total(total)
         for idx, album in enumerate(albums, 1):
             log(
                 f"[ALBUM-FULL-LOAD][DEBUG] Loading album {idx}/{total}: '{album.get_album_name()}'",
@@ -232,12 +230,7 @@ class AlbumCollectionWrapper:
         Does not remove from the list.
         Returns True if marked. Raises if already deleted or not present.
         """
-        album_id_str = str(album_wrapper.get_album_uuid())
-        if self._ensure_fully_loaded()._albums.get_by_id(album_id_str) is None:
-            raise RuntimeError(
-                f"Album '{album_wrapper.get_album_name()}' "
-                f"(id={album_wrapper.get_album_uuid()}) is not present in the collection."
-            )
+
         if album_wrapper.is_deleted():
             raise RuntimeError(
                 f"Album '{album_wrapper.get_album_name()}' "
@@ -328,7 +321,7 @@ class AlbumCollectionWrapper:
         if total > 0:
             from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-            tracker = PerformanceTracker.from_total(total_assets=total)
+            tracker = PerformanceTracker.from_total(total)
         for idx, album_wrapper in enumerate(albums, 1):
             # Ensures the album is in full mode (assets loaded)
             # album_wrapper.ensure_full()
@@ -432,7 +425,9 @@ class AlbumCollectionWrapper:
             return
 
         # In development: fail fast to surface systemic problems
-        if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+        from immich_autotag.config.dev_mode import is_development_mode
+
+        if is_development_mode():
             raise RuntimeError(
                 f"Too many albums marked unavailable during run: "
                 f"{self._unavailable.count} >= {threshold}. "
@@ -520,11 +515,14 @@ class AlbumCollectionWrapper:
                 client=client,
                 tag_mod_report=tag_mod_report,
             )
-        elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
-            raise RuntimeError(
-                f"Duplicate album name detected when adding album: "
-                f"{existing_album.get_album_name()!r}"
-            )
+        else:
+            from immich_autotag.config.dev_mode import is_development_mode
+
+            if is_development_mode():
+                raise RuntimeError(
+                    f"Duplicate album name detected when adding album: "
+                    f"{existing_album.get_album_name()!r}"
+                )
         collect_duplicate(
             self._collected_duplicates, existing_album, incoming_album, context
         )
@@ -543,9 +541,7 @@ class AlbumCollectionWrapper:
         Returns True if deleted successfully or if it no longer exists.
         """
 
-        from immich_autotag.api.immich_proxy.albums import (
-            proxy_delete_album,  # Removed: function does not exist
-        )
+        from immich_autotag.api.immich_proxy.albums import proxy_delete_album
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
@@ -561,9 +557,7 @@ class AlbumCollectionWrapper:
         # Remove locally first to avoid errors if already deleted
         self.remove_album_local_public(wrapper)
         try:
-            proxy_delete_album(
-                album_id=wrapper.get_album_uuid(), client=client
-            )  # Removed: function does not exist
+            proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)
         except Exception as exc:
             msg = str(exc)
             # Try to give a more specific reason if possible
@@ -648,7 +642,8 @@ class AlbumCollectionWrapper:
                 existing_album=existing,
                 context="duplicate_on_load",
             )
-        elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+
+        elif is_development_mode():
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
             )
@@ -684,7 +679,7 @@ class AlbumCollectionWrapper:
         wrapper: AlbumResponseWrapper,
         client: ImmichClient,
         tag_mod_report: ModificationReport,
-        old_tested_mode=True,
+        old_tested_mode: bool = True,
     ) -> None:
         """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
 
@@ -768,11 +763,16 @@ class AlbumCollectionWrapper:
     def get_asset_to_albums_map(self) -> AssetToAlbumsMap:
         """
         Returns the current asset-to-albums map, building it if not already done.
+        Defensive: always returns AssetToAlbumsMap, never None.
         """
-
         self._ensure_fully_loaded()
         if self._asset_to_albums_map is None:
             self._rebuild_asset_to_albums_map()
+        if self._asset_to_albums_map is None:
+            # If still None after rebuild, this is a fatal error
+            raise RuntimeError(
+                "AssetToAlbumsMap is None after rebuild. This should never happen."
+            )
         return self._asset_to_albums_map
 
     @conditional_typechecked
@@ -821,7 +821,7 @@ class AlbumCollectionWrapper:
         # AlbumNameMap only supports one album per name, but if there are duplicates, the structure would need to be changed.
         # If the map only supports one, we maintain compatibility by returning a list of one or zero.
         album = self._albums.get_by_name(album_name)
-        if album is not None and not album.is_deleted():
+        if album and not album.is_deleted():
             yield album
 
     @typechecked
@@ -945,7 +945,12 @@ class AlbumCollectionWrapper:
         album = self._create_album_dto(album_name, client, tag_mod_report)
 
         # Centralized user access
-        user_wrapper: UserResponseWrapper = UserResponseWrapper.load_current_user()
+        user_wrapper_opt = UserResponseWrapper.load_current_user()
+        if user_wrapper_opt is None:
+            raise RuntimeError(
+                "Could not load current user (UserResponseWrapper.load_current_user() returned None)"
+            )
+        user_wrapper: UserResponseWrapper = user_wrapper_opt
 
         wrapper = self._album_wrapper_from_partial_dto(album)
         tag_mod_report.add_album_modification(
@@ -1017,7 +1022,9 @@ class AlbumCollectionWrapper:
         # Integrar PerformanceTracker para progreso y tiempo estimado
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-        tracker = PerformanceTracker(total_assets=len(albums))
+        tracker = PerformanceTracker.empty(
+            total_assets=len(albums), max_assets=len(albums), skip_n=0
+        )
 
         if clear_first:
             # Clear the current collection
