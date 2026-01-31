@@ -9,6 +9,7 @@ class Battery:
 
     def run(self, mode: str, args) -> int:
         """Executes all checks in order. Returns the first error code !=0 or 0 if all OK."""
+        results = []
         for check in self.checks:
             print(f"[CHECK] Running {check.name} ...", flush=True)
             if mode == 'CHECK':

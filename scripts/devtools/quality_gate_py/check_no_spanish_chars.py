@@ -8,17 +8,13 @@ class CheckNoSpanishChars(Check):
         super().__init__('check_no_spanish_chars')
 
     def check(self, args):
-        # Searches for Spanish words and characters in all .py files
-        SPANISH_WORDS = [
-            'aquellas', 'aquellos', 'antes', 'cambiado', 'cierto', 'claro', 'comentario', 'complicado', 'complejo',
-            'compatibilidad', 'correcto', 'devuelve', 'devolviendo', 'durante', 'ejemplo', 'entonces', 'estructura',
-            'etiqueta', 'etiquetas', 'falso', 'grande', 'hoy', 'imposible', 'importante', 'improbable', 'inicio',
-            'interesante', 'limpieza', 'lista', 'lento', 'luego', 'mantenimiento', 'mayor', 'mejor', 'menos',
-            'mientras', 'muy', 'nombre', 'nuevo', 'nueva', 'nuevas', 'nuevos', 'nunca', 'oscuro', 'peor', 'posible',
-            'primera', 'primeras', 'primero', 'primeros', 'probable', 'referencia', 'seguro', 'sencillo', 'si',
-            'siempre', 'soporta', 'tenemos', 'usamos', 'verdadero', 'vieja', 'viejas', 'viejo', 'viejos'
-        ]
-        SPANISH_PATTERN = re.compile(r"[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(" + '|'.join(SPANISH_WORDS) + ")\\b", re.IGNORECASE)
+        # Loads forbidden words from the external file (one per line)
+        import os
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        words_path = os.path.join(script_dir, '../spanish_words.txt')
+        with open(words_path, encoding='utf-8') as f:
+            SPANISH_WORDS = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        SPANISH_PATTERN = re.compile(r"[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(" + '|'.join(map(re.escape, SPANISH_WORDS)) + ")\\b", re.IGNORECASE)
         failed = False
         for pyfile in Path(args.target_dir).rglob('*.py'):
             with open(pyfile, encoding='utf-8', errors='ignore') as f:

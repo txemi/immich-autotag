@@ -768,76 +768,16 @@ check_no_spanish_chars() {
 	local spanish_matches
 	echo "Checking for Spanish language characters in source files..."
 
-	# Spanish word list
-	local SPANISH_WORDS='aquellas
-aquellos
-antes
-cam-biando
-cambiado
-cierto
-claro
-comentario
-complicado
-complejo
-compatibilidad
-correcto
-devuelve
-devolviendo
-durante
-ejemplo
-entonces
-estructura
-etiqueta
-etiquetas
-falso
-grande
-hoy
-imposible
-importante
-improbable
-inicio
-interesante
-limpieza
-lista
-lento
-luego
-mantenimiento
-mayor
-mejor
-menos
-mientras
-muy
-nombre
-nuevo
-nueva
-nuevas
-nuevos
-nunca
-oscuro
-peor
-posible
-primera
-primeras
-primero
-primeros
-probable
-referencia
-seguro
-sencillo
-si
-siempre
-soporta
-tenemos
-usamos
-verdadero
-vieja
-viejas
-viejo
-viejos'
-
-	local SPANISH_WORD_PATTERN
-	SPANISH_WORD_PATTERN=$(echo "$SPANISH_WORDS" | paste -sd '|' -)
-	local SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]|\\b(${SPANISH_WORD_PATTERN})\\b"
+	# Leer palabras desde fichero externo
+	local SPANISH_WORDS_FILE="$SCRIPT_DIR/spanish_words.txt"
+	local SPANISH_WORD_PATTERN=""
+	if [[ -f "$SPANISH_WORDS_FILE" ]]; then
+		SPANISH_WORD_PATTERN=$(grep -v '^#' "$SPANISH_WORDS_FILE" | grep -v '^$' | paste -sd '|' -)
+	fi
+	local SPANISH_PATTERN="[áéíóúÁÉÍÓÚñÑüÜ¿¡]"
+	if [[ -n "$SPANISH_WORD_PATTERN" ]]; then
+		SPANISH_PATTERN="$SPANISH_PATTERN|\\b($SPANISH_WORD_PATTERN)\\b"
+	fi
 
 	# Get relative paths for exclusion
 	local SCRIPT_ABS_PATH QUALITY_GATE_ABS_PATH SCRIPT_REL_PATH QUALITY_GATE_REL_PATH
