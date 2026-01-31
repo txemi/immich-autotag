@@ -18,12 +18,8 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, on_setattr=attrs.setters.validate)
 class ResolveEmailsResult:
-    _resolved: Dict[EmailAddress, UserUUID] = attrs.field(
-        init=False, factory=dict, metadata={"type": "Dict[EmailAddress, UserUUID]"}
-    )
-    _unresolved: List[EmailAddress] = attrs.field(
-        init=False, factory=list, metadata={"type": "List[EmailAddress]"}
-    )
+    _resolved: Dict[EmailAddress, UserUUID] = attrs.field(init=False, factory=dict)  # type: ignore[type-arg]
+    _unresolved: List[EmailAddress] = attrs.field(init=False, factory=list)  # type: ignore[type-arg]
 
     def __iter__(self):
         yield self._resolved
