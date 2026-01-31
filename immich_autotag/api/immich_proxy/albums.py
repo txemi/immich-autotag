@@ -170,11 +170,11 @@ def proxy_delete_album(album_id: AlbumUUID, client: AuthenticatedClient) -> None
     Deletes an album by UUID using the ImmichClient API.
     Raises an exception if the operation fails.
     """
-    from immich_client.api.albums import delete_album
+    from immich_client.api.albums.delete_album import sync as delete_album_sync
 
-    response = delete_album.sync(id=album_id, client=client)
-    if hasattr(response, "status_code") and response.status_code not in (200, 204):
-        raise RuntimeError(
-            f"Failed to delete album {album_id}: {response.status_code} {getattr(response, 'text', '')}"
-        )
+    # The correct API expects id as UUID and client
+    result = delete_album_sync(id=album_id.to_uuid(), client=client)
+    if result is not None:
+        # If the API returns anything but None, treat as error (should be None on success)
+        raise RuntimeError(f"Failed to delete album {album_id}: unexpected response {result}")
     return None

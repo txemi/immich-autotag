@@ -22,14 +22,14 @@ class MatchResultList:
 
     @typechecked
     def tags(self) -> list[str]:
-        tags = []
+        tags: list[str] = []
         for m in self.matches:
             tags.extend(m.tags_matched)
         return tags
 
     @typechecked
     def albums(self) -> list[str]:
-        albums = []
+        albums: list[str] = []
         for m in self.matches:
             albums.extend(m.albums_matched)
         return albums
