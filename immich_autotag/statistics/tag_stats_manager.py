@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 @attr.s(auto_attribs=True, kw_only=True)
 class TagStatsManager:
     stats_manager: "StatisticsManager" = attr.ib(
-        validator=attr.validators.instance_of("StatisticsManager")
+        validator=attr.validators.instance_of(StatisticsManager)
     )
 
     @typechecked
