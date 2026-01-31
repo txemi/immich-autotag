@@ -156,7 +156,10 @@ class AssetCacheEntry:
         """
         Creates an AssetCacheEntry from an existing state (private).
         """
-        return cls(state=state, max_age_seconds=max_age_seconds)
+        self = cls()
+        self._state = state
+        self._max_age_seconds = max_age_seconds
+        return self
 
     # Removed methods to_cache_dict and from_cache_dict: the cache only serializes AssetDtoState
 

@@ -45,9 +45,15 @@ class AssetDtoState:
     This class never performs API calls or business logic—just holds and exposes data.
     """
 
-    _dto: AssetResponseDto = attrs.field(init=False, validator=attrs.validators.instance_of(AssetResponseDto))
-    _api_endpoint_source: AssetDtoType = attrs.field(init=False, validator=attrs.validators.instance_of(AssetDtoType))
-    _loaded_at: datetime = attrs.field(factory=datetime.now, validator=attrs.validators.instance_of(datetime))
+    _dto: AssetResponseDto = attrs.field(
+        init=False, validator=attrs.validators.instance_of(AssetResponseDto)
+    )
+    _api_endpoint_source: AssetDtoType = attrs.field(
+        init=False, validator=attrs.validators.instance_of(AssetDtoType)
+    )
+    _loaded_at: datetime = attrs.field(
+        factory=datetime.now, validator=attrs.validators.instance_of(datetime)
+    )
 
     def __attrs_post_init__(self):
         # Defensive check of the type of tags according to the API endpoint used
