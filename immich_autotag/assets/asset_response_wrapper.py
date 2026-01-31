@@ -33,7 +33,7 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.types.uuid_wrappers import AssetUUID
+from immich_autotag.types.uuid_wrappers import AssetUUID, TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
@@ -350,9 +350,9 @@ class AssetResponseWrapper:
             )
             return False
         # Extra checks and logging before API call
-        if not tag or tag.get_id() is None:
+        if not tag:
             error_msg = (
-                f"[ERROR] Tag object for '{tag_name}' is missing or has no id. "
+                f"[ERROR] Tag object for '{tag_name}' is missing. "
                 f"Tag: {tag}"
             )
             from immich_autotag.logging.levels import LogLevel
@@ -434,7 +434,7 @@ class AssetResponseWrapper:
         return True
 
     @typechecked
-    def _get_current_tag_ids(self) -> "list[TagUUID]":
+    def _get_current_tag_ids(self) -> list[TagUUID]:
         """Returns the AssetUUIDs of the asset's current tags."""
         tags: list[TagWrapper] = self.get_tags()
         return [t.get_id() for t in tags]
@@ -502,9 +502,7 @@ class AssetResponseWrapper:
     def get_original_path(self) -> Path:
         # Ensure the return is a Path object
         orig = self._cache_entry.get_original_path()
-        if isinstance(orig, Path):
-            return orig
-        return Path(orig)
+        return orig
 
     def get_duplicate_id_as_uuid(self) -> UUID:
         return self._cache_entry.get_duplicate_id_as_uuid()
