@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-# Imports the MatchResult class from the new file
-
-from typing import TYPE_CHECKING, Dict, List
+from typing import Dict, List
 
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
 )
@@ -15,14 +14,13 @@ from immich_autotag.classification.match_result_list import MatchResultList
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.uuid_wrappers import AssetUUID
 
+# Imports the MatchResult class from the new file
+
+
 # Example usage:
 # rule_set = get_rule_set_from_config_manager()
 # if rule_set.has_tag("autotag_input_meme"):
 #     print("Tag exists in rules!")
-
-
-
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
@@ -131,7 +129,6 @@ class ClassificationRuleSet:
         # from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper  # unused
 
         wrappers: List[AssetResponseWrapper] = []
-
 
         for asset_uuid in all_uuids:
             asset_wrapper = context.get_asset_manager().get_asset(asset_uuid, context)
