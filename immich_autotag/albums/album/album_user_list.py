@@ -21,7 +21,7 @@ class AlbumUserList:
     providing helper methods.
     """
 
-    _users: list["AlbumUserWrapper"] = attrs.field(factory=list)
+    _users: list[AlbumUserWrapper] = attrs.field(factory=list)  # type: ignore[type-arg]
 
     @typechecked
     def append(self, user: "AlbumUserWrapper") -> None:

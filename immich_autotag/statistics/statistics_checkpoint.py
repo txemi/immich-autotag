@@ -77,7 +77,7 @@ def get_previous_skip_n(
             return result
         # If there is no data, proceed with default mode
 
-    prev_run = RunOutputManager.get_previous_run_output_dir()
+    prev_run = RunOutputManager.current().get_previous_run_output_dir()
     if prev_run is None:
         return None
     stats_path = prev_run.get_run_statistics_path()

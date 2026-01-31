@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import attrs
 from typeguard import typechecked
@@ -13,44 +13,30 @@ if TYPE_CHECKING:
     from immich_client.models.user_response_dto import UserResponseDto
 
 
+
 @attrs.define(slots=True, frozen=True)
 class UserResponseWrapper:
+    _user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field()
 
     @staticmethod
-    def _validate_user(
-        instance: "UserResponseWrapper",
-        attribute: Any,
-        value: object,
-    ) -> None:
-        if value is None:
+    def _validate_user(user: object) -> None:
+        if user is None:
             raise ValueError("user cannot be None")
-        from immich_client.models.user_admin_response_dto import (
-            UserAdminResponseDto,
-        )
+        from immich_client.models.user_admin_response_dto import UserAdminResponseDto
         from immich_client.models.user_response_dto import UserResponseDto
-
-        if not isinstance(value, (UserResponseDto, UserAdminResponseDto)):
+        if not isinstance(user, (UserResponseDto, UserAdminResponseDto)):
             raise TypeError(
-                f"user must be a UserResponseDto or UserAdminResponseDto, got "
-                f"{type(value)}"
+                f"user must be a UserResponseDto or UserAdminResponseDto, got {type(user)}"
             )
 
-    _user: Union["UserResponseDto", "UserAdminResponseDto"] = attrs.field(
-        init=False, validator=_validate_user
-    )
-
-    def _set_user(self, user: Union["UserResponseDto", "UserAdminResponseDto"]) -> None:
-        # Call the validator before assignment
-        self._validate_user(self, UserResponseWrapper.__attrs_attrs__[0], user)
-        self._user = user
+    def __attrs_post_init__(self):
+        self._validate_user(self._user)
 
     @classmethod
     def from_user(
         cls, user: Union["UserResponseDto", "UserAdminResponseDto"]
     ) -> "UserResponseWrapper":
-        obj = cls()
-        obj._set_user(user)
-        return obj
+        return cls(user)
 
     @typechecked
     def get_name(self) -> str:
