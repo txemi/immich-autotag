@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from scripts.devtools.quality_gate_py.enums_mode import QualityGateMode
-from scripts.devtools.quality_gate_py.enums_level import QualityGateLevel
+from python_qualitygate.enums_mode import QualityGateMode
+from python_qualitygate.enums_level import QualityGateLevel
 
 @dataclass
 class QualityGateArgs:

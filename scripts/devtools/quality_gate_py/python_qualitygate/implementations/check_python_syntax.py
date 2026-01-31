@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from scripts.devtools.quality_gate_py.base import Check
+from python_qualitygate.base import Check
 
 class CheckPythonSyntax(Check):
     def __init__(self):

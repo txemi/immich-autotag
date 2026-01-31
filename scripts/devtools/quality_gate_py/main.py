@@ -3,23 +3,23 @@ import sys
 import argparse
 import os
 from pathlib import Path
-from scripts.devtools.quality_gate_py.args import QualityGateArgs
-from scripts.devtools.quality_gate_py.battery import Battery
-from scripts.devtools.quality_gate_py.check_black import CheckBlack
-from scripts.devtools.quality_gate_py.check_isort import CheckIsort
-from scripts.devtools.quality_gate_py.check_python_syntax import CheckPythonSyntax
-from scripts.devtools.quality_gate_py.check_ruff import CheckRuff
-from scripts.devtools.quality_gate_py.check_flake8 import CheckFlake8
-from scripts.devtools.quality_gate_py.check_mypy import CheckMypy
-from scripts.devtools.quality_gate_py.check_shfmt import CheckShfmt
-from scripts.devtools.quality_gate_py.check_no_spanish_chars import CheckNoSpanishChars
-from scripts.devtools.quality_gate_py.check_jscpd import CheckJscpd
-from scripts.devtools.quality_gate_py.check_no_tuples import CheckNoTuples
-from scripts.devtools.quality_gate_py.check_import_linter import CheckImportLinter
-from scripts.devtools.quality_gate_py.check_no_dynamic_attrs import CheckNoDynamicAttrs
-from scripts.devtools.quality_gate_py.check_ssort import CheckSsort
-from scripts.devtools.quality_gate_py.enums_mode import QualityGateMode
-from scripts.devtools.quality_gate_py.enums_level import QualityGateLevel
+from python_qualitygate.args import QualityGateArgs
+from python_qualitygate.battery import Battery
+from python_qualitygate.implementations.check_black import CheckBlack
+from python_qualitygate.implementations.check_isort import CheckIsort
+from python_qualitygate.implementations.check_python_syntax import CheckPythonSyntax
+from python_qualitygate.implementations.check_ruff import CheckRuff
+from python_qualitygate.implementations.check_flake8 import CheckFlake8
+from python_qualitygate.implementations.check_mypy import CheckMypy
+from python_qualitygate.implementations.check_shfmt import CheckShfmt
+from python_qualitygate.implementations.check_no_spanish_chars import CheckNoSpanishChars
+from python_qualitygate.implementations.check_jscpd import CheckJscpd
+from python_qualitygate.implementations.check_no_tuples import CheckNoTuples
+from python_qualitygate.implementations.check_import_linter import CheckImportLinter
+from python_qualitygate.implementations.check_no_dynamic_attrs import CheckNoDynamicAttrs
+from python_qualitygate.implementations.check_ssort import CheckSsort
+from python_qualitygate.enums_mode import QualityGateMode
+from python_qualitygate.enums_level import QualityGateLevel
 
 CHECKS = {
     'check_black': CheckBlack,

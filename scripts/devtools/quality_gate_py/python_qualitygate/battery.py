@@ -1,5 +1,5 @@
 from typing import List
-from scripts.devtools.quality_gate_py.base import Check
+from python_qualitygate.base import Check
 
 
 class Battery:
@@ -9,7 +9,7 @@ class Battery:
 
     def run(self, mode, args) -> int:
         """Executes all checks in order. Returns the first error code !=0 or 0 if all OK."""
-        from scripts.devtools.quality_gate_py.enums_mode import QualityGateMode
+        from python_qualitygate.enums_mode import QualityGateMode
         results = []
         for check in self.checks:
             print(f"[CHECK] Running {check.name} ...", flush=True)
