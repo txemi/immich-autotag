@@ -16,6 +16,7 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
+from immich_client.types import Response
 
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
@@ -165,18 +166,20 @@ def proxy_add_assets_to_album(
     return result
 
 
-def proxy_delete_album(album_id: AlbumUUID, client: AuthenticatedClient) -> None:
+def proxy_delete_album(
+    album_id: "AlbumUUID", client: "AuthenticatedClient"
+) -> Response[Any]:
     """
     Deletes an album by UUID using the ImmichClient API.
     Raises an exception if the operation fails.
     """
-    from immich_client.api.albums.delete_album import sync as delete_album_sync
+    from immich_client.api.albums.delete_album import (
+        sync_detailed as delete_album_sync_detailed,
+    )
 
-    # The correct API expects id as UUID and client
-    result = delete_album_sync(id=album_id.to_uuid(), client=client)
-    if result is not None:
-        # If the API returns anything but None, treat as error (should be None on success)
+    response = delete_album_sync_detailed(id=album_id.to_uuid(), client=client)
+    if response.status_code != 204:
         raise RuntimeError(
-            f"Failed to delete album {album_id}: unexpected response {result}"
+            f"Failed to delete album {album_id}: status {response.status_code}, content: {response.content!r}"
         )
-    return None
+    return response

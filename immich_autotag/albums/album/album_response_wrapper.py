@@ -717,7 +717,9 @@ class AlbumResponseWrapper:
         If 'other' is not an AlbumResponseWrapper, raise TypeError to signal improper comparison usage.
         """
         if not isinstance(other, AlbumResponseWrapper):
-            raise TypeError(f"Cannot compare AlbumResponseWrapper with {type(other).__name__}")
+            raise TypeError(
+                f"Cannot compare AlbumResponseWrapper with {type(other).__name__}"
+            )
         return self.get_album_uuid() == other.get_album_uuid()
 
     def __hash__(self) -> int:  # pragma: no cover - trivial
