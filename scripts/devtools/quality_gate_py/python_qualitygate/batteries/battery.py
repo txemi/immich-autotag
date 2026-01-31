@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-from python_qualitygate.base import Check
+from python_qualitygate.core.base import Check
 
 @dataclass(slots=True)
 class Battery:
@@ -9,7 +9,7 @@ class Battery:
 
     def run(self, mode, args) -> int:
         """Executes all checks in order. Returns the first error code !=0 or 0 if all OK."""
-        from python_qualitygate.enums_mode import QualityGateMode
+        from python_qualitygate.core.enums_mode import QualityGateMode
         results = []
         for check in self.checks:
             print(f"[CHECK] Running {check.name} ...", flush=True)

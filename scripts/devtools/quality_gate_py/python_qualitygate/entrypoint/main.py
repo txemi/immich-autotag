@@ -1,9 +1,9 @@
 import sys
 from python_qualitygate.cli.args import QualityGateArgs
-from python_qualitygate.battery import Battery
+from python_qualitygate.batteries.battery import Battery
 from python_qualitygate.batteries.registry import CHECKS, BATTERY_ORDER
-from python_qualitygate.enums_mode import QualityGateMode
-from python_qualitygate.enums_level import QualityGateLevel
+from python_qualitygate.core.enums_mode import QualityGateMode
+from python_qualitygate.core.enums_level import QualityGateLevel
 from python_qualitygate.cli.parse_args import parse_args
 
 def main():
