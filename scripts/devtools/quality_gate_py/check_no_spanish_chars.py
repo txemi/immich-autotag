@@ -8,7 +8,7 @@ class CheckNoSpanishChars(Check):
         super().__init__('check_no_spanish_chars')
 
     def check(self, args):
-        # Busca palabras y caracteres españoles en todos los .py
+        # Searches for Spanish words and characters in all .py files
         SPANISH_WORDS = [
             'aquellas', 'aquellos', 'antes', 'cambiado', 'cierto', 'claro', 'comentario', 'complicado', 'complejo',
             'compatibilidad', 'correcto', 'devuelve', 'devolviendo', 'durante', 'ejemplo', 'entonces', 'estructura',

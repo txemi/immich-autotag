@@ -13,5 +13,5 @@ class CheckRuff(Check):
         return subprocess.call(cmd)
 
     def apply(self, args):
-        # Ruff siempre intenta arreglar con --fix
+        # Ruff always tries to fix with --fix
         return self.check(args)
