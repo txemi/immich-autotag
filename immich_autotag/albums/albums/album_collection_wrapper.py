@@ -915,6 +915,15 @@ class AlbumCollectionWrapper:
         )
         return album
 
+    def _album_wrapper_from_partial_dto(
+        self, album: AlbumResponseDto
+    ) -> AlbumResponseWrapper:
+        """
+        Centralized helper to create an AlbumResponseWrapper from a partial AlbumResponseDto.
+        Use this method instead of calling AlbumResponseWrapper.from_partial_dto directly.
+        """
+        return AlbumResponseWrapper.from_partial_dto(album)
+
     @conditional_typechecked
     def create_or_get_album_with_user(
         self,
@@ -1084,15 +1093,6 @@ class AlbumCollectionWrapper:
         filtered elsewhere).
         """
         return len(self._albums)
-
-    def _album_wrapper_from_partial_dto(
-        self, album: AlbumResponseDto
-    ) -> AlbumResponseWrapper:
-        """
-        Centralized helper to create an AlbumResponseWrapper from a partial AlbumResponseDto.
-        Use this method instead of calling AlbumResponseWrapper.from_partial_dto directly.
-        """
-        return AlbumResponseWrapper.from_partial_dto(album)
 
     # Removed broken is_owner method (should be on AlbumResponseWrapper)
 
