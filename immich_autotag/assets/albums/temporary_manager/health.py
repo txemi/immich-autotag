@@ -47,8 +47,8 @@ def is_temporary_album_healthy(
     min_date = min(dates)
     max_date = max(dates)
     # Try to get album-provided min/max dates if available
-    album_min_date = album_wrapper._album_dto.start_date
-    album_max_date = album_wrapper._album_dto.end_date
+    album_min_date = album_wrapper.get_start_date()
+    album_max_date = album_wrapper.get_end_date()
 
     # Logic based on mode
     if date_check_mode == TemporaryAlbumDateCheckMode.ALBUM:
