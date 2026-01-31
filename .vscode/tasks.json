@@ -22,7 +22,7 @@
       "type": "shell",
       "command": "./.venv/bin/python -m flake8 --exclude=.venv,immich-client,scripts immich_autotag",
       "presentation": { "reveal": "always", "panel": "shared" },
-      "problemMatcher": ["$flake8"]
+      "problemMatcher": ["$python"]
     }
     ,
     {
