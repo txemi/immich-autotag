@@ -26,6 +26,10 @@ class StaleAlbumCacheError(Exception):
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCacheEntry:
 
+    _dto: AlbumDtoState
+    _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
+    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
+
     def merge_from_dto(
         self, dto: "AlbumResponseDto", load_source: "AlbumLoadSource"
     ) -> None:
@@ -33,10 +37,6 @@ class AlbumCacheEntry:
         Delegates to AlbumDtoState.merge_from_dto. See AlbumDtoState for logic.
         """
         self._dto.merge_from_dto(dto, load_source)
-
-    _dto: AlbumDtoState
-    _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
-    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
 
     def get_owner_uuid(self) -> "UserUUID":
         return self._dto.get_owner_uuid()
