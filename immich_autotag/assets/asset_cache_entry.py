@@ -114,6 +114,8 @@ class AssetCacheEntry:
                 # If it's a list, use the first element
                 if isinstance(cache_data, list):
                     # Defensive: only use if first element is a dict
+                    from typing import cast
+
                     first = None
                     try:
                         # Use next(iter(...)) to avoid type checker complaints
@@ -121,7 +123,9 @@ class AssetCacheEntry:
                     except Exception:
                         first = None
                     if isinstance(first, dict):
-                        state = AssetDtoState.from_cache_dict(first)  # type: ignore[arg-type]
+                        state = AssetDtoState.from_cache_dict(
+                            cast(dict[str, object], first)
+                        )
                     else:
                         state = None
                 elif isinstance(cache_data, dict):  # type: ignore[redundant-expr]
