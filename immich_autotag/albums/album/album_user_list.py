@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from typing import TYPE_CHECKING, Iterator
 
 import attrs
@@ -8,8 +9,10 @@ from typeguard import typechecked
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
 
+from .album_user_wrapper import AlbumUserWrapper
+
 if TYPE_CHECKING:
-    from .album_user_wrapper import AlbumUserWrapper
+    pass
 
 
 @attrs.define(auto_attribs=True, slots=True)
