@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Iterator
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
 
 if TYPE_CHECKING:
@@ -26,20 +27,16 @@ class AlbumUserList:
         self._users.append(user)
 
     @typechecked
-    def to_id_list(self) -> list[str]:
-        return [u.id for u in self._users]
-
-    @typechecked
     def to_uuid_list(self) -> list[UserUUID]:
         return [u.get_uuid() for u in self._users]
 
     @typechecked
-    def emails(self) -> list[str]:
-        return [u.email for u in self._users]
+    def emails(self) -> list[EmailAddress]:
+        return [u.get_email() for u in self._users]
 
     @typechecked
     def names(self) -> list[str]:
-        return [u.name for u in self._users]
+        return [u.get_name() for u in self._users]
 
     @typechecked
     def __getitem__(self, idx: int) -> "AlbumUserWrapper":
