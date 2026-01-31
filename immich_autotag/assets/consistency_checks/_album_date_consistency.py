@@ -36,7 +36,7 @@ def check_album_date_consistency(
         return
 
     # Get album wrappers for this asset
-    albums = asset_wrapper.get_context().albums_collection.albums_wrappers_for_asset_wrapper(
+    albums = asset_wrapper.get_context().get_albums_collection().albums_wrappers_for_asset_wrapper(
         asset_wrapper
     )
 
