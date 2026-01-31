@@ -55,7 +55,7 @@ class AlbumResponseWrapper:
     # (No manual __slots__ definition; rely on attrs fields only)
 
     # --- 1. Fields ---
-    _cache_entry: AlbumCacheEntry = attrs.field(kw_only=True)
+    _cache_entry: AlbumCacheEntry = attrs.field()
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
     _unavailable: bool = attrs.field(default=False, init=False)
     from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
@@ -707,9 +707,9 @@ class AlbumResponseWrapper:
         # attrs with kw_only fields and validators are incompatible with direct kwarg construction in some cases.
         # So we use a no-argument constructor and assign the field directly.
         # See: docs/dev/style/python_static_factory_pattern.md#attrs-single-argument-constructor-pattern
-        obj = cls()
-        obj._cache_entry = cache_entry
-        return obj  # noqa: E501, W292
+
+        obj = cls(cache_entry)  # Now positional
+        return obj
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible.
