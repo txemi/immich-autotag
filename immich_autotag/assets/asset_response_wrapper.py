@@ -633,13 +633,10 @@ class AssetResponseWrapper:
         from immich_autotag.config.models import ClassificationConfig
 
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
-        tag_name = None
-        if config is not None and config.classification is not None:
-            classification: ClassificationConfig = config.classification
-            tag_name = classification.autotag_unknown
+        classification: ClassificationConfig = config.classification
+        tag_name = classification.autotag_unknown
         if tag_name is None:
             from immich_autotag.logging.utils import log
-
             log(
                 "[WARNING] autotag_unknown not set in config.classification; skipping tag management."
             )
@@ -672,13 +669,10 @@ class AssetResponseWrapper:
         from immich_autotag.config.models import ClassificationConfig
 
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
-        tag_name = None
-        if config is not None and config.classification is not None:
-            classification: ClassificationConfig = config.classification
-            tag_name = classification.autotag_conflict
+        classification: ClassificationConfig = config.classification
+        tag_name = classification.autotag_conflict
         if tag_name is None:
             from immich_autotag.logging.utils import log
-
             log(
                 "[WARNING] autotag_conflict not set in config.classification; skipping tag management."
             )
@@ -773,11 +767,7 @@ class AssetResponseWrapper:
         )
 
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
-        if not (
-            config
-            and config.album_detection_from_folders is not None
-            and config.album_detection_from_folders.enabled
-        ):
+        if not config.album_detection_from_folders.enabled:
             return None
 
         # If already classified or conflicted by tag or album, skip
