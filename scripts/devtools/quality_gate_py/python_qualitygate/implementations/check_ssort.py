@@ -22,21 +22,20 @@ class CheckSsort(Check):
         sys.stdout, sys.stderr = stdout, stderr
         findings = []
         try:
-            try:
-                ssort._main.main()
-                output = stdout.getvalue()
-                # ssort --check prints summary even if OK, only findings if there are errors
-                # If there is "would be left unchanged" we consider it OK
-                if 'would be left unchanged' not in output:
-                    for line in output.splitlines():
-                        if line.strip():
-                            findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
-            except SystemExit as e:
-                output = stdout.getvalue()
-                if e.code != 0:
-                    for line in output.splitlines():
-                        if line.strip():
-                            findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
+            ssort._main.main()
+            output = stdout.getvalue()
+            # ssort --check prints summary even if OK, only findings if there are errors
+            # If there is "would be left unchanged" we consider it OK
+            if 'would be left unchanged' not in output:
+                for line in output.splitlines():
+                    if line.strip():
+                        findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
+        except SystemExit as e:
+            output = stdout.getvalue()
+            if e.code != 0:
+                for line in output.splitlines():
+                    if line.strip():
+                        findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
             sys.argv = old_argv
@@ -54,19 +53,18 @@ class CheckSsort(Check):
         sys.stdout, sys.stderr = stdout, stderr
         findings = []
         try:
-            try:
-                ssort._main.main()
-                output = stdout.getvalue()
-                if 'would be left unchanged' not in output:
-                    for line in output.splitlines():
-                        if line.strip():
-                            findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
-            except SystemExit as e:
-                output = stdout.getvalue()
-                if e.code != 0:
-                    for line in output.splitlines():
-                        if line.strip():
-                            findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
+            ssort._main.main()
+            output = stdout.getvalue()
+            if 'would be left unchanged' not in output:
+                for line in output.splitlines():
+                    if line.strip():
+                        findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
+        except SystemExit as e:
+            output = stdout.getvalue()
+            if e.code != 0:
+                for line in output.splitlines():
+                    if line.strip():
+                        findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ssort"))
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
             sys.argv = old_argv
