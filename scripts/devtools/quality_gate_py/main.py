@@ -18,6 +18,8 @@ from scripts.devtools.quality_gate_py.check_no_tuples import CheckNoTuples
 from scripts.devtools.quality_gate_py.check_import_linter import CheckImportLinter
 from scripts.devtools.quality_gate_py.check_no_dynamic_attrs import CheckNoDynamicAttrs
 from scripts.devtools.quality_gate_py.check_ssort import CheckSsort
+from scripts.devtools.quality_gate_py.enums_mode import QualityGateMode
+from scripts.devtools.quality_gate_py.enums_level import QualityGateLevel
 
 CHECKS = {
     'check_black': CheckBlack,
@@ -61,8 +63,8 @@ def detect_venv_python():
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Quality Gate Python OO Edition")
-    parser.add_argument('--level', '-l', default='STANDARD', choices=['STRICT', 'STANDARD', 'TARGET'])
-    parser.add_argument('--mode', '-m', default='APPLY', choices=['CHECK', 'APPLY'])
+    parser.add_argument('--level', '-l', default='STANDARD', choices=[e.value for e in QualityGateLevel])
+    parser.add_argument('--mode', '-m', default='APPLY', choices=[e.value for e in QualityGateMode])
     parser.add_argument('--py-bin', default=None)
     parser.add_argument('--max-line-length', type=int, default=88)
     parser.add_argument('--only-check', default='')
@@ -71,8 +73,8 @@ def parse_args():
     # Detect venv if py-bin is not provided
     py_bin = args.py_bin if args.py_bin else detect_venv_python()
     return QualityGateArgs(
-        level=args.level,
-        mode=args.mode,
+        level=QualityGateLevel(args.level),
+        mode=QualityGateMode(args.mode),
         py_bin=py_bin,
         max_line_length=args.max_line_length,
         target_dir=args.target_dir,
@@ -88,7 +90,7 @@ def main():
             print(f"[DEFENSIVE-FAIL] Unknown check: {args.only_check}", file=sys.stderr)
             sys.exit(90)
         check = check_cls()
-        rc = check.check(args) if args.mode == 'CHECK' else check.apply(args)
+        rc = check.check(args) if args.mode == QualityGateMode.CHECK else check.apply(args)
         sys.exit(rc)
     # Battery
     battery = Battery([CHECKS[name]() for name in BATTERY_ORDER])
