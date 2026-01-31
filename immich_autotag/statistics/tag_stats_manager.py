@@ -1,7 +1,15 @@
 from __future__ import annotations
 
+# Type imports for mypy
+from typing import TYPE_CHECKING
+
 import attr
 from typeguard import typechecked
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.report.modification_kind import ModificationKind
+    from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 
 @typechecked

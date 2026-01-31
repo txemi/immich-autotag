@@ -40,7 +40,7 @@ class UserResponseWrapper:
     )
 
     def _set_user(self, user: Union["UserResponseDto", "UserAdminResponseDto"]) -> None:
-        # Llama al validador antes de asignar
+        # Call the validator before assignment
         self._validate_user(self, UserResponseWrapper.__attrs_attrs__[0], user)
         self._user = user
 
