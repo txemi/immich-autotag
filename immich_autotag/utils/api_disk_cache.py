@@ -19,52 +19,50 @@ class ApiCacheKey(Enum):
     # Add more as needed
 
 
-@attrs.define(auto_attribs=True, kw_only=True, slots=True)
-
+@attrs.define(auto_attribs=True, slots=True)
 class ApiCacheManager:
-    cache_type: ApiCacheKey = attrs.field(validator=attrs.validators.instance_of(ApiCacheKey))  # Now public
-    use_cache: Optional[bool] = attrs.field(default=None, validator=attrs.validators.optional(attrs.validators.instance_of(bool)))
-    _use_cache: bool = attrs.field(init=False, validator=attrs.validators.instance_of(bool))
-    _cache_subdir: str = attrs.field(default="api_cache", init=False, validator=attrs.validators.instance_of(str))
+    _cache_type: ApiCacheKey = attrs.field(
+        validator=attrs.validators.instance_of(ApiCacheKey)
+    )
+    _use_cache: bool = attrs.field(
+        init=False, validator=attrs.validators.instance_of(bool)
+    )
+    _cache_subdir: str = attrs.field(
+        default="api_cache", init=False, validator=attrs.validators.instance_of(str)
+    )
 
     def __attrs_post_init__(self):
         self._set_use_cache()
 
     def _set_use_cache(self):
-        # Set _use_cache from internal_config per cache_type, unless overridden
-        if self.use_cache is not None:
-            self._use_cache = self.use_cache
-        elif self.cache_type.value == ApiCacheKey.ASSETS.value:
+        # Set _use_cache from internal_config per cache_type
+        if self._cache_type.value == ApiCacheKey.ASSETS.value:
             self._use_cache = internal_config.USE_CACHE_ASSETS
-        elif self.cache_type.value == ApiCacheKey.ALBUMS.value:
+        elif self._cache_type.value == ApiCacheKey.ALBUMS.value:
             self._use_cache = internal_config.USE_CACHE_ALBUMS
-        elif self.cache_type.value == ApiCacheKey.ALBUM_PAGES.value:
+        elif self._cache_type.value == ApiCacheKey.ALBUM_PAGES.value:
             self._use_cache = internal_config.USE_CACHE_ALBUM_PAGES
-        elif self.cache_type.value == ApiCacheKey.USERS.value:
+        elif self._cache_type.value == ApiCacheKey.USERS.value:
             self._use_cache = internal_config.USE_CACHE_USERS
         else:
             self._use_cache = True
 
     @staticmethod
-    def create(
-        cache_type: "ApiCacheKey", use_cache: Optional[bool] = None
-    ) -> "ApiCacheManager":
+    def create(cache_type: "ApiCacheKey") -> "ApiCacheManager":
         """
         Static constructor for ApiCacheManager to avoid linter/type checker issues with private attribute names.
         Use this instead of direct instantiation.
         """
-        # Use 'cache_type' (not '_cache_type') to avoid linter/type checker warnings with attrs auto_attribs
-        return ApiCacheManager(
-            cache_type=cache_type,
-            use_cache=use_cache,
-        )
+        obj = ApiCacheManager(cache_type)
+
+        return obj
 
     def _get_cache_dir(self) -> Path:
         """
         Gets the cache directory of the current execution for the cache type.
         """
         run_execution = RunOutputManager.current().get_run_output_dir()
-        return run_execution.get_api_cache_dir(self.cache_type.value)
+        return run_execution.get_api_cache_dir(self._cache_type.value)
 
     def save(self, key: str, data: dict[str, object] | list[dict[str, object]]) -> None:
         cache_dir = self._get_cache_dir()
@@ -83,7 +81,7 @@ class ApiCacheManager:
         for run_execution in RunOutputManager.current().find_recent_run_dirs(
             exclude_current=True
         ):
-            prev_cache_dir = run_execution.get_api_cache_dir(self.cache_type.value)
+            prev_cache_dir = run_execution.get_api_cache_dir(self._cache_type.value)
             prev_path = prev_cache_dir / f"{key}.json"
             if prev_path.exists() and prev_path.stat().st_size > 0:
                 with open(prev_path, "r", encoding="utf-8") as f:
