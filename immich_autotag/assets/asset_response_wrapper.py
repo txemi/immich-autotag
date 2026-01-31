@@ -352,8 +352,7 @@ class AssetResponseWrapper:
         # Extra checks and logging before API call
         if not tag:
             error_msg = (
-                f"[ERROR] Tag object for '{tag_name}' is missing. "
-                f"Tag: {tag}"
+                f"[ERROR] Tag object for '{tag_name}' is missing. " f"Tag: {tag}"
             )
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
