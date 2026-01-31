@@ -78,7 +78,6 @@ class AlbumDtoState:
             return None
             return value
 
-
     def get_dto(self) -> AlbumResponseDto:
         """Returns the underlying AlbumResponseDto (for internal use only)."""
         return self._dto
