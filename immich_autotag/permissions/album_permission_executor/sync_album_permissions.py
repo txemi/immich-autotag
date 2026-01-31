@@ -34,7 +34,6 @@ def sync_album_permissions(
     """
     # album_id = album_wrapper.get_album_uuid()  # removed unused variable
     album_name = album_wrapper.get_album_name()
-    album_uuid = album_wrapper.get_album_uuid_no_cache()
     report = ModificationReport.get_instance()
 
     if not resolved_policy.has_match:
@@ -46,8 +45,8 @@ def sync_album_permissions(
     result = ResolveEmailsResult.resolve_emails_to_user_ids(email_objs, context)
     target_user_ids = set(result._resolved.values())
 
-    # Get current members from API (pass UUID directly)
-    current_members = get_current_members(album_uuid, context)
+    # Get current members from API (pass album_wrapper directly)
+    current_members =album_wrapper.get_album_users()
     from immich_autotag.types.uuid_wrappers import UserUUID
 
     current_user_ids = {
