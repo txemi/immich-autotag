@@ -1,10 +1,10 @@
 from typing import Iterator
-from uuid import UUID
 
 import attrs
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -13,10 +13,10 @@ class AlbumMap:
     Stores albums in a dict keyed by UUID. Prevents duplicates.
     """
 
-    _albums: dict[UUID, AlbumResponseWrapper] = attrs.field(factory=dict)
+    _albums: dict[AlbumUUID, AlbumResponseWrapper] = attrs.field(factory=dict)
 
     @typechecked
-    def get_by_uuid(self, uuid: UUID) -> AlbumResponseWrapper:
+    def get_by_uuid(self, uuid: AlbumUUID) -> AlbumResponseWrapper:
         if uuid not in self._albums:
             raise RuntimeError(f"Album with uuid {uuid} does not exist in AlbumMap")
         return self._albums[uuid]
@@ -42,7 +42,7 @@ class AlbumMap:
     def clear(self):
         self._albums.clear()
 
-    def __getitem__(self, uuid: UUID) -> AlbumResponseWrapper:
+    def __getitem__(self, uuid: AlbumUUID) -> AlbumResponseWrapper:
         return self._albums[uuid]
 
     @typechecked

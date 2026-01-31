@@ -5,6 +5,7 @@ import attrs
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_map import AlbumMap
 from immich_autotag.albums.albums.album_name_map import AlbumNameMap
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -31,15 +32,10 @@ class AlbumDualMap:
         self._name_map.remove(album)
 
     @typechecked
-    def get_by_id(self, uuid: str) -> AlbumResponseWrapper:
+    def get_by_id(self, uuid: AlbumUUID) -> AlbumResponseWrapper:
         # Defensive: raise if not found
-        from uuid import UUID
 
-        try:
-            uuid_obj = UUID(uuid)
-        except Exception:
-            raise RuntimeError(f"Invalid UUID string: {uuid}")
-        return self._id_map.get_by_uuid(uuid_obj)
+        return self._id_map.get_by_uuid(uuid)
 
     @typechecked
     def get_by_name(self, name: str) -> AlbumResponseWrapper:
