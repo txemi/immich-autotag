@@ -68,6 +68,7 @@ class CheckNoSpanishChars(Check):
 
     def _get_files_to_check(self, repo, repo_root: Path) -> List[Path]:
         files = [repo_root / Path(f) for f in repo.git.ls_files().splitlines()]
+        # Solo excluir el propio check y spanish_words.txt
         return [f for f in files if not str(f).endswith('spanish_words.txt') and not str(f).endswith('check_no_spanish_chars.py')]
 
     def _analyze_file(self, file_path: Path, forbidden_bytes: List[bytes], spanish_words: List[str]) -> List[Finding]:
@@ -77,7 +78,6 @@ class CheckNoSpanishChars(Check):
 
         ]
         EXCLUDE_FILES = [
-            'quality_gate.sh',
             'check_no_spanish_chars.py',
         ]
         try:
@@ -100,8 +100,13 @@ class CheckNoSpanishChars(Check):
 
     def _find_spanish_chars(self, file_path: Path, line_number: int, line: bytes, forbidden_bytes: List[bytes]) -> List[Finding]:
         findings = []
+        # Marca cualquier línea que contenga al menos un byte prohibido (carácter acentuado, ñ, etc.)
         if any(b in line for b in forbidden_bytes):
-            findings.append(Finding(file_path=file_path, line_number=line_number, message=line.decode(errors='ignore').strip(), code="spanish-char"))
+            try:
+                decoded = line.decode('utf-8', errors='ignore').strip()
+            except Exception:
+                decoded = str(line)
+            findings.append(Finding(file_path=file_path, line_number=line_number, message=decoded, code="spanish-char"))
         return findings
 
     def _find_spanish_words(self, file_path: Path, line_number: int, line: bytes, spanish_words: List[str]) -> List[Finding]:
@@ -115,7 +120,7 @@ class CheckNoSpanishChars(Check):
             for word in spanish_words:
                 if word:
                     # Solo marcar si es palabra completa (no subcadena)
-                    pattern = r'\\b' + re.escape(word) + r'\\b'
+                    pattern = r'\b' + re.escape(word) + r'\b'
                     if re.search(pattern, decoded_line, re.IGNORECASE):
                         findings.append(Finding(file_path=file_path, line_number=line_number, message=f"{decoded_line.strip()} (palabra prohibida: {word})", code="spanish-word"))
         return findings

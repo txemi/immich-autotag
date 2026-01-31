@@ -56,7 +56,7 @@ class Battery:
         for i, finding in enumerate(to_show, 1):
             print(f"  [ERROR {i}] {finding.file_path}:{finding.line_number}: {finding.message}")
         if n > MAX_ERRORS_TO_PRINT:
-            print(f"  ... (mostrando solo los primeros {MAX_ERRORS_TO_PRINT} errores de {n})")
+            print(f"  ... (showing only the first {MAX_ERRORS_TO_PRINT} errors out of {n})")
 
     def _print_summary(self, results) -> None:
         print("[SUMMARY] Quality Gate results:")
