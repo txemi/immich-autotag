@@ -1,4 +1,5 @@
 
+import shutil
 import subprocess
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
@@ -10,7 +11,11 @@ class CheckJscpd(Check):
     name = 'check_jscpd'
 
     def check(self, args: QualityGateArgs) -> CheckResult:
-        cmd = ['jscpd', '--silent', '--min-tokens', '30', '--max-lines', '100', '--format', 'python', '--ignore', '**/.venv/**,**/immich-client/**,**/scripts/**', str(args.target_dir)]
+        # Use jscpd if available, otherwise fall back to npx
+        if shutil.which('jscpd'):
+            cmd = ['jscpd', '--silent', '--min-tokens', '30', '--max-lines', '100', '--format', 'python', '--ignore', '**/.venv/**,**/immich-client/**,**/scripts/**', str(args.target_dir)]
+        else:
+            cmd = ['npx', 'jscpd', '--silent', '--min-tokens', '30', '--max-lines', '100', '--format', 'python', '--ignore', '**/.venv/**,**/immich-client/**,**/scripts/**', str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []

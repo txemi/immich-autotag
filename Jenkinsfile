@@ -21,6 +21,9 @@ pipeline {
                     apt-get update
                     apt-get install -y git curl nodejs npm shfmt
                     rm -rf /var/lib/apt/lists/*
+                    
+                    # Install jscpd globally for code duplication detection
+                    npm install -g jscpd
                 '''
             }
         }
