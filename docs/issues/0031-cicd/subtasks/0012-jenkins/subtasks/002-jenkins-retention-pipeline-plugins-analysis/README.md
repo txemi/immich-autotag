@@ -66,6 +66,45 @@ This analysis and actions are independent from the previous sub-task (Groovy Scr
 
 A ready-to-use script implementing both build retention and workspace cleanup is provided in this directory.
 
+### ⭐ THE MAGIC LINK: Jenkins CLI Method (Simplest!)
+
+**The easiest way to run scripts WITHOUT using the Jenkins UI:**
+
+```bash
+java -jar jenkins-cli.jar -s http://<jenkins-url> groovy = < jenkins_retention_executor.groovy
+```
+
+**Why it's "magical":**
+- ✅ One simple command
+- ✅ No UI navigation needed
+- ✅ Easy to automate/schedule with cron
+- ✅ Captures output to files for logging
+- ✅ Works from anywhere on your system
+- ✅ No timeout issues (UI can timeout on long operations)
+- ✅ Can be integrated into deployment scripts
+
+**First time setup (one-time):**
+```bash
+# Download Jenkins CLI JAR file
+wget http://<jenkins-url>/jnlpJars/jenkins-cli.jar
+chmod +x jenkins-cli.jar
+```
+
+**Then, every time you want to run cleanup:**
+```bash
+# Preview mode (dry-run)
+java -jar jenkins-cli.jar -s http://<jenkins-url> groovy = < jenkins_retention_executor.groovy
+
+# With authentication (if Jenkins requires login)
+java -jar jenkins-cli.jar -s http://<jenkins-url> -auth username:apitoken groovy = < jenkins_retention_executor.groovy
+```
+
+**📚 Official Jenkins CLI Documentation:**
+- https://www.jenkins.io/doc/book/managing/cli/
+- https://www.jenkins.io/doc/book/managing/groovy-hook-scripts/
+
+---
+
 ### Features:
 - Keeps N most recent builds per job
 - Keeps M most recent builds with artifacts

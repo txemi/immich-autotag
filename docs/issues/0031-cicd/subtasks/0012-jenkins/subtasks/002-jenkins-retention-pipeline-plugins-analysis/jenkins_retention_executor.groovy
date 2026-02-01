@@ -6,11 +6,22 @@
  * This script implements sustainable retention policies for Jenkins builds and workspaces
  * using Groovy, compatible with multiple execution methods:
  * - Jenkins Script Console (UI)
- * - Jenkins CLI (command line)
+ * - Jenkins CLI (command line) ⭐ RECOMMENDED - SIMPLEST METHOD
  * - Pipeline job (groovy step)
  * - Scheduled maintenance job
  * 
- * See README.md for execution methods and scheduling options.
+ * ╔════════════════════════════════════════════════════════════════════════╗
+ * ║  🪄 THE MAGIC COMMAND (Jenkins CLI - Simplest & Recommended):         ║
+ * ║                                                                        ║
+ * ║  java -jar jenkins-cli.jar -s http://<jenkins-url> \                 ║
+ * ║    groovy = < jenkins_retention_executor.groovy                      ║
+ * ║                                                                        ║
+ * ║  First time: wget http://<jenkins-url>/jnlpJars/jenkins-cli.jar       ║
+ * ║                                                                        ║
+ * ║  Why? One command, no UI, easy to automate, no timeouts!              ║
+ * ╚════════════════════════════════════════════════════════════════════════╝
+ * 
+ * See README.md for all execution methods and detailed documentation.
  */
 
 import jenkins.model.*

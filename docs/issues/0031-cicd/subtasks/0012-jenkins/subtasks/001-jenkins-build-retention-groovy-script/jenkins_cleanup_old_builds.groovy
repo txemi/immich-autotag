@@ -2,6 +2,17 @@
 // Section 1: Delete old builds, keep only the N most recent per job
 // Section 2: Delete orphaned workspaces (folders in workspace root not used by any active job)
 // Set dryRun = true to preview what would be deleted without actually deleting anything.
+//
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║  🪄 THE MAGIC COMMAND (Jenkins CLI - Simplest & Recommended):         ║
+// ║                                                                        ║
+// ║  java -jar jenkins-cli.jar -s http://<jenkins-url> \                 ║
+// ║    groovy = < jenkins_cleanup_old_builds.groovy                      ║
+// ║                                                                        ║
+// ║  First time: wget http://<jenkins-url>/jnlpJars/jenkins-cli.jar       ║
+// ║                                                                        ║
+// ║  Why? One command, no UI, easy to automate, no timeouts!              ║
+// ╚════════════════════════════════════════════════════════════════════════╝
 
 import jenkins.model.*
 import hudson.model.*
