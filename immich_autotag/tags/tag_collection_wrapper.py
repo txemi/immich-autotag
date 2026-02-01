@@ -211,24 +211,30 @@ class TagCollectionWrapper:
         from immich_autotag.config.manager import ConfigManager
 
         conf = ConfigManager.get_instance().get_config()
-        prefixes = [
-            conf.duplicate_processing.autotag_album_conflict,
-            conf.duplicate_processing.autotag_classification_conflict_prefix,
-        ]
+        prefixes = []
+        if conf.duplicate_processing is not None:
+            prefixes = [
+                conf.duplicate_processing.autotag_album_conflict,
+                conf.duplicate_processing.autotag_classification_conflict_prefix,
+            ]
         prefixes = [p for p in prefixes if p]
         from immich_autotag.api.immich_proxy.tags import (
-            proxy_delete_tag,
             proxy_get_all_tags,
         )
 
         tags_dto = proxy_get_all_tags(client=client) or []
         count = 0
-        from immich_autotag.types.uuid_wrappers import TagUUID
+        from immich_autotag.api.logging_proxy.tags import logging_delete_tag
+        from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-        for tag in tags_dto:
-            if any(tag.name.startswith(prefix) for prefix in prefixes):
-                proxy_delete_tag(client=client, tag_id=TagUUID.from_string(tag.id))
-                print(f"[CLEANUP] Deleted tag: {tag.name} (id={tag.id})")
+        for tag_dto in tags_dto:
+            if any(tag_dto.name.startswith(prefix) for prefix in prefixes):
+                tag_wrapper = TagWrapper(tag_dto)
+                logging_delete_tag(
+                    client=client,
+                    tag=tag_wrapper,
+                    reason="maintenance_cleanup",
+                )
                 count += 1
         return count
 
