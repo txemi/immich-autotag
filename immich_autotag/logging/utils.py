@@ -14,10 +14,12 @@ def register_custom_log_levels():
     """
     Register all custom (non-standard) log levels defined in LogLevel.
     This avoids hardcoding which levels are custom; instead, each LogLevel knows if it is custom.
+    addLevelName() is idempotent, so it's safe to call multiple times.
     """
+    existing_levels = logging.getLevelNamesMapping()
     for level in LogLevel:
-        if level.is_custom and level.name not in logging._nameToLevel:
-            logging.addLevelName(level.value, level.name)
+        if level.is_custom() and level.name not in existing_levels:
+            logging.addLevelName(level.level_value(), level.name)
 
 
 register_custom_log_levels()
