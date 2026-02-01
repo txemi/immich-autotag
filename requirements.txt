@@ -10,6 +10,7 @@ gitpython
 
 # For YAML support
 pyyaml
+types-PyYAML
 
 # For config models
 pydantic

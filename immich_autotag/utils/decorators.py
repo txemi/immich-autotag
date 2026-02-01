@@ -46,7 +46,8 @@ def conditional_typechecked(func: F) -> F:
         # config is never None
         performance: PerformanceConfig | None = config.performance
         # performance is never None
-        enable_type_checking = performance.enable_type_checking
+        if performance is not None:
+            enable_type_checking = performance.enable_type_checking
 
         if enable_type_checking:
             # Use real typechecked from typeguard
