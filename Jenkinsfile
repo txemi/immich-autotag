@@ -15,6 +15,21 @@ pipeline {
     }
     
     stages {
+        stage('Clean Python Caches') {
+            steps {
+                script {
+                    echo "Cleaning Python cache directories to prevent permission issues..."
+                    sh '''
+                        # Remove cache directories that can cause permission issues in Jenkins
+                        rm -rf .mypy_cache .pytest_cache __pycache__ *.pyc
+                        find . -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+                        find . -type f -name '*.pyc' -delete 2>/dev/null || true
+                        echo "✓ Cache directories cleaned"
+                    '''
+                }
+            }
+        }
+        
         stage('Install System Dependencies') {
             steps {
                 sh '''
