@@ -122,12 +122,10 @@ class TagCollectionWrapper:
 
         from immich_client import errors as immich_errors
 
-        from immich_autotag.api.immich_proxy.tags import proxy_create_tag
+        from immich_autotag.api.logging_proxy.tags import logging_create_tag
 
         try:
-            new_tag_dto = proxy_create_tag(client=client, name=name)
-            if new_tag_dto is None:
-                raise ValueError("API returned None for new tag creation")
+            new_tag_dto = logging_create_tag(client=client, name=name)
             from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
             new_tag = TagWrapper(new_tag_dto)
