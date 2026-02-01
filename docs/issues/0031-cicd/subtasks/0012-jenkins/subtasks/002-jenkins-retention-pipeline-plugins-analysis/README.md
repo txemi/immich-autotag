@@ -62,8 +62,129 @@ This analysis and actions are independent from the previous sub-task (Groovy Scr
 
 ---
 
+## Groovy Executor Script (jenkins_retention_executor.groovy)
+
+A ready-to-use script implementing both build retention and workspace cleanup is provided in this directory.
+
+### Features:
+- Keeps N most recent builds per job
+- Keeps M most recent builds with artifacts
+- Deletes orphaned workspaces
+- Dry-run mode for safety (preview before executing)
+- Detailed logging and statistics
+- Configurable via simple parameters at the top
+
+### Execution Methods
+
+#### Method 1: Jenkins Script Console (UI)
+**Simplest for testing, no command line needed:**
+
+1. Go to `http://<jenkins-url>/script`
+2. Copy and paste the content of `jenkins_retention_executor.groovy`
+3. Set `dryRun = true` to preview
+4. Click "Run"
+5. Review the output
+6. If satisfied, change `dryRun = false` and run again
+
+---
+
+#### Method 2: Jenkins CLI (Recommended)
+**Simple command-line execution without UI:**
+
+```bash
+# Download Jenkins CLI (one-time)
+wget http://<jenkins-url>/jnlpJars/jenkins-cli.jar
+
+# Execute the script via CLI
+java -jar jenkins-cli.jar \
+  -s http://<jenkins-url> \
+  groovy = < jenkins_retention_executor.groovy
+```
+
+**Why this is better:**
+- No need to navigate the Jenkins UI
+- Easy to schedule with cron
+- Output can be captured to a log file
+- More scriptable and automation-friendly
+- Less prone to UI timeouts on long-running operations
+
+**With authentication (if Jenkins requires it):**
+```bash
+java -jar jenkins-cli.jar \
+  -s http://<jenkins-url> \
+  -auth username:apitoken \
+  groovy = < jenkins_retention_executor.groovy
+```
+
+---
+
+#### Method 3: Pipeline Job
+**Integrate into your CI/CD pipeline:**
+
+Create a freestyle or pipeline job with this build step:
+
+```groovy
+stage('Maintenance: Cleanup') {
+    steps {
+        script {
+            // Load and execute the retention script
+            def script = readFile('jenkins_retention_executor.groovy')
+            evaluate(script)
+        }
+    }
+}
+```
+
+---
+
+#### Method 4: Scheduled Execution (Cron)
+**Automate periodic cleanup:**
+
+Create a shell script `jenkins-cleanup.sh`:
+
+```bash
+#!/bin/bash
+
+JENKINS_URL="http://localhost:8080"
+SCRIPT_PATH="$(pwd)/jenkins_retention_executor.groovy"
+LOG_FILE="/var/log/jenkins-cleanup.log"
+
+echo "$(date): Starting Jenkins retention policy cleanup" >> "$LOG_FILE"
+
+java -jar jenkins-cli.jar \
+  -s "$JENKINS_URL" \
+  groovy = < "$SCRIPT_PATH" >> "$LOG_FILE" 2>&1
+
+echo "$(date): Cleanup complete" >> "$LOG_FILE"
+```
+
+Add to crontab:
+```bash
+# Run cleanup every Sunday at 2:00 AM
+0 2 * * 0 /path/to/jenkins-cleanup.sh
+```
+
+---
+
+## Configuration
+
+Edit the top of `jenkins_retention_executor.groovy` to adjust:
+
+```groovy
+def config = [
+    buildsToKeep: 4,                    // Builds to keep per job
+    artifactsToKeep: 2,                 // Builds with artifacts to keep
+    dryRun: true,                       // true = preview, false = execute
+    deleteOrphanedWorkspaces: true,     // Enable workspace cleanup
+    workspaceRoot: "/path/to/workspace" // Workspace directory (adjust if needed)
+]
+```
+
+---
+
 ## Suggested next steps
 - Install and test Workspace Cleanup Plugin and/or Artifact Cleanup Plugin if more cleanup is required.
+- Try the Jenkins CLI method (Method 2) for easy scheduled execution
 - Periodically review disk usage and adjust policies as needed.
 - Document any further changes in this sub-task.
 
