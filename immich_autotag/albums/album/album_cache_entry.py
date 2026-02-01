@@ -81,9 +81,9 @@ class AlbumCacheEntry:
         from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
         if isinstance(cache_data, dict):
-            album_dto = AlbumResponseDto.from_dict(cache_data)
+            cached_album_dto = AlbumResponseDto.from_dict(cache_data)
             dto = AlbumDtoState.create(
-                dto=album_dto, load_source=AlbumLoadSource.DETAIL
+                dto=cached_album_dto, load_source=AlbumLoadSource.DETAIL
             )
             # Use public is_stale method
             if not dto.is_stale():
@@ -104,6 +104,8 @@ class AlbumCacheEntry:
             raise RuntimeError(
                 f"Could not fetch album info for album_id={album_id} (link: {album_url})"
             )
+        # Explicit assert for mypy type narrowing
+        assert album_dto is not None
         from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
         cache_mgr.save(album_id_str, album_dto.to_dict())
