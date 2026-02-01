@@ -83,8 +83,12 @@
 set -x
 set -e
 set -o pipefail
+
+# Store the original command for reproducibility
+QUALITY_GATE_COMMAND="$0 $*"
+
 # Trap for unexpected errors to always print a clear message before exit
-trap 'if [ $? -ne 0 ]; then echo "[FATAL] Quality Gate aborted unexpectedly. Check the output above for details."; fi' EXIT
+trap 'if [ $? -ne 0 ]; then echo "[FATAL] Quality Gate aborted unexpectedly. Check the output above for details."; quality_gate_print_reproduced_command; fi' EXIT
 
 # Ensure .venv/bin is in PATH for all subprocesses (import-linter, etc)
 SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
@@ -231,6 +235,38 @@ quality_gate_status_message() {
 	local msg="$1"
 	echo "$msg [LEVEL: $quality_level | MODE: $check_mode | SCRIPT: $(realpath "$0")]"
 }
+
+###############################################################################
+# Function: quality_gate_print_command
+# Description: Prints the exact command that will be executed (for reproducibility).
+# Usage: quality_gate_print_command "command" "arg1" "arg2" ...
+# Returns: nothing, prints to stdout
+###############################################################################
+quality_gate_print_command() {
+	echo ""
+	echo "[COMMAND] Executing:"
+	printf '  '
+	printf '%s ' "$@"
+	echo ""
+	echo ""
+}
+
+###############################################################################
+# Function: quality_gate_print_reproduced_command
+# Description: Prints the exact command that was originally executed for reproducibility.
+# This is printed at the end of execution or when errors occur.
+# Globals: QUALITY_GATE_COMMAND
+# Returns: nothing, prints to stdout/stderr
+###############################################################################
+quality_gate_print_reproduced_command() {
+	echo ""
+	echo "═══════════════════════════════════════════════════════════════════════════════"
+	echo "[REPRODUCIBLE COMMAND] To reproduce this exact execution, run:"
+	echo ""
+	printf '  %s\n' "$QUALITY_GATE_COMMAND"
+	echo ""
+	echo "═══════════════════════════════════════════════════════════════════════════════"
+}
 ###############################################################################
 # Function: check_shfmt
 # Description: Checks and formats Bash scripts using shfmt.
@@ -266,7 +302,7 @@ check_shfmt() {
 		shfmt_exit=$?
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in check_shfmt: '$check_mode'. Exiting for safety." >&2
-		exit 97
+		return 97
 	fi
 	if [ $shfmt_exit -ne 0 ]; then
 		echo "[WARNING] shfmt reported issues."
@@ -311,7 +347,7 @@ setup_python_venv_env() {
 		bash "$REPO_ROOT/setup_venv.sh" --dev >&2
 	else
 		echo "[ERROR] setup_venv.sh not found at $REPO_ROOT. Cannot set up development environment." >&2
-		exit 1
+		return 1
 	fi
 	local py_bin
 	if [ -f "$venv_activate" ]; then
@@ -323,7 +359,7 @@ setup_python_venv_env() {
 		py_bin="$(command -v python3 || command -v python)"
 		if [ -z "$py_bin" ]; then
 			echo "[ERROR] No python executable found. Create a virtualenv at .venv or install python3." >&2
-			exit 1
+			return 1
 		fi
 	fi
 	echo "$py_bin"
@@ -398,7 +434,7 @@ check_isort() {
 		isort_exit=$?
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in check_isort: '$check_mode'. Exiting for safety." >&2
-		exit 96
+		return 96
 	fi
 	if [ $isort_exit -ne 0 ]; then
 		echo "[WARNING] isort reported issues."
@@ -464,7 +500,7 @@ check_ssort() {
 		ssort "$target_dir" || ssort_failed=1
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in check_ssort: '$check_mode'. Exiting for safety." >&2
-		exit 95
+		return 95
 	fi
 	if [ $ssort_failed -ne 0 ]; then
 		echo "[ERROR] ssort detected unsorted methods. Run in apply mode to fix."
@@ -505,12 +541,12 @@ check_ruff() {
 		echo "[STRICT MODE] Ruff will NOT ignore any errors. All errors will block the build."
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_ruff: '$quality_level'. Exiting for safety."
-		exit 94
+		return 94
 	fi
 
 	local ruff_output ruff_exit
 	if [ "$check_mode" = "CHECK" ]; then
-		ruff_output=$("$py_bin" -m ruff check --fix $ruff_ignore "$target_dir" 2>&1)
+		ruff_output=$("$py_bin" -m ruff check $ruff_ignore "$target_dir" 2>&1)
 		ruff_exit=$?
 	else
 		ruff_output=$("$py_bin" -m ruff check --fix $ruff_ignore "$target_dir" 2>&1)
@@ -878,24 +914,24 @@ run_quality_gate_check_mode() {
 	# Defensive: Ensure local repo_root matches global REPO_ROOT
 	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
 		echo "[DEFENSIVE-FAIL] repo_root argument ('$repo_root') does not match global REPO_ROOT ('$REPO_ROOT'). Exiting for safety." >&2
-		exit 99
+		return 99
 	fi
 	# All implemented check modules are called below. If a check is not called, it is either deprecated, not implemented, or not relevant for this mode. Add new checks here as needed.
 	# 1. Blocking checks (fail fast on first error)
-	check_python_syntax "$py_bin" "$target_dir" || exit 1
-	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || exit 1
-	check_jscpd "$target_dir" || exit 1
-	check_import_linter "$REPO_ROOT" || exit 1
-	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || exit 2
-	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || exit 3
-	check_no_spanish_chars "$target_dir" || exit 5
+	check_python_syntax "$py_bin" "$target_dir" || return 1
+	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || return 1
+	check_jscpd "$target_dir" || return 1
+	check_import_linter "$REPO_ROOT" || return 1
+	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || return 2
+	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || return 3
+	check_no_spanish_chars "$target_dir" || return 5
 	# 2. Formatters and style (run only if all blocking checks pass)
-	check_shfmt "$check_mode" "$target_dir" || exit 1
-	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
-	check_ssort "$check_mode" "$target_dir" || exit 1
-	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
-	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || exit 1
-	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_shfmt "$check_mode" "$target_dir" || return 1
+	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || return 1
+	check_ssort "$check_mode" "$target_dir" || return 1
+	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || return 1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || return 1
+	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || return 1
 }
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
@@ -913,7 +949,7 @@ run_quality_gate_apply_mode() {
 	# Defensive: Ensure local repo_root matches global REPO_ROOT
 	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
 		echo "[DEFENSIVE-FAIL] repo_root argument ('$repo_root') does not match global REPO_ROOT ('$REPO_ROOT'). Exiting for safety." >&2
-		exit 99
+		return 99
 	fi
 	# All implemented check modules are called below. If a check is not called, it is either deprecated, not implemented, or not relevant for this mode. Add new checks here as needed.
 	# 1. Auto-fixers and formatters
@@ -937,7 +973,7 @@ run_quality_gate_apply_mode() {
 		quality_gate_status_message "[EXIT] Quality Gate failed (see errors above)."
 		# After APPLY fails, run summary check in priority order (most important errors first)
 		run_quality_gate_check_summary "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
-		exit $error_found
+		return $error_found
 	fi
 }
 
@@ -956,7 +992,7 @@ run_quality_gate_check_summary() {
 	# Defensive: Ensure local repo_root matches global REPO_ROOT
 	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
 		echo "[DEFENSIVE-FAIL] repo_root argument ('$repo_root') does not match global REPO_ROOT ('$REPO_ROOT'). Exiting for safety." >&2
-		exit 99
+		return 99
 	fi
 	echo "[SUMMARY] Running prioritized checks to show the most important remaining error."
 	# All implemented check modules are called below in priority order. If a check is not called, it is either deprecated, not implemented, or not relevant for this summary mode. Add new checks here as needed.
@@ -964,41 +1000,52 @@ run_quality_gate_check_summary() {
 	#    We put first the checks that we have already passed (like the language check),
 	#    so that if they break, it is very obvious and immediately visible.
 	#    This way we avoid quality deterioration in aspects that are already under control.
-	check_no_spanish_chars "$target_dir" || exit 5
-	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || exit 1
+	check_no_spanish_chars "$target_dir" || return 5
+	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || return 1
 	# 2. Syntax errors
-	check_python_syntax "$py_bin" "$target_dir" || exit 1
+	check_python_syntax "$py_bin" "$target_dir" || return 1
 	# 3. Ruff (lint/auto-fix)
-	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || exit 1
+	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || return 1
 	# 4. Flake8 (style)
-	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || exit 1
-	check_import_linter "$REPO_ROOT" || exit 1
+	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || return 1
+	check_import_linter "$REPO_ROOT" || return 1
 	# 5. Policy checks
-	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || exit 2
-	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || exit 3
+	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || return 2
+	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || return 3
 	# 6. Spanish character check
 	# 7. Code duplication (least urgent)
-	check_jscpd "$target_dir" || exit 1
+	check_jscpd "$target_dir" || return 1
 	# 8. Formatters (least urgent in summary)
-	check_shfmt "$check_mode" "$target_dir" || exit 1
-	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
-	check_ssort "$check_mode" "$target_dir" || exit 1
-	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || exit 1
+	check_shfmt "$check_mode" "$target_dir" || return 1
+	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || return 1
+	check_ssort "$check_mode" "$target_dir" || return 1
+	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || return 1
 }
 
 # Refactor: main uses only local variables and passes values explicitly
 main() {
 	# Argument and global variable initialization
-	local check_mode quality_level target_dir enforce_dynamic_attrs only_check max_line_length py_bin
+	local check_mode quality_level target_dir enforce_dynamic_attrs only_check max_line_length py_bin exit_code=0
 	read -r check_mode quality_level target_dir enforce_dynamic_attrs only_check < <(parse_args_and_globals "$@")
+
+	# Setup environment: max_line_length (safe, always returns a value)
 	max_line_length=$(setup_max_line_length)
+
+	# Setup environment: python_bin (must check for errors)
 	py_bin=$(setup_python_venv_env)
+	exit_code=$?
+	if [ $exit_code -ne 0 ]; then
+		echo "[SETUP-ERROR] Failed to initialize Python environment (exit code: $exit_code)." >&2
+		quality_gate_print_reproduced_command
+		return $exit_code
+	fi
 
 	# If --only-check is provided, run only that check and exit
 	if [ -n "$only_check" ]; then
 		if ! declare -f "$only_check" >/dev/null; then
 			echo "[DEFENSIVE-FAIL] Unknown check function: $only_check" >&2
-			exit 90
+			quality_gate_print_reproduced_command
+			return 90
 		fi
 		# Defensive: call with correct argument order for check_mypy
 		set +e
@@ -1007,15 +1054,15 @@ main() {
 		else
 			"$only_check" "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$repo_root" "$enforce_dynamic_attrs"
 		fi
-		rc=$?
+		exit_code=$?
 		set -e
-		if [ $rc -eq 0 ]; then
+		if [ $exit_code -eq 0 ]; then
 			quality_gate_status_message "[ONLY-CHECK] $only_check passed."
-			exit 0
 		else
 			quality_gate_status_message "[ONLY-CHECK] $only_check failed."
-			exit $rc
 		fi
+		quality_gate_print_reproduced_command
+		return $exit_code
 	fi
 
 	# Pass values explicitly to the check functions
@@ -1023,15 +1070,28 @@ main() {
 	# If a check is not called, it is either deprecated or not implemented yet. Add new checks to those functions.
 	if [ "$check_mode" = "CHECK" ]; then
 		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT" "$enforce_dynamic_attrs"
+		exit_code=$?
 	elif [ "$check_mode" = "APPLY" ]; then
 		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT" "$enforce_dynamic_attrs"
+		exit_code=$?
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in main: '$check_mode'. Exiting for safety." >&2
-		exit 92
+		quality_gate_print_reproduced_command
+		return 92
 	fi
 
-	quality_gate_status_message "🎉 Quality Gate completed successfully!"
-	quality_gate_status_message "All checks passed! Your code is cleaner than a robot's hard drive."
+	# Print success or failure messages
+	if [ $exit_code -eq 0 ]; then
+		quality_gate_status_message "🎉 Quality Gate completed successfully!"
+		quality_gate_status_message "All checks passed! Your code is cleaner than a robot's hard drive."
+	else
+		quality_gate_status_message "[EXIT] Quality Gate failed with exit code: $exit_code"
+	fi
+
+	# Always print the reproducible command at the end
+	quality_gate_print_reproduced_command
+
+	return $exit_code
 }
 
 # Entrypoint
