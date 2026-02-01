@@ -23,12 +23,15 @@ if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
+    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 
 from immich_autotag.report.modification_entry import ModificationEntry
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_entry import ModificationEntry
+
+from immich_client.models.album_user_role import AlbumUserRole
 
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
@@ -360,8 +363,8 @@ class ModificationReport:
         album: Optional["AlbumResponseWrapper"] = None,
         matched_rules: Optional[list[str]] = None,
         groups: Optional[list[str]] = None,
-        members: Optional[list[str]] = None,
-        access_level: Optional[str] = None,
+        members: Optional[list["UserResponseWrapper"]] = None,
+        access_level: Optional[AlbumUserRole] = None,
         extra: Optional[dict[str, object]] = None,
     ) -> None:
         """Records album permission events (detection, sharing, failures).
@@ -371,8 +374,8 @@ class ModificationReport:
             album: The album being processed
             matched_rules: List of rule names that matched
             groups: List of group names to share with
-            members: List of member emails/IDs
-            access_level: Permission level (view/edit/admin)
+            members: List of UserResponseWrapper objects (resolved users only)
+            access_level: Permission level (typed)
             extra: Additional context
         """
         assert kind in {
@@ -390,9 +393,11 @@ class ModificationReport:
         if groups:
             extra["groups"] = groups
         if members:
-            extra["members"] = members
-        if access_level:
-            extra["access_level"] = access_level
+            # Convert UserResponseWrapper objects to strings for storage
+            members_str = [str(member.get_uuid()) for member in members]
+            extra["members"] = members_str
+        if access_level is not None:
+            extra["access_level"] = access_level.value
 
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
