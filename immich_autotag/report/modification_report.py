@@ -8,11 +8,13 @@ TODO: The name of this class ('ModificationReport') does not accurately reflect 
 from __future__ import annotations
 
 import datetime
+import threading
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import ParseResult
 
 import attrs
+from typeguard import typechecked
 
 from immich_autotag.run_output.execution import RunExecution
 from immich_autotag.run_output.manager import RunOutputManager
@@ -41,8 +43,6 @@ _instance_created = False  # Class-level flag
 # - TagModificationReport (possibly renamed)
 @attrs.define(auto_attribs=True, slots=True)
 class ModificationReport:
-    import threading
-
     _lock: threading.Lock = attrs.field(
         default=attrs.Factory(threading.Lock), init=False, repr=False
     )
@@ -95,8 +95,6 @@ class ModificationReport:
             _instance = ModificationReport()
         # No explicit assignment needed for F824
         return _instance  # type: ignore[return-value]
-
-    from typeguard import typechecked
 
     # todo: tag is being passed as string in several functions, consider using wrapper
     # todo: asset_wrapper is being passed as Any in several functions, type correctly
@@ -180,6 +178,32 @@ class ModificationReport:
     # todo: review old_name and new_name usage, since they are not only used for names, it might be better to use old_value and new_value?
     # Specific methods for each action type
     @typechecked
+    def _build_tag_modification_log_message(
+        self,
+        kind: ModificationKind,
+        tag: "TagWrapper",
+        asset_wrapper: Optional["AssetResponseWrapper"] = None,
+    ) -> str:
+        """Build a log message for tag modification events."""
+        tag_name = tag.get_name()
+        tag_id = tag.get_id()
+
+        if kind == ModificationKind.REMOVE_TAG_GLOBALLY:
+            return f"[REMOVE_TAG_GLOBALLY] Tag '{tag_name}' (id={tag_id}) deleted."
+        elif kind == ModificationKind.ADD_TAG_TO_ASSET:
+            asset_info = (
+                f" to asset {asset_wrapper.get_uuid()}" if asset_wrapper else ""
+            )
+            return f"[ADD_TAG_TO_ASSET] Tag '{tag_name}' added{asset_info}."
+        elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
+            asset_info = (
+                f" from asset {asset_wrapper.get_uuid()}" if asset_wrapper else ""
+            )
+            return f"[REMOVE_TAG_FROM_ASSET] Tag '{tag_name}' removed{asset_info}."
+        else:
+            return f"[TAG_MODIFICATION] Tag '{tag_name}' (id={tag_id}): {kind.name}"
+
+    @typechecked
     def add_tag_modification(
         self,
         kind: ModificationKind,
@@ -194,6 +218,16 @@ class ModificationReport:
             ModificationKind.REMOVE_TAG_FROM_ASSET,
             ModificationKind.REMOVE_TAG_GLOBALLY,
         }
+        # Log the tag modification action
+        from immich_autotag.logging.utils import log
+
+        level = kind.value.log_level
+        if tag is not None:
+            msg = self._build_tag_modification_log_message(kind, tag, asset_wrapper)
+            log(msg, level=level)
+        else:
+            log(f"[TAG_MODIFICATION] {kind.name}", level=level)
+
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind, extra_key=tag)
