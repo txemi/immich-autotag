@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import attrs
+from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_map import AlbumMap
@@ -18,8 +19,6 @@ class AlbumDualMap:
 
     _id_map: AlbumMap = attrs.field(factory=AlbumMap)
     _name_map: AlbumNameMap = attrs.field(factory=AlbumNameMap)
-
-    from typeguard import typechecked
 
     @typechecked
     def add(self, album: AlbumResponseWrapper):
