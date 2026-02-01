@@ -5,18 +5,17 @@ Objective: Help developers easily choose an appropriate log level by providing c
 """
 
 import logging
-from dataclasses import dataclass
 from enum import Enum
 
+import attrs
 from typing_extensions import final
 
 
 @final
-@dataclass(frozen=True)
+@attrs.define(frozen=True, slots=True)
 class LogLevelInfo:
     """Immutable metadata for log levels. Cannot be subclassed, modified, or extended with new attributes."""
 
-    __slots__ = ()
     level_value: int
     is_custom: bool
     description: str
