@@ -41,50 +41,50 @@ class LogLevel(Enum):
     """
 
     ERROR = LogLevelInfo(
-        logging.ERROR,
-        False,
-        "Standard error level (numeric: 40). Use for serious problems that need immediate attention.",
+        level_value=logging.ERROR,
+        is_custom=False,
+        description="Standard error level (numeric: 40). Use for serious problems that need immediate attention.",
     )
     IMPORTANT = LogLevelInfo(
-        logging.WARNING,
-        False,
-        "Standard warning level (numeric: 30). Use for important warnings that should not be ignored.",
+        level_value=logging.WARNING,
+        is_custom=False,
+        description="Standard warning level (numeric: 30). Use for important warnings that should not be ignored.",
     )
     WARNING = LogLevelInfo(
-        logging.WARNING,
-        False,
-        "Standard warning level (numeric: 30). Use for general warnings.",
+        level_value=logging.WARNING,
+        is_custom=False,
+        description="Standard warning level (numeric: 30). Use for general warnings.",
     )
     PROGRESS = LogLevelInfo(
-        logging.INFO,
-        True,
-        "Custom level (numeric: 20). Use for progress updates (e.g., percent complete, phase changes) in long-running processes. Intended for user-facing progress feedback.",
+        level_value=logging.INFO,
+        is_custom=True,
+        description="Custom level (numeric: 20). Use for progress updates (e.g., percent complete, phase changes) in long-running processes. Intended for user-facing progress feedback.",
     )
     INFO = LogLevelInfo(
-        logging.INFO,
-        False,
-        "Standard info level (numeric: 20). Use for general, high-level informational messages about the application's state or actions.",
+        level_value=logging.INFO,
+        is_custom=False,
+        description="Standard info level (numeric: 20). Use for general, high-level informational messages about the application's state or actions.",
     )
     ASSET_SUMMARY = LogLevelInfo(
-        17,
-        True,
-        "Custom level (numeric: 17). Use for brief, per-asset status messages during large batch operations. Shows a concise result for each asset (e.g., processed, skipped, error), but avoids the full verbosity of FOCUS. Ideal for monitoring batch progress with enough detail to spot issues, without overwhelming output.",
+        level_value=17,
+        is_custom=True,
+        description="Custom level (numeric: 17). Use for brief, per-asset status messages during large batch operations. Shows a concise result for each asset (e.g., processed, skipped, error), but avoids the full verbosity of FOCUS. Ideal for monitoring batch progress with enough detail to spot issues, without overwhelming output.",
     )
     FOCUS = LogLevelInfo(
-        15,
-        True,
-        "Custom level (numeric: 15). Use for detailed information about a specific asset or entity, especially when debugging or investigating a single item. More verbose than INFO, less than DEBUG. Ideal for targeted runs and focused analysis.",
+        level_value=15,
+        is_custom=True,
+        description="Custom level (numeric: 15). Use for detailed information about a specific asset or entity, especially when debugging or investigating a single item. More verbose than INFO, less than DEBUG. Ideal for targeted runs and focused analysis.",
     )
 
     DEBUG = LogLevelInfo(
-        logging.DEBUG,
-        False,
-        "Standard debug level (numeric: 10). Use for very verbose, low-level details. Typically used when you want to see everything for deep troubleshooting. Not recommended for normal runs. Use TRACE for output that es even more excessive or redundant than DEBUG.",
+        level_value=logging.DEBUG,
+        is_custom=False,
+        description="Standard debug level (numeric: 10). Use for very verbose, low-level details. Typically used when you want to see everything for deep troubleshooting. Not recommended for normal runs. Use TRACE for output that es even more excessive or redundant than DEBUG.",
     )
     TRACE = LogLevelInfo(
-        5,
-        True,
-        "Custom level (numeric: 5). Use for ultra-verbose, excessive, or diagnostic-only output that is not useful even for most debugging sessions. Only enable when you need to trace every detail for deep diagnostics or performance tuning.",
+        level_value=5,
+        is_custom=True,
+        description="Custom level (numeric: 5). Use for ultra-verbose, excessive, or diagnostic-only output that is not useful even for most debugging sessions. Only enable when you need to trace every detail for deep diagnostics or performance tuning.",
     )
 
     def is_custom(self) -> bool:
