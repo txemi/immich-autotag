@@ -34,7 +34,7 @@ Jenkins.instance.getAllItems(Job.class).each { job ->
 // Section 2: Delete orphaned workspaces (folders in workspace root not used by any active job)
 // This helps reclaim disk space from jobs/branches that no longer exist in Jenkins.
 
-def workspaceRoot = "/home/ub20jenkins4ub20/txemi/ub20jenkins4ub20/workspace" // Adjust if needed
+def workspaceRoot = "${System.getenv('JENKINS_HOME') ?: '/var/jenkins'}/workspace" // Auto-detect Jenkins home
 
 def activeWorkspaces = []
 Jenkins.instance.getAllItems(Job.class).each { job ->

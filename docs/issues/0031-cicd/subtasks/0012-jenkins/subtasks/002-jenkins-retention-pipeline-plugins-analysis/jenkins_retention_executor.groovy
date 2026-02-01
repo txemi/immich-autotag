@@ -22,7 +22,7 @@ def config = [
     artifactsToKeep: 2,        // Number of builds with artifacts to keep
     dryRun: true,              // Set to false to actually delete
     deleteOrphanedWorkspaces: true,
-    workspaceRoot: "/home/ub20jenkins4ub20/txemi/ub20jenkins4ub20/workspace"  // Adjust if needed
+    workspaceRoot: "${System.getenv('JENKINS_HOME') ?: '/var/jenkins'}/workspace"  // Auto-detect Jenkins home
 ]
 
 println """
