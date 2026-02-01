@@ -36,15 +36,27 @@ class DestinationWrapper:
                 except Exception as e:
                     changes.append(f"Failed to add tag '{tag}': {e}")
         # Add to destination albums
-        for album in self.get_album_names():
-            if album not in asset_wrapper.get_album_names():
+        for album_name in self.get_album_names():
+            if album_name not in asset_wrapper.get_album_names():
                 try:
-                    asset_wrapper.context.albums_collection.add_asset_to_album(
-                        asset_wrapper, album
+                    from immich_autotag.report.modification_report import (
+                        ModificationReport,
                     )
-                    changes.append(f"Added asset to album '{album}'")
+
+                    context = asset_wrapper.get_context()
+                    albums_collection = context.get_albums_collection()
+                    album_wrapper = albums_collection.find_first_album_with_name(
+                        album_name
+                    )
+                    if album_wrapper:
+                        client = context.get_client_wrapper().get_client()
+                        tag_mod_report = ModificationReport.get_instance()
+                        album_wrapper.add_asset(asset_wrapper, client, tag_mod_report)
+                        changes.append(f"Added asset to album '{album_name}'")
+                    else:
+                        changes.append(f"Album '{album_name}' not found")
                 except Exception as e:
-                    changes.append(f"Failed to add asset to album '{album}': {e}")
+                    changes.append(f"Failed to add asset to album '{album_name}': {e}")
         return changes
 
     def __attrs_post_init__(self):
