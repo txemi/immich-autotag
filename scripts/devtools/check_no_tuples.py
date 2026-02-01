@@ -36,8 +36,13 @@ class TupleUsageVisitor(ast.NodeVisitor):
                     self.issues.append((stmt.lineno, f"Class attribute annotation uses Tuple/tuple in class '{node.name}'"))
             elif isinstance(stmt, ast.Assign):
                 # e.g., attr = (1, 2)
+                # EXCEPTION: __slots__ = () or __slots__ = [] are allowed (Python internals)
                 if isinstance(stmt.value, ast.Tuple):
-                    self.issues.append((stmt.lineno, f"Class attribute assigned a tuple literal in class '{node.name}'"))
+                    # Check if this is __slots__ assignment - skip if so
+                    if any(isinstance(target, ast.Name) and target.id == "__slots__" for target in stmt.targets):
+                        pass  # __slots__ is allowed to use tuples
+                    else:
+                        self.issues.append((stmt.lineno, f"Class attribute assigned a tuple literal in class '{node.name}'"))
         # Visit methods to check __init__ self.attr = tuple
         for stmt in node.body:
             if isinstance(stmt, ast.FunctionDef) and stmt.name == "__init__":
