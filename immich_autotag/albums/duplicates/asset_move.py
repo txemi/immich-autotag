@@ -41,18 +41,16 @@ def move_assets_between_albums(
     to continue.
     """
     # Local imports to avoid circular dependencies at module import time
-    from immich_autotag.config._internal_types import ErrorHandlingMode
-    from immich_autotag.config.internal_config import DEFAULT_ERROR_MODE
+    from immich_autotag.config.dev_mode import is_development_mode
+    from immich_autotag.context.immich_context import ImmichContext
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
 
     moved_count = 0
     tag_mod_report = tag_mod_report or collection.get_modification_report()
 
-    try:
-        asset_wrappers = src.wrapped_assets(collection.context)
-    except Exception:
-        asset_wrappers = []
+    ctx = ImmichContext.get_default_instance()
+    asset_wrappers = src.wrapped_assets(ctx)
 
     for asset_wrapper in asset_wrappers:
         # Add to destination album using wrapper logic (handles duplicates)
@@ -66,7 +64,7 @@ def move_assets_between_albums(
             if isinstance(e, AssetAlreadyInAlbumError):
                 # Asset already in album: treat as non-error, continue as normal
                 pass
-            elif DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+            elif is_development_mode():
                 raise
             else:
                 log(
@@ -79,7 +77,7 @@ def move_assets_between_albums(
         try:
             src.remove_asset(asset_wrapper, client, tag_mod_report)
         except Exception as e:
-            if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
+            if is_development_mode():
                 raise
             log(
                 f"Warning: failed to remove asset {asset_wrapper.get_id()} from src album {src.get_album_uuid()}: {e}",
@@ -88,11 +86,5 @@ def move_assets_between_albums(
             continue
 
         moved_count += 1
-        # Optionally refresh album caches
-        try:
-            dest.reload_from_api(client)
-            src.reload_from_api(client)
-        except Exception:
-            pass
 
     return moved_count
