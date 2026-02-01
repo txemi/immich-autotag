@@ -7,6 +7,7 @@ Objective: Help developers easily choose an appropriate log level by providing c
 import logging
 from dataclasses import dataclass
 from enum import Enum
+
 from typing_extensions import final
 
 
@@ -14,11 +15,11 @@ from typing_extensions import final
 @dataclass(frozen=True)
 class LogLevelInfo:
     """Immutable metadata for log levels. Cannot be subclassed, modified, or extended with new attributes."""
+
+    __slots__ = ()
     level_value: int
     is_custom: bool
     description: str
-    
-    __slots__ = ()
 
 
 class LogLevel(Enum):
