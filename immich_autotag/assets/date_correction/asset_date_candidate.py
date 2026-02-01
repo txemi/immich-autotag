@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import attrs
+from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
@@ -35,8 +36,6 @@ class AssetDateCandidate:
         validator=attrs.validators.optional(attrs.validators.instance_of(Path)),
     )
 
-    from typeguard import typechecked
-
     @typechecked
     def get_aware_date(self, user_tz: Optional[str] = None) -> datetime:
         """
@@ -47,8 +46,10 @@ class AssetDateCandidate:
         if dt.tzinfo is not None:
             return dt
 
+        # Determine timezone to use
+        tz_str: str
         if user_tz:
-            tz = user_tz
+            tz_str = user_tz
         else:
             from immich_autotag.config.manager import ConfigManager
             from immich_autotag.config.models import (
@@ -59,7 +60,7 @@ class AssetDateCandidate:
 
             manager = ConfigManager.get_instance()
             config: UserConfig = manager.get_config_or_raise()
-            tz: str = "UTC"  # Default fallback
+            tz_str = "UTC"  # Default fallback
             duplicate_processing: Optional[DuplicateProcessingConfig] = (
                 config.duplicate_processing
             )
@@ -68,10 +69,10 @@ class AssetDateCandidate:
                     duplicate_processing.date_correction
                 )
                 if date_correction and date_correction.extraction_timezone:
-                    tz = date_correction.extraction_timezone
+                    tz_str = date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 
-        return dt.replace(tzinfo=ZoneInfo(tz))
+        return dt.replace(tzinfo=ZoneInfo(tz_str))
 
     @typechecked
     def format_info(self) -> str:
