@@ -69,6 +69,8 @@ pipeline {
                     echo "================ PYTHON QUALITY GATE (MODULAR OO VERSION) ================"
                     echo "[PYTHON QUALITY GATE] Ejecutando Quality Gate Python (modular OO, attrs, enum, subprocess, type-safe)"
                     sh '''
+                        # Configure git safe.directory to avoid ownership errors
+                        git config --global --add safe.directory "$PWD"
                         chmod +x scripts/devtools/quality_gate_py/venv_launcher.sh
                         bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK
                     '''
