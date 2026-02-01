@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "${userHome}/.config/immich_autotag"
+			"path": "~/.config/immich_autotag"
 		},
 
 	],
