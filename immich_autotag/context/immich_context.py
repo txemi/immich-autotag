@@ -156,4 +156,4 @@ class ImmichContext:
     def get_default_client() -> "ImmichClientWrapper":
         """Returns the ImmichClientWrapper from the global singleton context."""
         ctx = ImmichContext.get_default_instance()
-        return ctx.get_client()
+        return ctx.get_client_wrapper()
