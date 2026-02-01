@@ -78,26 +78,42 @@ java -jar jenkins-cli.jar -s http://<jenkins-url> groovy = < jenkins_retention_e
 - ✅ One simple command
 - ✅ No UI navigation needed
 - ✅ Easy to automate/schedule with cron
-- ✅ Captures output to files for logging
-- ✅ Works from anywhere on your system
-- ✅ No timeout issues (UI can timeout on long operations)
-- ✅ Can be integrated into deployment scripts
 
-**First time setup (one-time):**
-```bash
-# Download Jenkins CLI JAR file
-wget http://<jenkins-url>/jnlpJars/jenkins-cli.jar
-chmod +x jenkins-cli.jar
+---
+
+### 🐛 Improvements: Orphaned Workspace Detection
+
+**Problem Addressed:**
+In multi-node Jenkins architectures, orphaned workspace directories can accumulate when jobs are deleted or disabled without proper cleanup:
+1. **Master vs Agent separation:** Each node maintains its own workspace directory
+2. **Path detection:** Scripts must correctly identify active vs orphaned workspaces
+3. **Robust deletion:** Handles permission issues and file locking gracefully
+
+**Solution Provided:**
+The `jenkins_retention_executor.groovy` script provides:
+- Auto-detection of node type (Master/Agent) via JENKINS_HOME environment variable
+- Set-based workspace comparison for O(1) orphan detection
+- Proper exception handling and progress reporting
+- DRY RUN mode for safe preview of cleanup operations
+- Build retention policy enforcement
+
+**Architecture Support:**
+```
+Jenkins MASTER:
+  └─ JENKINS_HOME: /var/lib/jenkins/
+  └─ Workspace: /var/lib/jenkins/workspace/
+
+Jenkins AGENT:
+  └─ JENKINS_HOME: /home/jenkins-agent/ (or custom path)
+  └─ Workspace: /home/jenkins-agent/workspace/
 ```
 
-**Then, every time you want to run cleanup:**
-```bash
-# Preview mode (dry-run)
-java -jar jenkins-cli.jar -s http://<jenkins-url> groovy = < jenkins_retention_executor.groovy
-
-# With authentication (if Jenkins requires login)
-java -jar jenkins-cli.jar -s http://<jenkins-url> -auth username:apitoken groovy = < jenkins_retention_executor.groovy
-```
+**Features:**
+- ✅ Runs within Jenkins security context
+- ✅ No timeout issues (unlike Script Console UI)
+- ✅ Can be integrated into maintenance pipelines
+- ✅ Works on both Master and Agent nodes
+- ✅ Detailed operation logging and reporting
 
 **📚 Official Jenkins CLI Documentation:**
 - https://www.jenkins.io/doc/book/managing/cli/

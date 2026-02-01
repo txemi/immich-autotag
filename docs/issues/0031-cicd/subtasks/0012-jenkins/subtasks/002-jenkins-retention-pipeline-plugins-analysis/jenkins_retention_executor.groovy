@@ -28,12 +28,17 @@ import jenkins.model.*
 import hudson.model.*
 
 // Configuration
+// NOTE: This script can run on MASTER or AGENT nodes
+// The workspaceRoot will auto-detect based on the node's JENKINS_HOME
+// Master: /var/lib/jenkins/workspace
+// Agent: /home/jenkins-agent/workspace (or other agent paths)
 def config = [
     buildsToKeep: 4,           // Number of builds to keep per job
     artifactsToKeep: 2,        // Number of builds with artifacts to keep
     dryRun: true,              // Set to false to actually delete
     deleteOrphanedWorkspaces: true,
-    workspaceRoot: "${System.getenv('JENKINS_HOME') ?: '/var/jenkins'}/workspace"  // Auto-detect Jenkins home
+    workspaceRoot: "${System.getenv('JENKINS_HOME') ?: '/var/jenkins'}/workspace",  // Auto-detect from JENKINS_HOME env var
+    // For manual override on agent: workspaceRoot: "/home/jenkins-agent/workspace"
 ]
 
 println """
@@ -104,37 +109,76 @@ if (config.deleteOrphanedWorkspaces) {
     println "\n▶ SECTION 2: Deleting orphaned workspaces"
     println "─".multiply(80)
     
-    def activeWorkspaces = []
+    // Build list of ABSOLUTE paths of active workspaces
+    def activeWorkspaces = [] as Set  // Use Set for O(1) lookup
+    
     Jenkins.instance.getAllItems(Job.class).each { job ->
-        if (job.metaClass.respondsTo(job, 'getWorkspace')) {
-            def ws = job.getWorkspace()
-            if (ws != null) {
-                activeWorkspaces << ws.getRemote()
+        try {
+            if (job.metaClass.respondsTo(job, 'getWorkspace')) {
+                def ws = job.getWorkspace()
+                if (ws != null) {
+                    // FIXED: Use ws.absolutePath instead of ws.getRemote()
+                    def absolutePath = ws.absolutePath
+                    if (absolutePath) {
+                        activeWorkspaces << absolutePath
+                    }
+                }
             }
+        } catch (Exception e) {
+            println "[WARN] Error reading workspace for job '${job.fullName}': ${e.class.simpleName}"
         }
     }
     
+    println "[INFO] Found ${activeWorkspaces.size()} active job workspaces"
+    
     def dir = new File(config.workspaceRoot)
     if (dir.exists()) {
-        def allDirs = dir.listFiles().findAll { it.isDirectory() }
+        def allDirs = dir.listFiles()?.findAll { it.isDirectory() } ?: []
+        
+        println "[INFO] Scanning ${allDirs.size()} directories in workspace root"
         
         allDirs.each { d ->
-            if (!activeWorkspaces.contains(d.absolutePath)) {
+            def isActive = activeWorkspaces.contains(d.absolutePath)
+            
+            if (!isActive) {
+                // Get directory size BEFORE deletion
+                def sizeBeforeStr = config.dryRun ? "" : ""
+                
                 if (config.dryRun) {
-                    println "[DRY RUN] Would delete orphan workspace: ${d.name}"
+                    // Calculate size for reporting
+                    def sizeCmd = "du -sb '${d.absolutePath}' 2>/dev/null | awk '{print \$1}'"
+                    try {
+                        def process = sizeCmd.execute()
+                        def size = process.text.trim().toLong()
+                        def sizeGB = String.format("%.2f", size / (1024**3))
+                        println "[DRY RUN] Would delete orphan workspace: ${d.name} (~${sizeGB} GiB)"
+                    } catch (Exception e) {
+                        println "[DRY RUN] Would delete orphan workspace: ${d.name}"
+                    }
                 } else {
                     try {
-                        println "[DELETE] Deleting orphan workspace: ${d.name}"
-                        d.deleteDir()
-                        stats.workspacesDeleted++
+                        // Use shell command for more robust deletion with shared permissions
+                        def deleteCmd = "rm -rf '${d.absolutePath}'"
+                        def process = deleteCmd.execute()
+                        def exitCode = process.waitFor()
+                        
+                        if (exitCode == 0) {
+                            println "[DELETE] ✓ Deleted orphan workspace: ${d.name}"
+                            stats.workspacesDeleted++
+                        } else {
+                            def errMsg = process.err.text
+                            println "[ERROR] Failed to delete (exit ${exitCode}): ${d.name}"
+                            if (errMsg) println "         Error: ${errMsg.take(100)}"
+                        }
                     } catch (Exception e) {
-                        println "[ERROR] Failed to delete workspace: ${e.message}"
+                        println "[ERROR] Exception deleting ${d.name}: ${e.class.simpleName}: ${e.message}"
+                        e.printStackTrace()
                     }
                 }
             }
         }
         
-        println "Orphaned workspaces ${config.dryRun ? 'preview' : 'cleanup'} complete."
+        println "[INFO] Orphaned workspaces ${config.dryRun ? 'preview' : 'cleanup'} complete."
     } else {
         println "[WARNING] Workspace root not found: ${config.workspaceRoot}"
     }
