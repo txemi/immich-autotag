@@ -19,3 +19,9 @@ docker_logs
 /immich_client.back
 /profile(1).stats
 /profile_optimized.stats
+
+# Python cache and type checking
+.mypy_cache/
+.pytest_cache/
+*.pyc
+.coverage
