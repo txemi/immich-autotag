@@ -35,7 +35,7 @@ class CheckMypy(Check):
             if args.level == QualityGateLevel.STRICT:
                 blocking.append(f)
             elif args.level == QualityGateLevel.STANDARD:
-                if f.code in ("arg-type", "call-arg"):
+                if f.code in ("arg-type", "call-arg", "attr-defined"):
                     blocking.append(f)
                 else:
                     nonblocking.append(f)
