@@ -57,7 +57,7 @@ def proxy_get_all_tags(*, client: ImmichClient):
 def proxy_delete_tag(*, client: ImmichClient, tag_id: TagUUID) -> None:
     """Proxy for delete_tag.sync_detailed con resultado parseado."""
     response = _delete_tag.sync_detailed(id=tag_id.to_uuid(), client=client)
-    return response.parsed
+    # response.parsed is None for delete operations
 
 
 def proxy_get_tag_by_id(
