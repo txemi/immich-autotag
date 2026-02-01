@@ -642,11 +642,16 @@ class AlbumCollectionWrapper:
                 existing_album=existing,
                 context="duplicate_on_load",
             )
+            return
 
-        elif is_development_mode():
+        if is_development_mode():
             raise RuntimeError(
                 f"Duplicate album name detected when adding album: {name!r}"
             )
+            return  # Unreachable but helps mypy
+            return  # Unreachable but helps mypy
+
+        # Default behavior: collect duplicate report
         from immich_autotag.albums.duplicates.duplicate_album_reports import (
             DuplicateAlbumReport,
         )
@@ -703,7 +708,7 @@ class AlbumCollectionWrapper:
                     tag_mod_report=tag_mod_report,
                     reason="Removed duplicate temporary album during add",
                 ):
-                    return
+                    return None
 
             else:
                 if old_tested_mode:
@@ -735,6 +740,8 @@ class AlbumCollectionWrapper:
                             tag_mod_report=tag_mod_report,
                             name=name,
                         )
+                        return None
+        return wrapper
 
     @typechecked
     def _add_album_wrapper(
