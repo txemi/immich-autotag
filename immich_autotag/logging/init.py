@@ -36,7 +36,7 @@ def initialize_logging() -> None:
             level=LogLevel.FOCUS,
         )
     else:
-        setup_logging(level=LogLevel.PROGRESS)
+        setup_logging(level=LogLevel.ASSET_SUMMARY)
     # Silence HTTP logs from httpx and noisy dependencies
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
