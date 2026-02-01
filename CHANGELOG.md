@@ -463,6 +463,27 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 - All code auto-formatted and import-sorted; all CI/CD checks green.
 - This tag marks a milestone for maintainability, type safety, and CI reliability.
 
+## [0.74.4] - 2026-02-01
+**Description:** Quality Gate milestone - Python modular Quality Gate system fully operational with all checks passing in Jenkins CI/CD pipeline.
+### Added
+- Modular, object-oriented Python Quality Gate system replacing hardcoded Bash scripts. ([feature](scripts/devtools/quality_gate_py/))
+- Dynamic registration of custom log levels with automatic detection and validation. ([feature](immich_autotag/logging/))
+- Robust error handling in `jscpd` check with fallback to `npx` for environments without global installation.
+- Complete test coverage for Quality Gate checks with per-module validation.
+
+### Changed
+- Quality Gate now runs in modular Python (OO, attrs, enums) for better maintainability and extensibility.
+- Custom log levels (PROGRESS, ASSET_SUMMARY, FOCUS, TRACE) now auto-register without hardcoding.
+- Jenkins pipeline now installs `jscpd` globally via npm for code duplication detection.
+
+### Fixed
+- Fixed `jscpd` availability issue in Jenkins by adding `npm install -g jscpd` to dependency installation stage.
+- Improved robustness of Python Quality Gate with graceful fallbacks for missing tools.
+
+### Technical Notes
+- Git commit: `c276f9844b2b86884a85fc46d3b698e02d869e69`
+- Jenkins Quality Gate status: ✅ All checks passing
+- Ready for larger battery deployments and expanded CI/CD testing phases.
 
 
 ## [Planned: Unmatched Albums Report]
