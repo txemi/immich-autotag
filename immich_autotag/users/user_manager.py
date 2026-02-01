@@ -33,7 +33,6 @@ class UserManager:
         factory=lambda: dict(),
         metadata={"type": "Dict[EmailAddress, UserResponseWrapper]"},
     )
-    _context: Optional[ImmichContext] = None
     _loaded: bool = attrs.field(init=False, default=False)
     _current_user: Optional[UserResponseWrapper] = attrs.field(init=False, default=None)
 
@@ -70,32 +69,31 @@ class UserManager:
         else:
             self._current_user = None
 
-    def load_all(self, context: ImmichContext) -> None:
+    def load_all(self) -> None:
         """
         Loads all users from Immich and caches them as UserResponseWrapper instances.
         """
-        self._context = context
-        client = context.get_client_wrapper().get_client()
+        client = ImmichContext.get_default_client().get_client()
         self._load_users(client)
         self._load_current_user(client)
         self._loaded = True
 
+    def _ensure_loaded(self) -> None:
+        if not self._loaded:
+            self.load_all()
+
     def get_by_uuid(self, uuid: "UserUUID") -> Optional["UserResponseWrapper"]:
-        if not self._loaded and self._context:
-            self.load_all(self._context)
+        self._ensure_loaded()
         return self._users.get(uuid)
 
     def get_by_email(self, email: "EmailAddress") -> Optional["UserResponseWrapper"]:
-        if not self._loaded and self._context:
-            self.load_all(self._context)
+        self._ensure_loaded()
         return self._email_map.get(email)
 
     def get_current_user(self) -> Optional["UserResponseWrapper"]:
-        if not self._loaded and self._context:
-            self.load_all(self._context)
+        self._ensure_loaded()
         return self._current_user
 
     def all_users(self) -> List["UserResponseWrapper"]:
-        if not self._loaded and self._context:
-            self.load_all(self._context)
+        self._ensure_loaded()
         return list(self._users.values())
