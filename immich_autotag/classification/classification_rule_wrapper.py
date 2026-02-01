@@ -85,30 +85,30 @@ class ClassificationRuleWrapper:
             level=LogLevel.FOCUS,
         )
         asset_tags = set(asset_wrapper.get_tag_names())
-        print(f"[DEBUG] asset_tags: {asset_tags}")
+        log(f"asset_tags: {asset_tags}", level=LogLevel.TRACE)
         album_names = set(asset_wrapper.get_album_names())
-        print(f"[DEBUG] album_names: {album_names}")
-        print(f"[DEBUG] asset_url: {asset_url}")
+        log(f"album_names: {album_names}", level=LogLevel.TRACE)
+        log(f"asset_url: {asset_url}", level=LogLevel.TRACE)
 
         tags_matched = [tag for tag in asset_tags if self.has_tag(tag)]
-        print(f"[DEBUG] tags_matched: {tags_matched}")
+        log(f"tags_matched: {tags_matched}", level=LogLevel.TRACE)
         albums_matched = [album for album in album_names if self.matches_album(album)]
-        print(f"[DEBUG] albums_matched: {albums_matched}")
+        log(f"albums_matched: {albums_matched}", level=LogLevel.TRACE)
 
         # Check asset_links (UUIDs)
         asset_link_uuids = self.extract_uuids_from_asset_links()
-        print(f"[DEBUG] asset_link_uuids: {asset_link_uuids}")
+        log(f"asset_link_uuids: {asset_link_uuids}", level=LogLevel.TRACE)
         asset_uuid = asset_wrapper.get_id()
-        print(f"[DEBUG] asset_uuid: {asset_uuid}")
+        log(f"asset_uuid: {asset_uuid}", level=LogLevel.TRACE)
         # Also show the URL as a string in debug mode
-        print(f"[DEBUG] asset_url (string): {asset_url}")
+        log(f"asset_url (string): {asset_url}", level=LogLevel.TRACE)
         asset_links_matched = []
         if asset_link_uuids and asset_uuid is not None:
             if asset_uuid in asset_link_uuids:
                 asset_links_matched = [str(asset_uuid)]
-        print(f"[DEBUG] asset_links_matched: {asset_links_matched}")
+        log(f"asset_links_matched: {asset_links_matched}", level=LogLevel.TRACE)
 
-        print(f"[DEBUG] DEFAULT_ERROR_MODE: {DEFAULT_ERROR_MODE}")
+        log(f"DEFAULT_ERROR_MODE: {DEFAULT_ERROR_MODE}", level=LogLevel.TRACE)
 
         if DEFAULT_ERROR_MODE == ErrorHandlingMode.CRAZY_DEBUG:
             asset_id = asset_wrapper.get_id()
@@ -122,10 +122,11 @@ class ClassificationRuleWrapper:
             )
 
         if not tags_matched and not albums_matched and not asset_links_matched:
-            print("[DEBUG] No matches found, returning None")
+            log("No matches found, returning None", level=LogLevel.TRACE)
             return None
-        print(
-            f"[DEBUG] Returning MatchResult: tags_matched={tags_matched}, albums_matched={albums_matched}, asset_links_matched={asset_links_matched}"
+        log(
+            f"Returning MatchResult: tags_matched={tags_matched}, albums_matched={albums_matched}, asset_links_matched={asset_links_matched}",
+            level=LogLevel.TRACE,
         )
         return MatchResult(
             rule=self,
