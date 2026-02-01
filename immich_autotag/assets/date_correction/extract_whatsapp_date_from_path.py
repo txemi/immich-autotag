@@ -18,9 +18,7 @@ def _get_extraction_timezone() -> Optional[ZoneInfo]:
         config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
         if config.duplicate_processing is None:
             return None
-        return ZoneInfo(
-            config.duplicate_processing.date_correction.extraction_timezone
-        )
+        return ZoneInfo(config.duplicate_processing.date_correction.extraction_timezone)
     except Exception:
         return None
 
@@ -36,9 +34,7 @@ def _extract_img_vid_pattern(path: str, tz: ZoneInfo) -> Optional[datetime]:
     if not m:
         return None
     try:
-        return datetime(
-            int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz
-        )
+        return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=tz)
     except (ValueError, OverflowError):
         # Invalid date values (e.g., month=13, day=32)
         return None
