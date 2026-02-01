@@ -1,4 +1,5 @@
 
+
 import subprocess
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
@@ -9,10 +10,15 @@ from python_qualitygate.core.result import CheckResult, Finding
 class CheckRuff(Check):
     name = 'check_ruff'
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def _build_ruff_command(self, args: QualityGateArgs, apply_fix: bool) -> list:
+        """Build the ruff command with appropriate flags based on level and mode."""
         from python_qualitygate.core.enums_level import QualityGateLevel
-        findings = []
+        
         cmd = [args.py_bin, '-m', 'ruff', 'check']
+        
+        if apply_fix:
+            cmd.append('--fix')
+        
         match args.level:
             case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
                 cmd += ['--ignore', 'E501']
@@ -20,41 +26,46 @@ class CheckRuff(Check):
                 pass
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
+        
         cmd.append(str(args.target_dir))
-        print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        output = result.stdout + '\n' + result.stderr
+        return cmd
+
+    def _process_check_output(self, args: QualityGateArgs, output: str, returncode: int) -> CheckResult:
+        """Process ruff output and return findings based on quality level."""
+        from python_qualitygate.core.enums_level import QualityGateLevel
+        
+        findings = []
+        
         match args.level:
             case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
                 f821_lines = [line for line in output.splitlines() if 'F821' in line]
                 if f821_lines:
                     for line in f821_lines:
                         findings.append(Finding(file_path=args.target_dir, line_number=0, message=line, code="ruff-F821"))
-                return CheckResult(findings=findings)
             case QualityGateLevel.STRICT:
-                if result.returncode != 0:
+                if returncode != 0:
                     for line in output.splitlines():
                         if line.strip():
                             findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ruff"))
-                return CheckResult(findings=findings)
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
+        
+        return CheckResult(findings=findings)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
-        from python_qualitygate.core.enums_level import QualityGateLevel
-        findings = []
-        cmd = [args.py_bin, '-m', 'ruff', 'check', '--fix']
-        match args.level:
-            case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
-                cmd += ['--ignore', 'E501']
-            case QualityGateLevel.STRICT:
-                pass
-            case _:
-                raise ValueError(f"Unknown QualityGateLevel: {args.level}")
-        cmd.append(str(args.target_dir))
+    def check(self, args: QualityGateArgs) -> CheckResult:
+        cmd = self._build_ruff_command(args, apply_fix=False)
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         output = result.stdout + '\n' + result.stderr
+        return self._process_check_output(args, output, result.returncode)
+
+    def apply(self, args: QualityGateArgs) -> CheckResult:
+        cmd = self._build_ruff_command(args, apply_fix=True)
+        print(f"[RUN] {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        output = result.stdout + '\n' + result.stderr
+        findings = []
         if result.returncode != 0:
             findings.append(Finding(file_path=args.target_dir, line_number=0, message="Ruff found issues during fix", code="ruff-fix"))
         return CheckResult(findings=findings)
+
