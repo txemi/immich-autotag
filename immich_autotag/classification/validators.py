@@ -5,11 +5,15 @@ This module contains reusable validators for classification-related classes.
 Any code needing to validate ClassificationRuleWrapper should import from here.
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 import attr
 
 
 def validate_classification_rule(
-    instance: object, attribute: attr.Attribute, value: object
+    instance: object, attribute: attr.Attribute[Any], value: object
 ) -> None:
     """
     Validate that value is a ClassificationRuleWrapper instance.
