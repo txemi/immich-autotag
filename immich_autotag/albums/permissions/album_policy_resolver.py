@@ -25,8 +25,9 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 import attrs
 
+from immich_client.models.album_user_role import AlbumUserRole
+
 from immich_autotag.config.models import AlbumSelectionRule, UserGroup
-from immich_autotag.permissions.album_access_level import AlbumAccessLevel
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -57,8 +58,8 @@ class ResolvedAlbumPolicy:
     matched_rules: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
     groups: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
     members: list[str] = attrs.field(validator=attrs.validators.instance_of(list))
-    access_level: AlbumAccessLevel = attrs.field(
-        validator=attrs.validators.instance_of(AlbumAccessLevel)
+    access_level: AlbumUserRole = attrs.field(
+        validator=attrs.validators.instance_of(AlbumUserRole)
     )
     has_match: bool = attrs.field(init=False)
 
@@ -74,7 +75,7 @@ class ResolvedAlbumPolicy:
             f"Matched rules={self.matched_rules}, "
             f"Groups={self.groups}, "
             f"Members={self.members}, "
-            f"Access={self.access_level.to_label()}"
+            f"Access={self.access_level.value}"
         )
 
 
@@ -148,7 +149,7 @@ def resolve_album_policy(
     matched_rules_names: List[str] = []
     all_groups: List[str] = []
     all_members: List[str] = []
-    access_level = AlbumAccessLevel.VIEW
+    access_level = AlbumUserRole.VIEWER
 
     album_name = album.get_album_name()
     # album_id = str(album.get_album_uuid())  # removed unused variable
@@ -158,7 +159,9 @@ def resolve_album_policy(
         if _match_keyword_in_album(album_name, rule.keyword):
             matched_rules_names.append(rule.name)
             all_groups.extend(rule.groups)
-            access_level = AlbumAccessLevel.from_string(rule.access)
+            # Map config strings to AlbumUserRole
+            role_map = {"view": AlbumUserRole.VIEWER, "edit": AlbumUserRole.EDITOR, "editor": AlbumUserRole.EDITOR}
+            access_level = role_map.get(rule.access.lower(), AlbumUserRole.VIEWER)
 
     # Resolve members from groups
     all_groups_unique = list(set(all_groups))  # Remove duplicates
