@@ -7,13 +7,18 @@ Objective: Help developers easily choose an appropriate log level by providing c
 import logging
 from dataclasses import dataclass
 from enum import Enum
+from typing_extensions import final
 
 
+@final
 @dataclass(frozen=True)
 class LogLevelInfo:
+    """Immutable metadata for log levels. Cannot be subclassed, modified, or extended with new attributes."""
     level_value: int
     is_custom: bool
     description: str
+    
+    __slots__ = ()
 
 
 class LogLevel(Enum):
@@ -81,16 +86,16 @@ class LogLevel(Enum):
         "Custom level (numeric: 5). Use for ultra-verbose, excessive, or diagnostic-only output that is not useful even for most debugging sessions. Only enable when you need to trace every detail for deep diagnostics or performance tuning.",
     )
 
-    @property
     def is_custom(self) -> bool:
+        """Returns True if this is a custom (non-standard) log level."""
         return self.value.is_custom
 
-    @property
     def description(self) -> str:
+        """Returns the human-friendly description of this log level."""
         return self.value.description
 
-    @property
     def level_value(self) -> int:
+        """Returns the numeric value of this log level."""
         return self.value.level_value
 
     def __str__(self):

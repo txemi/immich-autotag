@@ -25,14 +25,14 @@ register_custom_log_levels()
 
 @typechecked
 def log(msg: str, level: LogLevel = LogLevel.PROGRESS) -> None:
-    logging.log(level.level_value, msg)
+    logging.log(level.level_value(), msg)
 
 
 @typechecked
 def setup_logging(level: LogLevel = LogLevel.PROGRESS) -> None:
     logging.basicConfig(
         format="[%(levelname)s] %(message)s",
-        level=level.level_value,
+        level=level.level_value(),
         force=True,
     )
 
@@ -52,7 +52,7 @@ def log_trace(msg: str) -> None:
     """
     from .levels import LogLevel
 
-    logging.log(LogLevel.TRACE.level_value, msg)
+    logging.log(LogLevel.TRACE.level_value(), msg)
 
 
 @typechecked
@@ -61,4 +61,4 @@ def is_log_level_enabled(level: LogLevel) -> bool:
     Returns True if the given log level is enabled for the root logger.
     Usage: if is_log_level_enabled(LogLevel.DEBUG): ...
     """
-    return logging.getLogger().isEnabledFor(level.level_value)
+    return logging.getLogger().isEnabledFor(level.level_value())
