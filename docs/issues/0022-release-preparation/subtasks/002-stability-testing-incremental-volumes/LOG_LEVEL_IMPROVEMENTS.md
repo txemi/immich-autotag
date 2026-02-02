@@ -1,64 +1,86 @@
 # Log Level Improvement - Summary of Changes
 
-**Date:** 2026-02-01  
-**Branch:** `feature/stability-testing-incremental-assets`
+**Date:** 2026-02-01/02  
+**Branch:** `feature/stability-testing-incremental-assets`  
+**Status:** ✅ Implemented and Tested
 
-## Problem
+## Problems Solved
 
-During batch testing runs without asset filters, logs were showing `[Level 15]` which was confusing and verbose:
-- The numeric level name `[Level 15]` wasn't immediately clear (it's FOCUS)
-- The verbosity level was too high for batch operations (showing too much detail per asset)
+### 1. **Confusing Log Output**
+   - Logs were showing `[Level 15]`, `[Level 17]` instead of readable names
+   - Made it unclear what level each message represented
 
-## Solution Applied
+### 2. **Excessive Verbosity**
+   - Default level for batch operations was too verbose
+   - Showed too much detail per asset, overwhelming the output
 
-### 1. Improved Log Format (logging/utils.py)
-- Ensured custom log levels are registered **before** `basicConfig()` is called
-- This makes the output show `[FOCUS]`, `[ASSET_SUMMARY]`, etc. instead of `[Level 15]`, `[Level 17]`
-- Much more readable and self-documenting
+### 3. **Initialization Order Issue**
+   - `ImmichContext` wasn't initialized when maintenance operations needed it
+   - Caused runtime errors during cleanup phase
 
-### 2. Adjusted Logging Level for Batch Runs (logging/init.py)
-- Changed default level from `LogLevel.PROGRESS` (20) to `LogLevel.ASSET_SUMMARY` (17)
-- **ASSET_SUMMARY** is specifically designed for batch operations:
-  - Shows a brief per-asset status (processed, skipped, error)
-  - Less verbose than FOCUS (15)
-  - More informative than bare PROGRESS
-  - Ideal for monitoring batch progress without overwhelming output
+## Solutions Applied
+
+### 1. **Fixed Custom Log Level Registration** (logging/utils.py)
+   - **Bug**: Was accessing `level.value` directly (which is a `LogLevelInfo` object)
+   - **Fix**: Changed to use proper methods: `level.level_value()` and `level.is_custom()`
+   - **Improvement**: Used public API `logging.getLevelNamesMapping()` instead of private `_nameToLevel`
+   - **Result**: Now shows `[FOCUS]`, `[ASSET_SUMMARY]`, `[PROGRESS]` instead of numbers
+
+### 2. **Adjusted Logging Level for Batch Operations** (logging/init.py)
+   - **Changed**: Default level from `PROGRESS` (20) to `ASSET_SUMMARY` (17)
+   - **Benefit**: 
+     - Shows brief per-asset status (processed, skipped, error)
+     - Less verbose than FOCUS (15)
+     - Ideal for monitoring batch progress
+   - **Behavior**: Still uses FOCUS (15) when running with asset filter (debug mode)
+
+### 3. **Fixed Initialization Order** (entrypoints/main_logic.py)
+   - **Problem**: `maintenance_cleanup_labels()` called before `init_collections_and_context()`
+   - **Solution**: Moved context initialization earlier in the sequence
+   - **Result**: ImmichContext now available for all operations that need it
 
 ## New Behavior
 
-### With Filter (debug single asset):
-- Level: **FOCUS** (15) - Detailed info about that specific asset
+### Log Output Examples
 
-### Without Filter (batch processing):
-- Level: **ASSET_SUMMARY** (17) - Brief status per asset, no excessive detail
-
-### Example Output After Changes:
+**Before:**
 ```
-[ASSET_SUMMARY] Processed asset: id=6e9b8ae8... name=photo.jpg
-[ASSET_SUMMARY] Applied 2 tags: [tag1, tag2]
-[ASSET_SUMMARY] Next: 5/100 assets...
+[Level 15] Evaluating asset: id=6e9b8ae8...
+[Level 17] Processing: photo.jpg
+[INFO] Result: completed
 ```
 
-Instead of:
+**After:**
 ```
-[Level 17] Processed asset: id=6e9b8ae8... name=photo.jpg
-[Level 15] Evaluating rule: ClassificationRuleWrapper(...)
-[Level 15] Tag applied: tag1
-...
-```
-
-## Testing
-
-Run the application normally (without asset filter) to see the improved logging:
-```bash
-bash run_app.sh
+[FOCUS] Evaluating asset: id=6e9b8ae8...
+[ASSET_SUMMARY] Processing: photo.jpg
+[INFO] Result: completed
 ```
 
-The output should now be:
-- Clearer (named levels instead of numbers)
-- Less overwhelming (ASSET_SUMMARY instead of FOCUS/DEBUG verbosity)
-- Better for monitoring large batches
+### Log Level Hierarchy (by verbosity)
+1. **ERROR** (40) - Critical errors only
+2. **WARNING** (30) - Important warnings
+3. **PROGRESS** (20) - Progress updates, phase changes
+4. **ASSET_SUMMARY** (17) - Brief per-asset status (default for batch)
+5. **FOCUS** (15) - Detailed info about specific asset (when filtering)
+6. **DEBUG** (10) - Very verbose details
+7. **TRACE** (5) - Ultra-verbose diagnostic output
+
+## Verification
+
+✅ Application runs without errors  
+✅ Log levels display correctly as names  
+✅ Verbosity is appropriate for batch operations  
+✅ ImmichContext initializes properly  
+✅ Maintenance cleanup completes successfully  
+
+## Files Modified
+
+1. `immich_autotag/logging/utils.py` - Fixed level registration
+2. `immich_autotag/logging/init.py` - Changed default level to ASSET_SUMMARY
+3. `immich_autotag/entrypoints/main_logic.py` - Fixed initialization order
 
 ---
 
-*Changes made to prepare for stability testing with incremental asset volumes*
+*Ready for stability testing with incremental asset volumes*
+
