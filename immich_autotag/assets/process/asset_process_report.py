@@ -44,19 +44,31 @@ class AssetProcessReport:
     def any_changes(self) -> bool:
         # Define what counts as a change: if any phase result indicates a change
         # This logic can be refined as needed
-        for obj in [
-            self.tag_conversion_result,
-            self.date_correction_result,
-            self.duplicate_tag_analysis_result,
-            self.album_assignment_result,
-            self.validate_result,
-        ]:
-            if hasattr(obj, "changed") and getattr(obj, "changed"):
-                return True
-            if isinstance(obj, list) and obj:
-                return True
-            if obj is not None and not isinstance(obj, list):
-                return True
+        
+        # Check tag_conversion_result (list of str)
+        if self.tag_conversion_result is not None and self.tag_conversion_result:
+            return True
+        
+        # Check date_correction_result (has .changed attribute)
+        if (self.date_correction_result is not None and
+            self.date_correction_result.changed):
+            return True
+        
+        # Check duplicate_tag_analysis_result (has .changed attribute)
+        if (self.duplicate_tag_analysis_result is not None and
+            self.duplicate_tag_analysis_result.changed):
+            return True
+        
+        # Check album_assignment_result (has .changed attribute)
+        if (self.album_assignment_result is not None and
+            self.album_assignment_result.changed):
+            return True
+        
+        # Check validate_result (has .changed attribute)
+        if (self.validate_result is not None and
+            self.validate_result.changed):
+            return True
+        
         return False
 
     def summary(self) -> str:
