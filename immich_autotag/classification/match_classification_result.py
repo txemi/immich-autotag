@@ -34,7 +34,7 @@ class MatchClassificationResult:
         ) -> _AggregateResult:
             tags = []
             albums = []
-            for m in match_result_list._matches:
+            for m in match_result_list.rules():
                 tags.extend(m.tags_matched())
                 albums.extend(m.albums_matched())
             return _AggregateResult(tags=tags, albums=albums)
