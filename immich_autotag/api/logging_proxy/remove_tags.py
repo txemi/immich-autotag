@@ -188,10 +188,10 @@ def logging_untag_assets_safe(
 
     try:
         logging_untag_assets(client=client, tag=tag, asset_ids=asset_ids)
-        
+
         # Return all entries created in this operation (success case)
         return report.modifications[prev_count:]
-        
+
     except Exception as e:
         # Log the error
         logger.error(
