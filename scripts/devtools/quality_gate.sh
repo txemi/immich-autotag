@@ -526,10 +526,10 @@ check_ruff() {
 
 	if [ "$quality_level" = "STANDARD" ]; then
 		ruff_ignore="--ignore E501"
-		echo "[$quality_level MODE] Ruff will ignore E501 (line length) and will NOT block the build for it. Only F821 errors will block the build."
+		echo "[$quality_level MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	elif [ "$quality_level" = "TARGET" ]; then
 		ruff_ignore="--ignore E501"
-		echo "[$quality_level MODE] Ruff will ignore E501 (line length) and will NOT block the build for it. Only F821 errors will block the build."
+		echo "[$quality_level MODE] Ruff will ignore E501 (line length) and will NOT block the build for it."
 	elif [ "$quality_level" = "STRICT" ]; then
 		ruff_ignore=""
 		echo "[STRICT MODE] Ruff will NOT ignore any errors. All errors will block the build."
@@ -732,7 +732,7 @@ check_flake8() {
 			echo "[ERROR] flake8 failed in STANDARD mode (all errors except E501). See output above."
 			return 1
 		elif [ "$quality_level" = "TARGET" ]; then
-			echo "[ERROR] flake8 failed in TARGET mode (all errors except E501). See output above."
+			echo "[ERROR] flake8 failed in TARGET mode (all errors including E501). See output above."
 			return 1
 		else
 			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
