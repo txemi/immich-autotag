@@ -10,7 +10,10 @@ from immich_autotag.types.uuid_wrappers import AlbumUUID
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumList:
 
-    _albums: list[AlbumResponseWrapper] = attrs.field(factory=list)
+    _albums: list[AlbumResponseWrapper] = attrs.field(
+        factory=list,
+        repr=lambda value: f"size={len(value)}",
+    )
 
     @typechecked
     def get_by_uuid(self, uuid: AlbumUUID) -> AlbumResponseWrapper | None:
@@ -66,6 +69,3 @@ class AlbumList:
 
     def __bool__(self):
         return bool(self._albums)
-
-    def __repr__(self):
-        return f"AlbumList({self._albums!r})"

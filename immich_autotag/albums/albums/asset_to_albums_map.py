@@ -1,5 +1,6 @@
 from typing import Iterator, MutableMapping
 
+import attr
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -7,16 +8,20 @@ from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
+@attr.define(slots=True)
 class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
     """
     Map from asset_id (str) to AlbumList.
     The map key is the asset_id (string) of each asset.
     The value is a list of albums (AlbumList) that contain that asset.
     Allows O(1) queries to know which albums an asset belongs to.
+    The representation shows only the total size for performance.
     """
 
-    def __init__(self):
-        self._map: dict[AssetUUID, AlbumList] = dict()
+    _map: dict[AssetUUID, AlbumList] = attr.field(
+        factory=dict,
+        repr=lambda value: f"size={len(value)}",
+    )
 
     # Rely on MutableMapping.get implementation; avoid overriding overloaded signature.
 
@@ -123,5 +128,3 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
     def __len__(self) -> int:
         return len(self._map)
 
-    def __repr__(self) -> str:
-        return f"AssetToAlbumsMap({self._map!r})"
