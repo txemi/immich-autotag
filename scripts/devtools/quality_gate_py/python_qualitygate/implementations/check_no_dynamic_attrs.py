@@ -15,7 +15,7 @@ class CheckNoDynamicAttrs(Check):
         Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
         
         Activation by quality level:
-        - STANDARD: DISABLED (returns empty findings)
+        - STANDARD: ENABLED (blocks if getattr/hasattr detected)
         - TARGET: ENABLED (blocks if getattr/hasattr detected)
         - STRICT: ENABLED (blocks if getattr/hasattr detected)
         """
@@ -23,11 +23,7 @@ class CheckNoDynamicAttrs(Check):
         
         # Defensive programming: explicitly evaluate all quality level cases
         match args.level:
-            case QualityGateLevel.STANDARD:
-                # STANDARD mode: don't check
-                print("[INFO] getattr/hasattr policy enforcement is DISABLED for STANDARD.")
-                return CheckResult(findings=[])
-            case QualityGateLevel.TARGET | QualityGateLevel.STRICT:
+            case QualityGateLevel.STANDARD | QualityGateLevel.TARGET | QualityGateLevel.STRICT:
                 pass
             case _:
                 # Defensive: unknown level should fail hard

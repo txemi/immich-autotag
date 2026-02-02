@@ -616,14 +616,10 @@ check_no_dynamic_attrs() {
 	# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
 	# Projects following our coding guidelines avoid these calls because they
 	# undermine static typing and hide missing attributes. This check is strict.
-	# - DISABLED by default for STANDARD
-	# - ENABLED by default for TARGET and STRICT
+	# - ENABLED for STANDARD, TARGET and STRICT
 	local should_enforce=0
 	case "$quality_level" in
-	STANDARD)
-		should_enforce=0
-		;;
-	TARGET | STRICT)
+	STANDARD | TARGET | STRICT)
 		should_enforce=1
 		;;
 	*)
@@ -640,8 +636,6 @@ check_no_dynamic_attrs() {
 			return 1
 		fi
 		echo "[$quality_level MODE] getattr/hasattr policy enforcement is ENABLED."
-	else
-		echo "[INFO] getattr/hasattr policy enforcement is DISABLED for STANDARD."
 	fi
 	return 0
 }
