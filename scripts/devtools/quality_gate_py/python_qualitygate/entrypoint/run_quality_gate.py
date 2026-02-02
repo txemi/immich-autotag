@@ -16,4 +16,11 @@ def run_quality_gate():
     # Battery
     battery = Battery([cls() for cls in BATTERY_ORDER])
     rc = battery.run(args.mode, args)
+    print("")
+    print("═══════════════════════════════════════════════════════════════════════════════")
+    print("[REPRODUCIBLE COMMAND] To reproduce this exact execution, run:")
+    print("")
+    print(f"  {' '.join(sys.argv)}")
+    print("")
+    print("═══════════════════════════════════════════════════════════════════════════════")
     sys.exit(rc)

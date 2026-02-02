@@ -5,18 +5,17 @@
 # ============================================================================
 #
 # Usage:
-#   ./quality_gate.sh [--level=LEVEL|-l LEVEL] [--check|-c|--apply] [--enforce-dynamic-attrs] [target_dir]
+#   ./quality_gate.sh [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--only-check=FUNC] [target_dir]
 #
 #   --level=LEVEL or -l LEVEL: Set quality level (STRICT, STANDARD, TARGET)
 #   --mode=MODE or -m MODE: Set mode (CHECK, APPLY)
-#   --enforce-dynamic-attrs: Enforce dynamic attrs check
+#   --only-check=FUNC: Run only the specified check function (e.g., check_black, check_mypy, etc.)
 #   target_dir: Directory to check (default: immich_autotag)
 #
 # Modes:
 #   STRICT: Applies ALL checks strictly. Any error or warning in any check BLOCKS the build. Not recommended for CI unless code is perfect.
 #   STANDARD: Official CI level. Applies all checks, but some only warn and DO NOT block the build (see below). The rest may block if they fail.
 #   TARGET: Intermediate mode for Quality Gate improvement branches. Blocks the build ONLY for una subset de errores. El resto se comporta como en STANDARD (warn only).
-#   --enforce-dynamic-attrs  Enforce ban on getattr/hasattr (advanced).
 #
 # If no [target_dir] is given, defaults to the main package.
 #
@@ -36,7 +35,7 @@
 # | 9  | check_jscpd            | npx (jscpd)           | Detects code duplication                          | Blocks if duplicates found    | Blocks if duplicates found    | Blocks if duplicates found    |
 # | 10 | check_no_spanish_chars | custom (bash/grep)    | Forbids Spanish chars/text                        | Blocks if Spanish detected    | Blocks if Spanish detected    | Blocks if Spanish detected    |
 # | 11 | check_import_linter    | pip (import-linter)   | Verifies architectural import contracts           | Blocks if violations          | Blocks if violations          | Blocks if violations          |
-# | 12 | check_no_dynamic_attrs | custom (bash/grep)    | Forbids getattr/hasattr (static typing)           | Blocks if enabled and found   | Blocks if enabled and found   | Blocks if enabled and found   |
+# | 12 | check_no_dynamic_attrs | custom (bash/grep)    | Forbids getattr/hasattr (static typing)           | Blocks if found   | Blocks if found   | Blocks if found   |
 # | 13 | check_shfmt            | debian/pip (shfmt)    | Formats bash scripts with shfmt                   | Blocks if changes             | Blocks if changes             | Blocks if changes             |
 #
 # =====================
@@ -60,12 +59,12 @@
 # | 13 | jscpd (code duplication)                | check_jscpd            | Detects code duplication                    |   ✔️     |   ✔️                         |   ✔️                        |
 # | 14 | Spanish character check                 | check_no_spanish_chars | Forbids Spanish text/accents                |   ✔️     |   ✔️                         |   ✔️                        |
 # | 15 | import-linter (contracts)               | check_import_linter    | Architectural import contracts              |   ✔️     |   ✔️                         |   ✔️                        |
-# | 16 | no dynamic attrs (getattr/hasattr)      | check_no_dynamic_attrs | Forbids getattr/hasattr for static typing   |   ✔️**   |   ✔️**                       |   ✔️**                      |
+# | 16 | no dynamic attrs (getattr/hasattr)      | check_no_dynamic_attrs | Forbids getattr/hasattr for static typing   |   ✔️   |   ❌                       |   ✔️                      |
 # | 17 | no tuples (returns/attributes)          | check_no_tuples        | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        |
 # | 18 | shfmt (bash formatting)                 | check_shfmt            | Bash script formatting                      |   ✔️     |   ✔️                         |   ✔️                        |
 # -----------------------------------------------------------------------------
 # * In STANDARD and TARGET mode, flake8/ruff ignore E501. STANDARD and TARGET block ALL flake8/ruff errors (except E501). Mypy blocks ALL errors in both modes.
-# ** Only if --enforce-dynamic-attrs is used
+# ** Dynamic attributes check is ENABLED for STRICT and TARGET (always), but DISABLED for STANDARD.
 #
 # =====================
 # Quality Gate Objectives Table (current/future)
@@ -105,18 +104,17 @@ FORMAT_SELF=1
 ###############################################################################
 # Function: parse_args_and_globals
 # Description: Parses command-line arguments and defines global variables.
-# Globals set: QUALITY_LEVEL, CHECK_MODE, ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
+# Globals set: QUALITY_LEVEL, CHECK_MODE, TARGET_DIR
 # Usage: parse_args_and_globals "$@"
 # Returns: Exports global variables and may terminate the script in help mode
 ###############################################################################
 
 # Print help/usage message (single source)
 print_help() {
-	echo "Usage: $0 [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--enforce-dynamic-attrs] [--only-check=FUNC] [target_dir]"
+	echo "Usage: $0 [--level=LEVEL|-l LEVEL] [--mode=MODE|-m MODE] [--only-check=FUNC] [target_dir]"
 	echo "Runs ruff/isort/black/flake8/mypy against the codebase. Uses .venv if present; otherwise falls back to system python."
 	echo "  --level=LEVEL or -l LEVEL: Set quality level (STRICT, STANDARD, TARGET)"
 	echo "  --mode=MODE or -m MODE: Set mode (CHECK, APPLY)"
-	echo "  --enforce-dynamic-attrs: Enforce dynamic attrs check"
 	echo "  --only-check=FUNC: Run only the specified check function (e.g., check_black, check_mypy, etc.)"
 	echo "  target_dir: Directory to check (default: immich_autotag)"
 	echo ""
@@ -132,11 +130,10 @@ parse_args_and_globals() {
 	fi
 
 	# Local variables for parsing
-	local arg check_mode quality_level enforce_dynamic_attrs target_dir only_check next_is_level next_is_mode
+	local arg check_mode quality_level target_dir only_check next_is_level next_is_mode
 
 	check_mode="APPLY" # Possible values: APPLY, CHECK
 	quality_level=""   # Possible values: STRICT, STANDARD, TARGET
-	enforce_dynamic_attrs=0
 	target_dir=""
 	only_check=""
 	next_is_level=0
@@ -156,8 +153,6 @@ parse_args_and_globals() {
 		elif [ "$next_is_mode" = "1" ]; then
 			check_mode="$arg"
 			next_is_mode=0
-		elif [ "$arg" = "--enforce-dynamic-attrs" ]; then
-			enforce_dynamic_attrs=1
 		elif [[ "$arg" =~ ^--only-check= ]]; then
 			only_check="${arg#--only-check=}"
 		elif [[ "$arg" != --* ]]; then
@@ -227,7 +222,7 @@ parse_args_and_globals() {
 	fi
 
 	# Devolver los valores como salida (en orden, SOLO datos)
-	echo "$check_mode $quality_level $target_dir $enforce_dynamic_attrs $only_check"
+	echo "$check_mode $quality_level $target_dir $only_check"
 }
 # Prints a status message with common Quality Gate context (level, mode, script path)
 quality_gate_status_message() {
@@ -611,25 +606,42 @@ check_black() {
 ###############################################################################
 # Function: check_no_dynamic_attrs
 # Description: Forbids the use of getattr/hasattr for static typing safety.
-# Globals: ENFORCE_DYNAMIC_ATTRS, TARGET_DIR
+# Parameters: target_dir, quality_level
 # Returns: 0 if passes, 1 if forbidden uses detected
 ###############################################################################
 check_no_dynamic_attrs() {
+	local target_dir="$1"
+	local quality_level="$2"
 	local matches
 	# Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
 	# Projects following our coding guidelines avoid these calls because they
-	# undermine static typing and hide missing attributes. This check is strict
-	# and is DISABLED by default (enabled only with --enforce-dynamic-attrs).
-	if [ "$ENFORCE_DYNAMIC_ATTRS" -eq 1 ]; then
-		matches=$(grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$TARGET_DIR" || true)
+	# undermine static typing and hide missing attributes. This check is strict.
+	# - DISABLED by default for STANDARD
+	# - ENABLED by default for TARGET and STRICT
+	local should_enforce=0
+	case "$quality_level" in
+	STANDARD)
+		should_enforce=0
+		;;
+	TARGET | STRICT)
+		should_enforce=1
+		;;
+	*)
+		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_no_dynamic_attrs: '$quality_level'. Exiting for safety." >&2
+		return 91
+		;;
+	esac
+	if [ "$should_enforce" -eq 1 ]; then
+		matches=$(grep -R --line-number --exclude-dir=".venv" --exclude-dir="immich-client" --exclude-dir="scripts" --include="*.py" -E "getattr\(|hasattr\(" "$target_dir" || true)
 		if [ -n "$matches" ]; then
 			echo "$matches"
 			echo "[ERROR] Forbidden use of getattr(...) or hasattr(...) detected. Our style policy bans dynamic attribute access."
 			echo "Fix occurrences in source (do not rely on getattr/hasattr)."
 			return 1
 		fi
+		echo "[$quality_level MODE] getattr/hasattr policy enforcement is ENABLED."
 	else
-		echo "[INFO] getattr/hasattr policy enforcement is DISABLED by default. Use --enforce-dynamic-attrs to enable."
+		echo "[INFO] getattr/hasattr policy enforcement is DISABLED for STANDARD."
 	fi
 	return 0
 }
@@ -901,7 +913,6 @@ run_quality_gate_check_mode() {
 	local quality_level="$4"
 	local check_mode="$5"
 	local repo_root="$6"
-	local enforce_dynamic_attrs="$7"
 	# Defensive: Ensure local repo_root matches global REPO_ROOT
 	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
 		echo "[DEFENSIVE-FAIL] repo_root argument ('$repo_root') does not match global REPO_ROOT ('$REPO_ROOT'). Exiting for safety." >&2
@@ -913,7 +924,6 @@ run_quality_gate_check_mode() {
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || return 1
 	check_jscpd "$target_dir" || return 1
 	check_import_linter "$REPO_ROOT" || return 1
-	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || return 2
 	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || return 3
 	check_no_spanish_chars "$target_dir" || return 5
 	# 2. Formatters and style (run only if all blocking checks pass)
@@ -923,6 +933,8 @@ run_quality_gate_check_mode() {
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || return 1
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || return 1
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || return 1
+	# 3. Dynamic attributes check (run last to ensure it doesn't block other checks from running)
+	check_no_dynamic_attrs "$target_dir" "$quality_level" || return 2
 }
 
 # Run all quality checks in APPLY mode (run all, accumulate errors, fail at end)
@@ -934,7 +946,6 @@ run_quality_gate_apply_mode() {
 	local quality_level="$4"
 	local check_mode="$5"
 	local repo_root="$6"
-	local enforce_dynamic_attrs="$7"
 	local error_found=0
 
 	# Defensive: Ensure local repo_root matches global REPO_ROOT
@@ -952,7 +963,6 @@ run_quality_gate_apply_mode() {
 	# 2. Fast/deterministic checks
 	check_python_syntax "$py_bin" "$target_dir" || error_found=1
 	# 3. Internal policy checks
-	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || error_found=2
 	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || error_found=3
 	check_no_spanish_chars "$target_dir" || error_found=5
 	# 4. Heavy/informative checks
@@ -960,10 +970,12 @@ run_quality_gate_apply_mode() {
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
 	check_import_linter "$REPO_ROOT" || error_found=1
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || error_found=1
+	# 5. Dynamic attributes check (run last to ensure it doesn't block other checks from running)
+	check_no_dynamic_attrs "$target_dir" "$quality_level" || error_found=2
 	if [ "$error_found" -ne 0 ]; then
 		quality_gate_status_message "[EXIT] Quality Gate failed (see errors above)."
 		# After APPLY fails, run summary check in priority order (most important errors first)
-		run_quality_gate_check_summary "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root" "$enforce_dynamic_attrs"
+		run_quality_gate_check_summary "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$repo_root"
 		return $error_found
 	fi
 }
@@ -978,7 +990,6 @@ run_quality_gate_check_summary() {
 	local quality_level="$4"
 	local check_mode="$5"
 	local repo_root="$6"
-	local enforce_dynamic_attrs="$7"
 
 	# Defensive: Ensure local repo_root matches global REPO_ROOT
 	if [ -n "$repo_root" ] && [ "$repo_root" != "$REPO_ROOT" ]; then
@@ -1001,13 +1012,13 @@ run_quality_gate_check_summary() {
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || return 1
 	check_import_linter "$REPO_ROOT" || return 1
 	# 5. Policy checks
-	check_no_dynamic_attrs "$enforce_dynamic_attrs" "$target_dir" || return 2
 	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || return 3
-	# 6. Spanish character check
-	# 7. Code duplication (least urgent)
+	# 6. Code duplication (least urgent)
 	check_jscpd "$target_dir" || return 1
-	# 8. Formatters (least urgent in summary)
+	# 7. Formatters (least urgent in summary)
 	check_shfmt "$check_mode" "$target_dir" || return 1
+	# 8. Dynamic attributes check (run last to ensure it doesn't block other checks from running)
+	check_no_dynamic_attrs "$target_dir" "$quality_level" || return 2
 	check_isort "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || return 1
 	check_ssort "$check_mode" "$target_dir" || return 1
 	check_black "$check_mode" "$py_bin" "$max_line_length" "$target_dir" || return 1
@@ -1016,8 +1027,8 @@ run_quality_gate_check_summary() {
 # Refactor: main uses only local variables and passes values explicitly
 main() {
 	# Argument and global variable initialization
-	local check_mode quality_level target_dir enforce_dynamic_attrs only_check max_line_length py_bin exit_code=0
-	read -r check_mode quality_level target_dir enforce_dynamic_attrs only_check < <(parse_args_and_globals "$@")
+	local check_mode quality_level target_dir only_check max_line_length py_bin exit_code=0
+	read -r check_mode quality_level target_dir only_check < <(parse_args_and_globals "$@")
 
 	# Setup environment: max_line_length (safe, always returns a value)
 	max_line_length=$(setup_max_line_length)
@@ -1045,7 +1056,7 @@ main() {
 		elif [ "$only_check" = "check_flake8" ]; then
 			"$only_check" "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir"
 		else
-			"$only_check" "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$repo_root" "$enforce_dynamic_attrs"
+			"$only_check" "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$repo_root"
 		fi
 		exit_code=$?
 		set -e
@@ -1062,10 +1073,10 @@ main() {
 	# All quality gate modules/checks are called via run_quality_gate_check_mode and run_quality_gate_apply_mode.
 	# If a check is not called, it is either deprecated or not implemented yet. Add new checks to those functions.
 	if [ "$check_mode" = "CHECK" ]; then
-		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT" "$enforce_dynamic_attrs"
+		run_quality_gate_check_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT"
 		exit_code=$?
 	elif [ "$check_mode" = "APPLY" ]; then
-		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT" "$enforce_dynamic_attrs"
+		run_quality_gate_apply_mode "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$check_mode" "$REPO_ROOT"
 		exit_code=$?
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected check_mode value in main: '$check_mode'. Exiting for safety." >&2

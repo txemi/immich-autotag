@@ -21,7 +21,6 @@ BATTERY_ORDER = [
     CheckMypy,
     CheckJscpd,
     CheckImportLinter,
-    CheckNoDynamicAttrs,
     CheckNoTuples,
     CheckShfmt,
     CheckIsort,
@@ -29,6 +28,7 @@ BATTERY_ORDER = [
     CheckBlack,
     CheckRuff,
     CheckFlake8,
+    CheckNoDynamicAttrs,
 ]
 
 
