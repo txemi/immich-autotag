@@ -535,8 +535,8 @@ class AssetResponseWrapper:
             n_rules_matched = len(match_result_list.rules())
             msg = (
                 f"[ERROR] Asset id={self.get_id()} ({self.get_original_file_name()}) is classified by "
-                f"{n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched}, "
-                f"albums={match_detail.albums_matched}\nLink: {photo_url}"
+                f"{n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched()}, "
+                f"albums={match_detail.albums_matched()}\nLink: {photo_url}"
             )
             if fail_fast:
                 raise Exception(msg)
@@ -728,8 +728,6 @@ class AssetResponseWrapper:
         from immich_autotag.classification.classification_rule_set import (
             ClassificationRuleSet,
         )
-
-        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
 
         return ClassificationValidationResult(
             match_results=match_results,

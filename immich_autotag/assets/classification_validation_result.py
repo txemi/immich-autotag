@@ -5,26 +5,31 @@ from typing import TYPE_CHECKING
 import attrs
 
 if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.classification.match_result_list import MatchResultList
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True, repr=False)
+@attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ClassificationValidationResult:
     """
     Encapsulates the complete result of classification validation.
-
+    
     Contains both the cause (which rules matched) and consequence (what modifications were applied).
     This allows upper layers to understand what happened during classification validation.
-
-    Attributes:
-        match_results: The MatchResultList containing all matched classification rules (the cause)
-        modifications: The ModificationEntriesList with all tag additions/removals (the consequence)
-        rule_set: The ClassificationRuleSet used for classification
-        asset: The AssetResponseWrapper being classified
-        has_tags: Whether the asset has any tags
-        has_albums: Whether the asset belongs to any albums
+    
+    Attributes (private):
+        _match_results: The MatchResultList containing all matched classification rules (the cause)
+        _modifications: The ModificationEntriesList with all tag additions/removals (the consequence)
     """
 
-    match_results: "MatchResultList"
-    modifications: "ModificationEntriesList"
+    _match_results: "MatchResultList" = attrs.field(alias="match_results")
+    _modifications: "ModificationEntriesList" = attrs.field(alias="modifications")
+
+    def match_results(self) -> "MatchResultList":
+        """Get the match results (which rules matched)."""
+        return self._match_results
+
+    def modifications(self) -> "ModificationEntriesList":
+        """Get the modifications (what tags were added/removed)."""
+        return self._modifications
