@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typeguard import typechecked
 
 from immich_autotag.report.modification_kind import ModificationKind
@@ -68,7 +68,7 @@ class RunStatistics(BaseModel):
     )
     count: int = Field(0, description="Number of processed assets")
     started_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        None, description="Datetime when asset processing started (set by initialize_for_run)"
     )
     finished_at: Optional[datetime] = None
     abrupt_exit_at: Optional[datetime] = Field(
@@ -97,6 +97,13 @@ class RunStatistics(BaseModel):
         default_factory=dict,
         description="Event counters by ModificationKind (string key)",
     )
+
+    @model_validator(mode="after")
+    def initialize_started_at_if_none(self) -> "RunStatistics":
+        """Initialize started_at to now if it's None (for new runs)."""
+        if self.started_at is None:
+            self.started_at = datetime.now(timezone.utc)
+        return self
 
     @typechecked
     def increment_event(
@@ -150,8 +157,9 @@ class RunStatistics(BaseModel):
 
     @typechecked
     def get_start_time(self) -> float:
+        # started_at is guaranteed to be set by model_validator
         if self.started_at is None:
-            raise RuntimeError("RunStatistics.started_at is not set")
+            raise RuntimeError("Internal error: started_at should have been initialized by model_validator")
         return self.started_at.timestamp()
 
     @typechecked
