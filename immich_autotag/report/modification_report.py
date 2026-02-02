@@ -204,9 +204,10 @@ class ModificationReport:
     @typechecked
     def add_tag_modification(
         self,
+        *,
         kind: ModificationKind,
+        tag: "TagWrapper",
         asset_wrapper: Optional["AssetResponseWrapper"] = None,
-        tag: Optional["TagWrapper"] = None,
         old_value: Optional[str] = None,
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
@@ -221,11 +222,8 @@ class ModificationReport:
         from immich_autotag.logging.utils import log
 
         level = kind.value.log_level
-        if tag is not None:
-            msg = self._build_tag_modification_log_message(kind, tag, asset_wrapper)
-            log(msg, level=level)
-        else:
-            log(f"[TAG_MODIFICATION] {kind.name}", level=level)
+        msg = self._build_tag_modification_log_message(kind, tag, asset_wrapper)
+        log(msg, level=level)
 
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
