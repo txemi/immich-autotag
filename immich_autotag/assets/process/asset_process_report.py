@@ -89,7 +89,7 @@ class AssetProcessReport(ProcessStepResult):
         return self.has_changes()
 
     def summary(self) -> str:
-        lines = []
+        lines: List[str] = []
         asset_url = self.asset_wrapper.get_immich_photo_url().geturl()
         lines.append(f"Asset: {asset_url}")
         lines.append(
