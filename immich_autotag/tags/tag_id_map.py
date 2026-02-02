@@ -15,7 +15,10 @@ class TagIdMap:
     Mapa eficiente de id (UUID o str) a TagWrapper.
     """
 
-    _id_to_tag: Dict[TagUUID, "TagWrapper"] = attrs.field(factory=dict)
+    _id_to_tag: Dict[TagUUID, "TagWrapper"] = attrs.field(
+        factory=dict,
+        repr=lambda value: f"size={len(value)}",
+    )
 
     @typechecked
     def append(self, tag: "TagWrapper"):

@@ -13,7 +13,10 @@ class TagNameMap:
     Efficient map from name (str) to TagWrapper.
     """
 
-    _name_to_tag: Dict[str, "TagWrapper"] = attrs.field(factory=dict)
+    _name_to_tag: Dict[str, "TagWrapper"] = attrs.field(
+        factory=dict,
+        repr=lambda value: f"size={len(value)}",
+    )
 
     @typechecked
     def add(self, tag: "TagWrapper"):
