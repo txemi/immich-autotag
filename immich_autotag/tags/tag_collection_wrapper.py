@@ -124,10 +124,11 @@ class TagCollectionWrapper:
         from immich_autotag.api.logging_proxy.tags import logging_create_tag
 
         try:
-            new_tag_dto = logging_create_tag(client=client, name=name)
-            from immich_autotag.tags.tag_response_wrapper import TagWrapper
-
-            new_tag = TagWrapper(new_tag_dto)
+            # logging_create_tag returns ModificationEntry containing the TagWrapper
+            entry = logging_create_tag(client=client, name=name)
+            new_tag = entry.tag
+            if new_tag is None:
+                raise RuntimeError(f"Tag creation succeeded but entry has no tag: {name}")
             self._index.add(new_tag)
             return new_tag
         except immich_errors.UnexpectedStatus as e:

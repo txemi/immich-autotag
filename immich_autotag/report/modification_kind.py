@@ -34,6 +34,9 @@ class ModificationKind(Enum):
     REMOVE_TAG_GLOBALLY = ModificationKindInfo(
         "REMOVE_TAG_GLOBALLY", LogLevel.IMPORTANT, ModificationLevel.MODIFICATION
     )
+    CREATE_TAG = ModificationKindInfo(
+        "CREATE_TAG", LogLevel.IMPORTANT, ModificationLevel.MODIFICATION
+    )
     WARNING_TAG_REMOVAL_FROM_ASSET_FAILED = ModificationKindInfo(
         "WARNING_TAG_REMOVAL_FROM_ASSET_FAILED",
         LogLevel.WARNING,

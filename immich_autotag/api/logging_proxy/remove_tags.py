@@ -70,7 +70,7 @@ def logging_untag_assets(
     from immich_autotag.report.modification_report import ModificationReport
 
     report = ModificationReport.get_instance()
-    entries = []
+    entries: list[ModificationEntry] = []
     for asset_wrapper in asset_wrappers:
         entry = report.add_tag_modification(
             kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
@@ -134,39 +134,6 @@ def logging_delete_tag(
         tag=tag,
     )
     return entry
-
-
-@typechecked
-def logging_create_tag(
-    *,
-    client: ImmichClient,
-    name: str,
-):
-    """
-    Create a tag with automatic event logging.
-
-    Args:
-        client: Immich client instance
-        name: Name of the tag to create
-
-    Returns:
-        The newly created tag DTO from the API
-
-    Side effects:
-        - Calls the API to create the tag
-        - Logs the creation event
-    """
-    from immich_autotag.api.immich_proxy.tags import (
-        proxy_create_tag as _proxy_create_tag,
-    )
-
-    # Call the underlying proxy function
-    new_tag_dto = _proxy_create_tag(client=client, name=name)
-
-    # Log the creation
-    logger.debug(f"Created tag: name='{name}'")
-
-    return new_tag_dto
 
 
 @typechecked

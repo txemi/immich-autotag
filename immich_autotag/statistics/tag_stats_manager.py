@@ -22,14 +22,8 @@ class TagStatsManager:
     _stats_manager: "StatisticsManager" = attr.ib(init=False, repr=False)
 
     def __attrs_post_init__(self):
-        # Runtime type check to enforce type safety without circular import
-        from .statistics_manager import StatisticsManager as SM
-
+        # Type is already enforced by TypeVar and typechecked decorator
         self._stats_manager = self.stats_manager
-        if not isinstance(self._stats_manager, SM):
-            raise TypeError(
-                f"_stats_manager must be a StatisticsManager, got {type(self._stats_manager)}"
-            )
 
     @typechecked
     def process_asset_tags(self, tag_names: list[str]) -> None:
