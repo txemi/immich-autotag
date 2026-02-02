@@ -94,7 +94,7 @@ def logging_delete_tag(
     client: ImmichClient,
     tag: TagWrapper,
     reason: Optional[str] = None,
-) -> None:
+) -> ModificationEntry:
     """
     Delete a tag with automatic event logging and statistics tracking.
 
@@ -102,6 +102,9 @@ def logging_delete_tag(
         client: Immich client instance
         tag: TagWrapper object containing tag information
         reason: Optional reason for deletion (e.g., "cleanup", "conflict_resolution")
+
+    Returns:
+        ModificationEntry: The entry created for this deletion
 
     Side effects:
         - Calls the API to delete the tag
@@ -130,6 +133,7 @@ def logging_delete_tag(
         kind=ModificationKind.REMOVE_TAG_GLOBALLY,
         tag=tag,
     )
+    return entry
 
 
 @typechecked
