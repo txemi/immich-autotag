@@ -13,7 +13,10 @@ class AlbumNameMap:
     Uses attrs for validation and robustness.
     """
 
-    _name_to_album: Dict[str, AlbumResponseWrapper] = attrs.field(factory=dict)
+    _name_to_album: Dict[str, AlbumResponseWrapper] = attrs.field(
+        factory=dict,
+        repr=lambda value: f"size={len(value)}",
+    )
 
     @typechecked
     def add(self, album: AlbumResponseWrapper):
