@@ -22,15 +22,42 @@ class MatchResultList:
             member_validator=attr.validators.instance_of(MatchResult),
             iterable_validator=attr.validators.instance_of(list),
         ),
-        repr=lambda matches: f"MatchResults(count={len(matches)})"
+        repr=lambda matches: f"MatchResults(count={len(matches)})",
     )
-    _rules: "ClassificationRuleSet" = attr.ib(
-        init=True, repr=False
-    )
+    _rules: "ClassificationRuleSet" = attr.ib(init=True, repr=False)
     _asset: "AssetResponseWrapper" = attr.ib(
         init=True,
-        repr=lambda asset: f"AssetResponseWrapper(url={asset.get_immich_photo_url().geturl()})"
+        repr=lambda asset: f"AssetResponseWrapper(url={asset.get_immich_photo_url().geturl()})",
     )
+
+    @classmethod
+    @typechecked
+    def from_rules_and_asset(
+        cls,
+        rules: "ClassificationRuleSet",
+        asset: "AssetResponseWrapper",
+    ) -> "MatchResultList":
+        """
+        Factory method to create a MatchResultList with lazy loading of matches.
+
+        This constructor evaluates matching rules against the asset and builds
+        the MatchResultList on demand. The matches are computed once and then
+        cached in the immutable frozen attrs instance.
+
+        Args:
+            rules: The ClassificationRuleSet to match against the asset.
+            asset: The AssetResponseWrapper to match with the rules.
+
+        Returns:
+            A new MatchResultList instance with all matches computed.
+        """
+        matches: list[MatchResult] = []
+        for wrapper in rules.rules:
+            match = wrapper.matches_asset(asset)
+            if match is not None:
+                matches.append(match)
+
+        return cls(matches=matches, rules=rules, asset=asset)
 
     @typechecked
     def tags(self) -> list[str]:
