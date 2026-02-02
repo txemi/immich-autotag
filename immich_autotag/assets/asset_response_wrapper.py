@@ -366,20 +366,55 @@ class AssetResponseWrapper:
 
             error_msg = f"[ERROR] Asset object is missing id. Asset state: {str(self._cache_entry.get_state())}"
             log(error_msg, level=LogLevel.ERROR)
-            return False
+            if tag_mod_report:
+                from immich_autotag.report.modification_kind import ModificationKind
 
-        # Use logging_proxy for automatic error handling and reporting
-        from immich_autotag.api.logging_proxy.add_tags import logging_tag_assets_safe
+                entry = tag_mod_report.add_modification(
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    asset_wrapper=self,
+                    tag=tag,
+                    user=user_wrapper,
+                    extra={"error": error_msg},
+                )
+                return entry
+            return None
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
 
-        success = logging_tag_assets_safe(
-            client=self.get_context().get_client_wrapper().get_client(),
-            tag=tag,
-            asset_ids=[self.get_id()],
+        log(
+            f"[DEBUG] Calling tag_assets.sync with tag_id={tag.get_id()} and asset_id={self.get_id()}",
+            level=LogLevel.DEBUG,
         )
-        
-        if not success:
-            return False
 
+        # Statistics update is handled by modification_report, not directly here
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        try:
+            response = proxy_tag_assets(
+                tag_id=tag.get_id(),
+                client=self.get_context().get_client_wrapper().get_client(),
+                asset_ids=[self.get_id()],
+            )
+        except Exception as e:
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            error_msg = f"[ERROR] Exception during proxy_tag_assets: {e}"
+            log(error_msg, level=LogLevel.ERROR)
+            if tag_mod_report:
+                from immich_autotag.report.modification_kind import ModificationKind
+
+                entry = tag_mod_report.add_modification(
+                    asset_wrapper=self,
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    tag=tag,
+                    user=user_wrapper,
+                    extra={"error": error_msg},
+                )
+                return entry
+            return None
+        log(f"[DEBUG] Response proxy_tag_assets: {response}", level=LogLevel.DEBUG)
         log(
             f"[INFO] Added tag '{tag_name}' to asset.id={self.get_id()}.",
             level=LogLevel.DEBUG,
