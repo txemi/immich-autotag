@@ -68,7 +68,8 @@ class RunStatistics(BaseModel):
     )
     count: int = Field(0, description="Number of processed assets")
     started_at: Optional[datetime] = Field(
-        None, description="Datetime when asset processing started (set by initialize_for_run)"
+        None,
+        description="Datetime when asset processing started (set by initialize_for_run)",
     )
     finished_at: Optional[datetime] = None
     abrupt_exit_at: Optional[datetime] = Field(
@@ -159,7 +160,9 @@ class RunStatistics(BaseModel):
     def get_start_time(self) -> float:
         # started_at is guaranteed to be set by model_validator
         if self.started_at is None:
-            raise RuntimeError("Internal error: started_at should have been initialized by model_validator")
+            raise RuntimeError(
+                "Internal error: started_at should have been initialized by model_validator"
+            )
         return self.started_at.timestamp()
 
     @typechecked
