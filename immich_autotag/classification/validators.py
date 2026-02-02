@@ -13,7 +13,7 @@ import attr
 
 
 def validate_classification_rule(
-    instance: object, attribute: attr.Attribute[Any], value: object
+    instance: object, attribute: Any, value: object
 ) -> None:
     """
     Validate that value is a ClassificationRuleWrapper instance.
