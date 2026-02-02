@@ -35,8 +35,29 @@ class MatchResultList:
         return albums
 
     @typechecked
+    def asset_links(self) -> list[str]:
+        asset_links: list[str] = []
+        for m in self.matches:
+            asset_links.extend(m.asset_links_matched)
+        return asset_links
+
+    @typechecked
     def rules(self) -> list[MatchResult]:
         return list(self.matches)
+
+    @typechecked
+    def _count_total_destinations(self) -> int:
+        """
+        Count the total number of destinations (tags + albums + asset_links) across all match results.
+        If a single rule produces multiple albums, tags, or asset_links, each counts as a destination.
+        
+        Returns:
+            Total count of tags, albums, and asset_links matched.
+        """
+        total_tags = len(self.tags())
+        total_albums = len(self.albums())
+        total_asset_links = len(self.asset_links())
+        return total_tags + total_albums + total_asset_links
 
     @typechecked
     def classification_status(self) -> "ClassificationStatus":

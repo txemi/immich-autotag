@@ -45,6 +45,10 @@ class ClassificationStatus(Enum):
     def from_match_results(match_results: "MatchResultList") -> "ClassificationStatus":
         """
         Determines classification status from match results.
+        
+        A conflict exists if:
+        - Multiple rules matched, OR
+        - A single rule matched but produced multiple destinations (tags + albums > 1)
 
         Args:
             match_results: The result of matching classification rules against an asset.
@@ -53,10 +57,13 @@ class ClassificationStatus(Enum):
             ClassificationStatus enum value indicating the asset's classification state.
         """
         num_rules_matched = len(match_results.rules())
+        total_destinations = match_results._count_total_destinations()
 
-        if num_rules_matched == 1:
-            return ClassificationStatus.CLASSIFIED
-        elif num_rules_matched > 1:
-            return ClassificationStatus.CONFLICT
-        else:  # num_rules_matched == 0
+        if num_rules_matched == 0:
             return ClassificationStatus.UNCLASSIFIED
+        elif num_rules_matched == 1 and total_destinations == 1:
+            # Exactly one rule, exactly one destination (tag or album)
+            return ClassificationStatus.CLASSIFIED
+        else:
+            # Multiple rules OR single rule with multiple destinations
+            return ClassificationStatus.CONFLICT
