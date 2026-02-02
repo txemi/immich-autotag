@@ -1,16 +1,9 @@
-
 import subprocess
-from enum import Enum
-from python_qualitygate.cli.args import QualityGateArgs
 import attr
+from python_qualitygate.cli.args import QualityGateArgs
 from python_qualitygate.core.base import Check
+from python_qualitygate.core.enums_level import QualityGateLevel
 from python_qualitygate.core.result import CheckResult, Finding
-
-
-class QualityLevel(str, Enum):
-    STANDARD = "STANDARD"
-    TARGET = "TARGET"
-    STRICT = "STRICT"
 
 
 @attr.define(auto_attribs=True, slots=True)
@@ -19,18 +12,18 @@ class CheckImportLinter(Check):
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         # Select configuration file based on quality level
-        level = QualityLevel(args.level)
-        
+        level = args.level
+
         match level:
-            case QualityLevel.STANDARD:
+            case QualityGateLevel.STANDARD:
                 config_file = "importlinter.ini"
-            case QualityLevel.TARGET:
+            case QualityGateLevel.TARGET:
                 config_file = "importlinter-target.ini"
-            case QualityLevel.STRICT:
+            case QualityGateLevel.STRICT:
                 config_file = "importlinter-strict.ini"
-        
+
         print(f"[INFO] Using import-linter config: {config_file} (level: {level.value})")
-        
+
         cmd = [args.py_bin, '-m', 'importlinter', '--config', config_file]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)

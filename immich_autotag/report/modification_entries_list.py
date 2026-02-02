@@ -25,7 +25,9 @@ class ModificationEntriesList:
     """
 
     _entries: list["ModificationEntry"] = attrs.field(
-        default=attrs.Factory(list), repr=lambda entries: f"modifications={len(entries)}", alias="entries"
+        default=attrs.Factory(list),
+        repr=lambda entries: f"modifications={len(entries)}",
+        alias="entries",
     )
 
     def entries(self) -> list["ModificationEntry"]:
@@ -76,6 +78,37 @@ class ModificationEntriesList:
         """Returns the underlying list of entries."""
         return list(self._entries)
 
+    def format(self) -> str:
+        """
+        Format the modification entries list as a summary string.
+
+        Shows the total count and breakdown by modification kind.
+
+        Returns:
+            A formatted string with total modifications and counts by kind.
+            Example: "5 modifications (added=2, removed=3)"
+        """
+        total = len(self._entries)
+
+        if total == 0:
+            return "No modifications"
+
+        # Get all kinds and their counts
+        kinds = self.get_all_kinds()
+        kind_counts = {kind: self.count_by_kind(kind) for kind in kinds}
+
+        # Sort kinds by name for consistent output
+        sorted_kinds = sorted(kind_counts.keys(), key=lambda k: str(k))
+
+        # Build breakdown string
+        breakdown = ", ".join(
+            f"{kind.name}={count}"
+            for kind, count in zip(sorted_kinds, [kind_counts[k] for k in sorted_kinds])
+        )
+
+        word = "modification" if total == 1 else "modifications"
+        return f"{total} {word} ({breakdown})"
+
     def __iter__(self) -> Iterator["ModificationEntry"]:
         """Allows iteration over entries."""
         return iter(self._entries)
@@ -87,31 +120,3 @@ class ModificationEntriesList:
     def __bool__(self) -> bool:
         """Returns True if list has any entries."""
         return len(self._entries) > 0
-
-    def format(self) -> str:
-        """
-        Format the modification entries list as a summary string.
-        
-        Shows the total count and breakdown by modification kind.
-        
-        Returns:
-            A formatted string with total modifications and counts by kind.
-            Example: "5 modifications (added=2, removed=3)"
-        """
-        total = len(self._entries)
-        
-        if total == 0:
-            return "No modifications"
-        
-        # Get all kinds and their counts
-        kinds = self.get_all_kinds()
-        kind_counts = {kind: self.count_by_kind(kind) for kind in kinds}
-        
-        # Sort kinds by name for consistent output
-        sorted_kinds = sorted(kind_counts.keys(), key=lambda k: str(k))
-        
-        # Build breakdown string
-        breakdown = ", ".join(f"{kind.name}={count}" for kind, count in zip(sorted_kinds, [kind_counts[k] for k in sorted_kinds]))
-        
-        word = "modification" if total == 1 else "modifications"
-        return f"{total} {word} ({breakdown})"

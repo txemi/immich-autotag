@@ -9,7 +9,6 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
 )
-from immich_autotag.classification.match_result import MatchResult
 from immich_autotag.classification.match_result_list import MatchResultList
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.uuid_wrappers import AssetUUID

@@ -45,7 +45,7 @@ def _correct_date_if_enabled(
     asset_wrapper: AssetResponseWrapper,
 ) -> AssetDateCorrector | None:
     """Correct the asset date if the feature is enabled in config.
-    
+
     Returns the AssetDateCorrector instance so that diagnostic information
     can be accessed at the upper level (format_diagnosis, get_reasoning, etc.)
     """

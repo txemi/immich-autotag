@@ -11,7 +11,10 @@ from immich_autotag.logging.utils import log
 
 from ..asset_date_candidate import AssetDateCandidate
 from ..asset_date_sources_list import AssetDateSourcesList
-from ._helpers import check_filename_candidate_and_fix, is_precise_and_rounded_midnight_close
+from ._helpers import (
+    check_filename_candidate_and_fix,
+    is_precise_and_rounded_midnight_close,
+)
 from .step_result import DateCorrectionStepResult
 
 
@@ -19,46 +22,52 @@ from .step_result import DateCorrectionStepResult
 class AssetDateCorrector:
     """
     Handles date correction logic for assets.
-    
+
     This class encapsulates the logic for correcting asset dates based on various sources.
     After executing the correction, you can query the internal state to understand
     what happened during the process.
     """
-    
+
     asset_wrapper: AssetResponseWrapper
-    
+
     # Private state (initialized after execute())
-    _date_sources_list: AssetDateSourcesList = attrs.field(default=None, init=False, repr=False)
+    _date_sources_list: AssetDateSourcesList = attrs.field(
+        default=None, init=False, repr=False
+    )
     _selected_candidate: Optional[AssetDateCandidate] = attrs.field(
         default=None, init=False, repr=False
     )
-    _step_result: DateCorrectionStepResult = attrs.field(default=None, init=False, repr=False)
+    _step_result: DateCorrectionStepResult = attrs.field(
+        default=None, init=False, repr=False
+    )
     _reasoning: str = attrs.field(default=None, init=False, repr=False)
-    
+
     @typechecked
     def execute(self, log_flag: bool = False) -> DateCorrectionStepResult:
         """
         Main entry point for asset date correction logic.
 
         Policy and structure:
-        - This method is intentionally organized as a sequence of early returns for all conditions 
+        - This method is intentionally organized as a sequence of early returns for all conditions
           where no action is needed (fail-fast, exit-early philosophy).
-        - For conditions where a correction is clearly required, the update is performed immediately 
+        - For conditions where a correction is clearly required, the update is performed immediately
           and the method returns.
-        - Only if none of the above conditions match (i.e., an unhandled or ambiguous case), 
+        - Only if none of the above conditions match (i.e., an unhandled or ambiguous case),
           an error is raised at the end to ensure no silent failures.
-        - This approach prioritizes clarity, explicitness, and robustness over minimalism, 
+        - This approach prioritizes clarity, explicitness, and robustness over minimalism,
           making the logic easy to audit and debug.
 
-        For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates 
+        For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates
         from all duplicates. Applies all relevant heuristics and thresholds to avoid false positives.
-        
+
         Returns:
             DateCorrectionStepResult indicating the outcome of the correction attempt.
         """
 
         wrappers = self.asset_wrapper.get_all_duplicate_wrappers(include_self=True)
-        self._date_sources_list = AssetDateSourcesList.from_wrappers(self.asset_wrapper, wrappers)
+        self._date_sources_list = AssetDateSourcesList.from_wrappers(
+            self.asset_wrapper, wrappers
+        )
         flat_candidates = self._date_sources_list.to_flat_candidates()
         immich_date: datetime = self.asset_wrapper.get_best_date()
 
@@ -92,7 +101,7 @@ class AssetDateCorrector:
                 level=LogLevel.FOCUS,
             )
             return DateCorrectionStepResult.EXIT
-        
+
         self._selected_candidate = oldest_candidate
         oldest: datetime = oldest_candidate.get_aware_date()
 
@@ -114,7 +123,9 @@ class AssetDateCorrector:
             return DateCorrectionStepResult.EXIT
         if is_precise_and_rounded_midnight_close(immich_date, oldest):
             self._step_result = DateCorrectionStepResult.EXIT
-            self._reasoning = "Immich date is precise and suggested is rounded and very close (<4h)"
+            self._reasoning = (
+                "Immich date is precise and suggested is rounded and very close (<4h)"
+            )
             log(
                 f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do. Asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
@@ -123,7 +134,9 @@ class AssetDateCorrector:
         diff_seconds_abs = abs((immich_date - oldest).total_seconds())
         if diff_seconds_abs < 20 * 3600:
             self._step_result = DateCorrectionStepResult.EXIT
-            self._reasoning = "Difference between Immich date and oldest is less than 20h"
+            self._reasoning = (
+                "Difference between Immich date and oldest is less than 20h"
+            )
             log(
                 f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do. Asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
@@ -160,30 +173,30 @@ class AssetDateCorrector:
     def get_step_result(self) -> DateCorrectionStepResult:
         """Get the result of the date correction execution."""
         return self._step_result
-    
+
     @typechecked
     def get_selected_candidate(self) -> Optional[AssetDateCandidate]:
         """Get the candidate that was selected during the correction process."""
         return self._selected_candidate
-    
+
     @typechecked
     def get_date_sources_list(self) -> AssetDateSourcesList:
         """Get the complete list of date sources that were evaluated."""
         return self._date_sources_list
-    
+
     @typechecked
     def get_reasoning(self) -> str:
         """Get a text description of why the correction resulted in the current state."""
         return self._reasoning
-    
+
     @typechecked
     def format(self) -> str:
         """
         Format a concise summary of the date correction result.
-        
+
         Returns a single-line formatted string indicating whether the date was corrected
         and the reasoning behind the decision.
-        
+
         Examples:
         - "✓ Date corrected (Date corrected by filename)"
         - "○ Date not corrected (No date candidates found)"
@@ -194,12 +207,12 @@ class AssetDateCorrector:
             return f"○ Date not corrected ({self._reasoning})"
         else:
             return f"? Date correction unknown ({self._reasoning})"
-    
+
     @typechecked
     def format_diagnosis(self) -> str:
         """
         Format a complete diagnosis of what happened during the correction process.
-        
+
         Returns:
             A formatted string with detailed information about the correction attempt.
         """
@@ -211,16 +224,16 @@ class AssetDateCorrector:
         lines.append(f"Asset Name: {self.asset_wrapper.get_original_file_name()}")
         lines.append(f"Result: {self._step_result}")
         lines.append(f"Reasoning: {self._reasoning}")
-        
+
         if self._selected_candidate:
             lines.append("")
             lines.append("Selected Candidate:")
             lines.append(self._selected_candidate.format_info())
-        
+
         if self._date_sources_list:
             lines.append("")
             lines.append("All Date Sources:")
             lines.append(self._date_sources_list.format_full_info())
-        
+
         lines.append("=" * 60)
         return "\n".join(lines)

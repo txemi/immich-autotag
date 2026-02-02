@@ -62,7 +62,8 @@ class AssetProcessReport(ProcessStepResult):
 
         if (
             self.date_correction_result is not None
-            and self.date_correction_result.get_step_result() == DateCorrectionStepResult.FIXED
+            and self.date_correction_result.get_step_result()
+            == DateCorrectionStepResult.FIXED
         ):
             return True
 
