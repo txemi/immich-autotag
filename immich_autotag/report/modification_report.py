@@ -210,7 +210,7 @@ class ModificationReport:
         old_value: Optional[str] = None,
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
-    ) -> None:
+    ) -> ModificationEntry:
         assert kind in {
             ModificationKind.ADD_TAG_TO_ASSET,
             ModificationKind.REMOVE_TAG_FROM_ASSET,
@@ -229,7 +229,7 @@ class ModificationReport:
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind, extra_key=tag)
-        self.add_modification(
+        return self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
             tag=tag,
