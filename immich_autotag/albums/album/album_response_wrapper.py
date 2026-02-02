@@ -59,8 +59,6 @@ class AlbumResponseWrapper:
     _cache_entry: AlbumCacheEntry = attrs.field()
     _deleted_at: datetime.datetime | None = attrs.field(default=None, init=False)
     _unavailable: bool = attrs.field(default=False, init=False)
-    from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
-
     _error_history: AlbumErrorHistory = attrs.field(
         factory=AlbumErrorHistory,
         init=False,
