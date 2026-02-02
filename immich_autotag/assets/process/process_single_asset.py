@@ -15,7 +15,7 @@ from immich_autotag.assets.consistency_checks._album_date_consistency import (
 )
 from immich_autotag.assets.date_correction.core_logic import AssetDateCorrector
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
-    DuplicateTagAnalysisResult,
+    DuplicateTagAnalysisReport,
     analyze_duplicate_classification_tags,
 )
 from immich_autotag.config.dev_mode import is_crazy_debug_mode
@@ -64,7 +64,7 @@ def _correct_date_if_enabled(
 @typechecked
 def _analyze_duplicate_tags(
     asset_wrapper: AssetResponseWrapper,
-) -> DuplicateTagAnalysisResult:
+) -> DuplicateTagAnalysisReport:
     """Analyze duplicate classification tags for the asset."""
     log("[DEBUG] Analyzing duplicate classification tags...", level=LogLevel.FOCUS)
     return analyze_duplicate_classification_tags(asset_wrapper)

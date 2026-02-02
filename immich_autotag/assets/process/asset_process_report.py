@@ -14,7 +14,7 @@ from immich_autotag.assets.date_correction.core_logic import (
     DateCorrectionStepResult,
 )
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
-    DuplicateTagAnalysisResult,
+    DuplicateTagAnalysisReport,
 )
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
@@ -46,7 +46,7 @@ class AssetProcessReport(ProcessStepResult):
     asset_wrapper: "AssetResponseWrapper"
     tag_conversion_result: Optional[ModificationEntriesList] = None
     date_correction_result: Optional[AssetDateCorrector] = None
-    duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisResult] = None
+    duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisReport] = None
     album_assignment_result: Optional[AlbumAssignmentResult] = None
     validate_result: Optional["ClassificationValidationResult"] = None
     # Optionally, keep the old steps list for extensibility/debug
@@ -69,8 +69,7 @@ class AssetProcessReport(ProcessStepResult):
 
         if (
             self.duplicate_tag_analysis_result is not None
-            and self.duplicate_tag_analysis_result
-            != DuplicateTagAnalysisResult.NO_DUPLICATES
+            and self.duplicate_tag_analysis_result.has_changes()
         ):
             return True
 
@@ -139,7 +138,7 @@ class AssetProcessReport(ProcessStepResult):
             lines.append(f"  Date correction: {self.date_correction_result.format()}")
         if self.duplicate_tag_analysis_result is not None:
             lines.append(
-                f"  Duplicate tag analysis: {self.duplicate_tag_analysis_result}"
+                f"  Duplicate tag analysis: {self.duplicate_tag_analysis_result.format()}"
             )
         if self.album_assignment_result is not None:
             lines.append(f"  Album assignment: {self.album_assignment_result}")
