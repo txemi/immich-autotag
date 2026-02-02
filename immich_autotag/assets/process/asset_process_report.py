@@ -1,6 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import attr
+
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentResult
 from immich_autotag.assets.classification_update_result import (
@@ -37,6 +40,7 @@ class AssetProcessReport(ProcessStepResult):
     Implements ProcessStepResult protocol with has_changes() and has_errors() methods.
     """
 
+    asset_wrapper: "AssetResponseWrapper"
     tag_conversion_result: Optional[ModificationEntriesList] = None
     date_correction_result: Optional[DateCorrectionStepResult] = None
     duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisResult] = None
@@ -85,9 +89,12 @@ class AssetProcessReport(ProcessStepResult):
         return self.has_changes()
 
     def summary(self) -> str:
-        lines = [
+        lines = []
+        asset_url = self.asset_wrapper.get_immich_photo_url().geturl()
+        lines.append(f"Asset: {asset_url}")
+        lines.append(
             f"Asset process summary: {'CHANGES' if self.has_changes() else 'NO CHANGES'}"
-        ]
+        )
         if self.tag_conversion_result is not None:
             lines.append(f"Tag conversions: {self.tag_conversion_result}")
         if self.date_correction_result is not None:

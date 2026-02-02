@@ -128,6 +128,7 @@ def process_single_asset(
     )
 
     report = AssetProcessReport(
+        asset_wrapper=asset_wrapper,
         tag_conversion_result=tag_conversion_result,
         date_correction_result=date_correction_result,
         duplicate_tag_analysis_result=duplicate_tag_analysis_result,
