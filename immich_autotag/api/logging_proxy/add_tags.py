@@ -127,7 +127,7 @@ def logging_tag_assets_safe(
             f"[TAG_ASSETS] Tag '{tag_name}' (id={tag_id}) added to "
             f"{len(asset_ids)} asset(s)"
         )
-        
+
         # Return all entries created in this operation
         return report.modifications[prev_count:]
 
