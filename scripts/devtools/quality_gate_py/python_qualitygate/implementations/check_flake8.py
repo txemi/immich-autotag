@@ -1,6 +1,7 @@
 
 import subprocess
 from python_qualitygate.cli.args import QualityGateArgs
+from python_qualitygate.core.enums_level import QualityGateLevel
 import attr
 from python_qualitygate.core.base import Check
 from python_qualitygate.core.result import CheckResult, Finding
@@ -9,7 +10,7 @@ from python_qualitygate.core.result import CheckResult, Finding
 class CheckFlake8(Check):
     name = 'check_flake8'
 
-    def _get_flake8_config(self, level) -> tuple[list[str], str | None]:
+    def _get_flake8_config(self, level: QualityGateLevel) -> tuple[list[str], str | None]:
         from python_qualitygate.core.enums_level import QualityGateLevel
 
         base_ignore = ['E203', 'W503']
@@ -54,7 +55,7 @@ class CheckFlake8(Check):
         for line in output.splitlines():
             parts = line.split(':', 3)
             if len(parts) == 4:
-                file_path, line_num, col, rest = parts
+                file_path, line_num, _col, rest = parts
                 code_msg = rest.strip().split(' ', 1)
                 code = code_msg[0] if code_msg else ''
                 msg = code_msg[1] if len(code_msg) > 1 else ''

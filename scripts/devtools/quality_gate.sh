@@ -860,7 +860,7 @@ check_import_linter() {
 	local repo_root="$1"
 	local quality_level="$2"
 	local py_bin
-	
+
 	# Select configuration file based on quality level
 	local config_file
 	case "$quality_level" in
@@ -878,9 +878,9 @@ check_import_linter() {
 		return 89
 		;;
 	esac
-	
+
 	echo "[INFO] Using import-linter config: $config_file (level: $quality_level)"
-	
+
 	# Detectar el binario de Python del entorno virtual
 	if [ -f "$repo_root/.venv/bin/python" ]; then
 		py_bin="$repo_root/.venv/bin/python"
