@@ -15,6 +15,7 @@ from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_
     DuplicateTagAnalysisResult,
     analyze_duplicate_classification_tags,
 )
+from immich_autotag.config.dev_mode import is_development_mode
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
@@ -103,11 +104,12 @@ def process_single_asset(
     # Ejecutar cada fase y almacenar resultados en el reporte tipado
     from immich_autotag.assets.process.asset_process_report import AssetProcessReport
 
-    tag_conversion_result = _apply_tag_conversions(asset_wrapper)
-    date_correction_result = _correct_date_if_enabled(asset_wrapper)
-    duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
-    tag_mod_report = ModificationReport.get_instance()
-    album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
+    if not is_crazy_debug_mode():
+        tag_conversion_result = _apply_tag_conversions(asset_wrapper)
+        date_correction_result = _correct_date_if_enabled(asset_wrapper)
+        duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
+        tag_mod_report = ModificationReport.get_instance()
+        album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     validate_result = asset_wrapper.validate_and_update_classification()
 
     log(
@@ -141,11 +143,9 @@ def process_single_asset(
     log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.ASSET_SUMMARY)
     from immich_autotag.config.manager import ConfigManager
 
-    config = ConfigManager.get_instance().get_config_or_raise()
-    if config.album_date_consistency is None:
-        raise ValueError("album_date_consistency configuration must not be None")
-    if config.album_date_consistency.enabled:
-        threshold_days = config.album_date_consistency.threshold_days
+
+    if not is_crazy_debug_mode():
+
         check_album_date_consistency(asset_wrapper, tag_mod_report, threshold_days)
 
     tag_mod_report.flush()

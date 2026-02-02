@@ -22,13 +22,17 @@ from immich_autotag.report.modification_report import ModificationReport
 def check_album_date_consistency(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
-    threshold_days: int = 180,
 ) -> None:
     """
     For each album whose name starts with a date (YYYY-MM-DD, YYYY-MM, or YYYY),
     compare the album date to the asset's best date. If the difference is greater than
     threshold_days, add an entry to the modification report.
     """
+    config = ConfigManager.get_instance().get_config_or_raise()
+    if config.album_date_consistency is None:
+        raise ValueError("album_date_consistency configuration must not be None")
+    if config.album_date_consistency.enabled:
+        threshold_days = config.album_date_consistency.threshold_days
     # Get the best date for the asset (oldest of created_at, file_created_at, exif_created_at)
     try:
         asset_date = asset_wrapper.get_best_date()
