@@ -117,6 +117,11 @@ pipeline {
         }
         success {
             echo "✅ Pipeline succeeded - All stages passed"
+            // Automatically mark successful builds to keep forever
+            script {
+                currentBuild.keepLog = true
+                echo "🔒 Build marked as 'Keep this build forever' (success)"
+            }
         }
         failure {
             echo "❌ Pipeline FAILED - Check logs above"
