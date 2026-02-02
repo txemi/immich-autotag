@@ -31,8 +31,11 @@ class ConfigManager:
         log(f"Found config path: {config_location.path}", level=LogLevel.INFO)
 
         if config_location.path is None:
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
             from immich_autotag.utils.user_help import print_config_help
 
+            log("No configuration found", level=LogLevel.WARNING)
             print_config_help()
             raise FileNotFoundError(
                 "No configuration found. See the configuration guide above."
@@ -51,7 +54,10 @@ class ConfigManager:
             if isinstance(config_obj, UserConfig):
                 self._config = config_obj
             else:
-                print("[CONFIG] Validating config object as UserConfig...")
+                from immich_autotag.logging.levels import LogLevel
+                from immich_autotag.logging.utils import log
+                
+                log("Validating config object as UserConfig...", level=LogLevel.DEBUG)
                 self._config = UserConfig.model_validate(config_obj)
         elif config_type == config_type.__class__.YAML:
             from immich_autotag.logging.levels import LogLevel
@@ -61,8 +67,11 @@ class ConfigManager:
             config_data = load_yaml_config(config_location.path)
             self._config = UserConfig.model_validate(config_data)
         else:
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
             from immich_autotag.utils.user_help import print_config_help
 
+            log("Configuration type not recognized", level=LogLevel.WARNING)
             print_config_help()
             raise FileNotFoundError(
                 "No configuration found. See the configuration guide above."
@@ -92,42 +101,34 @@ class ConfigManager:
 
     def __attrs_post_init__(self):
         import traceback
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
 
         global _instance, _instance_created
         # Reserved global variable _instance is required for singleton pattern
         if _instance_created:
-            print(
-                "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
-            )
+            log("ConfigManager instance already exists", level=LogLevel.ERROR)
             raise RuntimeError(
                 "ConfigManager instance already exists. Use get_instance()."
             )
-        try:
-            # --- New configuration search and loading logic ---
-            self._construction()
-            # Initialize skip_n with the counter from the last previous execution (with overlap)
-            _instance_created = True
-            print("[INFO] Assigning self to reserved global variable _instance.")
-            _instance = self
-        except Exception:
-            from immich_autotag.logging.levels import LogLevel
-            from immich_autotag.logging.utils import log
-
-            log("[ConfigManager] Error during config load:", level=LogLevel.ERROR)
-            traceback.print_exc()
-            _instance = None
-            _instance_created = False
-            raise
+        
+        # --- New configuration search and loading logic ---
+        self._construction()
+        # Initialize skip_n with the counter from the last previous execution (with overlap)
+        _instance_created = True
+        log("ConfigManager singleton instance created and assigned", level=LogLevel.PROGRESS)
+        _instance = self
 
     @staticmethod
     @typechecked
     def get_instance() -> "ConfigManager":
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+        
         global _instance
         # Reserved global variable _instance is required for singleton pattern
         if _instance is None:
-            print(
-                "[INFO] Reserved global variable _instance is None, creating new ConfigManager instance."
-            )
+            log("Creating new ConfigManager instance", level=LogLevel.PROGRESS)
             instance = ConfigManager()
             _instance = instance
         assert _instance is not None
