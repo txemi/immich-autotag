@@ -878,21 +878,16 @@ class AlbumCollectionWrapper:
 
         from immich_client.models.album_user_role import AlbumUserRole
 
-        from immich_autotag.permissions.album_permission_executor.add_members_to_album import (
-            add_members_to_album,
+        from immich_autotag.api.logging_proxy.permissions import (
+            logging_add_user_to_album,
         )
 
         try:
-            add_members_to_album(
+            logging_add_user_to_album(
                 album=album,
-                users=[user],
+                user=user,
                 access_level=AlbumUserRole.EDITOR,
                 context=context,
-            )
-            tag_mod_report.add_album_modification(
-                kind=ModificationKind.ADD_USER_TO_ALBUM,
-                album=album,
-                extra={"added_user": str(user.get_uuid())},
             )
         except Exception as e:
             raise RuntimeError(
