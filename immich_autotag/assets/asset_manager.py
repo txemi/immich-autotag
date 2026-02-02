@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterator, Optional
 
 import attrs
-from immich_autotag.api.immich_proxy.types import Client
 from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+from immich_autotag.api.immich_proxy.types import Client
 from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper

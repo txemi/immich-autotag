@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import attrs
-from immich_autotag.api.immich_proxy.types import AssetResponseDto
 
+from immich_autotag.api.immich_proxy.types import AssetResponseDto
 from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.context.immich_context import ImmichContext

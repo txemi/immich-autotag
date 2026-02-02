@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Generator
 
-from immich_autotag.api.immich_proxy.types import (
-    AssetResponseDto,
-    MetadataSearchDto,
-    Response,
-)
 from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.search import (
     SearchResponseDto,
     proxy_search_assets,
+)
+from immich_autotag.api.immich_proxy.types import (
+    AssetResponseDto,
+    MetadataSearchDto,
+    Response,
 )
 from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
