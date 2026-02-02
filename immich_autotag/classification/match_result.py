@@ -14,25 +14,45 @@ if TYPE_CHECKING:
 # Represents the result of a match: reference to the rule and the matched tags and albums
 @attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
 class MatchResult:
-    rule: "ClassificationRuleWrapper" = attr.ib(validator=validate_classification_rule)
-    tags_matched: list[str] = attr.ib(
+    _rule: "ClassificationRuleWrapper" = attr.ib(validator=validate_classification_rule)
+    _tags_matched: list[str] = attr.ib(
         factory=list,
         validator=attr.validators.instance_of(list),
     )
-    albums_matched: list[str] = attr.ib(
+    _albums_matched: list[str] = attr.ib(
         factory=list,
         validator=attr.validators.instance_of(list),
     )
-    asset_links_matched: list[str] = attr.ib(
+    _asset_links_matched: list[str] = attr.ib(
         factory=list,
         validator=attr.validators.instance_of(list),
     )
 
     def __attrs_post_init__(self):
-        if not (self.tags_matched or self.albums_matched or self.asset_links_matched):
+        if not (self._tags_matched or self._albums_matched or self._asset_links_matched):
             raise ValueError(
                 "MatchResult must have at least one matching tag, album, or asset link."
             )
+
+    @typechecked
+    def rule(self) -> "ClassificationRuleWrapper":
+        """Returns the classification rule that produced this match."""
+        return self._rule
+
+    @typechecked
+    def tags_matched(self) -> list[str]:
+        """Returns the list of tags matched by this rule."""
+        return self._tags_matched
+
+    @typechecked
+    def albums_matched(self) -> list[str]:
+        """Returns the list of albums matched by this rule."""
+        return self._albums_matched
+
+    @typechecked
+    def asset_links_matched(self) -> list[str]:
+        """Returns the list of asset links matched by this rule."""
+        return self._asset_links_matched
 
     @typechecked
     def has_match(self) -> bool:
@@ -40,7 +60,7 @@ class MatchResult:
         Returns True if there is at least one matching tag, album, or asset link in the result.
         """
         return bool(
-            self.tags_matched or self.albums_matched or self.asset_links_matched
+            self._tags_matched or self._albums_matched or self._asset_links_matched
         )
 
     @typechecked
@@ -49,5 +69,5 @@ class MatchResult:
         Returns True if there is at least one matching tag, album, or asset link in the result.
         """
         return bool(
-            self.tags_matched or self.albums_matched or self.asset_links_matched
+            self._tags_matched or self._albums_matched or self._asset_links_matched
         )

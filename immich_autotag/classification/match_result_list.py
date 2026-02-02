@@ -15,38 +15,42 @@ if TYPE_CHECKING:
     )
 
 
-@attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True, repr=False)
+@attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
 class MatchResultList:
     _matches: List[MatchResult] = attr.ib(
         validator=attr.validators.deep_iterable(
             member_validator=attr.validators.instance_of(MatchResult),
             iterable_validator=attr.validators.instance_of(list),
-        )
+        ),
+        repr=lambda matches: f"MatchResults(count={len(matches)})"
     )
     _rules: "ClassificationRuleSet" = attr.ib(
-        init=True,
+        init=True, repr=False
     )
-    _asset: "AssetResponseWrapper" = attr.ib(init=True)
+    _asset: "AssetResponseWrapper" = attr.ib(
+        init=True,
+        repr=lambda asset: f"AssetResponseWrapper(url={asset.get_immich_photo_url().geturl()})"
+    )
 
     @typechecked
     def tags(self) -> list[str]:
         tags: list[str] = []
         for m in self._matches:
-            tags.extend(m.tags_matched)
+            tags.extend(m.tags_matched())
         return tags
 
     @typechecked
     def albums(self) -> list[str]:
         albums: list[str] = []
         for m in self._matches:
-            albums.extend(m.albums_matched)
+            albums.extend(m.albums_matched())
         return albums
 
     @typechecked
     def asset_links(self) -> list[str]:
         asset_links: list[str] = []
         for m in self._matches:
-            asset_links.extend(m.asset_links_matched)
+            asset_links.extend(m.asset_links_matched())
         return asset_links
 
     @typechecked
