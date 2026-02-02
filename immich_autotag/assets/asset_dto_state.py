@@ -336,14 +336,14 @@ class AssetDtoState:
     def is_duplicate_id_loaded(self) -> bool:
         """
         Returns True if duplicate_id is loaded (not Unset), False otherwise.
-        
+
         Similar to are_tags_loaded(), this checks if the duplicate_id field has been loaded.
         The duplicate_id may be Unset depending on which API endpoint was used.
-        
-        Note: This returns True even if duplicate_id is None/empty (meaning the asset 
+
+        Note: This returns True even if duplicate_id is None/empty (meaning the asset
         is not part of any duplicate group). It only returns False if the field is Unset
         (meaning we haven't loaded it yet).
-        
+
         Returns:
             True if duplicate_id is loaded (accessible, even if None/empty)
             False if duplicate_id is Unset (not yet loaded)
@@ -352,11 +352,11 @@ class AssetDtoState:
 
         dto = self._require_dto()
         val = dto.duplicate_id
-        
+
         # Check if the field is Unset (not loaded)
         if val is UNSET or isinstance(val, Unset):
             return False
-        
+
         # Field is loaded (even if it's None or empty string)
         return True
 
@@ -373,13 +373,13 @@ class AssetDtoState:
     def require_duplicate_id_loaded(self) -> "AssetDtoState":
         """
         Ensures duplicate_id is loaded and returns self, otherwise raises an exception.
-        
+
         This forces the caller (upper layer) to handle the case where duplicate_id
         is not loaded, typically by calling ensure_full_asset_loaded() first.
-        
+
         Returns:
             self: Always returns self when duplicate_id is loaded
-        
+
         Raises:
             DuplicateIdNotLoadedError: If duplicate_id is not loaded (Unset)
         """
@@ -390,14 +390,14 @@ class AssetDtoState:
     def get_duplicate_id_as_uuid(self) -> DuplicateUUID | None:
         """
         Returns the duplicate_id as a DuplicateUUID, or None if the asset has no duplicate group.
-        
+
         This method requires duplicate_id to be loaded. If not loaded (Unset), it raises
         DuplicateIdNotLoadedError, forcing the upper layer to call ensure_full_asset_loaded().
-        
+
         Returns:
             DuplicateUUID if the asset is part of a duplicate group
             None if the asset is NOT part of any duplicate group (field is loaded but empty)
-        
+
         Raises:
             DuplicateIdNotLoadedError: If duplicate_id is Unset (not yet loaded from API)
         """
@@ -405,10 +405,10 @@ class AssetDtoState:
         full = self.require_duplicate_id_loaded()
         dto = full._require_dto()
         val = dto.duplicate_id
-        
+
         # At this point, val is NOT Unset (validated by require_duplicate_id_loaded)
         # But it might be None or empty string, meaning no duplicate group
         if not val:
             return None
-        
+
         return DuplicateUUID(val)

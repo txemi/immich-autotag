@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_kind import ModificationKind
 
 
+
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class ModificationEntriesList:
     """

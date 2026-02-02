@@ -321,17 +321,17 @@ class AssetCacheEntry:
     def get_duplicate_id_as_uuid(self) -> DuplicateUUID | None:
         """
         Returns the duplicate id as DuplicateUUID, or None if not part of a duplicate group.
-        
+
         Automatically ensures the asset is fully loaded if duplicate_id is not yet available.
         This provides transparent access to duplicate_id regardless of how the asset was initially loaded.
-        
+
         Returns:
             DuplicateUUID if the asset is part of a duplicate group
             None if the asset is not part of any duplicate group
         """
         from immich_autotag.assets.asset_dto_state import DuplicateIdNotLoadedError
         from immich_autotag.context.immich_context import ImmichContext
-        
+
         try:
             return self._state.get_duplicate_id_as_uuid()
         except DuplicateIdNotLoadedError:
