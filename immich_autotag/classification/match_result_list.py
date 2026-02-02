@@ -3,11 +3,13 @@ from typing import TYPE_CHECKING, List
 import attr
 from typeguard import typechecked
 
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
 from immich_autotag.classification.match_result import MatchResult
 
 if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.classification.classification_rule_set import (
+        ClassificationRuleSet,
+    )
     from immich_autotag.classification.classification_status import (
         ClassificationStatus,
     )
@@ -21,7 +23,7 @@ class MatchResultList:
             iterable_validator=attr.validators.instance_of(list),
         )
     )
-    _rules: ClassificationRuleSet = attr.ib(
+    _rules: "ClassificationRuleSet" = attr.ib(
         init=True,
     )
     _asset: "AssetResponseWrapper" = attr.ib(init=True)
