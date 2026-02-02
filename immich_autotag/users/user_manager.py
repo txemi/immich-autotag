@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import attrs
 from immich_client.client import AuthenticatedClient as ImmichClient
@@ -11,11 +11,6 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.types.uuid_wrappers import UserUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-
-if TYPE_CHECKING:
-    from immich_autotag.types.email_address import EmailAddress
-    from immich_autotag.types.uuid_wrappers import UserUUID
-    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
 # Singleton instance variable (module-level, not attrs-managed)
 _user_manager_instance: Optional[UserManager] = None
@@ -38,7 +33,6 @@ class UserManager:
 
     def __attrs_post_init__(self):
         # Prevent direct instantiation
-        global _user_manager_instance
         if _user_manager_instance is not None:
             raise RuntimeError(
                 "Use UserManager.get_instance() instead of direct instantiation."

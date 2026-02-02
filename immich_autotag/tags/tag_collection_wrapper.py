@@ -28,7 +28,6 @@ class TagCollectionWrapper:
     _fully_loaded: bool = attrs.field(default=False, init=False)
 
     def __attrs_post_init__(self):
-        global _tag_collection_singleton
         if (
             _tag_collection_singleton is not None
             and self is not _tag_collection_singleton

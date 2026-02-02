@@ -32,7 +32,7 @@ def proxy_get_asset_info(
     """
     Centralized wrapper for get_asset_info.sync. Now delegates all cache logic to AssetCacheEntry.
     """
-    global _asset_api_call_count, _asset_api_ids
+    global _asset_api_call_count
     _asset_api_call_count += 1
     _asset_api_ids.add(str(asset_id))
     # Calls the API directly, without cache logic

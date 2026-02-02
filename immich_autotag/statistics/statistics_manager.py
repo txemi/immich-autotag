@@ -72,14 +72,6 @@ class StatisticsManager:
         )
         return self._perf_tracker
 
-    def save_to_file(self) -> None:
-        if self._current_stats and self._current_file:
-            # Always update progress_description before saving
-            self.get_or_create_run_stats().progress_description = (
-                self.get_progress_description()
-            )
-            self.get_or_create_run_stats().save_to_file()
-
     @typechecked
     def _set_max_assets(self) -> None:
         """
@@ -133,6 +125,14 @@ class StatisticsManager:
         self._set_max_assets()
         self._set_skip_n()
 
+    def save_to_file(self) -> None:
+        if self._current_stats and self._current_file:
+            # Always update progress_description before saving
+            self.get_or_create_run_stats().progress_description = (
+                self.get_progress_description()
+            )
+            self.get_or_create_run_stats().save_to_file()
+
     @typechecked
     def get_checkpoint_manager(self) -> CheckpointManager:
         return self._checkpoint
@@ -184,7 +184,6 @@ class StatisticsManager:
     @staticmethod
     def get_instance() -> "StatisticsManager":
         # Reserved global variable _instance is required for singleton pattern
-        global _instance
         if _instance is None:
             # Logging the use of reserved variable
             print(

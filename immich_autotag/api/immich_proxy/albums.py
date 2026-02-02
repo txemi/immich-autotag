@@ -52,7 +52,7 @@ def proxy_get_album_info(
     """
     Centralized wrapper for get_album_info.sync. Includes disk cache.
     """
-    global _album_api_call_count, _album_api_ids
+    global _album_api_call_count
     from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
     cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS)

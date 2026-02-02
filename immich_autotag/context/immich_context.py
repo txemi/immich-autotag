@@ -104,7 +104,6 @@ class ImmichContext:
     @staticmethod
     @typechecked
     def get_default_instance() -> "ImmichContext":
-        global _instance
         # Reserved global variable _instance is required for singleton pattern
         if _instance is None:
             print(

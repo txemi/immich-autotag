@@ -64,7 +64,6 @@ class RunOutputManager:
     )
 
     def __attrs_post_init__(self):
-        global _current_instance
         if _current_instance is not None:
             raise RuntimeError(
                 "RunOutputManager is a singleton. Use RunOutputManager.current() to get the instance."
