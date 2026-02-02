@@ -13,7 +13,7 @@ from immich_autotag.assets.classification_validation_result import (
 from immich_autotag.assets.consistency_checks._album_date_consistency import (
     check_album_date_consistency,
 )
-from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepResult
+from immich_autotag.assets.date_correction.core_logic import AssetDateCorrector
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     DuplicateTagAnalysisResult,
     analyze_duplicate_classification_tags,
@@ -43,17 +43,21 @@ def _apply_tag_conversions(
 @typechecked
 def _correct_date_if_enabled(
     asset_wrapper: AssetResponseWrapper,
-) -> DateCorrectionStepResult | None:
-    """Correct the asset date if the feature is enabled in config."""
+) -> AssetDateCorrector | None:
+    """Correct the asset date if the feature is enabled in config.
+    
+    Returns the AssetDateCorrector instance so that diagnostic information
+    can be accessed at the upper level (format_diagnosis, get_reasoning, etc.)
+    """
 
     config = ConfigManager.get_instance().get_config_or_raise()
     if config.duplicate_processing is None:
         raise ValueError("duplicate_processing configuration must not be None")
     if config.duplicate_processing.date_correction.enabled:
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
-        from immich_autotag.assets.date_correction.core_logic import correct_asset_date
-
-        return correct_asset_date(asset_wrapper)
+        corrector = AssetDateCorrector(asset_wrapper=asset_wrapper)
+        corrector.execute()
+        return corrector
     return None
 
 
@@ -115,8 +119,8 @@ def process_single_asset(
     tag_mod_report = None
 
     tag_conversion_result = _apply_tag_conversions(asset_wrapper)
+    date_correction_result = _correct_date_if_enabled(asset_wrapper)
     if not is_crazy_debug_mode():
-        date_correction_result = _correct_date_if_enabled(asset_wrapper)
         duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
         tag_mod_report = ModificationReport.get_instance()
         album_assignment_result = _analyze_and_assign_album(
