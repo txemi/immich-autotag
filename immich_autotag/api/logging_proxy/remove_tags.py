@@ -28,7 +28,6 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
     from immich_autotag.types.client_types import ImmichClient
-    from immich_autotag.types.uuid_wrappers import AssetUUID
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +84,7 @@ def logging_untag_assets(
         f"[UNTAG_ASSETS] Tag '{tag_name}' (id={tag_id}) removed from "
         f"{len(asset_wrappers)} asset(s)"
     )
-    
+
     return entries
 
 
@@ -201,11 +200,13 @@ def logging_untag_assets_safe(
 
     try:
         # Call logging_untag_assets which returns the created entries
-        entries = logging_untag_assets(client=client, tag=tag, asset_wrappers=asset_wrappers)
-        
+        entries = logging_untag_assets(
+            client=client, tag=tag, asset_wrappers=asset_wrappers
+        )
+
         # Return all entries created in this operation (success case)
         return ModificationEntriesList(entries=entries)
-        
+
     except Exception as e:
         # Log the error
         logger.error(

@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
     from immich_autotag.types.client_types import ImmichClient
-    from immich_autotag.types.uuid_wrappers import AssetUUID
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +81,7 @@ def logging_tag_assets(
         f"[TAG_ASSETS] Tag '{tag_name}' (id={tag_id}) added to "
         f"{len(asset_wrappers)} asset(s)"
     )
-    
+
     return entries
 
 
@@ -126,8 +125,10 @@ def logging_tag_assets_safe(
 
     try:
         # Call logging_tag_assets which returns the created entries
-        entries = logging_tag_assets(client=client, tag=tag, asset_wrappers=asset_wrappers)
-        
+        entries = logging_tag_assets(
+            client=client, tag=tag, asset_wrappers=asset_wrappers
+        )
+
         # Return all entries created in this operation
         return ModificationEntriesList(entries=entries)
 

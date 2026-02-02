@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 from urllib.parse import ParseResult
 
 import attrs
@@ -271,9 +271,7 @@ class AssetResponseWrapper:
             self.get_context().get_tag_collection(), TagCollectionWrapper
         ), "context.tag_collection must be an object"
 
-        tag_wrapper = self.get_context().get_tag_collection().find_by_name(
-            tag_name
-        )
+        tag_wrapper = self.get_context().get_tag_collection().find_by_name(tag_name)
         if not tag_wrapper:
             error_msg = f"Tag '{tag_name}' not found in tag collection"
             log(error_msg, level=LogLevel.ERROR)
