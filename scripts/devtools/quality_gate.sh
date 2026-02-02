@@ -858,7 +858,24 @@ check_no_spanish_chars() {
 ###############################################################################
 check_import_linter() {
 	local repo_root="$1"
+	local quality_level="$2"
 	local py_bin
+	
+	# Only run in TARGET or STRICT levels, skip in STANDARD
+	case "$quality_level" in
+	STANDARD)
+		echo "[SKIP] import-linter skipped in $quality_level level (only runs in TARGET/STRICT)"
+		return 0
+		;;
+	TARGET | STRICT)
+		# Continue with check
+		;;
+	*)
+		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_import_linter: '$quality_level'. Exiting for safety." >&2
+		return 89
+		;;
+	esac
+	
 	# Detectar el binario de Python del entorno virtual
 	if [ -f "$repo_root/.venv/bin/python" ]; then
 		py_bin="$repo_root/.venv/bin/python"
@@ -917,7 +934,7 @@ run_quality_gate_check_mode() {
 	check_python_syntax "$py_bin" "$target_dir" || return 1
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || return 1
 	check_jscpd "$target_dir" || return 1
-	check_import_linter "$REPO_ROOT" || return 1
+	check_import_linter "$REPO_ROOT" "$quality_level" || return 1
 	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || return 3
 	check_no_spanish_chars "$target_dir" || return 5
 	# 2. Formatters and style (run only if all blocking checks pass)
@@ -962,7 +979,7 @@ run_quality_gate_apply_mode() {
 	# 4. Heavy/informative checks
 	check_jscpd "$target_dir" || error_found=1
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || error_found=1
-	check_import_linter "$REPO_ROOT" || error_found=1
+	check_import_linter "$REPO_ROOT" "$quality_level" || error_found=1
 	check_mypy "$check_mode" "$quality_level" "$py_bin" "$target_dir" || error_found=1
 	# 5. Dynamic attributes check (run last to ensure it doesn't block other checks from running)
 	check_no_dynamic_attrs "$target_dir" "$quality_level" || error_found=2
@@ -1004,7 +1021,7 @@ run_quality_gate_check_summary() {
 	check_ruff "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" || return 1
 	# 4. Flake8 (style)
 	check_flake8 "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir" || return 1
-	check_import_linter "$REPO_ROOT" || return 1
+	check_import_linter "$REPO_ROOT" "$quality_level" || return 1
 	# 5. Policy checks
 	check_no_tuples "$py_bin" "$REPO_ROOT" "$target_dir" || return 3
 	# 6. Code duplication (least urgent)
