@@ -11,8 +11,6 @@ class CheckFlake8(Check):
     name = 'check_flake8'
 
     def _get_flake8_config(self, level: QualityGateLevel) -> tuple[list[str], str | None]:
-        from python_qualitygate.core.enums_level import QualityGateLevel
-
         base_ignore = ['E203', 'W503']
         flake8_select = None
         match level:
@@ -79,7 +77,6 @@ class CheckFlake8(Check):
         return findings
 
     def check(self, args: QualityGateArgs) -> CheckResult:
-        from python_qualitygate.core.enums_level import QualityGateLevel
         flake8_ignore, flake8_select = self._get_flake8_config(args.level)
         cmd = self._build_cmd(args, flake8_ignore, flake8_select)
         print(f"[RUN] {' '.join(cmd)}")
