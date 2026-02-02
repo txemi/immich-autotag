@@ -29,7 +29,7 @@
 # | 2  | check_ruff             | pip (ruff)            | Lint and autoformat with ruff                     | Blocks any error              | Only F821 blocks, E501 ignored| Only F821 blocks, E501 ignored|
 # | 3  | check_isort            | pip (isort)           | Sorts imports with isort                          | Blocks if unsorted            | Blocks if unsorted            | Blocks if unsorted            |
 # | 4  | check_black            | pip (black)           | Formats code with black                           | Blocks if changes             | Blocks if changes             | Blocks if changes             |
-# | 5  | check_flake8           | pip (flake8)          | Style linter with flake8                          | Blocks any error              | Only warning, E501 ignored    | Only warning, E501 ignored    |
+# | 5  | check_flake8           | pip (flake8)          | Style linter with flake8                          | Blocks any error              | Only warning, E501 ignored    | Blocks F* errors (E501 ignored) |
 # | 6  | check_mypy             | pip (mypy)            | Static type checking with mypy                    | Blocks any error              | Only arg-type/call-arg block, rest warning | arg-type/call-arg/attr-defined block, rest warning |
 # | 7  | check_ssort            | pip (ssort, github)   | Deterministic class method ordering               | Blocks if unordered           | Blocks if unordered**         | Blocks if unordered**         |
 # | 8  | check_no_tuples        | custom (python)       | Forbids tuples as return/attribute                | Blocks if tuples detected     | Blocks if tuples detected     | Blocks if tuples detected     |
@@ -51,7 +51,7 @@
 # | 2  | ruff (lint/auto-fix)                    | check_ruff             | Linter and auto-format                      |   ✔️     |   F821 only (E501 ignored)   |   F821 only (E501 ignored)   |
 # | 3  | isort (import sorting)                  | check_isort            | Sorts imports                               |   ✔️     |   ✔️                         |   ✔️                        |
 # | 4  | black (formatter)                       | check_black            | Code formatter                              |   ✔️     |   ✔️                         |   ✔️                        |
-# | 5  | flake8 (style)                          | check_flake8           | Style linter                                |   ✔️     |   Warn only (E501 ignored)  |   Warn only (E501 ignored)  |
+# | 5  | flake8 (style)                          | check_flake8           | Style linter                                |   ✔️     |   Warn only (E501 ignored)  |   F* only (E501 ignored)    |
 # | 6  | flake8 (E501 long lines)                | check_flake8           | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
 # | 7  | ruff (E501 long lines)                  | check_ruff             | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
 # | 8  | mypy (type check)                       | check_mypy             | Type checking (all errors)                  |   ✔️     |   ✔️                         |   ✔️                        |
@@ -64,7 +64,7 @@
 # | 17 | no tuples (returns/attributes)          | check_no_tuples        | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        |
 # | 18 | shfmt (bash formatting)                 | check_shfmt            | Bash script formatting                      |   ✔️     |   ✔️                         |   ✔️                        |
 # -----------------------------------------------------------------------------
-# * In STANDARD and TARGET mode, flake8/ruff ignore E501. Mypy now blocks ALL errors in both modes.
+# * In STANDARD and TARGET mode, flake8/ruff ignore E501. TARGET flake8 blocks only F* (logic) errors. Mypy blocks ALL errors in both modes.
 # ** Only if --enforce-dynamic-attrs is used
 #
 # =====================
@@ -75,6 +75,7 @@
 # | mypy (all errors)                 | ✅ COMPLETED | All mypy errors now block in STANDARD/TARGET |
 # | Spanish character check           | Future      | Warn only, will block in future  |
 # | flake8/ruff E501                  | Future      | Ignored, will block in future    |
+# | flake8 F* (logic errors)          | ✅ COMPLETED | TARGET blocks F* only            |
 #
 
 set -x
@@ -690,7 +691,7 @@ check_flake8() {
 	local py_bin="$3"
 	local max_line_length="$4"
 	local target_dir="$5"
-	local flake_failed=0 flake8_ignore
+	local flake_failed=0 flake8_ignore flake8_select
 	ensure_python_tool "$py_bin" flake8 flake8
 	flake8_ignore="E203,W503"
 	if [ "$quality_level" = "STRICT" ]; then
@@ -700,13 +701,18 @@ check_flake8() {
 		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
 	elif [ "$quality_level" = "TARGET" ]; then
 		flake8_ignore="$flake8_ignore,E501"
-		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
+		flake8_select="F"
+		echo "[TARGET MODE] E501 (line length) errors are ignored and only F* (logic) errors will block the build."
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_flake8: '$quality_level'. Exiting for safety."
 		return 93
 	fi
 	echo "[INFO] Running flake8 (output below if any):"
-	"$py_bin" -m flake8 --max-line-length=$max_line_length --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$target_dir"
+	if [ -n "$flake8_select" ]; then
+		"$py_bin" -m flake8 --max-line-length=$max_line_length --select=$flake8_select --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$target_dir"
+	else
+		"$py_bin" -m flake8 --max-line-length=$max_line_length --extend-ignore=$flake8_ignore --exclude=.venv,immich-client,scripts,jenkins_logs "$target_dir"
+	fi
 	if [ $? -ne 0 ]; then
 		flake_failed=1
 	fi
@@ -718,8 +724,8 @@ check_flake8() {
 			echo "[WARNING] flake8 failed, but STANDARD mode is enabled. See output above."
 			echo "[STANDARD MODE] Not blocking build on flake8 errors."
 		elif [ "$quality_level" = "TARGET" ]; then
-			echo "[WARNING] flake8 failed, but TARGET mode is enabled. See output above."
-			echo "[TARGET MODE] Not blocking build on flake8 errors."
+			echo "[ERROR] flake8 failed in TARGET mode (F* errors). See output above."
+			return 1
 		else
 			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
 			return 2
