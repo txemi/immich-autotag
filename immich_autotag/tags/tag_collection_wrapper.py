@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 import attrs
-from immich_client.models.tag_response_dto import TagResponseDto
+from immich_autotag.api.immich_proxy.types import TagResponseDto
 from typeguard import typechecked
 
 from immich_autotag.tags.tag_dual_map import TagDualMap
@@ -119,7 +119,7 @@ class TagCollectionWrapper:
         if tag is not None:
             return tag
 
-        from immich_client import errors as immich_errors
+        from immich_autotag.api.immich_proxy.types import immich_errors
 
         from immich_autotag.api.logging_proxy.create_tag.logging_create_tag import (
             logging_create_tag,

@@ -1,5 +1,5 @@
 import attrs
-from immich_client.models.tag_response_dto import TagResponseDto
+from immich_autotag.api.immich_proxy.types import TagResponseDto
 from typeguard import typechecked
 
 from immich_autotag.types.uuid_wrappers import TagUUID

@@ -6,10 +6,7 @@ from typing import Callable
 from urllib.parse import ParseResult
 
 import attrs
-from immich_client.models.update_asset_dto import (
-    UpdateAssetDto,  # TODO: move to proxy if needed
-)
-from immich_client.types import Unset
+from immich_autotag.api.immich_proxy.types import UpdateAssetDto, Unset
 from typeguard import typechecked
 
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (

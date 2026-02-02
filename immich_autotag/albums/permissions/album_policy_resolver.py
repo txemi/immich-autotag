@@ -24,7 +24,7 @@ import re
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import attrs
-from immich_client.models.album_user_role import AlbumUserRole
+from immich_autotag.api.immich_proxy.types import AlbumUserRole
 
 from immich_autotag.config.models import AlbumSelectionRule, UserGroup
 

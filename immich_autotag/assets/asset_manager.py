@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterator, Optional
 
 import attrs
-from immich_client import Client
+from immich_autotag.api.immich_proxy.types import Client
 from typeguard import typechecked
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto

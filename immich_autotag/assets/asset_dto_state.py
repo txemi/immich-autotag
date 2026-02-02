@@ -12,7 +12,7 @@ import enum
 from datetime import datetime
 
 import attrs
-from immich_client.types import Unset
+from immich_autotag.api.immich_proxy.types import Unset
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 
@@ -217,7 +217,7 @@ class AssetDtoState:
         """
         Reconstructs the state from a serialized dictionary.
         """
-        from immich_client.models.asset_response_dto import AssetResponseDto
+        from immich_autotag.api.immich_proxy.types import AssetResponseDto
 
         dto = AssetResponseDto.from_dict(cast(Mapping[str, Any], data["dto"]))
         api_endpoint_source = AssetDtoType(str(data["type"]))

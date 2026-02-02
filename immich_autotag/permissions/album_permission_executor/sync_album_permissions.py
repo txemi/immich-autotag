@@ -73,7 +73,7 @@ def sync_album_permissions(
 
     # Phase 2A: PONER (add members)
     if members_to_add:
-        from immich_client.models.album_user_role import AlbumUserRole
+        from immich_autotag.api.immich_proxy.types import AlbumUserRole
 
         logging_add_members_to_album(
             album=album_wrapper,
