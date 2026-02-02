@@ -1,9 +1,3 @@
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from .asset_date_candidates import AssetDateCandidates
-
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
@@ -14,11 +8,10 @@ from immich_autotag.assets.validators import validate_asset_response_wrapper_not
 
 from .asset_date_candidate import AssetDateCandidate
 from .asset_date_candidates import AssetDateCandidates
+from .date_source_kind import DateSourceKind
 
 if TYPE_CHECKING:
-    from .asset_date_candidates import AssetDateCandidates
-
-from .date_source_kind import DateSourceKind
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 
 @attrs.define(auto_attribs=True, slots=True)
