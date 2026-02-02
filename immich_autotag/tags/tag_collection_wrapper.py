@@ -128,7 +128,9 @@ class TagCollectionWrapper:
             entry = logging_create_tag(client=client, name=name)
             new_tag = entry.tag
             if new_tag is None:
-                raise RuntimeError(f"Tag creation succeeded but entry has no tag: {name}")
+                raise RuntimeError(
+                    f"Tag creation succeeded but entry has no tag: {name}"
+                )
             self._index.add(new_tag)
             return new_tag
         except immich_errors.UnexpectedStatus as e:
