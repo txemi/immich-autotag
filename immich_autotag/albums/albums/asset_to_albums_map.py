@@ -127,4 +127,3 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
 
     def __len__(self) -> int:
         return len(self._map)
-
