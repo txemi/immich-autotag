@@ -31,7 +31,7 @@ def get_immich_album_url(album_id: AlbumUUID) -> ParseResult:
     """
     Returns the Immich web URL for an album given its id (UUID) as ParseResult.
     """
-    if not isinstance(album_id, uuid.UUID):
-        raise TypeError(f"album_id must be uuid.UUID, not {type(album_id)}")
-    url = f"{get_immich_web_base_url()}/albums/{str(album_id)}"
+    # AlbumUUID is a wrapper, extract the internal uuid.UUID
+    uuid_value = album_id.to_uuid() 
+    url = f"{get_immich_web_base_url()}/albums/{str(uuid_value)}"
     return urlparse(url)
