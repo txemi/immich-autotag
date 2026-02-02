@@ -13,6 +13,7 @@ from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepR
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     DuplicateTagAnalysisResult,
 )
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
@@ -46,7 +47,7 @@ class AssetProcessReport(ProcessStepResult):
     album_assignment_result: Optional[AlbumAssignmentResult] = None
     validate_result: Optional[ClassificationUpdateResult] = None
     # Optionally, keep the old steps list for extensibility/debug
-    steps: List[AssetProcessStepResult] = attr.ib(factory=list)
+    steps: List[AssetProcessStepResult] = attr.ib(factory=lambda: [])  # type: List[AssetProcessStepResult]
 
     def has_changes(self) -> bool:
         """Returns True if any processing step resulted in changes."""
