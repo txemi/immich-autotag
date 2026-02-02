@@ -26,10 +26,10 @@
 # | #  | Bash Function           | Origin                | Short Description                                 | Strict   | Standard (CI)                | Target (improvement)         |
 # |----|------------------------|-----------------------|---------------------------------------------------|----------|------------------------------|------------------------------|
 # | 1  | check_python_syntax    | stdlib (python)       | Checks Python syntax/indentation errors           | Blocks on any error           | Blocks on any error           | Blocks on any error           |
-# | 2  | check_ruff             | pip (ruff)            | Lint and autoformat with ruff                     | Blocks any error              | Only F821 blocks, E501 ignored| Only F821 blocks, E501 ignored|
+# | 2  | check_ruff             | pip (ruff)            | Lint and autoformat with ruff                     | Blocks any error              | Blocks all (E501 ignored)     | Blocks all (E501 ignored)     |
 # | 3  | check_isort            | pip (isort)           | Sorts imports with isort                          | Blocks if unsorted            | Blocks if unsorted            | Blocks if unsorted            |
 # | 4  | check_black            | pip (black)           | Formats code with black                           | Blocks if changes             | Blocks if changes             | Blocks if changes             |
-# | 5  | check_flake8           | pip (flake8)          | Style linter with flake8                          | Blocks any error              | Blocks F* errors (E501 ignored)   | Blocks F* errors (E501 ignored)   |
+# | 5  | check_flake8           | pip (flake8)          | Style linter with flake8                          | Blocks any error              | Blocks all (E501 ignored)     | Blocks all (E501 ignored)     |
 # | 6  | check_mypy             | pip (mypy)            | Static type checking with mypy                    | Blocks any error              | Only arg-type/call-arg block, rest warning | arg-type/call-arg/attr-defined block, rest warning |
 # | 7  | check_ssort            | pip (ssort, github)   | Deterministic class method ordering               | Blocks if unordered           | Blocks if unordered**         | Blocks if unordered**         |
 # | 8  | check_no_tuples        | custom (python)       | Forbids tuples as return/attribute                | Blocks if tuples detected     | Blocks if tuples detected     | Blocks if tuples detected     |
@@ -48,10 +48,10 @@
 # | #  | Check Name                              | Bash Function           | Description                                 | Strict   | Standard (CI)                | Target (improvement)         |
 # |----|-----------------------------------------|------------------------|---------------------------------------------|----------|------------------------------|------------------------------|
 # | 1  | Syntax/Indent (compileall)              | check_python_syntax    | Python syntax errors                        |   ✔️     |   ✔️                         |   ✔️                        |
-# | 2  | ruff (lint/auto-fix)                    | check_ruff             | Linter and auto-format                      |   ✔️     |   F821 only (E501 ignored)   |   F821 only (E501 ignored)   |
+# | 2  | ruff (lint/auto-fix)                    | check_ruff             | Linter and auto-format                      |   ✔️     |   All errors (E501 ignored)  |   All errors (E501 ignored)  |
 # | 3  | isort (import sorting)                  | check_isort            | Sorts imports                               |   ✔️     |   ✔️                         |   ✔️                        |
 # | 4  | black (formatter)                       | check_black            | Code formatter                              |   ✔️     |   ✔️                         |   ✔️                        |
-# | 5  | flake8 (style)                          | check_flake8           | Style linter                                |   ✔️     |   F* only (E501 ignored)     |   F* only (E501 ignored)    |
+# | 5  | flake8 (style)                          | check_flake8           | Style linter                                |   ✔️     |   All errors (E501 ignored)  |   All errors (E501 ignored) |
 # | 6  | flake8 (E501 long lines)                | check_flake8           | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
 # | 7  | ruff (E501 long lines)                  | check_ruff             | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
 # | 8  | mypy (type check)                       | check_mypy             | Type checking (all errors)                  |   ✔️     |   ✔️                         |   ✔️                        |
@@ -64,7 +64,7 @@
 # | 17 | no tuples (returns/attributes)          | check_no_tuples        | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        |
 # | 18 | shfmt (bash formatting)                 | check_shfmt            | Bash script formatting                      |   ✔️     |   ✔️                         |   ✔️                        |
 # -----------------------------------------------------------------------------
-# * In STANDARD and TARGET mode, flake8/ruff ignore E501. STANDARD and TARGET flake8 block F* (logic) errors. Mypy blocks ALL errors in both modes.
+# * In STANDARD and TARGET mode, flake8/ruff ignore E501. STANDARD and TARGET block ALL flake8/ruff errors (except E501). Mypy blocks ALL errors in both modes.
 # ** Only if --enforce-dynamic-attrs is used
 #
 # =====================
@@ -73,9 +73,10 @@
 # | Objective (subset/block)          | Status      | Plan/Notes                       |
 # |-----------------------------------|-------------|----------------------------------|
 # | mypy (all errors)                 | ✅ COMPLETED | All mypy errors now block in STANDARD/TARGET |
+# | ruff (all errors except E501)     | ✅ COMPLETED | STANDARD/TARGET block all ruff   |
+# | flake8 (all errors except E501)   | ✅ COMPLETED | STANDARD/TARGET block all flake8 |
 # | Spanish character check           | Future      | Warn only, will block in future  |
 # | flake8/ruff E501                  | Future      | Ignored, will block in future    |
-# | flake8 F* (logic errors)          | ✅ COMPLETED | TARGET blocks F* only            |
 #
 
 set -x
@@ -552,15 +553,15 @@ check_ruff() {
 	fi
 
 	if [ "$quality_level" = "STANDARD" ] || [ "$quality_level" = "TARGET" ]; then
-		local f821_count
-		f821_count=$(echo "$ruff_output" | grep -c 'F821')
-		if [ "$f821_count" -gt 0 ]; then
-			echo "[$quality_level MODE: F821 ONLY] Found $f821_count F821 (undefined name) errors:"
-			echo "$ruff_output" | grep 'F821'
+		# OPTION #2 ACTIVATED: Block all ruff errors (except E501)
+		if [ $ruff_exit -ne 0 ]; then
+			echo "$ruff_output"
+			echo "[$quality_level MODE] Ruff found errors (E501 ignored)."
+			if [ "$check_mode" = "CHECK" ]; then
+				echo "Run in apply mode to let ruff attempt to fix issues."
+				return 1
+			fi
 			return 1
-		else
-			echo "[$quality_level MODE: F821 ONLY] No F821 errors found."
-			return 0
 		fi
 	elif [ "$quality_level" = "STRICT" ]; then
 		if [ $ruff_exit -ne 0 ]; then
@@ -698,11 +699,12 @@ check_flake8() {
 		: # No se hace nada especial
 	elif [ "$quality_level" = "STANDARD" ]; then
 		flake8_ignore="$flake8_ignore,E501"
-		echo "[NON-STRICT MODE] E501 (line length) errors are ignored and will NOT block the build."
+		# OPTION #3 ACTIVATED: Block all flake8 errors (not just F*), except E501
+		echo "[STANDARD MODE] E501 (line length) errors are ignored. All other errors will block the build."
 	elif [ "$quality_level" = "TARGET" ]; then
 		flake8_ignore="$flake8_ignore,E501"
-		flake8_select="F"
-		echo "[TARGET MODE] E501 (line length) errors are ignored and only F* (logic) errors will block the build."
+		# OPTION #3 ACTIVATED: Block all flake8 errors (not just F*), except E501
+		echo "[TARGET MODE] E501 (line length) errors are ignored. All other errors will block the build."
 	else
 		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_flake8: '$quality_level'. Exiting for safety."
 		return 93
@@ -721,10 +723,10 @@ check_flake8() {
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
 		elif [ "$quality_level" = "STANDARD" ]; then
-			echo "[ERROR] flake8 failed in STANDARD mode (F* errors). See output above."
+			echo "[ERROR] flake8 failed in STANDARD mode (all errors except E501). See output above."
 			return 1
 		elif [ "$quality_level" = "TARGET" ]; then
-			echo "[ERROR] flake8 failed in TARGET mode (F* errors). See output above."
+			echo "[ERROR] flake8 failed in TARGET mode (all errors except E501). See output above."
 			return 1
 		else
 			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
@@ -1036,10 +1038,12 @@ main() {
 			quality_gate_print_reproduced_command
 			return 90
 		fi
-		# Defensive: call with correct argument order for check_mypy
+		# Defensive: call with correct argument order for check_mypy and check_flake8
 		set +e
 		if [ "$only_check" = "check_mypy" ]; then
 			"$only_check" "$check_mode" "$quality_level" "$py_bin" "$target_dir"
+		elif [ "$only_check" = "check_flake8" ]; then
+			"$only_check" "$check_mode" "$quality_level" "$py_bin" "$max_line_length" "$target_dir"
 		else
 			"$only_check" "$check_mode" "$py_bin" "$max_line_length" "$target_dir" "$quality_level" "$repo_root" "$enforce_dynamic_attrs"
 		fi

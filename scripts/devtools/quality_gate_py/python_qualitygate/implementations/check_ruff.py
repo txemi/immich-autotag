@@ -38,10 +38,11 @@ class CheckRuff(Check):
         
         match args.level:
             case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
-                f821_lines = [line for line in output.splitlines() if 'F821' in line]
-                if f821_lines:
-                    for line in f821_lines:
-                        findings.append(Finding(file_path=args.target_dir, line_number=0, message=line, code="ruff-F821"))
+                # OPTION #2 ACTIVATED: Block all ruff errors (except E501, already ignored in command)
+                if returncode != 0:
+                    for line in output.splitlines():
+                        if line.strip() and not line.startswith('warning:'):
+                            findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ruff"))
             case QualityGateLevel.STRICT:
                 if returncode != 0:
                     for line in output.splitlines():

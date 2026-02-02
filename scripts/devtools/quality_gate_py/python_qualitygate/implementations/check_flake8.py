@@ -18,11 +18,11 @@ class CheckFlake8(Check):
             case QualityGateLevel.STRICT:
                 flake8_ignore = base_ignore
             case QualityGateLevel.STANDARD:
+                # OPTION #3 ACTIVATED: Block all errors (not just F*), except E501
                 flake8_ignore = base_ignore + ['E501']
-                flake8_select = 'F'
             case QualityGateLevel.TARGET:
+                # OPTION #3 ACTIVATED: Block all errors (not just F*), except E501
                 flake8_ignore = base_ignore + ['E501']
-                flake8_select = 'F'
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {level}")
         return flake8_ignore, flake8_select
