@@ -22,8 +22,12 @@ class ClassificationValidationResult:
         _modifications: The ModificationEntriesList with all tag additions/removals (the consequence)
     """
 
-    _match_results: "MatchResultList" = attrs.field(alias="match_results", repr=lambda matches: f"matches={len(matches)}")
-    _modifications: "ModificationEntriesList" = attrs.field(alias="modifications", repr=lambda mods: f"modifications={len(mods)}")
+    _match_results: "MatchResultList" = attrs.field(
+        alias="match_results", repr=lambda matches: f"matches={len(matches)}"
+    )
+    _modifications: "ModificationEntriesList" = attrs.field(
+        alias="modifications", repr=lambda mods: f"modifications={len(mods)}"
+    )
 
     def match_results(self) -> "MatchResultList":
         """Get the match results (which rules matched)."""
