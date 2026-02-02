@@ -153,6 +153,8 @@ class TagStatsManager:
             self._increment_tag_created(tag)
         elif kind == ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED:
             self._increment_tag_error(tag)
+        elif kind == ModificationKind.WARNING_TAG_ADDITION_TO_ASSET_FAILED:
+            self._increment_tag_error(tag)
         elif kind == ModificationKind.UPDATE_ASSET_DATE:
             self._increment_asset_date_update()
         elif kind == ModificationKind.ASSIGN_ASSET_TO_ALBUM:
