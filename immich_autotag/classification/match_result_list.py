@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, List
 import attr
 from typeguard import typechecked
 
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.classification.classification_rule_set import ClassificationRuleSet
 from immich_autotag.classification.match_result import MatchResult
 
 if TYPE_CHECKING:
