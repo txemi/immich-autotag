@@ -5,10 +5,6 @@ from typing import TYPE_CHECKING
 import attrs
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from immich_autotag.classification.classification_rule_set import (
-        ClassificationRuleSet,
-    )
     from immich_autotag.classification.match_result_list import MatchResultList
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
@@ -17,10 +13,10 @@ if TYPE_CHECKING:
 class ClassificationValidationResult:
     """
     Encapsulates the complete result of classification validation.
-    
+
     Contains both the cause (which rules matched) and consequence (what modifications were applied).
     This allows upper layers to understand what happened during classification validation.
-    
+
     Attributes:
         match_results: The MatchResultList containing all matched classification rules (the cause)
         modifications: The ModificationEntriesList with all tag additions/removals (the consequence)
@@ -32,4 +28,3 @@ class ClassificationValidationResult:
 
     match_results: "MatchResultList"
     modifications: "ModificationEntriesList"
-

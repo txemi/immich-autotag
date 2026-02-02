@@ -10,7 +10,7 @@ from python_qualitygate.core.result import CheckResult, Finding
 class CheckRuff(Check):
     name = 'check_ruff'
 
-    def _build_ruff_command(self, args: QualityGateArgs, apply_fix: bool) -> list:
+    def _build_ruff_command(self, args: QualityGateArgs, apply_fix: bool) -> list[str]:
         """Build the ruff command with appropriate flags based on level and mode."""
         from python_qualitygate.core.enums_level import QualityGateLevel
         
@@ -34,7 +34,7 @@ class CheckRuff(Check):
         """Process ruff output and return findings based on quality level."""
         from python_qualitygate.core.enums_level import QualityGateLevel
         
-        findings = []
+        findings: list[Finding] = []
         
         match args.level:
             case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
@@ -64,8 +64,8 @@ class CheckRuff(Check):
         cmd = self._build_ruff_command(args, apply_fix=True)
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
-        output = result.stdout + '\n' + result.stderr
-        findings = []
+        # output = result.stdout + '\n' + result.stderr  # Not used in CHECK mode
+        findings: list[Finding] = []
         if result.returncode != 0:
             findings.append(Finding(file_path=args.target_dir, line_number=0, message="Ruff found issues during fix", code="ruff-fix"))
         return CheckResult(findings=findings)

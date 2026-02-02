@@ -25,7 +25,7 @@ from immich_client.models.update_album_dto import UpdateAlbumDto
 from immich_client.models.update_asset_dto import UpdateAssetDto
 from immich_client.models.user_admin_response_dto import UserAdminResponseDto
 from immich_client.models.user_response_dto import UserResponseDto
-from immich_client.types import Response, UNSET, Unset
+from immich_client.types import UNSET, Response, Unset
 
 # Type aliases for backward compatibility
 ImmichClient = AuthenticatedClient
