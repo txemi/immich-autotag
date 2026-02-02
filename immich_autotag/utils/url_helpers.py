@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 from urllib.parse import ParseResult, urlparse
 
 from typeguard import typechecked
@@ -32,6 +31,6 @@ def get_immich_album_url(album_id: AlbumUUID) -> ParseResult:
     Returns the Immich web URL for an album given its id (UUID) as ParseResult.
     """
     # AlbumUUID is a wrapper, extract the internal uuid.UUID
-    uuid_value = album_id.to_uuid() 
+    uuid_value = album_id.to_uuid()
     url = f"{get_immich_web_base_url()}/albums/{str(uuid_value)}"
     return urlparse(url)
