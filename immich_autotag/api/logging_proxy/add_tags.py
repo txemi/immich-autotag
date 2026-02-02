@@ -69,7 +69,8 @@ def logging_tag_assets(
 
     # Log the action
     logger.info(
-        f"[TAG_ASSETS] Tag '{tag_name}' (id={tag_id}) added to {len(asset_ids)} asset(s)"
+        f"[TAG_ASSETS] Tag '{tag_name}' (id={tag_id}) added to "
+        f"{len(asset_ids)} asset(s)"
     )
 
 
@@ -122,7 +123,8 @@ def logging_tag_assets_safe(
 
         # Log the action
         logger.info(
-            f"[TAG_ASSETS] Tag '{tag_name}' (id={tag_id}) added to {len(asset_ids)} asset(s)"
+            f"[TAG_ASSETS] Tag '{tag_name}' (id={tag_id}) added to "
+            f"{len(asset_ids)} asset(s)"
         )
         return True
 
