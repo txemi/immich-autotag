@@ -533,10 +533,12 @@ class AssetResponseWrapper:
             match_detail = self.get_classification_match_detail()
             photo_url = get_immich_photo_url(self.get_id())
             n_rules_matched = len(match_result_list.rules())
+            tags_matched_list = match_detail.tags_matched()
+            albums_matched_list = match_detail.albums_matched()
             msg = (
                 f"[ERROR] Asset id={self.get_id()} ({self.get_original_file_name()}) is classified by "
-                f"{n_rules_matched} different rules (conflict). Matched tags={match_detail.tags_matched()}, "
-                f"albums={match_detail.albums_matched()}\nLink: {photo_url}"
+                f"{n_rules_matched} different rules (conflict). Matched tags={tags_matched_list}, "
+                f"albums={albums_matched_list}\nLink: {photo_url}"
             )
             if fail_fast:
                 raise Exception(msg)

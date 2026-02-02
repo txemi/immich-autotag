@@ -14,8 +14,8 @@ class _AggregateResult:
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class MatchClassificationResult:
-    tags_matched: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
-    albums_matched: List[str] = attrs.field(
+    _tags_matched: List[str] = attrs.field(validator=attrs.validators.instance_of(list))
+    _albums_matched: List[str] = attrs.field(
         validator=attrs.validators.instance_of(list)
     )
 
@@ -42,5 +42,13 @@ class MatchClassificationResult:
         agg = _aggregate(match_result_list)
         return cls(tags_matched=agg.tags, albums_matched=agg.albums)
 
+    def tags_matched(self) -> List[str]:
+        """Returns the list of tags matched by classification rules."""
+        return self._tags_matched
+
+    def albums_matched(self) -> List[str]:
+        """Returns the list of albums matched by classification rules."""
+        return self._albums_matched
+
     def any(self) -> bool:
-        return bool(self.tags_matched or self.albums_matched)
+        return bool(self._tags_matched or self._albums_matched)
