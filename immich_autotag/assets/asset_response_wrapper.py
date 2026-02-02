@@ -361,7 +361,7 @@ class AssetResponseWrapper:
             tag=tag,
             asset_ids=[self.get_id()],
         )
-        
+
         if not success:
             return False
 
