@@ -114,8 +114,9 @@ def process_single_asset(
     album_assignment_result = None
     tag_mod_report = None
 
+
+    tag_conversion_result = _apply_tag_conversions(asset_wrapper)
     if not is_crazy_debug_mode():
-        tag_conversion_result = _apply_tag_conversions(asset_wrapper)
         date_correction_result = _correct_date_if_enabled(asset_wrapper)
         duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
         tag_mod_report = ModificationReport.get_instance()
