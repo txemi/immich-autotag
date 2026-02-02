@@ -133,6 +133,7 @@ class ClassificationRuleWrapper:
             tags_matched=tags_matched,
             albums_matched=albums_matched,
             asset_links_matched=asset_links_matched,
+            asset=asset_wrapper,
         )
 
     @typechecked
@@ -182,12 +183,12 @@ class ClassificationRuleWrapper:
         """
         changes = []
         # Remove matched tags
-        for tag in match_result.tags_matched:
+        for tag in match_result.tags_matched():
             if asset_wrapper.has_tag(tag_name=tag):
                 asset_wrapper.remove_tag_by_name(tag_name=tag)
                 changes.append(f"Removed matched tag '{tag}'")
         # Remove matched albums (if logic exists for it)
-        # for album in match_result.albums_matched:
+        # for album in match_result.albums_matched():
         #     if album in asset_wrapper.get_album_names():
         #         ... # logic to remove asset from album
         #         changes.append(f"Removed asset from matched album '{album}'")
