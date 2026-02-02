@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
+from immich_client.models.album_user_role import AlbumUserRole
+
 from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.context.immich_context import ImmichContext
 
@@ -71,16 +73,16 @@ def process_album_permissions(
                 f"[ALBUM_PERMISSIONS] Album '{album_wrapper.get_album_name()}' → "
                 f"Groups: {resolved_policy.groups}, "
                 f"Members: {len(resolved_policy.members)}, "
-                f"Access: {resolved_policy.access_level}",
+                f"Access: {resolved_policy.access_level.value}",
                 level=LogLevel.DEBUG,
             )
-            # Record in modification report
+            # Record in modification report (Phase 1: detection only, no users resolved yet)
             report.add_album_permission_modification(
                 kind=ModificationKind.ALBUM_PERMISSION_RULE_MATCHED,
                 album=album_wrapper,
                 matched_rules=resolved_policy.matched_rules,
                 groups=resolved_policy.groups,
-                members=resolved_policy.members,
+                members=[],  # Phase 1: No users resolved yet
                 access_level=resolved_policy.access_level,
             )
         else:
@@ -96,7 +98,7 @@ def process_album_permissions(
                     matched_rules=[],
                     groups=[],
                     members=[],
-                    access_level="none",
+                    access_level=None,
                 )
 
     log(

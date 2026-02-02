@@ -4,12 +4,14 @@ from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbu
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.report.modification_kind import ModificationKind
-from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.email_address import EmailAddress
 
-from ._remove_members_from_album import remove_members_from_album
-from ._resolve_emails_result import ResolveEmailsResult
+from immich_autotag.api.logging_proxy.permissions import (
+    logging_add_members_to_album,
+    logging_remove_members_from_album,
+)
+
+from ._resolve_emails_result import EmailMemberResolution
 
 if True:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -33,54 +35,70 @@ def sync_album_permissions(
     """
     # album_id = album_wrapper.get_album_uuid()  # removed unused variable
     album_name = album_wrapper.get_album_name()
-    report = ModificationReport.get_instance()
 
     if not resolved_policy.has_match:
         log_debug(f"[ALBUM_PERMISSIONS] Skipping {album_name}: no matching rules")
         return
 
-    # Resolve configured member emails to user IDs
+    # Resolve configured member emails to user objects
     email_objs = [EmailAddress.from_string(e) for e in resolved_policy.members]
-    result = ResolveEmailsResult()
-    result.resolve_emails_to_user_ids(email_objs, context)
-    target_user_ids = set(result._resolved.values())
+    member_resolution = EmailMemberResolution()
+    member_resolution.resolve_emails_to_user_ids(email_objs, context)
 
-    # Get current members from API (pass album_wrapper directly)
+    # Get current members from API
     current_members = album_wrapper.get_album_users()
 
-    # current_members is AlbumUserList; iterate and use .id property of AlbumUserWrapper
-    current_user_ids = {member.get_uuid() for member in current_members}
+    from immich_autotag.users.user_manager import UserManager
+
+    user_manager = UserManager.get_instance()
+
+    current_member_wrappers = []
+    for album_user in current_members:
+        member = user_manager.get_by_uuid(album_user.get_uuid())
+        if member is None:
+            log_debug(
+                "[ALBUM_PERMISSIONS] Skipping removal for unresolved album user "
+                f"{album_user.get_uuid()}"
+            )
+            continue
+        current_member_wrappers.append(member)
+
+    # Build sets for comparison: target members vs current members
+    # Note: UserResponseWrapper is frozen and hashable, supporting set operations
+    target_members_set = set(member_resolution.get_resolved_members())
+    current_members_set = set(current_member_wrappers)
 
     # Calculate diff
-    users_to_add = target_user_ids - current_user_ids
-    users_to_remove = current_user_ids - target_user_ids
+    members_to_add = target_members_set - current_members_set
+    members_to_remove = current_members_set - target_members_set
 
     # Phase 2A: PONER (add members)
-    if users_to_add:
-        # You need to resolve UserResponseWrapper objects for users_to_add
-        # This requires mapping user IDs to wrappers, which should be handled by the caller or a utility
-        pass  # Placeholder for add_members_to_album logic
+    if members_to_add:
+        from immich_client.models.album_user_role import AlbumUserRole
 
-    # Phase 2B: QUITAR (remove members)
-    if users_to_remove:
-        remove_members_from_album(
+        logging_add_members_to_album(
             album=album_wrapper,
-            user_ids=list(users_to_remove),
+            members=list(members_to_add),
+            access_level=AlbumUserRole.EDITOR,
             context=context,
-        )
-        report.add_album_permission_modification(
-            kind=ModificationKind.ALBUM_PERMISSION_REMOVED,
-            album=album_wrapper,
             matched_rules=resolved_policy.matched_rules,
             groups=resolved_policy.groups,
-            members=list(users_to_remove),
-            access_level="none",
         )
 
-    if users_to_add or users_to_remove:
+    # Phase 2B: QUITAR (remove members)
+    if members_to_remove:
+        logging_remove_members_from_album(
+            album=album_wrapper,
+            members=list(members_to_remove),
+            context=context,
+            matched_rules=resolved_policy.matched_rules,
+            groups=resolved_policy.groups,
+        )
+
+    if members_to_add or members_to_remove:
         log(
             f"[ALBUM_PERMISSIONS] Synced {album_name}: "
-            f"+{len(users_to_add)} PONER, -{len(users_to_remove)} QUITAR",
+            f"+{len(members_to_add)} PONER, -{len(members_to_remove)} QUITAR",
             level=LogLevel.FOCUS,
         )
     else:
