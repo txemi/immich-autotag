@@ -89,12 +89,15 @@ def process_single_asset(
 
     log(
         f"[DEBUG] [process_single_asset] START asset_id={asset_id}",
-        level=LogLevel.FOCUS,
+        level=LogLevel.ASSET_SUMMARY,
     )
 
     asset_url = asset_wrapper.get_immich_photo_url().geturl()
     asset_name = asset_wrapper.get_original_file_name() or "[no name]"
-    log(f"Processing asset: {asset_url} | Name: {asset_name}", level=LogLevel.FOCUS)
+    log(
+        f"Processing asset: {asset_url} | Name: {asset_name}",
+        level=LogLevel.ASSET_SUMMARY,
+    )
 
     # Ejecutar cada fase y almacenar resultados en el reporte tipado
     from immich_autotag.assets.process.asset_process_report import AssetProcessReport
@@ -108,19 +111,19 @@ def process_single_asset(
 
     log(
         f"[RESERVED] tag_conversion_result: {tag_conversion_result}",
-        level=LogLevel.FOCUS,
+        level=LogLevel.ASSET_SUMMARY,
     )
     log(
         f"[RESERVED] date_correction_result: {date_correction_result}",
-        level=LogLevel.FOCUS,
+        level=LogLevel.ASSET_SUMMARY,
     )
     log(
         f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}",
-        level=LogLevel.FOCUS,
+        level=LogLevel.ASSET_SUMMARY,
     )
     log(
         f"[RESERVED] album_assignment_result: {album_assignment_result}",
-        level=LogLevel.FOCUS,
+        level=LogLevel.ASSET_SUMMARY,
     )
 
     report = AssetProcessReport(
@@ -131,9 +134,9 @@ def process_single_asset(
         validate_result=validate_result,
     )
 
-    log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.FOCUS)
+    log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 
-    log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.DEBUG)
+    log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.ASSET_SUMMARY)
     from immich_autotag.config.manager import ConfigManager
 
     config = ConfigManager.get_instance().get_config_or_raise()
@@ -145,6 +148,6 @@ def process_single_asset(
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     log(
         f"[DEBUG] [process_single_asset] END asset_id={asset_wrapper.get_uuid()}",
-        level=LogLevel.FOCUS,
+        level=LogLevel.ASSET_SUMMARY,
     )
     return None
