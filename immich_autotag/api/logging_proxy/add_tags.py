@@ -119,8 +119,6 @@ def logging_tag_assets_safe(
     )
     from immich_autotag.report.modification_report import ModificationReport
 
-    tag_id = tag.get_id()
-    tag_name = tag.get_name()
     report = ModificationReport.get_instance()
 
     try:
