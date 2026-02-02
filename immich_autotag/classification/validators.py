@@ -7,13 +7,16 @@ Any code needing to validate ClassificationRuleWrapper should import from here.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import attr
+if TYPE_CHECKING:
+    from immich_autotag.classification.classification_rule_wrapper import (
+        ClassificationRuleWrapper,
+    )
 
 
 def validate_classification_rule(
-    instance: object, attribute: Any, value: object
+    instance: object, attribute: Any, value: ClassificationRuleWrapper
 ) -> None:
     """
     Validate that value is a ClassificationRuleWrapper instance.
