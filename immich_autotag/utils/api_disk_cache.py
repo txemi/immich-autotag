@@ -73,7 +73,9 @@ class ApiCacheManager:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-    def _try_load_json(self, path: Path) -> Optional[dict[str, object] | list[dict[str, object]]]:
+    def _try_load_json(
+        self, path: Path
+    ) -> Optional[dict[str, object] | list[dict[str, object]]]:
         """Try to load JSON from a single cache file with error handling."""
         if not path.exists() or path.stat().st_size == 0:
             return None

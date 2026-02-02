@@ -9,7 +9,9 @@ from immich_autotag.utils.typeguard_hook import (  # isort: skip
 
 install_typeguard_import_hook()  # noqa: E402
 
-from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions  # noqa: E402
+from immich_autotag.utils.setup_runtime import (  # noqa: E402
+    setup_logging_and_exceptions,
+)
 
 setup_logging_and_exceptions()
 
