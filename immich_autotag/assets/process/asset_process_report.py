@@ -88,56 +88,36 @@ class AssetProcessReport(ProcessStepResult):
         """Backward-compatible alias for has_changes()."""
         return self.has_changes()
 
-    def summary(self) -> str:
-        lines: List[str] = []
-        asset_url = self.asset_wrapper.get_immich_photo_url().geturl()
-        
-        # Build a single detailed summary line
-        changes_indicator = "✓ CHANGES" if self.has_changes() else "○ NO CHANGES"
-        changes_details = self._get_changes_details()
-        
-        lines.append(f"[ASSET REPORT] {changes_indicator}")
-        lines.append(f"  Asset: {asset_url}")
-        
-        if changes_details:
-            lines.append(f"  Details: {changes_details}")
-        
-        # Add individual results for detailed info
-        if self.tag_conversion_result is not None:
-            lines.append(f"  Tag conversions: {self.tag_conversion_result}")
-        if self.date_correction_result is not None:
-            lines.append(f"  Date correction: {self.date_correction_result}")
-        if self.duplicate_tag_analysis_result is not None:
-            lines.append(f"  Duplicate tag analysis: {self.duplicate_tag_analysis_result}")
-        if self.album_assignment_result is not None:
-            lines.append(f"  Album assignment: {self.album_assignment_result}")
-        if self.validate_result is not None:
-            lines.append(f"  Validation: {self.validate_result}")
-        
-        return "\n".join(lines)
-
     def _get_changes_details(self) -> str:
         """Generate a concise string describing what changes were made."""
-        changes = []
-        
+        changes: list[str] = []
+
         # Check tag conversions
         if self.tag_conversion_result is not None:
             result_str = str(self.tag_conversion_result).lower()
-            if "added" in result_str or "removed" in result_str or "modified" in result_str:
+            if (
+                "added" in result_str
+                or "removed" in result_str
+                or "modified" in result_str
+            ):
                 changes.append("Tags modified")
-        
+
         # Check date corrections
         if self.date_correction_result is not None:
             result_str = str(self.date_correction_result).lower()
-            if "updated" in result_str or "corrected" in result_str or "fixed" in result_str:
+            if (
+                "updated" in result_str
+                or "corrected" in result_str
+                or "fixed" in result_str
+            ):
                 changes.append("Date corrected")
-        
+
         # Check album assignment
         if self.album_assignment_result is not None:
             result_str = str(self.album_assignment_result).lower()
             if "assigned" in result_str or "classified" in result_str:
                 changes.append("Album assigned")
-        
+
         # Check validation result for tag/album changes
         if self.validate_result is not None:
             result_str = str(self.validate_result)
@@ -145,10 +125,40 @@ class AssetProcessReport(ProcessStepResult):
                 changes.append("Tags applied")
             if "has_albums=True" in result_str:
                 changes.append("Albums applied")
-        
+
         if changes:
             return " | ".join(changes)
         return ""
+
+    def summary(self) -> str:
+        lines: List[str] = []
+        asset_url = self.asset_wrapper.get_immich_photo_url().geturl()
+
+        # Build a single detailed summary line
+        changes_indicator = "✓ CHANGES" if self.has_changes() else "○ NO CHANGES"
+        changes_details = self._get_changes_details()
+
+        lines.append(f"[ASSET REPORT] {changes_indicator}")
+        lines.append(f"  Asset: {asset_url}")
+
+        if changes_details:
+            lines.append(f"  Details: {changes_details}")
+
+        # Add individual results for detailed info
+        if self.tag_conversion_result is not None:
+            lines.append(f"  Tag conversions: {self.tag_conversion_result}")
+        if self.date_correction_result is not None:
+            lines.append(f"  Date correction: {self.date_correction_result}")
+        if self.duplicate_tag_analysis_result is not None:
+            lines.append(
+                f"  Duplicate tag analysis: {self.duplicate_tag_analysis_result}"
+            )
+        if self.album_assignment_result is not None:
+            lines.append(f"  Album assignment: {self.album_assignment_result}")
+        if self.validate_result is not None:
+            lines.append(f"  Validation: {self.validate_result}")
+
+        return "\n".join(lines)
 
     def __str__(self):
         return self.summary()
