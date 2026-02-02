@@ -20,6 +20,9 @@ docker_logs
 /profile(1).stats
 /profile_optimized.stats
 
+# Local-only workspace
+immich-autotag.local.code-workspace
+
 # Python cache and type checking
 .mypy_cache/
 .pytest_cache/
