@@ -54,9 +54,7 @@
 # | 5  | flake8 (style)                          | check_flake8           | Style linter                                |   ✔️     |   Warn only (E501 ignored)  |   Warn only (E501 ignored)  |
 # | 6  | flake8 (E501 long lines)                | check_flake8           | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
 # | 7  | ruff (E501 long lines)                  | check_ruff             | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
-# | 8  | mypy (type check)                       | check_mypy             | Type checking (all errors)                  |   ✔️     |   Warn only                 |   Warn only                 |
-# | 9  | mypy (arg-type/call-arg/return-value)   | check_mypy             | Type errors (arg-type/call-arg/return-value)|   ✔️     |   Warn only                 |   ✔️                        |
-# | 10 | mypy (attr-defined)                     | check_mypy             | Attribute defined errors                    |   ✔️     |   Warn only                 |   ✔️                        |
+# | 8  | mypy (type check)                       | check_mypy             | Type checking (all errors)                  |   ✔️     |   ✔️                         |   ✔️                        |
 # | 11 | ssort (method order)                    | check_ssort            | Class method ordering                       |   ✔️**   |   ✔️**                       |   ✔️**                      |
 # | 12 | tuple return/type policy                | check_no_tuples        | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        |
 # | 13 | jscpd (code duplication)                | check_jscpd            | Detects code duplication                    |   ✔️     |   ✔️                         |   ✔️                        |
@@ -66,7 +64,7 @@
 # | 17 | no tuples (returns/attributes)          | check_no_tuples        | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        |
 # | 18 | shfmt (bash formatting)                 | check_shfmt            | Bash script formatting                      |   ✔️     |   ✔️                         |   ✔️                        |
 # -----------------------------------------------------------------------------
-# * In STANDARD and TARGET mode, flake8/ruff ignore E501, and mypy only warns except for arg-type/call-arg (STANDARD) or arg-type/call-arg/attr-defined (TARGET).
+# * In STANDARD and TARGET mode, flake8/ruff ignore E501. Mypy now blocks ALL errors in both modes.
 # ** Only if --enforce-dynamic-attrs is used
 #
 # =====================
@@ -74,8 +72,7 @@
 # =====================
 # | Objective (subset/block)          | Status      | Plan/Notes                       |
 # |-----------------------------------|-------------|----------------------------------|
-# | mypy arg-type/call-arg/return-value | In progress | Target mode blocks these errors  |
-# | mypy attr-defined                 | Future      | Warn only, will block in future  |
+# | mypy (all errors)                 | ✅ COMPLETED | All mypy errors now block in STANDARD/TARGET |
 # | Spanish character check           | Future      | Warn only, will block in future  |
 # | flake8/ruff E501                  | Future      | Ignored, will block in future    |
 #
@@ -764,27 +761,13 @@ check_mypy() {
 			echo '[EXIT] Quality Gate failed due to mypy errors.'
 			return 1
 		elif [ "$quality_level" = "STANDARD" ]; then
-			# Blocks for arg-type, call-arg and attr-defined errors
-			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|attr-defined)\]' | wc -l)
-			if [ "$mypy_block_count" -gt 0 ]; then
-				quality_gate_status_message "\n\n❌❌❌ QUALITY GATE BLOCKED ($quality_level) ❌❌❌
-🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE/CALL-ARG/ATTR-DEFINED) DETECTED 🚨
-[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
-				return 1
-			else
-				echo "[STANDARD MODE] Only non-critical mypy errors found (return-value, imports, etc). Not blocking build.'"
-			fi
+			# STANDARD now blocks ALL mypy errors (mypy fully passes)
+			echo "[STANDARD MODE] All mypy errors now block the build."
+			return 1
 		elif [ "$quality_level" = "TARGET" ]; then
-			# Bloquea por errores arg-type, call-arg y attr-defined
-			mypy_block_count=$(echo "$mypy_output" | grep -E '\[(arg-type|call-arg|attr-defined)\]' | wc -l)
-			if [ "$mypy_block_count" -gt 0 ]; then
-				quality_gate_status_message "\n\n❌❌❌ QUALITY GATE BLOCKED ($quality_level) ❌❌❌
-🚨 MYPY: $mypy_block_count CRITICAL ERRORS (ARG-TYPE/CALL-ARG/ATTR-DEFINED) DETECTED 🚨
-[EXIT] QUALITY GATE FAILED DUE TO CRITICAL MYPY ERRORS."
-				return 1
-			else
-				echo "[TARGET MODE] Only non-critical mypy errors found (return-value, imports, etc). Not blocking build.'"
-			fi
+			# TARGET now blocks ALL mypy errors (mypy fully passes)
+			echo "[TARGET MODE] All mypy errors now block the build."
+			return 1
 		else
 			echo "[ERROR] Invalid quality level: $quality_level. Must be one of: STRICT, STANDARD, TARGET."
 			return 2

@@ -35,15 +35,11 @@ class CheckMypy(Check):
             if args.level == QualityGateLevel.STRICT:
                 blocking.append(f)
             elif args.level == QualityGateLevel.STANDARD:
-                if f.code in ("arg-type", "call-arg", "attr-defined"):
-                    blocking.append(f)
-                else:
-                    nonblocking.append(f)
+                # STANDARD now blocks ALL mypy errors (mypy fully passes)
+                blocking.append(f)
             elif args.level == QualityGateLevel.TARGET:
-                if f.code in ("arg-type", "call-arg", "attr-defined"):
-                    blocking.append(f)
-                else:
-                    nonblocking.append(f)
+                # TARGET now blocks ALL mypy errors (mypy fully passes)
+                blocking.append(f)
             else:
                 blocking.append(f)  # Defensive: treat as STRICT
         return CheckResult(findings=blocking)
