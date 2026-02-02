@@ -12,7 +12,7 @@ from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.config.manager import ConfigManager
-from immich_autotag.config.models import AlbumDateConsistencyConfig, UserConfig
+from immich_autotag.config.models import AlbumDateConsistencyConfig
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_kind import ModificationKind

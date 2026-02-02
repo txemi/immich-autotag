@@ -727,9 +727,6 @@ class AssetResponseWrapper:
         from immich_autotag.assets.classification_validation_result import (
             ClassificationValidationResult,
         )
-        from immich_autotag.classification.classification_rule_set import (
-            ClassificationRuleSet,
-        )
 
         return ClassificationValidationResult(
             match_results=match_results,

@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 import attrs
 
 if TYPE_CHECKING:
-    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.classification.match_result_list import MatchResultList
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
@@ -14,10 +13,10 @@ if TYPE_CHECKING:
 class ClassificationValidationResult:
     """
     Encapsulates the complete result of classification validation.
-    
+
     Contains both the cause (which rules matched) and consequence (what modifications were applied).
     This allows upper layers to understand what happened during classification validation.
-    
+
     Attributes (private):
         _match_results: The MatchResultList containing all matched classification rules (the cause)
         _modifications: The ModificationEntriesList with all tag additions/removals (the consequence)
@@ -37,32 +36,32 @@ class ClassificationValidationResult:
     def format(self) -> str:
         """
         Format the classification validation result with status information.
-        
+
         Shows the classification status (CLASSIFIED, CONFLICT, or UNCLASSIFIED)
         and the number of matches and modifications.
-        
+
         Returns:
             A formatted string describing the classification state.
         """
         from immich_autotag.classification.classification_status import (
             ClassificationStatus,
         )
-        
+
         status = self._match_results.classification_status()
         match_count = len(self._match_results)
         modification_count = len(self._modifications)
-        
+
         status_display = {
             ClassificationStatus.CLASSIFIED: f"✓ CLASSIFIED ({match_count} rule{'s' if match_count != 1 else ''})",
             ClassificationStatus.CONFLICT: f"⚠ CONFLICT ({match_count} conflicting rules)",
             ClassificationStatus.UNCLASSIFIED: "✗ UNCLASSIFIED (no matches)",
         }
-        
+
         status_str = status_display.get(status, "? UNKNOWN")
-        
+
         if modification_count > 0:
             modifications_str = f", {modification_count} modification{'s' if modification_count != 1 else ''} applied"
         else:
             modifications_str = ", no modifications"
-        
+
         return f"{status_str}{modifications_str}"

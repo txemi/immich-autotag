@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 # Represents the result of a match: reference to the rule and the matched tags and albums
 @attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
 class MatchResult:
-    _rule: "ClassificationRuleWrapper" = attr.ib(validator=validate_classification_rule, alias="rule",init=True)
+    _rule: "ClassificationRuleWrapper" = attr.ib(validator=validate_classification_rule, alias="rule", init=True)
     _tags_matched: list[str] = attr.ib(
         factory=list,
         validator=attr.validators.instance_of(list),
