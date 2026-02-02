@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 # Represents the result of a match: reference to the rule and the matched tags and albums
 @attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
 class MatchResult:
-    _rule: "ClassificationRuleWrapper" = attr.ib(validator=validate_classification_rule, alias="rule", init=True)
+    _rule: "ClassificationRuleWrapper" = attr.ib(
+        validator=validate_classification_rule, alias="rule", init=True
+    )
     _tags_matched: list[str] = attr.ib(
         factory=list,
         validator=attr.validators.instance_of(list),
@@ -34,7 +36,9 @@ class MatchResult:
     _asset: "AssetResponseWrapper" = attr.ib(alias="asset", init=True)
 
     def __attrs_post_init__(self):
-        if not (self._tags_matched or self._albums_matched or self._asset_links_matched):
+        if not (
+            self._tags_matched or self._albums_matched or self._asset_links_matched
+        ):
             raise ValueError(
                 "MatchResult must have at least one matching tag, album, or asset link."
             )
