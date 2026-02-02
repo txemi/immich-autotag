@@ -16,8 +16,9 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
+from immich_autotag.report.modification_entry import ModificationEntry
+
 if TYPE_CHECKING:
-    from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.types.client_types import ImmichClient
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ def logging_create_tag(
     *,
     client: ImmichClient,
     name: str,
-) -> "ModificationEntry":
+) -> ModificationEntry:
     """
     Create a tag with automatic event logging and modification tracking.
 

@@ -121,7 +121,9 @@ class TagCollectionWrapper:
 
         from immich_client import errors as immich_errors
 
-        from immich_autotag.api.logging_proxy.tags import logging_create_tag
+        from immich_autotag.api.logging_proxy.create_tag.logging_create_tag import (
+            logging_create_tag,
+        )
 
         try:
             # logging_create_tag returns ModificationEntry containing the TagWrapper
