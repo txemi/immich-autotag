@@ -15,20 +15,14 @@ if TYPE_CHECKING:
     )
 
 
-@attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
+@attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=False)
 class MatchResultList:
-    _matches: List[MatchResult] = attr.ib(
-        validator=attr.validators.deep_iterable(
-            member_validator=attr.validators.instance_of(MatchResult),
-            iterable_validator=attr.validators.instance_of(list),
-        ),
-        repr=lambda matches: f"MatchResults(count={len(matches)})",
-    )
     _rules: "ClassificationRuleSet" = attr.ib(init=True, repr=False)
     _asset: "AssetResponseWrapper" = attr.ib(
         init=True,
         repr=lambda asset: f"AssetResponseWrapper(url={asset.get_immich_photo_url().geturl()})",
     )
+    _matches: List[MatchResult] = attr.ib(init=False, default=None, repr=False)
 
     @classmethod
     @typechecked
@@ -40,49 +34,61 @@ class MatchResultList:
         """
         Factory method to create a MatchResultList with lazy loading of matches.
 
-        This constructor evaluates matching rules against the asset and builds
-        the MatchResultList on demand. The matches are computed once and then
-        cached in the immutable frozen attrs instance.
+        The matches are NOT computed during construction. They are computed on demand
+        when first accessed through a public method. This allows efficient lazy loading.
 
         Args:
             rules: The ClassificationRuleSet to match against the asset.
             asset: The AssetResponseWrapper to match with the rules.
 
         Returns:
-            A new MatchResultList instance with all matches computed.
+            A new MatchResultList instance (matches will be computed on first access).
         """
-        matches: list[MatchResult] = []
-        for wrapper in rules.rules:
-            match = wrapper.matches_asset(asset)
-            if match is not None:
-                matches.append(match)
+        return cls(rules=rules, asset=asset)
 
-        return cls(matches=matches, rules=rules, asset=asset)
+    @typechecked
+    def _get_matches(self) -> List[MatchResult]:
+        """
+        Private method to get matches with lazy loading.
+        Computes matches on first call, subsequent calls return cached result.
+        """
+        if self._matches is None:
+            matches: list[MatchResult] = []
+            for wrapper in self._rules.rules:
+                match = wrapper.matches_asset(self._asset)
+                if match is not None:
+                    matches.append(match)
+            self._matches = matches
+        return self._matches
 
     @typechecked
     def tags(self) -> list[str]:
+        """Returns the list of all tags matched by classification rules (lazy loaded)."""
         tags: list[str] = []
-        for m in self._matches:
+        for m in self._get_matches():
             tags.extend(m.tags_matched())
         return tags
 
     @typechecked
     def albums(self) -> list[str]:
+        """Returns the list of all albums matched by classification rules (lazy loaded)."""
         albums: list[str] = []
-        for m in self._matches:
+        for m in self._get_matches():
             albums.extend(m.albums_matched())
         return albums
 
     @typechecked
     def asset_links(self) -> list[str]:
+        """Returns the list of all asset_links matched by classification rules (lazy loaded)."""
         asset_links: list[str] = []
-        for m in self._matches:
+        for m in self._get_matches():
             asset_links.extend(m.asset_links_matched())
         return asset_links
 
     @typechecked
     def rules(self) -> list[MatchResult]:
-        return list(self._matches)
+        """Returns the list of matched rules (lazy loaded)."""
+        return list(self._get_matches())
 
     @typechecked
     def _count_total_destinations(self) -> int:
@@ -91,7 +97,7 @@ class MatchResultList:
         If a single rule produces multiple albums, tags, or asset_links, each counts as a destination.
 
         Returns:
-            Total count of tags, albums, and asset_links matched.
+            Total count of tags, albums, and asset_links matched (lazy loaded).
         """
         total_tags = len(self.tags())
         total_albums = len(self.albums())
@@ -101,7 +107,7 @@ class MatchResultList:
     @typechecked
     def classification_status(self) -> "ClassificationStatus":
         """
-        Determines the classification status based on number of matched rules.
+        Determines the classification status based on number of matched rules (lazy loaded).
 
         Returns the status as a ClassificationStatus enum, making it easy to
         pattern-match on the result for clear control flow.
@@ -127,8 +133,10 @@ class MatchResultList:
 
     @typechecked
     def __getitem__(self, idx: int) -> MatchResult:
-        return self._matches[idx]
+        """Access match by index (lazy loaded)."""
+        return self._get_matches()[idx]
 
     @typechecked
     def __len__(self) -> int:
-        return len(self._matches)
+        """Get number of matched rules (lazy loaded)."""
+        return len(self._get_matches())
