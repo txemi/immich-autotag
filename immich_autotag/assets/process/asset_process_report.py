@@ -33,6 +33,8 @@ class AssetProcessReport(ProcessStepResult):
     Collects the results of each step in process_single_asset for a single asset.
     Can generate a summary report and answer if any changes were made.
     Holds explicit attributes for each processing phase.
+
+    Implements ProcessStepResult protocol with has_changes() and has_errors() methods.
     """
 
     tag_conversion_result: Optional[ModificationEntriesList] = None
