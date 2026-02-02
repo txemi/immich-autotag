@@ -33,7 +33,6 @@ from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
-from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -235,17 +234,16 @@ class AssetResponseWrapper:
         *,
         tag_name: str,
         user: "UserResponseWrapper | None" = None,
-    ) -> bool:
+    ) -> ModificationEntriesList:
         """
         Removes all tags from the asset with the given name (case-insensitive),
         even if they have different IDs (e.g., global and nested tags).
-        Returns True if at least one was removed, False if none were found.
+        Returns a ModificationEntriesList with the recorded modifications.
         After removal, reloads the asset and checks if the tag is still present.
         Raises if any remain.
         Uses TagWrapper from the tag collection for all reporting.
         """
 
-        from immich_autotag.api.immich_proxy.tags import proxy_untag_assets
         from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 
         tags = self.get_tags()
@@ -255,50 +253,48 @@ class AssetResponseWrapper:
         if not tags_to_remove:
             if is_log_level_enabled(LogLevel.DEBUG):
                 log_debug(
-                    f"[BUG][INFO] Asset id={self.get_id()} does not have the tag '{tag_name}'"
+                    f"[BUG][INFO] Asset id={self.get_id()} does not have the tag "
+                    f"'{tag_name}'"
                 )
-            return False
+            return ModificationEntriesList()
+
         if is_log_level_enabled(LogLevel.DEBUG):
             log_debug(
                 f"[BUG] Before removal: asset.id={self.get_id()}, "
                 f"asset_name={self.get_original_file_name()}, "
-                f"tag_name='{tag_name}', tag_ids={[str(tag.get_id()) for tag in tags_to_remove]}"
+                f"tag_name='{tag_name}', "
+                f"tag_ids={[str(tag.get_id()) for tag in tags_to_remove]}"
             )
             log_debug(f"[BUG] Tags before removal: {self.get_tag_names()}")
+
         assert isinstance(
             self.get_context().get_tag_collection(), TagCollectionWrapper
         ), "context.tag_collection must be an object"
-        tag_wrapper = self.get_context().get_tag_collection().find_by_name(tag_name)
-        removed_any = False
-        tag_mod_report = ModificationReport.get_instance()
-        for tag in tags_to_remove:
-            tag_uuid = tag.get_id()
-            response = proxy_untag_assets(
-                tag_id=tag_uuid,
-                client=self.get_context().get_client_wrapper().get_client(),
-                asset_ids=[self.get_id()],
-            )
-            if is_log_level_enabled(LogLevel.DEBUG):
-                log_debug(
-                    f"[BUG] Full untag_assets response for tag_id={str(tag_uuid)}: {response}"
-                )
-                log_debug(
-                    f"[BUG][INFO] Removed tag '{tag_name}' (id={str(tag_uuid)}) from asset.id={self.get_id()}. "
-                    f"Response: {response}"
-                )
-            removed_any = True
-            from immich_autotag.report.modification_kind import ModificationKind
 
-            tag_mod_report.add_modification(
-                kind=ModificationKind.REMOVE_TAG_FROM_ASSET,
-                asset_wrapper=self,
-                tag=tag_wrapper,
-                user=user,
-            )
+        tag_wrapper = self.get_context().get_tag_collection().find_by_name(
+            tag_name
+        )
+        if not tag_wrapper:
+            error_msg = f"Tag '{tag_name}' not found in tag collection"
+            log(error_msg, level=LogLevel.ERROR)
+            return ModificationEntriesList()
 
-        if is_log_level_enabled(LogLevel.DEBUG):
+        # Use logging_proxy for automatic error handling and reporting
+        from immich_autotag.api.logging_proxy.remove_tags import (
+            logging_untag_assets_safe,
+        )
+
+        entries = logging_untag_assets_safe(
+            client=self.get_context().get_client_wrapper().get_client(),
+            tag=tag_wrapper,
+            asset_wrappers=[self],
+        )
+
+        # Check if entries were created (success)
+        if entries and is_log_level_enabled(LogLevel.DEBUG):
             log_debug(f"[PERF] Tag '{tag_name}' removal applied")
-        return removed_any
+
+        return entries
 
     @typechecked
     def add_tag_by_name(
@@ -306,10 +302,10 @@ class AssetResponseWrapper:
         *,
         tag_name: str,
         fail_if_exists: bool = False,
-    ) -> Optional["ModificationEntry"]:
+    ) -> ModificationEntriesList:
         """
         Adds a tag to the asset by name using the Immich API if it doesn't have it already.
-        Returns True if added, raises exception if it already had it or if the tag doesn't exist.
+        Returns a ModificationEntriesList with the recorded modifications.
         """
         from immich_autotag.api.immich_proxy.tags import proxy_tag_assets
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
@@ -342,7 +338,7 @@ class AssetResponseWrapper:
                 f"[INFO] Asset.id={self.get_id()} already has tag '{tag_name}', skipping.",
                 level=LogLevel.DEBUG,
             )
-            return None
+            return ModificationEntriesList()
         # Extra checks and logging before API call
         if not tag:
             from immich_autotag.logging.levels import LogLevel
@@ -353,31 +349,29 @@ class AssetResponseWrapper:
             from immich_autotag.report.modification_kind import ModificationKind
 
             entry = tag_mod_report.add_modification(
-                kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                kind=ModificationKind.WARNING_TAG_ADDITION_TO_ASSET_FAILED,
                 asset_wrapper=self,
                 tag=tag,
                 user=user_wrapper,
                 extra={"error": error_msg},
             )
-            return entry
+            return ModificationEntriesList(entries=[entry])
         if not self.get_id():
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
             error_msg = f"[ERROR] Asset object is missing id. Asset state: {str(self._cache_entry.get_state())}"
             log(error_msg, level=LogLevel.ERROR)
-            if tag_mod_report:
-                from immich_autotag.report.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
-                entry = tag_mod_report.add_modification(
-                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
-                    asset_wrapper=self,
-                    tag=tag,
-                    user=user_wrapper,
-                    extra={"error": error_msg},
-                )
-                return entry
-            return None
+            entry = tag_mod_report.add_modification(
+                kind=ModificationKind.WARNING_TAG_ADDITION_TO_ASSET_FAILED,
+                asset_wrapper=self,
+                tag=tag,
+                user=user_wrapper,
+                extra={"error": error_msg},
+            )
+            return ModificationEntriesList(entries=[entry])
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
@@ -402,18 +396,16 @@ class AssetResponseWrapper:
 
             error_msg = f"[ERROR] Exception during proxy_tag_assets: {e}"
             log(error_msg, level=LogLevel.ERROR)
-            if tag_mod_report:
-                from immich_autotag.report.modification_kind import ModificationKind
+            from immich_autotag.report.modification_kind import ModificationKind
 
-                entry = tag_mod_report.add_modification(
-                    asset_wrapper=self,
-                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
-                    tag=tag,
-                    user=user_wrapper,
-                    extra={"error": error_msg},
-                )
-                return entry
-            return None
+            entry = tag_mod_report.add_modification(
+                asset_wrapper=self,
+                kind=ModificationKind.WARNING_TAG_ADDITION_TO_ASSET_FAILED,
+                tag=tag,
+                user=user_wrapper,
+                extra={"error": error_msg},
+            )
+            return ModificationEntriesList(entries=[entry])
         log(f"[DEBUG] Response proxy_tag_assets: {response}", level=LogLevel.DEBUG)
         log(
             f"[INFO] Added tag '{tag_name}' to asset.id={self.get_id()}.",
@@ -427,7 +419,7 @@ class AssetResponseWrapper:
             tag=tag,
             user=user_wrapper,
         )
-        return entry
+        return ModificationEntriesList(entries=[entry])
 
     @typechecked
     def _get_current_tag_ids(self) -> list[TagUUID]:
