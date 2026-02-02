@@ -20,6 +20,7 @@ from immich_autotag.api.immich_proxy.tags import proxy_tag_assets as _proxy_tag_
 from immich_autotag.report.modification_kind import ModificationKind
 
 if TYPE_CHECKING:
+    from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
     from immich_autotag.types.client_types import ImmichClient
     from immich_autotag.types.uuid_wrappers import AssetUUID
@@ -80,12 +81,12 @@ def logging_tag_assets_safe(
     client: ImmichClient,
     tag: TagWrapper,
     asset_ids: list[AssetUUID],
-) -> bool:
+) -> list[ModificationEntry]:
     """
     Add a tag to multiple assets with automatic event logging and error handling.
 
-    Returns True if successful, False if an exception occurred.
-    Logs errors and records failures in ModificationReport.
+    Returns list of ModificationEntry objects created for this operation.
+    Entries are automatically added to the ModificationReport singleton.
 
     Args:
         client: Immich client instance
@@ -93,12 +94,11 @@ def logging_tag_assets_safe(
         asset_ids: List of AssetUUID objects to tag
 
     Returns:
-        bool: True if tagging succeeded, False if an exception occurred
+        list[ModificationEntry]: All entries created for this operation (empty if error)
 
     Side effects:
         - Calls the API to tag the assets
-        - Records success events in ModificationReport for each asset
-        - Records failure event if exception occurs
+        - Records the operation in ModificationReport singleton
         - Updates statistics (delegated to ModificationReport)
         - Logs actions and errors
     """
@@ -108,13 +108,14 @@ def logging_tag_assets_safe(
 
     tag_id = tag.get_id()
     tag_name = tag.get_name()
+    report = ModificationReport.get_instance()
+    prev_count = len(report.modifications)
 
     try:
         # Call the underlying proxy function
         _proxy_tag_assets(client=client, tag_id=tag_id, asset_ids=asset_ids)
 
         # Record success events in the modification report
-        report = ModificationReport.get_instance()
         for asset_id in asset_ids:
             report.add_tag_modification(
                 kind=ModificationKind.ADD_TAG_TO_ASSET,
@@ -126,17 +127,18 @@ def logging_tag_assets_safe(
             f"[TAG_ASSETS] Tag '{tag_name}' (id={tag_id}) added to "
             f"{len(asset_ids)} asset(s)"
         )
-        return True
+        
+        # Return all entries created in this operation
+        return report.modifications[prev_count:]
 
     except Exception as e:
         error_msg = f"[ERROR] Exception during proxy_tag_assets: {e}"
         log(error_msg, level=LogLevel.ERROR)
 
         # Record failure in modification report
-        report = ModificationReport.get_instance()
         report.add_tag_modification(
             kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
             tag=tag,
         )
-
-        return False
+        # Return the failure entry(ies)
+        return report.modifications[prev_count:]

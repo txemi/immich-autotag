@@ -23,6 +23,7 @@ from immich_autotag.api.immich_proxy.tags import (
 from immich_autotag.report.modification_kind import ModificationKind
 
 if TYPE_CHECKING:
+    from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
     from immich_autotag.types.client_types import ImmichClient
     from immich_autotag.types.uuid_wrappers import AssetUUID
@@ -152,3 +153,57 @@ def logging_create_tag(
     logger.debug(f"Created tag: name='{name}'")
 
     return new_tag_dto
+
+
+@typechecked
+def logging_untag_assets_safe(
+    *,
+    client: ImmichClient,
+    tag: TagWrapper,
+    asset_ids: list[AssetUUID],
+) -> list[ModificationEntry]:
+    """
+    Remove a tag from assets with error handling.
+
+    Returns list of ModificationEntry objects created for this operation.
+    Entries are automatically added to the ModificationReport singleton.
+
+    Args:
+        client: Immich client instance
+        tag: TagWrapper object containing tag information
+        asset_ids: List of AssetUUID objects to untag
+
+    Returns:
+        list[ModificationEntry]: All entries created for this operation (empty if error)
+
+    Side effects:
+        - Calls the API to untag the assets
+        - Records events in ModificationReport singleton
+        - Logs the action or error
+    """
+    from immich_autotag.report.modification_report import ModificationReport
+
+    report = ModificationReport.get_instance()
+    prev_count = len(report.modifications)
+
+    try:
+        logging_untag_assets(client=client, tag=tag, asset_ids=asset_ids)
+        
+        # Return all entries created in this operation (success case)
+        return report.modifications[prev_count:]
+        
+    except Exception as e:
+        # Log the error
+        logger.error(
+            f"Failed to remove tag '{tag.get_name()}' from {len(asset_ids)} "
+            f"asset(s): {str(e)}"
+        )
+
+        # Record failure in modification report
+        for asset_id in asset_ids:
+            report.add_tag_modification(
+                kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                tag=tag,
+            )
+        # Return all entries created in this operation (failure case)
+        return report.modifications[prev_count:]
