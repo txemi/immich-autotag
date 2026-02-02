@@ -24,6 +24,7 @@ class OutputTagCounter(BaseModel):
     added: int = 0
     removed: int = 0
     removed_globally: int = 0  # Count of global removals (maintenance cleanup)
+    created: int = 0  # Count of tag creations
     errors: int = 0  # New: count errors for this tag
 
 

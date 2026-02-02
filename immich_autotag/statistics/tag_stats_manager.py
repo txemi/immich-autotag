@@ -78,6 +78,17 @@ class TagStatsManager:
         self._stats_manager.save_to_file()
 
     @typechecked
+    def _increment_tag_created(self, tag: "TagWrapper") -> None:
+        tag_name = tag.get_name()
+        stats = self._stats_manager.get_stats()
+        if tag_name not in stats.output_tag_counters:
+            from .run_statistics import OutputTagCounter
+
+            stats.output_tag_counters[tag_name] = OutputTagCounter()
+        stats.output_tag_counters[tag_name].created += 1
+        self._stats_manager.save_to_file()
+
+    @typechecked
     def _increment_album_date_mismatch(self) -> None:
         stats = self._stats_manager.get_stats()
         try:
@@ -137,6 +148,9 @@ class TagStatsManager:
             self.increment_tag_added(tag)
         elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
             self.increment_tag_removed(tag)
+        elif kind == ModificationKind.CREATE_TAG:
+            # CREATE_TAG: increment tag creation counter
+            self._increment_tag_created(tag)
         elif kind == ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED:
             self._increment_tag_error(tag)
         elif kind == ModificationKind.UPDATE_ASSET_DATE:
