@@ -15,8 +15,10 @@ def run_main_inner_logic():
     manager = init_config_and_logging()
     client_wrapper = init_client(manager)
     client = client_wrapper.get_client()
-    maintenance_cleanup_labels(client)
+    # Initialize context early so it's available for maintenance operations
     context = init_collections_and_context(client_wrapper)
+    # TODO: Maintenance cleanup disabled during stability testing - causes performance issues
+    maintenance_cleanup_labels(client)
     # Apply conversions to all assets before loading tags
     from immich_autotag.config.internal_config import APPLY_CONVERSIONS_AT_START
     from immich_autotag.entrypoint.collections import (

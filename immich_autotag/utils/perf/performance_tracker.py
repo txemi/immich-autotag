@@ -358,7 +358,7 @@ class PerformanceTracker:
         else:
             msg += "/?(est_total_all)"
 
-        msg += f" Average: {avg:.3f} s"
+        msg += f" Average: {avg:.3f}s"
         return msg
 
     @typechecked

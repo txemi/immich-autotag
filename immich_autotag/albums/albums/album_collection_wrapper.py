@@ -345,7 +345,7 @@ class AlbumCollectionWrapper:
             if tracker and tracker.should_log_progress(idx):
                 progress_msg = tracker.get_progress_description(idx)
                 log(
-                    f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}Album "
+                    f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}. Album "
                     f"'{album_wrapper.get_album_name()}' reloaded with "
                     f"{len(album_wrapper.get_asset_uuids())} assets.",
                     level=LogLevel.PROGRESS,
