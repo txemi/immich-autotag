@@ -7,6 +7,7 @@ from immich_autotag.assets.albums.analyze_and_assign_album import (
     analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.classification_validation_result import ClassificationValidationResult
 from immich_autotag.assets.consistency_checks._album_date_consistency import (
     check_album_date_consistency,
 )
@@ -15,7 +16,7 @@ from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_
     DuplicateTagAnalysisResult,
     analyze_duplicate_classification_tags,
 )
-from immich_autotag.config.dev_mode import is_development_mode
+from immich_autotag.config.dev_mode import is_crazy_debug_mode, is_development_mode
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
@@ -104,13 +105,20 @@ def process_single_asset(
     # Ejecutar cada fase y almacenar resultados en el reporte tipado
     from immich_autotag.assets.process.asset_process_report import AssetProcessReport
 
+    # Initialize variables before conditional to avoid UnboundLocalError
+    tag_conversion_result = ModificationEntriesList()
+    date_correction_result = None
+    duplicate_tag_analysis_result = None
+    album_assignment_result = None
+    tag_mod_report = None
+
     if not is_crazy_debug_mode():
         tag_conversion_result = _apply_tag_conversions(asset_wrapper)
         date_correction_result = _correct_date_if_enabled(asset_wrapper)
         duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
         tag_mod_report = ModificationReport.get_instance()
         album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
-    validate_result = asset_wrapper.validate_and_update_classification()
+    validation_result:ClassificationValidationResult= asset_wrapper.validate_and_update_classification()
 
     log(
         f"[RESERVED] tag_conversion_result: {tag_conversion_result}",
@@ -135,14 +143,16 @@ def process_single_asset(
         date_correction_result=date_correction_result,
         duplicate_tag_analysis_result=duplicate_tag_analysis_result,
         album_assignment_result=album_assignment_result,
-        validate_result=validate_result,
+        validate_result=validation_result,
     )
 
     log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 
-    log(f"[RESERVED] validate_result: {validate_result}", level=LogLevel.ASSET_SUMMARY)
+    log(f"[RESERVED] validate_result: {validation_result}", level=LogLevel.ASSET_SUMMARY)
     from immich_autotag.config.manager import ConfigManager
 
+    if tag_mod_report is None:
+        tag_mod_report = ModificationReport.get_instance()
 
     if not is_crazy_debug_mode():
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 from urllib.parse import ParseResult
 
 import attrs
@@ -16,13 +16,11 @@ from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
-from immich_autotag.assets.classification_update_result import (
-    ClassificationUpdateResult,
-)
 from immich_autotag.classification.classification_status import ClassificationStatus
 from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
 )
+from immich_autotag.classification.match_result_list import MatchResultList
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.config.models import UserConfig
 from immich_autotag.context.immich_context import ImmichContext
@@ -37,6 +35,11 @@ from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID, TagUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.utils.deprecation import raise_deprecated_path
 from immich_autotag.utils.url_helpers import get_immich_photo_url
+
+if TYPE_CHECKING:
+    from immich_autotag.assets.classification_validation_result import (
+        ClassificationValidationResult,
+    )
 
 
 # Exception for date integrity
@@ -444,28 +447,27 @@ class AssetResponseWrapper:
         return tag_names
 
     @typechecked
-    def get_classification_status(self) -> "ClassificationStatus":
+    def get_classification_status(self) -> "MatchResultList":
         """
-        Returns the comprehensive classification status of the asset.
+        Returns the comprehensive match results for the asset classification.
 
-        Determines whether the asset is:
-        - CLASSIFIED: Matched exactly one classification rule
-        - CONFLICT: Matched multiple classification rules
-        - UNCLASSIFIED: Matched no classification rules
+        Determines which classification rules matched the asset and returns the full
+        MatchResultList with all matched rules, tags, and albums. This provides more
+        detailed information than just the classification status.
 
         This is the primary method for classification evaluation. Use this instead
         of checking individual boolean properties.
 
         Returns:
-            ClassificationStatus enum indicating the asset's classification state.
+            MatchResultList containing all matched rules and their details.
         """
         from immich_autotag.classification.classification_rule_set import (
             ClassificationRuleSet,
         )
 
-        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        match_results = rule_set.matching_rules(self)
-        return match_results.classification_status()
+        rule_set: ClassificationRuleSet = ClassificationRuleSet.get_rule_set_from_config_manager()
+        match_results : MatchResultList = rule_set.matching_rules(self)
+        return match_results
 
     def get_original_file_name(self) -> Path:
         return self._cache_entry.get_original_file_name()
@@ -555,7 +557,7 @@ class AssetResponseWrapper:
         should_have_tag_fn: Callable[[], bool],
         tag_present_reason: str,
         tag_absent_reason: str,
-    ) -> None:
+    ) -> ModificationEntriesList:
         """
         Generic method to manage classification-related tags.
 
@@ -564,25 +566,29 @@ class AssetResponseWrapper:
             should_have_tag_fn: Callable that returns True if tag should be present.
             tag_present_reason: Log message reason when adding tag.
             tag_absent_reason: Log message reason when removing tag.
-            user: Optional user for tracking tag removal.
+
+        Returns:
+            ModificationEntriesList with the modifications performed (add/remove tag).
         """
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
         if should_have_tag_fn():
             if not self.has_tag(tag_name=tag_name):
-                self.add_tag_by_name(tag_name=tag_name)
+                entries = self.add_tag_by_name(tag_name=tag_name)
                 log(
                     f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) "
                     f"{tag_present_reason}. Tagged as '{tag_name}'.",
                     level=LogLevel.FOCUS,
                 )
+                return entries
             else:
                 log(
                     f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) "
                     f"{tag_present_reason}. Tag '{tag_name}' already present.",
                     level=LogLevel.FOCUS,
                 )
+                return ModificationEntriesList()
         else:
             if self.has_tag(tag_name=tag_name):
                 log(
@@ -592,15 +598,17 @@ class AssetResponseWrapper:
                 )
 
                 user_obj = UserResponseWrapper.load_current_user()
-                self.remove_tag_by_name(tag_name=tag_name, user=user_obj)
+                entries = self.remove_tag_by_name(tag_name=tag_name, user=user_obj)
+                return entries
             else:
                 log(
                     f"[CLASSIFICATION] asset.id={self.get_id()} ({self.get_original_file_name()}) {tag_absent_reason}. Tag '{tag_name}' not present.",
                     level=LogLevel.FOCUS,
                 )
+                return ModificationEntriesList()
 
     @typechecked
-    def _ensure_autotag_unknown_category(self) -> None:
+    def _ensure_autotag_unknown_category(self) -> ModificationEntriesList:
         """
         Adds or removes the AUTOTAG_UNKNOWN_CATEGORY tag according to classification state.
 
@@ -611,6 +619,9 @@ class AssetResponseWrapper:
 
         Idempotent: does nothing if already in correct state.
         Also logs and notifies the modification report.
+
+        Returns:
+            ModificationEntriesList with the modifications performed.
         """
 
         from immich_autotag.config.models import ClassificationConfig
@@ -624,9 +635,10 @@ class AssetResponseWrapper:
             log(
                 "[WARNING] autotag_unknown not set in config.classification; skipping tag management."
             )
-            return
-        status = self.get_classification_status()
-        self._ensure_tag_for_classification_status(
+            return ModificationEntriesList()
+        match_results = self.get_classification_status()
+        status = match_results.classification_status()
+        return self._ensure_tag_for_classification_status(
             tag_name=tag_name,
             should_have_tag_fn=status.is_unclassified,
             tag_present_reason="is not classified",
@@ -638,7 +650,7 @@ class AssetResponseWrapper:
         self,
         *,
         status: "ClassificationStatus",
-    ) -> None:
+    ) -> ModificationEntriesList:
         """
         Adds or removes the AUTOTAG_CONFLICT_CATEGORY tag according to classification status.
 
@@ -647,7 +659,9 @@ class AssetResponseWrapper:
 
         Args:
             status: The ClassificationStatus determining if conflict tag should be present.
-            user: Optional user for tracking tag removal. If None, derived from context.
+
+        Returns:
+            ModificationEntriesList with the modifications performed.
         """
 
         from immich_autotag.config.models import ClassificationConfig
@@ -661,16 +675,15 @@ class AssetResponseWrapper:
             log(
                 "[WARNING] autotag_conflict not set in config.classification; skipping tag management."
             )
-            return
-        self._ensure_tag_for_classification_status(
+            return ModificationEntriesList()
+        return self._ensure_tag_for_classification_status(
             tag_name=tag_name,
             should_have_tag_fn=status.is_conflict,
             tag_present_reason="is in classification conflict",
             tag_absent_reason=f"classification status is {status.value}",
         )
 
-    @typechecked
-    def validate_and_update_classification(self) -> "ClassificationUpdateResult":
+    def validate_and_update_classification(self) -> "ClassificationValidationResult":
         """
         Validates and updates asset classification state with proper tag management.
 
@@ -681,15 +694,22 @@ class AssetResponseWrapper:
         This method is idempotent: calling it multiple times produces the same result.
 
         Returns:
-            ClassificationUpdateResult: has_tags and has_albums as booleans.
+            ClassificationValidationResult: Contains match results (cause) and modifications (consequence),
+                along with has_tags and has_albums status.
         """
         tag_names = self.get_tag_names()
         album_names = self.get_album_names()
 
         # Get comprehensive classification status and update tags accordingly
-        status = self.get_classification_status()
-        self._ensure_autotag_unknown_category()
-        self._ensure_autotag_conflict_category(status=status)
+        match_results = self.get_classification_status()
+        status = match_results.classification_status()
+        
+        # Capture modifications from tag management
+        modifications = ModificationEntriesList()
+        unknown_entries = self._ensure_autotag_unknown_category()
+        conflict_entries = self._ensure_autotag_conflict_category(status=status)
+        modifications = modifications.extend(unknown_entries)
+        modifications = modifications.extend(conflict_entries)
 
         # Log the classification result
         log(
@@ -699,8 +719,19 @@ class AssetResponseWrapper:
             f"Date: {self.get_created_at()} | original_path: {self.get_original_path()}",
             level=LogLevel.FOCUS,
         )
-        return ClassificationUpdateResult(
-            has_tags=bool(tag_names), has_albums=bool(album_names)
+        
+        from immich_autotag.assets.classification_validation_result import (
+            ClassificationValidationResult,
+        )
+        from immich_autotag.classification.classification_rule_set import (
+            ClassificationRuleSet,
+        )
+        
+        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
+        
+        return ClassificationValidationResult(
+            match_results=match_results,
+            modifications=modifications,
         )
 
     @typechecked
@@ -756,7 +787,8 @@ class AssetResponseWrapper:
             return None
 
         # If already classified or conflicted by tag or album, skip
-        status = self.get_classification_status()
+        match_results = self.get_classification_status()
+        status = match_results.classification_status()
         match status:
             case ClassificationStatus.UNCLASSIFIED:
                 # Proceed with album detection

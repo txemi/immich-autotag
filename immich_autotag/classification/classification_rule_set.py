@@ -86,7 +86,7 @@ class ClassificationRuleSet:
             if match is not None:
                 matches.append(match)
 
-        return MatchResultList(matches=matches)
+        return MatchResultList(matches=matches,rules=self,asset=asset_wrapper)
 
     @typechecked
     def is_focused(self) -> bool:
