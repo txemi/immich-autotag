@@ -195,14 +195,14 @@ class AssetCacheEntry:
     def ensure_full_asset_loaded(self, context: "ImmichContext") -> AssetDtoState:
         """
         Ensures the asset is fully loaded with tags. If not, fetches from API and updates the cache entry.
-        
+
         Uses the robust are_tags_loaded() method which validates:
         1. Tags are not Unset
         2. We're in FULL mode
         3. Both validation methods agree
         """
         state = self._get_fresh_state()
-        
+
         # Use the robust validation method
         if state.are_tags_loaded():
             return state
