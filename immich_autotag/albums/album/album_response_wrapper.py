@@ -556,7 +556,9 @@ class AlbumResponseWrapper:
         self, item: BulkIdResponseDto, asset_wrapper: "AssetResponseWrapper"
     ) -> None:
         """Handles non-success results from removal API."""
-        error_msg = getattr(item, "error", None)
+        from immich_client.types import UNSET
+
+        error_msg: str | None = None if item.error is UNSET else str(item.error)
         asset_url = asset_wrapper.get_immich_photo_url().geturl()
         album_url = self.get_immich_album_url().geturl()
 

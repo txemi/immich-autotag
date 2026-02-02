@@ -110,11 +110,7 @@ def get_all_assets(
         # response is expected to be a SearchResponseDto
         # If using httpx or a custom Response, adapt as needed
         # If response is a custom Response object, get .parsed
-        parsed = getattr(response, "parsed", None)
-        if parsed is not None:
-            response_obj = parsed
-        else:
-            response_obj = response
+        response_obj: SearchResponseDto = response.parsed if response.parsed is not None else response  # type: ignore[assignment]
         # Now response_obj should be a SearchResponseDto
         # assets_page should be a list[AssetResponseDto]
         # assets_page should be a list[AssetResponseDto]
@@ -159,7 +155,7 @@ def get_all_assets(
             log(f"[PROGRESS] Asset processed, count={count}", level=LogLevel.DEBUG)
         skip_applied = bool(skip_n and not skip_applied)
         abs_pos = skip_n + count
-        response_assets = getattr(response.parsed, "assets", None)
+        response_assets = response.parsed.assets if response.parsed is not None else None  # type: ignore[attr-defined]
         total_assets = response_assets.total if response_assets is not None else None
         _log_page_progress(
             page,
@@ -176,7 +172,7 @@ def get_all_assets(
                 level=LogLevel.PROGRESS,
             )
             break
-        if response_assets is None or not getattr(response_assets, "next_page", None):
+        if response_assets is None or not response_assets.next_page:  # type: ignore[attr-defined]
             log(
                 f"[PROGRESS] No next_page in response after page {page}, ending loop.",
                 level=LogLevel.PROGRESS,
