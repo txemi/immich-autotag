@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 import attrs
@@ -8,6 +9,7 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
+from ..asset_date_candidate import AssetDateCandidate
 from ..asset_date_sources_list import AssetDateSourcesList
 from ._helpers import check_filename_candidate_and_fix, is_precise_and_rounded_midnight_close
 from .step_result import DateCorrectionStepResult
@@ -27,7 +29,9 @@ class AssetDateCorrector:
     
     # Private state (initialized after execute())
     _date_sources_list: AssetDateSourcesList = attrs.field(default=None, init=False, repr=False)
-    _selected_candidate: object = attrs.field(default=None, init=False, repr=False)
+    _selected_candidate: Optional[AssetDateCandidate] = attrs.field(
+        default=None, init=False, repr=False
+    )
     _step_result: DateCorrectionStepResult = attrs.field(default=None, init=False, repr=False)
     _reasoning: str = attrs.field(default=None, init=False, repr=False)
     
@@ -158,7 +162,7 @@ class AssetDateCorrector:
         return self._step_result
     
     @typechecked
-    def get_selected_candidate(self) -> object:
+    def get_selected_candidate(self) -> Optional[AssetDateCandidate]:
         """Get the candidate that was selected during the correction process."""
         return self._selected_candidate
     
