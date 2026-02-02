@@ -13,7 +13,10 @@ class AlbumMap:
     Stores albums in a dict keyed by UUID. Prevents duplicates.
     """
 
-    _albums: dict[AlbumUUID, AlbumResponseWrapper] = attrs.field(factory=dict)
+    _albums: dict[AlbumUUID, AlbumResponseWrapper] = attrs.field(
+        factory=dict,
+        repr=lambda value: f"size={len(value)}",
+    )
 
     @typechecked
     def get_by_uuid(self, uuid: AlbumUUID) -> AlbumResponseWrapper:
@@ -58,6 +61,3 @@ class AlbumMap:
 
     def __bool__(self):
         return bool(self._albums)
-
-    def __repr__(self):
-        return f"AlbumMap({self._albums!r})"
