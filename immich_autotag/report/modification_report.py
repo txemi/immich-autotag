@@ -215,6 +215,7 @@ class ModificationReport:
             ModificationKind.ADD_TAG_TO_ASSET,
             ModificationKind.REMOVE_TAG_FROM_ASSET,
             ModificationKind.REMOVE_TAG_GLOBALLY,
+            ModificationKind.CREATE_TAG,
         }
         # Log the tag modification action
         from immich_autotag.logging.utils import log
