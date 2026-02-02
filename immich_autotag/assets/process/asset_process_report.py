@@ -94,13 +94,7 @@ class AssetProcessReport(ProcessStepResult):
 
         # Check tag conversions
         if self.tag_conversion_result is not None:
-            result_str = str(self.tag_conversion_result).lower()
-            if (
-                "added" in result_str
-                or "removed" in result_str
-                or "modified" in result_str
-            ):
-                changes.append("Tags modified")
+            changes.append(self.tag_conversion_result.format())
 
         # Check date corrections
         if self.date_correction_result is not None:
@@ -142,7 +136,7 @@ class AssetProcessReport(ProcessStepResult):
 
         # Add individual results for detailed info
         if self.tag_conversion_result is not None:
-            lines.append(f"  Tag conversions: {self.tag_conversion_result}")
+            lines.append(f"  Tag conversions: {self.tag_conversion_result.format()}")
         if self.date_correction_result is not None:
             lines.append(f"  Date correction: {self.date_correction_result}")
         if self.duplicate_tag_analysis_result is not None:
