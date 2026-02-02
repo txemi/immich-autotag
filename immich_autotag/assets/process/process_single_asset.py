@@ -114,7 +114,6 @@ def process_single_asset(
     album_assignment_result = None
     tag_mod_report = None
 
-
     tag_conversion_result = _apply_tag_conversions(asset_wrapper)
     if not is_crazy_debug_mode():
         date_correction_result = _correct_date_if_enabled(asset_wrapper)

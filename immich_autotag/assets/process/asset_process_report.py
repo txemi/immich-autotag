@@ -9,9 +9,6 @@ if TYPE_CHECKING:
     )
 
 from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentResult
-from immich_autotag.assets.classification_update_result import (
-    ClassificationUpdateResult,
-)
 from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepResult
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     DuplicateTagAnalysisResult,

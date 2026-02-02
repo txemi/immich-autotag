@@ -56,7 +56,7 @@ class ConfigManager:
             else:
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
-                
+
                 log("Validating config object as UserConfig...", level=LogLevel.DEBUG)
                 self._config = UserConfig.model_validate(config_obj)
         elif config_type == config_type.__class__.YAML:
@@ -100,7 +100,6 @@ class ConfigManager:
         self.print_config()
 
     def __attrs_post_init__(self):
-        import traceback
 
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
@@ -112,7 +111,7 @@ class ConfigManager:
             raise RuntimeError(
                 "ConfigManager instance already exists. Use get_instance()."
             )
-        
+
         # --- New configuration search and loading logic ---
         self._construction()
         # Initialize skip_n with the counter from the last previous execution (with overlap)
@@ -125,7 +124,7 @@ class ConfigManager:
     def get_instance() -> "ConfigManager":
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
-        
+
         global _instance
         # Reserved global variable _instance is required for singleton pattern
         if _instance is None:
