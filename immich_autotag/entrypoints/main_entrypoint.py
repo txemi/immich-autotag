@@ -9,14 +9,14 @@ from immich_autotag.utils.typeguard_hook import (  # isort: skip
 
 install_typeguard_import_hook()  # noqa: E402
 
-from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions
+from immich_autotag.utils.setup_runtime import setup_logging_and_exceptions  # noqa: E402
 
 setup_logging_and_exceptions()
 
 if TYPE_CHECKING:
     pass
 
-from immich_autotag.entrypoints.main_logic import run_main_inner_logic
+from immich_autotag.entrypoints.main_logic import run_main_inner_logic  # noqa: E402
 
 
 def run_main_inner() -> None:

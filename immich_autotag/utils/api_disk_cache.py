@@ -92,14 +92,14 @@ class ApiCacheManager:
     def load(self, key: str) -> Optional[dict[str, object] | list[dict[str, object]]]:
         if not self._use_cache:
             return None
-        
+
         # Try current run cache
         cache_dir = self._get_cache_dir()
         path = cache_dir / f"{key}.json"
         data = self._try_load_json(path)
         if data is not None:
             return data
-        
+
         # Try previous run caches
         for run_execution in RunOutputManager.current().find_recent_run_dirs(
             exclude_current=True
@@ -110,5 +110,5 @@ class ApiCacheManager:
             if data is not None:
                 self.save(key, data)  # Cache for current run
                 return data
-        
+
         return None
