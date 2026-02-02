@@ -107,9 +107,10 @@ class AlbumResponseWrapper:
         from immich_autotag.types.uuid_wrappers import AssetUUID
 
         for item in result:
-            if item.success is not True:
+            # Validate that success is a boolean (can be True or False)
+            if not isinstance(item.success, bool):
                 raise RuntimeError(
-                    "API returned non-boolean success value in BulkIdResponseDto"
+                    f"API returned non-boolean success value in BulkIdResponseDto: {type(item.success)} = {item.success}"
                 )
             if AssetUUID.from_uuid(UUID(item.id)) == asset_id:
                 return item
