@@ -861,20 +861,25 @@ check_import_linter() {
 	local quality_level="$2"
 	local py_bin
 	
-	# Only run in TARGET or STRICT levels, skip in STANDARD
+	# Select configuration file based on quality level
+	local config_file
 	case "$quality_level" in
 	STANDARD)
-		echo "[SKIP] import-linter skipped in $quality_level level (only runs in TARGET/STRICT)"
-		return 0
+		config_file="$REPO_ROOT/importlinter.ini"
 		;;
-	TARGET | STRICT)
-		# Continue with check
+	TARGET)
+		config_file="$REPO_ROOT/importlinter-target.ini"
+		;;
+	STRICT)
+		config_file="$REPO_ROOT/importlinter-strict.ini"
 		;;
 	*)
 		echo "[DEFENSIVE-FAIL] Unexpected quality_level value in check_import_linter: '$quality_level'. Exiting for safety." >&2
 		return 89
 		;;
 	esac
+	
+	echo "[INFO] Using import-linter config: $config_file (level: $quality_level)"
 	
 	# Detectar el binario de Python del entorno virtual
 	if [ -f "$repo_root/.venv/bin/python" ]; then
@@ -902,7 +907,7 @@ check_import_linter() {
 		echo "[ERROR] lint-imports binary not found in virtualenv or PATH."
 		return 1
 	fi
-	if ! "$lint_imports_bin" --config "$REPO_ROOT/importlinter.ini"; then
+	if ! "$lint_imports_bin" --config "$config_file"; then
 		echo "[ERROR] import-linter found contract violations."
 		return 1
 	fi

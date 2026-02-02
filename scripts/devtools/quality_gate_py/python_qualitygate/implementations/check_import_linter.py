@@ -18,28 +18,33 @@ class CheckImportLinter(Check):
     name = 'check_import_linter'
 
     def check(self, args: QualityGateArgs) -> CheckResult:
-        # Only run in TARGET or STRICT levels, skip in STANDARD
+        # Select configuration file based on quality level
         level = QualityLevel(args.level)
         
         match level:
             case QualityLevel.STANDARD:
-                print(f"[SKIP] import-linter skipped in {level.value} level (only runs in TARGET/STRICT)")
-                return CheckResult(findings=[])
-            case QualityLevel.TARGET | QualityLevel.STRICT:
-                cmd = [args.py_bin, '-m', 'importlinter', '--config', 'importlinter.ini']
-                print(f"[RUN] {' '.join(cmd)}")
-                result = subprocess.run(cmd, capture_output=True, text=True)
-                findings = []
-                if result.returncode != 0:
-                    for line in result.stdout.splitlines():
-                        if line.strip():
-                            findings.append(Finding(
-                                file_path='importlinter.ini',
-                                line_number=0,
-                                message=line.strip(),
-                                code="importlinter"
-                            ))
-                return CheckResult(findings=findings)
+                config_file = "importlinter.ini"
+            case QualityLevel.TARGET:
+                config_file = "importlinter-target.ini"
+            case QualityLevel.STRICT:
+                config_file = "importlinter-strict.ini"
+        
+        print(f"[INFO] Using import-linter config: {config_file} (level: {level.value})")
+        
+        cmd = [args.py_bin, '-m', 'importlinter', '--config', config_file]
+        print(f"[RUN] {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        findings = []
+        if result.returncode != 0:
+            for line in result.stdout.splitlines():
+                if line.strip():
+                    findings.append(Finding(
+                        file_path=config_file,
+                        line_number=0,
+                        message=line.strip(),
+                        code="importlinter"
+                    ))
+        return CheckResult(findings=findings)
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
         # importlinter solo checkea, no modifica
