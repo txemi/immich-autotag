@@ -42,31 +42,29 @@ class AssetProcessReport:
     steps: List[AssetProcessStepResult] = attr.ib(factory=list)
 
     def any_changes(self) -> bool:
-        # Define what counts as a change: if any phase result indicates a change
-        # This logic can be refined as needed
-        
-        # Check tag_conversion_result (list of str)
+        """Check if any processing step resulted in changes."""
+        # tag_conversion_result: List[str] - non-empty means tags were converted
         if self.tag_conversion_result is not None and self.tag_conversion_result:
             return True
         
-        # Check date_correction_result (has .changed attribute)
+        # date_correction_result: Enum - FIXED means date was corrected
         if (self.date_correction_result is not None and
-            self.date_correction_result.changed):
+            self.date_correction_result == DateCorrectionStepResult.FIXED):
             return True
         
-        # Check duplicate_tag_analysis_result (has .changed attribute)
+        # duplicate_tag_analysis_result: Enum - anything except NO_DUPLICATES means action taken
         if (self.duplicate_tag_analysis_result is not None and
-            self.duplicate_tag_analysis_result.changed):
+            self.duplicate_tag_analysis_result != DuplicateTagAnalysisResult.NO_DUPLICATES):
             return True
         
-        # Check album_assignment_result (has .changed attribute)
-        if (self.album_assignment_result is not None and
-            self.album_assignment_result.changed):
+        # album_assignment_result: Enum - anything except NOT_ASSIGNED means action taken
+        if self.album_assignment_result is not None:
+            # AlbumAssignmentResult enum - check if assignment occurred
+            # We consider any non-None result as a change (assignment was attempted/made)
             return True
         
-        # Check validate_result (has .changed attribute)
-        if (self.validate_result is not None and
-            self.validate_result.changed):
+        # validate_result: ClassificationUpdateResult - non-None means validation occurred
+        if self.validate_result is not None:
             return True
         
         return False
