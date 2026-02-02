@@ -72,7 +72,8 @@ def logging_untag_assets(
 
     # Log the action
     logger.info(
-        f"[UNTAG_ASSETS] Tag '{tag_name}' (id={tag_id}) removed from {len(asset_ids)} asset(s)"
+        f"[UNTAG_ASSETS] Tag '{tag_name}' (id={tag_id}) removed from "
+        f"{len(asset_ids)} asset(s)"
     )
 
 
