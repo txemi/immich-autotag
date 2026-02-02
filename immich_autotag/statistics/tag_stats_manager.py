@@ -73,6 +73,17 @@ class TagStatsManager:
             self._stats_manager.save_to_file()
 
     @typechecked
+    def _increment_tag_removed_globally(self, tag: "TagWrapper") -> None:
+        tag_name = tag.get_name()
+        stats = self._stats_manager.get_stats()
+        if tag_name not in stats.output_tag_counters:
+            from .run_statistics import OutputTagCounter
+
+            stats.output_tag_counters[tag_name] = OutputTagCounter()
+        stats.output_tag_counters[tag_name].removed_globally += 1
+        self._stats_manager.save_to_file()
+
+    @typechecked
     def _increment_album_date_mismatch(self) -> None:
         stats = self._stats_manager.get_stats()
         try:
@@ -140,6 +151,8 @@ class TagStatsManager:
             self._increment_album_assignment(album)
         elif kind == ModificationKind.ALBUM_DATE_MISMATCH:
             self._increment_album_date_mismatch()
+        elif kind == ModificationKind.REMOVE_TAG_GLOBALLY:
+            self._increment_tag_removed_globally(tag)
         else:
             raise NotImplementedError(
                 f"increment_tag_action not implemented for ModificationKind: {kind}"
