@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True, frozen=True, repr=False)
 class ClassificationValidationResult:
     """
     Encapsulates the complete result of classification validation.

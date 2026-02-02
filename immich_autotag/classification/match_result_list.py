@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     )
 
 
-@attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True)
+@attr.s(auto_attribs=True, slots=True, kw_only=True, frozen=True, repr=False)
 class MatchResultList:
     _matches: List[MatchResult] = attr.ib(
         validator=attr.validators.deep_iterable(
