@@ -7,7 +7,9 @@ from immich_autotag.assets.albums.analyze_and_assign_album import (
     analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.assets.classification_validation_result import ClassificationValidationResult
+from immich_autotag.assets.classification_validation_result import (
+    ClassificationValidationResult,
+)
 from immich_autotag.assets.consistency_checks._album_date_consistency import (
     check_album_date_consistency,
 )
@@ -16,7 +18,7 @@ from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_
     DuplicateTagAnalysisResult,
     analyze_duplicate_classification_tags,
 )
-from immich_autotag.config.dev_mode import is_crazy_debug_mode, is_development_mode
+from immich_autotag.config.dev_mode import is_crazy_debug_mode
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
@@ -117,8 +119,12 @@ def process_single_asset(
         date_correction_result = _correct_date_if_enabled(asset_wrapper)
         duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
         tag_mod_report = ModificationReport.get_instance()
-        album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
-    validation_result:ClassificationValidationResult= asset_wrapper.validate_and_update_classification()
+        album_assignment_result = _analyze_and_assign_album(
+            asset_wrapper, tag_mod_report
+        )
+    validation_result: ClassificationValidationResult = (
+        asset_wrapper.validate_and_update_classification()
+    )
 
     log(
         f"[RESERVED] tag_conversion_result: {tag_conversion_result}",
@@ -148,8 +154,9 @@ def process_single_asset(
 
     log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 
-    log(f"[RESERVED] validate_result: {validation_result}", level=LogLevel.ASSET_SUMMARY)
-    from immich_autotag.config.manager import ConfigManager
+    log(
+        f"[RESERVED] validate_result: {validation_result}", level=LogLevel.ASSET_SUMMARY
+    )
 
     if tag_mod_report is None:
         tag_mod_report = ModificationReport.get_instance()

@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 from urllib.parse import ParseResult
 
 import attrs
-from immich_autotag.api.immich_proxy.types import UpdateAssetDto, Unset
 from typeguard import typechecked
 
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+from immich_autotag.api.immich_proxy.types import Unset, UpdateAssetDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
@@ -465,8 +465,10 @@ class AssetResponseWrapper:
             ClassificationRuleSet,
         )
 
-        rule_set: ClassificationRuleSet = ClassificationRuleSet.get_rule_set_from_config_manager()
-        match_results : MatchResultList = rule_set.matching_rules(self)
+        rule_set: ClassificationRuleSet = (
+            ClassificationRuleSet.get_rule_set_from_config_manager()
+        )
+        match_results: MatchResultList = rule_set.matching_rules(self)
         return match_results
 
     def get_original_file_name(self) -> Path:
@@ -703,7 +705,7 @@ class AssetResponseWrapper:
         # Get comprehensive classification status and update tags accordingly
         match_results = self.get_classification_status()
         status = match_results.classification_status()
-        
+
         # Capture modifications from tag management
         modifications = ModificationEntriesList()
         unknown_entries = self._ensure_autotag_unknown_category()
@@ -719,16 +721,16 @@ class AssetResponseWrapper:
             f"Date: {self.get_created_at()} | original_path: {self.get_original_path()}",
             level=LogLevel.FOCUS,
         )
-        
+
         from immich_autotag.assets.classification_validation_result import (
             ClassificationValidationResult,
         )
         from immich_autotag.classification.classification_rule_set import (
             ClassificationRuleSet,
         )
-        
+
         rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        
+
         return ClassificationValidationResult(
             match_results=match_results,
             modifications=modifications,

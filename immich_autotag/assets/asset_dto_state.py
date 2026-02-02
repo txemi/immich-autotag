@@ -12,9 +12,9 @@ import enum
 from datetime import datetime
 
 import attrs
-from immich_autotag.api.immich_proxy.types import Unset
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
+from immich_autotag.api.immich_proxy.types import Unset
 
 
 class AssetDtoType(enum.Enum):
