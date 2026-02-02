@@ -20,11 +20,16 @@ authentication parameters:
         raise_on_unexpected_status=True,
     )
 
+ARCHITECTURE NOTE:
+This module re-exports types from immich_proxy.client_types to maintain
+architectural isolation. Only immich_proxy has direct access to immich_client.
+
 See docs/issues/0022-client-type-centralization/ for the history of this decision.
 """
 
-from immich_client.client import AuthenticatedClient
+from immich_autotag.api.immich_proxy.client_types import (
+    AuthenticatedClient,
+    ImmichClient,
+)
 
-# The canonical client type for immich-autotag
-# All endpoints require authentication
-ImmichClient = AuthenticatedClient
+__all__ = ["ImmichClient", "AuthenticatedClient"]
