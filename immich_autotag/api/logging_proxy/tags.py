@@ -21,12 +21,14 @@ from immich_autotag.api.logging_proxy.remove_tags import (
     logging_create_tag,
     logging_delete_tag,
     logging_untag_assets,
+    logging_untag_assets_safe,
 )
 
 __all__ = [
     "logging_tag_assets",
     "logging_tag_assets_safe",
     "logging_untag_assets",
+    "logging_untag_assets_safe",
     "logging_delete_tag",
     "logging_create_tag",
 ]
