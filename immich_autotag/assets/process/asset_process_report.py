@@ -10,6 +10,7 @@ from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepR
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     DuplicateTagAnalysisResult,
 )
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
@@ -27,7 +28,7 @@ class AssetProcessStepResult:
 
 
 @attr.s(auto_attribs=True, slots=True)
-class AssetProcessReport:
+class AssetProcessReport(ProcessStepResult):
     """
     Collects the results of each step in process_single_asset for a single asset.
     Can generate a summary report and answer if any changes were made.
