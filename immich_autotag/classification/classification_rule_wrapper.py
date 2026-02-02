@@ -118,7 +118,7 @@ class ClassificationRuleWrapper:
 
             log(
                 f"Evaluating asset: id={asset_id} url={asset_url} | {self.to_log_string()}",
-                level=LogLevel.PROGRESS,
+                level=LogLevel.FOCUS,
             )
 
         if not tags_matched and not albums_matched and not asset_links_matched:
