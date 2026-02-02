@@ -1,17 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum, auto
-from typing import Iterable, Protocol, runtime_checkable
-
-from immich_autotag.config.dev_mode import is_development_mode
-
-
-# Protocol for objects with a 'mark' method
-@runtime_checkable
-class PerfPhaseTracker(Protocol):
-    def mark(self, phase: str, event: str) -> None: ...
-
-
+from typing import Iterable
 from uuid import UUID
 
 import attrs
@@ -34,6 +24,7 @@ from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_a
 
 # Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.config.dev_mode import is_development_mode
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
@@ -42,6 +33,7 @@ from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.utils.decorators import conditional_typechecked
+from immich_autotag.utils.perf.protocol import PerfPhaseTracker
 
 
 class SyncState(Enum):
@@ -327,9 +319,6 @@ class AlbumCollectionWrapper:
             # album_wrapper.ensure_full()
 
             if album_wrapper.is_empty():
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
-
                 log(
                     f"Album '{album_wrapper.get_album_name()}' "
                     f"has no assets after forced reload.",
@@ -347,21 +336,13 @@ class AlbumCollectionWrapper:
                         "Please review the album loading logic."
                     )
                 if is_temporary_album(album_wrapper.get_album_name()):
-                    from immich_autotag.logging.levels import LogLevel
-                    from immich_autotag.logging.utils import log
-
                     log(
                         f"Temporary album '{album_wrapper.get_album_name()}' "
                         f"marked for removal after map build.",
                         level=LogLevel.WARNING,
                     )
-            from immich_autotag.logging.levels import LogLevel
-            from immich_autotag.logging.utils import log
 
             if tracker and tracker.should_log_progress(idx):
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
-
                 progress_msg = tracker.get_progress_description(idx)
                 log(
                     f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}Album "
