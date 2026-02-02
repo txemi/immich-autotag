@@ -42,37 +42,48 @@ class AssetProcessReport:
     # Optionally, keep the old steps list for extensibility/debug
     steps: List[AssetProcessStepResult] = attr.ib(factory=list)
 
-    def any_changes(self) -> bool:
-        """Check if any processing step resulted in changes."""
-        # tag_conversion_result: List[str] - non-empty means tags were converted
-        if self.tag_conversion_result is not None and self.tag_conversion_result:
+    def has_changes(self) -> bool:
+        """Returns True if any processing step resulted in changes."""
+        if self.tag_conversion_result is not None and (
+            self.tag_conversion_result.has_changes()
+            or self.tag_conversion_result.has_errors()
+        ):
             return True
-        
-        # date_correction_result: Enum - FIXED means date was corrected
-        if (self.date_correction_result is not None and
-            self.date_correction_result == DateCorrectionStepResult.FIXED):
+
+        if (
+            self.date_correction_result is not None
+            and self.date_correction_result == DateCorrectionStepResult.FIXED
+        ):
             return True
-        
-        # duplicate_tag_analysis_result: Enum - anything except NO_DUPLICATES means action taken
-        if (self.duplicate_tag_analysis_result is not None and
-            self.duplicate_tag_analysis_result != DuplicateTagAnalysisResult.NO_DUPLICATES):
+
+        if (
+            self.duplicate_tag_analysis_result is not None
+            and self.duplicate_tag_analysis_result
+            != DuplicateTagAnalysisResult.NO_DUPLICATES
+        ):
             return True
-        
-        # album_assignment_result: Enum - anything except NOT_ASSIGNED means action taken
+
         if self.album_assignment_result is not None:
-            # AlbumAssignmentResult enum - check if assignment occurred
-            # We consider any non-None result as a change (assignment was attempted/made)
             return True
-        
-        # validate_result: ClassificationUpdateResult - non-None means validation occurred
+
         if self.validate_result is not None:
             return True
-        
+
         return False
+
+    def has_errors(self) -> bool:
+        """Returns True if any processing step encountered errors."""
+        if self.tag_conversion_result is not None:
+            return self.tag_conversion_result.has_errors()
+        return False
+
+    def any_changes(self) -> bool:
+        """Backward-compatible alias for has_changes()."""
+        return self.has_changes()
 
     def summary(self) -> str:
         lines = [
-            f"Asset process summary: {'CHANGES' if self.any_changes() else 'NO CHANGES'}"
+            f"Asset process summary: {'CHANGES' if self.has_changes() else 'NO CHANGES'}"
         ]
         if self.tag_conversion_result is not None:
             lines.append(f"Tag conversions: {self.tag_conversion_result}")
