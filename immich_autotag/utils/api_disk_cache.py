@@ -1,4 +1,5 @@
 import json
+import logging
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -7,6 +8,8 @@ import attrs
 
 from immich_autotag.config import internal_config
 from immich_autotag.run_output.manager import RunOutputManager
+
+logger = logging.getLogger(__name__)
 
 # Global config to enable/disable caching (can be overridden by parameter)
 
@@ -70,22 +73,42 @@ class ApiCacheManager:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
+    def _try_load_json(self, path: Path) -> Optional[dict[str, object] | list[dict[str, object]]]:
+        """Try to load JSON from a single cache file with error handling."""
+        if not path.exists() or path.stat().st_size == 0:
+            return None
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            logger.warning(f"Corrupted cache file {path}: {e}")
+            # Try to delete the corrupted file
+            try:
+                path.unlink()
+            except Exception:
+                pass
+            return None
+
     def load(self, key: str) -> Optional[dict[str, object] | list[dict[str, object]]]:
         if not self._use_cache:
             return None
+        
+        # Try current run cache
         cache_dir = self._get_cache_dir()
         path = cache_dir / f"{key}.json"
-        if path.exists() and path.stat().st_size > 0:
-            with open(path, "r", encoding="utf-8") as f:
-                return json.load(f)
+        data = self._try_load_json(path)
+        if data is not None:
+            return data
+        
+        # Try previous run caches
         for run_execution in RunOutputManager.current().find_recent_run_dirs(
             exclude_current=True
         ):
             prev_cache_dir = run_execution.get_api_cache_dir(self._cache_type.value)
             prev_path = prev_cache_dir / f"{key}.json"
-            if prev_path.exists() and prev_path.stat().st_size > 0:
-                with open(prev_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                self.save(key, data)
+            data = self._try_load_json(prev_path)
+            if data is not None:
+                self.save(key, data)  # Cache for current run
                 return data
+        
         return None
