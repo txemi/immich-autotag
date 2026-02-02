@@ -79,14 +79,9 @@ class ClassificationRuleSet:
     def matching_rules(self, asset_wrapper: "AssetResponseWrapper") -> MatchResultList:
         """
         Returns a MatchResultList: each one indicates the rule and the element (tag or album) that matched.
+        Uses lazy loading via the factory method to compute matches on demand.
         """
-        matches: list[MatchResult] = []
-        for wrapper in self.rules:
-            match = wrapper.matches_asset(asset_wrapper)
-            if match is not None:
-                matches.append(match)
-
-        return MatchResultList(matches=matches,rules=self,asset=asset_wrapper)
+        return MatchResultList.from_rules_and_asset(rules=self, asset=asset_wrapper)
 
     @typechecked
     def is_focused(self) -> bool:

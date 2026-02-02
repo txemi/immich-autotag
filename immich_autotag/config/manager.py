@@ -116,7 +116,10 @@ class ConfigManager:
         self._construction()
         # Initialize skip_n with the counter from the last previous execution (with overlap)
         _instance_created = True
-        log("ConfigManager singleton instance created and assigned", level=LogLevel.PROGRESS)
+        log(
+            "ConfigManager singleton instance created and assigned",
+            level=LogLevel.PROGRESS,
+        )
         _instance = self
 
     @staticmethod
