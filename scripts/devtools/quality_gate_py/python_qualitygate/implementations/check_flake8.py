@@ -19,6 +19,7 @@ class CheckFlake8(Check):
                 flake8_ignore = base_ignore
             case QualityGateLevel.STANDARD:
                 flake8_ignore = base_ignore + ['E501']
+                flake8_select = 'F'
             case QualityGateLevel.TARGET:
                 flake8_ignore = base_ignore + ['E501']
                 flake8_select = 'F'
@@ -90,8 +91,8 @@ class CheckFlake8(Check):
             case QualityGateLevel.STRICT:
                 return CheckResult(findings=findings)
             case QualityGateLevel.STANDARD:
-                # Only warning, never blocks
-                return CheckResult(findings=[])
+                # STANDARD now blocks F* errors (same as TARGET)
+                return CheckResult(findings=findings)
             case QualityGateLevel.TARGET:
                 return CheckResult(findings=findings)
             case _:

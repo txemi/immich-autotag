@@ -29,7 +29,7 @@
 # | 2  | check_ruff             | pip (ruff)            | Lint and autoformat with ruff                     | Blocks any error              | Only F821 blocks, E501 ignored| Only F821 blocks, E501 ignored|
 # | 3  | check_isort            | pip (isort)           | Sorts imports with isort                          | Blocks if unsorted            | Blocks if unsorted            | Blocks if unsorted            |
 # | 4  | check_black            | pip (black)           | Formats code with black                           | Blocks if changes             | Blocks if changes             | Blocks if changes             |
-# | 5  | check_flake8           | pip (flake8)          | Style linter with flake8                          | Blocks any error              | Only warning, E501 ignored    | Blocks F* errors (E501 ignored) |
+# | 5  | check_flake8           | pip (flake8)          | Style linter with flake8                          | Blocks any error              | Blocks F* errors (E501 ignored)   | Blocks F* errors (E501 ignored)   |
 # | 6  | check_mypy             | pip (mypy)            | Static type checking with mypy                    | Blocks any error              | Only arg-type/call-arg block, rest warning | arg-type/call-arg/attr-defined block, rest warning |
 # | 7  | check_ssort            | pip (ssort, github)   | Deterministic class method ordering               | Blocks if unordered           | Blocks if unordered**         | Blocks if unordered**         |
 # | 8  | check_no_tuples        | custom (python)       | Forbids tuples as return/attribute                | Blocks if tuples detected     | Blocks if tuples detected     | Blocks if tuples detected     |
@@ -51,7 +51,7 @@
 # | 2  | ruff (lint/auto-fix)                    | check_ruff             | Linter and auto-format                      |   ✔️     |   F821 only (E501 ignored)   |   F821 only (E501 ignored)   |
 # | 3  | isort (import sorting)                  | check_isort            | Sorts imports                               |   ✔️     |   ✔️                         |   ✔️                        |
 # | 4  | black (formatter)                       | check_black            | Code formatter                              |   ✔️     |   ✔️                         |   ✔️                        |
-# | 5  | flake8 (style)                          | check_flake8           | Style linter                                |   ✔️     |   Warn only (E501 ignored)  |   F* only (E501 ignored)    |
+# | 5  | flake8 (style)                          | check_flake8           | Style linter                                |   ✔️     |   F* only (E501 ignored)     |   F* only (E501 ignored)    |
 # | 6  | flake8 (E501 long lines)                | check_flake8           | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
 # | 7  | ruff (E501 long lines)                  | check_ruff             | Line length                                 |   ✔️     |   Ignored                   |   Ignored                   |
 # | 8  | mypy (type check)                       | check_mypy             | Type checking (all errors)                  |   ✔️     |   ✔️                         |   ✔️                        |
@@ -64,7 +64,7 @@
 # | 17 | no tuples (returns/attributes)          | check_no_tuples        | Forbids tuples as return/attribute          |   ✔️     |   ✔️                         |   ✔️                        |
 # | 18 | shfmt (bash formatting)                 | check_shfmt            | Bash script formatting                      |   ✔️     |   ✔️                         |   ✔️                        |
 # -----------------------------------------------------------------------------
-# * In STANDARD and TARGET mode, flake8/ruff ignore E501. TARGET flake8 blocks only F* (logic) errors. Mypy blocks ALL errors in both modes.
+# * In STANDARD and TARGET mode, flake8/ruff ignore E501. STANDARD and TARGET flake8 block F* (logic) errors. Mypy blocks ALL errors in both modes.
 # ** Only if --enforce-dynamic-attrs is used
 #
 # =====================
@@ -721,8 +721,8 @@ check_flake8() {
 			echo "[ERROR] flake8 failed. See output above."
 			return 1
 		elif [ "$quality_level" = "STANDARD" ]; then
-			echo "[WARNING] flake8 failed, but STANDARD mode is enabled. See output above."
-			echo "[STANDARD MODE] Not blocking build on flake8 errors."
+			echo "[ERROR] flake8 failed in STANDARD mode (F* errors). See output above."
+			return 1
 		elif [ "$quality_level" = "TARGET" ]; then
 			echo "[ERROR] flake8 failed in TARGET mode (F* errors). See output above."
 			return 1
