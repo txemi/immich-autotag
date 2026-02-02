@@ -39,7 +39,7 @@ def add_members_to_album(
 ) -> None:
     """
     Add members to album (PONER).
-    
+
     Low-level function that calls the API directly.
     For operations that need automatic logging, use logging_add_members_to_album instead.
     """
@@ -136,7 +136,7 @@ def logging_add_user_to_album(
 ) -> None:
     """
     Add a single user to album with automatic event logging.
-    
+
     This is for manual user addition (e.g., when creating albums),
     not rule-based permission sharing. Uses ADD_USER_TO_ALBUM event.
 

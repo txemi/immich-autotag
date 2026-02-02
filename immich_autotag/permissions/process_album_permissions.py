@@ -11,8 +11,6 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
-from immich_client.models.album_user_role import AlbumUserRole
-
 from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
 from immich_autotag.context.immich_context import ImmichContext
 

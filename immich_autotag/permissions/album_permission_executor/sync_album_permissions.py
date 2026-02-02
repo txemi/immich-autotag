@@ -1,15 +1,14 @@
 from typeguard import typechecked
 
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
-from immich_autotag.context.immich_context import ImmichContext
-from immich_autotag.logging.levels import LogLevel
-from immich_autotag.logging.utils import log, log_debug
-from immich_autotag.types.email_address import EmailAddress
-
 from immich_autotag.api.logging_proxy.permissions import (
     logging_add_members_to_album,
     logging_remove_members_from_album,
 )
+from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log, log_debug
+from immich_autotag.types.email_address import EmailAddress
 
 from ._resolve_emails_result import EmailMemberResolution
 

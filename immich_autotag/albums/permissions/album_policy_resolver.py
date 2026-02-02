@@ -24,7 +24,6 @@ import re
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import attrs
-
 from immich_client.models.album_user_role import AlbumUserRole
 
 from immich_autotag.config.models import AlbumSelectionRule, UserGroup
@@ -160,7 +159,11 @@ def resolve_album_policy(
             matched_rules_names.append(rule.name)
             all_groups.extend(rule.groups)
             # Map config strings to AlbumUserRole
-            role_map = {"view": AlbumUserRole.VIEWER, "edit": AlbumUserRole.EDITOR, "editor": AlbumUserRole.EDITOR}
+            role_map = {
+                "view": AlbumUserRole.VIEWER,
+                "edit": AlbumUserRole.EDITOR,
+                "editor": AlbumUserRole.EDITOR,
+            }
             access_level = role_map.get(rule.access.lower(), AlbumUserRole.VIEWER)
 
     # Resolve members from groups
