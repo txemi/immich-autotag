@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
+    from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.context.immich_context import ImmichContext
 
 from immich_autotag.albums.albums.album_error_history import AlbumErrorHistory
@@ -297,11 +298,11 @@ class AlbumResponseWrapper:
         self,
         asset_wrapper: "AssetResponseWrapper",
         tag_mod_report: "ModificationReport",
-    ) -> None:
+    ) -> "ModificationEntry":
         """Records the asset addition in the modification report."""
         from immich_autotag.report.modification_kind import ModificationKind
 
-        tag_mod_report.add_assignment_modification(
+        return tag_mod_report.add_assignment_modification(
             kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
             asset_wrapper=asset_wrapper,
             album=self,
@@ -411,10 +412,11 @@ class AlbumResponseWrapper:
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
         tag_mod_report: "ModificationReport",
-    ) -> None:
+    ) -> "ModificationEntry":
         """
         Adds an asset to the album. If the asset is already present,
         raises AssetAlreadyInAlbumError.
+        Returns the ModificationEntry created by the operation.
         """
         # 1. Validation
         self._validate_before_add(asset_wrapper)
@@ -435,9 +437,14 @@ class AlbumResponseWrapper:
             )
 
         # 4. Reporting
-        self._report_addition_to_modification_report(asset_wrapper, tag_mod_report)
+        entry = self._report_addition_to_modification_report(
+            asset_wrapper, tag_mod_report
+        )
 
         # 5. Consistency Verification
+        self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
+
+        return entry
         self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
     @typechecked

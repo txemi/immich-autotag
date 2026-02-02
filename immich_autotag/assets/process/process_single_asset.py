@@ -19,13 +19,16 @@ from immich_autotag.config.manager import ConfigManager
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
 from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 @typechecked
-def _apply_tag_conversions(asset_wrapper: AssetResponseWrapper):
+def _apply_tag_conversions(
+    asset_wrapper: AssetResponseWrapper,
+) -> ModificationEntriesList:
     """Apply tag conversions to the asset using the current config."""
     log("[DEBUG] Applying tag conversions...", level=LogLevel.FOCUS)
 

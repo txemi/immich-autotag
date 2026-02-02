@@ -106,7 +106,7 @@ class ModificationReport:
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
-    ) -> None:
+    ) -> ModificationEntry:
         # Account for the event in the statistics manager
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
@@ -171,6 +171,7 @@ class ModificationReport:
         self._since_last_flush += 1
         if self._since_last_flush >= self.batch_size:
             self.flush()
+        return entry
 
     # todo: review old_name and new_name usage, since they are not only used for names, it might be better to use old_value and new_value?
     # Specific methods for each action type
@@ -291,7 +292,7 @@ class ModificationReport:
         album: Optional["AlbumResponseWrapper"] = None,
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, object]] = None,
-    ) -> None:
+    ) -> ModificationEntry:
         assert kind in {
             ModificationKind.ASSIGN_ASSET_TO_ALBUM,
             ModificationKind.REMOVE_ASSET_FROM_ALBUM,
@@ -300,7 +301,7 @@ class ModificationReport:
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind)
-        self.add_modification(
+        return self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
             album=album,

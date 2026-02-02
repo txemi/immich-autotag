@@ -10,6 +10,7 @@ from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepR
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     DuplicateTagAnalysisResult,
 )
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
 @attr.s(auto_attribs=True, slots=True)
@@ -33,7 +34,7 @@ class AssetProcessReport:
     Holds explicit attributes for each processing phase.
     """
 
-    tag_conversion_result: Optional[List[str]] = None
+    tag_conversion_result: Optional[ModificationEntriesList] = None
     date_correction_result: Optional[DateCorrectionStepResult] = None
     duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisResult] = None
     album_assignment_result: Optional[AlbumAssignmentResult] = None
@@ -51,8 +52,11 @@ class AssetProcessReport:
             self.album_assignment_result,
             self.validate_result,
         ]:
-            if hasattr(obj, "changed") and getattr(obj, "changed"):
-                return True
+            try:
+                if obj.changed:  # type: ignore[attr-defined,union-attr]
+                    return True
+            except (AttributeError, TypeError):
+                pass
             if isinstance(obj, list) and obj:
                 return True
             if obj is not None and not isinstance(obj, list):

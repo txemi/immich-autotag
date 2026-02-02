@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 from urllib.parse import ParseResult
 
 import attrs
@@ -32,6 +32,8 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
+from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
@@ -304,11 +306,18 @@ class AssetResponseWrapper:
         *,
         tag_name: str,
         fail_if_exists: bool = False,
-    ) -> bool:
+    ) -> Optional["ModificationEntry"]:
         """
         Adds a tag to the asset by name using the Immich API if it doesn't have it already.
         Returns True if added, raises exception if it already had it or if the tag doesn't exist.
         """
+        from immich_autotag.api.immich_proxy.tags import proxy_tag_assets
+        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+
+        tag_mod_report = ModificationReport.get_instance()
+
+        # Get the UserWrapper in a clean and encapsulated way
+        user_wrapper = UserResponseWrapper.load_current_user()
 
         tag = self.get_context().get_tag_collection().find_by_name(tag_name)
         if tag is None:
@@ -333,43 +342,92 @@ class AssetResponseWrapper:
                 f"[INFO] Asset.id={self.get_id()} already has tag '{tag_name}', skipping.",
                 level=LogLevel.DEBUG,
             )
-            return False
-        # Extra checks before API call
+            return None
+        # Extra checks and logging before API call
         if not tag:
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
-            error_msg = (
-                f"[ERROR] Tag object for '{tag_name}' is missing. " f"Tag: {tag}"
-            )
+            error_msg = f"[ERROR] Tag '{tag_name}' not found and could not be created."
             log(error_msg, level=LogLevel.ERROR)
-            return False
+            from immich_autotag.report.modification_kind import ModificationKind
 
+            entry = tag_mod_report.add_modification(
+                kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                asset_wrapper=self,
+                tag=tag,
+                user=user_wrapper,
+                extra={"error": error_msg},
+            )
+            return entry
         if not self.get_id():
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
 
             error_msg = f"[ERROR] Asset object is missing id. Asset state: {str(self._cache_entry.get_state())}"
             log(error_msg, level=LogLevel.ERROR)
-            return False
+            if tag_mod_report:
+                from immich_autotag.report.modification_kind import ModificationKind
 
-        # Use logging_proxy for automatic error handling and reporting
-        from immich_autotag.api.logging_proxy.add_tags import logging_tag_assets_safe
+                entry = tag_mod_report.add_modification(
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    asset_wrapper=self,
+                    tag=tag,
+                    user=user_wrapper,
+                    extra={"error": error_msg},
+                )
+                return entry
+            return None
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
 
-        success = logging_tag_assets_safe(
-            client=self.get_context().get_client_wrapper().get_client(),
-            tag=tag,
-            asset_ids=[self.get_id()],
+        log(
+            f"[DEBUG] Calling tag_assets.sync with tag_id={tag.get_id()} and asset_id={self.get_id()}",
+            level=LogLevel.DEBUG,
         )
-        
-        if not success:
-            return False
 
+        # Statistics update is handled by modification_report, not directly here
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        try:
+            response = proxy_tag_assets(
+                tag_id=tag.get_id(),
+                client=self.get_context().get_client_wrapper().get_client(),
+                asset_ids=[self.get_id()],
+            )
+        except Exception as e:
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            error_msg = f"[ERROR] Exception during proxy_tag_assets: {e}"
+            log(error_msg, level=LogLevel.ERROR)
+            if tag_mod_report:
+                from immich_autotag.report.modification_kind import ModificationKind
+
+                entry = tag_mod_report.add_modification(
+                    asset_wrapper=self,
+                    kind=ModificationKind.WARNING_TAG_REMOVAL_FROM_ASSET_FAILED,
+                    tag=tag,
+                    user=user_wrapper,
+                    extra={"error": error_msg},
+                )
+                return entry
+            return None
+        log(f"[DEBUG] Response proxy_tag_assets: {response}", level=LogLevel.DEBUG)
         log(
             f"[INFO] Added tag '{tag_name}' to asset.id={self.get_id()}.",
             level=LogLevel.DEBUG,
         )
-        return True
+        from immich_autotag.report.modification_kind import ModificationKind
+
+        entry = tag_mod_report.add_modification(
+            kind=ModificationKind.ADD_TAG_TO_ASSET,
+            asset_wrapper=self,
+            tag=tag,
+            user=user_wrapper,
+        )
+        return entry
 
     @typechecked
     def _get_current_tag_ids(self) -> list[TagUUID]:
@@ -663,22 +721,22 @@ class AssetResponseWrapper:
         self,
         *,
         tag_conversions: TagConversions,
-    ) -> list[str]:
+    ) -> ModificationEntriesList:
         """
         Applies each conversion by calling its apply_to_asset method.
         """
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
-        changes: list[str] = []
+        changes = ModificationEntriesList()
         for conv in tag_conversions:
-            result: list[str] | None = conv.apply_to_asset(self)
+            result: ModificationEntriesList | None = conv.apply_to_asset(self)
             if result:
-                changes.extend(result)
-        if changes:
-            for c in changes:
+                changes = changes.extend(result)
+        if changes.has_changes():
+            for entry in changes:
                 log(
-                    f"[TAG CONVERSION] {c} on asset {self.get_id()} ({self.get_original_file_name()})",
+                    f"[TAG CONVERSION] {entry.kind.value.name} on asset {self.get_id()} ({self.get_original_file_name()})",
                     level=LogLevel.FOCUS,
                 )
         else:

@@ -4,6 +4,7 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.config.models import Destination
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -21,20 +22,21 @@ class DestinationWrapper:
         return self.destination.album_names or []
 
     @typechecked
-    def apply_action(self, asset_wrapper: "AssetResponseWrapper") -> list[str]:
+    def apply_action(
+        self, asset_wrapper: "AssetResponseWrapper"
+    ) -> ModificationEntriesList:
         """
         Applies the destination action on the asset_wrapper.
         Adds all destination tags and adds the asset to all destination albums if not already present.
+        Returns ModificationEntriesList containing all modifications created during the operation.
         """
-        changes = []
+        changes = ModificationEntriesList()
         # Add destination tags
         for tag in self.get_tag_names():
             if not asset_wrapper.has_tag(tag_name=tag):
-                try:
-                    asset_wrapper.add_tag_by_name(tag_name=tag)
-                    changes.append(f"Added tag '{tag}'")
-                except Exception as e:
-                    changes.append(f"Failed to add tag '{tag}': {e}")
+                entry = asset_wrapper.add_tag_by_name(tag_name=tag)
+                if entry is not None:
+                    changes = changes.append(entry)
         # Add to destination albums
         for album_name in self.get_album_names():
             if album_name not in asset_wrapper.get_album_names():
@@ -51,12 +53,16 @@ class DestinationWrapper:
                     if album_wrapper:
                         client = context.get_client_wrapper().get_client()
                         tag_mod_report = ModificationReport.get_instance()
-                        album_wrapper.add_asset(asset_wrapper, client, tag_mod_report)
-                        changes.append(f"Added asset to album '{album_name}'")
+                        entry = album_wrapper.add_asset(
+                            asset_wrapper, client, tag_mod_report
+                        )
+                        changes = changes.append(entry)
                     else:
-                        changes.append(f"Album '{album_name}' not found")
-                except Exception as e:
-                    changes.append(f"Failed to add asset to album '{album_name}': {e}")
+                        # Album not found - log but don't create entry since add_asset wasn't called
+                        pass
+                except Exception:
+                    # Exceptions are already recorded as ModificationEntry objects in add_asset()
+                    pass
         return changes
 
     def __attrs_post_init__(self):
