@@ -1,4 +1,4 @@
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 import attr
 
@@ -47,7 +47,9 @@ class AssetProcessReport(ProcessStepResult):
     album_assignment_result: Optional[AlbumAssignmentResult] = None
     validate_result: Optional[ClassificationUpdateResult] = None
     # Optionally, keep the old steps list for extensibility/debug
-    steps: List[AssetProcessStepResult] = attr.ib(factory=lambda: [])  # type: List[AssetProcessStepResult]
+    steps: List[AssetProcessStepResult] = attr.ib(
+        factory=lambda: []
+    )  # type: List[AssetProcessStepResult]
 
     def has_changes(self) -> bool:
         """Returns True if any processing step resulted in changes."""
