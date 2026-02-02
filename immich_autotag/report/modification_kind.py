@@ -39,6 +39,11 @@ class ModificationKind(Enum):
         LogLevel.WARNING,
         ModificationLevel.WARNING,
     )
+    WARNING_TAG_ADDITION_TO_ASSET_FAILED = ModificationKindInfo(
+        "WARNING_TAG_ADDITION_TO_ASSET_FAILED",
+        LogLevel.WARNING,
+        ModificationLevel.WARNING,
+    )
     WARNING_ASSET_ALREADY_IN_ALBUM = ModificationKindInfo(
         "WARNING_ASSET_ALREADY_IN_ALBUM", LogLevel.WARNING, ModificationLevel.WARNING
     )

@@ -34,9 +34,9 @@ class DestinationWrapper:
         # Add destination tags
         for tag in self.get_tag_names():
             if not asset_wrapper.has_tag(tag_name=tag):
-                entry = asset_wrapper.add_tag_by_name(tag_name=tag)
-                if entry:
-                    changes = changes.append(entry)
+                entries = asset_wrapper.add_tag_by_name(tag_name=tag)
+                if entries:
+                    changes = changes.extend(entries)
         # Add to destination albums
         for album_name in self.get_album_names():
             if album_name not in asset_wrapper.get_album_names():
@@ -56,7 +56,8 @@ class DestinationWrapper:
                         entry = album_wrapper.add_asset(
                             asset_wrapper, client, tag_mod_report
                         )
-                        changes = changes.append(entry)
+                        if entry:
+                            changes = changes.append(entry)
                     else:
                         # Album not found - log but don't create entry since add_asset wasn't called
                         pass
