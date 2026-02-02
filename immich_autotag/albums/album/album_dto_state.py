@@ -5,6 +5,7 @@ from uuid import UUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
+from immich_client.types import Unset
 
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID, UserUUID
@@ -55,30 +56,41 @@ class AlbumDtoState:
         # _dto is always required and validated by attrs; no need to check for None
         pass
 
-    def get_start_date(self) -> datetime.datetime | None:
+    def get_start_date(self) -> datetime.datetime:
         """
-        Returns the album's start date as a datetime object, or None if not available.
-        Handles Unset/null robustly.
+        Returns the album's start date as a datetime object.
+
+        Raises:
+            TypeError: If start_date is not a datetime (including None, Unset, or any other type).
+                      Fails fast to discover actual API behavior in production.
         """
         value = self._dto.start_date
-        # Unset/null handling
-        if getattr(value, "__class__", None) and value.__class__.__name__ == "Unset":
-            return None
+
         if isinstance(value, datetime.datetime):
             return value
-        return None
 
-    def get_end_date(self) -> datetime.datetime | None:
+        # Fail fast for any non-datetime value (None, Unset, string, etc.)
+        raise TypeError(
+            f"Album start_date must be datetime.datetime, got {type(value).__name__!r}: {value!r}"
+        )
+
+    def get_end_date(self) -> datetime.datetime:
         """
-        Returns the album's end date as a datetime object, or None if not available.
-        Handles Unset/null robustly.
+        Returns the album's end date as a datetime object.
+
+        Raises:
+            TypeError: If end_date is not a datetime (including None, Unset, or any other type).
+                      Fails fast to discover actual API behavior in production.
         """
         value = self._dto.end_date
-        if getattr(value, "__class__", None) and value.__class__.__name__ == "Unset":
-            return None
+
         if isinstance(value, datetime.datetime):
             return value
-        return None
+
+        # Fail fast for any non-datetime value (None, Unset, string, etc.)
+        raise TypeError(
+            f"Album end_date must be datetime.datetime, got {type(value).__name__!r}: {value!r}"
+        )
 
     def get_dto(self) -> AlbumResponseDto:
         """Returns the underlying AlbumResponseDto (for internal use only)."""

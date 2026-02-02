@@ -167,8 +167,12 @@ class AssetDtoState:
             raise RuntimeError(
                 "Cannot serialize AssetDtoState: missing required fields"
             )
+        try:
+            dto_data: dict[str, Any] = dto.to_dict()  # type: ignore[attr-defined]
+        except (AttributeError, TypeError):
+            dto_data = dto  # type: ignore[assignment]
         return {
-            "dto": dto.to_dict() if hasattr(dto, "to_dict") else dto,
+            "dto": dto_data,
             "type": self._api_endpoint_source.value,
             "loaded_at": self._loaded_at.isoformat(),
         }

@@ -63,4 +63,8 @@ class UserResponseWrapper:
 
     @typechecked
     def __str__(self) -> str:
-        return self.get_name() or getattr(self._user, "id", None) or "<unknown user>"
+        try:
+            user_id = self._user.id  # type: ignore[attr-defined]
+        except (AttributeError, TypeError):
+            user_id = None
+        return self.get_name() or user_id or "<unknown user>"
