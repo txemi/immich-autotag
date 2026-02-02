@@ -163,7 +163,7 @@ def process_single_asset(
 
     if not is_crazy_debug_mode():
 
-        check_album_date_consistency(asset_wrapper, tag_mod_report, threshold_days)
+        check_album_date_consistency(asset_wrapper, tag_mod_report)
 
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
