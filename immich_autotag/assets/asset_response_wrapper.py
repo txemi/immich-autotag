@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 from urllib.parse import ParseResult
 
 import attrs
@@ -32,20 +32,13 @@ from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID, TagUUID
-
-if TYPE_CHECKING:
-    from immich_autotag.report.modification_report import ModificationReport
-
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
+from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID, TagUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.utils.deprecation import raise_deprecated_path
 from immich_autotag.utils.url_helpers import get_immich_photo_url
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 # Exception for date integrity
@@ -449,8 +442,6 @@ class AssetResponseWrapper:
         """
         Returns the names of the tags associated with this asset.
         """
-        from immich_client.types import Unset
-
         tag_names: list[str] | Unset = self._cache_entry.ensure_full_asset_loaded(
             self.get_context()
         ).get_tag_names()
