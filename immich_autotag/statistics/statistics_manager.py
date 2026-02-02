@@ -105,8 +105,8 @@ class StatisticsManager:
     # Event counters are now stored in self._current_stats.event_counters
     def __attrs_post_init__(self) -> None:
         # The folder is already created by get_run_output_dir
-        # Reserved global variable _instance is required for singleton pattern
-        global _instance  # noqa: F824
+        # Singleton pattern: prevent direct instantiation when already instantiated
+        global _instance
         if _instance is not None and _instance is not self:
             # Logging the use of reserved variable
             print(
