@@ -194,14 +194,20 @@ class AssetCacheEntry:
 
     def ensure_full_asset_loaded(self, context: "ImmichContext") -> AssetDtoState:
         """
-        Ensures the asset is fully loaded (type FULL). If not, fetches from API and updates the cache entry.
+        Ensures the asset is fully loaded with tags. If not, fetches from API and updates the cache entry.
+        
+        Uses the robust are_tags_loaded() method which validates:
+        1. Tags are not Unset
+        2. We're in FULL mode
+        3. Both validation methods agree
         """
         state = self._get_fresh_state()
-        from immich_autotag.assets.asset_dto_state import AssetDtoType
-
-        if state.get_type() == AssetDtoType.FULL:
+        
+        # Use the robust validation method
+        if state.are_tags_loaded():
             return state
 
+        # Tags not loaded, need to reload from API
         self._reload_from_api(context)
         return self._state
 

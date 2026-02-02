@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, Mapping, cast
+from typing import TYPE_CHECKING, Any, Iterator, Mapping, NoReturn, cast
 
 from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
 
@@ -67,16 +67,24 @@ class AssetDtoState:
         return self._dto
 
     def _check_tag_type_integrity(self):
+        """
+        Validates that the tag type is consistent with the API endpoint source.
+        This is a defensive check to ensure we understand the Immich API behavior correctly.
+        
+        Rules:
+        - FULL mode: tags must be a list (loaded) or Unset (not yet loaded)
+        - PARTIAL mode (SEARCH/ALBUM): tags must be a set or Unset
+        """
         tags = self._dto.tags if self._dto is not None else None
         if self._api_endpoint_source == AssetDtoType.FULL:
-            if tags is not None and not isinstance(tags, list):
+            if tags is not None and not isinstance(tags, (list, Unset)):
                 raise TypeError(
                     f"In FULL mode, tags must be a list or Unset, but it is {type(tags)}"
                 )
         else:
-            if tags is not None and not isinstance(tags, set):
+            if tags is not None and not isinstance(tags, (set, Unset)):
                 raise TypeError(
-                    f"En modo PARTIAL, tags debe ser un set o Unset, pero es {type(tags)}"
+                    f"In PARTIAL mode (SEARCH/ALBUM), tags must be a set or Unset, but it is {type(tags)}"
                 )
 
     def __attrs_post_init__(self):
@@ -106,18 +114,28 @@ class AssetDtoState:
     def get_tags(self) -> list["TagWrapper"]:
         """
         Returns a list of TagWrapper for the tags associated with this asset.
-        If tag_collection is provided, returns TagWrapper objects; otherwise, uses the singleton collection (requires it to be initialized, or pass client for first use).
-        If neither is available, returns raw tag DTOs.
-        Raises TagsNotLoadedError if tags are not loaded (UNSET).
+        
+        Uses the robust are_tags_loaded() validation to ensure:
+        1. Tags are loaded (not Unset)
+        2. We're in FULL mode
+        3. Both validation methods agree
+        
+        Raises:
+            TagsNotLoadedError: If tags are not loaded (Unset)
+            RuntimeError: If validation methods disagree (inconsistent state)
         """
-
-        full = self.get_self_if_full()
+        # This will validate that tags are loaded using both methods
+        full = self.require_tags_loaded()
         dto = full._require_dto()
         tags = dto.tags
+        
+        # Double-check: tags should NOT be Unset at this point
         if isinstance(tags, Unset):
             raise TagsNotLoadedError(
-                "Tags are UNSET; tags have not been loaded for this asset."
+                "Tags are UNSET; tags have not been loaded for this asset. "
+                "This should have been caught by require_tags_loaded()."
             )
+        
         from immich_autotag.context.immich_context import ImmichContext
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
@@ -213,13 +231,77 @@ class AssetDtoState:
         tag_wrappers = self.get_tags()
         return [tag_wrapper.get_name() for tag_wrapper in tag_wrappers]
 
-    def get_self_if_full(self) -> "AssetDtoState":
+    def are_tags_loaded(self) -> bool:
         """
-        Returns self only if the state is FULL, otherwise raises an exception.
+        Returns True if tags are fully loaded (available for reading), False otherwise.
+        
+        This method performs DUAL validation to ensure consistency:
+        1. Checks if we're in FULL mode (tags should be loaded in FULL mode)
+        2. Checks if tags are NOT Unset (direct verification)
+        
+        Both checks should agree. If they don't, we raise an exception to catch API behavior mismatches early.
+        
+        Returns:
+            True if tags are loaded and accessible
+            False if tags are not loaded (Unset)
+        
+        Raises:
+            RuntimeError: If the two validation methods disagree (inconsistent state)
         """
-        if self.get_type() == AssetDtoType.FULL:
+        dto = self._require_dto()
+        tags = dto.tags
+        
+        # Direct check: are tags Unset?
+        tags_are_unset = isinstance(tags, Unset)
+        
+        # Indirect check: are we in FULL mode?
+        is_full_mode = self.get_type() == AssetDtoType.FULL
+        
+        # Defensive consistency check: both methods should agree
+        if is_full_mode and tags_are_unset:
+            raise RuntimeError(
+                "Inconsistent state: AssetDtoType is FULL but tags are Unset. "
+                "This suggests a mismatch between how we're tracking API endpoints and the actual data. "
+                f"Asset ID: {dto.id}"
+            )
+        
+        if not is_full_mode and not tags_are_unset and not isinstance(tags, set):
+            raise RuntimeError(
+                f"Inconsistent state: AssetDtoType is PARTIAL ({self.get_type().value}) but tags are neither Unset nor a set (type: {type(tags)}). "
+                "This suggests unexpected API behavior. "
+                f"Asset ID: {dto.id}"
+            )
+        
+        # If we're here, both checks are consistent
+        return not tags_are_unset
+
+    def require_tags_loaded(self) -> "AssetDtoState":
+        """
+        Ensures tags are fully loaded and returns self, otherwise raises an exception.
+        
+        This method uses the robust are_tags_loaded() validation which checks:
+        1. That we're in FULL mode (old method)
+        2. That tags are not Unset (new, more direct method)
+        3. That both methods agree (defensive consistency check)
+        
+        Returns:
+            self: Always returns self when tags are loaded
+        
+        Raises:
+            RuntimeError: If tags are not loaded or if validation methods disagree
+        """
+        if self.are_tags_loaded():
             return self
-        raise RuntimeError("AssetDtoState is not FULL; operation not allowed.")
+        self._raise_tags_not_loaded_error()
+
+    def _raise_tags_not_loaded_error(self) -> NoReturn:
+        """
+        Raises an error indicating tags are not loaded. Separated for clarity.
+        """
+        raise RuntimeError(
+            "Tags are not loaded (Unset). Cannot perform operation that requires full asset data. "
+            f"Current state: {self.get_type().value}"
+        )
 
     def get_is_favorite(self) -> bool:
         """
