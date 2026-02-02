@@ -50,7 +50,7 @@ class MatchResultList:
         """
         Count the total number of destinations (tags + albums + asset_links) across all match results.
         If a single rule produces multiple albums, tags, or asset_links, each counts as a destination.
-        
+
         Returns:
             Total count of tags, albums, and asset_links matched.
         """

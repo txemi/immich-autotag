@@ -45,7 +45,7 @@ class ClassificationStatus(Enum):
     def from_match_results(match_results: "MatchResultList") -> "ClassificationStatus":
         """
         Determines classification status from match results.
-        
+
         A conflict exists if:
         - Multiple rules matched, OR
         - A single rule matched but produced multiple destinations (tags + albums > 1)
