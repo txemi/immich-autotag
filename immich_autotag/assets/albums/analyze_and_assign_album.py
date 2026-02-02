@@ -76,7 +76,7 @@ def _handle_classified_asset(
     )
 
     # Remove 'unknown' tag if present and update classification tags
-    validation_result = asset_wrapper.validate_and_update_classification()
+    asset_wrapper.validate_and_update_classification()
 
     log(
         f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.get_original_file_name()}' classified. "
