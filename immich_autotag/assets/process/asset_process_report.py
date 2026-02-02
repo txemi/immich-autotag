@@ -4,6 +4,9 @@ import attr
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.assets.classification_validation_result import (
+        ClassificationValidationResult,
+    )
 
 from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentResult
 from immich_autotag.assets.classification_update_result import (
@@ -45,7 +48,7 @@ class AssetProcessReport(ProcessStepResult):
     date_correction_result: Optional[DateCorrectionStepResult] = None
     duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisResult] = None
     album_assignment_result: Optional[AlbumAssignmentResult] = None
-    validate_result: Optional[ClassificationUpdateResult] = None
+    validate_result: Optional["ClassificationValidationResult"] = None
     # Optionally, keep the old steps list for extensibility/debug
     steps: List[AssetProcessStepResult] = attr.ib(factory=lambda: [])
 
@@ -118,13 +121,9 @@ class AssetProcessReport(ProcessStepResult):
             if "assigned" in result_str or "classified" in result_str:
                 changes.append("Album assigned")
 
-        # Check validation result for tag/album changes
+        # Check validation result for classification status
         if self.validate_result is not None:
-            result_str = str(self.validate_result)
-            if "has_tags=True" in result_str:
-                changes.append("Tags applied")
-            if "has_albums=True" in result_str:
-                changes.append("Albums applied")
+            changes.append(self.validate_result.format())
 
         if changes:
             return " | ".join(changes)
@@ -156,7 +155,7 @@ class AssetProcessReport(ProcessStepResult):
         if self.album_assignment_result is not None:
             lines.append(f"  Album assignment: {self.album_assignment_result}")
         if self.validate_result is not None:
-            lines.append(f"  Validation: {self.validate_result}")
+            lines.append(f"  Validation: {self.validate_result.format()}")
 
         return "\n".join(lines)
 

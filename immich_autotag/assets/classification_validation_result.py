@@ -33,3 +33,34 @@ class ClassificationValidationResult:
     def modifications(self) -> "ModificationEntriesList":
         """Get the modifications (what tags were added/removed)."""
         return self._modifications
+
+    def format(self) -> str:
+        """
+        Format the classification validation result with status information.
+        
+        Shows the classification status (CLASSIFIED, CONFLICT, or UNCLASSIFIED)
+        and the number of matches and modifications.
+        
+        Returns:
+            A formatted string describing the classification state.
+        """
+        from immich_autotag.classification.classification_status import ClassificationStatus
+        
+        status = self._match_results.classification_status()
+        match_count = len(self._match_results)
+        modification_count = len(self._modifications)
+        
+        status_display = {
+            ClassificationStatus.CLASSIFIED: f"✓ CLASSIFIED ({match_count} rule{'s' if match_count != 1 else ''})",
+            ClassificationStatus.CONFLICT: f"⚠ CONFLICT ({match_count} conflicting rules)",
+            ClassificationStatus.UNCLASSIFIED: "✗ UNCLASSIFIED (no matches)",
+        }
+        
+        status_str = status_display.get(status, "? UNKNOWN")
+        
+        if modification_count > 0:
+            modifications_str = f", {modification_count} modification{'s' if modification_count != 1 else ''} applied"
+        else:
+            modifications_str = ", no modifications"
+        
+        return f"{status_str}{modifications_str}"
