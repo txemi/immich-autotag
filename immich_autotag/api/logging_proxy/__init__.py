@@ -4,6 +4,20 @@ Logging Proxy Layer
 This layer wraps immich_proxy functions to add automatic event logging,
 statistics tracking, and modification reporting.
 
+Module Organization:
+====================
+
+    add_tags.py: Functions for adding tags to assets
+    ├─ logging_tag_assets()
+    └─ logging_tag_assets_safe() (with error handling)
+
+    remove_tags.py: Functions for removing tags
+    ├─ logging_untag_assets()
+    └─ logging_delete_tag()
+
+    tags.py: Re-exports (backward compatibility)
+    └─ Imports from add_tags.py and remove_tags.py
+
 Architecture:
 =============
 
