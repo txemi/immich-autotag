@@ -11,6 +11,7 @@ from datetime import datetime
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.config.manager import ConfigManager
 from immich_autotag.config.models import AlbumDateConsistencyConfig, UserConfig
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
@@ -49,10 +50,6 @@ def check_album_date_consistency(
         .get_albums_collection()
         .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
-
-    from immich_autotag.config.manager import ConfigManager
-
-    config: UserConfig = ConfigManager.get_instance().get_config_or_raise()
 
     autotag_name = "autotag_album_date_mismatch"  # Default fallback
     if config.album_date_consistency is not None:

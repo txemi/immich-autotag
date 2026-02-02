@@ -44,7 +44,9 @@ class ClassificationValidationResult:
         Returns:
             A formatted string describing the classification state.
         """
-        from immich_autotag.classification.classification_status import ClassificationStatus
+        from immich_autotag.classification.classification_status import (
+            ClassificationStatus,
+        )
         
         status = self._match_results.classification_status()
         match_count = len(self._match_results)

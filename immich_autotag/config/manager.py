@@ -101,6 +101,7 @@ class ConfigManager:
 
     def __attrs_post_init__(self):
         import traceback
+
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
