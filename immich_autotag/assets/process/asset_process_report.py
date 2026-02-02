@@ -9,7 +9,10 @@ if TYPE_CHECKING:
     )
 
 from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentResult
-from immich_autotag.assets.date_correction.core_logic import DateCorrectionStepResult
+from immich_autotag.assets.date_correction.core_logic import (
+    AssetDateCorrector,
+    DateCorrectionStepResult,
+)
 from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
     DuplicateTagAnalysisResult,
 )
@@ -42,7 +45,7 @@ class AssetProcessReport(ProcessStepResult):
 
     asset_wrapper: "AssetResponseWrapper"
     tag_conversion_result: Optional[ModificationEntriesList] = None
-    date_correction_result: Optional[DateCorrectionStepResult] = None
+    date_correction_result: Optional[AssetDateCorrector] = None
     duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisResult] = None
     album_assignment_result: Optional[AlbumAssignmentResult] = None
     validate_result: Optional["ClassificationValidationResult"] = None
@@ -59,7 +62,7 @@ class AssetProcessReport(ProcessStepResult):
 
         if (
             self.date_correction_result is not None
-            and self.date_correction_result == DateCorrectionStepResult.FIXED
+            and self.date_correction_result.get_step_result() == DateCorrectionStepResult.FIXED
         ):
             return True
 
@@ -98,13 +101,7 @@ class AssetProcessReport(ProcessStepResult):
 
         # Check date corrections
         if self.date_correction_result is not None:
-            result_str = str(self.date_correction_result).lower()
-            if (
-                "updated" in result_str
-                or "corrected" in result_str
-                or "fixed" in result_str
-            ):
-                changes.append("Date corrected")
+            changes.append(self.date_correction_result.format())
 
         # Check album assignment
         if self.album_assignment_result is not None:
@@ -138,7 +135,7 @@ class AssetProcessReport(ProcessStepResult):
         if self.tag_conversion_result is not None:
             lines.append(f"  Tag conversions: {self.tag_conversion_result.format()}")
         if self.date_correction_result is not None:
-            lines.append(f"  Date correction: {self.date_correction_result}")
+            lines.append(f"  Date correction: {self.date_correction_result.format()}")
         if self.duplicate_tag_analysis_result is not None:
             lines.append(
                 f"  Duplicate tag analysis: {self.duplicate_tag_analysis_result}"

@@ -173,6 +173,25 @@ class AssetDateCorrector:
         return self._reasoning
     
     @typechecked
+    def format(self) -> str:
+        """
+        Format a concise summary of the date correction result.
+        
+        Returns a single-line formatted string indicating whether the date was corrected
+        and the reasoning behind the decision.
+        
+        Examples:
+        - "✓ Date corrected (Date corrected by filename)"
+        - "○ Date not corrected (No date candidates found)"
+        """
+        if self._step_result == DateCorrectionStepResult.FIXED:
+            return f"✓ Date corrected ({self._reasoning})"
+        elif self._step_result == DateCorrectionStepResult.EXIT:
+            return f"○ Date not corrected ({self._reasoning})"
+        else:
+            return f"? Date correction unknown ({self._reasoning})"
+    
+    @typechecked
     def format_diagnosis(self) -> str:
         """
         Format a complete diagnosis of what happened during the correction process.
