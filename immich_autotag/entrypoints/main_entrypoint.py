@@ -10,7 +10,7 @@ from immich_autotag.utils.typeguard_hook import (  # isort: skip
 install_typeguard_import_hook()  # noqa: E402
 
 # Architecture import hook (for import restrictions)
-from immich_autotag.utils.import_architecture_hook import (  # noqa: E402
+from immich_autotag.utils.import_architecture_hook import (
     setup_import_architecture_hook,
 )
 
