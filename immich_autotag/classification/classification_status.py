@@ -56,14 +56,16 @@ class ClassificationStatus(Enum):
         Returns:
             ClassificationStatus enum value indicating the asset's classification state.
         """
+        num_tags = len(match_results.tags())
+        num_albums = len(match_results.albums())
         num_rules_matched = len(match_results.rules())
-        total_destinations = match_results._count_total_destinations()
 
         if num_rules_matched == 0:
             return ClassificationStatus.UNCLASSIFIED
-        elif num_rules_matched == 1 and total_destinations == 1:
-            # Exactly one rule, exactly one destination (tag or album)
-            return ClassificationStatus.CLASSIFIED
+        elif num_rules_matched == 1:
+            if num_albums > 1:
+                return ClassificationStatus.CONFLICT
+            else:
+                return ClassificationStatus.CLASSIFIED
         else:
-            # Multiple rules OR single rule with multiple destinations
-            return ClassificationStatus.CONFLICT
+            return ClassificationStatus.CLASSIFIED
