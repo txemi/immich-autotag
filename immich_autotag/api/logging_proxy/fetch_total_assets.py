@@ -7,7 +7,6 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.types.client_types import ImmichClient
 
-
 @typechecked
 def fetch_total_assets(client: ImmichClient) -> int:
     stats = proxy_get_server_statistics(client=client)
