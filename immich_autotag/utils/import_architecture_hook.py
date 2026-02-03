@@ -102,7 +102,7 @@ def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
 
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
-# Nueva función auxiliar para comprobar si el caller está fuera de logging_proxy
+ # Helper function to check if the caller is outside logging_proxy
 @typechecked
 def _is_caller_outside_logging_proxy(caller: Path) -> bool:
     """
@@ -114,16 +114,16 @@ def _is_caller_outside_logging_proxy(caller: Path) -> bool:
 @typechecked
 def _enforce_logging_proxy_import_rule(fullname: str, caller: Path) -> None:
     """
-    Enforce: No módulo de immich_proxy puede importar desde logging_proxy.
-    Raise ImportError si se viola la regla.
+    Enforce: No immich_proxy module can import from logging_proxy.
+    Raise ImportError if the rule is violated.
     """
     if not _is_caller_proxy_module_import(caller):
         return
     logging_proxy_mod = logging_proxy.__name__
     if fullname.startswith(logging_proxy_mod):
         raise ImportError(
-            f"Importación prohibida: '{fullname}' no puede ser importado desde '{caller}'.\n"
-            f"Los módulos de immich_proxy no pueden importar desde {logging_proxy_mod} por restricción arquitectónica."
+            f"Forbidden import: '{fullname}' cannot be imported from '{caller}'.\n"
+            f"immich_proxy modules are not allowed to import from {logging_proxy_mod} due to architectural restriction."
         )
 
 
