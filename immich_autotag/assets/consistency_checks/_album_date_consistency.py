@@ -8,12 +8,13 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
+import attrs
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.config.models import AlbumDateConsistencyConfig
-from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_kind import ModificationKind
@@ -75,7 +76,9 @@ class AlbumDateConsistencyResult(ProcessStepResult):
             .albums_wrappers_for_asset_wrapper(self._asset_wrapper)
         )
 
-        album_date_consistency: AlbumDateConsistencyConfig = config.album_date_consistency
+        album_date_consistency: AlbumDateConsistencyConfig = (
+            config.album_date_consistency
+        )
         if album_date_consistency.autotag_album_date_mismatch:
             self._autotag_name = album_date_consistency.autotag_album_date_mismatch
 
@@ -122,7 +125,9 @@ class AlbumDateConsistencyResult(ProcessStepResult):
                     level=LogLevel.FOCUS,
                 )
 
-        if not mismatch_found and self._asset_wrapper.has_tag(tag_name=self._autotag_name):
+        if not mismatch_found and self._asset_wrapper.has_tag(
+            tag_name=self._autotag_name
+        ):
             self._asset_wrapper.remove_tag_by_name(tag_name=self._autotag_name)
             log(
                 f"[ALBUM_DATE_CONSISTENCY] Asset {self._asset_wrapper.get_id()} no longer has a date mismatch. Removed autotag '{self._autotag_name}'.",

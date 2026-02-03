@@ -186,9 +186,7 @@ class AssetProcessReport(ProcessStepResult):
                 f"{self.album_date_consistency_result.format()}"
             )
         if self.album_assignment_result is not None:
-            lines.append(
-                f"  Album assignment: {self.album_assignment_result.format()}"
-            )
+            lines.append(f"  Album assignment: {self.album_assignment_result.format()}")
         if self.validate_result is not None:
             lines.append(f"  Validation: {self.validate_result.format()}")
 

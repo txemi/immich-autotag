@@ -4,7 +4,6 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 import attrs
-
 from typeguard import typechecked
 
 from immich_autotag.assets.albums._process_album_detection import (
@@ -33,41 +32,6 @@ class AlbumAssignmentResult(Enum):
     CREATED_TEMPORARY = auto()
     UNCLASSIFIED_NO_ALBUM = auto()
     ERROR = auto()
-
-
-@attrs.define(auto_attribs=True, slots=True)
-class AlbumAssignmentReport(ProcessStepResult):
-    _asset_wrapper: AssetResponseWrapper = attrs.field(repr=False)
-    _result: AlbumAssignmentResult = attrs.field(init=False, default=None, repr=True)
-
-    def has_changes(self) -> bool:
-        return self._result in (
-            AlbumAssignmentResult.CLASSIFIED,
-            AlbumAssignmentResult.ASSIGNED_UNIQUE,
-            AlbumAssignmentResult.CREATED_TEMPORARY,
-        )
-
-    def has_errors(self) -> bool:
-        return self._result in (
-            AlbumAssignmentResult.CONFLICT,
-            AlbumAssignmentResult.ERROR,
-        )
-
-    def format(self) -> str:
-        return f"ALBUM_ASSIGNMENT ({self._result.name})"
-
-    @classmethod
-    def analyze(
-        cls,
-        asset_wrapper: AssetResponseWrapper,
-        tag_mod_report: ModificationReport,
-    ) -> "AlbumAssignmentReport":
-        report = cls(asset_wrapper=asset_wrapper)
-        report._perform_analysis(tag_mod_report)
-        return report
-
-    def _perform_analysis(self, tag_mod_report: ModificationReport) -> None:
-        self._result = _analyze_and_assign_album(self._asset_wrapper, tag_mod_report)
 
 
 @typechecked
@@ -255,6 +219,41 @@ def _analyze_and_assign_album(
     raise NotImplementedError(
         f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
     )
+
+
+@attrs.define(auto_attribs=True, slots=True)
+class AlbumAssignmentReport(ProcessStepResult):
+    _asset_wrapper: AssetResponseWrapper = attrs.field(repr=False)
+    _result: AlbumAssignmentResult = attrs.field(init=False, default=None, repr=True)
+
+    def has_changes(self) -> bool:
+        return self._result in (
+            AlbumAssignmentResult.CLASSIFIED,
+            AlbumAssignmentResult.ASSIGNED_UNIQUE,
+            AlbumAssignmentResult.CREATED_TEMPORARY,
+        )
+
+    def has_errors(self) -> bool:
+        return self._result in (
+            AlbumAssignmentResult.CONFLICT,
+            AlbumAssignmentResult.ERROR,
+        )
+
+    def format(self) -> str:
+        return f"ALBUM_ASSIGNMENT ({self._result.name})"
+
+    @classmethod
+    def analyze(
+        cls,
+        asset_wrapper: AssetResponseWrapper,
+        tag_mod_report: ModificationReport,
+    ) -> "AlbumAssignmentReport":
+        report = cls(asset_wrapper=asset_wrapper)
+        report._perform_analysis(tag_mod_report)
+        return report
+
+    def _perform_analysis(self, tag_mod_report: ModificationReport) -> None:
+        self._result = _analyze_and_assign_album(self._asset_wrapper, tag_mod_report)
 
 
 @typechecked

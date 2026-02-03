@@ -148,16 +148,12 @@ def process_single_asset(
             level=LogLevel.ASSET_SUMMARY,
         )
 
-
-
     log(
         f"[RESERVED] validate_result: {validation_result}", level=LogLevel.ASSET_SUMMARY
     )
 
     if tag_mod_report is None:
         tag_mod_report = ModificationReport.get_instance()
-
-
 
     album_date_consistency_result = check_album_date_consistency(
         asset_wrapper, tag_mod_report
