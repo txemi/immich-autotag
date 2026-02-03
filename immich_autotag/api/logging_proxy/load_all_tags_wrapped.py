@@ -2,9 +2,11 @@
 High-level loader for all tags (no reporting, just fetch and wrap).
 This function loads all tags from the API and returns them wrapped as TagWrapper objects.
 """
+
+from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
 from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
-from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
+
 
 def load_all_tags_wrapped() -> list[TagWrapper]:
     """

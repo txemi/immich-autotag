@@ -26,7 +26,6 @@ from immich_autotag.api.logging_proxy.logging_untag_assets import (
     logging_untag_assets_safe,
 )
 
-
 __all__ = [
     "logging_tag_assets",
     "logging_tag_assets_safe",

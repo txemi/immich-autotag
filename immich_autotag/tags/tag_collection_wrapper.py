@@ -46,7 +46,10 @@ class TagCollectionWrapper:
         """
         if self._fully_loaded:
             return
-        from immich_autotag.api.logging_proxy.load_all_tags_wrapped import load_all_tags_wrapped
+        from immich_autotag.api.logging_proxy.load_all_tags_wrapped import (
+            load_all_tags_wrapped,
+        )
+
         self._index.clear()
         for tag in load_all_tags_wrapped():
             self._index.add(tag)
@@ -67,24 +70,15 @@ class TagCollectionWrapper:
         self._fully_loaded = False
         self._load_all_from_api()
 
-    def _load_single_by_id_from_api(self, id_: TagUUID):
+    def _load_single_by_id_from_api(self, id_: TagUUID)->TagWrapper:
         """
         Fetch a tag by id using the efficient proxy and add it to the index if found.
         Returns the found TagWrapper or None.
         """
 
-        from immich_autotag.api.logging_proxy.tags import proxy_get_tag_by_id
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-        from immich_autotag.tags.tag_response_wrapper import TagWrapper
-
-        client_wrapper = ImmichClientWrapper.get_default_instance()
-        client = client_wrapper.get_client()
-        try:
-            tag_dto = proxy_get_tag_by_id(client=client, tag_id=id_)
-        except Exception:
-            tag_dto = None
-        if tag_dto is not None:
-            tag_obj = TagWrapper(tag_dto)
+        from immich_autotag.api.logging_proxy.load_tag_by_id_wrapped import load_tag_by_id_wrapped
+        tag_obj = load_tag_by_id_wrapped(id_)
+        if tag_obj is not None:
             self._index.add(tag_obj)
             return tag_obj
         return None
@@ -210,18 +204,14 @@ class TagCollectionWrapper:
                 conf.duplicate_processing.autotag_classification_conflict_prefix,
             ]
         prefixes = [p for p in prefixes if p]
-        from immich_autotag.api.logging_proxy.tags import proxy_get_all_tags
+        from immich_autotag.api.logging_proxy.load_all_tags_wrapped import load_all_tags_wrapped
 
-        tags_dto = proxy_get_all_tags(client=client) or []
+        tags_wrapped = load_all_tags_wrapped()
         count = 0
-        from immich_autotag.api.logging_proxy.logging_delete_tag import (
-            logging_delete_tag,
-        )
-        from immich_autotag.tags.tag_response_wrapper import TagWrapper
+        from immich_autotag.api.logging_proxy.logging_delete_tag import logging_delete_tag
 
-        for tag_dto in tags_dto:
-            if any(tag_dto.name.startswith(prefix) for prefix in prefixes):
-                tag_wrapper = TagWrapper(tag_dto)
+        for tag_wrapper in tags_wrapped:
+            if any(tag_wrapper.name.startswith(prefix) for prefix in prefixes):
                 logging_delete_tag(
                     client=client,
                     tag=tag_wrapper,
