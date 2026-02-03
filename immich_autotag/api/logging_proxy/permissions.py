@@ -10,7 +10,6 @@ and event tracking. This layer delegates all logging responsibilities to it.
 """
 
 from immich_autotag.api.logging_proxy.add_members import (
-    add_members_to_album,
     logging_add_members_to_album,
     logging_add_user_to_album,
 )
@@ -21,7 +20,6 @@ from immich_autotag.api.logging_proxy.remove_members import (
 
 __all__ = [
     # Add members functions
-    "add_members_to_album",
     "logging_add_members_to_album",
     "logging_add_user_to_album",
     # Remove members functions

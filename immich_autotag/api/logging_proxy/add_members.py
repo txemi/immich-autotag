@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def add_members_to_album(
+def _add_members_to_album(
     *,
     album: "AlbumResponseWrapper",
     users: List["UserResponseWrapper"],
@@ -38,10 +38,10 @@ def add_members_to_album(
     context: ImmichContext,
 ) -> None:
     """
-    Add members to album (PONER).
+    [INTERNAL] Add members to album (PONER).
 
-    Low-level function that calls the API directly.
-    For operations that need automatic logging, use logging_add_members_to_album instead.
+    Solo para uso interno de logging_proxy. No registra eventos ni logs de auditoría.
+    No debe ser llamada directamente desde fuera de este módulo.
     """
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
@@ -71,11 +71,10 @@ def add_members_to_album(
         client=client,
         body=add_users_dto,
     )
-    if response is not None:
-        log_debug(
-            f"[ALBUM_PERMISSIONS] Successfully added {len(user_ids)} "
-            f"members to {album_name}"
-        )
+    log_debug(
+        f"[ALBUM_PERMISSIONS] Successfully added {len(user_ids)} "
+        f"members to {album_name}"
+    )
 
 
 @typechecked
@@ -105,7 +104,7 @@ def logging_add_members_to_album(
         - Updates statistics (delegated to ModificationReport)
     """
     # Call the underlying function
-    add_members_to_album(
+    _add_members_to_album(
         album=album,
         users=members,
         access_level=access_level,
@@ -151,7 +150,7 @@ def logging_add_user_to_album(
         - Records ADD_USER_TO_ALBUM event in ModificationReport
     """
     # Call the underlying function
-    add_members_to_album(
+    _add_members_to_album(
         album=album,
         users=[user],
         access_level=access_level,
