@@ -25,28 +25,28 @@ from immich_autotag.report.modification_report import ModificationReport
 class AlbumDateConsistencyResult(ProcessStepResult):
     """
     Checks date consistency between asset dates and album dates extracted from album names.
-    
+
     This class validates that assets are in albums with matching date information.
     Albums with names in YYYY-MM-DD, YYYY-MM, or YYYY format are checked against
     the asset's best date (photo taken date, file creation date, etc.).
-    
+
     The consistency check performs:
     - Extracts date from album name using regex pattern (YYYY-MM-DD format)
     - Compares album date with asset's best date
     - If difference exceeds threshold (configured in days), marks as mismatch
     - Automatically tags mismatched assets with configurable autotag
     - Removes autotag when mismatch is resolved
-    
+
     This is important for:
     - Detecting incorrectly dated photos in date-based albums
     - Identifying photos that were manually moved to wrong date albums
     - Finding photos with incorrect EXIF date information
     - Maintaining temporal consistency in album organization
-    
+
     Note: This check focuses on date consistency, while DuplicateTagAnalysisReport
     handles classification consistency across duplicate assets.
     """
-    
+
     _asset_wrapper: AssetResponseWrapper = attrs.field(repr=False)
     _mismatch_count: int = 0
     _error_count: int = 0

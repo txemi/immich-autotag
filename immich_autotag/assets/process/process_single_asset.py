@@ -18,7 +18,6 @@ from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_
     DuplicateTagAnalysisReport,
     analyze_duplicate_classification_tags,
 )
-from immich_autotag.config.dev_mode import is_crazy_debug_mode
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.conversions.tag_conversions import TagConversions
 from immich_autotag.logging.levels import LogLevel
@@ -122,9 +121,7 @@ def process_single_asset(
     date_correction_result = _correct_date_if_enabled(asset_wrapper)
     duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
-    album_assignment_result = _analyze_and_assign_album(
-        asset_wrapper, tag_mod_report
-    )
+    album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
     validation_result: ClassificationValidationResult = (
         asset_wrapper.validate_and_update_classification()
     )
@@ -162,15 +159,14 @@ def process_single_asset(
         level=LogLevel.ASSET_SUMMARY,
     )
 
-    report = AssetProcessReport(
-        asset_wrapper=asset_wrapper,
-        tag_conversion_result=tag_conversion_result,
-        date_correction_result=date_correction_result,
-        duplicate_tag_analysis_result=duplicate_tag_analysis_result,
-        album_date_consistency_result=album_date_consistency_result,
-        album_assignment_result=album_assignment_result,
-        validate_result=validation_result,
-    )
+    # Create report and add results in execution order
+    report = AssetProcessReport(asset_wrapper=asset_wrapper)
+    report.add_result(tag_conversion_result)
+    report.add_result(date_correction_result)
+    report.add_result(duplicate_tag_analysis_result)
+    report.add_result(album_date_consistency_result)
+    report.add_result(album_assignment_result)
+    report.add_result(validation_result)
 
     log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 

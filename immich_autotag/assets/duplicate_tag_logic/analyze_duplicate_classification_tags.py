@@ -26,26 +26,26 @@ class DuplicateTagAnalysisResult(Enum):
 class DuplicateTagAnalysisReport(ProcessStepResult):
     """
     Analyzes classification consistency across duplicate assets.
-    
+
     This class checks whether all duplicates of a given asset have consistent classification tags.
     When duplicates exist, they should all belong to the same category (classification).
-    
+
     The analysis performs the following checks:
     - Verifies that all duplicate assets have the same classification tags
     - Attempts automatic fix (autofix) when inconsistencies can be resolved automatically
     - Marks conflicts when duplicates have incompatible classifications
     - Tracks statistics about duplicate count, comparisons, autofixes, and errors
-    
+
     The consistency check is critical because duplicate assets represent the same physical content
     and should therefore have the same classification. Inconsistencies may arise from:
     - Manual tagging errors
     - Timing issues during parallel processing
     - Classification rule changes over time
-    
+
     Note: This analysis focuses on classification consistency, not on date consistency
     (which is handled separately by AlbumDateConsistencyResult).
     """
-    
+
     _asset_wrapper: AssetResponseWrapper = attrs.field(repr=False)
     _result: DuplicateTagAnalysisResult = attrs.field(
         init=False, default=None, repr=True

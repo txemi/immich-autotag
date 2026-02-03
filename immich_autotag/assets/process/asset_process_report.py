@@ -4,23 +4,8 @@ import attr
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from immich_autotag.assets.classification_validation_result import (
-        ClassificationValidationResult,
-    )
 
-from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentReport
-from immich_autotag.assets.consistency_checks._album_date_consistency import (
-    AlbumDateConsistencyResult,
-)
-from immich_autotag.assets.date_correction.core_logic import (
-    AssetDateCorrector,
-    DateCorrectionStepResult,
-)
-from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
-    DuplicateTagAnalysisReport,
-)
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
-from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
 @attr.s(auto_attribs=True, slots=True)
@@ -40,105 +25,67 @@ class AssetProcessStepResult:
 class AssetProcessReport(ProcessStepResult):
     """
     Collects the results of each step in process_single_asset for a single asset.
-    Can generate a summary report and answer if any changes were made.
-    Holds explicit attributes for each processing phase.
+    Aggregates all processing step results in a single unified list, maintaining
+    the execution order of the processing pipeline.
 
-    Implements ProcessStepResult protocol with has_changes(), has_errors(), and format() methods.
+    Implements ProcessStepResult protocol with has_changes(), has_errors(),
+    get_title(), and format() methods.
 
-    Four of the result types implement the ProcessStepResult protocol:
-    - ModificationEntriesList (tag_conversion_result)
-    - AssetDateCorrector (date_correction_result)
-    - AlbumAssignmentReport (album_assignment_result)
-    - ClassificationValidationResult (validate_result)
+    All result types are added to the internal results list via add_result() method
+    in the order they are produced during asset processing. This maintains temporal
+    consistency with the actual execution flow and enables symmetric handling of
+    all results regardless of their specific type.
 
-    Other result types (DuplicateTagAnalysisResult) are enum-based and are included in
-    reports for completeness but without the protocol interface.
+    Private Attributes:
+        _process_step_results: List of ProcessStepResult objects in execution order
+        _legacy_steps: Legacy step list for backward compatibility/debugging
     """
 
     asset_wrapper: "AssetResponseWrapper"
-    tag_conversion_result: Optional[ModificationEntriesList] = None
-    date_correction_result: Optional[AssetDateCorrector] = None
-    duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisReport] = None
-    album_date_consistency_result: Optional[AlbumDateConsistencyResult] = None
-    album_assignment_result: Optional[AlbumAssignmentReport] = None
-    validate_result: Optional["ClassificationValidationResult"] = None
+    _process_step_results: List[ProcessStepResult] = attr.ib(
+        factory=lambda: [], repr=False
+    )
     # Optionally, keep the old steps list for extensibility/debug
-    steps: List[AssetProcessStepResult] = attr.ib(factory=lambda: [])
+    _legacy_steps: List[AssetProcessStepResult] = attr.ib(
+        factory=lambda: [], repr=False
+    )
+
+    def add_result(self, result: Optional[ProcessStepResult]) -> None:
+        """
+        Add a processing step result to the report in execution order.
+
+        Args:
+            result: A ProcessStepResult object (or None to skip)
+        """
+        if result is not None:
+            self._process_step_results.append(result)
+
+    def add_legacy_step(self, step: AssetProcessStepResult) -> None:
+        """Add a legacy step for backward compatibility/debugging."""
+        self._legacy_steps.append(step)
+
+    def get_process_step_results(self) -> List[ProcessStepResult]:
+        """Return a copy of the process step results list."""
+        return list(self._process_step_results)
 
     def has_changes(self) -> bool:
         """Returns True if any processing step resulted in changes."""
-        if self.tag_conversion_result is not None and (
-            self.tag_conversion_result.has_changes()
-            or self.tag_conversion_result.has_errors()
-        ):
-            return True
-
-        if (
-            self.date_correction_result is not None
-            and self.date_correction_result.get_step_result()
-            == DateCorrectionStepResult.FIXED
-        ):
-            return True
-
-        if (
-            self.duplicate_tag_analysis_result is not None
-            and self.duplicate_tag_analysis_result.has_changes()
-        ):
-            return True
-
-        if (
-            self.album_date_consistency_result is not None
-            and self.album_date_consistency_result.has_changes()
-        ):
-            return True
-
-        if (
-            self.album_assignment_result is not None
-            and self.album_assignment_result.has_changes()
-        ):
-            return True
-
-        if self.validate_result is not None:
-            return True
-
-        return False
+        return any(result.has_changes() for result in self._process_step_results)
 
     def has_errors(self) -> bool:
         """Returns True if any processing step encountered errors."""
-        if self.tag_conversion_result is not None:
-            return self.tag_conversion_result.has_errors()
-        return False
+        return any(result.has_errors() for result in self._process_step_results)
 
     def _get_changes_details(self) -> str:
         """
         Generate a concise string describing what changes were made.
 
-        Treats all result objects uniformly through the ProcessStepResult protocol,
-        calling format() on each to obtain symmetric string representation.
+        Iterates through all results symmetrically using the ProcessStepResult protocol,
+        calling format() on each to obtain uniform string representation.
         """
         changes: list[str] = []
-
-        # Process results that implement ProcessStepResult protocol
-        # These have has_changes(), has_errors(), and format() methods
-        if self.tag_conversion_result is not None:
-            changes.append(self.tag_conversion_result.format())
-
-        if self.date_correction_result is not None:
-            changes.append(self.date_correction_result.format())
-
-        # Enum results (DuplicateTagAnalysisResult)
-        # are included directly in summary but not with format() method
-        if self.duplicate_tag_analysis_result is not None:
-            changes.append(self.duplicate_tag_analysis_result.format())
-
-        if self.album_date_consistency_result is not None:
-            changes.append(self.album_date_consistency_result.format())
-
-        if self.album_assignment_result is not None:
-            changes.append(self.album_assignment_result.format())
-
-        if self.validate_result is not None:
-            changes.append(self.validate_result.format())
+        for result in self._process_step_results:
+            changes.append(result.format())
 
         if changes:
             return " | ".join(changes)
@@ -153,38 +100,35 @@ class AssetProcessReport(ProcessStepResult):
             result += f" | {changes_details}"
         return result
 
+    def get_title(self) -> str:
+        """Return the title for this report in ProcessStepResult protocol."""
+        return "Asset process report"
+
     def any_changes(self) -> bool:
         """Backward-compatible alias for has_changes()."""
         return self.has_changes()
 
     def summary(self) -> str:
+        """Generate a comprehensive summary of the asset processing results."""
         lines: List[str] = []
         asset_url = self.asset_wrapper.get_immich_photo_url().geturl()
 
-        # Build a single detailed summary line
+        # Build header with overall status
         changes_indicator = "✓ CHANGES" if self.has_changes() else "○ NO CHANGES"
-        changes_details = self._get_changes_details()
-
         lines.append(f"[ASSET REPORT] {changes_indicator}")
         lines.append(f"  Asset: {asset_url}")
 
+        # Add concise details line if there are changes
+        changes_details = self._get_changes_details()
         if changes_details:
             lines.append(f"  Details: {changes_details}")
 
-        # Add individual results for detailed info (symmetry via get_title/format)
-        detail_results = [
-            self.tag_conversion_result,
-            self.date_correction_result,
-            self.duplicate_tag_analysis_result,
-            self.album_date_consistency_result,
-            self.album_assignment_result,
-            self.validate_result,
-        ]
-        for result in detail_results:
-            if result is None:
-                continue
-            title = result.get_title()
-            lines.append(f"  {title}: {result.format()}")
+        # Add individual results for detailed info (symmetric iteration by execution order)
+        if self._process_step_results:
+            lines.append(f"  Processing steps ({len(self._process_step_results)}):")
+            for result in self._process_step_results:
+                title = result.get_title()
+                lines.append(f"    • {title}: {result.format()}")
 
         return "\n".join(lines)
 
