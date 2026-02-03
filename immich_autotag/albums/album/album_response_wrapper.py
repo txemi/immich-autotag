@@ -447,7 +447,7 @@ class AlbumResponseWrapper:
         self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
         return entry
-        
+
     @typechecked
     def _ensure_removal_allowed(self) -> None:
         """Enforces safety rules for asset removal."""
