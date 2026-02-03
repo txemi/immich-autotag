@@ -98,6 +98,22 @@ class ArchitectureImportChecker:
             return None
 
         _enforce_immich_api_import_rule(fullname, caller)
+        _enforce_immich_proxy_import_rule(fullname, caller)
+
+@typechecked
+def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
+    """
+    Enforce: Only logging_proxy can import any submodule from immich_proxy.
+    Raise ImportError if violated.
+    """
+    # Block any import from immich_autotag.api.immich_proxy (including submodules)
+    if fullname.startswith("immich_autotag.api.immich_proxy"):
+        # Allow only if caller is inside logging_proxy
+        if "immich_autotag/api/logging_proxy" not in str(caller):
+            raise ImportError(
+                f"Direct import of '{fullname}' is forbidden outside logging_proxy. "
+                "Only 'immich_autotag.api.logging_proxy' may import from 'immich_autotag.api.immich_proxy'."
+            )
 
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
