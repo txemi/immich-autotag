@@ -87,6 +87,15 @@ def _is_import_from_immich_proxy(fullname: str) -> bool:
     return fullname.startswith("immich_autotag.api.immich_proxy")
 
 
+# Helper function to check if the caller is outside logging_proxy
+@typechecked
+def _is_caller_outside_logging_proxy(caller: Path) -> bool:
+    """
+    Returns True if the importing module is outside the logging_proxy module.
+    """
+    return LOGGING_PROXY_MODULE.replace(".", "/") not in str(caller)
+
+
 @typechecked
 def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
     """
@@ -108,13 +117,6 @@ def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
 
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
- # Helper function to check if the caller is outside logging_proxy
-@typechecked
-def _is_caller_outside_logging_proxy(caller: Path) -> bool:
-    """
-    Returns True if the importing module is outside the logging_proxy module.
-    """
-    return LOGGING_PROXY_MODULE.replace(".", "/") not in str(caller)
 
 
 @typechecked
