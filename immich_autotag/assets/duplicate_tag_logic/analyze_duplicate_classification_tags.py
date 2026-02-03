@@ -4,6 +4,7 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.types.uuid_wrappers import AssetUUID
 
 from .__compare_classification_tags import compare_classification_tags
@@ -22,7 +23,7 @@ class DuplicateTagAnalysisResult(Enum):
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=False)
-class DuplicateTagAnalysisReport:
+class DuplicateTagAnalysisReport(ProcessStepResult):
     _asset_wrapper: AssetResponseWrapper = attrs.field(repr=False)
     _result: DuplicateTagAnalysisResult = attrs.field(
         init=False, default=None, repr=True
@@ -35,6 +36,9 @@ class DuplicateTagAnalysisReport:
 
     def has_changes(self) -> bool:
         return self._result in (DuplicateTagAnalysisResult.AUTOFIXED,)
+
+    def has_errors(self) -> bool:
+        return self._error_count > 0 or self._result == DuplicateTagAnalysisResult.ERROR
 
     def get_result(self) -> DuplicateTagAnalysisResult:
         return self._result
