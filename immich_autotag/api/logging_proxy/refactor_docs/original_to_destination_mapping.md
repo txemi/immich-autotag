@@ -10,7 +10,7 @@ This table maps the current files in `immich_autotag/api/logging_proxy/` to thei
 | create_tag/                         | tags/create_tag.py                         | ✅   |
 | duplicates.py                       | duplicates/get_asset_duplicates.py         | ✅   |
 | fetch_total_assets.py               | server/get_server_statistics.py            | ✅   |
-| logging_delete_tag.py               | tags/delete_tag.py                         |
+| logging_delete_tag.py               | tags/delete_tag.py                         | ✅   |
 | logging_untag_assets.py             | tags/untag_assets.py                       |
 | logging_update_asset_date.py        | assets/update_asset.py                     |
 | permissions.py                      | albums/album_permissions.py                |
