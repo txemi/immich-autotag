@@ -14,7 +14,7 @@ This table maps the current files in `immich_autotag/api/logging_proxy/` to thei
 | logging_untag_assets.py             | tags/untag_assets.py                       | ✅   |
 | logging_update_asset_date.py        | assets/update_asset.py                     | ✅   |
 | permissions.py                      | albums/album_permissions.py                | ✅   |
-| remove_members.py                   | albums/remove_user_from_album.py           |
+| remove_members.py                   | albums/remove_user_from_album.py           | ✅   |
 | remove_tags.py                      | tags/remove_tags.py (deprecated)           |
 | tags.py                             | tags/__init__.py                           |
 | types.py                            | types/__init__.py                          |
