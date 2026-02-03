@@ -1032,7 +1032,7 @@ class AlbumCollectionWrapper:
                     client=client,
                     tag_mod_report=tag_mod_report,
                 )
-                # Log de progreso y tiempo estimado
+                # Log progress and estimated time
                 if tracker.should_log_progress(idx):
                     progress_msg = tracker.get_progress_description(idx)
                     log(
