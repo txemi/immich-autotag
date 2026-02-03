@@ -18,41 +18,41 @@ IMMICH_API_MODULE = "immich_autotag.api.immich_proxy"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-def _get_relative():
+def get_importing_module_relative_path():
+    """
+    Returns the relative path (to PROJECT_ROOT) of the first non-frozen caller in the stack,
+    or None if the caller is not inside the project.
+    """
     import inspect
-
-    state: int = 0
     found_frozen = False
     stack = inspect.stack()
-    # Check if the import is happening from the proxy module itself
     for frame in stack:
         filename = frame.filename
         if "frozen" in filename:
             found_frozen = True
             continue
         if found_frozen and "frozen" not in filename:
-
             try:
                 return Path(filename).resolve().relative_to(PROJECT_ROOT)
             except ValueError:
                 return None
-    raise RuntimeError("Could not determine relative path")
+    return None
+
 
 
 def _is_outside_project() -> bool:
     """
-    Returns True if the file is outside the immich_autotag project root.
+    Returns True if the importing module is outside the immich_autotag project root.
     """
-    bb = _get_relative()
-    if not str(bb).startswith("immich_autotag"):
+    rel = get_importing_module_relative_path()
+    if rel is None or not str(rel).startswith("immich_autotag"):
         return True
     return False
 
 
 def _is_proxy_module_import():
-
-    filename = _get_relative()
-    return "immich_autotag/api/immich_proxy" in str(filename)
+    rel = get_importing_module_relative_path()
+    return rel is not None and "immich_autotag/api/immich_proxy" in str(rel)
 
 
 def _is_immich_api_module(fullname: str) -> bool:
