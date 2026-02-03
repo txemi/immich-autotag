@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @typechecked
-def logging_untag_assets(
+def _logging_untag_assets(
     *,
     client: ImmichClient,
     tag: TagWrapper,
@@ -170,8 +170,8 @@ def logging_untag_assets_safe(
     report = ModificationReport.get_instance()
 
     try:
-        # Call logging_untag_assets which returns the created entries
-        entries = logging_untag_assets(
+        # Call _logging_untag_assets which returns the created entries
+        entries = _logging_untag_assets(
             client=client, tag=tag, asset_wrappers=asset_wrappers
         )
 
