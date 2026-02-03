@@ -91,7 +91,7 @@ class AssetResponseWrapper:
         Updates the main date (created_at) of the asset using the Immich API.
         If tag_mod_report is provided, logs the modification.
         """
-        from immich_autotag.api.logging_proxy.logging_update_asset_date import (
+        from immich_autotag.api.logging_proxy.assets.update_asset import (
             logging_update_asset_date,
         )
 
