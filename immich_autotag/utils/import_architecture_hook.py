@@ -4,10 +4,8 @@ This module installs a custom import hook that checks every import against a set
 You can extend the logic to log, block, or warn about imports that violate your constraints.
 """
 
-import importlib.abc
-import sys
+import importlib.machinery
 from pathlib import Path
-from types import FrameType
 from typing import Optional
 
 from typeguard import typechecked
@@ -30,9 +28,11 @@ def _get_importing_module_relative_path() -> Optional[Path]:
     import inspect
 
     found_frozen: bool = False
-    stack: list[FrameType] = inspect.stack()  # type: ignore[assignment]
+    stack = inspect.stack()
     for frame in stack:
-        filename: str = frame.filename  # type: ignore[attr-defined]
+        filename = getattr(frame, "filename", None)
+        if not isinstance(filename, str):
+            continue
         if "frozen" in filename:
             found_frozen = True
             continue
@@ -45,18 +45,20 @@ def _get_importing_module_relative_path() -> Optional[Path]:
 
 
 @typechecked
-def _is_caller_outside_project(caller: Path) -> bool:
+def _is_caller_outside_project(caller: Optional[Path]) -> bool:
     """
     Returns True if the importing module is outside the immich_autotag project root.
     """
-    if caller is None or not str(caller).startswith("immich_autotag"):
+    if caller is None:
         return True
-    return False
+    return not str(caller).startswith("immich_autotag")
 
 
 @typechecked
-def _is_caller_proxy_module_import(caller: Path) -> bool:
-    return caller is not None and "immich_autotag/api/immich_proxy" in str(caller)
+def _is_caller_proxy_module_import(caller: Optional[Path]) -> bool:
+    if caller is None:
+        return False
+    return "immich_autotag/api/immich_proxy" in str(caller)
 
 
 @typechecked
@@ -64,8 +66,17 @@ def _is_immich_api_module(fullname: str) -> bool:
     return fullname.startswith("immich_client")
 
 
-class ArchitectureImportChecker(importlib.abc.MetaPathFinder):
-    def find_spec(self, fullname, path, target=None):
+class ArchitectureImportChecker:
+    """
+    Custom meta path finder for enforcing import architecture rules.
+    """
+
+    def find_spec(
+        self,
+        fullname: str,
+        path: Optional[object] = None,
+        target: Optional[object] = None,
+    ) -> Optional[importlib.machinery.ModuleSpec]:
         # If the import is outside our project, skip restrictions
         caller = _get_importing_module_relative_path()
         if caller is None:
@@ -75,11 +86,14 @@ class ArchitectureImportChecker(importlib.abc.MetaPathFinder):
         if _is_immich_api_module(fullname):
             if not _is_caller_proxy_module_import(caller):
                 raise ImportError(
-                    f"Direct import of '{IMMICH_API_MODULE}' is forbidden. Only the proxy module may import it."
+                    f"Direct import of '{IMMICH_API_MODULE}' is forbidden. "
+                    "Only the proxy module may import it."
                 )
-
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
+
+
+import sys
 
 
 def install_architecture_import_hook():
@@ -107,9 +121,4 @@ def initialize_app():
 # For demonstration only: run as script
 if __name__ == "__main__":
     initialize_app()
-    try:
-        import os  # Should raise ImportError
-    except ImportError as e:
-        print(f"[ARCHITECTURE CHECK] {e}")
-
     print("math imported successfully")
