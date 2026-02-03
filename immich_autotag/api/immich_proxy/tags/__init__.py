@@ -1,3 +1,11 @@
+__all__ = [
+	"proxy_create_tag",
+	"proxy_get_tag_by_id",
+	"proxy_delete_tag",
+	"proxy_get_all_tags",
+	"proxy_tag_assets",
+	"proxy_untag_assets",
+]
 from .create_tag import proxy_create_tag as proxy_create_tag
 from .get_tag_by_id import proxy_get_tag_by_id as proxy_get_tag_by_id
 from .proxy_delete_tag import proxy_delete_tag as proxy_delete_tag
