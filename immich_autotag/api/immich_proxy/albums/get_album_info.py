@@ -81,15 +81,6 @@ def proxy_get_album_info(
 
 
 
-def proxy_add_users_to_album(
-    *, album_id: AlbumUUID, client: AuthenticatedClient, body: AddUsersDto
-) -> AlbumResponseDto:
-    from immich_client.api.albums import add_users_to_album
-
-    result = add_users_to_album.sync(id=album_id.to_uuid(), client=client, body=body)
-    if result is None:
-        raise RuntimeError("Failed to add users to album")
-    return result
 
 
 def proxy_get_all_albums(*, client: AuthenticatedClient) -> list[AlbumResponseDto]:

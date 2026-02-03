@@ -18,7 +18,7 @@ from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
-from immich_autotag.api.immich_proxy.albums.get_album_info import proxy_add_users_to_album
+from immich_autotag.api.immich_proxy.albums.add_users_to_album import proxy_add_users_to_album
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
