@@ -5,7 +5,7 @@ This table maps the current files in `immich_autotag/api/logging_proxy/` to thei
 | Original File/Folder                | Proposed Destination Name/Structure         | Done |
 |-------------------------------------|--------------------------------------------|------|
 | add_members.py                      | albums/add_users_to_album.py               | ✅   |
-| add_tags.py                         | tags/tag_assets.py                         |
+| add_tags.py                         | tags/tag_assets.py                         | ✅   |
 | assets.py                           | assets/get_asset_info.py                   |
 | create_tag/                         | tags/create_tag.py                         |
 | duplicates.py                       | duplicates/get_asset_duplicates.py         |
