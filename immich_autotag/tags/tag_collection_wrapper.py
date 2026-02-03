@@ -62,7 +62,6 @@ class TagCollectionWrapper:
             tag = TagWrapper(tag_dto)
             self._index.add(tag)
         self._set_fully_loaded()
-            # (líneas largas ya corregidas)
 
     def _sync_from_api(self, client: ImmichClient) -> None:
         """
