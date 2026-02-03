@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.api.logging_proxy.tags.create_tag import logging_create_tag
+
 from immich_autotag.api.logging_proxy.types import TagResponseDto
 from immich_autotag.tags.tag_dual_map import TagDualMap
 from immich_autotag.types.client_types import ImmichClient
@@ -23,6 +25,7 @@ class TagCollectionWrapperLoadError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
+    from immich_autotag.report.modification_entry import ModificationEntry
 
     _index: TagDualMap = attrs.field(factory=TagDualMap)
     _fully_loaded: bool = attrs.field(default=False, init=False)
@@ -106,7 +109,7 @@ class TagCollectionWrapper:
         if tag is not None:
             return tag
 
-            from immich_autotag.api.logging_proxy.tags.create_tag import logging_create_tag
+            from immich_autotag.api.logging_proxy.tags import logging_create_tag
         from immich_autotag.api.logging_proxy.types import immich_errors
 
         try:
@@ -209,9 +212,7 @@ class TagCollectionWrapper:
 
         tags_wrapped = load_all_tags_wrapped()
         count = 0
-        from immich_autotag.api.logging_proxy.tags.delete_tag import (
-            logging_delete_tag,
-        )
+        from immich_autotag.api.logging_proxy.tags import logging_delete_tag
 
         for tag_wrapper in tags_wrapped:
             if any(tag_wrapper.name().startswith(prefix) for prefix in prefixes):
