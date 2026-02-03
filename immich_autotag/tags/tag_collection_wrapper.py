@@ -6,7 +6,8 @@ from immich_autotag.types.uuid_wrappers import TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
-        # (Removed duplicate unused imports to fix Flake8)
+
+    # (Removed duplicate unused imports to fix Flake8)
 
 import attrs
 from typeguard import typechecked

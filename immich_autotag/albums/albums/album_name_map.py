@@ -37,12 +37,11 @@ class AlbumNameMap:
         del self._name_to_album[name]
 
     @typechecked
-    def get(self, name: str) -> AlbumResponseWrapper:
-        if name not in self._name_to_album:
-            raise RuntimeError(
-                f"Album with name '{name}' does not exist in AlbumNameMap."
-            )
-        return self._name_to_album[name]
+    def get(self, name: str) -> AlbumResponseWrapper | None:
+        """
+        Returns the AlbumResponseWrapper for the given name, or None if not found.
+        """
+        return self._name_to_album.get(name)
 
     @typechecked
     def clear(self):

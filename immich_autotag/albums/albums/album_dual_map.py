@@ -37,7 +37,10 @@ class AlbumDualMap:
         return self._id_map.get_by_uuid(uuid)
 
     @typechecked
-    def get_by_name(self, name: str) -> AlbumResponseWrapper:
+    def get_by_name(self, name: str) -> AlbumResponseWrapper | None:
+        """
+        Returns the AlbumResponseWrapper for the given name, or None if not found.
+        """
         return self._name_map.get(name)
 
     @typechecked

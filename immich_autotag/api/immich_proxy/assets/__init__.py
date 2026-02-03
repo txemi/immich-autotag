@@ -1,7 +1,7 @@
 __all__ = [
-	"AssetResponseDto",
-	"proxy_get_asset_info",
-	"proxy_update_asset",
+    "AssetResponseDto",
+    "proxy_get_asset_info",
+    "proxy_update_asset",
 ]
 from .get_asset_info import AssetResponseDto as AssetResponseDto
 from .get_asset_info import proxy_get_asset_info as proxy_get_asset_info
