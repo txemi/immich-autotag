@@ -6,6 +6,7 @@ from immich_autotag.types.uuid_wrappers import TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
+    from immich_autotag.api.logging_proxy.tags import logging_create_tag
 
 import attrs
 from typeguard import typechecked
