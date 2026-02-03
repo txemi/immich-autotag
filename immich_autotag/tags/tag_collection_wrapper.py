@@ -106,9 +106,7 @@ class TagCollectionWrapper:
         if tag is not None:
             return tag
 
-        from immich_autotag.api.logging_proxy.tags.create_tag import (
-            logging_create_tag,
-        )
+            from immich_autotag.api.logging_proxy.tags.create_tag import logging_create_tag
         from immich_autotag.api.logging_proxy.types import immich_errors
 
         try:
@@ -204,7 +202,7 @@ class TagCollectionWrapper:
                 conf.duplicate_processing.autotag_album_conflict,
                 conf.duplicate_processing.autotag_classification_conflict_prefix,
             ]
-        prefixes = [p for p in prefixes if p is not None and p != ""]
+        prefixes = [p for p in prefixes if isinstance(p, str) and p]
         from immich_autotag.api.logging_proxy.load_all_tags_wrapped import (
             load_all_tags_wrapped,
         )

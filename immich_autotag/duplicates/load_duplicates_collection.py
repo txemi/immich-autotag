@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.api.logging_proxy.duplicates import DuplicatesLoader
+from immich_autotag.api.logging_proxy.duplicates.get_asset_duplicates import DuplicatesLoader
 from immich_autotag.duplicates._find_recent_duplicates_cache import (
     find_recent_duplicates_cache,
 )
