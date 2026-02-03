@@ -94,10 +94,10 @@ class ArchitectureImportChecker:
         caller = _get_importing_module_relative_path()
         if caller is None:
             return None
-        if caller is not None and _is_caller_outside_project(caller):
+        if _is_caller_outside_project(caller):
             return None
-        if caller is not None:
-            _enforce_immich_api_import_rule(fullname, caller)
+
+        _enforce_immich_api_import_rule(fullname, caller)
 
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
