@@ -50,6 +50,9 @@ class ModificationKind(Enum):
     WARNING_ASSET_ALREADY_IN_ALBUM = ModificationKindInfo(
         "WARNING_ASSET_ALREADY_IN_ALBUM", LogLevel.WARNING, ModificationLevel.WARNING
     )
+    WARNING_ASSET_NOT_IN_ALBUM = ModificationKindInfo(
+        "WARNING_ASSET_NOT_IN_ALBUM", LogLevel.WARNING, ModificationLevel.WARNING
+    )
     ASSIGN_ASSET_TO_ALBUM = ModificationKindInfo(
         "ASSIGN_ASSET_TO_ALBUM", level=ModificationLevel.MODIFICATION
     )

@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 from immich_autotag.albums.album.album_user_list import AlbumUserList
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_kind import ModificationKind
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -561,7 +562,10 @@ class AlbumResponseWrapper:
         )
 
     def _handle_remove_asset_error(
-        self, item: BulkIdResponseDto, asset_wrapper: "AssetResponseWrapper"
+        self,
+        item: BulkIdResponseDto,
+        asset_wrapper: "AssetResponseWrapper",
+        tag_mod_report: "ModificationReport",
     ) -> None:
         """Handles non-success results from removal API."""
         from immich_client.types import UNSET
@@ -578,8 +582,8 @@ class AlbumResponseWrapper:
                 self._handle_album_not_found_during_removal(
                     error_msg, asset_url, album_url
                 )
-                from immich_autotag.config.dev_mode import raise_if_development_mode
-
+                # Asset not found in album - likely due to stale cache data
+                # This is not a fatal error, just log as warning and continue
                 log(
                     (
                         f"[ALBUM REMOVAL] Asset {asset_wrapper.get_id()} could not be removed from "
@@ -589,10 +593,11 @@ class AlbumResponseWrapper:
                     ),
                     level=LogLevel.WARNING,
                 )
-                raise_if_development_mode(
-                    f"[DEV MODE] Asset {asset_wrapper.get_id()} could not be removed from album {self.get_album_uuid()}: {error_msg}\n"
-                    f"Asset link: {asset_url}\n"
-                    f"Album link: {album_url}"
+                # Register warning event in modification report
+                tag_mod_report.add_entry(
+                    asset_id=asset_wrapper.get_id(),
+                    kind=ModificationKind.WARNING_ASSET_NOT_IN_ALBUM,
+                    details=f"Asset could not be removed from album '{self.get_album_name()}': {error_msg}",
                 )
                 return
 
@@ -662,7 +667,7 @@ class AlbumResponseWrapper:
         item = self._find_asset_result_in_response(result, asset_wrapper.get_id())
         if item:
             if not item.success:
-                self._handle_remove_asset_error(item, asset_wrapper)
+                self._handle_remove_asset_error(item, asset_wrapper, tag_mod_report)
         else:
             self._handle_missing_remove_response(asset_wrapper)
             return
