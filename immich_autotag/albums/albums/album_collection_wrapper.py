@@ -523,7 +523,9 @@ class AlbumCollectionWrapper:
         Returns True if deleted successfully or if it no longer exists.
         """
 
-        from immich_autotag.api.immich_proxy.albums.delete_album import proxy_delete_album
+        from immich_autotag.api.immich_proxy.albums.delete_album import (
+            proxy_delete_album,
+        )
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 
@@ -889,9 +891,7 @@ class AlbumCollectionWrapper:
         """
         from immich_client.models.create_album_dto import CreateAlbumDto
 
-        from immich_autotag.api.immich_proxy.proxy_create_album import (
-            proxy_create_album,
-        )
+        from immich_autotag.api.immich_proxy.albums import proxy_create_album
 
         album = proxy_create_album(
             client=client,
@@ -991,7 +991,9 @@ class AlbumCollectionWrapper:
         - If clear_first is False, merges new albums with existing ones (without deleting current ones).
         - Handles duplicates and logging same as from_client.
         """
-        from immich_autotag.api.immich_proxy.albums.get_all_albums import proxy_get_all_albums
+        from immich_autotag.api.immich_proxy.albums.get_all_albums import (
+            proxy_get_all_albums,
+        )
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
         from immich_autotag.report.modification_report import ModificationReport
