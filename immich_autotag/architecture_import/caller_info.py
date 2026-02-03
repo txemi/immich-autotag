@@ -18,7 +18,15 @@ class CallerInfo:
 
     def is_outside_project(self) -> bool:
         # Use the root package name robustly
-        return not str(self._path).startswith(Path(__package__.split(".")[0]))
+        return not str(self._path).startswith(self._get_root_package_path())
+
+    @staticmethod
+    def _get_root_package_path() -> str:
+        """
+        Returns the string path of the root package directory (e.g., 'immich_autotag')
+        """
+        root_name = __package__.split(".")[0]
+        return str(Path(root_name))
 
     def is_proxy_module_import(self) -> bool:
         # Use the real path of the imported module, not a hardcoded string
