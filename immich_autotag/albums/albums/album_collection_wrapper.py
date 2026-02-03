@@ -1049,7 +1049,7 @@ class AlbumCollectionWrapper:
             write_duplicates_summary(self._collected_duplicates)
 
         log(f"[RESYNC] Total albums: {len(self)}", level=LogLevel.INFO)
-        # Marcar como sincronizado
+        # Mark as synchronized
         self._sync_state = SyncState.SYNCED
 
     @typechecked
