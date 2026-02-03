@@ -265,7 +265,8 @@ class AlbumCollectionWrapper:
                         "and temporary"
                     ),
                 )
-                self._remove_album_from_local_collection(album_wrapper)
+                # No need to call _remove_album_from_local_collection here
+                # because delete_album already does it via remove_album_local_public
             except Exception as e:
                 album_name = album_wrapper.get_album_name()
                 from immich_autotag.logging.levels import LogLevel
