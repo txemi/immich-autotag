@@ -4,7 +4,6 @@ This module installs a custom import hook that checks every import against a set
 You can extend the logic to log, block, or warn about imports that violate your constraints.
 """
 
-
 import importlib.abc
 import importlib.util
 import sys
@@ -16,13 +15,14 @@ from pathlib import Path
 IMMICH_API_MODULE = "immich_autotag.api.immich_proxy"
 
 
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
 
 def _get_relative():
     import inspect
-    state :int=0
-    found_frozen = False    
+
+    state: int = 0
+    found_frozen = False
     stack = inspect.stack()
     # Check if the import is happening from the proxy module itself
     for frame in stack:
@@ -31,22 +31,29 @@ def _get_relative():
             found_frozen = True
             continue
         if found_frozen and "frozen" not in filename:
-            return Path(filename) .relative_to(PROJECT_ROOT)
+
+            try:
+                return Path(filename).resolve().relative_to(PROJECT_ROOT)
+            except ValueError:
+                return None
     raise RuntimeError("Could not determine relative path")
+
 
 def _is_outside_project() -> bool:
     """
     Returns True if the file is outside the immich_autotag project root.
     """
-    bb= _get_relative()
+    bb = _get_relative()
     if not str(bb).startswith("immich_autotag"):
         return True
     return False
 
+
 def _is_proxy_module_import():
 
     filename = _get_relative()
-    return "immich_autotag/api/immich_proxy" in str(filename )
+    return "immich_autotag/api/immich_proxy" in str(filename)
+
 
 def _is_immich_api_module(fullname: str) -> bool:
     return fullname.startswith("immich_client")
