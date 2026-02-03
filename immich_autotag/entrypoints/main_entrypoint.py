@@ -9,9 +9,9 @@ setup_all_hooks()
 from immich_autotag.entrypoints.main_logic import run_main_inner_logic  # noqa: E402
 
 # Profiling utils (for run_main)
-from immich_autotag.entrypoints.profiling_utils import (
+from immich_autotag.entrypoints.profiling_utils import (  # noqa: E402
     setup_profiling_and_memory,
-)  # noqa: E402
+)
 
 
 def run_main_inner() -> None:
