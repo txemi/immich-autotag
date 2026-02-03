@@ -1,7 +1,9 @@
 """
 Import hook for architecture checks.
-This module installs a custom import hook that checks every import against a set of architectural rules.
-You can extend the logic to log, block, or warn about imports that violate your constraints.
+This module installs a custom import hook that checks every import
+against a set of architectural rules.
+You can extend the logic to log, block, or warn about imports that
+violate your constraints.
 """
 
 import importlib.machinery
@@ -32,20 +34,26 @@ class CallerInfo:
         return not str(self._path).startswith("immich_autotag")
 
     def is_proxy_module_import(self) -> bool:
-        return "immich_autotag/api/immich_proxy" in str(self._path)
+        return (
+            "immich_autotag/api/immich_proxy" in str(self._path)
+        )
 
     def is_outside_logging_proxy(self) -> bool:
-        return LOGGING_PROXY_MODULE.replace(".", "/") not in str(self._path)
+        return (
+            LOGGING_PROXY_MODULE.replace(".", "/") not in str(self._path)
+        )
 
     def is_client_types_entry(self) -> bool:
-        return str(self._path).endswith("api/immich_proxy/client_types.py")
+        return (
+            str(self._path).endswith("api/immich_proxy/client_types.py")
+        )
 
     @staticmethod
     @typechecked
     def from_stack() -> Optional["CallerInfo"]:
         """
-        Returns a CallerInfo for the first non-frozen caller in the stack (relative to PROJECT_ROOT),
-        or None if the caller is not inside the project.
+        Returns a CallerInfo for the first non-frozen caller in the stack
+        (relative to PROJECT_ROOT), or None if the caller is not inside the project.
         """
         found_frozen: bool = False
         stack = inspect.stack()
@@ -108,8 +116,8 @@ def _enforce_immich_proxy_import_rule(fni: FullnameInfo, ci: CallerInfo) -> None
             return None
         if ci.is_outside_logging_proxy():
             raise ImportError(
-                f"Direct import of '{fni._fullname}' is forbidden outside {LOGGING_PROXY_MODULE}. "
-                f"Only '{LOGGING_PROXY_MODULE}' may import from "
+                f"Direct import of '{fni._fullname}' is forbidden outside "
+                f"{LOGGING_PROXY_MODULE}. Only '{LOGGING_PROXY_MODULE}' may import from "
                 f"'immich_autotag.api.immich_proxy'."
             )
         return None
@@ -125,9 +133,10 @@ def _enforce_logging_proxy_import_rule(fni: FullnameInfo, ci: CallerInfo) -> Non
     if fni.is_import_from_logging_proxy():
         logging_proxy_mod = logging_proxy.__name__
         raise ImportError(
-            f"Forbidden import: '{fni._fullname}' cannot be imported from '{ci._path}'.\n"
-            f"immich_proxy modules are not allowed to import from {logging_proxy_mod} "
-            f"due to architectural restriction."
+            f"Forbidden import: '{fni._fullname}' cannot be imported from "
+            f"'{ci._path}'.\n"
+            f"immich_proxy modules are not allowed to import from "
+            f"{logging_proxy_mod} due to architectural restriction."
         )
 
 
