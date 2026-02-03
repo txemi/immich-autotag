@@ -12,10 +12,9 @@ from typing import Optional
 
 from typeguard import typechecked
 
-# Example: Block imports from forbidden packages
+from immich_autotag.api import immich_proxy
 
-# No module except the proxy should import Immich API
-IMMICH_API_MODULE: str = "immich_autotag.api.immich_proxy"
+IMMICH_API_MODULE: str = immich_proxy.__name__
 
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
