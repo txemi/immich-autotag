@@ -101,6 +101,22 @@ def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
         return None  # Allow normal import to continue
 
 
+@typechecked
+def _enforce_logging_proxy_import_rule(fullname: str, caller: Path) -> None:
+    """
+    Enforce: No módulo de immich_proxy puede importar desde logging_proxy.
+    Raise ImportError si se viola la regla.
+    """
+    if not _is_caller_proxy_module_import(caller):
+        return
+    if fullname.startswith("immich_autotag.api.logging_proxy"):
+        # Solo permitir si el importador NO es un módulo de immich_proxy
+        raise ImportError(
+            f"Importación prohibida: '{fullname}' no puede ser importado desde '{caller}'.\n"
+            "Los módulos de immich_proxy no pueden importar desde logging_proxy por restricción arquitectónica."
+        )
+
+
 class ArchitectureImportChecker:
     """
     Custom meta path finder for enforcing import architecture rules.
@@ -123,6 +139,7 @@ class ArchitectureImportChecker:
 
         _enforce_immich_api_import_rule(fullname, caller)
         _enforce_immich_proxy_import_rule(fullname, caller)
+        _enforce_logging_proxy_import_rule(fullname, caller)
         return None
 
 
