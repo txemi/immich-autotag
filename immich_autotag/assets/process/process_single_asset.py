@@ -13,8 +13,10 @@ from immich_autotag.assets.classification_validation_result import (
 from immich_autotag.assets.consistency_checks._album_date_consistency import (
     check_album_date_consistency,
 )
-from immich_autotag.assets.date_correction.core_logic import AssetDateCorrector
-from immich_autotag.assets.duplicate_tag_logic.analyze_duplicate_classification_tags import (
+from immich_autotag.assets.date_correction.core_logic import (
+    AssetDateCorrector,
+)
+from immich_autotag.assets.duplicate_tag_logic import (
     DuplicateTagAnalysisReport,
     analyze_duplicate_classification_tags,
 )
@@ -50,9 +52,10 @@ def _correct_date_if_enabled(
     """
 
     config = ConfigManager.get_instance().get_config_or_raise()
-    if config.duplicate_processing is None:
+    duplicate_processing = config.duplicate_processing
+    if duplicate_processing is None:
         raise ValueError("duplicate_processing configuration must not be None")
-    if config.duplicate_processing.date_correction.enabled:
+    if duplicate_processing.date_correction.enabled:
         log("[DEBUG] Correcting asset date...", level=LogLevel.FOCUS)
         corrector = AssetDateCorrector(asset_wrapper=asset_wrapper)
         corrector.execute()
@@ -74,7 +77,10 @@ def _analyze_and_assign_album(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
 ) -> AlbumAssignmentReport:
-    """Analyze and assign the asset to an album if needed. Returns the result of analyze_and_assign_album."""
+    """Analyze and assign the asset to an album if needed.
+
+    Returns the result of analyze_and_assign_album.
+    """
     log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
     return analyze_and_assign_album(asset_wrapper, tag_mod_report)
 
@@ -83,10 +89,11 @@ def _analyze_and_assign_album(
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
 ) -> None:
-    """
-    Process a single asset: applies tag conversions, corrects date if enabled, analyzes duplicates,
-    assigns album, validates classification, flushes the report, and updates tag counters.
-    Thread-safe for report flushing.
+    """Process a single asset through all analysis and tagging phases.
+
+    Applies tag conversions, corrects date if enabled, analyzes duplicates,
+    assigns album, validates classification, flushes the report, and updates
+    tag counters. Thread-safe for report flushing.
     """
 
     from typing import Optional
@@ -138,24 +145,23 @@ def process_single_asset(
         f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}",
         level=LogLevel.ASSET_SUMMARY,
     )
-    if album_assignment_result is not None:
-        log(
-            f"[RESERVED] album_assignment_result: {album_assignment_result.format()}",
-            level=LogLevel.ASSET_SUMMARY,
-        )
+    log(
+        f"[RESERVED] album_assignment_result: {album_assignment_result.format()}",
+        level=LogLevel.ASSET_SUMMARY,
+    )
 
     log(
         f"[RESERVED] validate_result: {validation_result}", level=LogLevel.ASSET_SUMMARY
     )
 
-    if tag_mod_report is None:
-        tag_mod_report = ModificationReport.get_instance()
+    tag_mod_report = ModificationReport.get_instance()
 
     album_date_consistency_result = check_album_date_consistency(
         asset_wrapper, tag_mod_report
     )
     log(
-        f"[RESERVED] album_date_consistency_result: {album_date_consistency_result.format()}",
+        f"[RESERVED] album_date_consistency_result: "
+        f"{album_date_consistency_result.format()}",
         level=LogLevel.ASSET_SUMMARY,
     )
 

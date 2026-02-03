@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ._analyze_and_assign_album import _analyze_and_assign_album
 from .album_assignment_report import AlbumAssignmentReport
 from .album_assignment_result import AlbumAssignmentResult
 
