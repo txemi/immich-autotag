@@ -1,9 +1,12 @@
 from typing import List
+
 from immich_client.api.tags import tag_assets
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
+
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.types.uuid_wrappers import AssetUUID, TagUUID
+
 
 def proxy_tag_assets(
     *, tag_id: TagUUID, client: ImmichClient, asset_ids: List[AssetUUID]

@@ -1,9 +1,12 @@
+from typing import List
+
 from immich_client.api.tags import untag_assets
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
+
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.types.uuid_wrappers import AssetUUID, TagUUID
-from typing import List
+
 
 def proxy_untag_assets(
     *, tag_id: TagUUID, client: ImmichClient, asset_ids: List[AssetUUID]
@@ -16,5 +19,6 @@ def proxy_untag_assets(
     if result is None:
         raise RuntimeError("untag_assets.sync returned None (unexpected)")
     return result
+
 
 __all__ = ["proxy_untag_assets"]

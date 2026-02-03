@@ -1,6 +1,7 @@
-from immich_client.models.album_response_dto import AlbumResponseDto
-from immich_client.client import AuthenticatedClient
 from immich_client.api.albums import get_all_albums
+from immich_client.client import AuthenticatedClient
+from immich_client.models.album_response_dto import AlbumResponseDto
+
 
 def proxy_get_all_albums(*, client: AuthenticatedClient) -> list[AlbumResponseDto]:
     result = get_all_albums.sync(client=client)

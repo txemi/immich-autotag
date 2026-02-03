@@ -1,8 +1,13 @@
-from immich_client.api.albums.delete_album import sync_detailed as delete_album_sync_detailed
-from immich_client.client import AuthenticatedClient
-from immich_autotag.types.uuid_wrappers import AlbumUUID
-from immich_client.types import Response
 from typing import Any
+
+from immich_client.api.albums.delete_album import (
+    sync_detailed as delete_album_sync_detailed,
+)
+from immich_client.client import AuthenticatedClient
+from immich_client.types import Response
+
+from immich_autotag.types.uuid_wrappers import AlbumUUID
+
 
 def proxy_delete_album(
     album_id: AlbumUUID, client: AuthenticatedClient
