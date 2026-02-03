@@ -93,11 +93,9 @@ class AssetResponseWrapper:
         Updates the main date (created_at) of the asset using the Immich API.
         If tag_mod_report is provided, logs the modification.
         """
-        from immich_autotag.api.logging_proxy.assets import proxy_update_asset
+        from immich_autotag.api.logging_proxy.logging_update_asset_date import logging_update_asset_date
 
-        raise_deprecated_path("do we really need this?")
         old_date = self.get_created_at()
-        # Ensure the date is timezone-aware in UTC
         if new_date.tzinfo is None:
             raise ValueError(
                 (
@@ -106,59 +104,13 @@ class AssetResponseWrapper:
                 )
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
-        # Log and print before updating the asset, including link to the photo in Immich
-        from immich_autotag.logging.utils import is_log_level_enabled, log_debug
-
-        if is_log_level_enabled(LogLevel.DEBUG):
-            photo_url_obj = self.get_immich_photo_url()
-            photo_url = photo_url_obj.geturl()
-            log_msg = (
-                f"[INFO] Updating asset date: asset.id={self.get_id()}, "
-                f"asset_name={self.get_original_file_name()}, "
-                f"old_date={old_date}, new_date={new_date}\n"
-                f"[INFO] Immich photo link: {photo_url}"
-            )
-            log_debug(f"[BUG] {log_msg}")
-        from immich_autotag.report.modification_kind import ModificationKind
-        from immich_autotag.report.modification_report import ModificationReport
-        from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-
-        tag_mod_report = ModificationReport.get_instance()
-        user_wrapper = UserResponseWrapper.load_current_user()
-        # asset_url = self.get_immich_photo_url().geturl()  # Unused variable removed
-
-        tag_mod_report.add_modification(
-            kind=ModificationKind.UPDATE_ASSET_DATE,
+        response = logging_update_asset_date(
             asset_wrapper=self,
-            old_value=str(old_date) if old_date else None,
-            new_value=str(new_date) if new_date else None,
-            user=user_wrapper,
-            extra={"pre_update": True},
+            new_date=new_date,
+            old_date=old_date,
+            dto=dto,
+            check_update_applied=check_update_applied,
         )
-        response = proxy_update_asset(
-            asset_id=self.get_id(),
-            client=self.get_context().get_client_wrapper().get_client(),
-            body=dto,
-        )
-        # Fail-fast: check response type and status directly, no dynamic attribute access
-        # If the API returns a response object with status_code, check it; otherwise, assume success if no exception was raised
-        # If the response is an AssetResponseDto, we expect no error field and no status_code
-        # If the API changes and returns a dict or error object, this will fail fast
-        if not isinstance(response, AssetResponseDto):
-            raise DateIntegrityError(
-                f"[ERROR] update_asset.sync did not return AssetResponseDto, "
-                f"got {type(response)}: {response} for asset.id={self.get_id()} "
-                f"({self.get_original_file_name()})"
-            )
-        # If the response has an 'error' attribute and it is not None, fail fast (static access only)
-        # This assumes that if present, 'error' is a public attribute of the response object
-        # OPTIMIZATION: Trust the API response instead of polling with sleep().
-        # The API call to proxy_update_asset should atomically update and return the asset.
-        # Removed: polling loop with time.sleep(1.5s) retry logic that added 1.5-4.5s per asset
-        if check_update_applied:
-            if is_log_level_enabled(LogLevel.DEBUG):
-                log_debug(f"[PERF] Date update applied: {new_date.isoformat()}")
-            return
 
     @typechecked
     def get_immich_photo_url(self) -> ParseResult:
