@@ -1,0 +1,67 @@
+"""Private handler for classification conflicts in album assignment."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from typeguard import typechecked
+
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_kind import ModificationKind
+
+from .album_assignment_result import AlbumAssignmentResult
+
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+    from immich_autotag.classification.match_result_list import MatchResultList
+    from immich_autotag.report.modification_report import ModificationReport
+
+
+@typechecked
+def _handle_classification_conflict(
+    asset_wrapper: "AssetResponseWrapper",
+    tag_mod_report: "ModificationReport",
+    match_results: "MatchResultList",
+) -> AlbumAssignmentResult:
+    """
+    Handles assets that match multiple classification rules by removing them from temporary albums
+    and reporting the conflict.
+    """
+    from immich_autotag.assets.albums.temporary_manager.cleanup import (
+        remove_asset_from_autotag_temporary_albums,
+    )
+
+    all_albums = list(
+        asset_wrapper.get_context()
+        .get_albums_collection()
+        .albums_wrappers_for_asset_wrapper(asset_wrapper)
+    )
+    remove_asset_from_autotag_temporary_albums(
+        asset_wrapper=asset_wrapper,
+        temporary_albums=all_albums,
+        tag_mod_report=tag_mod_report,
+    )
+
+    num_rules_matched = len(list(match_results.rules()))
+    asset_name = asset_wrapper.get_original_file_name()
+    asset_id = asset_wrapper.get_id()
+    immich_url = asset_wrapper.get_immich_photo_url().geturl()
+
+    log(
+        f"[ALBUM ASSIGNMENT] Asset '{asset_name}' ({asset_id}) matched {num_rules_matched} classification rules. "
+        f"Classification conflict: removed from temporary album if it was there.\nSee asset: {immich_url}",
+        level=LogLevel.ERROR,
+    )
+
+    tag_mod_report.add_modification(
+        kind=ModificationKind.CLASSIFICATION_CONFLICT,
+        asset_wrapper=asset_wrapper,
+        extra={
+            "reason": "multiple_rules_matched",
+            "num_rules": num_rules_matched,
+            "asset_name": asset_name,
+            "asset_id": asset_id,
+        },
+    )
+    return AlbumAssignmentResult.CONFLICT

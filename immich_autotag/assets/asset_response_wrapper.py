@@ -877,8 +877,9 @@ class AssetResponseWrapper:
 
         context = self.get_context()
         duplicate_id_or_none = self.get_duplicate_id_as_uuid()
-        # duplicate_id is always a DuplicateUUID, never None in this context
-        assert duplicate_id_or_none is not None
+        # If there's no duplicate ID, this asset has no duplicates
+        if duplicate_id_or_none is None:
+            return []
         duplicate_id: DuplicateUUID = duplicate_id_or_none
         wrappers: list[AssetResponseWrapper] = []
         group = context.get_duplicates_collection().get_group(duplicate_id)
