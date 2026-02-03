@@ -2,6 +2,7 @@ from immich_client.client import AuthenticatedClient
 from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.create_album_dto import CreateAlbumDto
 
+
 def proxy_create_album(
     *, client: AuthenticatedClient, body: CreateAlbumDto
 ) -> AlbumResponseDto:

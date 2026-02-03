@@ -1,25 +1,16 @@
 from __future__ import annotations
 
 import atexit
-from typing import Any, Callable, List, Optional
+from typing import Callable, Optional
 
 from immich_client.api.albums import (
-    add_assets_to_album,
     get_album_info,
-    get_all_albums,
-    remove_asset_from_album,
-    update_album_info,
 )
 from immich_client.client import AuthenticatedClient
-from immich_client.models.add_users_dto import AddUsersDto
 from immich_client.models.album_response_dto import AlbumResponseDto
-from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
-from immich_client.models.bulk_ids_dto import BulkIdsDto
-from immich_client.models.update_album_dto import UpdateAlbumDto
-from immich_client.types import Response
 
 from immich_autotag.logging.levels import LogLevel
-from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
+from immich_autotag.types.uuid_wrappers import AlbumUUID
 from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
 # --- Album API call diagnostics ---
@@ -53,7 +44,6 @@ def proxy_get_album_info(
     Centralized wrapper for get_album_info.sync. Includes disk cache.
     """
     global _album_api_call_count
-    from immich_autotag.utils.api_disk_cache import ApiCacheKey
 
     cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS)
     # Only accept AlbumUUID
@@ -75,17 +65,3 @@ def proxy_get_album_info(
     if dto is not None:
         cache_mgr.save(cache_key, dto.to_dict())
     return dto
-
-
-
-
-
-
-
-
-
-
-
-
-
-
