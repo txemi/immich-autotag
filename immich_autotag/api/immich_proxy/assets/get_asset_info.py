@@ -29,4 +29,7 @@ def proxy_get_asset_info(
     _asset_api_call_count += 1
     _asset_api_ids.add(str(asset_id))
     # Calls the API directly, without cache logic
+
     return _get_asset_info.sync(id=asset_id.to_uuid(), client=client)
+
+__all__ = ["AssetResponseDto", "proxy_get_asset_info"]

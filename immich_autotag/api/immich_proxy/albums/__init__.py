@@ -1,0 +1,1 @@
+from .remove_user_from_album import proxy_remove_user_from_album
