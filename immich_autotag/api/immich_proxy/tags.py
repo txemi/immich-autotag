@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 # ...existing code...
 from typing import List
 
