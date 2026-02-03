@@ -34,6 +34,14 @@
       "problemMatcher": []
     },
     {
+      "label": "Quality Gate: Python (CHECK) TARGET",
+      "type": "shell",
+      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode CHECK --level TARGET",
+      "group": { "kind": "build" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
       "label": "Quality Gate: Check Only (CHECK)",
       "type": "shell",
       "command": "bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=CHECK",
