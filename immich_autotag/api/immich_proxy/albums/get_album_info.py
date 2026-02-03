@@ -79,13 +79,6 @@ def proxy_get_album_info(
 
 
 
-def proxy_update_album_info(
-    *, album_id: AlbumUUID, client: AuthenticatedClient, body: UpdateAlbumDto
-) -> AlbumResponseDto:
-    result = update_album_info.sync(id=album_id.to_uuid(), client=client, body=body)
-    if result is None:
-        raise RuntimeError("Failed to update album info")
-    return result
 
 
 def proxy_add_users_to_album(

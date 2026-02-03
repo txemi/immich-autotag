@@ -701,7 +701,7 @@ class AlbumResponseWrapper:
 
             from immich_client.models.update_album_dto import UpdateAlbumDto
 
-            from immich_autotag.api.immich_proxy.albums.get_album_info import proxy_update_album_info
+            from immich_autotag.api.immich_proxy.albums.update_album_info import proxy_update_album_info
 
             update_body = UpdateAlbumDto(album_name=cleaned_name)
             proxy_update_album_info(
