@@ -2,9 +2,9 @@
 
 This table maps the current files in `immich_autotag/api/logging_proxy/` to their proposed destination names, aiming for symmetry with the API entrypoints structure.
 
-| Original File/Folder                | Proposed Destination Name/Structure         |
-|-------------------------------------|--------------------------------------------|
-| add_members.py                      | albums/add_users_to_album.py               |
+| Original File/Folder                | Proposed Destination Name/Structure         | Done |
+|-------------------------------------|--------------------------------------------|------|
+| add_members.py                      | albums/add_users_to_album.py               | ✅   |
 | add_tags.py                         | tags/tag_assets.py                         |
 | assets.py                           | assets/get_asset_info.py                   |
 | create_tag/                         | tags/create_tag.py                         |
