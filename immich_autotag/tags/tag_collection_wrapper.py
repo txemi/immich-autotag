@@ -10,8 +10,6 @@ if TYPE_CHECKING:
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.api.logging_proxy.tags.create_tag import logging_create_tag
-
 from immich_autotag.api.logging_proxy.types import TagResponseDto
 from immich_autotag.tags.tag_dual_map import TagDualMap
 from immich_autotag.types.client_types import ImmichClient
@@ -25,10 +23,10 @@ class TagCollectionWrapperLoadError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-    from immich_autotag.report.modification_entry import ModificationEntry
 
     _index: TagDualMap = attrs.field(factory=TagDualMap)
     _fully_loaded: bool = attrs.field(default=False, init=False)
+    from immich_autotag.report.modification_entry import ModificationEntry
 
     def __attrs_post_init__(self):
         if (

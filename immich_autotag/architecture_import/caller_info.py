@@ -37,6 +37,7 @@ class CallerInfo:
 
     def is_client_types_entry(self) -> bool:
         import immich_autotag.api.immich_proxy.client_types as client_types_mod
+
         client_types_path = Path(client_types_mod.__file__).resolve()
         return self._path.resolve() == client_types_path
 

@@ -102,7 +102,9 @@ class AssetCacheEntry:
         asset_id must be an AssetUUID (not a plain UUID).
         """
 
-        from immich_autotag.api.logging_proxy.assets.get_asset_info import proxy_get_asset_info
+        from immich_autotag.api.logging_proxy.assets.get_asset_info import (
+            proxy_get_asset_info,
+        )
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
         cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ASSETS)

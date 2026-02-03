@@ -11,17 +11,17 @@ New code should import directly from these modules instead.
 
 from __future__ import annotations
 
-# Re-export add tag functions
-from immich_autotag.api.logging_proxy.tags.tag_assets import (
-    logging_tag_assets,
-    logging_tag_assets_safe,
-)
-
 # Re-export create tag functions
 from immich_autotag.api.logging_proxy.tags.create_tag import logging_create_tag
 
 # Re-export remove tag functions
 from immich_autotag.api.logging_proxy.tags.delete_tag import logging_delete_tag
+
+# Re-export add tag functions
+from immich_autotag.api.logging_proxy.tags.tag_assets import (
+    logging_tag_assets,
+    logging_tag_assets_safe,
+)
 from immich_autotag.api.logging_proxy.tags.untag_assets import (
     logging_untag_assets_safe,
 )
