@@ -50,6 +50,10 @@ FORCED_LOG_LEVEL = (
     LogLevel.ASSET_SUMMARY
 )  # Change to 'DEBUG' to force massive logging in development/CI
 
+# ==================== ARCHITECTURE IMPORT HOOK CONTROL ====================
+# Set to True to enable architecture import hook, False to disable enforcement
+ENABLE_ARCHITECTURE_IMPORT_HOOK = False
+
 # ==================== CONVERSIONS AT STARTUP ====================
 # Controls whether all conversions are applied to assets at application startup
 APPLY_CONVERSIONS_AT_START = False  # Set to False to disable mass processing at startup

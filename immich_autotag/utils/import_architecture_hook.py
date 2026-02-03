@@ -13,6 +13,7 @@ from typing import Optional
 from typeguard import typechecked
 
 from immich_autotag.api import immich_proxy, logging_proxy
+from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
 
 IMMICH_API_MODULE: str = immich_proxy.__name__
 LOGGING_PROXY_MODULE: str = logging_proxy.__name__
@@ -86,6 +87,9 @@ def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
     """
     # Block any import from immich_autotag.api.immich_proxy (including submodules)
     if fullname.startswith("immich_autotag.api.immich_proxy"):
+        # Exception: allow in client_types.py as entry point to immich_client
+        if str(caller).endswith("api/immich_proxy/client_types.py"):
+            return None
         # Allow only if caller is inside logging_proxy
         if LOGGING_PROXY_MODULE.replace(".", "/") not in str(caller):
             raise ImportError(
@@ -109,6 +113,8 @@ class ArchitectureImportChecker:
         target: Optional[object] = None,
     ) -> Optional[importlib.machinery.ModuleSpec]:
         # If the import is outside our project, skip restrictions
+        if not ENABLE_ARCHITECTURE_IMPORT_HOOK:
+            return None
         caller = _get_importing_module_relative_path()
         if caller is None:
             return None
@@ -121,6 +127,8 @@ class ArchitectureImportChecker:
 
 
 def install_architecture_import_hook():
+    if not ENABLE_ARCHITECTURE_IMPORT_HOOK:
+        return 
     # Avoid double installation
     if not any(isinstance(f, ArchitectureImportChecker) for f in sys.meta_path):
         sys.meta_path.insert(0, ArchitectureImportChecker())
