@@ -10,7 +10,8 @@ class AdjustEstimatesResult:
     est_remaining: float = attrs.field(validator=attrs.validators.instance_of(float))
 
     def __iter__(self):
-        # Returns AdjustEstimatesResult dataclass with est_total and est_remaining fields.
+        # Returns AdjustEstimatesResult dataclass with est_total and
+        # est_remaining fields.
         yield self.est_total
         yield self.est_remaining
 

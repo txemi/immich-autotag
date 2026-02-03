@@ -1,3 +1,4 @@
 """
-Tags package: provides tag collection, tag wrappers, and tag-related utilities for Immich autotag.
+Tags package: provides tag collection, tag wrappers, and tag-related utilities
+for Immich autotag.
 """

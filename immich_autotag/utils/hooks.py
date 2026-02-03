@@ -1,6 +1,7 @@
 """
-Centralized setup for all runtime hooks: typeguard, architecture import rules, logging, profiling, etc.
-Call setup_all_hooks() at the top of your entrypoint before importing any business logic.
+Centralized setup for all runtime hooks: typeguard, architecture import rules,
+logging, profiling, etc. Call setup_all_hooks() at the top of your entrypoint
+before importing any business logic.
 """
 
 
