@@ -16,7 +16,9 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
-from immich_autotag.api.immich_proxy.tags.tag_assets import proxy_tag_assets as _proxy_tag_assets
+from immich_autotag.api.immich_proxy.tags.tag_assets import (
+    proxy_tag_assets as _proxy_tag_assets,
+)
 from immich_autotag.report.modification_kind import ModificationKind
 
 if TYPE_CHECKING:

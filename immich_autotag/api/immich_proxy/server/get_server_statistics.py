@@ -1,7 +1,9 @@
 from typing import Optional
+
 from immich_client.api.server import get_server_statistics
 from immich_client.client import AuthenticatedClient
 from immich_client.models.server_stats_response_dto import ServerStatsResponseDto
+
 
 def proxy_get_server_statistics(
     *, client: AuthenticatedClient
