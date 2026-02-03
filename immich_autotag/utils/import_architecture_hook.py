@@ -40,19 +40,17 @@ def _get_importing_module_relative_path():
 
 
 
-def _is_caller_outside_project() -> bool:
+def _is_caller_outside_project(caller) -> bool:
     """
     Returns True if the importing module is outside the immich_autotag project root.
     """
-    rel = _get_importing_module_relative_path()
-    if rel is None or not str(rel).startswith("immich_autotag"):
+    if caller is None or not str(caller).startswith("immich_autotag"):
         return True
     return False
 
 
-def _is_caller_proxy_module_import():
-    rel = _get_importing_module_relative_path()
-    return rel is not None and "immich_autotag/api/immich_proxy" in str(rel)
+def _is_caller_proxy_module_import(caller):
+    return caller is not None and "immich_autotag/api/immich_proxy" in str(caller)
 
 
 def _is_immich_api_module(fullname: str) -> bool:
@@ -62,10 +60,13 @@ def _is_immich_api_module(fullname: str) -> bool:
 class ArchitectureImportChecker(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
         # If the import is outside our project, skip restrictions
-        if _is_caller_outside_project():
+        caller=_get_importing_module_relative_path()
+        if caller is None:
+            return None
+        if _is_caller_outside_project(caller):
             return None
         if _is_immich_api_module(fullname):
-            if not _is_caller_proxy_module_import():
+            if not _is_caller_proxy_module_import(caller):
                 raise ImportError(
                     f"Direct import of '{IMMICH_API_MODULE}' is forbidden. Only the proxy module may import it."
                 )
