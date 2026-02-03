@@ -49,6 +49,10 @@ class ModificationEntriesList(ProcessStepResult):
     def get_title(self) -> str:
         return "Rule engine modifications"
 
+    def get_events(self) -> "ModificationEntriesList":
+        """Returns all modification entries (events) from this result."""
+        return self
+
     def has_entries_of_kind(self, kind: "ModificationKind") -> bool:
         """Returns True if list contains entries of the specified kind."""
         return any(entry.kind == kind for entry in self._entries)

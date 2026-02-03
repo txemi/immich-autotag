@@ -104,6 +104,15 @@ class AssetProcessReport(ProcessStepResult):
         """Return the title for this report in ProcessStepResult protocol."""
         return "Asset process report"
 
+    def get_events(self):
+        """Returns all events from all processing step results aggregated."""
+        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        aggregated = ModificationEntriesList()
+        for result in self._process_step_results:
+            events = result.get_events()
+            aggregated = aggregated.extend(events)
+        return aggregated
+
     def any_changes(self) -> bool:
         """Backward-compatible alias for has_changes()."""
         return self.has_changes()

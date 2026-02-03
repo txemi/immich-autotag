@@ -264,6 +264,11 @@ class AlbumAssignmentReport(ProcessStepResult):
     def get_title(self) -> str:
         return "Album assignment logic"
 
+    def get_events(self):
+        """Returns events from album assignment (empty, as assignment doesn't track modification events)."""
+        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        return ModificationEntriesList()
+
     def format(self) -> str:
         return f"ALBUM_ASSIGNMENT ({self._result.name})"
 

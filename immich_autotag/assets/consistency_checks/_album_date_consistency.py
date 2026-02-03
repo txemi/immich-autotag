@@ -61,6 +61,11 @@ class AlbumDateConsistencyResult(ProcessStepResult):
     def get_title(self) -> str:
         return "Album-asset date consistency"
 
+    def get_events(self):
+        """Returns events from album date consistency checks (empty, as this check is informational)."""
+        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        return ModificationEntriesList()
+
     def format(self) -> str:
         parts = [f"mismatches={self._mismatch_count}"]
         if self._error_count:

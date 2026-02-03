@@ -50,6 +50,10 @@ class ClassificationValidationResult(ProcessStepResult):
     def get_title(self) -> str:
         return "Classification validation"
 
+    def get_events(self) -> "ModificationEntriesList":
+        """Returns all modification events from the classification validation."""
+        return self._modifications
+
     def format(self) -> str:
         """
         Format the classification validation result with status information.

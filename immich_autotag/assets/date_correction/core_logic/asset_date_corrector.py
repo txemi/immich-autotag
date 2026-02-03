@@ -207,6 +207,12 @@ class AssetDateCorrector(ProcessStepResult):
         return "Date correction"
 
     @typechecked
+    def get_events(self):
+        """Returns events from date correction (empty, as date correction doesn't track modification events)."""
+        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        return ModificationEntriesList()
+
+    @typechecked
     def format(self) -> str:
         """
         Format a concise summary of the date correction result.
