@@ -232,8 +232,9 @@ class TagCollectionWrapper:
                     return True
             return False
 
+        prefixes_clean: Sequence[str] = [p for p in prefixes if p is not None]
         for tag_wrapper in tags_wrapped:
-            if tag_name_has_conflict_prefix(tag_wrapper, prefixes):
+            if tag_name_has_conflict_prefix(tag_wrapper, prefixes_clean):
                 logging_delete_tag(
                     client=client,
                     tag=tag_wrapper,
