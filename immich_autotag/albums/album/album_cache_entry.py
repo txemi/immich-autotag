@@ -89,7 +89,7 @@ class AlbumCacheEntry:
                 return dto
 
         # API fetch logic: call proxy_get_album_info using the default Immich client
-        from immich_autotag.api.immich_proxy.albums import proxy_get_album_info
+        from immich_autotag.api.immich_proxy.albums.get_album_info import proxy_get_album_info
         from immich_autotag.context.immich_context import ImmichContext
 
         client = ImmichContext.get_default_instance().get_client_wrapper().get_client()

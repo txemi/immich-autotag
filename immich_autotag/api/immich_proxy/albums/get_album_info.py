@@ -77,19 +77,6 @@ def proxy_get_album_info(
     return dto
 
 
-def proxy_remove_asset_from_album(
-    *, album_id: AlbumUUID, client: AuthenticatedClient, asset_ids: List[AssetUUID]
-) -> list[BulkIdResponseDto]:
-    # Convert AssetUUIDs to UUIDs for API compatibility
-    uuid_ids = [a.to_uuid() for a in asset_ids]
-    result = remove_asset_from_album.sync(
-        id=album_id.to_uuid(), client=client, body=BulkIdsDto(ids=uuid_ids)
-    )
-    if result is None:
-        raise RuntimeError(
-            f"Failed to remove assets from album {album_id}: API returned None"
-        )
-    return result
 
 
 def proxy_update_album_info(
