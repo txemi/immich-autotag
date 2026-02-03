@@ -47,12 +47,10 @@ def _get_importing_module_relative_path() -> Optional[Path]:
 
 
 @typechecked
-def _is_caller_outside_project(caller: Optional[Path]) -> bool:
+def _is_caller_outside_project(caller: Path) -> bool:
     """
     Returns True if the importing module is outside the immich_autotag project root.
     """
-    if caller is None:
-        return True
     return not str(caller).startswith("immich_autotag")
 
 
@@ -66,6 +64,20 @@ def _is_caller_proxy_module_import(caller: Optional[Path]) -> bool:
 @typechecked
 def _is_immich_api_module(fullname: str) -> bool:
     return fullname.startswith("immich_client")
+
+
+@typechecked
+def _enforce_immich_api_import_rule(fullname: str, caller: Path) -> None:
+    """
+    Enforce the rule: Only the proxy module may import the Immich API.
+    Raise ImportError if violated.
+    """
+    if _is_immich_api_module(fullname):
+        if not _is_caller_proxy_module_import(caller):
+            raise ImportError(
+                f"Direct import of '{IMMICH_API_MODULE}' is forbidden. "
+                "Only the proxy module may import it."
+            )
 
 
 class ArchitectureImportChecker:
@@ -83,14 +95,11 @@ class ArchitectureImportChecker:
         caller = _get_importing_module_relative_path()
         if caller is None:
             return None
-        if _is_caller_outside_project(caller):
+        if caller is not None and _is_caller_outside_project(caller):
             return None
-        if _is_immich_api_module(fullname):
-            if not _is_caller_proxy_module_import(caller):
-                raise ImportError(
-                    f"Direct import of '{IMMICH_API_MODULE}' is forbidden. "
-                    "Only the proxy module may import it."
-                )
+        if caller is not None:
+            _enforce_immich_api_import_rule(fullname, caller)
+
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
 
