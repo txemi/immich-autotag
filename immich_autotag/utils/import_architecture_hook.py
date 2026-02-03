@@ -25,19 +25,47 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
 @attrs.define(frozen=True, auto_attribs=True)
 class CallerInfo:
+
+    @staticmethod
+    @typechecked
+    def from_stack() -> Optional["CallerInfo"]:
+        """
+        Returns a CallerInfo for the first non-frozen caller in the stack (relative to PROJECT_ROOT),
+        or None if the caller is not inside the project.
+        """
+        found_frozen: bool = False
+        stack = inspect.stack()
+        for frame in stack:
+            filename = frame.filename
+            if "frozen" in filename:
+                found_frozen = True
+                continue
+            if found_frozen and "frozen" not in filename:
+                try:
+                    rel_path = Path(filename).resolve().relative_to(PROJECT_ROOT)
+                    return CallerInfo(rel_path)
+                except ValueError:
+                    return None
+        return None
     _path: Path
 
     def is_outside_project(self) -> bool:
         return not str(self._path).startswith("immich_autotag")
 
     def is_proxy_module_import(self) -> bool:
-        return "immich_autotag/api/immich_proxy" in str(self._path)
+        return (
+            "immich_autotag/api/immich_proxy" in str(self._path)
+        )
 
     def is_outside_logging_proxy(self) -> bool:
-        return LOGGING_PROXY_MODULE.replace(".", "/") not in str(self._path)
+        return (
+            LOGGING_PROXY_MODULE.replace(".", "/") not in str(self._path)
+        )
 
     def is_client_types_entry(self) -> bool:
-        return str(self._path).endswith("api/immich_proxy/client_types.py")
+        return (
+            str(self._path).endswith("api/immich_proxy/client_types.py")
+        )
 
     def __str__(self):
         return str(self._path)
@@ -51,7 +79,9 @@ class FullnameInfo:
         return self._fullname.startswith("immich_client")
 
     def is_import_from_immich_proxy(self) -> bool:
-        return self._fullname.startswith("immich_autotag.api.immich_proxy")
+        return self._fullname.startswith(
+            "immich_autotag.api.immich_proxy"
+        )
 
     def is_import_from_logging_proxy(self) -> bool:
         logging_proxy_mod = logging_proxy.__name__
@@ -62,26 +92,7 @@ class FullnameInfo:
 
 
 @typechecked
-def _get_importing_module_relative_path() -> Optional[Path]:
-    """
-    Returns the relative path (to PROJECT_ROOT) of the first non-frozen caller in the stack,
-    or None if the caller is not inside the project.
-    """
 
-    found_frozen: bool = False
-    stack = inspect.stack()
-    for frame in stack:
-        # Direct attribute access: inspect.FrameInfo always has 'filename'
-        filename = frame.filename
-        if "frozen" in filename:
-            found_frozen = True
-            continue
-        if found_frozen and "frozen" not in filename:
-            try:
-                return Path(filename).resolve().relative_to(PROJECT_ROOT)
-            except ValueError:
-                return None
-    return None
 
 
 def _enforce_immich_api_import_rule(fullname: str, caller: Path) -> None:
@@ -112,7 +123,8 @@ def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
         if ci.is_outside_logging_proxy():
             raise ImportError(
                 f"Direct import of '{fullname}' is forbidden outside {LOGGING_PROXY_MODULE}. "
-                f"Only '{LOGGING_PROXY_MODULE}' may import from 'immich_autotag.api.immich_proxy'."
+                f"Only '{LOGGING_PROXY_MODULE}' may import from "
+                f"'immich_autotag.api.immich_proxy'."
             )
         return None
 
@@ -130,7 +142,8 @@ def _enforce_logging_proxy_import_rule(fullname: str, caller: Path) -> None:
         logging_proxy_mod = logging_proxy.__name__
         raise ImportError(
             f"Forbidden import: '{fullname}' cannot be imported from '{caller}'.\n"
-            f"immich_proxy modules are not allowed to import from {logging_proxy_mod} due to architectural restriction."
+            f"immich_proxy modules are not allowed to import from {logging_proxy_mod} "
+            f"due to architectural restriction."
         )
 
 
@@ -148,10 +161,9 @@ class ArchitectureImportChecker:
         # If the import is outside our project, skip restrictions
         if not ENABLE_ARCHITECTURE_IMPORT_HOOK:
             return None
-        caller = _get_importing_module_relative_path()
-        if caller is None:
+        ci = CallerInfo.from_stack()
+        if ci is None:
             return None
-        ci = CallerInfo(caller)
         if ci.is_outside_project():
             return None
 
@@ -168,7 +180,7 @@ def install_architecture_import_hook():
     if not any(isinstance(f, ArchitectureImportChecker) for f in sys.meta_path):
         sys.meta_path.insert(0, ArchitectureImportChecker())
 
-
+  
 # --- App initialization pattern ---
 def setup_import_architecture_hook():
     """
