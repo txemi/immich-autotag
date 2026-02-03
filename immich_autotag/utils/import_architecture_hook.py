@@ -4,9 +4,11 @@ This module installs a custom import hook that checks every import against a set
 You can extend the logic to log, block, or warn about imports that violate your constraints.
 """
 
+
 import importlib.abc
 import importlib.util
 import sys
+from pathlib import Path
 
 # Example: Block imports from forbidden packages
 
@@ -14,7 +16,10 @@ import sys
 IMMICH_API_MODULE = "immich_autotag.api.immich_proxy"
 
 
-def _is_proxy_module_import():
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
+def _get_relative():
     import inspect
     state :int=0
     found_frozen = False    
@@ -26,22 +31,38 @@ def _is_proxy_module_import():
             found_frozen = True
             continue
         if found_frozen and "frozen" not in filename:
-            if  "immich_autotag/api/immich_proxy" in filename :
-                return True
-            else:
-                return False
+            return Path(filename) .relative_to(PROJECT_ROOT)
+    raise RuntimeError("Could not determine relative path")
+
+def _is_outside_project() -> bool:
+    """
+    Returns True if the file is outside the immich_autotag project root.
+    """
+    bb= _get_relative()
+    if not str(bb).startswith("immich_autotag"):
+        return True
     return False
+
+def _is_proxy_module_import():
+
+    filename = _get_relative()
+    return "immich_autotag/api/immich_proxy" in str(filename )
+
+def _is_immich_api_module(fullname: str) -> bool:
+    return fullname.startswith("immich_client")
 
 
 class ArchitectureImportChecker(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
-        # Block direct imports of Immich API except from proxy module
-        if fullname.startswith("immich_client"):
-
+        # If the import is outside our project, skip restrictions
+        if _is_outside_project():
+            return None
+        if _is_immich_api_module(fullname):
             if not _is_proxy_module_import():
                 raise ImportError(
                     f"Direct import of '{IMMICH_API_MODULE}' is forbidden. Only the proxy module may import it."
                 )
+
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
 
