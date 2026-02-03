@@ -25,40 +25,40 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
 @attrs.define(frozen=True)
 class CallerInfo:
-    path: Path
+    _path: Path
 
     def is_outside_project(self) -> bool:
-        return not str(self.path).startswith("immich_autotag")
+        return not str(self._path).startswith("immich_autotag")
 
     def is_proxy_module_import(self) -> bool:
-        return "immich_autotag/api/immich_proxy" in str(self.path)
+        return "immich_autotag/api/immich_proxy" in str(self._path)
 
     def is_outside_logging_proxy(self) -> bool:
-        return LOGGING_PROXY_MODULE.replace(".", "/") not in str(self.path)
+        return LOGGING_PROXY_MODULE.replace(".", "/") not in str(self._path)
 
     def is_client_types_entry(self) -> bool:
-        return str(self.path).endswith("api/immich_proxy/client_types.py")
+        return str(self._path).endswith("api/immich_proxy/client_types.py")
 
     def __str__(self):
-        return str(self.path)
+        return str(self._path)
 
 
 @attrs.define(frozen=True)
 class FullnameInfo:
-    fullname: str
+    _fullname: str
 
     def is_immich_api_module(self) -> bool:
-        return self.fullname.startswith("immich_client")
+        return self._fullname.startswith("immich_client")
 
     def is_import_from_immich_proxy(self) -> bool:
-        return self.fullname.startswith("immich_autotag.api.immich_proxy")
+        return self._fullname.startswith("immich_autotag.api.immich_proxy")
 
     def is_import_from_logging_proxy(self) -> bool:
         logging_proxy_mod = logging_proxy.__name__
-        return self.fullname.startswith(logging_proxy_mod)
+        return self._fullname.startswith(logging_proxy_mod)
 
     def __str__(self):
-        return self.fullname
+        return self._fullname
 
 
 @typechecked
@@ -155,9 +155,9 @@ class ArchitectureImportChecker:
         if ci.is_outside_project():
             return None
 
-        _enforce_immich_api_import_rule(fullname, ci.path)
-        _enforce_immich_proxy_import_rule(fullname, ci.path)
-        _enforce_logging_proxy_import_rule(fullname, ci.path)
+        _enforce_immich_api_import_rule(fullname, ci._path)
+        _enforce_immich_proxy_import_rule(fullname, ci._path)
+        _enforce_logging_proxy_import_rule(fullname, ci._path)
         return None
 
 
