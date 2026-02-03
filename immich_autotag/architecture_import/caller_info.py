@@ -16,10 +16,6 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 class CallerInfo:
     _path: Path
 
-    def is_outside_project(self) -> bool:
-        # Use the root package name robustly
-        return not str(self._path).startswith(self._get_root_package_path())
-
     @staticmethod
     def _get_root_package_path() -> str:
         """
@@ -27,6 +23,10 @@ class CallerInfo:
         """
         root_name = __package__.split(".")[0]
         return str(Path(root_name))
+
+    def is_outside_project(self) -> bool:
+        # Use the root package name robustly
+        return not str(self._path).startswith(self._get_root_package_path())
 
     def is_proxy_module_import(self) -> bool:
         # Use the real path of the imported module, not a hardcoded string
