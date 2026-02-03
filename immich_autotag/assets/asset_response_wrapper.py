@@ -255,7 +255,7 @@ class AssetResponseWrapper:
         Adds a tag to the asset by name using the Immich API if it doesn\'t have it already.
         Returns a ModificationEntriesList with the recorded modifications.
         """
-        from immich_autotag.api.immich_proxy.tags import proxy_tag_assets
+        from immich_autotag.api.immich_proxy.tags.tag_assets import proxy_tag_assets
         from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
         tag_mod_report = ModificationReport.get_instance()
