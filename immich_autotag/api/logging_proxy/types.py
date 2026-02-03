@@ -4,18 +4,18 @@ Only logging_proxy may import from immich_proxy.types.
 """
 
 from immich_autotag.api.immich_proxy.types import (
-    Unset,
-    UpdateAssetDto,
-    AssetResponseDto,
-    TagResponseDto,
-    AlbumUserRole,
-    AuthenticatedClient,
-    ImmichClient,
-    Client,
     UNSET,
-    immich_errors,
+    AlbumUserRole,
+    AssetResponseDto,
+    AuthenticatedClient,
+    Client,
+    ImmichClient,
     MetadataSearchDto,
     Response,
+    TagResponseDto,
+    Unset,
+    UpdateAssetDto,
+    immich_errors,
 )
 
 __all__ = [
