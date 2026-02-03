@@ -53,7 +53,6 @@
       "presentation": { "reveal": "always", "panel": "shared" },
       "group": { "kind": "build" },
       "problemMatcher": [],
-      "deprecated": true,
       "detail": "DEPRECATED: Use Python quality gate tasks above."
     },
     {
@@ -63,7 +62,6 @@
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": [],
-      "deprecated": true,
       "detail": "DEPRECATED: Use Python quality gate tasks above."
     },
     {
@@ -73,7 +71,6 @@
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": [],
-      "deprecated": true,
       "detail": "DEPRECATED: Use Python quality gate tasks above."
     },
     {
@@ -83,7 +80,6 @@
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": [],
-      "deprecated": true,
       "detail": "DEPRECATED: Use Python quality gate tasks above."
     },
     {
