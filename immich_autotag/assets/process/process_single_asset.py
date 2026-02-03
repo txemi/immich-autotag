@@ -121,11 +121,10 @@ def process_single_asset(
     tag_conversion_result = _apply_tag_conversions(asset_wrapper)
     date_correction_result = _correct_date_if_enabled(asset_wrapper)
     duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
-    if not is_crazy_debug_mode():
-        tag_mod_report = ModificationReport.get_instance()
-        album_assignment_result = _analyze_and_assign_album(
-            asset_wrapper, tag_mod_report
-        )
+    tag_mod_report = ModificationReport.get_instance()
+    album_assignment_result = _analyze_and_assign_album(
+        asset_wrapper, tag_mod_report
+    )
     validation_result: ClassificationValidationResult = (
         asset_wrapper.validate_and_update_classification()
     )
