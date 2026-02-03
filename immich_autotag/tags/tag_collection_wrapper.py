@@ -46,18 +46,9 @@ class TagCollectionWrapper:
         """
         if self._fully_loaded:
             return
-        from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-        from immich_autotag.tags.tag_response_wrapper import TagWrapper
-
-        client_wrapper = ImmichClientWrapper.get_default_instance()
-        client = client_wrapper.get_client()
-        tags_dto = proxy_get_all_tags(client=client)
-        if tags_dto is None:
-            raise RuntimeError("API returned None when fetching all tags")
+        from immich_autotag.api.logging_proxy.load_all_tags_wrapped import load_all_tags_wrapped
         self._index.clear()
-        for tag_dto in tags_dto:
-            tag = TagWrapper(tag_dto)
+        for tag in load_all_tags_wrapped():
             self._index.add(tag)
         self._set_fully_loaded()
 
@@ -82,7 +73,7 @@ class TagCollectionWrapper:
         Returns the found TagWrapper or None.
         """
 
-        from immich_autotag.api.immich_proxy.tags import proxy_get_tag_by_id
+        from immich_autotag.api.logging_proxy.tags import proxy_get_tag_by_id
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -219,9 +210,7 @@ class TagCollectionWrapper:
                 conf.duplicate_processing.autotag_classification_conflict_prefix,
             ]
         prefixes = [p for p in prefixes if p]
-        from immich_autotag.api.immich_proxy.tags import (
-            proxy_get_all_tags,
-        )
+        from immich_autotag.api.logging_proxy.tags import proxy_get_all_tags
 
         tags_dto = proxy_get_all_tags(client=client) or []
         count = 0
