@@ -370,7 +370,7 @@ check_python_syntax() {
 	local target_dir="$2"
 	echo "Checking for syntax and indentation errors..."
 	echo "[CHECK] Byte-compiling Python sources in $target_dir..."
-	# Buscar y compilar todos los .py fuera de carpetas ignoradas
+	# Find and compile all .py files outside ignored folders
 	local failed=0
 	find "$target_dir" \
 		\( -path "$target_dir/.venv" -o -path "$target_dir/immich-client" -o -path "$target_dir/scripts" -o -path "$target_dir/jenkins_logs" \) -prune -false -o -name "*.py" -print |

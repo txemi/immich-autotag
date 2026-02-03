@@ -158,7 +158,7 @@ install_python_requirements() {
 	fi
 }
 
-# Instala herramientas de desarrollo del sistema (solo modo dev)
+# Install system development tools (dev mode only)
 install_system_dev_tools() {
 	if [ "$MODE" = "dev" ]; then
 		# Solo Ubuntu/Debian
@@ -186,7 +186,7 @@ install_system_dev_tools() {
 	fi
 }
 
-# Instala dependencias Python de desarrollo (solo modo dev)
+# Install Python development dependencies (dev mode only)
 install_python_dev_requirements() {
 	if [ "$MODE" = "dev" ]; then
 		if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then

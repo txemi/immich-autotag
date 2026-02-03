@@ -1,28 +1,28 @@
 # Import-Linter Configuration - Quality Levels
 
-Este documento describe los niveles de calidad y las reglas de arquitectura que se aplican con import-linter en este proyecto. Cada nivel define qué contratos se aplican y cómo se refuerzan los límites entre módulos.
+This document describes the quality levels and architecture rules applied with import-linter in this project. Each level defines which contracts apply and how boundaries between modules are enforced.
 
-## Niveles de calidad
+## Quality levels
 
 ### STANDARD (CI/CD)
-- Solo logging_proxy puede acceder a immich_proxy
-- Solo immich_proxy puede acceder a immich_client
+- Only logging_proxy can access immich_proxy
+- Only immich_proxy can access immich_client
 
 ### TARGET (Release)
-- Incluye las reglas STANDARD
-- Añade reglas de aislamiento entre módulos (más estrictas)
+- Includes STANDARD rules
+- Adds isolation rules between modules (stricter)
 
-### STRICT (Futuro)
-- Máxima restricción, incluye todo lo anterior y posibles reglas futuras
+### STRICT (Future)
+- Maximum restriction, includes all previous and possible future rules
 
-## Propósito
-- STANDARD: feedback rápido y evitar violaciones graves
-- TARGET: validación de arquitectura para releases
-- STRICT: experimentación y mejora continua
+## Purpose
+- STANDARD: fast feedback and avoid major violations
+- TARGET: architecture validation for releases
+- STRICT: experimentation and continuous improvement
 
-## Estado actual
-- Todos los contratos STANDARD pasan
-- TARGET y STRICT pueden tener reglas rotas en desarrollo
+## Current status
+- All STANDARD contracts pass
+- TARGET and STRICT may have broken rules in development
 
 ---
 
