@@ -52,7 +52,7 @@ FORCED_LOG_LEVEL = (
 
 # ==================== ARCHITECTURE IMPORT HOOK CONTROL ====================
 # Set to True to enable architecture import hook, False to disable enforcement
-ENABLE_ARCHITECTURE_IMPORT_HOOK = False
+ENABLE_ARCHITECTURE_IMPORT_HOOK = True
 
 # ==================== CONVERSIONS AT STARTUP ====================
 # Controls whether all conversions are applied to assets at application startup
