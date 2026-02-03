@@ -13,7 +13,7 @@ feat/album-permission-groups (current)
 ### The Problem
 - You have 326 albums in Immich
 - Want to quickly share albums with family members based on album names
-- Currently names like: "2024-Familia-Navidad", "2024-Amigos-Reunion", "2024-Trabajo"
+- Currently names like: "2024-Family-Christmas", "2024-Friends-Meeting", "2024-Work"
 - No native Immich user groups
 
 ### The Solution (3-Phase Approach)
@@ -24,7 +24,7 @@ When you run the app with `--album-permissions` flag:
 1. **Define groups in config**:
 ```python
 user_groups = {
-    "familia": ["abuelo@...", "madre@...", "hermano@..."],
+    "family": ["grandfather@...", "mother@...", "brother@..."],
     "amigos": ["juan@...", "maria@..."],
     "trabajo": ["jefe@...", "colega1@..."],
 }

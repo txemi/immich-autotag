@@ -1010,7 +1010,7 @@ class AlbumCollectionWrapper:
             f"[RESYNC] Starting album resync. Total albums to process: {len(albums)}",
             level=LogLevel.PROGRESS,
         )
-        # Integrar PerformanceTracker para progreso y tiempo estimado
+        # Integrate PerformanceTracker for progress and estimated time
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
         tracker = PerformanceTracker.from_args(

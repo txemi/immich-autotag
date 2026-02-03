@@ -1,6 +1,6 @@
 # Feature Analysis: Remove Assets from Auto-Generated Temporary Albums
 
-**Date:** 17 de Enero de 2026  
+**Date:** January 17, 2026  
 **Status:** Analysis (Ready for Implementation)  
 **Parent Issue:** 0016 - Auto Album Creation from Date  
 **Proposed:** As subtask of 0016

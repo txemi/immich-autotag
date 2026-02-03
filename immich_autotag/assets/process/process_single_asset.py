@@ -114,7 +114,7 @@ def process_single_asset(
         level=LogLevel.ASSET_SUMMARY,
     )
 
-    # Ejecutar cada fase y almacenar resultados en el reporte tipado
+    # Execute each phase and store results in the typed report
     from immich_autotag.assets.process.asset_process_report import AssetProcessReport
 
     # Initialize variables before conditional to avoid UnboundLocalError
