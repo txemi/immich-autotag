@@ -37,15 +37,8 @@ def proxy_create_tag(*, client: ImmichClient, name: str):
     return _create_tag.sync(client=client, body=tag_create)
 
 
-def proxy_get_all_tags(*, client: ImmichClient):
-    """Proxy for get_all_tags.sync with explicit keyword arguments."""
-    return _get_all_tags.sync(client=client)
 
 
-def proxy_delete_tag(*, client: ImmichClient, tag_id: TagUUID) -> None:
-    """Proxy for delete_tag.sync_detailed con resultado parseado."""
-    _delete_tag.sync_detailed(id=tag_id.to_uuid(), client=client)
-    # response.parsed is None for delete operations
 
 
 def proxy_get_tag_by_id(
