@@ -295,6 +295,7 @@ class ModificationReport:
             ModificationKind.ASSIGN_ASSET_TO_ALBUM,
             ModificationKind.REMOVE_ASSET_FROM_ALBUM,
             ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
+            ModificationKind.WARNING_ASSET_NOT_IN_ALBUM,
         }
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 

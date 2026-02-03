@@ -67,7 +67,10 @@ class DuplicateTagAnalysisReport(ProcessStepResult):
 
     def get_events(self):
         """Returns events from duplicate tag analysis (empty, as analysis doesn't track modification events)."""
-        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        from immich_autotag.report.modification_entries_list import (
+            ModificationEntriesList,
+        )
+
         return ModificationEntriesList()
 
     def get_result(self) -> DuplicateTagAnalysisResult:

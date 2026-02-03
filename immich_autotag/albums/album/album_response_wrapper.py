@@ -447,7 +447,6 @@ class AlbumResponseWrapper:
         self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
         return entry
-        self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
     @typechecked
     def _ensure_removal_allowed(self) -> None:
@@ -594,10 +593,11 @@ class AlbumResponseWrapper:
                     level=LogLevel.WARNING,
                 )
                 # Register warning event in modification report
-                tag_mod_report.add_entry(
-                    asset_id=asset_wrapper.get_id(),
+                tag_mod_report.add_assignment_modification(
                     kind=ModificationKind.WARNING_ASSET_NOT_IN_ALBUM,
-                    details=f"Asset could not be removed from album '{self.get_album_name()}': {error_msg}",
+                    asset_wrapper=asset_wrapper,
+                    album=self,
+                    extra={"error": error_msg},
                 )
                 return
 

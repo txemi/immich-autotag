@@ -11,15 +11,14 @@ from immich_autotag.classification.classification_rule_set import (
 )
 from immich_autotag.classification.classification_status import ClassificationStatus
 
-from .album_assignment_result import AlbumAssignmentResult
-from ._handle_classified_asset import _handle_classified_asset
 from ._handle_classification_conflict import _handle_classification_conflict
+from ._handle_classified_asset import _handle_classified_asset
 from ._handle_duplicate_conflicts import _handle_duplicate_conflicts
 from ._handle_unclassified_asset import _handle_unclassified_asset
+from .album_assignment_result import AlbumAssignmentResult
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-    from immich_autotag.assets.albums.album_decision import AlbumDecision
     from immich_autotag.report.modification_report import ModificationReport
 
 

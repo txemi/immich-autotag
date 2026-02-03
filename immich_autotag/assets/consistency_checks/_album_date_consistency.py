@@ -63,7 +63,10 @@ class AlbumDateConsistencyResult(ProcessStepResult):
 
     def get_events(self):
         """Returns events from album date consistency checks (empty, as this check is informational)."""
-        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        from immich_autotag.report.modification_entries_list import (
+            ModificationEntriesList,
+        )
+
         return ModificationEntriesList()
 
     def format(self) -> str:

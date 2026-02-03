@@ -29,11 +29,11 @@ class ProcessStepResult(Protocol):
     def get_events(self) -> "ModificationEntriesList":
         """
         Returns all events/entries from this processing step.
-        
+
         Events represent all changes, warnings, and errors that occurred
         during processing. They are unified as ModificationEntry objects
         that can be queried and reported uniformly across all step results.
-        
+
         Returns:
             A ModificationEntriesList containing all events from this step,
             or empty list if no events occurred.

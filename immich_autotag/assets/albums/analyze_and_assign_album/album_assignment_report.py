@@ -8,8 +8,8 @@ import attrs
 
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 
-from .album_assignment_result import AlbumAssignmentResult
 from ._analyze_and_assign_album import _analyze_and_assign_album
+from .album_assignment_result import AlbumAssignmentResult
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -62,7 +62,9 @@ class AlbumAssignmentReport(ProcessStepResult):
 
     def get_events(self) -> "ModificationEntriesList":
         """Returns events from album assignment (empty, as assignment doesn't track modification events)."""
-        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        from immich_autotag.report.modification_entries_list import (
+            ModificationEntriesList,
+        )
 
         return ModificationEntriesList()
 
