@@ -9,25 +9,32 @@ import importlib.util
 import sys
 from pathlib import Path
 
+from typeguard import typechecked
+
 # Example: Block imports from forbidden packages
 
 # No module except the proxy should import Immich API
-IMMICH_API_MODULE = "immich_autotag.api.immich_proxy"
+IMMICH_API_MODULE: str = "immich_autotag.api.immich_proxy"
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
 
-def _get_importing_module_relative_path():
+
+from typing import Optional
+from types import FrameType
+
+@typechecked
+def _get_importing_module_relative_path() -> Optional[Path]:
     """
     Returns the relative path (to PROJECT_ROOT) of the first non-frozen caller in the stack,
     or None if the caller is not inside the project.
     """
     import inspect
-    found_frozen = False
-    stack = inspect.stack()
+    found_frozen: bool = False
+    stack: list[FrameType] = inspect.stack()
     for frame in stack:
-        filename = frame.filename
+        filename: str = frame.filename
         if "frozen" in filename:
             found_frozen = True
             continue
@@ -39,8 +46,8 @@ def _get_importing_module_relative_path():
     return None
 
 
-
-def _is_caller_outside_project(caller) -> bool:
+@typechecked
+def _is_caller_outside_project(caller: Path) -> bool:
     """
     Returns True if the importing module is outside the immich_autotag project root.
     """
@@ -48,11 +55,11 @@ def _is_caller_outside_project(caller) -> bool:
         return True
     return False
 
-
-def _is_caller_proxy_module_import(caller):
+@typechecked
+def _is_caller_proxy_module_import(caller: Path) -> bool:
     return caller is not None and "immich_autotag/api/immich_proxy" in str(caller)
 
-
+@typechecked
 def _is_immich_api_module(fullname: str) -> bool:
     return fullname.startswith("immich_client")
 
