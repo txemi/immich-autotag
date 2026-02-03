@@ -4,6 +4,7 @@ This module serves as the single point of entry for all external immich_client i
 maintaining architectural isolation according to the import-linter contract:
 "Only immich_proxy can access immich_client"
 """
+
 # Client types
 from immich_client import Client
 from immich_client import errors as immich_errors

@@ -6,7 +6,6 @@ from immich_autotag.types.uuid_wrappers import TagUUID
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
-    from immich_autotag.api.logging_proxy.tags import logging_create_tag
     from immich_autotag.api.logging_proxy.types import TagResponseDto
     from immich_autotag.types.client_types import ImmichClient
 
@@ -213,9 +212,13 @@ class TagCollectionWrapper:
 
         tags_wrapped = load_all_tags_wrapped()
         count = 0
-        from immich_autotag.api.logging_proxy.tags import logging_delete_tag
         from typing import Sequence
-        def tag_name_has_conflict_prefix(tag_wrapper: "TagWrapper", prefixes: Sequence[str]) -> bool:
+
+        from immich_autotag.api.logging_proxy.tags import logging_delete_tag
+
+        def tag_name_has_conflict_prefix(
+            tag_wrapper: "TagWrapper", prefixes: Sequence[str]
+        ) -> bool:
             """
             Returns True if the tag's name starts with any of the given prefixes.
             Handles empty string defensively.
@@ -223,6 +226,7 @@ class TagCollectionWrapper:
             name: str = tag_wrapper.name()
             if name == "":
                 import logging
+
                 logging.getLogger(__name__).warning(
                     f"[TAG MAINTENANCE] Tag with empty name encountered: {tag_wrapper!r}"
                 )
