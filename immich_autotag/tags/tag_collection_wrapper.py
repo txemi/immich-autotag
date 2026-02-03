@@ -54,9 +54,7 @@ class TagCollectionWrapper:
         client = client_wrapper.get_client()
         tags_dto = proxy_get_all_tags(client=client)
         if tags_dto is None:
-            raise RuntimeError(
-                "API returned None when fetching all tags"
-            )
+            raise RuntimeError("API returned None when fetching all tags")
         self._index.clear()
         for tag_dto in tags_dto:
             tag = TagWrapper(tag_dto)
