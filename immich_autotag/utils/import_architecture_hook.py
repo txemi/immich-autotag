@@ -13,8 +13,10 @@ from typing import Optional
 from typeguard import typechecked
 
 from immich_autotag.api import immich_proxy
+from immich_autotag.api import logging_proxy
 
 IMMICH_API_MODULE: str = immich_proxy.__name__
+LOGGING_PROXY_MODULE: str = logging_proxy.__name__
 
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
@@ -109,10 +111,10 @@ def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
     # Block any import from immich_autotag.api.immich_proxy (including submodules)
     if fullname.startswith("immich_autotag.api.immich_proxy"):
         # Allow only if caller is inside logging_proxy
-        if "immich_autotag/api/logging_proxy" not in str(caller):
+        if LOGGING_PROXY_MODULE.replace(".", "/") not in str(caller):
             raise ImportError(
-                f"Direct import of '{fullname}' is forbidden outside logging_proxy. "
-                "Only 'immich_autotag.api.logging_proxy' may import from 'immich_autotag.api.immich_proxy'."
+                f"Direct import of '{fullname}' is forbidden outside {LOGGING_PROXY_MODULE}. "
+                f"Only '{LOGGING_PROXY_MODULE}' may import from 'immich_autotag.api.immich_proxy'."
             )
 
         # ...other checks (example: forbidden modules)...
