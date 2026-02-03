@@ -5,9 +5,10 @@ You can extend the logic to log, block, or warn about imports that violate your 
 """
 
 import importlib.abc
-import importlib.util
 import sys
 from pathlib import Path
+from types import FrameType
+from typing import Optional
 
 from typeguard import typechecked
 
@@ -20,10 +21,6 @@ IMMICH_API_MODULE: str = "immich_autotag.api.immich_proxy"
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
 
-
-from typing import Optional
-from types import FrameType
-
 @typechecked
 def _get_importing_module_relative_path() -> Optional[Path]:
     """
@@ -31,10 +28,11 @@ def _get_importing_module_relative_path() -> Optional[Path]:
     or None if the caller is not inside the project.
     """
     import inspect
+
     found_frozen: bool = False
-    stack: list[FrameType] = inspect.stack()
+    stack: list[FrameType] = inspect.stack()  # type: ignore[assignment]
     for frame in stack:
-        filename: str = frame.filename
+        filename: str = frame.filename  # type: ignore[attr-defined]
         if "frozen" in filename:
             found_frozen = True
             continue
@@ -55,9 +53,11 @@ def _is_caller_outside_project(caller: Path) -> bool:
         return True
     return False
 
+
 @typechecked
 def _is_caller_proxy_module_import(caller: Path) -> bool:
     return caller is not None and "immich_autotag/api/immich_proxy" in str(caller)
+
 
 @typechecked
 def _is_immich_api_module(fullname: str) -> bool:
@@ -67,7 +67,7 @@ def _is_immich_api_module(fullname: str) -> bool:
 class ArchitectureImportChecker(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
         # If the import is outside our project, skip restrictions
-        caller=_get_importing_module_relative_path()
+        caller = _get_importing_module_relative_path()
         if caller is None:
             return None
         if _is_caller_outside_project(caller):
