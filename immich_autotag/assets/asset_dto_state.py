@@ -14,7 +14,7 @@ from datetime import datetime
 import attrs
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
-from immich_autotag.api.immich_proxy.types import Unset
+from immich_autotag.api.immich_proxy.types import UNSET, Unset
 
 
 class AssetDtoType(enum.Enum):
@@ -348,8 +348,6 @@ class AssetDtoState:
             True if duplicate_id is loaded (accessible, even if None/empty)
             False if duplicate_id is Unset (not yet loaded)
         """
-        from immich_client.types import UNSET
-
         dto = self._require_dto()
         val = dto.duplicate_id
 
