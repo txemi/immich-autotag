@@ -31,7 +31,8 @@ def _get_importing_module_relative_path() -> Optional[Path]:
     found_frozen: bool = False
     stack = inspect.stack()
     for frame in stack:
-        filename = getattr(frame, "filename", None)
+        # Direct attribute access: inspect.FrameInfo always has 'filename'
+        filename = frame.filename
         if not isinstance(filename, str):
             continue
         if "frozen" in filename:
