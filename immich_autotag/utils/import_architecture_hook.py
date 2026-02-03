@@ -5,6 +5,7 @@ You can extend the logic to log, block, or warn about imports that violate your 
 """
 
 import importlib.machinery
+import inspect
 import sys
 from pathlib import Path
 from typing import Optional
@@ -26,7 +27,6 @@ def _get_importing_module_relative_path() -> Optional[Path]:
     Returns the relative path (to PROJECT_ROOT) of the first non-frozen caller in the stack,
     or None if the caller is not inside the project.
     """
-    import inspect
 
     found_frozen: bool = False
     stack = inspect.stack()
