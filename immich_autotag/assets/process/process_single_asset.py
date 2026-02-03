@@ -3,7 +3,7 @@ from __future__ import annotations
 from typeguard import typechecked
 
 from immich_autotag.assets.albums.analyze_and_assign_album import (
-    AlbumAssignmentResult,
+    AlbumAssignmentReport,
     analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -74,7 +74,7 @@ def _analyze_duplicate_tags(
 def _analyze_and_assign_album(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
-) -> AlbumAssignmentResult:
+) -> AlbumAssignmentReport:
     """Analyze and assign the asset to an album if needed. Returns the result of analyze_and_assign_album."""
     log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
     return analyze_and_assign_album(asset_wrapper, tag_mod_report)
@@ -142,14 +142,13 @@ def process_single_asset(
         f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}",
         level=LogLevel.ASSET_SUMMARY,
     )
-    log(
-        f"[RESERVED] album_assignment_result: {album_assignment_result}",
-        level=LogLevel.ASSET_SUMMARY,
-    )
+    if album_assignment_result is not None:
+        log(
+            f"[RESERVED] album_assignment_result: {album_assignment_result.format()}",
+            level=LogLevel.ASSET_SUMMARY,
+        )
 
 
-
-    log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 
     log(
         f"[RESERVED] validate_result: {validation_result}", level=LogLevel.ASSET_SUMMARY
@@ -177,6 +176,8 @@ def process_single_asset(
         album_assignment_result=album_assignment_result,
         validate_result=validation_result,
     )
+
+    log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())

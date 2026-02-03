@@ -3,6 +3,8 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
+import attrs
+
 from typeguard import typechecked
 
 from immich_autotag.assets.albums._process_album_detection import (
@@ -10,6 +12,7 @@ from immich_autotag.assets.albums._process_album_detection import (
 )
 from immich_autotag.assets.albums.album_decision import AlbumDecision
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.classification.classification_rule_set import (
     ClassificationRuleSet,
 )
@@ -30,6 +33,41 @@ class AlbumAssignmentResult(Enum):
     CREATED_TEMPORARY = auto()
     UNCLASSIFIED_NO_ALBUM = auto()
     ERROR = auto()
+
+
+@attrs.define(auto_attribs=True, slots=True)
+class AlbumAssignmentReport(ProcessStepResult):
+    _asset_wrapper: AssetResponseWrapper = attrs.field(repr=False)
+    _result: AlbumAssignmentResult = attrs.field(init=False, default=None, repr=True)
+
+    def has_changes(self) -> bool:
+        return self._result in (
+            AlbumAssignmentResult.CLASSIFIED,
+            AlbumAssignmentResult.ASSIGNED_UNIQUE,
+            AlbumAssignmentResult.CREATED_TEMPORARY,
+        )
+
+    def has_errors(self) -> bool:
+        return self._result in (
+            AlbumAssignmentResult.CONFLICT,
+            AlbumAssignmentResult.ERROR,
+        )
+
+    def format(self) -> str:
+        return f"ALBUM_ASSIGNMENT ({self._result.name})"
+
+    @classmethod
+    def analyze(
+        cls,
+        asset_wrapper: AssetResponseWrapper,
+        tag_mod_report: ModificationReport,
+    ) -> "AlbumAssignmentReport":
+        report = cls(asset_wrapper=asset_wrapper)
+        report._perform_analysis(tag_mod_report)
+        return report
+
+    def _perform_analysis(self, tag_mod_report: ModificationReport) -> None:
+        self._result = _analyze_and_assign_album(self._asset_wrapper, tag_mod_report)
 
 
 @typechecked
@@ -184,7 +222,7 @@ def _handle_unclassified_asset(
 
 
 @typechecked
-def analyze_and_assign_album(
+def _analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
 ) -> AlbumAssignmentResult:
@@ -205,16 +243,23 @@ def analyze_and_assign_album(
     if status == ClassificationStatus.CLASSIFIED:
         return _handle_classified_asset(asset_wrapper, tag_mod_report)
 
-    elif status == ClassificationStatus.CONFLICT:
+    if status == ClassificationStatus.CONFLICT:
         return _handle_classification_conflict(
             asset_wrapper, tag_mod_report, match_results
         )
 
-    elif status == ClassificationStatus.UNCLASSIFIED:
+    if status == ClassificationStatus.UNCLASSIFIED:
         return _handle_unclassified_asset(asset_wrapper, tag_mod_report, album_decision)
 
-    else:
-        # Exhaustive pattern match - should never reach here
-        raise NotImplementedError(
-            f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
-        )
+    # Exhaustive pattern match - should never reach here
+    raise NotImplementedError(
+        f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
+    )
+
+
+@typechecked
+def analyze_and_assign_album(
+    asset_wrapper: "AssetResponseWrapper",
+    tag_mod_report: "ModificationReport",
+) -> AlbumAssignmentReport:
+    return AlbumAssignmentReport.analyze(asset_wrapper, tag_mod_report)

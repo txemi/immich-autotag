@@ -8,7 +8,7 @@ if TYPE_CHECKING:
         ClassificationValidationResult,
     )
 
-from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentResult
+from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentReport
 from immich_autotag.assets.consistency_checks._album_date_consistency import (
     AlbumDateConsistencyResult,
 )
@@ -45,13 +45,14 @@ class AssetProcessReport(ProcessStepResult):
 
     Implements ProcessStepResult protocol with has_changes(), has_errors(), and format() methods.
 
-    Three of the result types implement the ProcessStepResult protocol:
+    Four of the result types implement the ProcessStepResult protocol:
     - ModificationEntriesList (tag_conversion_result)
     - AssetDateCorrector (date_correction_result)
+    - AlbumAssignmentReport (album_assignment_result)
     - ClassificationValidationResult (validate_result)
 
-    Other result types (DuplicateTagAnalysisResult, AlbumAssignmentResult) are enum-based
-    and are included in reports for completeness but without the protocol interface.
+    Other result types (DuplicateTagAnalysisResult) are enum-based and are included in
+    reports for completeness but without the protocol interface.
     """
 
     asset_wrapper: "AssetResponseWrapper"
@@ -59,7 +60,7 @@ class AssetProcessReport(ProcessStepResult):
     date_correction_result: Optional[AssetDateCorrector] = None
     duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisReport] = None
     album_date_consistency_result: Optional[AlbumDateConsistencyResult] = None
-    album_assignment_result: Optional[AlbumAssignmentResult] = None
+    album_assignment_result: Optional[AlbumAssignmentReport] = None
     validate_result: Optional["ClassificationValidationResult"] = None
     # Optionally, keep the old steps list for extensibility/debug
     steps: List[AssetProcessStepResult] = attr.ib(factory=lambda: [])
@@ -91,7 +92,10 @@ class AssetProcessReport(ProcessStepResult):
         ):
             return True
 
-        if self.album_assignment_result is not None:
+        if (
+            self.album_assignment_result is not None
+            and self.album_assignment_result.has_changes()
+        ):
             return True
 
         if self.validate_result is not None:
@@ -122,7 +126,7 @@ class AssetProcessReport(ProcessStepResult):
         if self.date_correction_result is not None:
             changes.append(self.date_correction_result.format())
 
-        # Enum results (DuplicateTagAnalysisResult, AlbumAssignmentResult)
+        # Enum results (DuplicateTagAnalysisResult)
         # are included directly in summary but not with format() method
         if self.duplicate_tag_analysis_result is not None:
             changes.append(self.duplicate_tag_analysis_result.format())
@@ -131,7 +135,7 @@ class AssetProcessReport(ProcessStepResult):
             changes.append(self.album_date_consistency_result.format())
 
         if self.album_assignment_result is not None:
-            changes.append(str(self.album_assignment_result))
+            changes.append(self.album_assignment_result.format())
 
         if self.validate_result is not None:
             changes.append(self.validate_result.format())
@@ -182,7 +186,9 @@ class AssetProcessReport(ProcessStepResult):
                 f"{self.album_date_consistency_result.format()}"
             )
         if self.album_assignment_result is not None:
-            lines.append(f"  Album assignment: {self.album_assignment_result}")
+            lines.append(
+                f"  Album assignment: {self.album_assignment_result.format()}"
+            )
         if self.validate_result is not None:
             lines.append(f"  Validation: {self.validate_result.format()}")
 
