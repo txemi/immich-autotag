@@ -8,9 +8,11 @@ if TYPE_CHECKING:
     from immich_autotag.classification.match_result_list import MatchResultList
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
-class ClassificationValidationResult:
+class ClassificationValidationResult(ProcessStepResult):
     """
     Encapsulates the complete result of classification validation.
 
@@ -36,6 +38,14 @@ class ClassificationValidationResult:
     def modifications(self) -> "ModificationEntriesList":
         """Get the modifications (what tags were added/removed)."""
         return self._modifications
+
+    def has_changes(self) -> bool:
+        """Returns True if any modifications were applied during validation."""
+        return len(self._modifications) > 0
+
+    def has_errors(self) -> bool:
+        """Returns True if validation resulted in errors or warnings."""
+        return self._modifications.has_errors()
 
     def format(self) -> str:
         """

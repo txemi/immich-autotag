@@ -42,8 +42,10 @@ def _handle_duplicate_conflicts(
     conflict = album_decision.has_conflict()
     from immich_autotag.types.uuid_wrappers import DuplicateUUID
 
-    duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
-    # duplicate_id is always a UUID; no need to check for None/Unset
+    duplicate_id_or_none = asset_wrapper.get_duplicate_id_as_uuid()
+    # duplicate_id is always a UUID in this context; no need to check for None/Unset
+    assert duplicate_id_or_none is not None
+    duplicate_id: DuplicateUUID = duplicate_id_or_none
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()
     )

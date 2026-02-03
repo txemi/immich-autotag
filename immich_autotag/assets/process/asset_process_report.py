@@ -40,7 +40,15 @@ class AssetProcessReport(ProcessStepResult):
     Can generate a summary report and answer if any changes were made.
     Holds explicit attributes for each processing phase.
 
-    Implements ProcessStepResult protocol with has_changes() and has_errors() methods.
+    Implements ProcessStepResult protocol with has_changes(), has_errors(), and format() methods.
+
+    Three of the result types implement the ProcessStepResult protocol:
+    - ModificationEntriesList (tag_conversion_result)
+    - AssetDateCorrector (date_correction_result)
+    - ClassificationValidationResult (validate_result)
+
+    Other result types (DuplicateTagAnalysisResult, AlbumAssignmentResult) are enum-based
+    and are included in reports for completeness but without the protocol interface.
     """
 
     asset_wrapper: "AssetResponseWrapper"
@@ -87,35 +95,50 @@ class AssetProcessReport(ProcessStepResult):
             return self.tag_conversion_result.has_errors()
         return False
 
-    def any_changes(self) -> bool:
-        """Backward-compatible alias for has_changes()."""
-        return self.has_changes()
-
     def _get_changes_details(self) -> str:
-        """Generate a concise string describing what changes were made."""
+        """
+        Generate a concise string describing what changes were made.
+
+        Treats all result objects uniformly through the ProcessStepResult protocol,
+        calling format() on each to obtain symmetric string representation.
+        """
         changes: list[str] = []
 
-        # Check tag conversions
+        # Process results that implement ProcessStepResult protocol
+        # These have has_changes(), has_errors(), and format() methods
         if self.tag_conversion_result is not None:
             changes.append(self.tag_conversion_result.format())
 
-        # Check date corrections
         if self.date_correction_result is not None:
             changes.append(self.date_correction_result.format())
 
-        # Check album assignment
-        if self.album_assignment_result is not None:
-            result_str = str(self.album_assignment_result).lower()
-            if "assigned" in result_str or "classified" in result_str:
-                changes.append("Album assigned")
+        # Enum results (DuplicateTagAnalysisResult, AlbumAssignmentResult)
+        # are included directly in summary but not with format() method
+        if self.duplicate_tag_analysis_result is not None:
+            changes.append(str(self.duplicate_tag_analysis_result))
 
-        # Check validation result for classification status
+        if self.album_assignment_result is not None:
+            changes.append(str(self.album_assignment_result))
+
         if self.validate_result is not None:
             changes.append(self.validate_result.format())
 
         if changes:
             return " | ".join(changes)
         return ""
+
+    def format(self) -> str:
+        """Return a formatted string representation of the report."""
+        changes_indicator = "✓ CHANGES" if self.has_changes() else "○ NO CHANGES"
+        changes_details = self._get_changes_details()
+        result = f"[ASSET REPORT] {changes_indicator}"
+        if changes_details:
+            result += f" | {changes_details}"
+        return result
+
+    def any_changes(self) -> bool:
+        """Backward-compatible alias for has_changes()."""
+        return self.has_changes()
 
     def summary(self) -> str:
         lines: List[str] = []

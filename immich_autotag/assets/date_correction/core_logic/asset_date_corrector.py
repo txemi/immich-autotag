@@ -6,6 +6,7 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
@@ -19,7 +20,7 @@ from .step_result import DateCorrectionStepResult
 
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
-class AssetDateCorrector:
+class AssetDateCorrector(ProcessStepResult):
     """
     Handles date correction logic for assets.
 
@@ -188,6 +189,18 @@ class AssetDateCorrector:
     def get_reasoning(self) -> str:
         """Get a text description of why the correction resulted in the current state."""
         return self._reasoning
+
+    @typechecked
+    def has_changes(self) -> bool:
+        """Returns True if the date was corrected (FIXED result)."""
+        return self._step_result == DateCorrectionStepResult.FIXED
+
+    @typechecked
+    def has_errors(self) -> bool:
+        """Returns True if an error occurred during date correction."""
+        # Currently, date correction doesn't produce errors that are returned.
+        # Errors would be raised as exceptions. Return False for consistency.
+        return False
 
     @typechecked
     def format(self) -> str:

@@ -13,7 +13,9 @@ def get_duplicate_wrappers(
     context = asset_wrapper.get_context()
     from immich_autotag.types.uuid_wrappers import DuplicateUUID
 
-    duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
+    duplicate_id_or_none = asset_wrapper.get_duplicate_id_as_uuid()
+    assert duplicate_id_or_none is not None
+    duplicate_id: DuplicateUUID = duplicate_id_or_none
 
     return context.get_duplicates_collection().get_duplicate_asset_wrappers(
         duplicate_id, context.get_asset_manager(), context

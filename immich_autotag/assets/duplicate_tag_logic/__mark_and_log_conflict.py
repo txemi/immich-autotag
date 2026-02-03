@@ -37,7 +37,9 @@ def mark_and_log_conflict(asset_wrapper: "AssetResponseWrapper") -> None:
 
     from immich_autotag.types.uuid_wrappers import DuplicateUUID
 
-    duplicate_id: DuplicateUUID = asset_wrapper.get_duplicate_id_as_uuid()
+    duplicate_id_or_none = asset_wrapper.get_duplicate_id_as_uuid()
+    assert duplicate_id_or_none is not None
+    duplicate_id: DuplicateUUID = duplicate_id_or_none
     group_tag = (
         f"{duplicate_processing.autotag_classification_conflict_prefix}{duplicate_id}"
     )

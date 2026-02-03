@@ -13,10 +13,11 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.report.modification_kind import ModificationKind
 
+from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
-class ModificationEntriesList:
+class ModificationEntriesList(ProcessStepResult):
     """
     Encapsulates a list of ModificationEntry objects, providing convenient
     methods for querying, filtering, and aggregating modification data.
