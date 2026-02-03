@@ -36,7 +36,7 @@ def parse_args():
         only_check_cls = CHECKS.get(args.only_check)
         if only_check_cls is None:
             valid_checks = ', '.join(CHECKS.keys())
-            raise ValueError(f"Unknown check: {args.only_check}. Opciones válidas: {valid_checks}")
+            raise ValueError(f"Unknown check: {args.only_check}. Valid options: {valid_checks}")
     return QualityGateArgs(
         level=QualityGateLevel(args.level),
         mode=QualityGateMode(args.mode),
