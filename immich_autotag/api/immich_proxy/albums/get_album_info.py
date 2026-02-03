@@ -87,43 +87,5 @@ def proxy_get_album_info(
 
 
 
-def proxy_add_assets_to_album(
-    *, album_id: AlbumUUID, client: AuthenticatedClient, asset_ids: list[AssetUUID]
-) -> list[BulkIdResponseDto]:
-    # Convert AssetUUIDs to UUIDs for API compatibility
-    uuid_ids = [a.to_uuid() for a in asset_ids]
-    result = add_assets_to_album.sync(
-        id=album_id.to_uuid(), client=client, body=BulkIdsDto(ids=uuid_ids)
-    )
-    if result is None:
-        raise RuntimeError(
-            f"Failed to add assets to album {album_id}: API returned None"
-        )
-    return result
 
 
-def proxy_delete_album(
-    album_id: "AlbumUUID", client: "AuthenticatedClient"
-) -> Response[Any]:
-    """
-    Deletes an album by UUID using the ImmichClient API.
-    Raises an exception if the operation fails.
-
-        NOTE: This function intentionally returns the Response[Any] object from the Immich client.
-        Do NOT change the return type to None. The contract is:
-            - If the operation fails, an exception is raised.
-            - If the operation succeeds, the response object is returned for advanced inspection.
-        This is required by design and for full control of the flow in higher layers.
-        If any linting, formatting, or refactoring tool suggests removing the return,
-        IGNORE IT and keep this contract. Documented by explicit user request.
-    """
-    from immich_client.api.albums.delete_album import (
-        sync_detailed as delete_album_sync_detailed,
-    )
-
-    response = delete_album_sync_detailed(id=album_id.to_uuid(), client=client)
-    if response.status_code != 204:
-        raise RuntimeError(
-            f"Failed to delete album {album_id}: status {response.status_code}, content: {response.content!r}"
-        )
-    return response

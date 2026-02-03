@@ -10,8 +10,8 @@ This table maps the current files and functions in `immich_autotag/api/immich_pr
 | albums.py                | proxy_add_users_to_album     | albums/add_users_to_album.py               | ✅   |
 | albums.py                | proxy_get_all_albums         | albums/get_all_albums.py                   | ✅   |
 | albums.py                | proxy_get_album_page         | albums/get_album_page.py                   | ✅   |
-| albums.py                | proxy_add_assets_to_album    | albums/add_assets_to_album.py              |      |
-| albums.py                | proxy_delete_album           | albums/delete_album.py                     |      |
+| albums.py                | proxy_add_assets_to_album    | albums/add_assets_to_album.py              | ✅   |
+| albums.py                | proxy_delete_album           | albums/delete_album.py                     | ✅   |
 | assets.py                | (all functions)              | assets/get_asset_info.py                   |      |
 | client_types.py          | (all functions)              | types/client_types.py                      |      |
 | duplicates.py            | (all functions)              | duplicates/get_asset_duplicates.py         |      |
