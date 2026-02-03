@@ -5,6 +5,7 @@ You can extend the logic to log, block, or warn about imports that violate your 
 """
 
 import importlib.machinery
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -91,9 +92,6 @@ class ArchitectureImportChecker:
                 )
         # ...other checks (example: forbidden modules)...
         return None  # Allow normal import to continue
-
-
-import sys
 
 
 def install_architecture_import_hook():
