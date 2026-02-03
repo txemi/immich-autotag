@@ -17,11 +17,11 @@ class CallerInfo:
     _path: Path
 
     def is_outside_project(self) -> bool:
-        # Usar el nombre del paquete raíz de forma robusta
+        # Use the root package name robustly
         return not str(self._path).startswith(Path(__package__.split(".")[0]))
 
     def is_proxy_module_import(self) -> bool:
-        # Usar el path real del módulo importado, no string hardcodeada
+        # Use the real path of the imported module, not a hardcoded string
         proxy_path = Path(immich_proxy.__file__).resolve().relative_to(PROJECT_ROOT)
         return str(proxy_path.parent) in str(self._path)
 
