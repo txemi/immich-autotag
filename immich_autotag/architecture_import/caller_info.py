@@ -6,7 +6,8 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.api import immich_proxy
-from .shared_symbols import LOGGING_PROXY_MODULE_NAME, IMMICH_API_MODULE
+
+from .shared_symbols import LOGGING_PROXY_MODULE_NAME
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 

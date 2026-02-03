@@ -1,8 +1,9 @@
 import attrs
+
 from .shared_symbols import (
-    LOGGING_PROXY_MODULE_NAME,
     IMMICH_CLIENT_PREFIX,
     IMMICH_PROXY_PREFIX,
+    LOGGING_PROXY_MODULE_NAME,
 )
 
 

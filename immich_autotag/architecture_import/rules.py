@@ -1,4 +1,3 @@
-
 from .caller_info import CallerInfo
 from .fullname_info import FullnameInfo
 from .shared_symbols import (
