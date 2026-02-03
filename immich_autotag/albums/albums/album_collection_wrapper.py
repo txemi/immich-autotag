@@ -991,7 +991,7 @@ class AlbumCollectionWrapper:
         - If clear_first is False, merges new albums with existing ones (without deleting current ones).
         - Handles duplicates and logging same as from_client.
         """
-        from immich_autotag.api.immich_proxy.albums.get_album_info import proxy_get_all_albums
+        from immich_autotag.api.immich_proxy.albums.get_all_albums import proxy_get_all_albums
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
         from immich_autotag.report.modification_report import ModificationReport
