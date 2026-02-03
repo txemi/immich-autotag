@@ -33,6 +33,7 @@ BATTERY_ORDER = [
 
 
 # CHECKS map for lookup by name
-CHECKS = {cls.name: cls for cls in BATTERY_ORDER}
+from typing import Dict, Type
+CHECKS: Dict[str, type] = {cls.name: cls for cls in BATTERY_ORDER}
 
 # No need for validation: BATTERY_ORDER is the single source of truth for order and membership

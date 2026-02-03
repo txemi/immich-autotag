@@ -15,7 +15,7 @@ def detect_venv_python():
 
 def parse_args():
     from python_qualitygate.batteries.registry import CHECKS
-    checks_list = ', '.join(CHECKS.keys())
+    checks_list = ', '.join(list(CHECKS.keys()))
     parser = argparse.ArgumentParser(
         description=f"Quality Gate Python OO Edition\n\nOpciones para --only-check: {checks_list}"
     )
@@ -35,7 +35,7 @@ def parse_args():
     if args.only_check:
         only_check_cls = CHECKS.get(args.only_check)
         if only_check_cls is None:
-            valid_checks = ', '.join(CHECKS.keys())
+            valid_checks = ', '.join(list(CHECKS.keys()))
             raise ValueError(f"Unknown check: {args.only_check}. Valid options: {valid_checks}")
     return QualityGateArgs(
         level=QualityGateLevel(args.level),
