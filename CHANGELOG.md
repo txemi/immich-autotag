@@ -540,6 +540,13 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 ### Added
 - Refactored logic for automatic album creation, improving detection and assignment.
 
+# [0.74.6] - 2026-02-03
+**Description:** Quality Gate milestone with architecture import hook enforcement enabled (internal).
+### Changed
+- Architecture import hook is now forcibly enabled for all runs in this branch.
+- All previous Quality Gate requirements still pass with architecture enforcement active.
+
+
 ## [Unreleased]
 **Description:** Improvements to the rule engine: more abstract, supports not only regex but also simplified common use cases.
 ### Added
