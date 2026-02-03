@@ -50,7 +50,8 @@ class UserResponseWrapper:
     def load_current_user(cls) -> Optional["UserResponseWrapper"]:
         """
         Loads and wraps the current user from the UserManager singleton.
-        The result is cached in a class variable (assumes immutable user in the session).
+        The result is cached in a class variable
+        (assumes immutable user in the session).
         """
         from immich_autotag.users.user_manager import UserManager
 

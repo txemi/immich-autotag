@@ -17,8 +17,11 @@
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     },
+    // === MAIN QUALITY GATE TASK ===
+    // ALWAYS use this task for code quality, lint, formatting, and gates.
+    // This is the ONLY source of truth for Python code validation in this project.
     {
-      "label": "Quality Gate: Python (CHECK)",
+      "label": "🚩 QUALITY GATE: PYTHON (CHECK) [RECOMMENDED] 🚩",
       "type": "shell",
       "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode CHECK --level STANDARD",
       "group": { "kind": "build" },
@@ -72,13 +75,6 @@
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
-    },
-    {
-      "label": "Quality Gate: Lint (Flake8)",
-      "type": "shell",
-      "command": "./.venv/bin/python -m flake8 --exclude=.venv,immich-client,scripts immich_autotag",
-      "presentation": { "reveal": "always", "panel": "shared" },
-      "problemMatcher": ["$python"]
     },
     {
       "label": "Quality Gate: MYPY Only (CHECK)",
