@@ -1,6 +1,5 @@
 """
 Central re-export module for all immich_client types and DTOs.
-
 This module serves as the single point of entry for all external immich_client imports,
 maintaining architectural isolation according to the import-linter contract:
 "Only immich_proxy can access immich_client"

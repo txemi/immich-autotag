@@ -22,12 +22,12 @@ Esta tabla mapea los archivos y funciones actuales en `immich_autotag/api/immich
 | search.py                | proxy_search_assets          | search/search.py                           | ✅    |
 | server.py                | proxy_get_server_statistics  | server/get_server_statistics.py            | ✅    |
 | tags.py                  | proxy_tag_assets             | tags/tag_assets.py                         | ✅    |
-| types.py                 | (all funciones)              | types/__init__.py                          |       |
-| users.py                 | (all funciones)              | users/get_user_info.py                     |       |
+| types.py                 | (all funciones)              | types/__init__.py                          | ✅    |
+| users.py                 | (all funciones)              | users/get_user_info.py                     | ✅    |
 
 ## Notas
 - Los nombres de destino buscan reflejar la estructura de entrypoints de la API.
-- Las funciones de albums.py, assets.py, duplicates.py, permissions.py, proxy_create_album.py, search.py, server.py y tags.py ya movidas están marcadas como hechas.
+- Todas las funciones y archivos principales ya han sido movidos y marcados como hechos.
 - El resto se irá marcando conforme se muevan y se actualicen los imports.
 - Al finalizar, se hará una revisión completa.
 
