@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from immich_autotag.types.uuid_wrappers import TagUUID
 
-
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -76,7 +75,10 @@ class TagCollectionWrapper:
         Fetch a tag by id using the efficient proxy and add it to the index if found.
         Returns the found TagWrapper or None.
         """
-        from immich_autotag.api.logging_proxy.load_tag_by_id_wrapped import load_tag_by_id_wrapped
+        from immich_autotag.api.logging_proxy.load_tag_by_id_wrapped import (
+            load_tag_by_id_wrapped,
+        )
+
         tag_obj = load_tag_by_id_wrapped(id_)
         if tag_obj is not None:
             self._index.add(tag_obj)
@@ -202,12 +204,16 @@ class TagCollectionWrapper:
                 conf.duplicate_processing.autotag_album_conflict,
                 conf.duplicate_processing.autotag_classification_conflict_prefix,
             ]
-        prefixes = [p for p in prefixes if p]
-        from immich_autotag.api.logging_proxy.load_all_tags_wrapped import load_all_tags_wrapped
+        prefixes = [p for p in prefixes if p is not None and p != ""]
+        from immich_autotag.api.logging_proxy.load_all_tags_wrapped import (
+            load_all_tags_wrapped,
+        )
 
         tags_wrapped = load_all_tags_wrapped()
         count = 0
-        from immich_autotag.api.logging_proxy.logging_delete_tag import logging_delete_tag
+        from immich_autotag.api.logging_proxy.logging_delete_tag import (
+            logging_delete_tag,
+        )
 
         for tag_wrapper in tags_wrapped:
             if any(tag_wrapper.name().startswith(prefix) for prefix in prefixes):

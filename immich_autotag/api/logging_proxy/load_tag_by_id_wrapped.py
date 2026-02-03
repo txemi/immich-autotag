@@ -1,10 +1,12 @@
 """
 High-level loader for a single tag by id (no reporting, just fetch and wrap).
 """
+
+from immich_autotag.api.immich_proxy.tags import proxy_get_tag_by_id
 from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
-from immich_autotag.api.immich_proxy.tags import proxy_get_tag_by_id
 from immich_autotag.types.uuid_wrappers import TagUUID
+
 
 def load_tag_by_id_wrapped(id_: TagUUID) -> TagWrapper | None:
     """
