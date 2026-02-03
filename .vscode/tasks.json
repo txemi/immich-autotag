@@ -89,7 +89,7 @@
     {
       "label": "Quality Gate: MYPY Only (CHECK)",
       "type": "shell",
-      "command": "bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=CHECK --only-check=check_mypy",
+      "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode CHECK --level STANDARD --only-check=check_mypy",
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
