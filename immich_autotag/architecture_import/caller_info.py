@@ -21,8 +21,7 @@ class CallerInfo:
         """
         Returns the string path of the root package directory (e.g., 'immich_autotag')
         """
-        root_name = __package__.split(".")[0]
-        return str(Path(root_name))
+        return str(Path(__file__).resolve().parent.name)
 
     def is_outside_project(self) -> bool:
         # Use the root package name robustly
@@ -37,7 +36,9 @@ class CallerInfo:
         return LOGGING_PROXY_MODULE_NAME.replace(".", "/") not in str(self._path)
 
     def is_client_types_entry(self) -> bool:
-        return str(self._path).endswith("api/immich_proxy/client_types.py")
+        import immich_autotag.api.immich_proxy.client_types as client_types_mod
+        client_types_path = Path(client_types_mod.__file__).resolve()
+        return self._path.resolve() == client_types_path
 
     @staticmethod
     @typechecked
