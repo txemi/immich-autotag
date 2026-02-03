@@ -2,17 +2,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+
 # Typeguard import hook must be installed before any other imports!
 from immich_autotag.utils.typeguard_hook import (  # isort: skip
     install_typeguard_import_hook,
 )
-
 install_typeguard_import_hook()  # noqa: E402
+
+# Architecture import hook (for import restrictions)
+from immich_autotag.utils.import_architecture_hook import setup_import_architecture_hook  # noqa: E402
+setup_import_architecture_hook()
 
 from immich_autotag.utils.setup_runtime import (  # noqa: E402
     setup_logging_and_exceptions,
 )
-
 setup_logging_and_exceptions()
 
 if TYPE_CHECKING:
