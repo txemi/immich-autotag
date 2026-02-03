@@ -19,6 +19,10 @@ class ProcessStepResult(Protocol):
         """Returns True if this step encountered errors during processing."""
         ...
 
+    def get_title(self) -> str:
+        """Returns the display title for this processing step."""
+        ...
+
     def format(self) -> str:
         """
         Format the result as a human-readable string for display.

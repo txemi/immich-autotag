@@ -203,6 +203,10 @@ class AssetDateCorrector(ProcessStepResult):
         return False
 
     @typechecked
+    def get_title(self) -> str:
+        return "Date correction"
+
+    @typechecked
     def format(self) -> str:
         """
         Format a concise summary of the date correction result.

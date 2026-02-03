@@ -171,24 +171,20 @@ class AssetProcessReport(ProcessStepResult):
         if changes_details:
             lines.append(f"  Details: {changes_details}")
 
-        # Add individual results for detailed info
-        if self.tag_conversion_result is not None:
-            lines.append(f"  Tag conversions: {self.tag_conversion_result.format()}")
-        if self.date_correction_result is not None:
-            lines.append(f"  Date correction: {self.date_correction_result.format()}")
-        if self.duplicate_tag_analysis_result is not None:
-            lines.append(
-                f"  Duplicate tag analysis: {self.duplicate_tag_analysis_result.format()}"
-            )
-        if self.album_date_consistency_result is not None:
-            lines.append(
-                "  Album date consistency: "
-                f"{self.album_date_consistency_result.format()}"
-            )
-        if self.album_assignment_result is not None:
-            lines.append(f"  Album assignment: {self.album_assignment_result.format()}")
-        if self.validate_result is not None:
-            lines.append(f"  Validation: {self.validate_result.format()}")
+        # Add individual results for detailed info (symmetry via get_title/format)
+        detail_results = [
+            self.tag_conversion_result,
+            self.date_correction_result,
+            self.duplicate_tag_analysis_result,
+            self.album_date_consistency_result,
+            self.album_assignment_result,
+            self.validate_result,
+        ]
+        for result in detail_results:
+            if result is None:
+                continue
+            title = result.get_title()
+            lines.append(f"  {title}: {result.format()}")
 
         return "\n".join(lines)
 

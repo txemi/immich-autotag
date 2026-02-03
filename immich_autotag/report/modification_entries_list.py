@@ -46,6 +46,9 @@ class ModificationEntriesList(ProcessStepResult):
             entry.kind.is_error() or entry.kind.is_warning() for entry in self._entries
         )
 
+    def get_title(self) -> str:
+        return "Rule engine modifications"
+
     def has_entries_of_kind(self, kind: "ModificationKind") -> bool:
         """Returns True if list contains entries of the specified kind."""
         return any(entry.kind == kind for entry in self._entries)

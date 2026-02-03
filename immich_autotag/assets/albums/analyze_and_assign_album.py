@@ -223,6 +223,28 @@ def _analyze_and_assign_album(
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumAssignmentReport(ProcessStepResult):
+    """
+    Manages album assignment logic for assets based on their classification status.
+    
+    This class orchestrates the complete album assignment workflow:
+    - For classified assets: removes them from temporary albums and updates classification tags
+    - For conflicted assets: removes from temporary albums and logs the conflict
+    - For unclassified assets: attempts album detection (from folders/duplicates) or creates temporary album
+    
+    The assignment logic handles:
+    1. Detection of album conflicts across duplicate assets
+    2. Classification status evaluation (CLASSIFIED, CONFLICT, UNCLASSIFIED)
+    3. Temporary album cleanup when asset gets classified
+    4. Album detection from folder structure or duplicate asset information
+    5. Creation of temporary albums when no classification or detection succeeds
+    
+    This is a critical step in the asset processing pipeline as it ensures:
+    - Classified assets are properly organized in their definitive albums
+    - Temporary albums serve as holding areas only for unclassified assets
+    - Conflicts are properly detected and reported
+    - Album information is propagated across duplicate assets
+    """
+    
     _asset_wrapper: AssetResponseWrapper = attrs.field(repr=False)
     _result: AlbumAssignmentResult = attrs.field(init=False, default=None, repr=True)
 
@@ -238,6 +260,9 @@ class AlbumAssignmentReport(ProcessStepResult):
             AlbumAssignmentResult.CONFLICT,
             AlbumAssignmentResult.ERROR,
         )
+
+    def get_title(self) -> str:
+        return "Album assignment logic"
 
     def format(self) -> str:
         return f"ALBUM_ASSIGNMENT ({self._result.name})"

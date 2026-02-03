@@ -47,6 +47,9 @@ class ClassificationValidationResult(ProcessStepResult):
         """Returns True if validation resulted in errors or warnings."""
         return self._modifications.has_errors()
 
+    def get_title(self) -> str:
+        return "Classification validation"
+
     def format(self) -> str:
         """
         Format the classification validation result with status information.
