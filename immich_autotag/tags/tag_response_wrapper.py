@@ -1,5 +1,4 @@
 import attrs
-from typeguard import typechecked
 
 from immich_autotag.api.logging_proxy.types import TagResponseDto
 from immich_autotag.types.uuid_wrappers import TagUUID
@@ -15,19 +14,17 @@ class TagWrapper:
         validator=attrs.validators.instance_of(TagResponseDto)
     )
 
-    @typechecked
     def get_id(self) -> TagUUID:
         id_val = self._tag.id
         return TagUUID.from_string(id_val)
 
-    @typechecked
     def get_name(self) -> str:
         return self._tag.name
 
-    def to_dto(self) -> TagResponseDto:
-        return self._tag
+    def name(self) -> str:
+        return self.get_name()
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, TagWrapper):
             return self.get_id() == other.get_id()
         return False
