@@ -6,7 +6,7 @@ from immich_client.api.tags import create_tag as _create_tag
 from immich_client.api.tags import delete_tag as _delete_tag
 from immich_client.api.tags import get_all_tags as _get_all_tags
 from immich_client.api.tags import get_tag_by_id as _get_tag_by_id
-from immich_client.api.tags import tag_assets, untag_assets
+from immich_client.api.tags import untag_assets
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.tag_create_dto import TagCreateDto
