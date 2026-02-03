@@ -5,7 +5,7 @@ This table maps the current files and functions in `immich_autotag/api/immich_pr
 | Original File/Folder      | Function Name                | Proposed Destination Name/Structure         | Done |
 |--------------------------|------------------------------|--------------------------------------------|------|
 | albums.py                | proxy_get_album_info         | albums/get_album_info.py                   |      |
-| albums.py                | proxy_remove_asset_from_album| albums/remove_asset_from_album.py          |      |
+| albums.py                | proxy_remove_asset_from_album| albums/remove_asset_from_album.py          | ✅   |
 | albums.py                | proxy_update_album_info      | albums/update_album_info.py                |      |
 | albums.py                | proxy_add_users_to_album     | albums/add_users_to_album.py               |      |
 | albums.py                | proxy_get_all_albums         | albums/get_all_albums.py                   |      |

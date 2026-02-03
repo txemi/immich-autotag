@@ -476,7 +476,7 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
     ) -> list[BulkIdResponseDto]:
         """Executes the API call to remove an asset from the album."""
-        from immich_autotag.api.immich_proxy.albums import proxy_remove_asset_from_album
+        from immich_autotag.api.immich_proxy.albums.remove_asset_from_album import proxy_remove_asset_from_album
 
         result = proxy_remove_asset_from_album(
             album_id=self.get_album_uuid(),
