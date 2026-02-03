@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterator, Optional
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.api.logging_proxy.assets import AssetResponseDto
+from immich_autotag.api.logging_proxy.assets.get_asset_info import AssetResponseDto
 from immich_autotag.api.logging_proxy.types import Client
 from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 from immich_autotag.assets.asset_dto_state import AssetDtoType

@@ -2,7 +2,7 @@
 Logging proxy for tag operations (re-exports from specialized modules).
 
 This module provides backward compatibility by re-exporting functions from:
-- add_tags: Functions for adding tags to assets
+- tags/tag_assets: Functions for adding tags to assets
 - create_tag: Functions for creating tags
 - remove_tags: Functions for removing tags from assets and managing tag lifecycle
 
@@ -12,13 +12,13 @@ New code should import directly from these modules instead.
 from __future__ import annotations
 
 # Re-export add tag functions
-from immich_autotag.api.logging_proxy.add_tags import (
+from immich_autotag.api.logging_proxy.tags.tag_assets import (
     logging_tag_assets,
     logging_tag_assets_safe,
 )
 
 # Re-export create tag functions
-from immich_autotag.api.logging_proxy.create_tag import logging_create_tag
+from immich_autotag.api.logging_proxy.tags.create_tag import logging_create_tag
 
 # Re-export remove tag functions
 from immich_autotag.api.logging_proxy.logging_delete_tag import logging_delete_tag

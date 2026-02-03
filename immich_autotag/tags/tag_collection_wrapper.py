@@ -106,7 +106,7 @@ class TagCollectionWrapper:
         if tag is not None:
             return tag
 
-        from immich_autotag.api.logging_proxy.create_tag.logging_create_tag import (
+        from immich_autotag.api.logging_proxy.tags.create_tag import (
             logging_create_tag,
         )
         from immich_autotag.api.logging_proxy.types import immich_errors

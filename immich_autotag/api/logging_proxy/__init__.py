@@ -7,7 +7,7 @@ statistics tracking, and modification reporting.
 Module Organization:
 ====================
 
-    add_tags.py: Functions for adding tags to assets
+   tags/tag_assets.py: Functions for adding tags to assets
     ├─ logging_tag_assets()
     └─ logging_tag_assets_safe() (with error handling)
 
@@ -16,7 +16,7 @@ Module Organization:
     └─ logging_delete_tag()
 
     tags.py: Re-exports (backward compatibility)
-    └─ Imports from add_tags.py and remove_tags.py
+   └─ Imports from tags/tag_assets.py and remove_tags.py
 
 Architecture:
 =============

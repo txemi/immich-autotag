@@ -7,7 +7,7 @@ error handling, and modification reporting.
 
 from __future__ import annotations
 
-from immich_autotag.api.logging_proxy.create_tag.logging_create_tag import (
+from immich_autotag.api.logging_proxy.tags.create_tag import (
     logging_create_tag,
 )
 
