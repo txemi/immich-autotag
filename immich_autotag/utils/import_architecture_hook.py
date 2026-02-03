@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+import attrs
 from typeguard import typechecked
 
 from immich_autotag.api import immich_proxy, logging_proxy
@@ -20,6 +21,44 @@ LOGGING_PROXY_MODULE: str = logging_proxy.__name__
 
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+
+
+@attrs.define(frozen=True)
+class CallerInfo:
+    path: Path
+
+    def is_outside_project(self) -> bool:
+        return not str(self.path).startswith("immich_autotag")
+
+    def is_proxy_module_import(self) -> bool:
+        return "immich_autotag/api/immich_proxy" in str(self.path)
+
+    def is_outside_logging_proxy(self) -> bool:
+        return LOGGING_PROXY_MODULE.replace(".", "/") not in str(self.path)
+
+    def is_client_types_entry(self) -> bool:
+        return str(self.path).endswith("api/immich_proxy/client_types.py")
+
+    def __str__(self):
+        return str(self.path)
+
+
+@attrs.define(frozen=True)
+class FullnameInfo:
+    fullname: str
+
+    def is_immich_api_module(self) -> bool:
+        return self.fullname.startswith("immich_client")
+
+    def is_import_from_immich_proxy(self) -> bool:
+        return self.fullname.startswith("immich_autotag.api.immich_proxy")
+
+    def is_import_from_logging_proxy(self) -> bool:
+        logging_proxy_mod = logging_proxy.__name__
+        return self.fullname.startswith(logging_proxy_mod)
+
+    def __str__(self):
+        return self.fullname
 
 
 @typechecked
@@ -45,87 +84,37 @@ def _get_importing_module_relative_path() -> Optional[Path]:
     return None
 
 
-@typechecked
-def _is_caller_outside_project(caller: Path) -> bool:
-    """
-    Returns True if the importing module is outside the immich_autotag project root.
-    """
-    return not str(caller).startswith("immich_autotag")
-
-
-@typechecked
-def _is_caller_proxy_module_import(caller: Optional[Path]) -> bool:
-    if caller is None:
-        return False
-    return "immich_autotag/api/immich_proxy" in str(caller)
-
-
-@typechecked
-def _is_immich_api_module(fullname: str) -> bool:
-    return fullname.startswith("immich_client")
-
-
-@typechecked
 def _enforce_immich_api_import_rule(fullname: str, caller: Path) -> None:
     """
     Enforce the rule: Only the proxy module may import the Immich API.
     Raise ImportError if violated.
     """
-    if _is_immich_api_module(fullname):
-        if not _is_caller_proxy_module_import(caller):
+    fni = FullnameInfo(fullname)
+    ci = CallerInfo(caller)
+    if fni.is_immich_api_module():
+        if not ci.is_proxy_module_import():
             raise ImportError(
                 f"Direct import of '{IMMICH_API_MODULE}' is forbidden. "
                 "Only the proxy module may import it."
             )
 
 
-@typechecked
-def _is_import_from_immich_proxy(fullname: str) -> bool:
-    """
-    Returns True if the import is from the immich_proxy module or its submodules.
-    """
-    return fullname.startswith("immich_autotag.api.immich_proxy")
-
-
-# Helper function to check if the caller is outside logging_proxy
-@typechecked
-def _is_caller_outside_logging_proxy(caller: Path) -> bool:
-    """
-    Returns True if the importing module is outside the logging_proxy module.
-    """
-    return LOGGING_PROXY_MODULE.replace(".", "/") not in str(caller)
-
-
-@typechecked
 def _enforce_immich_proxy_import_rule(fullname: str, caller: Path) -> None:
     """
     Enforce: Only logging_proxy can import any submodule from immich_proxy.
     Raise ImportError if violated.
     """
-    # Block any import from immich_autotag.api.immich_proxy (including submodules)
-    if _is_import_from_immich_proxy(fullname):
-        # Exception: allow in client_types.py as entry point to immich_client
-        if str(caller).endswith("api/immich_proxy/client_types.py"):
+    fni = FullnameInfo(fullname)
+    ci = CallerInfo(caller)
+    if fni.is_import_from_immich_proxy():
+        if ci.is_client_types_entry():
             return None
-        # Allow only if caller is inside logging_proxy
-
-        if _is_caller_outside_logging_proxy(caller):
+        if ci.is_outside_logging_proxy():
             raise ImportError(
                 f"Direct import of '{fullname}' is forbidden outside {LOGGING_PROXY_MODULE}. "
                 f"Only '{LOGGING_PROXY_MODULE}' may import from 'immich_autotag.api.immich_proxy'."
             )
-
-        # ...other checks (example: forbidden modules)...
-        return None  # Allow normal import to continue
-
-
-@typechecked
-def _is_import_from_logging_proxy(fullname: str) -> bool:
-    """
-    Returns True if the import is from the logging_proxy module or its submodules.
-    """
-    logging_proxy_mod = logging_proxy.__name__
-    return fullname.startswith(logging_proxy_mod)
+        return None
 
 
 def _enforce_logging_proxy_import_rule(fullname: str, caller: Path) -> None:
@@ -133,9 +122,11 @@ def _enforce_logging_proxy_import_rule(fullname: str, caller: Path) -> None:
     Enforce: No immich_proxy module can import from logging_proxy.
     Raise ImportError if the rule is violated.
     """
-    if not _is_caller_proxy_module_import(caller):
+    ci = CallerInfo(caller)
+    fni = FullnameInfo(fullname)
+    if not ci.is_proxy_module_import():
         return
-    if _is_import_from_logging_proxy(fullname):
+    if fni.is_import_from_logging_proxy():
         logging_proxy_mod = logging_proxy.__name__
         raise ImportError(
             f"Forbidden import: '{fullname}' cannot be imported from '{caller}'.\n"
@@ -160,12 +151,13 @@ class ArchitectureImportChecker:
         caller = _get_importing_module_relative_path()
         if caller is None:
             return None
-        if _is_caller_outside_project(caller):
+        ci = CallerInfo(caller)
+        if ci.is_outside_project():
             return None
 
-        _enforce_immich_api_import_rule(fullname, caller)
-        _enforce_immich_proxy_import_rule(fullname, caller)
-        _enforce_logging_proxy_import_rule(fullname, caller)
+        _enforce_immich_api_import_rule(fullname, ci.path)
+        _enforce_immich_proxy_import_rule(fullname, ci.path)
+        _enforce_logging_proxy_import_rule(fullname, ci.path)
         return None
 
 
