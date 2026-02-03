@@ -147,14 +147,7 @@ def process_single_asset(
         level=LogLevel.ASSET_SUMMARY,
     )
 
-    report = AssetProcessReport(
-        asset_wrapper=asset_wrapper,
-        tag_conversion_result=tag_conversion_result,
-        date_correction_result=date_correction_result,
-        duplicate_tag_analysis_result=duplicate_tag_analysis_result,
-        album_assignment_result=album_assignment_result,
-        validate_result=validation_result,
-    )
+
 
     log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 
@@ -165,9 +158,25 @@ def process_single_asset(
     if tag_mod_report is None:
         tag_mod_report = ModificationReport.get_instance()
 
-    if not is_crazy_debug_mode():
 
-        check_album_date_consistency(asset_wrapper, tag_mod_report)
+
+    album_date_consistency_result = check_album_date_consistency(
+        asset_wrapper, tag_mod_report
+    )
+    log(
+        f"[RESERVED] album_date_consistency_result: {album_date_consistency_result.format()}",
+        level=LogLevel.ASSET_SUMMARY,
+    )
+
+    report = AssetProcessReport(
+        asset_wrapper=asset_wrapper,
+        tag_conversion_result=tag_conversion_result,
+        date_correction_result=date_correction_result,
+        duplicate_tag_analysis_result=duplicate_tag_analysis_result,
+        album_date_consistency_result=album_date_consistency_result,
+        album_assignment_result=album_assignment_result,
+        validate_result=validation_result,
+    )
 
     tag_mod_report.flush()
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())

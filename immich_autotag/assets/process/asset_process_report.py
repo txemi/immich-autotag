@@ -9,6 +9,9 @@ if TYPE_CHECKING:
     )
 
 from immich_autotag.assets.albums.analyze_and_assign_album import AlbumAssignmentResult
+from immich_autotag.assets.consistency_checks._album_date_consistency import (
+    AlbumDateConsistencyResult,
+)
 from immich_autotag.assets.date_correction.core_logic import (
     AssetDateCorrector,
     DateCorrectionStepResult,
@@ -55,6 +58,7 @@ class AssetProcessReport(ProcessStepResult):
     tag_conversion_result: Optional[ModificationEntriesList] = None
     date_correction_result: Optional[AssetDateCorrector] = None
     duplicate_tag_analysis_result: Optional[DuplicateTagAnalysisReport] = None
+    album_date_consistency_result: Optional[AlbumDateConsistencyResult] = None
     album_assignment_result: Optional[AlbumAssignmentResult] = None
     validate_result: Optional["ClassificationValidationResult"] = None
     # Optionally, keep the old steps list for extensibility/debug
@@ -78,6 +82,12 @@ class AssetProcessReport(ProcessStepResult):
         if (
             self.duplicate_tag_analysis_result is not None
             and self.duplicate_tag_analysis_result.has_changes()
+        ):
+            return True
+
+        if (
+            self.album_date_consistency_result is not None
+            and self.album_date_consistency_result.has_changes()
         ):
             return True
 
@@ -116,6 +126,9 @@ class AssetProcessReport(ProcessStepResult):
         # are included directly in summary but not with format() method
         if self.duplicate_tag_analysis_result is not None:
             changes.append(self.duplicate_tag_analysis_result.format())
+
+        if self.album_date_consistency_result is not None:
+            changes.append(self.album_date_consistency_result.format())
 
         if self.album_assignment_result is not None:
             changes.append(str(self.album_assignment_result))
@@ -162,6 +175,11 @@ class AssetProcessReport(ProcessStepResult):
         if self.duplicate_tag_analysis_result is not None:
             lines.append(
                 f"  Duplicate tag analysis: {self.duplicate_tag_analysis_result.format()}"
+            )
+        if self.album_date_consistency_result is not None:
+            lines.append(
+                "  Album date consistency: "
+                f"{self.album_date_consistency_result.format()}"
             )
         if self.album_assignment_result is not None:
             lines.append(f"  Album assignment: {self.album_assignment_result}")
