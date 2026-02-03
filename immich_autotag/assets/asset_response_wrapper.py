@@ -104,7 +104,7 @@ class AssetResponseWrapper:
                 )
             )
         dto = UpdateAssetDto(date_time_original=new_date.isoformat())
-        response = logging_update_asset_date(
+        logging_update_asset_date(
             asset_wrapper=self,
             new_date=new_date,
             old_date=old_date,
