@@ -286,7 +286,7 @@ class AlbumResponseWrapper:
         self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
     ) -> list[BulkIdResponseDto]:
         """Executes the API call to add an asset to the album."""
-        from immich_autotag.api.immich_proxy.albums.get_album_info import proxy_add_assets_to_album
+        from immich_autotag.api.immich_proxy.albums.add_assets_to_album import proxy_add_assets_to_album
 
         result = proxy_add_assets_to_album(
             album_id=self.get_album_uuid(),

@@ -523,7 +523,7 @@ class AlbumCollectionWrapper:
         Returns True if deleted successfully or if it no longer exists.
         """
 
-        from immich_autotag.api.immich_proxy.albums.get_album_info import proxy_delete_album
+        from immich_autotag.api.immich_proxy.albums.delete_album import proxy_delete_album
         from immich_autotag.logging.levels import LogLevel
         from immich_autotag.logging.utils import log
 

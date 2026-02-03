@@ -214,9 +214,26 @@ class TagCollectionWrapper:
         tags_wrapped = load_all_tags_wrapped()
         count = 0
         from immich_autotag.api.logging_proxy.tags import logging_delete_tag
+        from typing import Sequence
+        def tag_name_has_conflict_prefix(tag_wrapper: "TagWrapper", prefixes: Sequence[str]) -> bool:
+            """
+            Returns True if the tag's name starts with any of the given prefixes.
+            Handles empty string defensively.
+            """
+            name: str = tag_wrapper.name()
+            if name == "":
+                import logging
+                logging.getLogger(__name__).warning(
+                    f"[TAG MAINTENANCE] Tag with empty name encountered: {tag_wrapper!r}"
+                )
+                return False
+            for prefix in prefixes:
+                if name.startswith(prefix):
+                    return True
+            return False
 
         for tag_wrapper in tags_wrapped:
-            if any(tag_wrapper.name().startswith(prefix) for prefix in prefixes):
+            if tag_name_has_conflict_prefix(tag_wrapper, prefixes):
                 logging_delete_tag(
                     client=client,
                     tag=tag_wrapper,
