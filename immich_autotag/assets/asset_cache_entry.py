@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import attrs
 
-from immich_autotag.api.immich_proxy.types import AssetResponseDto
+from immich_autotag.api.logging_proxy.types import AssetResponseDto
 from immich_autotag.assets.asset_dto_state import AssetDtoState, AssetDtoType
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
 from immich_autotag.context.immich_context import ImmichContext
@@ -102,7 +102,7 @@ class AssetCacheEntry:
         asset_id must be an AssetUUID (not a plain UUID).
         """
 
-        from immich_autotag.api.immich_proxy.assets import proxy_get_asset_info
+        from immich_autotag.api.logging_proxy.assets import proxy_get_asset_info
         from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
         cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ASSETS)
@@ -240,7 +240,7 @@ class AssetCacheEntry:
         """
         Creates an AssetCacheEntry by loading the asset from the API (always FULL).
         """
-        from immich_autotag.api.immich_proxy.assets import (
+        from immich_autotag.api.logging_proxy.assets import (
             proxy_get_asset_info,
         )
         from immich_autotag.assets.asset_dto_state import AssetDtoType

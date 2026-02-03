@@ -11,8 +11,8 @@ from typeguard import typechecked
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
-from immich_autotag.api.immich_proxy.assets import AssetResponseDto
-from immich_autotag.api.immich_proxy.types import Unset, UpdateAssetDto
+from immich_autotag.api.logging_proxy.assets import AssetResponseDto
+from immich_autotag.api.logging_proxy.types import Unset, UpdateAssetDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
@@ -93,7 +93,7 @@ class AssetResponseWrapper:
         Updates the main date (created_at) of the asset using the Immich API.
         If tag_mod_report is provided, logs the modification.
         """
-        from immich_autotag.api.immich_proxy.assets import proxy_update_asset
+        from immich_autotag.api.logging_proxy.assets import proxy_update_asset
 
         raise_deprecated_path("do we really need this?")
         old_date = self.get_created_at()

@@ -1,7 +1,7 @@
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.api.immich_proxy.types import TagResponseDto
+from immich_autotag.api.logging_proxy.types import TagResponseDto
 from immich_autotag.types.uuid_wrappers import TagUUID
 
 

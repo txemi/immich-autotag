@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 import attrs
 
-from immich_autotag.api.immich_proxy.types import AlbumUserRole
+from immich_autotag.api.logging_proxy.types import AlbumUserRole
 from immich_autotag.config.models import AlbumSelectionRule, UserGroup
 
 if TYPE_CHECKING:

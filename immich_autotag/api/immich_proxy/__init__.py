@@ -56,12 +56,12 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 
 ### ✅ CORRECT - Through proxy types
 ```python
-from immich_autotag.api.immich_proxy.types import AssetResponseDto
+from immich_autotag.api.logging_proxy.types import AssetResponseDto
 ```
 
 ### ✅ CORRECT - Through proxy functions
 ```python
-from immich_autotag.api.immich_proxy.assets import get_all_assets
+from immich_autotag.api.logging_proxy.assets import get_all_assets
 ```
 
 ## Future Improvements

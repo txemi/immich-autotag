@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-from immich_autotag.api.immich_proxy.types import AlbumUserRole
+from immich_autotag.api.logging_proxy.types import AlbumUserRole
 from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper

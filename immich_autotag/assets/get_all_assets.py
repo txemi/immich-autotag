@@ -8,7 +8,7 @@ from immich_autotag.api.immich_proxy.search import (
     SearchResponseDto,
     proxy_search_assets,
 )
-from immich_autotag.api.immich_proxy.types import (
+from immich_autotag.api.logging_proxy.types import (
     AssetResponseDto,
     MetadataSearchDto,
     Response,

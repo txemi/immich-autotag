@@ -27,6 +27,6 @@ architectural isolation. Only immich_proxy has direct access to immich_client.
 See docs/issues/0022-client-type-centralization/ for the history of this decision.
 """
 
-from immich_autotag.api.immich_proxy.types import AuthenticatedClient, ImmichClient
+from immich_autotag.api.logging_proxy.types import AuthenticatedClient, ImmichClient
 
 __all__ = ["ImmichClient", "AuthenticatedClient"]
