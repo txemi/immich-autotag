@@ -365,7 +365,12 @@ class PerformanceTracker:
     def print_progress(self, *, count: int, elapsed: Optional[float] = None):
         if elapsed is None:
             elapsed = time.time() - self._start_time
-        print("[PERF] " + self._format_perf_progress(count=count, elapsed=elapsed))
+        print(
+            "[PERF] "
+            + self._format_perf_progress(
+                count=count, elapsed=elapsed
+            )
+        )
 
     @typechecked
     def _printable_value_total_assets(self) -> Optional[int]:

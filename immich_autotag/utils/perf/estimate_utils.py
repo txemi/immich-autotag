@@ -31,4 +31,6 @@ def adjust_estimates(
     elif est_remaining is not None and est_remaining < 0:
         est_remaining = 0.0
     # coerce to floats
-    return AdjustEstimatesResult(est_total or 0.0, est_remaining or 0.0)
+    return AdjustEstimatesResult(
+        est_total or 0.0, est_remaining or 0.0
+    )
