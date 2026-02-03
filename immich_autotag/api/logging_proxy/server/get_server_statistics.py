@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typeguard import typechecked
 
-from immich_autotag.api.immich_proxy.server.get_server_statistics import proxy_get_server_statistics
+from immich_autotag.api.immich_proxy.server import proxy_get_server_statistics
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.types.client_types import ImmichClient

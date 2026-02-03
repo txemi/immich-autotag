@@ -13,7 +13,7 @@ from datetime import datetime
 
 import attrs
 
-from immich_autotag.api.logging_proxy.assets.get_asset_info import AssetResponseDto
+from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.api.logging_proxy.types import UNSET, Unset
 
 
