@@ -1,14 +1,16 @@
 
+
 from typing import List
 from python_qualitygate.cli.args import QualityGateArgs
 from git import Repo, InvalidGitRepositoryError
 from pathlib import Path
 from python_qualitygate.core.base import Check
 from python_qualitygate.core.result import CheckResult, Finding
-
 import attr
+from langdetect import detect, LangDetectException
 
 @attr.define(auto_attribs=True, slots=True)
+
 class CheckNoSpanishChars(Check):
     name = 'check_no_spanish_chars'
 
@@ -23,8 +25,10 @@ class CheckNoSpanishChars(Check):
         files_to_check = self._get_files_to_check(repo, repo_root)
 
         for file_path in files_to_check:
-            findings.extend(self._analyze_file(file_path, forbidden_bytes, spanish_words))
+            findings.extend(self._analyze_file_wordlist(file_path, forbidden_bytes, spanish_words))
+            findings.extend(self._analyze_file_langdetect(file_path))
         return CheckResult(findings=findings)
+
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
         return self.check(args)
@@ -71,11 +75,14 @@ class CheckNoSpanishChars(Check):
         # Solo excluir el propio check y spanish_words.txt
         return [f for f in files if not str(f).endswith('spanish_words.txt') and not str(f).endswith('check_no_spanish_chars.py')]
 
-    def _analyze_file(self, file_path: Path, forbidden_bytes: List[bytes], spanish_words: List[str]) -> List[Finding]:
+
+    def _analyze_file_wordlist(self, file_path: Path, forbidden_bytes: List[bytes], spanish_words: List[str]) -> List[Finding]:
+        """
+        Detect Spanish by forbidden bytes and wordlist (legacy method).
+        """
         findings: List[Finding] = []
         EXCLUDE_PATTERNS = [
             'SPANISH_PATTERN=',
-
         ]
         EXCLUDE_FILES = [
             'check_no_spanish_chars.py',
@@ -83,7 +90,6 @@ class CheckNoSpanishChars(Check):
         try:
             with file_path.open('rb') as f:
                 for i, line in enumerate(f, 1):
-                    # Excluir líneas especiales
                     try:
                         decoded_line = line.decode('utf-8', errors='ignore')
                     except Exception:
@@ -95,7 +101,27 @@ class CheckNoSpanishChars(Check):
                     findings.extend(self._find_spanish_chars(file_path, i, line, forbidden_bytes))
                     findings.extend(self._find_spanish_words(file_path, i, line, spanish_words))
         except Exception as e:
-            findings.append(Finding(file_path=file_path, line_number=0, message=f"No se pudo analizar: {e}", code="file-error"))
+            findings.append(Finding(file_path=file_path, line_number=0, message=f"Could not analyze: {e}", code="file-error"))
+        return findings
+
+    def _analyze_file_langdetect(self, file_path: Path) -> List[Finding]:
+        """
+        Detect Spanish using langdetect library (modern method).
+        """
+        findings: List[Finding] = []
+        try:
+            with file_path.open('r', encoding='utf-8', errors='ignore') as f:
+                for i, line in enumerate(f, 1):
+                    text = line.strip()
+                    if text:
+                        try:
+                            lang = detect(text)
+                            if lang == 'es':
+                                findings.append(Finding(file_path=file_path, line_number=i, message=f"Detected Spanish (langdetect): {text}", code="spanish-langdetect"))
+                        except LangDetectException:
+                            continue
+        except Exception as e:
+            findings.append(Finding(file_path=file_path, line_number=0, message=f"Could not analyze (langdetect): {e}", code="file-error"))
         return findings
 
     def _find_spanish_chars(self, file_path: Path, line_number: int, line: bytes, forbidden_bytes: List[bytes]) -> List[Finding]:
