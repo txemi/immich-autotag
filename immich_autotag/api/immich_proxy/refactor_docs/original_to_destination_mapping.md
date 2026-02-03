@@ -15,19 +15,19 @@ Esta tabla mapea los archivos y funciones actuales en `immich_autotag/api/immich
 | assets.py                | proxy_get_asset_info         | assets/get_asset_info.py                   | ✅    |
 | assets.py                | proxy_update_asset           | assets/update_asset.py                     | ✅    |
 | client_types.py          | (alias/types)                | types/client_types.py                      |       |
-| duplicates.py            | proxy_get_asset_duplicates   | duplicates/get_asset_duplicates.py         |       |
-| permissions.py           | proxy_search_users           | albums/search_users.py                     |       |
-| permissions.py           | proxy_remove_user_from_album | albums/remove_user_from_album.py           |       |
-| proxy_create_album.py    | proxy_create_album           | albums/create_album.py                     |       |
-| search.py                | (all functions)              | search/search.py                           |       |
-| server.py                | (all functions)              | server/get_server_statistics.py            |       |
-| tags.py                  | (all functions)              | tags/tag_assets.py                         |       |
+| duplicates.py            | proxy_get_asset_duplicates   | duplicates/get_asset_duplicates.py         | ✅    |
+| permissions.py           | proxy_search_users           | albums/search_users.py                     | ✅    |
+| permissions.py           | proxy_remove_user_from_album | albums/remove_user_from_album.py           | ✅    |
+| proxy_create_album.py    | proxy_create_album           | albums/create_album.py                     | ✅    |
+| search.py                | proxy_search_assets          | search/search.py                           | ✅    |
+| server.py                | proxy_get_server_statistics  | server/get_server_statistics.py            | ✅    |
+| tags.py                  | proxy_tag_assets             | tags/tag_assets.py                         | ✅    |
 | types.py                 | (all funciones)              | types/__init__.py                          |       |
 | users.py                 | (all funciones)              | users/get_user_info.py                     |       |
 
 ## Notas
 - Los nombres de destino buscan reflejar la estructura de entrypoints de la API.
-- Las funciones de albums.py y assets.py ya movidas están marcadas como hechas.
+- Las funciones de albums.py, assets.py, duplicates.py, permissions.py, proxy_create_album.py, search.py, server.py y tags.py ya movidas están marcadas como hechas.
 - El resto se irá marcando conforme se muevan y se actualicen los imports.
 - Al finalizar, se hará una revisión completa.
 
