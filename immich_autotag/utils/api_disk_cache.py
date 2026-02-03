@@ -71,7 +71,9 @@ class ApiCacheManager:
         cache_dir = self._get_cache_dir()
         path = cache_dir / f"{key}.json"
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+            json.dump(
+                data, f, ensure_ascii=False, indent=2
+            )
 
     def _try_load_json(
         self, path: Path
@@ -83,7 +85,9 @@ class ApiCacheManager:
             with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)
         except json.JSONDecodeError as e:
-            logger.warning(f"Corrupted cache file {path}: {e}")
+            logger.warning(
+                f"Corrupted cache file {path}: {e}"
+            )
             # Try to delete the corrupted file
             try:
                 path.unlink()
