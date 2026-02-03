@@ -115,7 +115,7 @@ class AssetProcessReport(ProcessStepResult):
         # Enum results (DuplicateTagAnalysisResult, AlbumAssignmentResult)
         # are included directly in summary but not with format() method
         if self.duplicate_tag_analysis_result is not None:
-            changes.append(str(self.duplicate_tag_analysis_result))
+            changes.append(self.duplicate_tag_analysis_result.format())
 
         if self.album_assignment_result is not None:
             changes.append(str(self.album_assignment_result))
