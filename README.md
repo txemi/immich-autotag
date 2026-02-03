@@ -37,7 +37,7 @@ For a more structured and detailed overview (including internal tools and links 
 This classification relies on a rule engine that is continuously evolving to become more abstract and flexible, allowing adaptation to the specific needs of different users.
 
 It helps to:
-- Quickly create and assing albums
+- Quickly create and assign albums
 - Quickly detect which photos or videos are still unorganized.
 - Highlight possible errors, such as assets classified under multiple conflicting criteria.
 - Speed up the review and mass organization of your photo library.

@@ -26,4 +26,4 @@ This document describes the quality levels and architecture rules applied with i
 
 ---
 
-(Contenido movido desde docs/dev/import-linter-levels.md)
+(Content moved from docs/dev/import-linter-levels.md)
