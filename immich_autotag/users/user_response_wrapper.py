@@ -26,7 +26,8 @@ class UserResponseWrapper:
 
         if not isinstance(user, (UserResponseDto, UserAdminResponseDto)):
             raise TypeError(
-                f"user must be a UserResponseDto or UserAdminResponseDto, got {type(user)}"
+                f"user must be a UserResponseDto or UserAdminResponseDto, got "
+                f"{type(user)}"
             )
 
     def __attrs_post_init__(self):

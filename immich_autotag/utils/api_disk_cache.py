@@ -53,8 +53,9 @@ class ApiCacheManager:
     @staticmethod
     def create(cache_type: "ApiCacheKey") -> "ApiCacheManager":
         """
-        Static constructor for ApiCacheManager to avoid linter/type checker issues with private attribute names.
-        Use this instead of direct instantiation.
+        Static constructor for ApiCacheManager to avoid linter/type checker
+        issues with private attribute names. Use this instead of direct
+        instantiation.
         """
         obj = ApiCacheManager(cache_type)
 

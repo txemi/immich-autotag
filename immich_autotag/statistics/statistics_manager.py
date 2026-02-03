@@ -36,10 +36,12 @@ class StatisticsManager:
     #
     # IMPORTANT NOTE ABOUT attrs AND THE LINTER:
     #
-    # By convention, the constructor arguments for classes using attrs should be public (no leading underscore),
-    # even if the internal attributes are private (with leading underscore). attrs requires this to function correctly.
-    # If the linter (e.g., flake8, pylint, mypy) complains about the mismatch between public arguments and private attributes,
-    # silence the warning with a noqa or specific configuration, as this is the correct pattern with attrs.
+    # By convention, the constructor arguments for classes using attrs should be
+    # public (no leading underscore), even if the internal attributes are private
+    # (with leading underscore). attrs requires this to function correctly.
+    # If the linter (e.g., flake8, pylint, mypy) complains about the mismatch
+    # between public arguments and private attributes, silence the warning with a
+    # noqa or specific configuration, as this is the correct pattern with attrs.
     # Example: pylint: disable=attribute-defined-outside-init
     #
     # Reference: https://www.attrs.org/en/stable/init.html#private-attributes
@@ -110,7 +112,8 @@ class StatisticsManager:
         if _instance is not None and _instance is not self:
             # Logging the use of reserved variable
             print(
-                "[INFO] Reserved global variable _instance is in use for singleton enforcement."
+                "[INFO] Reserved global variable _instance is in use for "
+                "singleton enforcement."
             )
             raise RuntimeError(
                 "StatisticsManager instance already exists. "
@@ -187,7 +190,8 @@ class StatisticsManager:
         if _instance is None:
             # Logging the use of reserved variable
             print(
-                "[INFO] Reserved global variable _instance is None, creating new instance."
+                "[INFO] Reserved global variable _instance is None, "
+                "creating new instance."
             )
             StatisticsManager()
         if _instance is None:

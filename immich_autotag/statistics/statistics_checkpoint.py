@@ -1,7 +1,8 @@
 """
 statistics_checkpoint.py
 
-Utility to obtain the counter of the previous execution (skip_n) from run_statistics.yaml in the previous logs directory.
+Utility to obtain the counter of the previous execution (skip_n) from
+run_statistics.yaml in the previous logs directory.
 """
 
 from pathlib import Path
@@ -18,7 +19,8 @@ from immich_autotag.statistics.run_statistics import RunStatistics
 @typechecked
 def _find_recent_max_count(overlap: int, hours: int) -> Optional[int]:
     """
-    Searches for the maximum count of runs in the last hours using RunOutputManager and RunExecution.
+    Searches for the maximum count of runs in the last hours using
+    RunOutputManager and RunExecution.
     Returns the calculated skip_n or None if there is no data.
     logs_dir: Optional base directory for logs. Defaults to Path('logs_local').
     """
@@ -62,11 +64,13 @@ def get_previous_skip_n(
     overlap: int = 100, use_recent_max: bool = False, hours: int = 3
 ) -> Optional[int]:
     """
-    Searches for the counter of the previous execution (skip_n) from run_statistics.yaml.
+    Searches for the counter of the previous execution (skip_n) from
+    run_statistics.yaml.
     If use_recent_max is True, searches for the maximum of the last hours.
     Returns None if there is no data.
     """
-    # If we are in DEVELOPMENT mode, force use of recent maximum and extend threshold to 48h
+    # If we are in DEVELOPMENT mode, force use of recent maximum and extend
+    # threshold to 48h
     if DEFAULT_ERROR_MODE == ErrorHandlingMode.DEVELOPMENT:
         use_recent_max = True
         hours = 48

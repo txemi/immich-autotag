@@ -92,7 +92,8 @@ class PerformanceTracker:
         skip_n: Optional[int] = 0,
     ) -> "PerformanceTracker":
         """
-        Static constructor that initializes the instance with setters, with guards for None values.
+        Static constructor that initializes the instance with setters, with
+        guards for None values.
         """
         instance = PerformanceTracker()
         if total_assets is not None:
@@ -109,7 +110,8 @@ class PerformanceTracker:
     @staticmethod
     def from_total(total_assets: int) -> "PerformanceTracker":
         """
-        Static constructor for PerformanceTracker with total_assets set, using setters for consistency.
+        Static constructor for PerformanceTracker with total_assets set, using
+        setters for consistency.
         """
         instance = PerformanceTracker()
         instance.set_total_assets(total_assets)

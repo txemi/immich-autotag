@@ -1,7 +1,11 @@
 from immich_client.api.albums import get_all_albums
 from immich_client.models import AlbumResponseDto
-from immich_autotag.api.immich_proxy.utils.cache_manager import ApiCacheManager, ApiCacheKey
+
 from immich_autotag.api.immich_proxy.types import AuthenticatedClient
+from immich_autotag.api.immich_proxy.utils.cache_manager import (
+    ApiCacheKey,
+    ApiCacheManager,
+)
 
 
 def proxy_get_album_page(

@@ -36,7 +36,8 @@ class TagCollectionWrapper:
             and self is not _tag_collection_singleton
         ):
             raise RuntimeError(
-                "TagCollectionWrapper singleton already exists. Use TagCollectionWrapper.get_instance()."
+                "TagCollectionWrapper singleton already exists. Use "
+                "TagCollectionWrapper.get_instance()."
             )
 
     def _set_fully_loaded(self):
@@ -90,8 +91,9 @@ class TagCollectionWrapper:
 
     def _load_single_by_name_from_api(self, name: str):
         """
-        Centralizes full loading: if not fully_loaded, loads all tags and searches in the index.
-        This avoids duplication and keeps the logic in one place.
+        Centralizes full loading: if not fully_loaded, loads all tags and
+        searches in the index. This avoids duplication and keeps the logic in
+        one place.
         """
         if not self._fully_loaded:
             self._load_all_from_api()
@@ -102,8 +104,8 @@ class TagCollectionWrapper:
         self, *, name: str, client: ImmichClient
     ) -> "TagWrapper":
         """
-        Creates the tag in Immich if it doesn't exist and adds it to the local collection.
-        Returns the corresponding TagResponseDto.
+        Creates the tag in Immich if it doesn't exist and adds it to the local
+        collection. Returns the corresponding TagResponseDto.
         """
         tag = self.find_by_name(name)
         if tag is not None:
@@ -193,8 +195,8 @@ class TagCollectionWrapper:
     @staticmethod
     def maintenance_delete_conflict_tags(client: ImmichClient) -> int:
         """
-        MAINTENANCE HACK: Deletes all tags whose name starts with the fixed conflict prefix.
-        Returns the number of deleted tags.
+        MAINTENANCE HACK: Deletes all tags whose name starts with the fixed
+        conflict prefix. Returns the number of deleted tags.
         """
         from immich_autotag.config.manager import ConfigManager
 
@@ -228,7 +230,8 @@ class TagCollectionWrapper:
                 import logging
 
                 logging.getLogger(__name__).warning(
-                    f"[TAG MAINTENANCE] Tag with empty name encountered: {tag_wrapper!r}"
+                    f"[TAG MAINTENANCE] Tag with empty name encountered: "
+                    f"{tag_wrapper!r}"
                 )
                 return False
             for prefix in prefixes:
