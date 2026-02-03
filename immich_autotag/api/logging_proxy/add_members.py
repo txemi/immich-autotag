@@ -40,8 +40,8 @@ def _add_members_to_album(
     """
     [INTERNAL] Add members to album (PONER).
 
-    Solo para uso interno de logging_proxy. No registra eventos ni logs de auditoría.
-    No debe ser llamada directamente desde fuera de este módulo.
+    Solo para uso interno de logging_proxy. No registra eventos ni logs de auditoria.
+    No debe ser llamada directamente desde fuera de este modulo.
     """
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
@@ -66,7 +66,7 @@ def _add_members_to_album(
     # Call API
     client_wrapper = context.get_client_wrapper()
     client = client_wrapper.get_client()
-    response = proxy_add_users_to_album(
+    proxy_add_users_to_album(
         album_id=album_id,
         client=client,
         body=add_users_dto,

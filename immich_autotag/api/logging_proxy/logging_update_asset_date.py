@@ -2,18 +2,19 @@
 Logging-proxy wrapper for asset date update event.
 This module contains only the logging_update_asset_date function for architectural clarity.
 """
+
+from datetime import datetime
+from typing import Any
+
+from immich_autotag.api.immich_proxy.assets import proxy_update_asset
 from immich_autotag.api.logging_proxy.types import AssetResponseDto, UpdateAssetDto
-from immich_autotag.api.logging_proxy.assets import proxy_update_asset
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import is_log_level_enabled, log_debug
 from immich_autotag.report.modification_kind import ModificationKind
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 
-from datetime import datetime
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.api.logging_proxy.types import AssetResponseDto, UpdateAssetDto
-from typing import Any
 
 def logging_update_asset_date(
     asset_wrapper: AssetResponseWrapper,
@@ -26,12 +27,6 @@ def logging_update_asset_date(
     Updates the asset date via proxy and logs the modification event.
     Performs type check and raises DateIntegrityError if response is not AssetResponseDto.
     """
-    from immich_autotag.api.logging_proxy.assets import proxy_update_asset
-    from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.logging.utils import is_log_level_enabled, log_debug
-    from immich_autotag.report.modification_kind import ModificationKind
-    from immich_autotag.report.modification_report import ModificationReport
-    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
     from immich_autotag.assets.asset_response_wrapper import DateIntegrityError
 
     if is_log_level_enabled(LogLevel.DEBUG):

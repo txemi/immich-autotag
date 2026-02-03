@@ -35,8 +35,8 @@ def _remove_members_from_album(
     """
     [INTERNAL] Remove users from album using the API. No event logging.
 
-    Solo para uso interno de logging_proxy. No registra eventos ni logs de auditoría.
-    No debe ser llamada directamente desde fuera de este módulo.
+    Solo para uso interno de logging_proxy. No registra eventos ni logs de auditoria.
+    No debe ser llamada directamente desde fuera de este modulo.
     """
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
