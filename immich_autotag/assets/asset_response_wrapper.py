@@ -11,7 +11,6 @@ from typeguard import typechecked
 from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
     AlbumFolderAnalyzer,
 )
-from immich_autotag.api.logging_proxy.assets import AssetResponseDto
 from immich_autotag.api.logging_proxy.types import Unset, UpdateAssetDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
@@ -33,7 +32,6 @@ from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 from immich_autotag.tags.tag_response_wrapper import TagWrapper
 from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID, TagUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
-from immich_autotag.utils.deprecation import raise_deprecated_path
 from immich_autotag.utils.url_helpers import get_immich_photo_url
 
 if TYPE_CHECKING:
@@ -93,7 +91,9 @@ class AssetResponseWrapper:
         Updates the main date (created_at) of the asset using the Immich API.
         If tag_mod_report is provided, logs the modification.
         """
-        from immich_autotag.api.logging_proxy.logging_update_asset_date import logging_update_asset_date
+        from immich_autotag.api.logging_proxy.logging_update_asset_date import (
+            logging_update_asset_date,
+        )
 
         old_date = self.get_created_at()
         if new_date.tzinfo is None:
@@ -230,7 +230,7 @@ class AssetResponseWrapper:
             return ModificationEntriesList()
 
         # Use logging_proxy for automatic error handling and reporting
-        from immich_autotag.api.logging_proxy.remove_tags import (
+        from immich_autotag.api.logging_proxy.logging_untag_assets import (
             logging_untag_assets_safe,
         )
 
@@ -254,7 +254,7 @@ class AssetResponseWrapper:
         fail_if_exists: bool = False,
     ) -> ModificationEntriesList:
         """
-        Adds a tag to the asset by name using the Immich API if it doesn't have it already.
+        Adds a tag to the asset by name using the Immich API if it doesn\'t have it already.
         Returns a ModificationEntriesList with the recorded modifications.
         """
         from immich_autotag.api.immich_proxy.tags import proxy_tag_assets

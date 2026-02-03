@@ -128,7 +128,7 @@ class ArchitectureImportChecker:
 
 def install_architecture_import_hook():
     if not ENABLE_ARCHITECTURE_IMPORT_HOOK:
-        return 
+        return
     # Avoid double installation
     if not any(isinstance(f, ArchitectureImportChecker) for f in sys.meta_path):
         sys.meta_path.insert(0, ArchitectureImportChecker())

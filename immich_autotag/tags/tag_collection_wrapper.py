@@ -119,10 +119,10 @@ class TagCollectionWrapper:
         if tag is not None:
             return tag
 
-        from immich_autotag.api.logging_proxy.types import immich_errors
         from immich_autotag.api.logging_proxy.create_tag.logging_create_tag import (
             logging_create_tag,
         )
+        from immich_autotag.api.logging_proxy.types import immich_errors
 
         try:
             # logging_create_tag returns ModificationEntry containing the TagWrapper
@@ -225,7 +225,9 @@ class TagCollectionWrapper:
 
         tags_dto = proxy_get_all_tags(client=client) or []
         count = 0
-        from immich_autotag.api.logging_proxy.logging_delete_tag import logging_delete_tag
+        from immich_autotag.api.logging_proxy.logging_delete_tag import (
+            logging_delete_tag,
+        )
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
         for tag_dto in tags_dto:
