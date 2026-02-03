@@ -209,7 +209,7 @@ class TagCollectionWrapper:
 
         tags_wrapped = load_all_tags_wrapped()
         count = 0
-        from immich_autotag.api.logging_proxy.logging_delete_tag import (
+        from immich_autotag.api.logging_proxy.tags.delete_tag import (
             logging_delete_tag,
         )
 

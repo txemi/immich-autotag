@@ -230,7 +230,7 @@ class AssetResponseWrapper:
             return ModificationEntriesList()
 
         # Use logging_proxy for automatic error handling and reporting
-        from immich_autotag.api.logging_proxy.logging_untag_assets import (
+        from immich_autotag.api.logging_proxy.tags.untag_assets import (
             logging_untag_assets_safe,
         )
 
