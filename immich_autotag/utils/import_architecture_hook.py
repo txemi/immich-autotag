@@ -23,7 +23,7 @@ LOGGING_PROXY_MODULE: str = logging_proxy.__name__
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
 
-@attrs.define(frozen=True)
+@attrs.define(frozen=True, auto_attribs=True)
 class CallerInfo:
     _path: Path
 
@@ -43,7 +43,7 @@ class CallerInfo:
         return str(self._path)
 
 
-@attrs.define(frozen=True)
+@attrs.define(frozen=True, auto_attribs=True)
 class FullnameInfo:
     _fullname: str
 
