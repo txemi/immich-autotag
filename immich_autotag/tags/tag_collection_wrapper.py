@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from immich_autotag.types.uuid_wrappers import TagUUID
 
+
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -70,12 +71,11 @@ class TagCollectionWrapper:
         self._fully_loaded = False
         self._load_all_from_api()
 
-    def _load_single_by_id_from_api(self, id_: TagUUID)->TagWrapper:
+    def _load_single_by_id_from_api(self, id_: "TagUUID") -> "TagWrapper | None":
         """
         Fetch a tag by id using the efficient proxy and add it to the index if found.
         Returns the found TagWrapper or None.
         """
-
         from immich_autotag.api.logging_proxy.load_tag_by_id_wrapped import load_tag_by_id_wrapped
         tag_obj = load_tag_by_id_wrapped(id_)
         if tag_obj is not None:
@@ -153,8 +153,8 @@ class TagCollectionWrapper:
     @typechecked
     def find_by_id(self, id_: "TagUUID") -> "TagWrapper | None":
         try:
-            tag = self._index.get_by_id(id_)
-            return tag
+            tag_obj = self._index.get_by_id(id_)
+            return tag_obj
         except Exception:
             pass
         # Lazy-load individual tag if not fully_loaded
@@ -179,7 +179,6 @@ class TagCollectionWrapper:
         Returns the TagWrapper corresponding to a TagResponseDto (dto), or None if it
         does not exist.
         """
-        from immich_autotag.types.uuid_wrappers import TagUUID
 
         tag_id = TagUUID.from_string(dto.id)
         tag = self.find_by_id(tag_id)
@@ -211,7 +210,7 @@ class TagCollectionWrapper:
         from immich_autotag.api.logging_proxy.logging_delete_tag import logging_delete_tag
 
         for tag_wrapper in tags_wrapped:
-            if any(tag_wrapper.name.startswith(prefix) for prefix in prefixes):
+            if any(tag_wrapper.name().startswith(prefix) for prefix in prefixes):
                 logging_delete_tag(
                     client=client,
                     tag=tag_wrapper,
