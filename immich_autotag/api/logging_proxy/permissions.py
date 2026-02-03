@@ -15,7 +15,6 @@ from immich_autotag.api.logging_proxy.add_members import (
 )
 from immich_autotag.api.logging_proxy.remove_members import (
     logging_remove_members_from_album,
-    remove_members_from_album,
 )
 
 __all__ = [
@@ -23,6 +22,5 @@ __all__ = [
     "logging_add_members_to_album",
     "logging_add_user_to_album",
     # Remove members functions
-    "remove_members_from_album",
     "logging_remove_members_from_album",
 ]

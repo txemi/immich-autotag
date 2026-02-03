@@ -26,22 +26,17 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def remove_members_from_album(
+def _remove_members_from_album(
     *,
     album: "AlbumResponseWrapper",
     members: Sequence["UserResponseWrapper"],
     context: ImmichContext,
 ) -> None:
     """
-    Remove users from album using the API. Logs each removal.
+    [INTERNAL] Remove users from album using the API. No event logging.
 
-    Low-level function that calls the API directly.
-    For operations that need automatic logging, use logging_remove_members_from_album instead.
-
-    Args:
-        album: Album wrapper with album data
-        members: Sequence of UserResponseWrapper objects to remove
-        context: ImmichContext with API client
+    Solo para uso interno de logging_proxy. No registra eventos ni logs de auditoría.
+    No debe ser llamada directamente desde fuera de este módulo.
     """
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
@@ -77,7 +72,7 @@ def logging_remove_members_from_album(
         - Updates statistics (delegated to ModificationReport)
     """
     # Call the underlying function
-    remove_members_from_album(
+    _remove_members_from_album(
         album=album,
         members=members,
         context=context,
