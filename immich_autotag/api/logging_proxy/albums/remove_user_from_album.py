@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Optional, Sequence
 
 from typeguard import typechecked
 
-from immich_autotag.api.immich_proxy.permissions import proxy_remove_user_from_album
+from immich_autotag.api.immich_proxy.albums import proxy_remove_user_from_album
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.utils import log_debug
 from immich_autotag.report.modification_kind import ModificationKind
