@@ -225,7 +225,7 @@ class TagCollectionWrapper:
 
         tags_dto = proxy_get_all_tags(client=client) or []
         count = 0
-        from immich_autotag.api.logging_proxy.tags import logging_delete_tag
+        from immich_autotag.api.logging_proxy.logging_delete_tag import logging_delete_tag
         from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
         for tag_dto in tags_dto:

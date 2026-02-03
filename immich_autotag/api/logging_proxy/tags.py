@@ -21,10 +21,8 @@ from immich_autotag.api.logging_proxy.add_tags import (
 from immich_autotag.api.logging_proxy.create_tag import logging_create_tag
 
 # Re-export remove tag functions
-from immich_autotag.api.logging_proxy.remove_tags import (
-    logging_delete_tag,
-    logging_untag_assets_safe,
-)
+from immich_autotag.api.logging_proxy.logging_delete_tag import logging_delete_tag
+from immich_autotag.api.logging_proxy.logging_untag_assets import logging_untag_assets_safe
 
 __all__ = [
     "logging_tag_assets",
