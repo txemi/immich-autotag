@@ -26,7 +26,10 @@ class CheckNoSpanishChars(Check):
 
         for file_path in files_to_check:
             findings.extend(self._analyze_file_wordlist(file_path, forbidden_bytes, spanish_words))
-            findings.extend(self._analyze_file_langdetect(file_path))
+            # Only use langdetect in TARGET mode (compare using enum)
+            from python_qualitygate.cli.args import QualityGateLevel
+            if args.level == QualityGateLevel.TARGET:
+                findings.extend(self._analyze_file_langdetect(file_path))
         return CheckResult(findings=findings)
 
 
