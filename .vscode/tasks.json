@@ -10,7 +10,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Run Application (main.py)",
+      "label": "3️⃣🟢 RUN APPLICATION (MAIN.PY)",
       "type": "shell",
       "command": "bash run_app.sh",
       "group": "build",
@@ -21,7 +21,7 @@
     // ALWAYS use this task for code quality, lint, formatting, and gates.
     // This is the ONLY source of truth for Python code validation in this project.
     {
-      "label": "🚩 QUALITY GATE: PYTHON (CHECK) [RECOMMENDED] 🚩",
+      "label": "1️⃣🚩 QUALITY GATE: PYTHON (CHECK) [RECOMMENDED] 🚩",
       "type": "shell",
       "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode CHECK --level STANDARD",
       "group": { "kind": "build" },
@@ -29,7 +29,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Quality Gate: Python (APPLY)",
+      "label": "2️⃣🟡 QUALITY GATE: PYTHON (APPLY)",
       "type": "shell",
       "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode APPLY --level STANDARD",
       "group": { "kind": "build" },
