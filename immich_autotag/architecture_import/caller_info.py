@@ -14,7 +14,6 @@ import attrs
 from typeguard import typechecked
 
 from .immich_module_path import ImmichModulePath
-from .shared_symbols import LOGGING_PROXY_MODULE_NAME
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
@@ -27,27 +26,24 @@ class CallerInfo:
     to be performed at the module/package level, not just file paths.
     Used by the architecture rules system to apply dynamic restrictions at runtime.
     """
-    module_path: ImmichModulePath
+    _module_path: ImmichModulePath
+
 
 
 
 
     def is_outside_project(self) -> bool:
         # Delegate to ImmichModulePath logic
-        return self.module_path.is_outside_root_package()
+        return self._module_path.is_outside_root_package()
 
     def is_proxy_module_import(self) -> bool:
-        # Example logic: check if the module path includes 'immich_proxy'
-        return 'immich_proxy' in self.module_path.parts
+        return self._module_path.is_proxy_module_import()
 
     def is_outside_logging_proxy(self) -> bool:
-        # Check if the module path includes the logging proxy module
-        logging_proxy_parts = tuple(LOGGING_PROXY_MODULE_NAME.split('.'))
-        return not all(part in self.module_path.parts for part in logging_proxy_parts)
+        return self._module_path.is_outside_logging_proxy()
 
     def is_client_types_entry(self) -> bool:
-        # Example: check if the module path matches the client_types module
-        return self.module_path.as_dotstring() == 'immich_autotag.api.immich_proxy.client_types'
+        return self._module_path.is_client_types_entry()
 
     @staticmethod
     @typechecked
@@ -75,4 +71,4 @@ class CallerInfo:
         return None
 
     def __str__(self):
-        return self.module_path.as_dotstring()
+        return self._module_path.as_dotstring()

@@ -9,6 +9,7 @@ Allows semantic queries about subpackage and core membership within the project.
 import attrs
 from .module_path import ModulePath
 
+
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ImmichModulePath(ModulePath):
     """
@@ -16,6 +17,26 @@ class ImmichModulePath(ModulePath):
     Allows checking if a module belongs to the core or a specific subpackage,
     and is the entry point for architecture rules specific to the Immich domain.
     """
+
+    def is_proxy_module_import(self) -> bool:
+        """
+        Returns True if the module path includes 'immich_proxy'.
+        """
+        return 'immich_proxy' in self.parts
+
+    def is_outside_logging_proxy(self) -> bool:
+        """
+        Returns True if the module path does not include all parts of the logging proxy module.
+        """
+        from .shared_symbols import LOGGING_PROXY_MODULE_NAME
+        logging_proxy_parts = tuple(LOGGING_PROXY_MODULE_NAME.split('.'))
+        return not all(part in self.parts for part in logging_proxy_parts)
+
+    def is_client_types_entry(self) -> bool:
+        """
+        Returns True if the module path matches the client_types module.
+        """
+        return self.as_dotstring() == 'immich_autotag.api.immich_proxy.client_types'
 
     @classmethod
     def from_path(cls, path):
