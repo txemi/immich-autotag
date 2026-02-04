@@ -1,12 +1,43 @@
 from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
 
+
+def enforce_common_package_import_rule(
+    imported: ImmichModulePath, caller: ImmichModulePath
+) -> None:
+    """
+    Enforce: The common package must not import anything from outside common.
+    Raise ImportError if violated.
+    """
+    # Get the common package path
+    from immich_autotag.common import __name__ as COMMON_PKG_NAME
+
+    common_path = ImmichModulePath.from_dotstring(COMMON_PKG_NAME)
+    # If caller is in common but imported is not, raise
+    if caller.is_submodule_of(common_path) and not imported.is_submodule_of(
+        common_path
+    ):
+        raise ImportError(
+            f"Forbidden import in 'common':\n"
+            f"Importer: '{caller.as_dotstring()}'\n"
+            f"Imported: '{imported.as_dotstring()}'\n"
+            "The common package must not import anything from outside common."
+        )
+
+
 from .shared_symbols import (
     IMMICH_API_MODULE,
+    from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
+    from .shared_symbols import (
+        IMMICH_API_MODULE,
+        LOGGING_PROXY_MODULE_NAME,
+    )
     LOGGING_PROXY_MODULE_NAME,
 )
 
 
-def enforce_immich_api_import_rule(imported: ImmichModulePath, caller: ImmichModulePath) -> None:
+def enforce_immich_api_import_rule(
+    imported: ImmichModulePath, caller: ImmichModulePath
+) -> None:
     """
     Enforce the rule: Only the proxy module may import the Immich API.
     Raise ImportError if violated.

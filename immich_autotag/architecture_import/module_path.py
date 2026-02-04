@@ -93,7 +93,7 @@ class ModulePath:
     def is_submodule_of(self, other: "ModulePath") -> bool:
         my_parts = self.get_parts()
         other_parts = other.get_parts()
-        prefix = Parts(list(my_parts[:len(other_parts)]))
+        prefix = Parts(list(my_parts[: len(other_parts)]))
         result = prefix.equals(other_parts)
         return result
 
