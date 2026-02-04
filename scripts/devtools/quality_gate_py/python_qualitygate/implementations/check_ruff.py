@@ -4,7 +4,7 @@ import subprocess
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckRuff(Check):
@@ -33,7 +33,7 @@ class CheckRuff(Check):
         cmd.append(str(args.target_dir))
         return cmd
 
-    def _process_check_output(self, args: QualityGateArgs, output: str, returncode: int, code: str = "ruff") -> CheckResult:
+    def _process_check_output(self, args: QualityGateArgs, output: str, returncode: int, code: str = "ruff") -> QualityGateResult:
         """Process ruff output and return findings based on quality level. Parametrizable code."""
         from python_qualitygate.core.enums_level import QualityGateLevel
 
@@ -53,9 +53,9 @@ class CheckRuff(Check):
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
 
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
 
-    def _run_ruff(self, args: QualityGateArgs, apply_fix: bool, code: str) -> CheckResult:
+    def _run_ruff(self, args: QualityGateArgs, apply_fix: bool, code: str) -> QualityGateResult:
         # The 'code' argument is used to label the origin of the finding in the results:
         #   - "ruff" for checks (check),
         #   - "ruff-fix" for automatic fixes (apply/fix).
@@ -66,9 +66,9 @@ class CheckRuff(Check):
         output = result.stdout + '\n' + result.stderr
         return self._process_check_output(args, output, result.returncode, code=code)
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         return self._run_ruff(args, apply_fix=False, code="ruff")
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         return self._run_ruff(args, apply_fix=True, code="ruff-fix")
 

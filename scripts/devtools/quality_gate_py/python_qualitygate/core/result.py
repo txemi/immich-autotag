@@ -9,10 +9,11 @@ class Finding:
     message: str
     code: str = ''  # opcional, para tipo de warning/error
 
+
 @attr.define(auto_attribs=True, slots=True)
-class CheckResult:
+class QualityGateResult:
     findings: List[Finding]
-    # You can add more fields if you want (for example, success, summary, etc)
+    score: float | None = None  # Quality score, e.g. pylint rating, None if not applicable
 
     def is_success(self) -> bool:
         return len(self.findings) == 0

@@ -3,7 +3,7 @@
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckMypy(Check):
@@ -12,7 +12,7 @@ class CheckMypy(Check):
     def get_name(self) -> str:
         return self._name
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         import re
         from mypy import api as mypy_api
         print(f"[RUN] mypy API on {args.target_dir}")
@@ -45,8 +45,8 @@ class CheckMypy(Check):
                 blocking.append(f)
             else:
                 blocking.append(f)  # Defensive: treat as STRICT
-        return CheckResult(findings=blocking)
+        return QualityGateResult(findings=blocking)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         # mypy no modifica archivos, solo check
         return self.check(args)

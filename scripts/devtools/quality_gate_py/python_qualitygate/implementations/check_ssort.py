@@ -3,7 +3,7 @@ import subprocess
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckSsort(Check):
@@ -13,7 +13,7 @@ class CheckSsort(Check):
         return self._name
 
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         import sys
         import io
         import ssort._main
@@ -42,9 +42,9 @@ class CheckSsort(Check):
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
             sys.argv = old_argv
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         import sys
         import io
         import ssort._main
@@ -71,4 +71,4 @@ class CheckSsort(Check):
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
             sys.argv = old_argv
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)

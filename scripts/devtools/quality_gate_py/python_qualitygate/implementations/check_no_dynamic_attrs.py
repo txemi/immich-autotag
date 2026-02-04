@@ -3,7 +3,7 @@ from pathlib import Path
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckNoDynamicAttrs(Check):
@@ -12,7 +12,7 @@ class CheckNoDynamicAttrs(Check):
     def get_name(self) -> str:
         return self._name
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         """
         Forbids the use of getattr/hasattr for static typing safety.
         Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
@@ -40,7 +40,6 @@ class CheckNoDynamicAttrs(Check):
             # Skip excluded directories
             if any(skip in str(pyfile) for skip in ['.venv', 'immich-client', 'scripts', 'jenkins_logs']):
                 continue
-                
             with open(pyfile, encoding='utf-8', errors='ignore') as f:
                 for i, line in enumerate(f, 1):
                     if 'getattr(' in line or 'hasattr(' in line:
@@ -52,8 +51,8 @@ class CheckNoDynamicAttrs(Check):
                         ))
 
         print(f"[{args.level.name} MODE] getattr/hasattr policy enforcement is ENABLED.")
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         # Solo checkea, no modifica
         return self.check(args)

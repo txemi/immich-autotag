@@ -2,7 +2,7 @@ import attr
 from pathlib import Path
 from python_qualitygate.cli.args import QualityGateArgs
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckLargeFiles(Check):
@@ -13,14 +13,14 @@ class CheckLargeFiles(Check):
     def get_name(self) -> str:
         return self._name
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         from python_qualitygate.core.enums_level import QualityGateLevel
         match args.level:
             case QualityGateLevel.STRICT | QualityGateLevel.TARGET:
                 pass  # Run the check normally
             case QualityGateLevel.STANDARD:
                 # Not active in STANDARD
-                return CheckResult(findings=[])
+                return QualityGateResult(findings=[])
             case _:
                 # Defensive programming: block if an unknown level appears
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
@@ -46,8 +46,8 @@ class CheckLargeFiles(Check):
                     message=f"Error reading file: {e}",
                     code="large-file-error"
                 ))
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         # Solo checkea, no modifica
         return self.check(args)

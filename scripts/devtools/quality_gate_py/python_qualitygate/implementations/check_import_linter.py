@@ -3,7 +3,7 @@ import attr
 from python_qualitygate.cli.args import QualityGateArgs
 from python_qualitygate.core.base import Check
 from python_qualitygate.core.enums_level import QualityGateLevel
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 DISABLE_IMPORT_LINTER_CHECK = True  # Cambia a False para reactivar el check
 
 
@@ -14,10 +14,10 @@ class CheckImportLinter(Check):
     def get_name(self) -> str:
         return self._name
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         if DISABLE_IMPORT_LINTER_CHECK:
             # Return an empty and successful result (Import-linter check disabled by configuration)
-            return CheckResult(findings=[])
+            return QualityGateResult(findings=[])
         # Select configuration file based on quality level
         level = args.level
 
@@ -47,8 +47,8 @@ class CheckImportLinter(Check):
                         message=line.strip(),
                         code="importlinter"
                     ))
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         # importlinter solo checkea, no modifica
         return self.check(args)
