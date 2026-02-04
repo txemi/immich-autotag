@@ -47,14 +47,14 @@ class ImmichModulePath(ModulePath):
         return cls(tuple(path.with_suffix('').parts))
 
     def is_core_module(self) -> bool:
-        # Determina si el módulo es del core de immich_autotag
+        # Determines if the module is part of the immich_autotag core
         return self.parts[:1] == ("immich_autotag",)
 
     def is_in_subpackage(self, subpackage: str) -> bool:
-        # Comprueba si el módulo está en un subpaquete concreto
+        # Checks if the module is in a specific subpackage
         return subpackage in self.parts
 
-    # Aquí puedes añadir más métodos específicos del dominio Immich
+    # Add more Immich domain-specific methods here
 
     @classmethod
     def get_root_package_path(cls) -> "ImmichModulePath":
