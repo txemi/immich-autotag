@@ -24,7 +24,10 @@ class CheckImportLinter(Check):
 
         print(f"[INFO] Using import-linter config: {config_file} (level: {level.value})")
 
-        cmd = [args.py_bin, '-m', 'importlinter', '--config', config_file]
+        # Use the lint-imports binary from the same venv as py_bin
+        from pathlib import Path
+        lint_imports_bin = str(Path(args.py_bin).parent / 'lint-imports')
+        cmd = [lint_imports_bin, '--config', config_file]
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []
