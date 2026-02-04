@@ -47,7 +47,7 @@ MERGE_DUPLICATE_ALBUMS_ENABLED = (
 # this will force the global log level for the app, ignoring any other logic.
 # If None, normal logic applies.
 FORCED_LOG_LEVEL = (
-    LogLevel.ASSET_SUMMARY
+    LogLevel.PROGRESS
 )  # Change to 'DEBUG' to force massive logging in development/CI
 
 # ==================== ARCHITECTURE IMPORT HOOK CONTROL ====================
