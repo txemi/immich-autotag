@@ -68,20 +68,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Quality Gate (Shell Script)') {
-            steps {
-                script {
-                    echo '🚨🚨 DEPRECATED: QUALITY GATE (SHELL SCRIPT) - USE PYTHON VERSION INSTEAD 🚨🚨'
-                    echo "Running Quality Gate (relaxed mode)..."
-                    sh '''
-                        chmod +x scripts/devtools/quality_gate.sh
-                        bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=CHECK
-                    '''
-                }
-            }
-        }
-
         stage('Quality Gate (Python OO)') {
             steps {
                 script {
@@ -96,6 +82,20 @@ pipeline {
                 }
             }
         }
+        stage('Quality Gate (Shell Script)') {
+            steps {
+                script {
+                    echo '🚨🚨 DEPRECATED: QUALITY GATE (SHELL SCRIPT) - USE PYTHON VERSION INSTEAD 🚨🚨'
+                    echo "Running Quality Gate (relaxed mode)..."
+                    sh '''
+                        chmod +x scripts/devtools/quality_gate.sh
+                        bash scripts/devtools/quality_gate.sh --level=STANDARD --mode=CHECK
+                    '''
+                }
+            }
+        }
+
+
 
         stage('Run Application') {
             steps {
