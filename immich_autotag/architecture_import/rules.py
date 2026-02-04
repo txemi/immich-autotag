@@ -6,15 +6,19 @@ from .shared_symbols import (
 )
 
 
-def enforce_immich_api_import_rule(fni: ImmichModulePath, ci: ImmichModulePath) -> None:
+def enforce_immich_api_import_rule(imported: ImmichModulePath, caller: ImmichModulePath) -> None:
     """
     Enforce the rule: Only the proxy module may import the Immich API.
     Raise ImportError if violated.
     """
-    if fni.is_immich_api_module():
-        if not ci.is_proxy_module_import():
+    if imported.is_immich_api_module():
+        if caller.is_architecture_rules():
+            return None
+        if not caller.is_proxy_module_import():
             raise ImportError(
-                f"Direct import of '{IMMICH_API_MODULE}' is forbidden. "
+                f"Direct import of '{IMMICH_API_MODULE}' is forbidden.\n"
+                f"Importer: '{caller.as_dotstring()}'\n"
+                f"Imported: '{imported.as_dotstring()}'\n"
                 "Only the proxy module may import it."
             )
 
@@ -32,6 +36,7 @@ def enforce_immich_proxy_import_rule(
         if caller.is_architecture_rules():
             return None
         if caller.is_outside_logging_proxy():
+            caller.is_architecture_rules()
             raise ImportError(
                 f"Direct import of '{str(imported)}' is forbidden outside "
                 f"{LOGGING_PROXY_MODULE_NAME}.\n"

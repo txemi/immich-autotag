@@ -20,6 +20,16 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 class Parts:
     items: List[str]
 
+    def equals(self, other) -> bool:
+        """
+        Compare this Parts object to another Parts or a list/tuple of strings.
+        """
+        if isinstance(other, Parts):
+            return self.items == other.items
+        if isinstance(other, (list, tuple)):
+            return self.items == list(other)
+        return False
+
     def __getitem__(self, idx):
         return self.items[idx]
 
@@ -81,7 +91,11 @@ class ModulePath:
         return cls(Parts(list(parts)))
 
     def is_submodule_of(self, other: "ModulePath") -> bool:
-        return self.get_parts()[: len(other.get_parts())] == other.get_parts()
+        my_parts = self.get_parts()
+        other_parts = other.get_parts()
+        prefix = Parts(list(my_parts[:len(other_parts)]))
+        result = prefix.equals(other_parts)
+        return result
 
     def as_dotstring(self) -> str:
         return ".".join(self.get_parts())
