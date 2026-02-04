@@ -412,11 +412,8 @@ class AlbumCollectionWrapper:
 
         self._evaluate_global_policy()
 
-
     @typechecked
     # Duplicate conflict logic delegated to manager
-
-    @typechecked
     def delete_album(
         self,
         wrapper: AlbumResponseWrapper,
@@ -507,11 +504,8 @@ class AlbumCollectionWrapper:
         """
         return self._remove_album_from_local_collection(album_wrapper)
 
-
     @typechecked
     # Non-temporary duplicate logic delegated to manager
-
-    @typechecked
     def _try_append_wrapper_to_list(
         self,
         *,
