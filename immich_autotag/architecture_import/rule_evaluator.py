@@ -11,6 +11,7 @@ from .rules import (
     enforce_immich_api_import_rule,
     enforce_immich_proxy_import_rule,
     enforce_logging_proxy_import_rule,
+    enforce_common_package_import_rule,
 )
 
 
@@ -23,6 +24,7 @@ def evaluate_import_rules(imported_module: ModulePath, caller_info: ModulePath) 
     if caller.is_outside_root_package():
         return None
     imported: ImmichModulePath = ImmichModulePath.from_module_path(imported_module)
+    enforce_common_package_import_rule(imported, caller)
     enforce_immich_api_import_rule(imported, caller)
     enforce_immich_proxy_import_rule(imported, caller)
     enforce_logging_proxy_import_rule(imported, caller)
