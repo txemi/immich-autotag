@@ -907,7 +907,10 @@ check_import_linter() {
 		echo "[ERROR] lint-imports binary not found in virtualenv or PATH."
 		return 1
 	fi
-	if ! "$lint_imports_bin" --config "$config_file"; then
+	importlinter_output=$("$lint_imports_bin" --config "$config_file" --output-markdown 2>&1)
+	importlinter_exit=$?
+	if [ $importlinter_exit -ne 0 ]; then
+		echo "$importlinter_output"
 		echo "[ERROR] import-linter found contract violations."
 		return 1
 	fi
