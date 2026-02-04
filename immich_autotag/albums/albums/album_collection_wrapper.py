@@ -60,13 +60,13 @@ class AlbumCollectionWrapper:
         factory=AlbumDualMap,
         validator=attrs.validators.instance_of(AlbumDualMap),
     )
-    _asset_to_albums_map: AssetToAlbumsMap | None = attrs.field(
+    # Asset map manager (delegates all asset-to-albums mapping logic)
+    _asset_map_manager: "AssetMapManager | None" = attrs.field(
         init=False,
         default=None,
-        validator=attrs.validators.optional(
-            attrs.validators.instance_of(AssetToAlbumsMap)
-        ),
+        repr=False,
     )
+
     # Unavailable album manager (delegates all unavailable logic)
     _unavailable_manager: "UnavailableAlbumManager | None" = attrs.field(
         init=False,
@@ -252,76 +252,14 @@ class AlbumCollectionWrapper:
         return TemporaryAlbumManager(_album_collection=self)
 
     @typechecked
-    def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
-        """Pre-computed map: asset_id -> AlbumList of AlbumResponseWrapper objects
-        (O(1) lookup).
-
-        Before building the map, forces the loading of asset_ids in all albums
-        (lazy loading).
-        """
-        asset_map = AssetToAlbumsMap()
-        assert (
-            len(self._albums) > 0
-        ), "AlbumCollectionWrapper must have at least one album to build asset map."
-
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-
-        client = ImmichClientWrapper.get_default_instance().get_client()
-        albums = self.get_albums()
-        total = len(albums)
-        tracker = None
-        if total > 0:
-            from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
-
-            tracker = PerformanceTracker.from_total(total)
-        for idx, album_wrapper in enumerate(albums, 1):
-            # Ensures the album is in full mode (assets loaded)
-            # album_wrapper.ensure_full()
-
-            if album_wrapper.is_empty():
-                log(
-                    f"Album '{album_wrapper.get_album_name()}' "
-                    f"has no assets after forced reload.",
-                    level=LogLevel.WARNING,
-                )
-                # album_wrapper.reload_from_api(client)
-                if album_wrapper.get_asset_uuids():
-                    album_url = album_wrapper.get_immich_album_url().geturl()
-                    raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album "
-                        f"'{album_wrapper.get_album_name()}' (URL: {album_url}) "
-                        "had empty asset_ids after initial load, "
-                        "but after a redundant reload it now has assets. "
-                        "This suggests a possible synchronization or lazy loading bug. "
-                        "Please review the album loading logic."
-                    )
-                if is_temporary_album(album_wrapper.get_album_name()):
-                    log(
-                        f"Temporary album '{album_wrapper.get_album_name()}' "
-                        f"marked for removal after map build.",
-                        level=LogLevel.WARNING,
-                    )
-
-            if tracker and tracker.should_log_progress(idx):
-                progress_msg = tracker.get_progress_description(idx)
-                log(
-                    f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}. Album "
-                    f"'{album_wrapper.get_album_name()}' reloaded with "
-                    f"{len(album_wrapper.get_asset_uuids())} assets.",
-                    level=LogLevel.PROGRESS,
-                )
-            asset_map.add_album_for_asset_ids(album_wrapper)
-        temp_manager = self._get_temporary_album_manager()
-        albums_to_remove = temp_manager.detect_empty_temporary_albums()
-        temp_manager.remove_empty_temporary_albums(albums_to_remove, client)
-
-        return asset_map
+    def build_asset_map(self) -> AssetToAlbumsMap:
+        """Delegates asset map build to AssetMapManager."""
+        return self._get_asset_map_manager().build_map()
 
     @typechecked
-    def _rebuild_asset_to_albums_map(self) -> None:
-        """Rebuilds the asset-to-albums map from scratch."""
-
-        self._asset_to_albums_map = self._asset_to_albums_map_build()
+    def _rebuild_asset_map(self) -> None:
+        """Delegates asset map rebuild to AssetMapManager."""
+        self._get_asset_map_manager().rebuild_map()
 
     @typechecked
     def remove_album_local(self, album_wrapper: AlbumResponseWrapper) -> bool:
@@ -848,7 +786,11 @@ class AlbumCollectionWrapper:
         filtered elsewhere).
         """
         return len(self._albums)
-
+    def _get_asset_map_manager(self) -> "AssetMapManager":
+        if self._asset_map_manager is None:
+            from immich_autotag.albums.albums.asset_map_manager.manager import AssetMapManager
+            self._asset_map_manager = AssetMapManager(collection=self)
+        return self._asset_map_manager
 
 # Singleton instance storage
 
