@@ -13,19 +13,53 @@ class CheckPylintProtectedAccess(Check):
         return self._name
 
     def check(self, args: QualityGateArgs) -> CheckResult:
-        cmd = [args.py_bin, '-m', 'pylint', '--disable=all', '--enable=protected-access', str(args.target_dir)]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        findings = []
-        if result.returncode != 0:
-            for line in result.stdout.splitlines():
-                if "W0212" in line:
-                    findings.append(Finding(
-                        file_path="pylint",
-                        line_number=0,
-                        message=line.strip(),
-                        code="protected-access"
-                    ))
-        return CheckResult(findings=findings)
+        from python_qualitygate.core.enums_level import QualityGateLevel
+
+        def _run_and_parse_pylint(args, finding_filter=None):
+            cmd = [args.py_bin, '-m', 'pylint', str(args.target_dir)]
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True)
+            except Exception as e:
+                raise RuntimeError(f"Error ejecutando pylint: {e}")
+
+            findings = []
+            if result.stderr.strip():
+                findings.append(Finding(
+                    file_path="pylint",
+                    line_number=0,
+                    message=f"stderr: {result.stderr.strip()}",
+                    code="pylint-stderr"
+                ))
+            if result.returncode != 0:
+                for line in result.stdout.splitlines():
+                    if ":" in line:
+                        parts = line.split(":", 4)
+                        if len(parts) >= 5:
+                            file_path, line_number, col, code, message = [p.strip() for p in parts]
+                            finding = Finding(
+                                file_path=file_path,
+                                line_number=int(line_number) if line_number.isdigit() else 0,
+                                message=message,
+                                code=code
+                            )
+                            if finding_filter is None or finding_filter(finding):
+                                findings.append(finding)
+            return findings
+
+        match args.level:
+            case QualityGateLevel.STRICT:
+                # Block ALL pylint findings in STRICT
+                findings = _run_and_parse_pylint(args)
+                return CheckResult(findings=findings)
+            case QualityGateLevel.TARGET:
+                # Block ONLY protected-access (W0212) in TARGET
+                findings = _run_and_parse_pylint(args, finding_filter=lambda f: f.code == "W0212")
+                return CheckResult(findings=findings)
+            case QualityGateLevel.STANDARD:
+                # Do not block in STANDARD
+                return CheckResult(findings=[])
+            case _:
+                raise ValueError(f"Unknown QualityGateLevel: {args.level}")
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
         return self.check(args)
