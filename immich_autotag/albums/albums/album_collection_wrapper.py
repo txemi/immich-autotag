@@ -13,18 +13,10 @@ from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
-from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
-from immich_autotag.albums.duplicates.duplicate_album_reports import (
-    DuplicateAlbumReports,
-)
-from immich_autotag.albums.duplicates.merge_duplicate_albums import (
-    merge_duplicate_albums,
-)
+from immich_autotag.albums.duplicates_manager.manager import DuplicateAlbumManager
 from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
 
-# Import for type checking and runtime
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
-from immich_autotag.config.dev_mode import is_development_mode
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
@@ -75,13 +67,18 @@ class AlbumCollectionWrapper:
     _unavailable: UnavailableAlbums = attrs.field(
         init=False, factory=UnavailableAlbums, repr=False
     )
-    # Collected duplicate album reports (instance-level). Used when running
-    # in non-development modes to accumulate duplicates for operator review.
-    _collected_duplicates: DuplicateAlbumReports = attrs.field(
-        default=attrs.Factory(DuplicateAlbumReports),
+    # Duplicate album manager (delegates all duplicate logic)
+    _duplicate_manager: DuplicateAlbumManager | None = attrs.field(
         init=False,
+        default=None,
         repr=False,
     )
+
+    def _get_duplicate_album_manager(self) -> DuplicateAlbumManager:
+        if self._duplicate_manager is None:
+            from immich_autotag.albums.duplicates_manager.manager import DuplicateAlbumManager
+            self._duplicate_manager = DuplicateAlbumManager(_collection=self)
+        return self._duplicate_manager
 
     # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
     _sync_state: SyncState = attrs.field(
@@ -242,7 +239,7 @@ class AlbumCollectionWrapper:
             TemporaryAlbumManager,
         )
 
-        return TemporaryAlbumManager(album_collection=self)
+        return TemporaryAlbumManager(_album_collection=self)
 
     @typechecked
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
@@ -412,54 +409,7 @@ class AlbumCollectionWrapper:
         self._evaluate_global_policy()
 
     @typechecked
-    def _handle_duplicate_album_conflict(
-        self,
-        incoming_album: AlbumResponseWrapper,
-        existing_album: AlbumResponseWrapper,
-        context: str = "ensure_unique",
-    ) -> AlbumResponseWrapper:
-        """
-        Centralizes duplicate album handling logic:
-        - Applies merge if the flag is active and returns the resulting album
-        - Fails fast in development mode
-        - Collects the duplicate in other modes
-        Performs an integrity check: both albums must have the same name.
-        """
-        # Integrity check: both albums must have the same name
-        name_existing = existing_album.get_album_name()
-        name_incoming = incoming_album.get_album_name()
-        if name_existing != name_incoming:
-            raise ValueError(
-                f"Integrity check failed in _handle_duplicate_album_conflict: "
-                f"album names differ ('{name_existing}' vs '{name_incoming}'). "
-                f"Context: {context}"
-            )
-        from immich_autotag.config.internal_config import (
-            MERGE_DUPLICATE_ALBUMS_ENABLED,
-        )
-
-        if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            client = AlbumCollectionWrapper.get_client()
-            tag_mod_report = AlbumCollectionWrapper.get_modification_report()
-            return merge_duplicate_albums(
-                target_album=existing_album,
-                collection=self,
-                duplicate_album=incoming_album,
-                client=client,
-                tag_mod_report=tag_mod_report,
-            )
-        else:
-            from immich_autotag.config.dev_mode import is_development_mode
-
-            if is_development_mode():
-                raise RuntimeError(
-                    f"Duplicate album name detected when adding album: "
-                    f"{existing_album.get_album_name()!r}"
-                )
-        collect_duplicate(
-            self._collected_duplicates, existing_album, incoming_album, context
-        )
-        return existing_album
+    # Duplicate conflict logic delegated to manager
 
     @typechecked
     def delete_album(
@@ -553,64 +503,7 @@ class AlbumCollectionWrapper:
         return self._remove_album_from_local_collection(album_wrapper)
 
     @typechecked
-    def _handle_non_temporary_duplicate(
-        self,
-        *,
-        existing: AlbumResponseWrapper,
-        incoming_album: AlbumResponseWrapper,
-        tag_mod_report: ModificationReport,
-        name: str,
-    ) -> None:
-        """
-        Handles the case of a non-temporary duplicate:
-        error in development, collection in other modes.
-        """
-
-        from immich_autotag.config.internal_config import (
-            MERGE_DUPLICATE_ALBUMS_ENABLED,
-        )
-
-        if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            # Centralizes handling in the unified method
-            self._handle_duplicate_album_conflict(
-                incoming_album=incoming_album,
-                existing_album=existing,
-                context="duplicate_on_load",
-            )
-            return
-
-        if is_development_mode():
-            raise RuntimeError(
-                f"Duplicate album name detected when adding album: {name!r}"
-            )
-            return  # Unreachable but helps mypy
-            return  # Unreachable but helps mypy
-
-        # Default behavior: collect duplicate report
-        from immich_autotag.albums.duplicates.duplicate_album_reports import (
-            DuplicateAlbumReport,
-        )
-
-        self._collected_duplicates.append(
-            DuplicateAlbumReport(
-                album_name=name,
-                existing_album=existing,
-                incoming_album=incoming_album,
-                note="duplicate skipped during initial load",
-            )
-        )
-        from immich_autotag.report.modification_kind import ModificationKind
-
-        tag_mod_report.add_error_modification(
-            kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-            error_message=f"duplicate album name encountered: {name}",
-            error_category="DUPLICATE_ALBUM",
-            extra={
-                "existing_id": existing.get_album_uuid(),
-                "incoming_id": incoming_album.get_album_uuid(),
-            },
-        )
-        return
+    # Non-temporary duplicate logic delegated to manager
 
     @typechecked
     def _try_append_wrapper_to_list(
@@ -669,7 +562,7 @@ class AlbumCollectionWrapper:
                     # Non-temporary duplicate
                     existing = self.find_first_album_with_name(name)
                     if existing is not None:
-                        self._handle_non_temporary_duplicate(
+                        self._get_duplicate_album_manager().handle_non_temporary_duplicate(
                             existing=existing,
                             incoming_album=wrapper,
                             tag_mod_report=tag_mod_report,
@@ -770,34 +663,7 @@ class AlbumCollectionWrapper:
     def combine_duplicate_albums(
         self, albums: list[AlbumResponseWrapper], context: str
     ) -> AlbumResponseWrapper:
-        """
-        Combines a list of duplicate albums into one, applying a reduction algorithm:
-        merges all albums two by two using the duplicate policy, always keeping the surviving album,
-        until only one remains. The 'context' argument is mandatory and must indicate the origin or
-        reason for the combination (for logs, exceptions, etc). Returns the resulting final album.
-        """
-        if not albums:
-            raise ValueError(
-                f"No albums provided to combine_duplicate_albums (context: {context})"
-            )
-        # Safety: Ensure all albums are true duplicates before merging
-        for album in albums:
-            if not album.is_duplicate_album():
-                raise RuntimeError(
-                    f"Refusing to combine album '{album.get_album_name()}' "
-                    f"(id={album.get_album_uuid()}): not a duplicate album."
-                )
-        survivors = list(albums)
-        while len(survivors) > 1:
-            existing_album = survivors[0]
-            incoming_album = survivors[1]
-            surviving_album = self._handle_duplicate_album_conflict(
-                incoming_album=incoming_album,
-                existing_album=existing_album,
-                context=context,
-            )
-            survivors = [surviving_album] + survivors[2:]
-        return survivors[0]
+        return self._get_duplicate_album_manager().combine_duplicate_albums(albums, context)
 
     @typechecked
     def _add_user_to_album(
@@ -957,7 +823,7 @@ class AlbumCollectionWrapper:
 
         albums = proxy_get_all_albums(client=client)
         # Clear previous duplicates before reloading
-        self._collected_duplicates.clear()
+        self._get_duplicate_album_manager().collected_duplicates.clear()
 
         log(
             f"[RESYNC] Starting album resync. Total albums to process: {len(albums)}",
@@ -994,12 +860,11 @@ class AlbumCollectionWrapper:
                     )
 
         tag_mod_report.flush()
-        if len(self._collected_duplicates) > 0:
+        if len(self._get_duplicate_album_manager().collected_duplicates) > 0:
             from immich_autotag.albums.duplicates.write_duplicates_summary import (
                 write_duplicates_summary,
             )
-
-            write_duplicates_summary(self._collected_duplicates)
+            write_duplicates_summary(self._get_duplicate_album_manager().collected_duplicates)
 
         log(f"[RESYNC] Total albums: {len(self)}", level=LogLevel.INFO)
         # Mark as synchronized
@@ -1007,12 +872,7 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def is_duplicated(self, wrapper: "AlbumResponseWrapper") -> bool:
-        """
-        Returns True if an album with the same name as 'wrapper' exists in the collection.
-        """
-        name = wrapper.get_album_name()
-        names = self.find_all_albums_with_name(name)
-        return len(list(names)) > 1
+        return self._get_duplicate_album_manager().is_duplicated(wrapper)
 
     @classmethod
     def from_client(cls) -> "AlbumCollectionWrapper":
