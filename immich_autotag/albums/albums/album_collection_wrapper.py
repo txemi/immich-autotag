@@ -12,10 +12,11 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
+from immich_autotag.albums.albums.duplicates_manager.manager import (
+    DuplicateAlbumManager,
+)
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
-from immich_autotag.albums.albums.duplicates_manager.manager import DuplicateAlbumManager
 from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
-
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
@@ -74,18 +75,21 @@ class AlbumCollectionWrapper:
         repr=False,
     )
 
-    def _get_duplicate_album_manager(self) -> DuplicateAlbumManager:
-        if self._duplicate_manager is None:
-            from immich_autotag.albums.albums.duplicates_manager.manager import DuplicateAlbumManager
-            self._duplicate_manager = DuplicateAlbumManager(_collection=self)
-        return self._duplicate_manager
-
     # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
     _sync_state: SyncState = attrs.field(
         default=SyncState.NOT_STARTED,
         init=False,
         repr=False,
     )
+
+    def _get_duplicate_album_manager(self) -> DuplicateAlbumManager:
+        if self._duplicate_manager is None:
+            from immich_autotag.albums.albums.duplicates_manager.manager import (
+                DuplicateAlbumManager,
+            )
+
+            self._duplicate_manager = DuplicateAlbumManager(collection=self)
+        return self._duplicate_manager
 
     def _ensure_fully_loaded(self):
         """
@@ -408,6 +412,7 @@ class AlbumCollectionWrapper:
 
         self._evaluate_global_policy()
 
+
     @typechecked
     # Duplicate conflict logic delegated to manager
 
@@ -501,6 +506,7 @@ class AlbumCollectionWrapper:
         Public wrapper for _remove_album_from_local_collection.
         """
         return self._remove_album_from_local_collection(album_wrapper)
+
 
     @typechecked
     # Non-temporary duplicate logic delegated to manager
@@ -663,7 +669,9 @@ class AlbumCollectionWrapper:
     def combine_duplicate_albums(
         self, albums: list[AlbumResponseWrapper], context: str
     ) -> AlbumResponseWrapper:
-        return self._get_duplicate_album_manager().combine_duplicate_albums(albums, context)
+        return self._get_duplicate_album_manager().combine_duplicate_albums(
+            albums, context
+        )
 
     @typechecked
     def _add_user_to_album(
@@ -864,7 +872,10 @@ class AlbumCollectionWrapper:
             from immich_autotag.albums.duplicates.write_duplicates_summary import (
                 write_duplicates_summary,
             )
-            write_duplicates_summary(self._get_duplicate_album_manager().collected_duplicates)
+
+            write_duplicates_summary(
+                self._get_duplicate_album_manager().collected_duplicates
+            )
 
         log(f"[RESYNC] Total albums: {len(self)}", level=LogLevel.INFO)
         # Mark as synchronized
