@@ -6,7 +6,7 @@ from typing import List
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckPythonSyntax(Check):
@@ -16,7 +16,7 @@ class CheckPythonSyntax(Check):
         return self._name
 
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         py_files = list(Path(args.target_dir).rglob('*.py'))
         findings: List[Finding] = []
         for f in py_files:
@@ -29,7 +29,7 @@ class CheckPythonSyntax(Check):
                 if hasattr(e, 'exc_value') and hasattr(e.exc_value, 'lineno'):
                     lineno = getattr(e.exc_value, 'lineno', 0)
                 findings.append(Finding(file_path=f, line_number=lineno, message=msg, code="syntax-error"))
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         return self.check(args)

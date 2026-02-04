@@ -4,7 +4,7 @@ from python_qualitygate.cli.args import QualityGateArgs
 from python_qualitygate.core.enums_level import QualityGateLevel
 import attr
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckFlake8(Check):
@@ -79,7 +79,7 @@ class CheckFlake8(Check):
                 )
         return findings
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         flake8_ignore, flake8_select = self._get_flake8_config(args.level)
         cmd = self._build_cmd(args, flake8_ignore, flake8_select)
         print(f"[RUN] {' '.join(cmd)}")
@@ -90,15 +90,15 @@ class CheckFlake8(Check):
             findings = []
         match args.level:
             case QualityGateLevel.STRICT:
-                return CheckResult(findings=findings)
+                return QualityGateResult(findings=findings)
             case QualityGateLevel.STANDARD:
                 # STANDARD now blocks F* errors (same as TARGET)
-                return CheckResult(findings=findings)
+                return QualityGateResult(findings=findings)
             case QualityGateLevel.TARGET:
-                return CheckResult(findings=findings)
+                return QualityGateResult(findings=findings)
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         # Flake8 no modifica archivos, solo check
         return self.check(args)

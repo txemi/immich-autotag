@@ -3,7 +3,7 @@ from pathlib import Path
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckNoDynamicAttrs(Check):
@@ -52,8 +52,8 @@ class CheckNoDynamicAttrs(Check):
                         ))
 
         print(f"[{args.level.name} MODE] getattr/hasattr policy enforcement is ENABLED.")
-        return CheckResult(findings=findings)
+            return QualityGateResult(findings=findings)
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
         # Solo checkea, no modifica
-        return self.check(args)
+            return self.check(args)

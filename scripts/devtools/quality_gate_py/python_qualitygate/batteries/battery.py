@@ -13,16 +13,25 @@ class Battery:
     def run(self, mode: QualityGateMode, args: QualityGateArgs) -> int:
         """Executes all checks in order. In CHECK mode, exits on first failure and prints up to 8 errors."""
         from python_qualitygate.core.enums_mode import QualityGateMode
-        from python_qualitygate.core.result import CheckResult
+        from python_qualitygate.core.result import QualityGateResult
         results = []
         for check in self.checks:
             rc, result = self._run_check(check, mode, args)
             check_name = check.get_name()
+            score_str = ""
+            # Mostrar score si está disponible
+            if  result.score is not None:
+                if check_name.lower().startswith("check_jscpd"):
+                    score_str = f" (duplicated: {result.score}%)"
+                elif check_name.lower().startswith("check_pylint"):
+                    score_str = f" (score: {result.score}/10)"
+                else:
+                    score_str = f" (score: {result.score})"
             if result.is_success():
-                results.append((check_name, 'OK', 0))
+                results.append((check_name, f'OK{score_str}', 0))
             else:
                 n = len(result.findings)
-                results.append((check_name, f'FAIL ({n} findings)', n))
+                results.append((check_name, f'FAIL ({n} findings){score_str}', n))
                 self._print_errors(check_name, result.findings)
                 self._print_summary(results)
                 print(f"[EXIT] Stopped at check: {check_name} with {n} errors.")
@@ -33,7 +42,7 @@ class Battery:
 
     def _run_check(self, check: Check, mode: QualityGateMode, args: QualityGateArgs):
         from python_qualitygate.core.enums_mode import QualityGateMode
-        from python_qualitygate.core.result import CheckResult
+        # from python_qualitygate.core.result import CheckResult  # Removed, use QualityGateResult only
         print(f"[CHECK] Running {check.get_name()} ...", flush=True)
         if mode == QualityGateMode.CHECK:
             result = check.check(args)
@@ -41,8 +50,8 @@ class Battery:
             result = check.apply(args)
         else:
             raise ValueError(f"Unknown mode: {mode}")
-        if not isinstance(result, CheckResult):
-            raise TypeError(f"Check {check.get_name()} must return a CheckResult, not {type(result)}")
+        if not isinstance(result, QualityGateResult):
+            raise TypeError(f"Check {check.get_name()} must return a QualityGateResult, not {type(result)}")
         if result.is_success():
             print(f"[OK] {check.get_name()} passed\n", flush=True)
             return 0, result
