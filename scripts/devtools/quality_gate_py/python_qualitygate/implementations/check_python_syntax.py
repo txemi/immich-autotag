@@ -10,7 +10,10 @@ from python_qualitygate.core.result import CheckResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckPythonSyntax(Check):
-    name = 'check_python_syntax'
+    _name: str = attr.ib(default='check_python_syntax', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
 
     def check(self, args: QualityGateArgs) -> CheckResult:

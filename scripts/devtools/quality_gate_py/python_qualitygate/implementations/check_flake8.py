@@ -8,7 +8,10 @@ from python_qualitygate.core.result import CheckResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckFlake8(Check):
-    name = 'check_flake8'
+    _name: str = attr.ib(default='check_flake8', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
     def _get_flake8_config(self, level: QualityGateLevel) -> tuple[list[str], str | None]:
         base_ignore = ['E203', 'W503']

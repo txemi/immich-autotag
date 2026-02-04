@@ -9,7 +9,10 @@ DISABLE_IMPORT_LINTER_CHECK = True  # Cambia a False para reactivar el check
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckImportLinter(Check):
-    name = 'check_import_linter'
+    _name: str = attr.ib(default='check_import_linter', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         if DISABLE_IMPORT_LINTER_CHECK:

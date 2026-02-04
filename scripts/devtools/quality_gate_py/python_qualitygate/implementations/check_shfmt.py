@@ -7,7 +7,10 @@ from python_qualitygate.core.result import CheckResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckShfmt(Check):
-    name = 'check_shfmt'
+    _name: str = attr.ib(default='check_shfmt', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         cmd = ['shfmt', '-d', '-i', '0']

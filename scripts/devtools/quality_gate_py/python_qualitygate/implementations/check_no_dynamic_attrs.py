@@ -7,7 +7,10 @@ from python_qualitygate.core.result import CheckResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckNoDynamicAttrs(Check):
-    name = 'check_no_dynamic_attrs'
+    _name: str = attr.ib(default='check_no_dynamic_attrs', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         """

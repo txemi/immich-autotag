@@ -17,14 +17,15 @@ class Battery:
         results = []
         for check in self.checks:
             rc, result = self._run_check(check, mode, args)
+            check_name = check.get_name()
             if result.is_success():
-                results.append((check.name, 'OK', 0))
+                results.append((check_name, 'OK', 0))
             else:
                 n = len(result.findings)
-                results.append((check.name, f'FAIL ({n} findings)', n))
-                self._print_errors(check.name, result.findings)
+                results.append((check_name, f'FAIL ({n} findings)', n))
+                self._print_errors(check_name, result.findings)
                 self._print_summary(results)
-                print(f"[EXIT] Stopped at check: {check.name} with {n} errors.")
+                print(f"[EXIT] Stopped at check: {check_name} with {n} errors.")
                 return n
         self._print_summary(results)
         print("[OK] Battery passed!")
@@ -33,7 +34,7 @@ class Battery:
     def _run_check(self, check: Check, mode: QualityGateMode, args: QualityGateArgs):
         from python_qualitygate.core.enums_mode import QualityGateMode
         from python_qualitygate.core.result import CheckResult
-        print(f"[CHECK] Running {check.name} ...", flush=True)
+        print(f"[CHECK] Running {check.get_name()} ...", flush=True)
         if mode == QualityGateMode.CHECK:
             result = check.check(args)
         elif mode == QualityGateMode.APPLY:
@@ -41,12 +42,12 @@ class Battery:
         else:
             raise ValueError(f"Unknown mode: {mode}")
         if not isinstance(result, CheckResult):
-            raise TypeError(f"Check {check.name} must return a CheckResult, not {type(result)}")
+            raise TypeError(f"Check {check.get_name()} must return a CheckResult, not {type(result)}")
         if result.is_success():
-            print(f"[OK] {check.name} passed\n", flush=True)
+            print(f"[OK] {check.get_name()} passed\n", flush=True)
             return 0, result
         else:
-            print(f"[FAIL] {check.name} failed: {len(result.findings)} findings found\n", flush=True)
+            print(f"[FAIL] {check.get_name()} failed: {len(result.findings)} findings found\n", flush=True)
             return 1, result
 
     def _print_errors(self, check_name: str, findings) -> None:

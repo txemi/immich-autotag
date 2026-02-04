@@ -4,8 +4,11 @@ from python_qualitygate.core.result import CheckResult
 from python_qualitygate.cli.args import QualityGateArgs
 from abc import ABC, abstractmethod
 
+
 class Check(ABC):
-    name: str = ''  # Should be overridden as a class variable in subclasses
+    @abstractmethod
+    def get_name(self) -> str:
+        ...
 
     @abstractmethod
     def check(self, args: QualityGateArgs) -> CheckResult:

@@ -10,9 +10,11 @@ import attr
 from langdetect import detect, LangDetectException
 
 @attr.define(auto_attribs=True, slots=True)
-
 class CheckNoSpanishChars(Check):
-    name = 'check_no_spanish_chars'
+    _name: str = attr.ib(default='check_no_spanish_chars', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         findings: List[Finding] = []

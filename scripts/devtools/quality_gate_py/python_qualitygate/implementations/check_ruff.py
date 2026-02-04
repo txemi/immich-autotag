@@ -8,7 +8,10 @@ from python_qualitygate.core.result import CheckResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckRuff(Check):
-    name = 'check_ruff'
+    _name: str = attr.ib(default='check_ruff', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
     def _build_ruff_command(self, args: QualityGateArgs, apply_fix: bool) -> list[str]:
         """Build the ruff command with appropriate flags based on level and mode."""

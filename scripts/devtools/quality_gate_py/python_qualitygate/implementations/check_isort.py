@@ -7,7 +7,10 @@ from python_qualitygate.core.result import CheckResult, Finding
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckIsort(Check):
-    name = 'check_isort'
+    _name: str = attr.ib(default='check_isort', init=False)
+
+    def get_name(self) -> str:
+        return self._name
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--check-only', '--line-length', str(args.line_length), str(args.target_dir)]
