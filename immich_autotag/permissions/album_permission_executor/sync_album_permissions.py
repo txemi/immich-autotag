@@ -51,9 +51,9 @@ def sync_album_permissions(
 
     user_manager = UserManager.get_instance()
 
-    current_member_wrappers = []
+    current_member_wrappers: list[UserResponseWrapper] = []
     for album_user in current_members:
-        member = user_manager.get_by_uuid(album_user.get_uuid())
+        member: UserResponseWrapper | None = user_manager.get_by_uuid(album_user.get_uuid())
         if member is None:
             log_debug(
                 "[ALBUM_PERMISSIONS] Skipping removal for unresolved album user "
@@ -63,13 +63,15 @@ def sync_album_permissions(
         current_member_wrappers.append(member)
 
     # Build sets for comparison: target members vs current members
-    # Note: UserResponseWrapper is frozen and hashable, supporting set operations
-    target_members_set = set(member_resolution.get_resolved_members())
-    current_members_set = set(current_member_wrappers)
+    # Wrap UserResponseDto in UserResponseWrapper for hashability
+    from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+    target_members: list[UserResponseWrapper] = [UserResponseWrapper.from_user(u) for u in member_resolution.get_resolved_members()]
+    target_members_set: set[UserResponseWrapper] = set(target_members)
+    current_members_set: set[UserResponseWrapper] = set(current_member_wrappers)
 
     # Calculate diff
-    members_to_add = target_members_set - current_members_set
-    members_to_remove = current_members_set - target_members_set
+    members_to_add: set[UserResponseWrapper] = target_members_set - current_members_set
+    members_to_remove: set[UserResponseWrapper] = current_members_set - target_members_set
 
     # Phase 2A: PONER (add members)
     if members_to_add:
