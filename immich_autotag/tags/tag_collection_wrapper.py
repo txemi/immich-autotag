@@ -107,11 +107,12 @@ class TagCollectionWrapper:
         Creates the tag in Immich if it doesn't exist and adds it to the local
         collection. Returns the corresponding TagResponseDto.
         """
+
         tag = self.find_by_name(name)
         if tag is not None:
             return tag
 
-            from immich_autotag.api.logging_proxy.tags import logging_create_tag
+        from immich_autotag.api.logging_proxy.tags import logging_create_tag
         from immich_autotag.api.logging_proxy.types import immich_errors
 
         try:
