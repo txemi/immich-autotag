@@ -196,7 +196,7 @@ class ConfigManager:
 
     @staticmethod
     def is_checkpoint_resume_enabled() -> bool:
-        config = ConfigManager.get_instance()._config
+        config = ConfigManager.get_instance().get_config()
         if config is None:
             return False
         # Prefer explicit access to known config fields. The skip/resume logic

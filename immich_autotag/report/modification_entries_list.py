@@ -73,7 +73,7 @@ class ModificationEntriesList(ProcessStepResult):
     def extend(self, other: "ModificationEntriesList") -> "ModificationEntriesList":
         """Returns a new list with entries from both lists."""
         if isinstance(other, ModificationEntriesList):
-            combined = self._entries + other._entries
+            combined = self._entries + other.get_entries()
         else:
             combined = self._entries + list(other)
         return ModificationEntriesList(entries=combined)
@@ -117,6 +117,12 @@ class ModificationEntriesList(ProcessStepResult):
 
         word = "modification" if total == 1 else "modifications"
         return f"{total} {word} ({breakdown})"
+
+    def get_entries(self) -> list["ModificationEntry"]:
+        """
+        Returns the underlying list of entries.
+        """
+        return self._entries
 
     def __iter__(self) -> Iterator["ModificationEntry"]:
         """Allows iteration over entries."""
