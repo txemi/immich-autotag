@@ -27,8 +27,6 @@ class StaleAssetCacheError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetCacheEntry:
-
-
     """
     Encapsulates the cached state of an asset, with freshness and reload logic.
     Attributes are private; access only via public methods.
