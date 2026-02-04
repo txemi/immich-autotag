@@ -211,9 +211,9 @@ class TagCollectionWrapper:
         return None
     def merge_or_update_tag(self, new_tag: "TagWrapper") -> "TagWrapper | None":
         """
-        Recibe un nuevo TagWrapper y lo compara con el candidato de la colección (por id/nombre).
-        Si no hay candidato, añade el nuevo y lo retorna.
-        Si hay candidato, llama a get_best_tag y actualiza el mapa si corresponde.
+        Receives a new TagWrapper and compares it with the candidate in the collection (by id/name).
+        If no candidate is found, adds the new tag and returns it.
+        If a candidate exists, calls get_best_tag and updates the map if needed.
         """
         candidate = self._find_candidate_tag(new_tag)
         if candidate is None:

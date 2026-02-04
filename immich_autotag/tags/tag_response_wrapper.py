@@ -6,7 +6,6 @@ from immich_autotag.api.logging_proxy.types import TagResponseDto
 from immich_autotag.types.uuid_wrappers import TagUUID
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
 class TagSource(Enum):
     GET_ALL_TAGS = "get_all_tags"
     GET_TAG_BY_ID = "get_tag_by_id"
