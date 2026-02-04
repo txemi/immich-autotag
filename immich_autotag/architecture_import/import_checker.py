@@ -6,16 +6,13 @@ for enforcing architecture rules on imports at runtime.
 Allows installing a hook in sys.meta_path that validates imports according to rules
 defined for the Immich-autotag project.
 """
+
 import importlib.machinery
 from typing import Optional
 
 from immich_autotag.architecture_import.rule_evaluator import evaluate_import_rules
 from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
-from .rules import (
-    enforce_immich_api_import_rule,
-    enforce_immich_proxy_import_rule,
-    enforce_logging_proxy_import_rule,
-)
+
 
 
 class ArchitectureImportChecker:
@@ -49,12 +46,14 @@ class ArchitectureImportChecker:
         if not ENABLE_ARCHITECTURE_IMPORT_HOOK:
             return None
         from .module_path import ModulePath
+
         ci = ModulePath.from_stack()
         if ci is None:
-            raise RuntimeError("ArchitectureImportChecker: Could not determine caller module path (ci is None). Defensive fail-fast.")
-        #if False and ci.is_outside_project():
+            raise RuntimeError(
+                "ArchitectureImportChecker: Could not determine caller module path (ci is None). Defensive fail-fast."
+            )
+        # if False and ci.is_outside_project():
         #    return None
         imported_module = ModulePath.from_dotstring(fullname)
         evaluate_import_rules(imported_module, ci)
         return None
-
