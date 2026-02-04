@@ -1,5 +1,4 @@
 from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
-from .caller_info import CallerInfo
 from .shared_symbols import (
     IMMICH_API_MODULE,
     LOGGING_PROXY_MODULE_NAME,

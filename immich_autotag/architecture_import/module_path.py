@@ -5,10 +5,13 @@ Defines the ModulePath class, which represents Python module paths as tuples of 
 Allows constructing paths from strings, Path, or parts, and performing typical hierarchical operations.
 This class is the base for architecture logic regarding imports and module membership.
 """
+import inspect
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 import attrs
+from typeguard import typechecked
 
+PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ModulePath:
 
@@ -66,3 +69,29 @@ class ModulePath:
         Returns True if this module path is outside the root of another module path.
         """
         return not self.get_parts() or not other.get_parts() or self.get_parts()[0] != other.get_parts()[0]
+    
+
+    @staticmethod
+    @typechecked
+    def from_stack() -> Optional["ModulePath"]:
+        """
+        Returns a CallerInfo for the first non-frozen caller in the stack
+        (relative to PROJECT_ROOT), or None if the caller is not inside the project.
+        """
+        found_frozen: bool = False
+        stack = inspect.stack()
+        from .immich_module_path import ImmichModulePath
+        for frame in stack:
+            filename = frame.filename
+            if "frozen" in filename:
+                found_frozen = True
+                continue
+            if found_frozen and "frozen" not in filename:
+                try:
+                    rel_path = Path(filename).resolve().relative_to(PROJECT_ROOT)
+                    # Convert rel_path to ImmichModulePath (dot notation)
+                    immich_module_path = ModulePath.from_path(rel_path)
+                    return immich_module_path
+                except ValueError:
+                    return None
+        return None

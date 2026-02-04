@@ -1,4 +1,3 @@
-from .caller_info import CallerInfo
 from .import_checker import ArchitectureImportChecker
 from .rules import (
     enforce_immich_api_import_rule,
