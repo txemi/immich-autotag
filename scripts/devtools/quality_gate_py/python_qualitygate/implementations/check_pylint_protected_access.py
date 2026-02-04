@@ -17,10 +17,15 @@ class CheckPylintProtectedAccess(Check):
 
         def _run_and_parse_pylint(args, finding_filter=None):
             cmd = [args.py_bin, '-m', 'pylint', str(args.target_dir)]
+            print(f"[RUN] {' '.join(cmd)}")
             try:
                 result = subprocess.run(cmd, capture_output=True, text=True, check=False)
             except Exception as e:
-                raise RuntimeError(f"Error ejecutando pylint: {e}")
+                raise RuntimeError(f"Error running pylint: {e}")
+
+            # If pylint is not installed or module not found, raise exception
+            if result.stderr and ("No module named pylint" in result.stderr or result.returncode == 1 and "No module named" in result.stderr):
+                raise RuntimeError(f"pylint is not installed or module not found: {result.stderr.strip()}")
 
             findings = []
             if result.stderr.strip():
