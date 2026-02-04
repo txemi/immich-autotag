@@ -234,63 +234,15 @@ class AlbumCollectionWrapper:
         self._albums.remove(album_wrapper)
         return True
 
-    @typechecked
-    def _remove_empty_temporary_albums(
-        self, albums_to_remove: AlbumList, client: ImmichClient
-    ):
+    def _get_temporary_album_manager(self):
         """
-        Removes empty temporary albums detected after building the map.
-        Raises an exception if any of them is not temporary (integrity).
+        Returns an instance of TemporaryAlbumManager bound to this collection.
         """
-        if not albums_to_remove:
-            return
-        # Integrity check: all must be temporary
-        for album_wrapper in albums_to_remove:
-            if not is_temporary_album(album_wrapper.get_album_name()):
-                raise RuntimeError(
-                    f"Integrity check failed: album '{album_wrapper.get_album_name()}' "
-                    f"(id={album_wrapper.get_album_uuid()}) is not temporary but was "
-                    f"passed to _remove_empty_temporary_albums."
-                )
+        from immich_autotag.assets.albums.temporary_manager.manager import (
+            TemporaryAlbumManager,
+        )
 
-        tag_mod_report = ModificationReport.get_instance()
-        for album_wrapper in albums_to_remove:
-            try:
-                self.delete_album(
-                    wrapper=album_wrapper,
-                    client=client,
-                    tag_mod_report=tag_mod_report,
-                    reason=(
-                        "Removed automatically after map build because it was empty "
-                        "and temporary"
-                    ),
-                )
-                # No need to call _remove_album_from_local_collection here
-                # because delete_album already does it via remove_album_local_public
-            except Exception as e:
-                album_name = album_wrapper.get_album_name()
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
-
-                log(
-                    f"Failed to remove temporary album '{album_name}': {e}",
-                    level=LogLevel.ERROR,
-                )
-                raise
-
-    @typechecked
-    def _detect_empty_temporary_albums(self) -> AlbumList:
-        """
-        Returns an AlbumList of empty temporary albums to be removed
-        after building the map.
-        """
-        albums_to_remove = AlbumList()
-        for album_wrapper in self.get_albums():
-            if album_wrapper.is_empty() and is_temporary_album(
-                album_wrapper.get_album_name()
-            ):
-                albums_to_remove.append(album_wrapper)
-        return albums_to_remove
+        return TemporaryAlbumManager(album_collection=self)
 
     @typechecked
     def _asset_to_albums_map_build(self) -> AssetToAlbumsMap:
@@ -352,10 +304,9 @@ class AlbumCollectionWrapper:
                     level=LogLevel.PROGRESS,
                 )
             asset_map.add_album_for_asset_ids(album_wrapper)
-        albums_to_remove = self._detect_empty_temporary_albums()
-
-        # Removes empty temporary albums detected after building the map
-        self._remove_empty_temporary_albums(albums_to_remove, client)
+        temp_manager = self._get_temporary_album_manager()
+        albums_to_remove = temp_manager.detect_empty_temporary_albums()
+        temp_manager.remove_empty_temporary_albums(albums_to_remove, client)
 
         return asset_map
 
