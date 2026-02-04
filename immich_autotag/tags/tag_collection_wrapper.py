@@ -196,53 +196,18 @@ class TagCollectionWrapper:
     @staticmethod
     def maintenance_delete_conflict_tags(client: ImmichClient) -> int:
         """
-        MAINTENANCE HACK: Deletes all tags whose name starts with the fixed
-        conflict prefix. Returns the number of deleted tags.
+        MAINTENANCE HACK: Deletes all tags whose name starts with any conflict prefix.
+        Returns the number of deleted tags.
         """
-        from immich_autotag.config.manager import ConfigManager
-
-        conf = ConfigManager.get_instance().get_config()
-        prefixes = []
-        if conf.duplicate_processing is not None:
-            prefixes = [
-                conf.duplicate_processing.autotag_album_conflict,
-                conf.duplicate_processing.autotag_classification_conflict_prefix,
-            ]
-        prefixes = [p for p in prefixes if isinstance(p, str) and p]
         from immich_autotag.api.logging_proxy.load_all_tags_wrapped import (
             load_all_tags_wrapped,
         )
+        from immich_autotag.api.logging_proxy.tags import logging_delete_tag
 
         tags_wrapped = load_all_tags_wrapped()
         count = 0
-        from typing import Sequence
-
-        from immich_autotag.api.logging_proxy.tags import logging_delete_tag
-
-        def tag_name_has_conflict_prefix(
-            tag_wrapper: "TagWrapper", prefixes: Sequence[str]
-        ) -> bool:
-            """
-            Returns True if the tag's name starts with any of the given prefixes.
-            Handles empty string defensively.
-            """
-            name: str = tag_wrapper.name()
-            if name == "":
-                import logging
-
-                logging.getLogger(__name__).warning(
-                    f"[TAG MAINTENANCE] Tag with empty name encountered: "
-                    f"{tag_wrapper!r}"
-                )
-                return False
-            for prefix in prefixes:
-                if name.startswith(prefix):
-                    return True
-            return False
-
-        prefixes_clean: Sequence[str] = [p for p in prefixes if p is not None]
         for tag_wrapper in tags_wrapped:
-            if tag_name_has_conflict_prefix(tag_wrapper, prefixes_clean):
+            if tag_wrapper.has_conflict_prefix():
                 logging_delete_tag(
                     client=client,
                     tag=tag_wrapper,
