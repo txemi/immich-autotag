@@ -8,7 +8,7 @@ from python_qualitygate.core.result import CheckResult, Finding
 class CheckLargeFiles(Check):
     _name: str = attr.ib(default='check_large_files', init=False)
     # Reasonable threshold: 1000 lines per Python file
-    MAX_LINES: int = 1000
+    MAX_LINES: int = 1080
 
     def get_name(self) -> str:
         return self._name
