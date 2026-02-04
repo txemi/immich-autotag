@@ -1,4 +1,3 @@
-
 from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
 from immich_autotag.common import __name__ as COMMON_PKG_NAME
 

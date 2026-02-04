@@ -92,6 +92,19 @@ class TagWrapper:
         If one is from GET_ALL_TAGS and the other is from ASSET_PAYLOAD, prefer GET_ALL_TAGS.
         Otherwise, raise NotImplementedError with info about both candidates.
         """
+        # If self is CREATE_TAG and other is ASSET_PAYLOAD, prefer self
+        if (
+            self._source == TagSource.CREATE_TAG
+            and other._source == TagSource.ASSET_PAYLOAD
+        ):
+            return self
+        # If other is CREATE_TAG and self is ASSET_PAYLOAD, prefer other
+        if (
+            other._source == TagSource.CREATE_TAG
+            and self._source == TagSource.ASSET_PAYLOAD
+        ):
+            return other
+        # Existing logic for GET_ALL_TAGS vs ASSET_PAYLOAD
         if (
             self._source == TagSource.GET_ALL_TAGS
             and other._source == TagSource.ASSET_PAYLOAD
