@@ -18,10 +18,7 @@ class CheckPylintProtectedAccess(Check):
         def _run_and_parse_pylint(args, finding_filter=None):
             cmd = [args.py_bin, '-m', 'pylint', str(args.target_dir)]
             try:
-                result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            except subprocess.CalledProcessError as e:
-                # Still want to parse output for findings, but fail visibly if the tool itself errors out
-                raise RuntimeError(f"Error running pylint (nonzero exit): {e}")
+                result = subprocess.run(cmd, capture_output=True, text=True, check=False)
             except Exception as e:
                 raise RuntimeError(f"Error ejecutando pylint: {e}")
 
@@ -33,20 +30,20 @@ class CheckPylintProtectedAccess(Check):
                     message=f"stderr: {result.stderr.strip()}",
                     code="pylint-stderr"
                 ))
-            if result.returncode != 0:
-                for line in result.stdout.splitlines():
-                    if ":" in line:
-                        parts = line.split(":", 4)
-                        if len(parts) >= 5:
-                            file_path, line_number, col, code, message = [p.strip() for p in parts]
-                            finding = Finding(
-                                file_path=file_path,
-                                line_number=int(line_number) if line_number.isdigit() else 0,
-                                message=message,
-                                code=code
-                            )
-                            if finding_filter is None or finding_filter(finding):
-                                findings.append(finding)
+            # Always process findings, even if returncode != 0
+            for line in result.stdout.splitlines():
+                if ":" in line:
+                    parts = line.split(":", 4)
+                    if len(parts) >= 5:
+                        file_path, line_number, col, code, message = [p.strip() for p in parts]
+                        finding = Finding(
+                            file_path=file_path,
+                            line_number=int(line_number) if line_number.isdigit() else 0,
+                            message=message,
+                            code=code
+                        )
+                        if finding_filter is None or finding_filter(finding):
+                            findings.append(finding)
             return findings
 
         match args.level:
