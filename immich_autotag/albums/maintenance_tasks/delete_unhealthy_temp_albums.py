@@ -20,12 +20,18 @@ def _is_album_healthy(album: AlbumResponseWrapper) -> bool:
     return is_temporary_album_healthy(album)
 
 
-def _delete_album(album: AlbumResponseWrapper, client: ImmichClient) -> None:
+def _delete_album(album: AlbumResponseWrapper, client: ImmichClient, albums_collection) -> None:
     """
-    Deletes the album using the API.
+    Deletes the album using the AlbumCollectionWrapper API.
     """
-    from immich_autotag.api.logging_proxy.albums import logging_delete_album
-    logging_delete_album(client=client, album=album)
+    from immich_autotag.report.modification_report import ModificationReport
+    tag_mod_report = ModificationReport.get_instance()
+    albums_collection.delete_album(
+        wrapper=album,
+        client=client,
+        tag_mod_report=tag_mod_report,
+        reason="Unhealthy temporary album deleted automatically",
+    )
 
 
 def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
@@ -34,11 +40,11 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
     Returns the number of deleted albums.
     """
     client = context.get_client_wrapper().get_client()
-    album_manager = context.get_album_manager()
-    albums = album_manager.get_all_albums()
+    albums_collection = context.get_albums_collection()
+    albums = albums_collection.get_all_albums()
     count = 0
     for album in albums:
         if _is_temp_album(album) and not _is_album_healthy(album):
-            _delete_album(album, client)
+            _delete_album(album, client, albums_collection)
             count += 1
     return count
