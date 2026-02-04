@@ -7,11 +7,14 @@ for the architecture and import rules of the Immich-autotag project.
 Allows semantic queries about subpackage and core membership within the project.
 """
 import attrs
+
+from immich_autotag.architecture_import.shared_symbols import LOGGING_PROXY_MODULE_NAME
 from .module_path import ModulePath
 
 
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ImmichModulePath(ModulePath):
+
 
 
     """
@@ -81,3 +84,19 @@ class ImmichModulePath(ModulePath):
         """
         parts = module_path.get_parts() 
         return cls(parts)
+
+    def is_immich_api_module(self) -> bool:
+        """
+        Returns True if this module path is part of the Immich API (client) prefix.
+        """
+        from .shared_symbols import IMMICH_CLIENT_PREFIX
+        return self.as_dotstring().startswith(IMMICH_CLIENT_PREFIX)
+
+    def is_import_from_immich_proxy(self) -> bool:
+        """
+        Returns True if the module path is from the Immich proxy prefix.
+        """
+        from .shared_symbols import IMMICH_PROXY_PREFIX
+        return self.as_dotstring().startswith(IMMICH_PROXY_PREFIX)
+    def is_import_from_logging_proxy(self) -> bool:
+        return self.as_dotstring().startswith(LOGGING_PROXY_MODULE_NAME)

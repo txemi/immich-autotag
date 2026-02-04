@@ -27,14 +27,10 @@ class ImportedModuleInfo:
     def __attrs_post_init__(self):
         if not isinstance(self.module_path, ModulePath):
             raise TypeError(f"module_path must be a ModulePath instance, got {type(self.module_path)}")
-    def is_immich_api_module(self) -> bool:
-        return self.module_path.as_dotstring().startswith(IMMICH_CLIENT_PREFIX)
 
-    def is_import_from_immich_proxy(self) -> bool:
-        return self.module_path.as_dotstring().startswith(IMMICH_PROXY_PREFIX)
 
-    def is_import_from_logging_proxy(self) -> bool:
-        return self.module_path.as_dotstring().startswith(LOGGING_PROXY_MODULE_NAME)
+
+
 
     def __str__(self):
         return self.module_path.as_dotstring()
