@@ -56,7 +56,7 @@ class ClassificationStatus(Enum):
         Returns:
             ClassificationStatus enum value indicating the asset's classification state.
         """
-        num_tags = len(match_results.tags())
+        # num_tags = len(match_results.tags())
         num_albums = len(match_results.albums())
         num_rules_matched = len(match_results.rules())
 
