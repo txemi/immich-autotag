@@ -1,6 +1,11 @@
 from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
 from immich_autotag.common import __name__ as COMMON_PKG_NAME
 
+from .shared_symbols import (
+    IMMICH_API_MODULE,
+    LOGGING_PROXY_MODULE_NAME,
+)
+
 
 def enforce_common_package_import_rule(
     imported: ImmichModulePath, caller: ImmichModulePath
@@ -21,12 +26,6 @@ def enforce_common_package_import_rule(
             f"Imported: '{imported.as_dotstring()}'\n"
             "The common package must not import anything from outside common."
         )
-
-
-from .shared_symbols import (
-    IMMICH_API_MODULE,
-    LOGGING_PROXY_MODULE_NAME,
-)
 
 
 def enforce_immich_api_import_rule(
