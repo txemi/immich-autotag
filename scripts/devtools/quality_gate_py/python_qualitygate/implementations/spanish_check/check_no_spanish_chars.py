@@ -5,7 +5,7 @@ from python_qualitygate.cli.args import QualityGateArgs
 from git import Repo, InvalidGitRepositoryError
 from pathlib import Path
 from python_qualitygate.core.base import Check
-from python_qualitygate.core.result import CheckResult, Finding
+from python_qualitygate.core.result import QualityGateResult, Finding
 import attr
 from langdetect import detect, LangDetectException
 
@@ -16,11 +16,11 @@ class CheckNoSpanishChars(Check):
     def get_name(self) -> str:
         return self._name
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         findings: List[Finding] = []
         repo, repo_root = self._get_repo_and_root(findings)
         if repo is None or repo_root is None:
-            return CheckResult(findings=findings)
+            return QualityGateResult(findings=findings)
 
         words_path, spanish_words = self._get_spanish_words(repo_root, findings)
         forbidden_bytes = self._get_forbidden_bytes()
@@ -37,7 +37,7 @@ class CheckNoSpanishChars(Check):
         # Check file names for spanish words
         findings.extend(self._analyze_filenames_for_spanish_words(files_to_check, spanish_words))
 
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
 
     def _analyze_filenames_for_spanish_words(self, files: List[Path], spanish_words: List[str]) -> List[Finding]:
         import re
@@ -72,7 +72,7 @@ class CheckNoSpanishChars(Check):
         return findings
 
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         return self.check(args)
 
     def _get_repo_and_root(self, findings: List[Finding]):

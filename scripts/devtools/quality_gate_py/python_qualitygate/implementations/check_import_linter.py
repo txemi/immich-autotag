@@ -14,7 +14,7 @@ class CheckImportLinter(Check):
     def get_name(self) -> str:
         return self._name
 
-    def check(self, args: QualityGateArgs) -> CheckResult:
+    def check(self, args: QualityGateArgs) -> QualityGateResult:
         if DISABLE_IMPORT_LINTER_CHECK:
             # Return an empty and successful result (Import-linter check disabled by configuration)
             return QualityGateResult(findings=[])
@@ -49,6 +49,6 @@ class CheckImportLinter(Check):
                     ))
         return QualityGateResult(findings=findings)
 
-    def apply(self, args: QualityGateArgs) -> CheckResult:
+    def apply(self, args: QualityGateArgs) -> QualityGateResult:
         # importlinter solo checkea, no modifica
         return self.check(args)

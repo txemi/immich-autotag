@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import List
 
+
 from python_qualitygate.core.base import Check
 from python_qualitygate.core.enums_mode import QualityGateMode
 from python_qualitygate.cli.args import QualityGateArgs
+from python_qualitygate.core.result import QualityGateResult
 
 @dataclass(slots=True)
 class Battery:
