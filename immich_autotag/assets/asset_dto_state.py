@@ -131,8 +131,10 @@ class AssetDtoState:
             RuntimeError: If validation methods disagree (inconsistent state)
         """
         # This will validate that tags are loaded using both methods
-        full = self.require_tags_loaded()
-        dto = full._require_dto()
+        self.require_tags_loaded()
+        dto = self._dto
+        if dto is None:
+            raise RuntimeError("DTO is None")
         tags = dto.tags
 
         # Double-check: tags should NOT be Unset at this point
