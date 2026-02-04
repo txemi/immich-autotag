@@ -34,8 +34,9 @@ class TagWrapper:
     _tag: TagResponseDto = attrs.field(
         init=True,
         validator=attrs.validators.instance_of(TagResponseDto),
-        repr=lambda self: f"TagResponseDto(name={self._tag.name})",
+        repr=lambda self: f"TagResponseDto(name={self.name})",
     )
+
 
     _source: TagSource = attrs.field(init=True, repr=True)
     _loaded_at: float = attrs.field(init=True, factory=lambda: time.time(), repr=True)
