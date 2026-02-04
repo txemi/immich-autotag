@@ -57,6 +57,7 @@ def _get_current_member_wrappers(
         )
         if member is None:
             from immich_autotag.logging.utils import log_debug
+
             log_debug(
                 f"[ALBUM_PERMISSIONS] Skipping removal for unresolved album user {album_user.get_uuid()}"
             )
@@ -72,7 +73,9 @@ def _calculate_member_diff(
     target_members_set: set[UserResponseWrapper] = set(target_members)
     current_members_set: set[UserResponseWrapper] = set(current_members)
     members_to_add: set[UserResponseWrapper] = target_members_set - current_members_set
-    members_to_remove: set[UserResponseWrapper] = current_members_set - target_members_set
+    members_to_remove: set[UserResponseWrapper] = (
+        current_members_set - target_members_set
+    )
     return MemberDiff(
         members_to_add=members_to_add, members_to_remove=members_to_remove
     )
@@ -126,8 +129,12 @@ def sync_album_permissions(
     if not resolved_policy.has_match:
         log_debug(f"[ALBUM_PERMISSIONS] Skipping {album_name}: no matching rules")
         return
-    target_members: list[UserResponseWrapper] = _resolve_target_members(resolved_policy, context)
-    current_member_wrappers: list[UserResponseWrapper] = _get_current_member_wrappers(album_wrapper)
+    target_members: list[UserResponseWrapper] = _resolve_target_members(
+        resolved_policy, context
+    )
+    current_member_wrappers: list[UserResponseWrapper] = _get_current_member_wrappers(
+        album_wrapper
+    )
     # Debug: Ensure all elements are UserResponseWrapper before set operations
     i: int
     x: UserResponseWrapper
@@ -143,7 +150,9 @@ def sync_album_permissions(
     assert all(
         isinstance(x, UserResponseWrapper) for x in current_member_wrappers
     ), "current_member_wrappers contains non-UserResponseWrapper"
-    member_diff: MemberDiff = _calculate_member_diff(target_members, current_member_wrappers)
+    member_diff: MemberDiff = _calculate_member_diff(
+        target_members, current_member_wrappers
+    )
     _apply_member_changes(
         album_wrapper,
         member_diff.members_to_add,

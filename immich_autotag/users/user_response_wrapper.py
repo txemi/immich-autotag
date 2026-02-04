@@ -63,6 +63,16 @@ class UserResponseWrapper:
     def get_uuid(self) -> UserUUID:
         return UserUUID.from_string(self._user.id)
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, UserResponseWrapper):
+            return NotImplemented
+        # Compare by unique user id and email (should be unique enough)
+        return self._user.id == other._user.id and self._user.email == other._user.email
+
+    def __hash__(self) -> int:
+        # Hash only by unique user id and email (both are str and hashable)
+        return hash((self._user.id, self._user.email))
+
     @typechecked
     def __str__(self) -> str:
         try:
