@@ -12,7 +12,6 @@ from typing import Optional
 from immich_autotag.architecture_import.rule_evaluator import evaluate_import_rules
 from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
 from .caller_info import CallerInfo
-from .fullname_info import ImportedModuleInfo
 from .rules import (
     enforce_immich_api_import_rule,
     enforce_immich_proxy_import_rule,
@@ -53,7 +52,6 @@ class ArchitectureImportChecker:
         ci = CallerInfo.from_stack()
         #if False and ci is None or ci.is_outside_project():
         #    return None
-        from .fullname_info import ImportedModuleInfo
         from .module_path import ModulePath
         imported_module = ModulePath.from_dotstring(fullname)
         evaluate_import_rules(imported_module, ci)

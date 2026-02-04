@@ -5,7 +5,6 @@ Main entry point for evaluating all architecture import rules for a given import
 """
 from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
 from immich_autotag.architecture_import.module_path import ModulePath
-from .fullname_info import ImportedModuleInfo
 from .caller_info import CallerInfo
 from .rules import (
     enforce_immich_api_import_rule,

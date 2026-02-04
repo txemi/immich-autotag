@@ -1,5 +1,4 @@
 from .caller_info import CallerInfo
-from .fullname_info import ImportedModuleInfo
 from .import_checker import ArchitectureImportChecker
 from .rules import (
     enforce_immich_api_import_rule,
