@@ -3,27 +3,21 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 from immich_autotag.context.immich_context import ImmichContext
 
 
+
 def _is_temp_album(album: AlbumResponseWrapper) -> bool:
     """
-    Returns True if the album is considered temporary.
-    The logic for 'temporary' should match the codebase conventions (e.g., name pattern, tag, etc).
+    Returns True if the album is considered temporary (project standard logic).
     """
-    # Example: albums with names starting with 'temp_' or a specific tag
-    name = album.get_name()
-    return name.startswith("temp_") or album.has_tag("temporary")
+    return album.is_temporary_album()
+
 
 
 def _is_album_healthy(album: AlbumResponseWrapper) -> bool:
     """
-    Returns True if the album is considered healthy.
-    The health check logic should match the codebase conventions (e.g., not broken, not empty, etc).
+    Returns True if the album is considered healthy (project standard logic).
     """
-    # Example: album must have assets and not be marked as broken
-    if album.is_broken():
-        return False
-    if album.get_asset_count() == 0:
-        return False
-    return True
+    from immich_autotag.assets.albums.temporary_manager.health import is_temporary_album_healthy
+    return is_temporary_album_healthy(album)
 
 
 def _delete_album(album: AlbumResponseWrapper, client: ImmichClient) -> None:
