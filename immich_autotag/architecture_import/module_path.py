@@ -41,7 +41,7 @@ class ModulePath:
         return self._parts
 
     @classmethod
-    def from_dotstring(cls, module: str) -> "ModulePath":
+    def from_dotstring(cls, module: str) -> ModulePath:
         return cls(tuple(module.split('.')))
 
     @classmethod
