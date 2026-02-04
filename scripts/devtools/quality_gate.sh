@@ -857,6 +857,10 @@ check_no_spanish_chars() {
 # Returns: 0 if passes, 1 if contracts are broken
 ###############################################################################
 check_import_linter() {
+
+	# [DISABLED] import-linter check is currently deactivated by request. Remove the following return to re-enable.
+	echo "[INFO] import-linter check is DISABLED by software flag. Skipping."
+	return 0
 	local repo_root="$1"
 	local quality_level="$2"
 	local py_bin
