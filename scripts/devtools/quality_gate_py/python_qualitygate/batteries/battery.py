@@ -21,7 +21,7 @@ class Battery:
                 results.append((check.name, 'OK', 0))
             else:
                 n = len(result.findings)
-                results.append((check.name, f'FAIL ({n} incidencias)', n))
+                results.append((check.name, f'FAIL ({n} findings)', n))
                 self._print_errors(check.name, result.findings)
                 self._print_summary(results)
                 print(f"[EXIT] Stopped at check: {check.name} with {n} errors.")
@@ -39,14 +39,14 @@ class Battery:
         elif mode == QualityGateMode.APPLY:
             result = check.apply(args)
         else:
-            raise ValueError(f"Modo desconocido: {mode}")
+            raise ValueError(f"Unknown mode: {mode}")
         if not isinstance(result, CheckResult):
-            raise TypeError(f"El check {check.name} debe devolver un CheckResult, no {type(result)}")
+            raise TypeError(f"Check {check.name} must return a CheckResult, not {type(result)}")
         if result.is_success():
             print(f"[OK] {check.name} passed\n", flush=True)
             return 0, result
         else:
-            print(f"[FAIL] {check.name} failed: {len(result.findings)} incidencias encontradas\n", flush=True)
+            print(f"[FAIL] {check.name} failed: {len(result.findings)} findings found\n", flush=True)
             return 1, result
 
     def _print_errors(self, check_name: str, findings) -> None:

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from uuid import UUID
-
-from immich_autotag.types.uuid_wrappers import AssetUUID
+from uuid import UUID  # noqa: F401
 
 if TYPE_CHECKING:
     from immich_autotag.classification.match_result import MatchResult
@@ -145,19 +143,20 @@ class ClassificationRuleWrapper:
         return len(self.extract_uuids_from_asset_links()) > 0
 
     @typechecked
-    def extract_uuids_from_asset_links(self) -> list[AssetUUID]:
+    def extract_uuids_from_asset_links(self) -> list[UUID | None]:
         """
-        Prototipo: extrae todos los UUIDs de los enlaces en asset_links usando el extractor centralizado.
+        Prototype: extracts all UUIDs from the links in asset_links using the centralized extractor.
         """
-        from immich_autotag.classification.link_parsing.immich_url_uuid_extractor import extract_uuids_from_immich_url
-        from immich_autotag.types.uuid_wrappers import AssetUUID
+
         if not self.rule.asset_links:
             return []
-        uuids: list[AssetUUID] = []
-        for link in self.rule.asset_links:
-            for uuid in extract_uuids_from_immich_url(link):
-                uuids.append(AssetUUID.from_uuid(uuid))
-        return uuids
+        from immich_autotag.classification.link_parsing.immich_url_uuid_extractor import (
+            ImmichUrlUuidExtractor,
+        )
+
+        return ImmichUrlUuidExtractor.extract_asset_uuids_from_links(
+            self.rule.asset_links or []
+        )
 
     @typechecked
     def remove_matches(

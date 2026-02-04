@@ -24,7 +24,7 @@ class TagIdMap:
     def append(self, tag: "TagWrapper"):
         tag_id = tag.get_id()
         if tag_id in self._id_to_tag:
-            raise ValueError(f"Tag con id {tag_id} ya existe en TagIdMap")
+            raise ValueError(f"Tag with id {tag_id} already exists in TagIdMap")
         self._id_to_tag[tag_id] = tag
 
     @typechecked
@@ -33,12 +33,12 @@ class TagIdMap:
         if tag_id in self._id_to_tag:
             del self._id_to_tag[tag_id]
         else:
-            raise ValueError(f"Tag con id {tag_id} no encontrada en TagIdMap")
+            raise ValueError(f"Tag with id {tag_id} not found in TagIdMap")
 
     @typechecked
     def get_by_id(self, tag_id: TagUUID) -> "TagWrapper":
         if tag_id not in self._id_to_tag:
-            raise RuntimeError(f"Tag con id {tag_id} no existe en TagIdMap")
+            raise RuntimeError(f"Tag with id {tag_id} does not exist in TagIdMap")
         return self._id_to_tag[tag_id]
 
     def to_list(self) -> List["TagWrapper"]:
