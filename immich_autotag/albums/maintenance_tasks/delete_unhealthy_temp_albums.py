@@ -1,6 +1,6 @@
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.context.context import ImmichContext
+from immich_autotag.context.immich_context import ImmichContext
 
 
 def _is_temp_album(album: AlbumResponseWrapper) -> bool:
