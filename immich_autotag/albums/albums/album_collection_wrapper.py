@@ -11,6 +11,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
+from immich_autotag.albums.albums.asset_map_manager.manager import AssetMapManager
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.duplicates_manager.manager import (
     DuplicateAlbumManager,
@@ -116,9 +117,6 @@ class AlbumCollectionWrapper:
     def log_lazy_load_timing(self):
         import time
 
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
-
         log(
             "[PROGRESS] [ALBUM-LAZY-LOAD] Starting lazy album loading",
             level=LogLevel.PROGRESS,
@@ -141,8 +139,6 @@ class AlbumCollectionWrapper:
         """
         import time
 
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
         if isinstance(perf_phase_tracker, PerfPhaseTracker):
@@ -220,6 +216,15 @@ class AlbumCollectionWrapper:
         all_allbums = self._ensure_fully_loaded()._albums
         return AlbumList([a for a in all_allbums.all() if not a.is_deleted()])
 
+    def _get_asset_map_manager(self) -> "AssetMapManager":
+        if self._asset_map_manager is None:
+            from immich_autotag.albums.albums.asset_map_manager.manager import (
+                AssetMapManager,
+            )
+
+            self._asset_map_manager = AssetMapManager(collection=self)
+        return self._asset_map_manager
+
     @typechecked
     def _remove_album_from_local_collection(
         self, album_wrapper: AlbumResponseWrapper
@@ -236,8 +241,7 @@ class AlbumCollectionWrapper:
                 f"(id={album_wrapper.get_album_uuid()}) is already deleted."
             )
         album_wrapper.mark_deleted()
-        if self._asset_to_albums_map is not None:
-            self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
+        self._get_asset_map_manager()._remove_album(album_wrapper)
         self._albums.remove(album_wrapper)
         return True
 
@@ -254,7 +258,7 @@ class AlbumCollectionWrapper:
     @typechecked
     def build_asset_map(self) -> AssetToAlbumsMap:
         """Delegates asset map build to AssetMapManager."""
-        return self._get_asset_map_manager().build_map()
+        return self._get_asset_map_manager()._build_map()
 
     @typechecked
     def _rebuild_asset_map(self) -> None:
@@ -320,8 +324,6 @@ class AlbumCollectionWrapper:
         from immich_autotag.api.immich_proxy.albums.delete_album import (
             proxy_delete_album,
         )
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
 
         # Safety check: only allow deletion of temporary or duplicate albums
         if not wrapper.is_temporary_album():
@@ -492,14 +494,7 @@ class AlbumCollectionWrapper:
         Defensive: always returns AssetToAlbumsMap, never None.
         """
         self._ensure_fully_loaded()
-        if self._asset_to_albums_map is None:
-            self._rebuild_asset_to_albums_map()
-        if self._asset_to_albums_map is None:
-            # If still None after rebuild, this is a fatal error
-            raise RuntimeError(
-                "AssetToAlbumsMap is None after rebuild. This should never happen."
-            )
-        return self._asset_to_albums_map
+        return self._get_asset_map_manager().get_map()
 
     @conditional_typechecked
     def albums_for_asset(
@@ -704,8 +699,6 @@ class AlbumCollectionWrapper:
         from immich_autotag.api.immich_proxy.albums.get_all_albums import (
             proxy_get_all_albums,
         )
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
         from immich_autotag.report.modification_report import ModificationReport
 
         # Set sync state to SYNCING at the start
@@ -786,11 +779,7 @@ class AlbumCollectionWrapper:
         filtered elsewhere).
         """
         return len(self._albums)
-    def _get_asset_map_manager(self) -> "AssetMapManager":
-        if self._asset_map_manager is None:
-            from immich_autotag.albums.albums.asset_map_manager.manager import AssetMapManager
-            self._asset_map_manager = AssetMapManager(collection=self)
-        return self._asset_map_manager
+
 
 # Singleton instance storage
 
