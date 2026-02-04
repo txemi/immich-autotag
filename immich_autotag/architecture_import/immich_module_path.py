@@ -36,7 +36,6 @@ class ImmichModulePath(ModulePath):
         logging_proxy_parts = tuple(LOGGING_PROXY_MODULE_NAME.split("."))
         return not all(part in self.get_parts() for part in logging_proxy_parts)
 
-
     @classmethod
     def from_path(cls, path):
         # Override to ensure ImmichModulePath is returned
@@ -108,5 +107,8 @@ class ImmichModulePath(ModulePath):
         """
         # Use the actual package reference for robustness
         import immich_autotag.architecture_import
-        arch_pkg_path = ImmichModulePath.from_dotstring(immich_autotag.architecture_import.__name__)
+
+        arch_pkg_path = ImmichModulePath.from_dotstring(
+            immich_autotag.architecture_import.__name__
+        )
         return self.is_submodule_of(arch_pkg_path)

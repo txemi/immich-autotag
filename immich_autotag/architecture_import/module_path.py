@@ -38,7 +38,6 @@ class Parts:
 
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ModulePath:
-
     """
     Represents a Python module path (e.g., 'immich_autotag.assets.process')
     as a tuple of parts. Allows constructing paths from string, Path, or parts,
@@ -112,7 +111,7 @@ class ModulePath:
 
         for frame in stack:
             filename = frame.filename
-            mp=ModulePath.from_path_string(filename,PROJECT_ROOT)
+            mp = ModulePath.from_path_string(filename, PROJECT_ROOT)
             return mp
             if "frozen" in filename:
                 found_frozen = True
@@ -127,9 +126,6 @@ class ModulePath:
                     return None
         return None
 
-    def __repr__(self) -> str:
-        return f"ModulePath({self.as_dotstring()})"
-
     @classmethod
     def from_path_string(cls, path_string: str, PROJECT_ROOT: Path) -> "ModulePath":
         """
@@ -140,3 +136,6 @@ class ModulePath:
         # Convert rel_path to ImmichModulePath (dot notation)
         immich_module_path = ModulePath.from_path(rel_path)
         return immich_module_path
+
+    def __repr__(self) -> str:
+        return f"ModulePath({self.as_dotstring()})"

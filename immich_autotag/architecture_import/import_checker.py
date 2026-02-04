@@ -49,7 +49,6 @@ class ArchitectureImportChecker:
 
         ci = ModulePath.from_stack(PROJECT_ROOT=PROJECT_ROOT)
         if ci is None:
-            ModulePath.from_stack()
             raise RuntimeError(
                 "ArchitectureImportChecker: Could not determine caller module path (ci is None). Defensive fail-fast."
             )
