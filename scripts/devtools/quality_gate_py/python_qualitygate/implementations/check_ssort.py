@@ -71,4 +71,4 @@ class CheckSsort(Check):
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
             sys.argv = old_argv
-        return CheckResult(findings=findings)
+        return QualityGateResult(findings=findings)
