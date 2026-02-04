@@ -21,7 +21,9 @@ class CheckBlack(Check):
                     file_path = line.split()[0]
                     findings.append(Finding(file_path=file_path, line_number=0, message="File not formatted with black", code="black-format"))
             if not findings:
-                findings.append(Finding(file_path=args.target_dir, line_number=0, message="Black found formatting errors", code="black-format"))
+                # If no specific files, include the full Black output for context
+                msg = result.stdout.strip() or "Black found formatting errors"
+                findings.append(Finding(file_path=args.target_dir, line_number=0, message=msg, code="black-format"))
         return CheckResult(findings=findings)
 
     def apply(self, args: QualityGateArgs) -> CheckResult:

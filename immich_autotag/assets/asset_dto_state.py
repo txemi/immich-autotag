@@ -142,8 +142,7 @@ class AssetDtoState:
             )
 
         from immich_autotag.context.immich_context import ImmichContext
-        from immich_autotag.tags.tag_response_wrapper import TagWrapper, TagSource
-        import time
+        from immich_autotag.tags.tag_response_wrapper import TagSource, TagWrapper
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
         wrappers: list["TagWrapper"] = []

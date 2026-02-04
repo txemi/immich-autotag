@@ -1,6 +1,7 @@
-import attrs
 import time
 from enum import Enum
+
+import attrs
 
 from immich_autotag.api.logging_proxy.types import TagResponseDto
 from immich_autotag.types.uuid_wrappers import TagUUID
@@ -11,6 +12,7 @@ class TagSource(Enum):
     GET_TAG_BY_ID = "get_tag_by_id"
     CREATE_TAG = "create_tag"
     ASSET_PAYLOAD = "asset_payload"
+
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class TagWrapper:
@@ -29,9 +31,13 @@ class TagWrapper:
         - Enable more robust merging and conflict resolution strategies.
     """
 
-    _tag: TagResponseDto = attrs.field(init=True, validator=attrs.validators.instance_of(TagResponseDto), repr=lambda self: f"TagResponseDto(name={self._tag.name})")
+    _tag: TagResponseDto = attrs.field(
+        init=True,
+        validator=attrs.validators.instance_of(TagResponseDto),
+        repr=lambda self: f"TagResponseDto(name={self._tag.name})",
+    )
 
-    _source: TagSource = attrs.field(init=True,repr=True)
+    _source: TagSource = attrs.field(init=True, repr=True)
     _loaded_at: float = attrs.field(init=True, factory=lambda: time.time(), repr=True)
 
     def get_id(self) -> TagUUID:
@@ -79,13 +85,6 @@ class TagWrapper:
             ]
         return [p for p in prefixes if isinstance(p, str) and p]
 
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, TagWrapper):
-            return self.get_id() == other.get_id()
-        return False
-
-
-
     def get_best_tag(self, other: "TagWrapper") -> "TagWrapper":
         """
         Decide which TagWrapper is preferred for merging/updating.
@@ -98,3 +97,8 @@ class TagWrapper:
         The actual logic is not implemented yet. This method should be extended to use one or more of these criteria.
         """
         raise NotImplementedError("get_best_tag decision logic not implemented yet")
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, TagWrapper):
+            return self.get_id() == other.get_id()
+        return False

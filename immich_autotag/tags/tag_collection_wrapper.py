@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.api.logging_proxy.types import TagResponseDto
 from immich_autotag.tags.tag_dual_map import TagDualMap
 from immich_autotag.types.client_types import ImmichClient
 
@@ -25,8 +24,6 @@ class TagCollectionWrapperLoadError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
-
-
 
     _index: TagDualMap = attrs.field(factory=TagDualMap)
     _fully_loaded: bool = attrs.field(default=False, init=False)
@@ -181,6 +178,7 @@ class TagCollectionWrapper:
             return _tag_collection_singleton
         _tag_collection_singleton = TagCollectionWrapper()
         return _tag_collection_singleton
+
     def _find_candidate_tag(self, new_tag: "TagWrapper") -> "TagWrapper | None":
         """
         INTERNAL: Helper for merging external tag entities.
@@ -202,13 +200,16 @@ class TagCollectionWrapper:
         by_name = self.find_by_name(name)
         if by_id and by_name:
             if by_id != by_name:
-                raise RuntimeError(f"TagCollectionWrapper: Conflicting tags found for id={tag_id} and name={name}")
+                raise RuntimeError(
+                    f"TagCollectionWrapper: Conflicting tags found for id={tag_id} and name={name}"
+                )
             return by_id
         if by_id:
             return by_id
         if by_name:
             return by_name
         return None
+
     def merge_or_update_tag(self, new_tag: "TagWrapper") -> "TagWrapper | None":
         """
         Receives a new TagWrapper and compares it with the candidate in the collection (by id/name).

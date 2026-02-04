@@ -66,6 +66,7 @@ def logging_create_tag(
 
     # Wrap the DTO for type safety and consistency
     from immich_autotag.tags.tag_response_wrapper import TagSource
+
     tag_wrapper = TagWrapper(new_tag_dto, TagSource.CREATE_TAG)
 
     # Record the event in the modification report

@@ -5,7 +5,7 @@ This function loads all tags from the API and returns them wrapped as TagWrapper
 
 from immich_autotag.api.immich_proxy.tags import proxy_get_all_tags
 from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-from immich_autotag.tags.tag_response_wrapper import TagWrapper, TagSource
+from immich_autotag.tags.tag_response_wrapper import TagSource, TagWrapper
 
 
 def load_all_tags_wrapped() -> list[TagWrapper]:
