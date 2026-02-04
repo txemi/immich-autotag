@@ -47,4 +47,16 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
         if _is_temp_album(album) and not _is_album_healthy(album):
             _delete_album(album, client, albums_collection)
             count += 1
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
+    if count > 0:
+        log(
+            f"[MAINTENANCE] Deleted {count} unhealthy temporary albums (reason: not healthy, e.g. assets too far apart in time or empty)",
+            level=LogLevel.PROGRESS,
+        )
+    else:
+        log(
+            "[MAINTENANCE] No unhealthy temporary albums found for deletion.",
+            level=LogLevel.PROGRESS,
+        )
     return count
