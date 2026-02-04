@@ -14,7 +14,6 @@ from immich_autotag.architecture_import.rule_evaluator import evaluate_import_ru
 from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
 
 
-
 class ArchitectureImportChecker:
     """
     Custom meta path finder for enforcing architecture rules on imports.
