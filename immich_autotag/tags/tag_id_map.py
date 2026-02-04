@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagIdMap:
+
+
     """
     Mapa eficiente de id (UUID o str) a TagWrapper.
     """
@@ -43,3 +45,10 @@ class TagIdMap:
 
     def to_list(self) -> List["TagWrapper"]:
         return list(self._id_to_tag.values())
+
+    @typechecked
+    def clear(self):
+        """
+        Remove all elements from the ID map.
+        """
+        self._id_to_tag.clear()

@@ -93,7 +93,7 @@ class AssetManager:
         if self._assets is not None and asset_uuid in self._assets:
             return self._assets[asset_uuid]
 
-        entry = AssetCacheEntry._from_dto_entry(dto=asset_dto, dto_type=dto_type)
+        entry = AssetCacheEntry.from_dto_entry(dto=asset_dto, dto_type=dto_type)
         wrapper = AssetResponseWrapper(context, entry)
         if self._assets is not None:
             self._assets[asset_uuid] = wrapper
