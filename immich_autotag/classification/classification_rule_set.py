@@ -114,13 +114,17 @@ class ClassificationRuleSet:
 
         all_uuids: List[AssetUUID] = []
         for wrapper in self.rules:
-            all_uuids.extend(wrapper.extract_uuids_from_asset_links())
+            # Only add non-None AssetUUIDs
+            all_uuids.extend(
+                [
+                    uuid
+                    for uuid in wrapper.extract_uuids_from_asset_links()
+                    if isinstance(uuid, AssetUUID)
+                ]
+            )
 
         if not all_uuids:
             return []
-
-        # Load assets from the API
-        # from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper  # unused
 
         wrappers: List[AssetResponseWrapper] = []
 
@@ -130,7 +134,7 @@ class ClassificationRuleSet:
                 raise TypeError(
                     f"Expected AssetUUID, got {type(asset_uuid)}: {asset_uuid}"
                 )
-            asset_wrapper = context.get_asset_manager().get_asset(asset_uuid_wrapped, context)
+            asset_wrapper = context.get_asset_manager().get_asset(asset_uuid, context)
             if asset_wrapper is None:
                 raise RuntimeError(
                     f"[ERROR] Asset with ID {asset_uuid} could not be loaded from API."

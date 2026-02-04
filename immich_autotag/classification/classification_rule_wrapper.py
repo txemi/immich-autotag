@@ -16,6 +16,7 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.config.models import ClassificationRule
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, eq=True)

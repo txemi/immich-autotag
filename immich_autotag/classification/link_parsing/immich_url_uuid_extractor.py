@@ -46,8 +46,8 @@ class ImmichUrlUuidExtractor:
                 m2 = re.search(r"/photos/([a-fA-F0-9\-]{36})", self._url)
                 if m2:
                     asset_uuid = UUID(m2.group(1))
-            self._album_uuid = album_uuid
-            self._asset_uuid = asset_uuid
+            self._album_uuid = AlbumUUID(album_uuid) if album_uuid else None
+            self._asset_uuid = AssetUUID(asset_uuid) if asset_uuid else None
             self._parsed = True
 
     def get_album_uuid(self) -> AlbumUUID | None:
