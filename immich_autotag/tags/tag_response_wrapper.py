@@ -32,7 +32,7 @@ class TagWrapper:
     _tag: TagResponseDto = attrs.field(init=True, validator=attrs.validators.instance_of(TagResponseDto), repr=lambda self: f"TagResponseDto(name={self._tag.name})")
 
     _source: TagSource = attrs.field(init=True,repr=True)
-    _loaded_at: float = attrs.field(init=True, default=None, factory=lambda: time.time(),repr=True)
+    _loaded_at: float = attrs.field(init=True, factory=lambda: time.time(), repr=True)
 
     def get_id(self) -> TagUUID:
         id_val = self._tag.id
