@@ -20,20 +20,23 @@ def enforce_immich_api_import_rule(fni: ImmichModulePath, ci: ImmichModulePath) 
 
 
 def enforce_immich_proxy_import_rule(
-    fni: ImmichModulePath, ci: ImmichModulePath
+    imported: ImmichModulePath, caller: ImmichModulePath
 ) -> None:
     """
     Enforce: Only logging_proxy can import any submodule from immich_proxy.
     Raise ImportError if violated.
     """
-    if fni.is_import_from_immich_proxy():
-        if ci.is_client_types_entry():
+    if imported.is_import_from_immich_proxy():
+        if caller.is_import_from_immich_proxy():
             return None
-        if ci.is_outside_logging_proxy():
+        if caller.is_client_types_entry():
+            return None
+        if caller.is_outside_logging_proxy():
             raise ImportError(
-                f"Direct import of '{str(fni)}' is forbidden outside "
-                f"{LOGGING_PROXY_MODULE_NAME}. Only '{LOGGING_PROXY_MODULE_NAME}' may import from "
-                f"'immich_autotag.api.immich_proxy'."
+                f"Direct import of '{str(imported)}' is forbidden outside "
+                f"{LOGGING_PROXY_MODULE_NAME}.\n"
+                f"Actual caller: '{str(caller)}'.\n"
+                f"Only '{LOGGING_PROXY_MODULE_NAME}' may import from 'immich_autotag.api.immich_proxy'."
             )
         return None
 
