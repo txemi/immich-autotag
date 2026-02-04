@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 import enum
+import time
 from datetime import datetime
 
 import attrs
@@ -150,6 +151,7 @@ class AssetDtoState:
             new_tag = TagWrapper(
                 tag=tag_dto,
                 source=TagSource.ASSET_PAYLOAD,
+                loaded_at=time.time(),
             )
             tag = tag_collection.merge_or_update_tag(new_tag)
             if tag is not None:
