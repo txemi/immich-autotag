@@ -34,7 +34,7 @@ def _resolve_target_members(
     member_resolution = EmailMemberResolution()
     member_resolution.resolve_emails_to_user_ids(email_objs, context)
     # Only wrap if not already a UserResponseWrapper
-    result = []
+    result: list[UserResponseWrapper] = []
     for u in member_resolution.get_resolved_members():
         if isinstance(u, UserResponseWrapper):
             result.append(u)
@@ -50,14 +50,13 @@ def _get_current_member_wrappers(
 
     user_manager = UserManager.get_instance()
     current_members = album_wrapper.get_album_users()
-    wrappers: list["UserResponseWrapper"] = []
+    wrappers: list[UserResponseWrapper] = []
     for album_user in current_members:
-        member: "UserResponseWrapper" | None = user_manager.get_by_uuid(
+        member: UserResponseWrapper | None = user_manager.get_by_uuid(
             album_user.get_uuid()
         )
         if member is None:
             from immich_autotag.logging.utils import log_debug
-
             log_debug(
                 f"[ALBUM_PERMISSIONS] Skipping removal for unresolved album user {album_user.get_uuid()}"
             )
@@ -73,9 +72,7 @@ def _calculate_member_diff(
     target_members_set: set[UserResponseWrapper] = set(target_members)
     current_members_set: set[UserResponseWrapper] = set(current_members)
     members_to_add: set[UserResponseWrapper] = target_members_set - current_members_set
-    members_to_remove: set[UserResponseWrapper] = (
-        current_members_set - target_members_set
-    )
+    members_to_remove: set[UserResponseWrapper] = current_members_set - target_members_set
     return MemberDiff(
         members_to_add=members_to_add, members_to_remove=members_to_remove
     )
@@ -125,13 +122,28 @@ def sync_album_permissions(
         resolved_policy: Resolved policy with target members (emails)
         context: ImmichContext with API client
     """
-    album_name = album_wrapper.get_album_name()
+    album_name: str = album_wrapper.get_album_name()
     if not resolved_policy.has_match:
         log_debug(f"[ALBUM_PERMISSIONS] Skipping {album_name}: no matching rules")
         return
-    target_members = _resolve_target_members(resolved_policy, context)
-    current_member_wrappers = _get_current_member_wrappers(album_wrapper)
-    member_diff = _calculate_member_diff(target_members, current_member_wrappers)
+    target_members: list[UserResponseWrapper] = _resolve_target_members(resolved_policy, context)
+    current_member_wrappers: list[UserResponseWrapper] = _get_current_member_wrappers(album_wrapper)
+    # Debug: Ensure all elements are UserResponseWrapper before set operations
+    i: int
+    x: UserResponseWrapper
+    for i, x in enumerate(target_members):
+        if not isinstance(x, UserResponseWrapper):
+            print(f"[DEBUG] target_members[{i}] is {type(x)}: {x}")
+    for i, x in enumerate(current_member_wrappers):
+        if not isinstance(x, UserResponseWrapper):
+            print(f"[DEBUG] current_member_wrappers[{i}] is {type(x)}: {x}")
+    assert all(
+        isinstance(x, UserResponseWrapper) for x in target_members
+    ), "target_members contains non-UserResponseWrapper"
+    assert all(
+        isinstance(x, UserResponseWrapper) for x in current_member_wrappers
+    ), "current_member_wrappers contains non-UserResponseWrapper"
+    member_diff: MemberDiff = _calculate_member_diff(target_members, current_member_wrappers)
     _apply_member_changes(
         album_wrapper,
         member_diff.members_to_add,
