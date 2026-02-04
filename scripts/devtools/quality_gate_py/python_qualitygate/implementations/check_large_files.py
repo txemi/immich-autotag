@@ -16,10 +16,10 @@ class CheckLargeFiles(Check):
     def check(self, args: QualityGateArgs) -> CheckResult:
         from python_qualitygate.core.enums_level import QualityGateLevel
         match args.level:
-            case QualityGateLevel.STRICT:
+            case QualityGateLevel.STRICT | QualityGateLevel.TARGET:
                 pass  # Run the check normally
-            case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
-                # Not active in these modes
+            case QualityGateLevel.STANDARD:
+                # Not active in STANDARD
                 return CheckResult(findings=[])
             case _:
                 # Defensive programming: block if an unknown level appears
