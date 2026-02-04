@@ -9,6 +9,7 @@ defined for the Immich-autotag project.
 import importlib.machinery
 from typing import Optional
 
+from immich_autotag.architecture_import.rule_evaluator import evaluate_import_rules
 from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
 from .caller_info import CallerInfo
 from .fullname_info import ImportedModuleInfo

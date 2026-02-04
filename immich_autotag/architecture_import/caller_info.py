@@ -13,9 +13,7 @@ from typing import Optional
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.api import immich_proxy
-
-from .module_path import ModulePath
+from .immich_module_path import ImmichModulePath
 from .shared_symbols import LOGGING_PROXY_MODULE_NAME
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
@@ -25,26 +23,18 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 class CallerInfo:
     """
     Encapsulates information about the module performing an import.
-    Stores a ModulePath instance for semantic clarity, allowing all queries and logic
+    Stores an ImmichModulePath instance for semantic clarity, allowing all queries and logic
     to be performed at the module/package level, not just file paths.
     Used by the architecture rules system to apply dynamic restrictions at runtime.
     """
-    module_path: ModulePath
+    module_path: ImmichModulePath
 
 
-    @staticmethod
-    def _get_root_package_path() -> ModulePath:
-        """
-        Returns the root package as a ModulePath (e.g., ModulePath(('immich_autotag',)))
-        """
-        from .module_path import ModulePath
-        name = Path(__file__).resolve().parent.name
-        return ModulePath.from_dotstring(name)
+
 
     def is_outside_project(self) -> bool:
-        # Use the root package ModulePath robustly
-        root_path = self._get_root_package_path()
-        return not self.module_path.parts or self.module_path.parts[0] != root_path.parts[0]
+        # Delegate to ImmichModulePath logic
+        return self.module_path.is_outside_root_package()
 
     def is_proxy_module_import(self) -> bool:
         # Example logic: check if the module path includes 'immich_proxy'
@@ -68,6 +58,7 @@ class CallerInfo:
         """
         found_frozen: bool = False
         stack = inspect.stack()
+        from .immich_module_path import ImmichModulePath
         for frame in stack:
             filename = frame.filename
             if "frozen" in filename:
@@ -76,9 +67,9 @@ class CallerInfo:
             if found_frozen and "frozen" not in filename:
                 try:
                     rel_path = Path(filename).resolve().relative_to(PROJECT_ROOT)
-                    # Convert rel_path to module path (dot notation)
-                    module_path = ModulePath.from_path(rel_path)
-                    return CallerInfo(module_path)
+                    # Convert rel_path to ImmichModulePath (dot notation)
+                    immich_module_path = ImmichModulePath.from_path(rel_path)
+                    return CallerInfo(immich_module_path)
                 except ValueError:
                     return None
         return None

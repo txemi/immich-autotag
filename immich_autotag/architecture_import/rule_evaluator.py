@@ -16,6 +16,8 @@ def evaluate_import_rules(imported_module: ImportedModuleInfo, caller_info: Call
     Evaluate all architecture import rules for a given import.
     Takes the imported module (as ImportedModuleInfo) and the caller (as CallerInfo).
     """
+    if  caller_info.is_outside_project():
+        return None
     enforce_immich_api_import_rule(imported_module, caller_info)
     enforce_immich_proxy_import_rule(imported_module, caller_info)
     enforce_logging_proxy_import_rule(imported_module, caller_info)
