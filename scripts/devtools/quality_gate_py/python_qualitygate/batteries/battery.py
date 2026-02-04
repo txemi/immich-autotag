@@ -21,7 +21,7 @@ class Battery:
             rc, result = self._run_check(check, mode, args)
             check_name = check.get_name()
             score_str = ""
-            # Mostrar score si está disponible
+            # Show score if available
             if  result.score is not None:
                 if check_name.lower().startswith("check_jscpd"):
                     score_str = f" (duplicated: {result.score}%)"

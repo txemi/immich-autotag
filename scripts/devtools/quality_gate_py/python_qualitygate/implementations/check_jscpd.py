@@ -26,7 +26,7 @@ class CheckJscpd(Check):
         for line in result.stdout.splitlines():
             if line.strip():
                 findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="jscpd"))
-                # Extraer porcentaje de duplicación
+                # Extract duplication percentage
                 if "% duplicated lines" in line:
                     import re
                     match = re.search(r"([0-9.]+)% duplicated lines", line)
