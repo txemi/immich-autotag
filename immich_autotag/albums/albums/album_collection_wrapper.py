@@ -15,7 +15,9 @@ from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.duplicates_manager.manager import (
     DuplicateAlbumManager,
 )
-from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
+from immich_autotag.albums.albums.unavailable_manager.manager import (
+    UnavailableAlbumManager,
+)
 from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.context.immich_context import ImmichContext
@@ -65,9 +67,13 @@ class AlbumCollectionWrapper:
             attrs.validators.instance_of(AssetToAlbumsMap)
         ),
     )
-    _unavailable: UnavailableAlbums = attrs.field(
-        init=False, factory=UnavailableAlbums, repr=False
+    # Unavailable album manager (delegates all unavailable logic)
+    _unavailable_manager: "UnavailableAlbumManager | None" = attrs.field(
+        init=False,
+        default=None,
+        repr=False,
     )
+
     # Duplicate album manager (delegates all duplicate logic)
     _duplicate_manager: DuplicateAlbumManager | None = attrs.field(
         init=False,
@@ -337,80 +343,27 @@ class AlbumCollectionWrapper:
             )
         return removed
 
-    # Method moved to UnavailableAlbums: use self._unavailable.write_summary() instead
+    # Removed broken is_owner method (should be on AlbumResponseWrapper)
 
-    @typechecked
-    def _evaluate_global_policy(self) -> None:
-        """Evaluate global unavailable-albums policy and act according to config.
-
-        In DEVELOPMENT mode this may raise to fail-fast. In PRODUCTION it logs and
-        records a summary event.
-        """
-
-        from immich_autotag.config.internal_config import (
-            GLOBAL_UNAVAILABLE_THRESHOLD,
-        )
-        from immich_autotag.report.modification_kind import ModificationKind
-        from immich_autotag.report.modification_report import ModificationReport
-
-        threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
-
-        if not self._unavailable.count >= threshold:
-            return
-
-        # In development: fail fast to surface systemic problems
-        from immich_autotag.config.dev_mode import is_development_mode
-
-        if is_development_mode():
-            raise RuntimeError(
-                f"Too many albums marked unavailable during run: "
-                f"{self._unavailable.count} >= {threshold}. "
-                f"Failing fast (DEVELOPMENT mode)."
+    def _get_unavailable_album_manager(self) -> "UnavailableAlbumManager":
+        if self._unavailable_manager is None:
+            from immich_autotag.albums.albums.unavailable_manager.manager import (
+                UnavailableAlbumManager,
             )
 
-        # In production: record a summary event and continue
-
-        tag_mod_report = ModificationReport.get_instance()
-        tag_mod_report.add_error_modification(
-            kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
-            error_message=(
-                f"global unavailable threshold exceeded: "
-                f"{self._unavailable.count} >= {threshold}"
-            ),
-            error_category="GLOBAL_THRESHOLD",
-            extra={
-                "unavailable_count": self._unavailable.count,
-                "threshold": threshold,
-            },
-        )
-        # Write a small summary file for operator inspection
-
-        self._unavailable.write_summary()
+            self._unavailable_manager = UnavailableAlbumManager(collection=self)
+        return self._unavailable_manager
 
     @typechecked
     def notify_album_marked_unavailable(
         self, album_wrapper: AlbumResponseWrapper
     ) -> None:
         """Notify collection that an album was marked unavailable.
-
-        This updates internal counters and triggers a global policy evaluation.
+        Delegates to UnavailableAlbumManager.
         """
-        album_id = album_wrapper.get_album_uuid()
-
-        # Use wrapper identity (by album id) for membership; avoid double-counting
-        added = self._unavailable.add(album_wrapper)
-        if not added:
-            return
-
-        log(
-            f"Album {album_id} marked unavailable "
-            f"(total_unavailable={self._unavailable.count}).",
-            level=LogLevel.FOCUS,
+        self._get_unavailable_album_manager().notify_album_marked_unavailable(
+            album_wrapper
         )
-
-        # Evaluate global policy after this change
-
-        self._evaluate_global_policy()
 
     @typechecked
     # Duplicate conflict logic delegated to manager
@@ -895,8 +848,6 @@ class AlbumCollectionWrapper:
         filtered elsewhere).
         """
         return len(self._albums)
-
-    # Removed broken is_owner method (should be on AlbumResponseWrapper)
 
 
 # Singleton instance storage
