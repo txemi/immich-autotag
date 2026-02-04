@@ -1,3 +1,11 @@
+"""
+caller_info.py
+
+Defines the CallerInfo class, which encapsulates information about the module performing an import
+in the architecture rules system. It stores a ModulePath instance for semantic clarity, allowing
+all queries and logic to be performed at the module/package level, not just file paths.
+It is fundamental for applying dynamic architecture rules at runtime.
+"""
 import inspect
 from pathlib import Path
 from typing import Optional
@@ -7,6 +15,7 @@ from typeguard import typechecked
 
 from immich_autotag.api import immich_proxy
 
+from .module_path import ModulePath
 from .shared_symbols import LOGGING_PROXY_MODULE_NAME
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
@@ -14,32 +23,41 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
 @attrs.define(frozen=True, auto_attribs=True)
 class CallerInfo:
-    _path: Path
+    """
+    Encapsulates information about the module performing an import.
+    Stores a ModulePath instance for semantic clarity, allowing all queries and logic
+    to be performed at the module/package level, not just file paths.
+    Used by the architecture rules system to apply dynamic restrictions at runtime.
+    """
+    module_path: ModulePath
+
 
     @staticmethod
-    def _get_root_package_path() -> str:
+    def _get_root_package_path() -> ModulePath:
         """
-        Returns the string path of the root package directory (e.g., 'immich_autotag')
+        Returns the root package as a ModulePath (e.g., ModulePath(('immich_autotag',)))
         """
-        return str(Path(__file__).resolve().parent.name)
+        from .module_path import ModulePath
+        name = Path(__file__).resolve().parent.name
+        return ModulePath.from_dotstring(name)
 
     def is_outside_project(self) -> bool:
-        # Use the root package name robustly
-        return not str(self._path).startswith(self._get_root_package_path())
+        # Use the root package ModulePath robustly
+        root_path = self._get_root_package_path()
+        return not self.module_path.parts or self.module_path.parts[0] != root_path.parts[0]
 
     def is_proxy_module_import(self) -> bool:
-        # Use the real path of the imported module, not a hardcoded string
-        proxy_path = Path(immich_proxy.__file__).resolve().relative_to(PROJECT_ROOT)
-        return str(proxy_path.parent) in str(self._path)
+        # Example logic: check if the module path includes 'immich_proxy'
+        return 'immich_proxy' in self.module_path.parts
 
     def is_outside_logging_proxy(self) -> bool:
-        return LOGGING_PROXY_MODULE_NAME.replace(".", "/") not in str(self._path)
+        # Check if the module path includes the logging proxy module
+        logging_proxy_parts = tuple(LOGGING_PROXY_MODULE_NAME.split('.'))
+        return not all(part in self.module_path.parts for part in logging_proxy_parts)
 
     def is_client_types_entry(self) -> bool:
-        import immich_autotag.api.immich_proxy.client_types as client_types_mod
-
-        client_types_path = Path(client_types_mod.__file__).resolve()
-        return self._path.resolve() == client_types_path
+        # Example: check if the module path matches the client_types module
+        return self.module_path.as_dotstring() == 'immich_autotag.api.immich_proxy.client_types'
 
     @staticmethod
     @typechecked
@@ -58,10 +76,12 @@ class CallerInfo:
             if found_frozen and "frozen" not in filename:
                 try:
                     rel_path = Path(filename).resolve().relative_to(PROJECT_ROOT)
-                    return CallerInfo(rel_path)
+                    # Convert rel_path to module path (dot notation)
+                    module_path = ModulePath.from_path(rel_path)
+                    return CallerInfo(module_path)
                 except ValueError:
                     return None
         return None
 
     def __str__(self):
-        return str(self._path)
+        return self.module_path.as_dotstring()

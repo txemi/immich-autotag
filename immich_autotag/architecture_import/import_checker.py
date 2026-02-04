@@ -1,10 +1,17 @@
+"""
+import_checker.py
+
+Defines the ArchitectureImportChecker class, a custom meta path finder
+for enforcing architecture rules on imports at runtime.
+Allows installing a hook in sys.meta_path that validates imports according to rules
+defined for the Immich-autotag project.
+"""
 import importlib.machinery
 from typing import Optional
 
 from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
-
 from .caller_info import CallerInfo
-from .fullname_info import FullnameInfo
+from .fullname_info import ImportedModuleInfo
 from .rules import (
     enforce_immich_api_import_rule,
     enforce_immich_proxy_import_rule,
@@ -14,7 +21,9 @@ from .rules import (
 
 class ArchitectureImportChecker:
     """
-    Custom meta path finder for enforcing import architecture rules.
+    Custom meta path finder for enforcing architecture rules on imports.
+    Allows installing a hook in sys.meta_path that validates imports according to rules
+    defined for the Immich-autotag project, ensuring architectural integrity at runtime.
     """
 
     @staticmethod
@@ -41,13 +50,11 @@ class ArchitectureImportChecker:
         if not ENABLE_ARCHITECTURE_IMPORT_HOOK:
             return None
         ci = CallerInfo.from_stack()
-        if ci is None:
+        if ci is None or ci.is_outside_project():
             return None
-        if ci.is_outside_project():
-            return None
-
-        fni = FullnameInfo(fullname)
-        enforce_immich_api_import_rule(fni, ci)
-        enforce_immich_proxy_import_rule(fni, ci)
-        enforce_logging_proxy_import_rule(fni, ci)
+        from .fullname_info import ImportedModuleInfo
+        from .module_path import ModulePath
+        imported_module = ImportedModuleInfo(module_path=ModulePath.from_dotstring(fullname))
+        evaluate_import_rules(imported_module, ci)
         return None
+

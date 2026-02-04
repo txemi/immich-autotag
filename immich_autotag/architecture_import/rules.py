@@ -1,12 +1,12 @@
 from .caller_info import CallerInfo
-from .fullname_info import FullnameInfo
+from .fullname_info import ImportedModuleInfo
 from .shared_symbols import (
     IMMICH_API_MODULE,
     LOGGING_PROXY_MODULE_NAME,
 )
 
 
-def enforce_immich_api_import_rule(fni: FullnameInfo, ci: CallerInfo) -> None:
+def enforce_immich_api_import_rule(fni: ImportedModuleInfo, ci: CallerInfo) -> None:
     """
     Enforce the rule: Only the proxy module may import the Immich API.
     Raise ImportError if violated.
@@ -19,7 +19,7 @@ def enforce_immich_api_import_rule(fni: FullnameInfo, ci: CallerInfo) -> None:
             )
 
 
-def enforce_immich_proxy_import_rule(fni: FullnameInfo, ci: CallerInfo) -> None:
+def enforce_immich_proxy_import_rule(fni: ImportedModuleInfo, ci: CallerInfo) -> None:
     """
     Enforce: Only logging_proxy can import any submodule from immich_proxy.
     Raise ImportError if violated.
@@ -36,7 +36,7 @@ def enforce_immich_proxy_import_rule(fni: FullnameInfo, ci: CallerInfo) -> None:
         return None
 
 
-def enforce_logging_proxy_import_rule(fni: FullnameInfo, ci: CallerInfo) -> None:
+def enforce_logging_proxy_import_rule(fni: ImportedModuleInfo, ci: CallerInfo) -> None:
     """
     Enforce: No immich_proxy module can import from logging_proxy.
     Raise ImportError if the rule is violated.
