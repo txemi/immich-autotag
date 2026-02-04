@@ -82,7 +82,7 @@ class AssetDtoState:
         """
         tags = self._dto.tags if self._dto is not None else None
         if self._api_endpoint_source == AssetDtoType.FULL:
-            if tags is not None and not isinstance(tags, (list, Unset)):
+            if tags is not None and not isinstance(tags, list):
                 raise TypeError(
                     f"In FULL mode, tags must be a list or Unset, but it is {type(tags)}"
                 )
@@ -142,13 +142,19 @@ class AssetDtoState:
             )
 
         from immich_autotag.context.immich_context import ImmichContext
+        from immich_autotag.tags.tag_response_wrapper import TagWrapper, TagSource
+        import time
 
         tag_collection = ImmichContext.get_default_instance().get_tag_collection()
         wrappers: list["TagWrapper"] = []
-        for tag in tags:
-            wrapper = tag_collection.get_tag_from_dto(tag)
-            if wrapper is not None:
-                wrappers.append(wrapper)
+        for tag_dto in tags:
+            new_tag = TagWrapper(
+                tag=tag_dto,
+                source=TagSource.ASSET_PAYLOAD,
+            )
+            tag = tag_collection.merge_or_update_tag(new_tag)
+            if tag is not None:
+                wrappers.append(tag)
         return wrappers
 
     def get_dates(self) -> list[datetime]:

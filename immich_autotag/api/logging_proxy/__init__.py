@@ -67,7 +67,8 @@ Usage Example:
     from immich_autotag.api.logging_proxy.tags import logging_delete_tag
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-    tag_wrapper = TagWrapper(tag_dto)
+   from immich_autotag.tags.tag_response_wrapper import TagSource
+   tag_wrapper = TagWrapper(tag_dto, TagSource.ASSET_PAYLOAD)
     logging_delete_tag(client=client, tag=tag_wrapper, reason="cleanup")
     # → Automatically: API call + logging + event recording + statistics
 

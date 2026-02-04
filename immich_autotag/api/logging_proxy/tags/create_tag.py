@@ -65,7 +65,8 @@ def logging_create_tag(
         raise RuntimeError(f"Failed to create tag '{name}': API returned None")
 
     # Wrap the DTO for type safety and consistency
-    tag_wrapper = TagWrapper(new_tag_dto)
+    from immich_autotag.tags.tag_response_wrapper import TagSource
+    tag_wrapper = TagWrapper(new_tag_dto, TagSource.CREATE_TAG)
 
     # Record the event in the modification report
     report = ModificationReport.get_instance()

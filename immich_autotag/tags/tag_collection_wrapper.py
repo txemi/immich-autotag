@@ -26,6 +26,8 @@ class TagCollectionWrapperLoadError(Exception):
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
 
+
+
     _index: TagDualMap = attrs.field(factory=TagDualMap)
     _fully_loaded: bool = attrs.field(default=False, init=False)
     from immich_autotag.report.modification_entry import ModificationEntry
@@ -179,19 +181,49 @@ class TagCollectionWrapper:
             return _tag_collection_singleton
         _tag_collection_singleton = TagCollectionWrapper()
         return _tag_collection_singleton
-
-    def get_tag_from_dto(self, dto: "TagResponseDto") -> "TagWrapper | None":
+    def _find_candidate_tag(self, new_tag: "TagWrapper") -> "TagWrapper | None":
         """
-        Returns the TagWrapper corresponding to a TagResponseDto (dto), or None if it
-        does not exist.
-        """
+        INTERNAL: Helper for merging external tag entities.
 
-        tag_id = TagUUID.from_string(dto.id)
-        tag = self.find_by_id(tag_id)
-        if tag is not None:
-            return tag
-        name = dto.name
-        return self.find_by_name(name)
+        This method is NOT for general use. It is designed to assist in merging a tag entity
+        (typically from an external payload) into the local collection, by searching for a candidate
+        tag in the collection using both ID and name.
+
+        - If both ID and name are found and refer to different tags, raises an exception (conflict).
+        - If only one is found, returns that candidate.
+        - If neither is found, returns None.
+
+        This logic is intentionally strict and is only suitable for controlled merge/update scenarios.
+        It is not recommended for general lookup or business logic.
+        """
+        tag_id = new_tag.get_id()
+        by_id = self.find_by_id(tag_id)
+        name = new_tag.get_name()
+        by_name = self.find_by_name(name)
+        if by_id and by_name:
+            if by_id != by_name:
+                raise RuntimeError(f"TagCollectionWrapper: Conflicting tags found for id={tag_id} and name={name}")
+            return by_id
+        if by_id:
+            return by_id
+        if by_name:
+            return by_name
+        return None
+    def merge_or_update_tag(self, new_tag: "TagWrapper") -> "TagWrapper | None":
+        """
+        Recibe un nuevo TagWrapper y lo compara con el candidato de la colección (por id/nombre).
+        Si no hay candidato, añade el nuevo y lo retorna.
+        Si hay candidato, llama a get_best_tag y actualiza el mapa si corresponde.
+        """
+        candidate = self._find_candidate_tag(new_tag)
+        if candidate is None:
+            self._index.add(new_tag)
+            return new_tag
+        best_tag = candidate.get_best_tag(new_tag)
+        if best_tag is candidate:
+            return candidate
+        self._index.add(best_tag)
+        return best_tag
 
     @staticmethod
     def maintenance_delete_conflict_tags(client: ImmichClient) -> int:
