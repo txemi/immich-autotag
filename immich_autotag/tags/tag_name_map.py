@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagNameMap:
-
     """
     Efficient map from name (str) to TagWrapper.
     """
@@ -41,7 +40,6 @@ class TagNameMap:
 
     def to_list(self) -> List["TagWrapper"]:
         return list(self._name_to_tag.values())
-
 
     @typechecked
     def clear(self):

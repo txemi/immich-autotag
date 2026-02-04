@@ -11,8 +11,6 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagIdMap:
-
-
     """
     Mapa eficiente de id (UUID o str) a TagWrapper.
     """

@@ -27,7 +27,6 @@ class StaleAssetCacheError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetCacheEntry:
-
     """
     Encapsulates the cached state of an asset, with freshness and reload logic.
     Attributes are private; access only via public methods.
@@ -349,6 +348,7 @@ class AssetCacheEntry:
         """
         self._ensure_fresh(ImmichContext.get_default_instance())
         return self._state.has_tag(tag_name)
+
     @classmethod
     def from_dto_entry(
         cls,
