@@ -41,7 +41,7 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
     """
     client = context.get_client_wrapper().get_client()
     albums_collection = context.get_albums_collection()
-    albums = albums_collection.get_all_albums()
+    albums = albums_collection.get_albums()
     count = 0
     for album in albums:
         if _is_temp_album(album) and not _is_album_healthy(album):
