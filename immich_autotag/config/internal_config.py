@@ -57,3 +57,7 @@ ENABLE_ARCHITECTURE_IMPORT_HOOK = True
 # ==================== CONVERSIONS AT STARTUP ====================
 # Controls whether all conversions are applied to assets at application startup
 APPLY_CONVERSIONS_AT_START = False  # Set to False to disable mass processing at startup
+
+# ==================== MAINTENANCE: DELETE CONFLICT TAGS ====================
+# If False, disables the maintenance_delete_conflict_tags function (prevents accidental mass deletion)
+ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS = False  # Default: disabled for safety

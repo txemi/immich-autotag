@@ -231,7 +231,13 @@ class TagCollectionWrapper:
         """
         MAINTENANCE HACK: Deletes all tags whose name starts with any conflict prefix.
         Returns the number of deleted tags.
+        Controlled by ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS in internal_config.py.
+        If disabled, this function does nothing and returns 0.
         """
+        from immich_autotag.config.internal_config import ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS
+        if not ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS:
+            # Disabled by config for safety
+            return 0
         from immich_autotag.api.logging_proxy.load_all_tags_wrapped import (
             load_all_tags_wrapped,
         )
