@@ -15,7 +15,7 @@ class CheckShfmt(Check):
     def check(self, args: QualityGateArgs) -> CheckResult:
         cmd = ['shfmt', '-d', '-i', '0']
         print(f"[RUN] {' '.join(cmd)} scripts/")
-        result = subprocess.run(cmd + ['scripts/'], capture_output=True, text=True)
+        result = subprocess.run(cmd + ['scripts/'], capture_output=True, text=True, check=True)
         from pathlib import Path
         from typing import List
         findings: List[Finding] = []
@@ -28,7 +28,7 @@ class CheckShfmt(Check):
     def apply(self, args: QualityGateArgs) -> CheckResult:
         cmd = ['shfmt', '-w', '-i', '0']
         print(f"[RUN] {' '.join(cmd)} scripts/")
-        result = subprocess.run(cmd + ['scripts/'], capture_output=True, text=True)
+        result = subprocess.run(cmd + ['scripts/'], capture_output=True, text=True, check=True)
         from pathlib import Path
         from typing import List
         findings: List[Finding] = []

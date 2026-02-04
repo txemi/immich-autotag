@@ -20,7 +20,7 @@ class CheckJscpd(Check):
         else:
             cmd = ['npx', 'jscpd', '--silent', '--min-tokens', '30', '--max-lines', '100', '--format', 'python', '--ignore', '**/.venv/**,**/immich-client/**,**/scripts/**', str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         findings = []
         if result.returncode != 0:
             for line in result.stdout.splitlines():

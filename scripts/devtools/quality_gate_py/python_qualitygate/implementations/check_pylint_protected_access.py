@@ -18,7 +18,10 @@ class CheckPylintProtectedAccess(Check):
         def _run_and_parse_pylint(args, finding_filter=None):
             cmd = [args.py_bin, '-m', 'pylint', str(args.target_dir)]
             try:
-                result = subprocess.run(cmd, capture_output=True, text=True)
+                result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            except subprocess.CalledProcessError as e:
+                # Still want to parse output for findings, but fail visibly if the tool itself errors out
+                raise RuntimeError(f"Error running pylint (nonzero exit): {e}")
             except Exception as e:
                 raise RuntimeError(f"Error ejecutando pylint: {e}")
 

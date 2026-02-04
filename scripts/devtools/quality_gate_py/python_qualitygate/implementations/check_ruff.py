@@ -62,7 +62,7 @@ class CheckRuff(Check):
         # This allows reports to distinguish whether a finding comes from a check or from applying fixes.
         cmd = self._build_ruff_command(args, apply_fix=apply_fix)
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         output = result.stdout + '\n' + result.stderr
         return self._process_check_output(args, output, result.returncode, code=code)
 

@@ -36,7 +36,7 @@ class CheckImportLinter(Check):
         lint_imports_bin = str(Path(args.py_bin).parent / 'lint-imports')
         cmd = [lint_imports_bin, '--config', config_file, '--output-markdown']
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         findings = []
         if result.returncode != 0:
             for line in result.stdout.splitlines():

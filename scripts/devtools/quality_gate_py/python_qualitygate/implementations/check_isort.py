@@ -15,7 +15,7 @@ class CheckIsort(Check):
     def check(self, args: QualityGateArgs) -> CheckResult:
         cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--check-only', '--line-length', str(args.line_length), str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         findings = []
         if result.returncode != 0:
             for line in result.stdout.splitlines():
@@ -27,7 +27,7 @@ class CheckIsort(Check):
     def apply(self, args: QualityGateArgs) -> CheckResult:
         cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--line-length', str(args.line_length), str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         findings = []
         # isort apply should not fail, but capture output just in case
         if result.returncode != 0:

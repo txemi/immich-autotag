@@ -83,7 +83,7 @@ class CheckFlake8(Check):
         flake8_ignore, flake8_select = self._get_flake8_config(args.level)
         cmd = self._build_cmd(args, flake8_ignore, flake8_select)
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         if result.returncode != 0:
             findings = self._parse_findings(result.stdout, str(args.target_dir))
         else:

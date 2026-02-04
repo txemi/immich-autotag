@@ -16,7 +16,7 @@ class CheckNoTuples(Check):
         script = 'scripts/devtools/check_no_tuples.py'
         cmd = [str(args.py_bin), str(script), str(args.target_dir), '--exclude', '.venv,immich-client,scripts']
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         findings = []
         if result.returncode != 0:
             for line in result.stdout.splitlines():

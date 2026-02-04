@@ -15,7 +15,7 @@ class CheckBlack(Check):
     def check(self, args: QualityGateArgs) -> CheckResult:
         cmd = [args.py_bin, '-m', 'black', '--check', '--line-length', str(args.line_length), str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         findings = []
         if result.returncode != 0:
             # Parse affected files from black's output
@@ -32,7 +32,7 @@ class CheckBlack(Check):
     def apply(self, args: QualityGateArgs) -> CheckResult:
         cmd = [args.py_bin, '-m', 'black', '--line-length', str(args.line_length), str(args.target_dir)]
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         findings = []
         if result.returncode != 0:
             findings.append(Finding(file_path=args.target_dir, line_number=0, message="Black could not format all files", code="black-apply-error"))
