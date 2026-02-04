@@ -18,7 +18,10 @@ def run_main_inner_logic():
     # Initialize context early so it's available for maintenance operations
     context = init_collections_and_context(client_wrapper)
     # Maintenance: delete unhealthy temporary albums
-    from immich_autotag.albums.maintenance_tasks.delete_unhealthy_temp_albums import delete_unhealthy_temp_albums
+    from immich_autotag.albums.maintenance_tasks.delete_unhealthy_temp_albums import (
+        delete_unhealthy_temp_albums,
+    )
+
     delete_unhealthy_temp_albums(context)
     # TODO: Maintenance cleanup disabled during stability testing - causes performance issues
     maintenance_cleanup_labels(client)
