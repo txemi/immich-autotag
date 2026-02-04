@@ -37,12 +37,13 @@
       "problemMatcher": []
     },
     {
-      "label": "QUALITY GATE [PYTHON]: (CHECK) TARGET",
+      "label": "QUALITY GATE [PYTHON]: 4️⃣🔵 (CHECK) TARGET",
       "type": "shell",
       "command": "bash scripts/devtools/quality_gate_py/venv_launcher.sh --mode CHECK --level TARGET",
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "detail": "4️⃣ Cuarta prioridad: Quality Gate Python en modo TARGET (solo bloquea findings críticos de ramas de mejora)"
     },
     // DEPRECATED: DO NOT USE THESE BASE SCRIPT QUALITY GATE TASKS
     // Use the Python-based quality gate tasks instead (see above)
