@@ -12,6 +12,8 @@ from .module_path import ModulePath
 
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ImmichModulePath(ModulePath):
+
+
     """
     Extends ModulePath with utilities specific to the Immich-autotag project.
     Allows checking if a module belongs to the core or a specific subpackage,
@@ -22,7 +24,7 @@ class ImmichModulePath(ModulePath):
         """
         Returns True if the module path includes 'immich_proxy'.
         """
-        return 'immich_proxy' in self.parts
+        return 'immich_proxy' in self.get_parts()
 
     def is_outside_logging_proxy(self) -> bool:
         """
@@ -30,7 +32,7 @@ class ImmichModulePath(ModulePath):
         """
         from .shared_symbols import LOGGING_PROXY_MODULE_NAME
         logging_proxy_parts = tuple(LOGGING_PROXY_MODULE_NAME.split('.'))
-        return not all(part in self.parts for part in logging_proxy_parts)
+        return not all(part in self.get_parts() for part in logging_proxy_parts)
 
     def is_client_types_entry(self) -> bool:
         """
@@ -48,11 +50,11 @@ class ImmichModulePath(ModulePath):
 
     def is_core_module(self) -> bool:
         # Determines if the module is part of the immich_autotag core
-        return self.parts[:1] == ("immich_autotag",)
+        return self.get_parts()[:1] == ("immich_autotag",)
 
     def is_in_subpackage(self, subpackage: str) -> bool:
         # Checks if the module is in a specific subpackage
-        return subpackage in self.parts
+        return subpackage in self.get_parts()
 
     # Add more Immich domain-specific methods here
 
@@ -62,7 +64,7 @@ class ImmichModulePath(ModulePath):
         Returns the root package as an ImmichModulePath (e.g., ImmichModulePath(('immich_autotag',)))
         """
         from pathlib import Path
-        name = Path(__file__).resolve().parent.name
+        name = Path(__file__).resolve().parent.parent.name
         return cls.from_dotstring(name)
 
     def is_outside_root_package(self) -> bool:
@@ -70,5 +72,12 @@ class ImmichModulePath(ModulePath):
         Returns True if this module path is outside the root package.
         """
         root_path = self.get_root_package_path()
-        return not self.parts or self.parts[0] != root_path.parts[0]
+        return self.is_outside_root_of(root_path)
     
+    @classmethod
+    def from_module_path(cls, module_path: ModulePath) -> "ImmichModulePath":
+        """
+        Converts a ModulePath (or ImmichModulePath) to an ImmichModulePath instance.
+        """
+        parts = module_path.get_parts() 
+        return cls(parts)

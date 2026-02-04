@@ -51,8 +51,8 @@ class ArchitectureImportChecker:
         if not ENABLE_ARCHITECTURE_IMPORT_HOOK:
             return None
         ci = CallerInfo.from_stack()
-        if ci is None or ci.is_outside_project():
-            return None
+        #if False and ci is None or ci.is_outside_project():
+        #    return None
         from .fullname_info import ImportedModuleInfo
         from .module_path import ModulePath
         imported_module = ImportedModuleInfo(module_path=ModulePath.from_dotstring(fullname))
