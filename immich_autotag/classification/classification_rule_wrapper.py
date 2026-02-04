@@ -147,30 +147,16 @@ class ClassificationRuleWrapper:
     @typechecked
     def extract_uuids_from_asset_links(self) -> list[AssetUUID]:
         """
-        Extracts UUIDs from the asset_links of this rule.
-        Accepts complete URLs or direct UUIDs.
+        Prototipo: extrae todos los UUIDs de los enlaces en asset_links usando el extractor centralizado.
         """
-        import re
-
+        from immich_autotag.classification.link_parsing.immich_url_uuid_extractor import extract_uuids_from_immich_url
         from immich_autotag.types.uuid_wrappers import AssetUUID
-
         if not self.rule.asset_links:
             return []
-
-        uuids = []
-        uuid_pattern = re.compile(
-            r"([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"
-        )
-
+        uuids: list[AssetUUID] = []
         for link in self.rule.asset_links:
-            match = uuid_pattern.search(link)
-            if not match:
-                raise RuntimeError(
-                    f"[ERROR] Could not extract asset ID from link: {link}"
-                )
-            asset_uuid = UUID(match.group(1))
-            uuids.append(AssetUUID.from_uuid(asset_uuid))
-
+            for uuid in extract_uuids_from_immich_url(link):
+                uuids.append(AssetUUID.from_uuid(uuid))
         return uuids
 
     @typechecked
