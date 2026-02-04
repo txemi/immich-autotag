@@ -27,7 +27,7 @@ class CheckImportLinter(Check):
         # Use the lint-imports binary from the same venv as py_bin
         from pathlib import Path
         lint_imports_bin = str(Path(args.py_bin).parent / 'lint-imports')
-        cmd = [lint_imports_bin, '--config', config_file]
+        cmd = [lint_imports_bin, '--config', config_file, '--output-markdown']
         print(f"[RUN] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         findings = []
