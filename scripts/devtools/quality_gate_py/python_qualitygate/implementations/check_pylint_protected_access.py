@@ -56,13 +56,10 @@ class CheckPylintProtectedAccess(Check):
                 # Block ALL pylint findings in STRICT
                 findings = _run_and_parse_pylint(args)
                 return CheckResult(findings=findings)
-            case QualityGateLevel.TARGET:
-                # Block ONLY protected-access (W0212) in TARGET
+            case QualityGateLevel.TARGET | QualityGateLevel.STANDARD:
+                # Block ONLY protected-access (W0212) in TARGET and STANDARD
                 findings = _run_and_parse_pylint(args, finding_filter=lambda f: f.code == "W0212")
                 return CheckResult(findings=findings)
-            case QualityGateLevel.STANDARD:
-                # Do not block in STANDARD
-                return CheckResult(findings=[])
             case _:
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
 
