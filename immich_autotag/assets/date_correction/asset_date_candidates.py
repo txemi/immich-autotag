@@ -39,7 +39,7 @@ class AssetDateCandidates:
 
     @typechecked
     def extend(self, other: "AssetDateCandidates") -> None:
-        self._candidates.extend(other._candidates)
+        self._candidates.extend(other.get_candidates())
 
     @typechecked
     def is_empty(self) -> bool:
@@ -127,6 +127,12 @@ class AssetDateCandidates:
     ) -> List[AssetDateCandidate]:
         """Returns all candidates whose source_kind is in the kinds list."""
         return [c for c in self._candidates if c.get_source_kind() in kinds]
+
+    def get_candidates(self) -> list["AssetDateCandidate"]:
+        """
+        Returns the list of date candidates.
+        """
+        return self._candidates
 
     @typechecked
     def __iter__(self) -> Iterator["AssetDateCandidate"]:
