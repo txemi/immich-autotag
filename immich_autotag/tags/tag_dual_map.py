@@ -44,8 +44,8 @@ class TagDualMap:
         return self._id_map.to_list()
 
     def clear(self):
-        self._id_map._id_to_tag.clear()
-        self._name_map._name_to_tag.clear()
+        self._id_map.clear()
+        self._name_map.clear()
 
     def __iter__(self):
         return iter(self._id_map._id_to_tag.values())
