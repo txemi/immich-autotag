@@ -38,6 +38,7 @@ class Parts:
 
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ModulePath:
+
     """
     Represents a Python module path (e.g., 'immich_autotag.assets.process')
     as a tuple of parts. Allows constructing paths from string, Path, or parts,
@@ -101,7 +102,7 @@ class ModulePath:
 
     @staticmethod
     @typechecked
-    def from_stack() -> Optional["ModulePath"]:
+    def from_stack(PROJECT_ROOT) -> Optional["ModulePath"]:
         """
         Returns a CallerInfo for the first non-frozen caller in the stack
         (relative to PROJECT_ROOT), or None if the caller is not inside the project.
@@ -111,6 +112,8 @@ class ModulePath:
 
         for frame in stack:
             filename = frame.filename
+            mp=ModulePath.from_path_string(filename,PROJECT_ROOT)
+            return mp
             if "frozen" in filename:
                 found_frozen = True
                 continue
@@ -126,3 +129,14 @@ class ModulePath:
 
     def __repr__(self) -> str:
         return f"ModulePath({self.as_dotstring()})"
+
+    @classmethod
+    def from_path_string(cls, path_string: str, PROJECT_ROOT: Path) -> "ModulePath":
+        """
+        Construct a ModulePath from a string path, accepting either dot or slash separators.
+        """
+
+        rel_path = Path(path_string).resolve().relative_to(PROJECT_ROOT)
+        # Convert rel_path to ImmichModulePath (dot notation)
+        immich_module_path = ModulePath.from_path(rel_path)
+        return immich_module_path

@@ -10,6 +10,7 @@ defined for the Immich-autotag project.
 import importlib.machinery
 from typing import Optional
 
+from immich_autotag.architecture_import.module_path import PROJECT_ROOT
 from immich_autotag.architecture_import.rule_evaluator import evaluate_import_rules
 from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
 
@@ -46,8 +47,9 @@ class ArchitectureImportChecker:
             return None
         from .module_path import ModulePath
 
-        ci = ModulePath.from_stack()
+        ci = ModulePath.from_stack(PROJECT_ROOT=PROJECT_ROOT)
         if ci is None:
+            ModulePath.from_stack()
             raise RuntimeError(
                 "ArchitectureImportChecker: Could not determine caller module path (ci is None). Defensive fail-fast."
             )

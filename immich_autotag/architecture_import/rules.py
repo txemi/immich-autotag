@@ -29,7 +29,7 @@ def enforce_immich_proxy_import_rule(
     if imported.is_import_from_immich_proxy():
         if caller.is_import_from_immich_proxy():
             return None
-        if caller.is_client_types_entry():
+        if caller.is_architecture_rules():
             return None
         if caller.is_outside_logging_proxy():
             raise ImportError(
