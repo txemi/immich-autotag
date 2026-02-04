@@ -68,7 +68,9 @@ class ImmichModulePath(ModulePath):
         """
         from pathlib import Path
         name = Path(__file__).resolve().parent.parent.name
-        return cls.from_dotstring(name)
+        # Always use cls.from_dotstring to ensure correct type
+        aa= cls.from_dotstring(name)
+        return cls.from_module_path(aa)
 
     def is_outside_root_package(self) -> bool:
         """
