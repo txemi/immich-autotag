@@ -72,6 +72,7 @@ pipeline {
         stage('Quality Gate (Shell Script)') {
             steps {
                 script {
+                    echo '🚨🚨 DEPRECATED: QUALITY GATE (SHELL SCRIPT) - USE PYTHON VERSION INSTEAD 🚨🚨'
                     echo "Running Quality Gate (relaxed mode)..."
                     sh '''
                         chmod +x scripts/devtools/quality_gate.sh
