@@ -43,7 +43,7 @@
       "group": { "kind": "build" },
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": [],
-      "detail": "4️⃣ Cuarta prioridad: Quality Gate Python en modo TARGET (solo bloquea findings críticos de ramas de mejora)"
+      "detail": "4️⃣ Fourth priority: Quality Gate Python in TARGET mode (only blocks critical findings for improvement branches)"
     },
     // DEPRECATED: DO NOT USE THESE BASE SCRIPT QUALITY GATE TASKS
     // Use the Python-based quality gate tasks instead (see above)

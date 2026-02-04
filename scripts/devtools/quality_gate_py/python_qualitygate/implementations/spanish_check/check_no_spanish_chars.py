@@ -26,13 +26,50 @@ class CheckNoSpanishChars(Check):
         forbidden_bytes = self._get_forbidden_bytes()
         files_to_check = self._get_files_to_check(repo, repo_root)
 
+        # Check file contents
         for file_path in files_to_check:
             findings.extend(self._analyze_file_wordlist(file_path, forbidden_bytes, spanish_words))
-            # Only use langdetect in STRICT mode (compare using enum)
+            # Only use langdetect in STRICT mode
             from python_qualitygate.cli.args import QualityGateLevel
             if args.level == QualityGateLevel.STRICT:
                 findings.extend(self._analyze_file_langdetect(file_path))
+
+        # Check file names for spanish words
+        findings.extend(self._analyze_filenames_for_spanish_words(files_to_check, spanish_words))
+
         return CheckResult(findings=findings)
+
+    def _analyze_filenames_for_spanish_words(self, files: List[Path], spanish_words: List[str]) -> List[Finding]:
+        import re
+        findings = []
+        forbidden_bytes = self._get_forbidden_bytes()
+        for file_path in files:
+            filename = file_path.name
+            # Separar por separadores típicos
+            tokens = re.split(r'[\s_\-\.]+', filename)
+            # Buscar caracteres especiales/acento en cada token
+            for i, token in enumerate(tokens):
+                # Buscar bytes prohibidos (acentos, ñ, etc) en la representación utf-8
+                token_bytes = token.encode('utf-8', errors='ignore')
+                if any(b in token_bytes for b in forbidden_bytes):
+                    findings.append(Finding(
+                        file_path=file_path,
+                        line_number=0,
+                        message=f"File name contains forbidden Spanish character/accent in token: '{token}'",
+                        code="spanish-filename-char"
+                    ))
+                # Buscar palabras del diccionario
+                for word in spanish_words:
+                    if word:
+                        pattern = r'^' + re.escape(word) + r'$'
+                        if re.match(pattern, token, re.IGNORECASE):
+                            findings.append(Finding(
+                                file_path=file_path,
+                                line_number=0,
+                                message=f"File name contains forbidden Spanish word: '{word}' in token: '{token}'",
+                                code="spanish-filename-word"
+                            ))
+        return findings
 
 
     def apply(self, args: QualityGateArgs) -> CheckResult:
@@ -44,11 +81,11 @@ class CheckNoSpanishChars(Check):
             repo_root = Path(repo.working_tree_dir)
             return repo, repo_root
         except InvalidGitRepositoryError:
-            findings.append(Finding(file_path=Path.cwd(), line_number=0, message="No se encontró un repositorio git en el árbol de directorios actual.", code="git-error"))
+            findings.append(Finding(file_path=Path.cwd(), line_number=0, message="No git repository found in the current directory tree.", code="git-error"))
             return None, None
 
     def _get_spanish_words(self, repo_root: Path, findings: List[Finding]):
-        # Buscar en varias rutas posibles
+        # Search in several possible paths
         candidate_paths = [
             repo_root / 'scripts' / 'spanish_words.txt',
             repo_root / 'scripts' / 'devtools' / 'spanish_words.txt',
