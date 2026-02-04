@@ -10,6 +10,8 @@ from uuid import UUID
 
 import attrs
 
+from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
+
 from .immich_url_types import ImmichUrlUuids
 
 
@@ -22,8 +24,8 @@ class ImmichUrlUuidExtractor:
     """
 
     _url: str
-    _album_uuid: UUID | None = attrs.field(init=False, default=None, repr=False)
-    _asset_uuid: UUID | None = attrs.field(init=False, default=None, repr=False)
+    _album_uuid: AlbumUUID | None = attrs.field(init=False, default=None, repr=False)
+    _asset_uuid: AssetUUID | None = attrs.field(init=False, default=None, repr=False)
     _parsed: bool = attrs.field(init=False, default=False, repr=False)
 
     def _parse_if_needed(self) -> None:
@@ -48,11 +50,11 @@ class ImmichUrlUuidExtractor:
             self._asset_uuid = asset_uuid
             self._parsed = True
 
-    def get_album_uuid(self) -> UUID | None:
+    def get_album_uuid(self) -> AlbumUUID | None:
         self._parse_if_needed()
         return self._album_uuid
 
-    def get_asset_uuid(self) -> UUID | None:
+    def get_asset_uuid(self) -> AssetUUID | None:
         self._parse_if_needed()
         return self._asset_uuid
 
@@ -61,7 +63,7 @@ class ImmichUrlUuidExtractor:
         return ImmichUrlUuids(album_uuid=self._album_uuid, asset_uuid=self._asset_uuid)
 
     @staticmethod
-    def extract_asset_uuids_from_links(links: list[str]) -> list[UUID | None]:
+    def extract_asset_uuids_from_links(links: list[str]) -> list[AssetUUID | None]:
         """
         Given a sequence of links (strings), returns a list with the asset UUID found in each link.
         If a link does not contain an asset UUID, None is placed in that position.

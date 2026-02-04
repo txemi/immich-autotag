@@ -143,7 +143,7 @@ class ClassificationRuleWrapper:
         return len(self.extract_uuids_from_asset_links()) > 0
 
     @typechecked
-    def extract_uuids_from_asset_links(self) -> list[UUID | None]:
+    def extract_uuids_from_asset_links(self) -> list[AssetUUID | None]:
         """
         Prototype: extracts all UUIDs from the links in asset_links using the centralized extractor.
         """
