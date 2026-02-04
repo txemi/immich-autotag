@@ -375,7 +375,7 @@ class AssetDtoState:
             f"The upper layer should call ensure_full_asset_loaded() before accessing duplicate_id."
         )
 
-    def require_duplicate_id_loaded(self) -> "AssetDtoState":
+    def _require_duplicate_id_loaded(self) -> "AssetDtoState":
         """
         Ensures duplicate_id is loaded and returns self, otherwise raises an exception.
 
@@ -407,8 +407,10 @@ class AssetDtoState:
             DuplicateIdNotLoadedError: If duplicate_id is Unset (not yet loaded from API)
         """
         # Ensure duplicate_id is loaded (will raise if Unset)
-        full = self.require_duplicate_id_loaded()
-        dto = full._require_dto()
+        self._require_duplicate_id_loaded()
+        dto = self._dto
+        if not dto:
+            raise RuntimeError("DTO is None")
         val = dto.duplicate_id
 
         # At this point, val is NOT Unset (validated by require_duplicate_id_loaded)
