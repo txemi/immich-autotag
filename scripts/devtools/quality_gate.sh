@@ -221,7 +221,7 @@ parse_args_and_globals() {
 		exit 98
 	fi
 
-	# Devolver los valores como salida (en orden, SOLO datos)
+	# Return the values as output (in order, DATA ONLY)
 	echo "$check_mode $quality_level $target_dir $only_check"
 }
 # Prints a status message with common Quality Gate context (level, mode, script path)
@@ -770,7 +770,7 @@ check_mypy() {
 		echo "[ERROR] MYPY FAILED. TOTAL ERRORS: $mypy_error_count IN $mypy_files_count FILES."
 		echo "[INFO] Command executed: $py_bin -m mypy --ignore-missing-imports $target_dir"
 		if [ "$quality_level" = "STRICT" ]; then
-			# En modo estricto, cualquier error de mypy bloquea
+			# In STRICT mode, any mypy error blocks
 			echo '[STRICT MODE] Any mypy error blocks the build.'
 			echo '[EXIT] Quality Gate failed due to mypy errors.'
 			return 1

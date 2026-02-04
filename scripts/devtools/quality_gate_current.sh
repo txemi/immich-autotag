@@ -1,4 +1,4 @@
 #!/bin/bash
-# Script para mostrar el estado actual del Quality Gate en modo CHECK (sin aplicar cambios)
+# Script to show the current status of the Quality Gate in CHECK mode (no changes applied)
 
 bash "$(dirname "$0")/quality_gate.sh" --level=STANDARD --mode=CHECK
