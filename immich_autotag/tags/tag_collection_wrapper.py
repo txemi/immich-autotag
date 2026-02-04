@@ -140,7 +140,6 @@ class TagCollectionWrapper:
         Uses the client from ImmichContext singleton.
         """
         wrapper = TagCollectionWrapper()
-        wrapper._load_all_from_api()
         return wrapper
 
     @typechecked
