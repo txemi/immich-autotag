@@ -129,11 +129,6 @@ class ClassificationRuleSet:
         wrappers: List[AssetResponseWrapper] = []
 
         for asset_uuid in all_uuids:
-            # Always use AssetUUID wrapper for type safety
-            if not isinstance(asset_uuid, AssetUUID):
-                raise TypeError(
-                    f"Expected AssetUUID, got {type(asset_uuid)}: {asset_uuid}"
-                )
             asset_wrapper = context.get_asset_manager().get_asset(asset_uuid, context)
             if asset_wrapper is None:
                 raise RuntimeError(

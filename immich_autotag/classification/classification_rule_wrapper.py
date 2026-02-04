@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from uuid import UUID  # noqa: F401
 
 if TYPE_CHECKING:
     from immich_autotag.classification.match_result import MatchResult
@@ -102,7 +101,7 @@ class ClassificationRuleWrapper:
         # Also show the URL as a string in debug mode
         log(f"asset_url (string): {asset_url}", level=LogLevel.TRACE)
         asset_links_matched = []
-        if asset_link_uuids and asset_uuid is not None:
+        if asset_link_uuids:
             if asset_uuid in asset_link_uuids:
                 asset_links_matched = [str(asset_uuid)]
         log(f"asset_links_matched: {asset_links_matched}", level=LogLevel.TRACE)
@@ -167,7 +166,7 @@ class ClassificationRuleWrapper:
         Removes all tags and albums from the asset that matched this rule (based on the MatchResult).
         Returns a list of changes made.
         """
-        changes = []
+        changes: list[str] = []
         # Remove matched tags
         for tag in match_result.tags_matched():
             if asset_wrapper.has_tag(tag_name=tag):
