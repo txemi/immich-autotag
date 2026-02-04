@@ -7,7 +7,7 @@ from python_qualitygate.core.result import CheckResult, Finding
 @attr.define(auto_attribs=True, slots=True)
 class CheckLargeFiles(Check):
     _name: str = attr.ib(default='check_large_files', init=False)
-    # Umbral razonable: 1000 líneas por archivo Python
+    # Reasonable threshold: 1000 lines per Python file
     MAX_LINES: int = 1000
 
     def get_name(self) -> str:
@@ -17,16 +17,16 @@ class CheckLargeFiles(Check):
         from python_qualitygate.core.enums_level import QualityGateLevel
         match args.level:
             case QualityGateLevel.STRICT:
-                pass  # Ejecutar el check normalmente
+                pass  # Run the check normally
             case QualityGateLevel.STANDARD | QualityGateLevel.TARGET:
-                # No activo en estos modos
+                # Not active in these modes
                 return CheckResult(findings=[])
             case _:
-                # Programación defensiva: si aparece un nivel desconocido, bloquear
+                # Defensive programming: block if an unknown level appears
                 raise ValueError(f"Unknown QualityGateLevel: {args.level}")
         findings = []
         for pyfile in Path(args.target_dir).rglob('*.py'):
-            # Excluir carpetas típicas
+            # Exclude common folders
             if any(skip in str(pyfile) for skip in ['.venv', 'immich-client', 'scripts', 'jenkins_logs']):
                 continue
             try:
