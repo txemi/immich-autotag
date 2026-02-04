@@ -69,4 +69,4 @@ class TemporaryAlbumManager:
                 )
                 raise
 
-    # Métodos privados y utilidades específicas para temporales pueden añadirse aquí
+    # Private methods and utilities for temporary albums can be added here

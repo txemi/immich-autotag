@@ -13,7 +13,7 @@ from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
 from immich_autotag.albums.albums.unavailable_albums import UnavailableAlbums
-from immich_autotag.albums.duplicates_manager.manager import DuplicateAlbumManager
+from immich_autotag.albums.albums.duplicates_manager.manager import DuplicateAlbumManager
 from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -76,7 +76,7 @@ class AlbumCollectionWrapper:
 
     def _get_duplicate_album_manager(self) -> DuplicateAlbumManager:
         if self._duplicate_manager is None:
-            from immich_autotag.albums.duplicates_manager.manager import DuplicateAlbumManager
+            from immich_autotag.albums.albums.duplicates_manager.manager import DuplicateAlbumManager
             self._duplicate_manager = DuplicateAlbumManager(_collection=self)
         return self._duplicate_manager
 
