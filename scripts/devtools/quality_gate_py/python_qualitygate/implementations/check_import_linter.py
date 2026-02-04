@@ -13,13 +13,8 @@ class CheckImportLinter(Check):
 
     def check(self, args: QualityGateArgs) -> CheckResult:
         if DISABLE_IMPORT_LINTER_CHECK:
-            # Devuelve un resultado vacío y exitoso
-            return CheckResult(
-                check_name=self.name,
-                findings=[],
-                passed=True,
-                output="[INFO] Import-linter check disabled by configuration."
-            )
+            # Return an empty and successful result (Import-linter check disabled by configuration)
+            return CheckResult(findings=[])
         # Select configuration file based on quality level
         level = args.level
 
