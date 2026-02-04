@@ -89,14 +89,22 @@ class TagWrapper:
         """
         Decide which TagWrapper is preferred for merging/updating.
 
-        Candidate criteria for decision:
-        1. Timestamp: Prefer the most recent tag (self._loaded_at vs other._loaded_at).
-        2. Source/API: Prefer tags from more authoritative API calls (self._source vs other._source).
-        3. Completeness: Prefer the tag with more complete data (e.g., fewer unset fields).
-
-        The actual logic is not implemented yet. This method should be extended to use one or more of these criteria.
+        If one is from GET_ALL_TAGS and the other is from ASSET_PAYLOAD, prefer GET_ALL_TAGS.
+        Otherwise, raise NotImplementedError with info about both candidates.
         """
-        raise NotImplementedError("get_best_tag decision logic not implemented yet")
+        if (
+            self._source == TagSource.GET_ALL_TAGS
+            and other._source == TagSource.ASSET_PAYLOAD
+        ):
+            return self
+        if (
+            other._source == TagSource.GET_ALL_TAGS
+            and self._source == TagSource.ASSET_PAYLOAD
+        ):
+            return other
+        raise NotImplementedError(
+            f"get_best_tag decision logic not implemented yet.\nSelf: {repr(self)}\nOther: {repr(other)}"
+        )
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, TagWrapper):
