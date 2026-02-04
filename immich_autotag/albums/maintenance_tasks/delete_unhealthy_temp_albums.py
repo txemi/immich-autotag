@@ -33,7 +33,7 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
     Iterates all albums, finds temporary ones, checks health, and deletes those that are unhealthy.
     Returns the number of deleted albums.
     """
-    client = context.get_client()
+    client = context.get_client_wrapper().get_client()
     album_manager = context.get_album_manager()
     albums = album_manager.get_all_albums()
     count = 0
