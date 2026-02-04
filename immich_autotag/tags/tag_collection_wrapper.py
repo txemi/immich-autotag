@@ -234,7 +234,10 @@ class TagCollectionWrapper:
         Controlled by ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS in internal_config.py.
         If disabled, this function does nothing and returns 0.
         """
-        from immich_autotag.config.internal_config import ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS
+        from immich_autotag.config.internal_config import (
+            ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS,
+        )
+
         if not ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS:
             # Disabled by config for safety
             return 0
