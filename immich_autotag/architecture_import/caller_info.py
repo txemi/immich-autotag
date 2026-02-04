@@ -20,6 +20,12 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 
 @attrs.define(frozen=True, auto_attribs=True)
 class CallerInfo:
+
+    def get_module_path(self) -> ImmichModulePath:
+        """
+        Returns the private _module_path attribute.
+        """
+        return self._module_path
     """
     Encapsulates information about the module performing an import.
     Stores an ImmichModulePath instance for semantic clarity, allowing all queries and logic
