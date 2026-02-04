@@ -8,10 +8,10 @@ from immich_autotag.architecture_import.immich_module_path import ImmichModulePa
 from immich_autotag.architecture_import.module_path import ModulePath
 
 from .rules import (
+    enforce_common_package_import_rule,
     enforce_immich_api_import_rule,
     enforce_immich_proxy_import_rule,
     enforce_logging_proxy_import_rule,
-    enforce_common_package_import_rule,
 )
 
 

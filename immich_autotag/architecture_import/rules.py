@@ -1,4 +1,6 @@
+
 from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
+from immich_autotag.common import __name__ as COMMON_PKG_NAME
 
 
 def enforce_common_package_import_rule(
@@ -9,8 +11,6 @@ def enforce_common_package_import_rule(
     Raise ImportError if violated.
     """
     # Get the common package path
-    from immich_autotag.common import __name__ as COMMON_PKG_NAME
-
     common_path = ImmichModulePath.from_dotstring(COMMON_PKG_NAME)
     # If caller is in common but imported is not, raise
     if caller.is_submodule_of(common_path) and not imported.is_submodule_of(
@@ -26,11 +26,6 @@ def enforce_common_package_import_rule(
 
 from .shared_symbols import (
     IMMICH_API_MODULE,
-    from immich_autotag.architecture_import.immich_module_path import ImmichModulePath
-    from .shared_symbols import (
-        IMMICH_API_MODULE,
-        LOGGING_PROXY_MODULE_NAME,
-    )
     LOGGING_PROXY_MODULE_NAME,
 )
 
