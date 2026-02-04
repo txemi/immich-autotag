@@ -1,5 +1,12 @@
+
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
+@dataclass(slots=True)
+class CheckSummary:
+    name: str
+    status: str
+    findings_count: int
+    score: Optional[float] = None
 
 
 from python_qualitygate.core.base import Check
@@ -16,7 +23,7 @@ class Battery:
         """Executes all checks in order. In CHECK mode, exits on first failure and prints up to 8 errors."""
         from python_qualitygate.core.enums_mode import QualityGateMode
         from python_qualitygate.core.result import QualityGateResult
-        results = []
+        results: list[CheckSummary] = []
         for check in self.checks:
             rc, result = self._run_check(check, mode, args)
             check_name = check.get_name()
@@ -30,10 +37,20 @@ class Battery:
                 else:
                     score_str = f" (score: {result.score})"
             if result.is_success():
-                results.append((check_name, f'OK{score_str}', 0))
+                results.append(CheckSummary(
+                    name=check_name,
+                    status=f'OK{score_str}',
+                    findings_count=0,
+                    score=result.score
+                ))
             else:
                 n = len(result.findings)
-                results.append((check_name, f'FAIL ({n} findings){score_str}', n))
+                results.append(CheckSummary(
+                    name=check_name,
+                    status=f'FAIL ({n} findings){score_str}',
+                    findings_count=n,
+                    score=result.score
+                ))
                 self._print_errors(check_name, result.findings)
                 self._print_summary(results)
                 print(f"[EXIT] Stopped at check: {check_name} with {n} errors.")
@@ -66,7 +83,11 @@ class Battery:
         for i, finding in enumerate(findings, 1):
             print(f"  [ERROR {i}] {finding.file_path}:{finding.line_number}: {finding.message}")
 
-    def _print_summary(self, results) -> None:
+    def _print_summary(self, results: list[CheckSummary]) -> None:
         print("[SUMMARY] Quality Gate results:")
-        for name, status, count in results:
-            print(f"  - {name}: {status}")
+        for summary in results:
+            line = f"  - {summary.name}: {summary.status}"
+            # Always print score explicitly if present and not already in status
+            if summary.score is not None and "score" not in summary.status and "duplicated" not in summary.status:
+                line += f" (score: {summary.score})"
+            print(line)
