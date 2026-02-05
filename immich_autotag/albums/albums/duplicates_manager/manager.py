@@ -77,8 +77,8 @@ class DuplicateAlbumManager:
     def _handle_non_temporary_duplicate(
         self,
         *,
-        existing: AlbumResponseWrapper,
-        incoming_album: AlbumResponseWrapper,
+        existing: "AlbumResponseWrapper",
+        incoming_album: "AlbumResponseWrapper",
         tag_mod_report: ModificationReport,
         name: str,
     ) -> None:
@@ -126,8 +126,8 @@ class DuplicateAlbumManager:
     def handle_non_temporary_duplicate(
         self,
         *,
-        existing: AlbumResponseWrapper,
-        incoming_album: AlbumResponseWrapper,
+        existing: "AlbumResponseWrapper",
+        incoming_album: "AlbumResponseWrapper",
         tag_mod_report: ModificationReport,
         name: str,
     ) -> None:
@@ -139,15 +139,15 @@ class DuplicateAlbumManager:
         )
 
     @typechecked
-    def is_duplicated(self, wrapper: AlbumResponseWrapper) -> bool:
+    def is_duplicated(self, wrapper: "AlbumResponseWrapper") -> bool:
         name = wrapper.get_album_name()
         names = self.collection.find_all_albums_with_name(name)
         return len(list(names)) > 1
 
     @typechecked
     def combine_duplicate_albums(
-        self, albums: list[AlbumResponseWrapper], context: str
-    ) -> AlbumResponseWrapper:
+        self, albums: list["AlbumResponseWrapper"], context: str
+    ) -> "AlbumResponseWrapper":
         if not albums:
             raise ValueError(
                 f"No albums provided to combine_duplicate_albums (context: {context})"
