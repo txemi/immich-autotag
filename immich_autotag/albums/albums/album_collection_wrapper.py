@@ -76,7 +76,7 @@ class AlbumCollectionWrapper:
     )
 
     # Duplicate album manager (delegates all duplicate logic)
-    _duplicate_manager: DuplicateAlbumManager | None = attrs.field(
+    _duplicate_manager: "DuplicateAlbumManager | None" = attrs.field(
         init=False,
         default=None,
         repr=False,
@@ -89,7 +89,7 @@ class AlbumCollectionWrapper:
         repr=False,
     )
 
-    def _get_duplicate_album_manager(self) -> DuplicateAlbumManager:
+    def _get_duplicate_album_manager(self):  # type: ignore
         if self._duplicate_manager is None:
             from immich_autotag.albums.albums.duplicates_manager.manager import (
                 DuplicateAlbumManager,
