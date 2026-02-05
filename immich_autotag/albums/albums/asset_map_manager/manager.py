@@ -98,3 +98,7 @@ class AssetMapManager:
     def get_map(self) -> AssetToAlbumsMap:
         """Returns the current mapping."""
         return self._asset_to_albums_map
+
+    def clear(self):
+        """Clears the current mapping."""
+        self._asset_to_albums_map.clear()
