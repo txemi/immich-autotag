@@ -65,4 +65,4 @@ ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS = False  # Default: disabled for safety
 # ==================== FORCED LIMITS FOR CI/DEV ====================
 # If set to an integer, this value will override any user config for max items to process.
 # If set to None, normal config/user value is used.
-FORCE_MAX_ITEMS_TO_PROCESS: int | None = 3  # Example: 50
+FORCE_MAX_ITEMS_TO_PROCESS: int | None = 200  # Example: 50
