@@ -83,16 +83,22 @@ class CheckFlake8(Check):
         flake8_ignore, flake8_select = self._get_flake8_config(args.level)
         cmd = self._build_cmd(args, flake8_ignore, flake8_select)
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        if result.returncode != 0:
-            findings = self._parse_findings(result.stdout, str(args.target_dir))
-        else:
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             findings = []
+        except subprocess.CalledProcessError as e:
+            # This means flake8 ran, but found lint errors (expected for findings)
+            findings = self._parse_findings(e.stdout, str(args.target_dir))
+        except FileNotFoundError as e:
+            # flake8 or python executable not found: this is a setup/execution error
+            raise RuntimeError(f"flake8 executable not found: {e}") from e
+        except Exception as e:
+            # Any other unexpected error
+            raise RuntimeError(f"Error running flake8: {e}") from e
         match args.level:
             case QualityGateLevel.STRICT:
                 return QualityGateResult(findings=findings)
             case QualityGateLevel.STANDARD:
-                # STANDARD now blocks F* errors (same as TARGET)
                 return QualityGateResult(findings=findings)
             case QualityGateLevel.TARGET:
                 return QualityGateResult(findings=findings)
