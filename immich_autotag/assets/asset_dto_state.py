@@ -16,6 +16,7 @@ import attrs
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.api.logging_proxy.types import UNSET, Unset
+from immich_autotag.assets.dto.url_helpers import repr_dto_filename_and_id
 
 
 class AssetDtoType(enum.Enum):
