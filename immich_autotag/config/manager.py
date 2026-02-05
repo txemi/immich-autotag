@@ -21,7 +21,6 @@ _instance_created = False
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ConfigManager:
 
-
     _config: Optional[UserConfig] = None
 
     @typechecked

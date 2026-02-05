@@ -1,4 +1,3 @@
-
 from immich_autotag.logging.levels import LogLevel
 
 from ._internal_types import ErrorHandlingMode

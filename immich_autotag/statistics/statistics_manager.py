@@ -1,4 +1,3 @@
-
 """
 statistics_manager.py
 
@@ -33,7 +32,6 @@ _instance = None
 
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class StatisticsManager:
-
 
     #
     # IMPORTANT NOTE ABOUT attrs AND THE LINTER:
@@ -76,7 +74,6 @@ class StatisticsManager:
         )
         return self._perf_tracker
 
-
     @typechecked
     def _set_skip_n(self) -> None:
 
@@ -86,6 +83,34 @@ class StatisticsManager:
             self.get_or_create_run_stats().skip_n = skip_n
             self.save_to_file()
             self._get_or_create_perf_tracker().set_skip_n(skip_n)
+
+    def _update_perf_tracker_max_assets(self, max_assets: int | None) -> None:
+        """
+        Update the value of max_assets in the PerformanceTracker if it exists.
+        """
+        perf_tracker = self._get_or_create_perf_tracker()
+        assert isinstance(perf_tracker, PerformanceTracker)
+        perf_tracker.set_max_assets(max_assets)
+
+    def _update_stats_max_assets(self) -> int | None:
+        """
+        Update the value of max_assets in the statistics and save the changes.
+        """
+        from immich_autotag.config.manager import ConfigManager
+
+        max_assets = ConfigManager.get_effective_max_items()
+        self.get_or_create_run_stats().max_assets = max_assets
+        self.save_to_file()
+        return max_assets
+
+    def _refresh_max_assets(self) -> int | None:
+        """
+        Refresh the value of max_assets from the effective configuration and update it in the statistics.
+        """
+        max_assets: int | None = self._update_stats_max_assets()
+        if max_assets is not None:
+            self._update_perf_tracker_max_assets(max_assets)
+        return max_assets
 
     # Event counters are now stored in self._current_stats.event_counters
     def __attrs_post_init__(self) -> None:
@@ -344,28 +369,4 @@ class StatisticsManager:
         # Here you can add logic to refresh from config if needed
         # or to synchronize with the effective value
         max_assets = self._refresh_max_assets()
-        return max_assets
-
-    def _refresh_max_assets(self) -> int | None:
-        """
-        Refresh the value of max_assets from the effective configuration and update it in the statistics.
-        """
-        max_assets: int | None= self._update_stats_max_assets()
-        self._update_perf_tracker_max_assets(max_assets)
-        return max_assets
-    def _update_perf_tracker_max_assets(self, max_assets: int) -> None:
-        """
-        Update the value of max_assets in the PerformanceTracker if it exists.
-        """
-        perf_tracker = self._get_or_create_perf_tracker()
-        assert isinstance(perf_tracker, PerformanceTracker)
-        perf_tracker.set_max_assets(max_assets)
-    def _update_stats_max_assets(self) -> int | None:
-        """
-        Update the value of max_assets in the statistics and save the changes.
-        """
-        from immich_autotag.config.manager import ConfigManager
-        max_assets = ConfigManager.get_effective_max_items()
-        self.get_or_create_run_stats().max_assets = max_assets
-        self.save_to_file()
         return max_assets
