@@ -425,10 +425,8 @@ class AlbumCollectionWrapper:
         during runtime album creation.
         """
         albums_list = self._albums  # Access the internal dual map
-        albums_list.add(wrapper)
         name = wrapper.get_album_name()
         if self.is_duplicated(wrapper):
-
             # Temporary duplicate
             if is_temporary_album(name):
                 # Only call delete_album if client is of correct type
@@ -438,11 +436,21 @@ class AlbumCollectionWrapper:
                     tag_mod_report=tag_mod_report,
                     reason="Removed duplicate temporary album during add",
                 ):
-                    return None
+                    albums_after = list(self.find_all_albums_with_name(name))
+                    if len(albums_after) == 1:
 
+                        surviving_album = albums_after[0]
+                        return surviving_album
+                    else:
+                        # Raise exception for developers after cleanup
+                        raise RuntimeError(
+                            f"Duplicate albums with name '{name}' were found and combined, "
+                            f"but multiple still remain. This indicates a data integrity issue. "
+                            f"Review the logs and investigate the cause."
+                        )
+                    return None
             else:
                 if old_tested_mode:
-                    # we cannot use this, we do not have
                     # Combine all duplicates into one
                     surviving_album = self.combine_duplicate_albums(
                         list(self.find_all_albums_with_name(name)),
@@ -450,7 +458,11 @@ class AlbumCollectionWrapper:
                     )
                     # After combining, check if any duplicates remain
                     albums_after = list(self.find_all_albums_with_name(name))
-                    assert surviving_album in albums_after
+                    if surviving_album not in albums_after:
+                        raise RuntimeError(
+                            f"Surviving album after combining duplicates with name '{name}' "
+                            "is not present in the collection. This indicates a data integrity issue."
+                        )
                     if len(albums_after) == 1:
                         return albums_after[0]
                     else:
@@ -471,6 +483,8 @@ class AlbumCollectionWrapper:
                             name=name,
                         )
                         return None
+        else:
+            albums_list.add(wrapper)
         return wrapper
 
     @typechecked
