@@ -4,11 +4,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, Mapping, NoReturn, cast
 
 from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
+import enum
 
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-import enum
 import time
 from datetime import datetime
 
@@ -41,17 +41,6 @@ class DuplicateIdNotLoadedError(Exception):
     pass
 
 
-def _repr_dto_filename_and_id(x) -> str:
-    if x is None:
-        return "None"
-    try:
-        file_name = x.original_file_name
-        uid = x.id
-    except AttributeError:
-        return "AssetResponseDto(<invalid object>)"
-    return f"AssetResponseDto(file_name='{file_name}', id='{uid}')"
-
-
 @attrs.define(auto_attribs=True, slots=True)
 class AssetDtoState:
     """
@@ -64,7 +53,7 @@ class AssetDtoState:
         validator=attrs.validators.optional(
             attrs.validators.instance_of(AssetResponseDto)
         ),
-        repr=_repr_dto_filename_and_id,
+        repr=repr_dto_filename_and_id,
     )
     _api_endpoint_source: AssetDtoType | None = attrs.field(
         default=None,
