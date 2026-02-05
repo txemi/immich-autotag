@@ -407,16 +407,24 @@ class AlbumCollectionWrapper:
         return self._remove_album_from_local_collection(album_wrapper)
 
     @typechecked
+    def _combine_duplicate_albums(
+        self, albums: list[AlbumResponseWrapper], context: str
+    ) -> AlbumResponseWrapper:
+        return self._get_duplicate_album_manager().combine_duplicate_albums(
+            albums, context
+        )
+
+    @typechecked
     # Non-temporary duplicate logic delegated to manager
     def _try_append_wrapper_to_list(
         self,
         *,
-        wrapper: AlbumResponseWrapper,
+        album_wrapper: AlbumResponseWrapper,
         client: ImmichClient,
         tag_mod_report: ModificationReport,
         old_tested_mode: bool = True,
     ) -> AlbumResponseWrapper | None:
-        """Central helper: attempt to append a wrapper to an albums list with duplicate handling.
+        """Central helper: attempt to append an album wrapper to the albums list with duplicate handling.
 
         If a duplicate name exists and it's a temporary album,
         attempt to delete the duplicate on the server (if `client` is provided)
@@ -425,85 +433,102 @@ class AlbumCollectionWrapper:
         during runtime album creation.
         """
         albums_list = self._albums  # Access the internal dual map
-        name = wrapper.get_album_name()
-        if self.is_duplicated(wrapper):
-            # Handle duplicates before adding
-            if is_temporary_album(name):
-                # Delete the temporary duplicate
-                self.delete_album(
-                    wrapper=wrapper,
-                    client=client,
-                    tag_mod_report=tag_mod_report,
-                    reason="Removed duplicate temporary album during add",
-                )
-                albums_after = list(self.find_all_albums_with_name(name))
-                if len(albums_after) == 1:
-                    return albums_after[0]
-                else:
-                    raise RuntimeError(
-                        f"Duplicate albums with name '{name}' were found and attempted to delete, "
-                        f"but multiple still remain. This indicates a data integrity issue. "
-                        f"Review the logs and investigate the cause."
-                    )
+        album_name = album_wrapper.get_album_name()
+        existing_album = self.find_first_album_with_name(album_name)
+        if existing_album is None:
+            # Only add if not present
+            albums_list.add(album_wrapper)
+            return album_wrapper
+        # There is already an album with this name: treat as duplicate
+        if is_temporary_album(album_name):
+            # Delete the temporary duplicate
+            self.delete_album(
+                wrapper=album_wrapper,
+                client=client,
+                tag_mod_report=tag_mod_report,
+                reason="Removed duplicate temporary album during add",
+            )
+            albums_after = list(self.find_all_albums_with_name(album_name))
+            if len(albums_after) == 1:
+                return albums_after[0]
             else:
-                if old_tested_mode:
-                    # Merge all duplicates into one
-                    surviving_album = self.combine_duplicate_albums(
-                        list(self.find_all_albums_with_name(name)),
-                        context="duplicate_on_create",
-                    )
-                    albums_after = list(self.find_all_albums_with_name(name))
-                    if surviving_album not in albums_after:
-                        raise RuntimeError(
-                            f"Surviving album after combining duplicates with name '{name}' "
-                            "is not present in the collection. This indicates a data integrity issue."
-                        )
-                    if len(albums_after) == 1:
-                        return albums_after[0]
-                    else:
-                        raise RuntimeError(
-                            f"Duplicate albums with name '{name}' were found and combined, "
-                            f"but multiple still remain. This indicates a data integrity issue. "
-                            f"Review the logs and investigate the cause."
-                        )
-                else:
-                    # Non-temporary duplicate: log and skip
-                    existing = self.find_first_album_with_name(name)
-                    if existing is not None:
-                        self._get_duplicate_album_manager().handle_non_temporary_duplicate(
-                            existing=existing,
-                            incoming_album=wrapper,
-                            tag_mod_report=tag_mod_report,
-                            name=name,
-                        )
-                    return None
+                raise RuntimeError(
+                    f"Duplicate albums with name '{album_name}' were found and attempted to delete, "
+                    f"but multiple still remain. This indicates a data integrity issue. "
+                    f"Review the logs and investigate the cause."
+                )
+        if old_tested_mode:
+            # Merge all duplicates into one
+            surviving_album = self._combine_duplicate_albums(
+                list(self.find_all_albums_with_name(album_name)),
+                context="duplicate_on_create",
+            )
+            albums_after = list(self.find_all_albums_with_name(album_name))
+            if surviving_album not in albums_after:
+                raise RuntimeError(
+                    f"Surviving album after combining duplicates with name '{album_name}' "
+                    "is not present in the collection. This indicates a data integrity issue."
+                )
+            from immich_autotag.config.dev_mode import is_crazy_debug_mode
+            #
+            # Duplicates created by the user (not temporary, not system-generated) are not supported by design.
+            # There is no robust, general way to resolve user-created album duplicates automatically without risking data loss or undefined behavior.
+            # For now, the safest approach is to raise an exception and fail fast, so the problem is visible and can be fixed manually.
+            # The 'crazy_debug_mode' is a development/testing switch, but this strict behavior is likely to remain permanent unless a clear, robust merge policy is defined for user duplicates.
+            # Any attempt to "survive" user duplicates with ad-hoc logic is fragile and discouraged.
+            if is_crazy_debug_mode():
+                raise RuntimeError(
+                    f"Album duplicate detected: An album with the name '{album_name}' already exists, and this duplicate was created by the user (not a temporary/system album).\n"
+                    "This situation cannot be resolved automatically by the application, as merging or deleting user-created albums could result in data loss or unexpected behavior.\n"
+                    "Please review your albums in the Immich app or web interface, and manually rename or remove the duplicate(s) to ensure each album name is unique.\n"
+                    "If you are a developer, see the code and comments in AlbumCollectionWrapper for more details about this design decision."
+                )
+            #TODO: 
+            if len(albums_after) == 1:
+                return albums_after[0]
+            else:
+                raise RuntimeError(
+                    f"Duplicate albums with name '{album_name}' were found and combined, "
+                    f"but multiple still remain. This indicates a data integrity issue. "
+                    f"Review the logs and investigate the cause."
+                )
         else:
-            # Only add if not a duplicate
-            albums_list.add(wrapper)
-            return wrapper
+            # Non-temporary duplicate: log and skip
+            #
+            # NOTE: I am not at all convinced that this logic actually solves anything meaningful.
+            # Honestly, I don't know what to think about this case, so this branch is effectively deactivated.
+            # The proliferation of duplicate-handling logic throughout the codebase is a mess, and I don't yet have a clear or robust solution.
+            # For now, let's do the sensible thing: keep things simple, fail fast on user duplicates, and hope to simplify this code over time as we better understand the real-world scenarios.
+            self._get_duplicate_album_manager().handle_non_temporary_duplicate(
+                existing=existing_album,
+                incoming_album=album_wrapper,
+                tag_mod_report=tag_mod_report,
+                name=album_name,
+            )
+            return None
 
     @typechecked
     def _add_album_wrapper(
         self,
-        wrapper: AlbumResponseWrapper,
+        album_wrapper: AlbumResponseWrapper,
     ) -> AlbumResponseWrapper:
-        """Add a wrapper to this collection with centralized duplicate handling.
+        """Add an album wrapper to this collection with centralized duplicate handling.
 
         If a duplicate exists and is temporary, attempt to delete it on the server
-        and remove it locally before adding the provided wrapper. If duplicate is
+        and remove it locally before adding the provided album wrapper. If duplicate is
         non-temporary, raise RuntimeError.
         """
-        name = wrapper.get_album_name()
-        existing = self.find_first_album_with_name(name)
-        if existing is not None:
+        album_name = album_wrapper.get_album_name()
+        existing_album = self.find_first_album_with_name(album_name)
+        if existing_album is not None:
             raise RuntimeError(
-                f"Cannot add album: an album with the name '{name}' already exists "
-                f"(id={existing.get_album_uuid()})."
+                f"Cannot add album: an album with the name '{album_name}' already exists "
+                f"(id={existing_album.get_album_uuid()})."
             )
         # Append to collection and update maps
-        self._albums.add(wrapper)
+        self._albums.add(album_wrapper)
         # Optionally update asset-to-albums map or other structures here if needed
-        return wrapper
+        return album_wrapper
 
     @typechecked
     def get_asset_to_albums_map(self) -> AssetToAlbumsMap:
@@ -562,14 +587,6 @@ class AlbumCollectionWrapper:
         album = self._albums.get_by_name(album_name)
         if album and not album.is_deleted():
             yield album
-
-    @typechecked
-    def combine_duplicate_albums(
-        self, albums: list[AlbumResponseWrapper], context: str
-    ) -> AlbumResponseWrapper:
-        return self._get_duplicate_album_manager().combine_duplicate_albums(
-            albums, context
-        )
 
     @typechecked
     def _add_user_to_album(
@@ -648,7 +665,7 @@ class AlbumCollectionWrapper:
         if len(albums_found) == 1:
             return albums_found[0]
         elif len(albums_found) > 1:
-            self.combine_duplicate_albums(albums_found, context="duplicate_on_create")
+            self._combine_duplicate_albums(albums_found, context="duplicate_on_create")
             # Raise exception for developers after cleanup
             raise RuntimeError(
                 f"Duplicate albums with name '{album_name}' were found and combined. This indicates a data integrity issue. Review the logs and investigate the cause."
@@ -667,25 +684,25 @@ class AlbumCollectionWrapper:
             )
         user_wrapper: UserResponseWrapper = user_wrapper_opt
 
-        wrapper = self._album_wrapper_from_partial_dto(album)
+        album_wrapper = self._album_wrapper_from_partial_dto(album)
         tag_mod_report.add_album_modification(
             kind=ModificationKind.CREATE_ALBUM,
-            album=wrapper,
+            album=album_wrapper,
             extra={"created": True},
         )
-        self._add_album_wrapper(wrapper)
+        self._add_album_wrapper(album_wrapper)
         # Assign user as EDITOR if not already owner
-        if wrapper.get_owner_uuid() != user_wrapper.get_uuid():
+        if album_wrapper.get_owner_uuid() != user_wrapper.get_uuid():
             from immich_autotag.context.immich_context import ImmichContext
 
             context = ImmichContext.get_default_instance()
             self._add_user_to_album(
-                album=wrapper,
+                album=album_wrapper,
                 user=user_wrapper,
                 context=context,
                 tag_mod_report=tag_mod_report,
             )
-        return wrapper
+        return album_wrapper
 
     @classmethod
     def resync_from_api_class(cls) -> None:
@@ -750,13 +767,13 @@ class AlbumCollectionWrapper:
             self._clear()
         # Rebuild the collection same as from_client
         for idx, album in enumerate(albums, 1):
-            wrapper = self._album_wrapper_from_partial_dto(album)
+            album_wrapper = self._album_wrapper_from_partial_dto(album)
             # If clear_first, just add; if not, only add if it does not exist
             if clear_first or not self.find_first_album_with_name(
-                wrapper.get_album_name()
+                album_wrapper.get_album_name()
             ):
                 self._try_append_wrapper_to_list(
-                    wrapper=wrapper,
+                    album_wrapper=album_wrapper,
                     client=client,
                     tag_mod_report=tag_mod_report,
                 )
@@ -764,7 +781,7 @@ class AlbumCollectionWrapper:
                 if tracker.should_log_progress(idx):
                     progress_msg = tracker.get_progress_description(idx)
                     log(
-                        f"[ALBUM-LOAD][API-BULK] {progress_msg} | Album: '{wrapper.get_album_name()}' processed after bulk fetch with {len(albums)} assets.",
+                        f"[ALBUM-LOAD][API-BULK] {progress_msg} | Album: '{album_wrapper.get_album_name()}' processed after bulk fetch with {len(albums)} assets.",
                         level=LogLevel.INFO,
                     )
 
