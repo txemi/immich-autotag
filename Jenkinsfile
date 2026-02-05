@@ -1,5 +1,5 @@
 // ==================== CONFIG FLAGS ====================
-def ENABLE_JENKINS_TAGGING = false // Set to true to enable git tagging/pushing
+def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
 pipeline {
     options {
         // Keep only the last 4 builds
@@ -127,9 +127,11 @@ pipeline {
                 // Tagging and pushing is temporarily disabled for CI stability
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-success-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
-                    echo "🏷️ Creando tag: ${tagName}"
-                    sh "git tag ${tagName} ${env.GIT_COMMIT ?: 'HEAD'}"
-                    sh "git push origin ${tagName}"
+                    echo "🏷️ Creando tag GitHub: ${tagName}"
+                    githubTag(
+                        tag: tagName,
+                        message: "Build ${env.BUILD_NUMBER} (${env.GIT_COMMIT ?: 'manual'}) [ci skip]"
+                    )
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
