@@ -118,9 +118,8 @@ def process_assets_sequential(
         )
         raise
     finally:
-        log("Asset processing loop finished.", level=LogLevel.PROGRESS)
         log(
-            "The asset for-loop has ended (no more assets in the iterator).",
+            f"Asset processing loop finished. Total assets processed: {count}. The asset for-loop has ended (no more assets in the iterator).",
             level=LogLevel.PROGRESS,
         )
     return count
