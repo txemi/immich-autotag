@@ -122,6 +122,11 @@ pipeline {
             script {
                 currentBuild.keepLog = true
                 echo "🔒 Build marked as 'Keep this build forever' (success)"
+                // Tag the current commit with the build number
+                def tagName = "jenkins-success-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
+                echo "🏷️ Creando tag: ${tagName}"
+                sh "git tag ${tagName} ${env.GIT_COMMIT ?: 'HEAD'}"
+                sh "git push origin ${tagName}"
             }
         }
         failure {
