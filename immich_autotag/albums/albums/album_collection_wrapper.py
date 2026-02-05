@@ -71,6 +71,7 @@ class AlbumCollectionWrapper:
         init=False,
         default=None,
         repr=False,
+        eq=False,
     )
 
     # Unavailable album manager (delegates all unavailable logic)
@@ -78,6 +79,7 @@ class AlbumCollectionWrapper:
         init=False,
         default=None,
         repr=False,
+        eq=False,
     )
 
     # Duplicate album manager (delegates all duplicate logic)
@@ -85,6 +87,7 @@ class AlbumCollectionWrapper:
         init=False,
         default=None,
         repr=False,
+        eq=False,
     )
 
     # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
