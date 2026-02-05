@@ -49,7 +49,7 @@ class DateIntegrityError(Exception):
 class AssetResponseWrapper:
 
     _context: "ImmichContext" = attrs.field(
-        validator=attrs.validators.instance_of(ImmichContext)
+        validator=attrs.validators.instance_of(ImmichContext), repr=False
     )
     _cache_entry: AssetCacheEntry = attrs.field()
 
