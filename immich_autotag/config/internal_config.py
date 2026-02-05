@@ -5,9 +5,9 @@ from ._internal_types import ErrorHandlingMode
 # ==================== API CACHE CONTROL (PER TYPE) ====================
 # Control cache usage for each entity type (developer/debug only)
 USE_CACHE_ASSETS = True
-USE_CACHE_ALBUMS = True
-USE_CACHE_ALBUM_PAGES = True
-USE_CACHE_USERS = True
+USE_CACHE_ALBUMS = USE_CACHE_ASSETS
+USE_CACHE_ALBUM_PAGES = USE_CACHE_ASSETS
+USE_CACHE_USERS = USE_CACHE_ASSETS
 
 
 # ==================== MULTITHREADING / CONCURRENCY ====================
@@ -65,4 +65,4 @@ ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS = False  # Default: disabled for safety
 # ==================== FORCED LIMITS FOR CI/DEV ====================
 # If set to an integer, this value will override any user config for max items to process.
 # If set to None, normal config/user value is used.
-FORCE_MAX_ITEMS_TO_PROCESS : int | None = 3  # Example: 50
+FORCE_MAX_ITEMS_TO_PROCESS: int | None = 3  # Example: 50
