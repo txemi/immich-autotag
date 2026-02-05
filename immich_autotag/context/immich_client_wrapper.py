@@ -7,7 +7,6 @@ from immich_autotag.types.client_types import ImmichClient
 _singleton: "ImmichClientWrapper | None" = None
 
 
-
 class ImmichClientWrapper:
     def __init__(self):
         global _singleton
@@ -21,7 +20,7 @@ class ImmichClientWrapper:
     def _build_client(self):
         from immich_autotag.config.host_config import get_immich_base_url
         from immich_autotag.types.client_types import ImmichClient
-        from immich_autotag.config.manager import ConfigManager
+
         manager = ConfigManager.get_instance()
         api_key = manager.get_config_or_raise().server.api_key
         return ImmichClient(
@@ -34,12 +33,12 @@ class ImmichClientWrapper:
 
     @staticmethod
     def get_default_instance() -> "ImmichClientWrapper":
+        global _singleton
         if _singleton is None:
-            _singleton = ImmichClientWrapper()  
+            _singleton = ImmichClientWrapper()
         return _singleton
 
     def get_client(self) -> ImmichClient:
         if self._client is None:
             self._client = self._build_client()
         return self._client
-

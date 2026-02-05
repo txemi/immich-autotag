@@ -15,8 +15,6 @@ def run_main_inner_logic():
     manager = init_config_and_logging()
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-
-
     client_wrapper = ImmichClientWrapper.get_default_instance()
     client = client_wrapper.get_client()
     # Initialize context early so it's available for maintenance operations
