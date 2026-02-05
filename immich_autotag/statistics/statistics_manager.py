@@ -350,7 +350,7 @@ class StatisticsManager:
         """
         Refresh the value of max_assets from the effective configuration and update it in the statistics.
         """
-        max_assets: int = self._update_stats_max_assets()
+        max_assets: int | None= self._update_stats_max_assets()
         self._update_perf_tracker_max_assets(max_assets)
         return max_assets
     def _update_perf_tracker_max_assets(self, max_assets: int) -> None:
@@ -360,7 +360,7 @@ class StatisticsManager:
         perf_tracker = self._get_or_create_perf_tracker()
         assert isinstance(perf_tracker, PerformanceTracker)
         perf_tracker.set_max_assets(max_assets)
-    def _update_stats_max_assets(self) -> int:
+    def _update_stats_max_assets(self) -> int | None:
         """
         Update the value of max_assets in the statistics and save the changes.
         """
