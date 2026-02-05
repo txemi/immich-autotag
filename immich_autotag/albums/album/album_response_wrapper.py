@@ -778,13 +778,17 @@ class AlbumResponseWrapper:
         from immich_client.models.update_album_dto import UpdateAlbumDto
         from immich_autotag.api.immich_proxy.albums.update_album_info import proxy_update_album_info
         update_body = UpdateAlbumDto(album_name=new_name)
-        proxy_update_album_info(
+        updated_dto=proxy_update_album_info(
             album_id=self.get_album_uuid(),
             client=client,
             body=update_body,
         )
-        # Update cache entry
-        self._cache_entry._dto.album_name = new_name
+        # Update cache entry using AlbumDtoState.update
+        from immich_client.models.album_response_dto import AlbumResponseDto
+        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+
+       
+        self._cache_entry._dto.update(dto=updated_dto, load_source=AlbumLoadSource.UPDATE)
         tag_mod_report.add_album_modification(
             kind=ModificationKind.RENAME_ALBUM,
             album=self,
