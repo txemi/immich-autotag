@@ -120,6 +120,7 @@ class AlbumCollectionWrapper:
         # Start sync
         self._sync_state = SyncState.SYNCING
         self.resync_from_api()
+
         return self
 
     def log_lazy_load_timing(self):
@@ -695,6 +696,13 @@ class AlbumCollectionWrapper:
                 return album
         return None
 
+    def _clear(self):
+        # Clear the current collection
+        # Clear previous duplicates before reloading
+        self._get_duplicate_album_manager().collected_duplicates.clear()
+        self._get_asset_map_manager().clear()
+        self._albums.clear()
+
     @typechecked
     def resync_from_api(self, clear_first: bool = True) -> None:
         """
@@ -716,8 +724,6 @@ class AlbumCollectionWrapper:
         assert isinstance(tag_mod_report, ModificationReport)
 
         albums = proxy_get_all_albums(client=client)
-        # Clear previous duplicates before reloading
-        self._get_duplicate_album_manager().collected_duplicates.clear()
 
         log(
             f"[RESYNC] Starting album resync. Total albums to process: {len(albums)}",
@@ -732,7 +738,7 @@ class AlbumCollectionWrapper:
 
         if clear_first:
             # Clear the current collection
-            self._albums.clear()
+            self._clear()
         # Rebuild the collection same as from_client
         for idx, album in enumerate(albums, 1):
             wrapper = self._album_wrapper_from_partial_dto(album)
