@@ -8,7 +8,7 @@ import attrs
 
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 
-from ._analyze_and_assign_album import _analyze_and_assign_album
+from ._analyze_and_assign_album import analyze_and_assign_album
 from .album_assignment_result import AlbumAssignmentResult
 
 if TYPE_CHECKING:
@@ -82,4 +82,4 @@ class AlbumAssignmentReport(ProcessStepResult):
         return report
 
     def _perform_analysis(self, tag_mod_report: "ModificationReport") -> None:
-        self._result = _analyze_and_assign_album(self._asset_wrapper, tag_mod_report)
+        self._result = analyze_and_assign_album(self._asset_wrapper, tag_mod_report)

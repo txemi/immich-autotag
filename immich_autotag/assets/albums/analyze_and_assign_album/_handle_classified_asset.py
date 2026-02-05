@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def _handle_classified_asset(
+def handle_classified_asset(
     asset_wrapper: "AssetResponseWrapper", tag_mod_report: "ModificationReport"
 ) -> AlbumAssignmentResult:
     """
