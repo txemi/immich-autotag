@@ -43,7 +43,7 @@ def process_assets_sequential(
             config_skip_n=config_skip_n, config_resume_previous=config_resume_previous
         )
     )
-    max_assets = stats.max_assets
+    max_assets = stats.get_max_assets()
     count = 0
     try:
         for asset_wrapper in context.get_asset_manager().iter_assets(

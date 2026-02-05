@@ -20,6 +20,8 @@ _instance_created = False
 
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ConfigManager:
+
+
     _config: Optional[UserConfig] = None
 
     @typechecked
@@ -217,3 +219,16 @@ class ConfigManager:
         if self._config is None:
             raise ValueError("No configuration loaded in ConfigManager.")
         return self._config
+
+    @staticmethod
+    def get_effective_max_items() -> Optional[int]:
+        """
+        Returns the effective max items to process, giving priority to FORCE_MAX_ITEMS_TO_PROCESS
+        in internal_config.py. If not set, falls back to user config.
+        """
+        from immich_autotag.config.internal_config import FORCE_MAX_ITEMS_TO_PROCESS
+
+        if FORCE_MAX_ITEMS_TO_PROCESS is not None:
+            return FORCE_MAX_ITEMS_TO_PROCESS
+        config = ConfigManager.get_instance().get_config()
+        return config.skip.max_items

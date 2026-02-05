@@ -1,3 +1,4 @@
+
 from immich_autotag.logging.levels import LogLevel
 
 from ._internal_types import ErrorHandlingMode
@@ -61,3 +62,8 @@ APPLY_CONVERSIONS_AT_START = False  # Set to False to disable mass processing at
 # ==================== MAINTENANCE: DELETE CONFLICT TAGS ====================
 # If False, disables the maintenance_delete_conflict_tags function (prevents accidental mass deletion)
 ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS = False  # Default: disabled for safety
+
+# ==================== FORCED LIMITS FOR CI/DEV ====================
+# If set to an integer, this value will override any user config for max items to process.
+# If set to None, normal config/user value is used.
+FORCE_MAX_ITEMS_TO_PROCESS = None  # Example: 50
