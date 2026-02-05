@@ -223,6 +223,10 @@ class AlbumCollectionWrapper:
 
     def _get_asset_map_manager(self) -> "AssetMapManager":
         if self._asset_map_manager is None:
+            from immich_autotag.albums.albums.asset_map_manager.manager import (
+                AssetMapManager,
+            )
+
             self._asset_map_manager = AssetMapManager(collection=self)
         return self._asset_map_manager
 
