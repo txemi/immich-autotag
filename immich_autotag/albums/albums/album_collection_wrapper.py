@@ -484,15 +484,13 @@ class AlbumCollectionWrapper:
                     "Please review your albums in the Immich app or web interface, and manually rename or remove the duplicate(s) to ensure each album name is unique.\n"
                     "If you are a developer, see the code and comments in AlbumCollectionWrapper for more details about this design decision."
                 )
-            # TODO:
-            if len(albums_after) == 1:
-                return albums_after[0]
-            else:
-                raise RuntimeError(
-                    f"Duplicate albums with name '{album_name}' were found and combined, "
-                    f"but multiple still remain. This indicates a data integrity issue. "
-                    f"Review the logs and investigate the cause."
-                )
+
+            new_name = f"{album_wrapper.get_album_name()}__RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM"
+            album_wrapper.rename_album(new_name, client, tag_mod_report)
+
+            albums_list.add(album_wrapper)
+            return album_wrapper
+
         else:
             # Non-temporary duplicate: log and skip
             #
