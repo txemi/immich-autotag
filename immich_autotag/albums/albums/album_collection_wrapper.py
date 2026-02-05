@@ -96,6 +96,10 @@ class AlbumCollectionWrapper:
 
     def _get_duplicate_album_manager(self) -> "DuplicateAlbumManager":
         if self._duplicate_manager is None:
+            from immich_autotag.albums.albums.duplicates_manager.manager import (
+                DuplicateAlbumManager,
+            )
+
             self._duplicate_manager = DuplicateAlbumManager(collection=self)
         return self._duplicate_manager
 
