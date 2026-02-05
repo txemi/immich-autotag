@@ -8,12 +8,16 @@ def run_main_inner_logic():
         init_collections_and_context,
     )
     from immich_autotag.entrypoint.finalize import finalize
-    from immich_autotag.entrypoint.init import init_client, init_config_and_logging
+    from immich_autotag.entrypoint.init import init_config_and_logging
     from immich_autotag.entrypoint.maintenance import maintenance_cleanup_labels
     from immich_autotag.entrypoint.permissions import process_permissions
 
     manager = init_config_and_logging()
-    client_wrapper = init_client(manager)
+    from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
+
+
+    client_wrapper = ImmichClientWrapper.get_default_instance()
     client = client_wrapper.get_client()
     # Initialize context early so it's available for maintenance operations
     context = init_collections_and_context(client_wrapper)
