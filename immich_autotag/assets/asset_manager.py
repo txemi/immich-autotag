@@ -6,11 +6,11 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.api.logging_proxy.assets.get_asset_info import AssetResponseDto
-from immich_autotag.api.logging_proxy.types import Client
 from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.config.internal_config import KEEP_ASSETS_IN_MEMORY
+from immich_autotag.types.client_types import AuthenticatedClient
 from immich_autotag.types.uuid_wrappers import AssetUUID
 
 # Removed import: AssetCacheEntry is only used internally in AssetResponseWrapper
@@ -21,8 +21,7 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetManager:
-
-    client: Client
+    client: AuthenticatedClient
     # If not kept in memory, _assets will be None
     _assets: Optional[dict[AssetUUID, AssetResponseWrapper]] = attrs.field(
         default=None, init=False

@@ -31,10 +31,10 @@ class ImmichContext:
     )
     _asset_manager: "AssetManager | None" = attrs.field(default=None)
 
-    def get_client_wrapper(self) -> ImmichClientWrapper:
-        if self._client is None:
-            from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+    def get_client_wrapper(self) -> "ImmichClientWrapper":
+        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
+        if self._client is None:
             self._client = ImmichClientWrapper.get_default_instance()
         return self._client
 
