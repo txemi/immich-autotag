@@ -1,11 +1,36 @@
 
 
+
 import subprocess
 from python_qualitygate.cli.args import QualityGateArgs
 import attr
 from python_qualitygate.core.base import Check
 from python_qualitygate.core.result import QualityGateResult, Finding
-
+def _is_fatal_ruff_error(stderr: str, stdout: str) -> bool:
+    """
+    Returns True if the output indicates a fatal error (not just lint errors).
+    Checks for common fatal error patterns.
+    """
+    error_text = (stderr or "") + (stdout or "")
+    fatal_patterns = [
+        "No module named",
+        "not found",
+        "Permission denied",
+        "Traceback (most recent call last)",
+        "ModuleNotFoundError",
+        "ImportError",
+        "SyntaxError",
+        "command not found",
+        "is not recognized as an internal or external command",
+        "Error: ",
+    ]
+    for pat in fatal_patterns:
+        if pat in error_text:
+            return True
+    # If both are empty, treat as fatal
+    if not error_text.strip():
+        return True
+    return False
 @attr.define(auto_attribs=True, slots=True)
 class CheckRuff(Check):
     _name: str = attr.ib(default='check_ruff', init=False)
@@ -62,9 +87,16 @@ class CheckRuff(Check):
         # This allows reports to distinguish whether a finding comes from a check or from applying fixes.
         cmd = self._build_ruff_command(args, apply_fix=apply_fix)
         print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        output = result.stdout + '\n' + result.stderr
-        return self._process_check_output(args, output, result.returncode, code=code)
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            output = result.stdout + '\n' + result.stderr
+            return self._process_check_output(args, output, result.returncode, code=code)
+        except subprocess.CalledProcessError as exc:
+            # Distinguish between fatal error and lint errors
+            if _is_fatal_ruff_error(exc.stderr, exc.stdout):
+                raise
+            output = (exc.stdout or "") + '\n' + (exc.stderr or "")
+            return self._process_check_output(args, output, exc.returncode, code=code)
 
     def check(self, args: QualityGateArgs) -> QualityGateResult:
         return self._run_ruff(args, apply_fix=False, code="ruff")

@@ -20,10 +20,11 @@ class Battery:
     checks: List[Check]
 
     def run(self, mode: QualityGateMode, args: QualityGateArgs) -> int:
-        """Executes all checks in order. In CHECK mode, exits on first failure and prints up to 8 errors."""
+        """Executes all checks in order. In CHECK mode, exits on first failure. In APPLY mode, runs all and prints all errors."""
         from python_qualitygate.core.enums_mode import QualityGateMode
         from python_qualitygate.core.result import QualityGateResult
         results: list[CheckSummary] = []
+        total_errors = 0
         for check in self.checks:
             rc, result = self._run_check(check, mode, args)
             check_name = check.get_name()
@@ -52,12 +53,17 @@ class Battery:
                     score=result.score
                 ))
                 self._print_errors(check_name, result.findings)
-                self._print_summary(results)
-                print(f"[EXIT] Stopped at check: {check_name} with {n} errors.")
-                return n
+                total_errors += n
+                if mode == QualityGateMode.CHECK:
+                    self._print_summary(results)
+                    print(f"[EXIT] Stopped at check: {check_name} with {n} errors.")
+                    return n
         self._print_summary(results)
-        print("[OK] Battery passed!")
-        return 0
+        if total_errors == 0:
+            print("[OK] Battery passed!")
+        else:
+            print(f"[FAIL] Battery completed with {total_errors} errors.")
+        return total_errors
 
     def _run_check(self, check: Check, mode: QualityGateMode, args: QualityGateArgs):
         from python_qualitygate.core.enums_mode import QualityGateMode
