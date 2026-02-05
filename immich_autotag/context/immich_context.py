@@ -68,9 +68,7 @@ class ImmichContext:
     def get_asset_manager(self) -> "AssetManager":
         if self._asset_manager is None:
             from immich_autotag.assets.asset_manager import AssetManager
-
-            client = self.get_client_wrapper().get_client()
-            self._asset_manager = AssetManager(client=client)
+            self._asset_manager = AssetManager()
         return self._asset_manager
 
     @staticmethod

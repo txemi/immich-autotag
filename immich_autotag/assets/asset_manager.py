@@ -21,7 +21,6 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetManager:
-    client: AuthenticatedClient
     # If not kept in memory, _assets will be None
     _assets: Optional[dict[AssetUUID, AssetResponseWrapper]] = attrs.field(
         default=None, init=False
