@@ -1,8 +1,14 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
 from immich_autotag.albums.duplicates.duplicate_album_reports import (
     DuplicateAlbumReports,
@@ -22,16 +28,18 @@ class DuplicateAlbumManager:
     - Reporting and storage
     """
 
-    collection: AlbumCollectionWrapper
-    collected_duplicates: DuplicateAlbumReports = attrs.Factory(DuplicateAlbumReports)
+    collection: "AlbumCollectionWrapper"
+    collected_duplicates: "DuplicateAlbumReports" = attrs.Factory(DuplicateAlbumReports)
 
     @typechecked
     def _handle_duplicate_album_conflict(
         self,
-        incoming_album: AlbumResponseWrapper,
-        existing_album: AlbumResponseWrapper,
+        incoming_album: "AlbumResponseWrapper",
+        existing_album: "AlbumResponseWrapper",
         context: str = "ensure_unique",
-    ) -> AlbumResponseWrapper:
+    ) -> "AlbumResponseWrapper":
+        # Import local para evitar ciclo
+
         name_existing = existing_album.get_album_name()
         name_incoming = incoming_album.get_album_name()
         if name_existing != name_incoming:
@@ -69,8 +77,8 @@ class DuplicateAlbumManager:
     def _handle_non_temporary_duplicate(
         self,
         *,
-        existing: AlbumResponseWrapper,
-        incoming_album: AlbumResponseWrapper,
+        existing: "AlbumResponseWrapper",
+        incoming_album: "AlbumResponseWrapper",
         tag_mod_report: ModificationReport,
         name: str,
     ) -> None:
@@ -118,8 +126,8 @@ class DuplicateAlbumManager:
     def handle_non_temporary_duplicate(
         self,
         *,
-        existing: AlbumResponseWrapper,
-        incoming_album: AlbumResponseWrapper,
+        existing: "AlbumResponseWrapper",
+        incoming_album: "AlbumResponseWrapper",
         tag_mod_report: ModificationReport,
         name: str,
     ) -> None:
@@ -131,15 +139,15 @@ class DuplicateAlbumManager:
         )
 
     @typechecked
-    def is_duplicated(self, wrapper: AlbumResponseWrapper) -> bool:
+    def is_duplicated(self, wrapper: "AlbumResponseWrapper") -> bool:
         name = wrapper.get_album_name()
         names = self.collection.find_all_albums_with_name(name)
         return len(list(names)) > 1
 
     @typechecked
     def combine_duplicate_albums(
-        self, albums: list[AlbumResponseWrapper], context: str
-    ) -> AlbumResponseWrapper:
+        self, albums: list["AlbumResponseWrapper"], context: str
+    ) -> "AlbumResponseWrapper":
         if not albums:
             raise ValueError(
                 f"No albums provided to combine_duplicate_albums (context: {context})"

@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.albums.asset_map_manager.manager import AssetMapManager
+
+    from immich_autotag.albums.albums.duplicates_manager.manager import (
+        DuplicateAlbumManager,
+    )
+
 from enum import Enum, auto
 from typing import Iterable
 from uuid import UUID
@@ -11,11 +20,7 @@ from typeguard import typechecked
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
-from immich_autotag.albums.albums.asset_map_manager.manager import AssetMapManager
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
-from immich_autotag.albums.albums.duplicates_manager.manager import (
-    DuplicateAlbumManager,
-)
 from immich_autotag.albums.albums.unavailable_manager.manager import (
     UnavailableAlbumManager,
 )
@@ -66,6 +71,7 @@ class AlbumCollectionWrapper:
         init=False,
         default=None,
         repr=False,
+        eq=False,
     )
 
     # Unavailable album manager (delegates all unavailable logic)
@@ -73,13 +79,15 @@ class AlbumCollectionWrapper:
         init=False,
         default=None,
         repr=False,
+        eq=False,
     )
 
     # Duplicate album manager (delegates all duplicate logic)
-    _duplicate_manager: DuplicateAlbumManager | None = attrs.field(
+    _duplicate_manager: "DuplicateAlbumManager | None" = attrs.field(
         init=False,
         default=None,
         repr=False,
+        eq=False,
     )
 
     # Enum to indicate sync state: NOT_STARTED, SYNCING, SYNCED
@@ -89,7 +97,7 @@ class AlbumCollectionWrapper:
         repr=False,
     )
 
-    def _get_duplicate_album_manager(self) -> DuplicateAlbumManager:
+    def _get_duplicate_album_manager(self) -> "DuplicateAlbumManager":
         if self._duplicate_manager is None:
             from immich_autotag.albums.albums.duplicates_manager.manager import (
                 DuplicateAlbumManager,
