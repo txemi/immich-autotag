@@ -743,6 +743,47 @@ class AlbumResponseWrapper:
         obj = cls(cache_entry)  # Now positional
         return obj
 
+    @typechecked
+    def rename_album(
+        self, new_name: str, client: ImmichClient, tag_mod_report: "ModificationReport"
+    ) -> None:
+        """
+        Renames the album using the API and updates the cache entry and modification report.
+        Args:
+            new_name: The new name to assign to the album.
+            client: The ImmichClient instance for API calls.
+            tag_mod_report: The ModificationReport for logging changes.
+        """
+        from immich_client.models.update_album_dto import UpdateAlbumDto
+
+        from immich_autotag.api.immich_proxy.albums.update_album_info import (
+            proxy_update_album_info,
+        )
+
+        update_body = UpdateAlbumDto(album_name=new_name)
+        updated_dto = proxy_update_album_info(
+            album_id=self.get_album_uuid(),
+            client=client,
+            body=update_body,
+        )
+        # Update cache entry using AlbumDtoState.update
+
+        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+
+        self._cache_entry._dto.update(
+            dto=updated_dto, load_source=AlbumLoadSource.UPDATE
+        )
+        tag_mod_report.add_album_modification(
+            kind=ModificationKind.RENAME_ALBUM,
+            album=self,
+            old_value=self.get_album_name(),
+            new_value=new_name,
+        )
+        log(
+            f"Album '{self.get_album_uuid()}' renamed to '{new_name}'",
+            level=LogLevel.FOCUS,
+        )
+
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible.
 
@@ -764,38 +805,3 @@ class AlbumResponseWrapper:
             return hash(self.get_album_uuid())
         except Exception:
             return object.__hash__(self)
-
-
-    @typechecked
-    def rename_album(self, new_name: str, client: ImmichClient, tag_mod_report: "ModificationReport") -> None:
-        """
-        Renames the album using the API and updates the cache entry and modification report.
-        Args:
-            new_name: The new name to assign to the album.
-            client: The ImmichClient instance for API calls.
-            tag_mod_report: The ModificationReport for logging changes.
-        """
-        from immich_client.models.update_album_dto import UpdateAlbumDto
-        from immich_autotag.api.immich_proxy.albums.update_album_info import proxy_update_album_info
-        update_body = UpdateAlbumDto(album_name=new_name)
-        updated_dto=proxy_update_album_info(
-            album_id=self.get_album_uuid(),
-            client=client,
-            body=update_body,
-        )
-        # Update cache entry using AlbumDtoState.update
-        from immich_client.models.album_response_dto import AlbumResponseDto
-        from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
-
-       
-        self._cache_entry._dto.update(dto=updated_dto, load_source=AlbumLoadSource.UPDATE)
-        tag_mod_report.add_album_modification(
-            kind=ModificationKind.RENAME_ALBUM,
-            album=self,
-            old_value=self.get_album_name(),
-            new_value=new_name,
-        )
-        log(
-            f"Album '{self.get_album_uuid()}' renamed to '{new_name}'",
-            level=LogLevel.FOCUS,
-        )

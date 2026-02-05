@@ -18,10 +18,12 @@ class AlbumLoadSource(enum.Enum):
      Enum to indicate the API call source for an AlbumResponseDto.
     SEARCH: Loaded from album list/search API (partial/summary info).
     DETAIL: Loaded from album detail API (full info).
+    UPDATE: Used when updating album information.
     """
 
     SEARCH = "search"
     DETAIL = "detail"
+    UPDATE = "update"
 
 
 @attrs.define(auto_attribs=True, slots=True)
