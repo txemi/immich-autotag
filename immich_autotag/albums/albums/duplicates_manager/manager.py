@@ -1,8 +1,14 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
 from immich_autotag.albums.duplicates.duplicate_album_reports import (
     DuplicateAlbumReports,
@@ -22,16 +28,18 @@ class DuplicateAlbumManager:
     - Reporting and storage
     """
 
-    collection: AlbumCollectionWrapper
-    collected_duplicates: DuplicateAlbumReports = attrs.Factory(DuplicateAlbumReports)
+    collection: "AlbumCollectionWrapper"
+    collected_duplicates: "DuplicateAlbumReports" = attrs.Factory(DuplicateAlbumReports)
 
     @typechecked
     def _handle_duplicate_album_conflict(
         self,
-        incoming_album: AlbumResponseWrapper,
-        existing_album: AlbumResponseWrapper,
+        incoming_album: "AlbumResponseWrapper",
+        existing_album: "AlbumResponseWrapper",
         context: str = "ensure_unique",
-    ) -> AlbumResponseWrapper:
+    ) -> "AlbumResponseWrapper":
+        # Import local para evitar ciclo
+
         name_existing = existing_album.get_album_name()
         name_incoming = incoming_album.get_album_name()
         if name_existing != name_incoming:
