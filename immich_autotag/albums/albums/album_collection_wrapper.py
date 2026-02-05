@@ -427,36 +427,31 @@ class AlbumCollectionWrapper:
         albums_list = self._albums  # Access the internal dual map
         name = wrapper.get_album_name()
         if self.is_duplicated(wrapper):
-            # Temporary duplicate
+            # Handle duplicates before adding
             if is_temporary_album(name):
-                # Only call delete_album if client is of correct type
-                if self.delete_album(
+                # Delete the temporary duplicate
+                self.delete_album(
                     wrapper=wrapper,
                     client=client,
                     tag_mod_report=tag_mod_report,
                     reason="Removed duplicate temporary album during add",
-                ):
-                    albums_after = list(self.find_all_albums_with_name(name))
-                    if len(albums_after) == 1:
-
-                        surviving_album = albums_after[0]
-                        return surviving_album
-                    else:
-                        # Raise exception for developers after cleanup
-                        raise RuntimeError(
-                            f"Duplicate albums with name '{name}' were found and combined, "
-                            f"but multiple still remain. This indicates a data integrity issue. "
-                            f"Review the logs and investigate the cause."
-                        )
-                    return None
+                )
+                albums_after = list(self.find_all_albums_with_name(name))
+                if len(albums_after) == 1:
+                    return albums_after[0]
+                else:
+                    raise RuntimeError(
+                        f"Duplicate albums with name '{name}' were found and attempted to delete, "
+                        f"but multiple still remain. This indicates a data integrity issue. "
+                        f"Review the logs and investigate the cause."
+                    )
             else:
                 if old_tested_mode:
-                    # Combine all duplicates into one
+                    # Merge all duplicates into one
                     surviving_album = self.combine_duplicate_albums(
                         list(self.find_all_albums_with_name(name)),
                         context="duplicate_on_create",
                     )
-                    # After combining, check if any duplicates remain
                     albums_after = list(self.find_all_albums_with_name(name))
                     if surviving_album not in albums_after:
                         raise RuntimeError(
@@ -466,14 +461,13 @@ class AlbumCollectionWrapper:
                     if len(albums_after) == 1:
                         return albums_after[0]
                     else:
-                        # Raise exception for developers after cleanup
                         raise RuntimeError(
                             f"Duplicate albums with name '{name}' were found and combined, "
                             f"but multiple still remain. This indicates a data integrity issue. "
                             f"Review the logs and investigate the cause."
                         )
                 else:
-                    # Non-temporary duplicate
+                    # Non-temporary duplicate: log and skip
                     existing = self.find_first_album_with_name(name)
                     if existing is not None:
                         self._get_duplicate_album_manager().handle_non_temporary_duplicate(
@@ -482,10 +476,11 @@ class AlbumCollectionWrapper:
                             tag_mod_report=tag_mod_report,
                             name=name,
                         )
-                        return None
+                    return None
         else:
+            # Only add if not a duplicate
             albums_list.add(wrapper)
-        return wrapper
+            return wrapper
 
     @typechecked
     def _add_album_wrapper(
