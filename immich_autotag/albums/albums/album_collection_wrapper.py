@@ -470,6 +470,7 @@ class AlbumCollectionWrapper:
                     "is not present in the collection. This indicates a data integrity issue."
                 )
             from immich_autotag.config.dev_mode import is_crazy_debug_mode
+
             #
             # Duplicates created by the user (not temporary, not system-generated) are not supported by design.
             # There is no robust, general way to resolve user-created album duplicates automatically without risking data loss or undefined behavior.
@@ -483,7 +484,7 @@ class AlbumCollectionWrapper:
                     "Please review your albums in the Immich app or web interface, and manually rename or remove the duplicate(s) to ensure each album name is unique.\n"
                     "If you are a developer, see the code and comments in AlbumCollectionWrapper for more details about this design decision."
                 )
-            #TODO: 
+            # TODO:
             if len(albums_after) == 1:
                 return albums_after[0]
             else:
