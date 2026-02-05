@@ -18,31 +18,59 @@ if TYPE_CHECKING:
     from immich_autotag.run_output.execution import RunExecution
     from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
 
-_instance = None
-_instance_created = False
+_instance: "ImmichContext | None" = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
 class ImmichContext:
-    _client: "ImmichClientWrapper" = attrs.field()
-    _albums_collection: "AlbumCollectionWrapper" = attrs.field()
-    _tag_collection: "TagCollectionWrapper" = attrs.field()
-    _duplicates_collection: "DuplicateCollectionWrapper" = attrs.field()
-    _asset_manager: "AssetManager" = attrs.field()
+    _client: "ImmichClientWrapper | None" = attrs.field(default=None)
+    _albums_collection: "AlbumCollectionWrapper | None" = attrs.field(default=None)
+    _tag_collection: "TagCollectionWrapper | None" = attrs.field(default=None)
+    _duplicates_collection: "DuplicateCollectionWrapper | None" = attrs.field(
+        default=None
+    )
+    _asset_manager: "AssetManager | None" = attrs.field(default=None)
 
     def get_client_wrapper(self) -> ImmichClientWrapper:
+        if self._client is None:
+            from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
+
+            self._client = ImmichClientWrapper.get_default_instance()
         return self._client
 
     def get_albums_collection(self) -> "AlbumCollectionWrapper":
+        if self._albums_collection is None:
+            from immich_autotag.albums.albums.album_collection_wrapper import (
+                AlbumCollectionWrapper,
+            )
+
+            self._albums_collection = AlbumCollectionWrapper.from_client()
         return self._albums_collection
 
     def get_tag_collection(self) -> "TagCollectionWrapper":
+        if self._tag_collection is None:
+            from immich_autotag.tags.list_tags import list_tags
+
+            client = self.get_client_wrapper().get_client()
+            self._tag_collection = list_tags(client)
         return self._tag_collection
 
     def get_duplicates_collection(self) -> "DuplicateCollectionWrapper":
+        if self._duplicates_collection is None:
+            from immich_autotag.duplicates.load_duplicates_collection import (
+                load_duplicates_collection,
+            )
+
+            client = self.get_client_wrapper().get_client()
+            self._duplicates_collection = load_duplicates_collection(client)
         return self._duplicates_collection
 
     def get_asset_manager(self) -> "AssetManager":
+        if self._asset_manager is None:
+            from immich_autotag.assets.asset_manager import AssetManager
+
+            client = self.get_client_wrapper().get_client()
+            self._asset_manager = AssetManager(client=client)
         return self._asset_manager
 
     @staticmethod
@@ -57,99 +85,22 @@ class ImmichContext:
         return RunOutputManager.current().get_run_output_dir()
 
     def __attrs_post_init__(self):
-        global _instance, _instance_created
-        # Explicit type validation to avoid circular import issues
-        from immich_autotag.albums.albums.album_collection_wrapper import (
-            AlbumCollectionWrapper,
-        )
-        from immich_autotag.assets.asset_manager import AssetManager
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-        from immich_autotag.duplicates.duplicate_collection_wrapper import (
-            DuplicateCollectionWrapper,
-        )
-        from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
-
-        if not isinstance(self._client, ImmichClientWrapper):
-            raise TypeError(
-                f"_client debe ser ImmichClientWrapper, no {type(self._client)}"
-            )
-        if not isinstance(self._albums_collection, AlbumCollectionWrapper):
-            raise TypeError(
-                f"_albums_collection debe ser AlbumCollectionWrapper, no {type(self._albums_collection)}"
-            )
-        if not isinstance(self._tag_collection, TagCollectionWrapper):
-            raise TypeError(
-                f"_tag_collection debe ser TagCollectionWrapper, no {type(self._tag_collection)}"
-            )
-        if not isinstance(self._duplicates_collection, DuplicateCollectionWrapper):
-            raise TypeError(
-                f"_duplicates_collection debe ser DuplicateCollectionWrapper, no {type(self._duplicates_collection)}"
-            )
-        if not isinstance(self._asset_manager, AssetManager):
-            raise TypeError(
-                f"_asset_manager debe ser AssetManager, no {type(self._asset_manager)}"
-            )
-        # Reserved global variables _instance and _instance_created are required for singleton pattern
-        if _instance_created:
-            print(
-                "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
-            )
+        global _instance
+        if _instance is not None:
             raise RuntimeError(
-                "ImmichContext instance already exists. Use get_instance()."
+                "ImmichContext instance already exists. Use get_default_instance()."
             )
-        _instance_created = True
-        print("[INFO] Assigning self to reserved global variable _instance.")
         _instance = self
 
     @staticmethod
     @typechecked
     def get_default_instance() -> "ImmichContext":
-        # Reserved global variable _instance is required for singleton pattern
+        global _instance
         if _instance is None:
-            print(
-                "[INFO] Reserved global variable _instance is None, ImmichContext not initialized."
-            )
-            raise RuntimeError(
-                "ImmichContext not initialized. Create an instance first."
-            )
-        # No explicit assignment needed for F824
+            _instance = ImmichContext()
         return _instance
 
-    @staticmethod
-    @typechecked
-    def create_default_instance(
-        client: "ImmichClientWrapper",
-        albums_collection: "AlbumCollectionWrapper",
-        tag_collection: "TagCollectionWrapper",
-        duplicates_collection: "DuplicateCollectionWrapper",
-        asset_manager: "AssetManager",
-    ) -> "ImmichContext":
-        """
-        Factory method to create the singleton ImmichContext instance.
-        This should be called only once at application startup.
-        Automatically registers itself as the singleton.
-        """
-        global _instance, _instance_created
-        # Reserved global variables _instance and _instance_created are required for singleton pattern
-        if _instance_created:
-            print(
-                "[INFO] Reserved global variable _instance_created is in use for singleton enforcement."
-            )
-            raise RuntimeError(
-                "ImmichContext instance already exists. Use get_default_instance()."
-            )
-        # Create instance (will call __attrs_post_init__ which sets the singleton)
-        instance = ImmichContext(
-            client=client,
-            albums_collection=albums_collection,
-            tag_collection=tag_collection,
-            duplicates_collection=duplicates_collection,
-            asset_manager=asset_manager,
-        )
-        # No explicit assignment needed for F824
-        _instance = instance
-        _instance_created = True
-        return instance
+    # create_default_instance is no longer needed; use get_default_instance()
 
     @staticmethod
     def get_default_client() -> "ImmichClientWrapper":
