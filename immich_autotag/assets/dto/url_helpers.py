@@ -9,7 +9,7 @@ def get_asset_dto_url(dto: AssetResponseDto) -> str:
     Defensive: returns '<invalid url>' if dto or id is invalid.
     """
     try:
-        uid = getattr(dto, "id", None)
+        uid = dto.id
         if not uid:
             return "<invalid url>"
         asset_uuid = AssetUUID(str(uid))
