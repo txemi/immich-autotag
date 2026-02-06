@@ -1,5 +1,7 @@
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.context.immich_context import ImmichContext
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
 from immich_autotag.types.client_types import ImmichClient
 
 
@@ -47,12 +49,15 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
     albums_collection = context.get_albums_collection()
     albums = albums_collection.get_albums()
     count = 0
+
     for album in albums:
         if _is_temp_album(album) and not _is_album_healthy(album):
             _delete_album(album, client, albums_collection)
+            log(
+                f"[PROGRESS] [ALBUM-DELETE] Deleted unhealthy temporary album: '{album.get_album_name()}' (UUID: {album.get_album_uuid()})",
+                level=LogLevel.PROGRESS,
+            )
             count += 1
-    from immich_autotag.logging.levels import LogLevel
-    from immich_autotag.logging.utils import log
 
     if count > 0:
         log(

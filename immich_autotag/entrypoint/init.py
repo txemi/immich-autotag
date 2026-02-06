@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from immich_autotag.config.host_config import get_immich_base_url
 from immich_autotag.config.manager import ConfigManager
-from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 from immich_autotag.logging.init import initialize_logging
-from immich_autotag.types.client_types import ImmichClient
 
 
 def init_config_and_logging() -> ConfigManager:
@@ -23,18 +20,3 @@ def init_config_and_logging() -> ConfigManager:
     StatisticsManager.get_instance().save()
     print_welcome_links(config)
     return manager
-
-
-def init_client(manager: ConfigManager) -> ImmichClientWrapper:
-    api_key = manager.get_config_or_raise().server.api_key
-    client = ImmichClient(
-        base_url=get_immich_base_url(),
-        token=api_key,
-        prefix="",
-        auth_header_name="x-api-key",
-        raise_on_unexpected_status=True,
-    )
-    from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
-
-    client_wrapper = ImmichClientWrapper.create_default_instance(client)
-    return client_wrapper

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def _handle_classification_conflict(
+def handle_classification_conflict(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
     match_results: "MatchResultList",
