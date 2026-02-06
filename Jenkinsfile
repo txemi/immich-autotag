@@ -139,7 +139,19 @@ pipeline {
         }
         failure {
             echo "❌ Pipeline FAILED - Check logs above"
-            // You can add notification here if you want
+            // Tagging and pushing is temporarily disabled for CI stability
+            script {
+                if (ENABLE_JENKINS_TAGGING) {
+                    def tagName = "jenkins-fail-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
+                    echo "🏷️ Creando tag GitHub (fail): ${tagName}"
+                    githubTag(
+                        tag: tagName,
+                        message: "Build ${env.BUILD_NUMBER} (${env.GIT_COMMIT ?: 'manual'}) [ci skip]"
+                    )
+                } else {
+                    echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
+                }
+            }
         }
     }
 }
