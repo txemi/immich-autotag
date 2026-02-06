@@ -363,8 +363,9 @@ class AlbumResponseWrapper:
             )
 
             raise AssetAlreadyInAlbumError(
-                f"Asset {asset_wrapper.get_id()} already in album "
-                f"{self.get_album_uuid()} (API duplicate error)"
+                f"Asset {asset_wrapper.get_id()} already in album {self.get_album_uuid()} (API duplicate error)\n"
+                f"Asset link: {str(asset_wrapper.get_link())}\n"
+                f"Album link: {str(self.get_immich_album_url())}"
             )
         else:
             raise RuntimeError(
