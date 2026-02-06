@@ -262,7 +262,7 @@ class AlbumCollectionWrapper:
             TemporaryAlbumManager,
         )
 
-        return TemporaryAlbumManager(_album_collection=self)
+        return TemporaryAlbumManager(self)
 
     @typechecked
     def build_asset_map(self) -> AssetToAlbumsMap:
