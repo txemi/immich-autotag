@@ -19,7 +19,7 @@ class AssetMapManager:
 
     _collection: "AlbumCollectionWrapper"
     _asset_to_albums_map: AssetToAlbumsMap = attrs.Factory(AssetToAlbumsMap)
-    _is_map_loaded: bool = False  # Indica si el mapa ha sido cargado
+    _is_map_loaded: bool = False  # Indicates whether the map has been loaded
 
     def _build_map(self) -> AssetToAlbumsMap:
         """Builds the asset_id -> albums mapping from scratch."""
@@ -98,16 +98,15 @@ class AssetMapManager:
         self._asset_to_albums_map.remove_album_for_asset_ids(album_wrapper)
         return True
 
-    def get_map(self) -> AssetToAlbumsMap:
-        """Returns the current mapping. Asegura que el mapa esté cargado."""
-        if not self._is_map_loaded:
-            raise RuntimeError("El mapa de assets no ha sido cargado. Llama a 'rebuild_map' o 'load_map' primero.")
-        return self._asset_to_albums_map
-
-    def load_map(self) -> None:
-        """Carga el mapa si no está cargado."""
+    def _load_map(self) -> None:
+        """Loads the map if it is not loaded (internal use)."""
         if not self._is_map_loaded:
             self._build_map()
+
+    def get_map(self) -> AssetToAlbumsMap:
+        """Returns the current mapping. Ensures the map is loaded."""
+        self._load_map()
+        return self._asset_to_albums_map
 
     def clear(self):
         """Clears the current mapping."""

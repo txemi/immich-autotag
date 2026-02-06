@@ -540,7 +540,8 @@ class AlbumCollectionWrapper:
         Defensive: always returns AssetToAlbumsMap, never None.
         """
         self._ensure_fully_loaded()
-        return self._get_asset_map_manager().get_map()
+        asset_map_manager = self._get_asset_map_manager()
+        return asset_map_manager.get_map()
 
     @conditional_typechecked
     def albums_for_asset(
