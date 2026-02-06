@@ -6,7 +6,6 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.api.logging_proxy.assets.get_asset_info import AssetResponseDto
-from immich_autotag.api.logging_proxy.types import Client
 from immich_autotag.assets.asset_cache_entry import AssetCacheEntry
 from immich_autotag.assets.asset_dto_state import AssetDtoType
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -21,8 +20,6 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AssetManager:
-
-    client: Client
     # If not kept in memory, _assets will be None
     _assets: Optional[dict[AssetUUID, AssetResponseWrapper]] = attrs.field(
         default=None, init=False

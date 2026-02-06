@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def _handle_unclassified_asset(
+def handle_unclassified_asset(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
     album_decision: "AlbumDecision",

@@ -262,7 +262,7 @@ class AlbumCollectionWrapper:
             TemporaryAlbumManager,
         )
 
-        return TemporaryAlbumManager(_album_collection=self)
+        return TemporaryAlbumManager(self)
 
     @typechecked
     def build_asset_map(self) -> AssetToAlbumsMap:
@@ -324,6 +324,7 @@ class AlbumCollectionWrapper:
         client: ImmichClient,
         tag_mod_report: ModificationReport,
         reason: str = "Album deleted",
+        remove_from_map: bool = True,
     ) -> bool:
         """
         Deletes an album on the server and records the action, whether temporary or not.
@@ -344,7 +345,9 @@ class AlbumCollectionWrapper:
                     "not a temporary or duplicate album."
                 )
         # Remove locally first to avoid errors if already deleted
-        self.remove_album_local_public(wrapper)
+
+        if remove_from_map:
+            self.remove_album_local_public(wrapper)
         try:
             proxy_delete_album(album_id=wrapper.get_album_uuid(), client=client)
         except Exception as exc:
@@ -447,6 +450,7 @@ class AlbumCollectionWrapper:
                 client=client,
                 tag_mod_report=tag_mod_report,
                 reason="Removed duplicate temporary album during add",
+                remove_from_map=False,  # Not in map yet, so skip local removal
             )
             albums_after = list(self.find_all_albums_with_name(album_name))
             if len(albums_after) == 1:
@@ -484,15 +488,13 @@ class AlbumCollectionWrapper:
                     "Please review your albums in the Immich app or web interface, and manually rename or remove the duplicate(s) to ensure each album name is unique.\n"
                     "If you are a developer, see the code and comments in AlbumCollectionWrapper for more details about this design decision."
                 )
-            # TODO:
-            if len(albums_after) == 1:
-                return albums_after[0]
-            else:
-                raise RuntimeError(
-                    f"Duplicate albums with name '{album_name}' were found and combined, "
-                    f"but multiple still remain. This indicates a data integrity issue. "
-                    f"Review the logs and investigate the cause."
-                )
+
+            new_name = f"{album_wrapper.get_album_name()}__RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM"
+            album_wrapper.rename_album(new_name, client, tag_mod_report)
+
+            albums_list.add(album_wrapper)
+            return album_wrapper
+
         else:
             # Non-temporary duplicate: log and skip
             #
@@ -538,7 +540,8 @@ class AlbumCollectionWrapper:
         Defensive: always returns AssetToAlbumsMap, never None.
         """
         self._ensure_fully_loaded()
-        return self._get_asset_map_manager().get_map()
+        asset_map_manager = self._get_asset_map_manager()
+        return asset_map_manager.get_map()
 
     @conditional_typechecked
     def albums_for_asset(

@@ -14,8 +14,9 @@ class CheckNoDynamicAttrs(Check):
 
     def check(self, args: QualityGateArgs) -> QualityGateResult:
         """
-        Forbids the use of getattr/hasattr for static typing safety.
-        Policy enforcement: disallow dynamic attribute access via getattr() and hasattr()
+        FORBIDDEN: Using getattr/hasattr or any helper that uses them, even if the type is known.
+        You must access attributes directly (obj.attribute) when you know the type.
+        The goal is to guarantee static typing and analysis-time safety.
         
         Activation by quality level:
         - STANDARD: ENABLED (blocks if getattr/hasattr detected)
@@ -44,9 +45,13 @@ class CheckNoDynamicAttrs(Check):
                 for i, line in enumerate(f, 1):
                     if 'getattr(' in line or 'hasattr(' in line:
                         findings.append(Finding(
-                            file_path=str(pyfile), 
-                            line_number=i, 
-                            message=line.strip(), 
+                            file_path=str(pyfile),
+                            line_number=i,
+                            message=(
+                                f"[NO-DYNAMIC-ATTRS POLICY] Forbidden to use getattr/hasattr or helpers that use them. "
+                                f"Access attributes directly if you know the type (example: obj.attribute). "
+                                f"Detected line: {line.strip()}"
+                            ),
                             code="no_dynamic_attrs"
                         ))
 

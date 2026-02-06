@@ -39,6 +39,7 @@ class AssetCacheEntry:
         init=False,
         validator=attrs.validators.instance_of(int),
         default=DEFAULT_CACHE_MAX_AGE_SECONDS,
+        repr=False,
     )
 
     def is_stale(self) -> bool:

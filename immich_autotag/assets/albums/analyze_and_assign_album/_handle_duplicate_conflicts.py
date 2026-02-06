@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 @typechecked
-def _handle_duplicate_conflicts(
+def handle_duplicate_conflicts(
     asset_wrapper: "AssetResponseWrapper", album_decision: "AlbumDecision"
 ) -> None:
     """

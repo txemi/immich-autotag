@@ -63,5 +63,12 @@ def proxy_get_album_info(
     _album_api_ids.add(cache_key)
     dto = get_album_info.sync(id=album_id.to_uuid(), client=client)
     if dto is not None:
+        from immich_autotag.logging.utils import log
+
+        album_name = dto.album_name
+        log(
+            f"[PROGRESS] Album loaded: {album_id} | Title: {album_name}",
+            LogLevel.PROGRESS,
+        )
         cache_mgr.save(cache_key, dto.to_dict())
     return dto

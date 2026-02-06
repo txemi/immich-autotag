@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, Mapping, NoReturn, cast
 
@@ -8,7 +9,6 @@ from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
-import enum
 import time
 from datetime import datetime
 
@@ -16,6 +16,7 @@ import attrs
 
 from immich_autotag.api.immich_proxy.assets import AssetResponseDto
 from immich_autotag.api.logging_proxy.types import UNSET, Unset
+from immich_autotag.assets.dto.url_helpers import repr_dto_filename_and_id
 
 
 class AssetDtoType(enum.Enum):
@@ -53,6 +54,7 @@ class AssetDtoState:
         validator=attrs.validators.optional(
             attrs.validators.instance_of(AssetResponseDto)
         ),
+        repr=repr_dto_filename_and_id,
     )
     _api_endpoint_source: AssetDtoType | None = attrs.field(
         default=None,

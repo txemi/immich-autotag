@@ -68,4 +68,4 @@ class ClassificationStatus(Enum):
             else:
                 return ClassificationStatus.CLASSIFIED
         else:
-            return ClassificationStatus.CLASSIFIED
+            return ClassificationStatus.CONFLICT
