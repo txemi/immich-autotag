@@ -51,7 +51,23 @@ class AssetResponseWrapper:
     _context: "ImmichContext" = attrs.field(
         validator=attrs.validators.instance_of(ImmichContext), repr=False
     )
-    _cache_entry: AssetCacheEntry = attrs.field()
+
+    @staticmethod
+    def _format_cache_entry_for_repr(x: AssetCacheEntry) -> str:
+        try:
+            uuid = x.get_uuid()
+        except Exception:
+            uuid = None
+        try:
+            # Intentamos obtener la URL del asset
+            from immich_autotag.utils.url_helpers import get_immich_photo_url
+
+            url = get_immich_photo_url(uuid).geturl() if uuid else None
+        except Exception:
+            url = None
+        return f"AssetCacheEntry(uuid={uuid}, url={url})"
+
+    _cache_entry: AssetCacheEntry = attrs.field(repr=_format_cache_entry_for_repr)
 
     # The rest of the methods will use self._cache_entry.get_state() instead of self._state directly.
 
