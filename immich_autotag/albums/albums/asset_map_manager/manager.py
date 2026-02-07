@@ -81,8 +81,7 @@ class AssetMapManager:
                 )
             asset_map.add_album_for_asset_ids(album_wrapper)
         # Cleanup of empty temporary albums
-        temp_manager = self._collection._get_temporary_album_manager()
-        temp_manager.cleanup_empty_temporary_albums(client)
+
 
         self._asset_to_albums_map = asset_map
         self._is_map_loaded = True
