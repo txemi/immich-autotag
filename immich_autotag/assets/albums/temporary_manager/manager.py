@@ -13,6 +13,11 @@ from immich_autotag.types.client_types import ImmichClient
 
 @attrs.define(auto_attribs=True, slots=True)
 class TemporaryAlbumManager:
+        
+
+
+
+
     """
     Encapsulates all logic for managing temporary albums in an AlbumCollectionWrapper.
     Receives a reference to the album collection in the constructor.
@@ -68,5 +73,14 @@ class TemporaryAlbumManager:
                     level=LogLevel.ERROR,
                 )
                 raise
+
+
+    def cleanup_empty_temporary_albums(self, client: ImmichClient):
+        """
+        Detects and removes empty temporary albums using the temporary album manager.
+        """
+        albums_to_remove = self.detect_empty_temporary_albums()
+        self.remove_empty_temporary_albums(albums_to_remove, client)
+
 
     # Private methods and utilities for temporary albums can be added here

@@ -20,7 +20,7 @@ class AssetMapManager:
     _collection: "AlbumCollectionWrapper"
     _asset_to_albums_map: AssetToAlbumsMap = attrs.Factory(AssetToAlbumsMap)
     _is_map_loaded: bool = False  # Indicates whether the map has been loaded
-
+    # Method removed: now handled by TemporaryAlbumManager
     def _build_map(self) -> AssetToAlbumsMap:
         """Builds the asset_id -> albums mapping from scratch."""
         asset_map = AssetToAlbumsMap()
@@ -82,8 +82,8 @@ class AssetMapManager:
             asset_map.add_album_for_asset_ids(album_wrapper)
         # Cleanup of empty temporary albums
         temp_manager = self._collection._get_temporary_album_manager()
-        albums_to_remove = temp_manager.detect_empty_temporary_albums()
-        temp_manager.remove_empty_temporary_albums(albums_to_remove, client)
+        temp_manager.cleanup_empty_temporary_albums(client)
+
         self._asset_to_albums_map = asset_map
         self._is_map_loaded = True
         return asset_map
