@@ -69,4 +69,11 @@ class TemporaryAlbumManager:
                 )
                 raise
 
+    def cleanup_empty_temporary_albums(self, client: ImmichClient):
+        """
+        Detects and removes empty temporary albums using the temporary album manager.
+        """
+        albums_to_remove = self.detect_empty_temporary_albums()
+        self.remove_empty_temporary_albums(albums_to_remove, client)
+
     # Private methods and utilities for temporary albums can be added here
