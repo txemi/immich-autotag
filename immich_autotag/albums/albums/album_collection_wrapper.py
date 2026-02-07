@@ -387,11 +387,18 @@ class AlbumCollectionWrapper:
                 f"Reason: {err_reason}. Exception: {msg}",
                 level=LogLevel.WARNING,
             )
-            raise RuntimeError(
-                f"Failed to delete album "
-                f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}). "
-                f"Reason: {err_reason}."
-            ) from exc
+            if err_reason == "Album not found (already deleted)":
+                # Album is already deleted, treat as success
+                raise RuntimeError(
+                    f"Album '{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}) "
+                    "already deleted."
+                )
+            else:
+                raise RuntimeError(
+                    f"Failed to delete album "
+                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}). "
+                    f"Reason: {err_reason}."
+                ) from exc
         from immich_autotag.report.modification_kind import ModificationKind
 
         # On success, err_reason is not set, so use a default
