@@ -120,18 +120,18 @@ pipeline {
         }
         success {
             echo "✅ Pipeline succeeded - All stages passed"
-            // Automatically mark successful builds to keep forever
             script {
                 currentBuild.keepLog = true
                 echo "🔒 Build marked as 'Keep this build forever' (success)"
-                // Tagging and pushing is temporarily disabled for CI stability
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-success-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
                     echo "🏷️ Creando tag GitHub: ${tagName}"
-                    githubTag(
-                        tag: tagName,
-                        message: "Build ${env.BUILD_NUMBER} (${env.GIT_COMMIT ?: 'manual'}) [ci skip]"
-                    )
+                    withCredentials([string(credentialsId: 'app_github_para_ubuntu20jenkins.ad3.lab', variable: 'GITHUB_TOKEN')]) {
+                        sh '''
+                            echo $GITHUB_TOKEN | gh auth login --with-token
+                            gh tag create "'"${tagName}"'" --target $(git rev-parse HEAD) --notes "Tag creado por Jenkins"
+                        '''
+                    }
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
@@ -139,15 +139,16 @@ pipeline {
         }
         failure {
             echo "❌ Pipeline FAILED - Check logs above"
-            // Tagging and pushing is temporarily disabled for CI stability
             script {
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-fail-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
                     echo "🏷️ Creando tag GitHub (fail): ${tagName}"
-                    githubTag(
-                        tag: tagName,
-                        message: "Build ${env.BUILD_NUMBER} (${env.GIT_COMMIT ?: 'manual'}) [ci skip]"
-                    )
+                    withCredentials([string(credentialsId: 'app_github_para_ubuntu20jenkins.ad3.lab', variable: 'GITHUB_TOKEN')]) {
+                        sh '''
+                            echo $GITHUB_TOKEN | gh auth login --with-token
+                            gh tag create "'"${tagName}"'" --target $(git rev-parse HEAD) --notes "Tag creado por Jenkins"
+                        '''
+                    }
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
