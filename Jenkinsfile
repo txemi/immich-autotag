@@ -1,5 +1,5 @@
 // ==================== CONFIG FLAGS ====================
-def ENABLE_JENKINS_TAGGING = false // Set to true to enable GitHub tagging
+def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
 pipeline {
     options {
         // Keep only the last 4 builds
