@@ -29,7 +29,6 @@ class AssetMapManager:
             len(self._collection._albums) > 0
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
 
-
         albums = self._collection.get_albums()
         total = len(albums)
         tracker = None
