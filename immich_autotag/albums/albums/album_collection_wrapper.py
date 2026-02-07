@@ -550,7 +550,7 @@ class AlbumCollectionWrapper:
         # Clean up empty temporary albums before returning the map
 
         asset_map_manager = self._get_asset_map_manager()
-        map= asset_map_manager.get_map()
+        map = asset_map_manager.get_map()
         temp_manager = self._get_temporary_album_manager()
         temp_manager.cleanup_empty_temporary_albums(self.get_client())
         return map
