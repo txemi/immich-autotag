@@ -29,9 +29,7 @@ class AssetMapManager:
             len(self._collection._albums) > 0
         ), "AlbumCollectionWrapper must have at least one album to build asset map."
 
-        from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
-        client = ImmichClientWrapper.get_default_instance().get_client()
         albums = self._collection.get_albums()
         total = len(albums)
         tracker = None
