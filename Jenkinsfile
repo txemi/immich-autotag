@@ -126,7 +126,7 @@ pipeline {
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-success-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
                     echo "🏷️ Creando tag GitHub: ${tagName}"
-                    withCredentials([string(credentialsId: 'github_token_immich_autotag_ci', variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'app_github_para_ubuntu20jenkins.ad3.lab', variable: 'GITHUB_TOKEN')]) {
                         sh '''
                             echo $GITHUB_TOKEN | gh auth login --with-token
                             gh tag create "'"${tagName}"'" --target $(git rev-parse HEAD) --notes "Tag creado por Jenkins"
