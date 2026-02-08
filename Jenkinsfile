@@ -8,7 +8,9 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro --user root'
+            // Mounts ~/.ssh from host into the container as read-only for private key and known_hosts access
+            // Ensure $HOME/.ssh exists and contains the required key and known_hosts files
+            args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
         }
     }
     
@@ -113,12 +115,12 @@ pipeline {
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-success-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
                     echo "🏷️ Creando tag GitHub: ${tagName}"
-                    withCredentials([string(credentialsId: 'immich-autotag', variable: 'GITHUB_TOKEN')]) {
-                        sh '''
-                            echo $GITHUB_TOKEN | gh auth login --with-token
-                            gh tag create "'"${tagName}"'" --target $(git rev-parse HEAD) --notes "Tag creado por Jenkins"
-                        '''
-                    }
+                    sh "git config user.name 'jenkins'"
+                    sh "git config user.email 'jenkins@localhost'"
+                    sh "git tag ${tagName}"
+                    sh "ssh-keygen -F github.com > /dev/null || ssh-keyscan github.com >> $HOME/.ssh/known_hosts"
+                    sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
+                    sh "git push origin ${tagName}"
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
@@ -130,12 +132,12 @@ pipeline {
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-fail-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
                     echo "🏷️ Creando tag GitHub (fail): ${tagName}"
-                    withCredentials([string(credentialsId: 'immich-autotag', variable: 'GITHUB_TOKEN')]) {
-                        sh '''
-                            echo $GITHUB_TOKEN | gh auth login --with-token
-                            gh tag create "'"${tagName}"'" --target $(git rev-parse HEAD) --notes "Tag creado por Jenkins"
-                        '''
-                    }
+                    sh "git config user.name 'jenkins'"
+                    sh "git config user.email 'jenkins@localhost'"
+                    sh "git tag ${tagName}"
+                    sh "ssh-keygen -F github.com > /dev/null || ssh-keyscan github.com >> $HOME/.ssh/known_hosts"
+                    sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
+                    sh "git push origin ${tagName}"
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
