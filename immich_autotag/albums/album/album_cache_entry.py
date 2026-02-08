@@ -23,6 +23,16 @@ class StaleAlbumCacheError(Exception):
     """Raised when a cache entry is stale and cannot be used."""
 
 
+class RedundantAlbumCacheAccessError(Exception):
+    """Raised when a redundant access to the album cache is detected (debug only)."""
+
+    pass
+
+
+# Global album cache (private, type-safe)
+_album_cache_global: dict[AlbumUUID, AlbumCacheEntry] = {}
+
+
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumCacheEntry:
 
@@ -125,17 +135,24 @@ class AlbumCacheEntry:
         If already full, does nothing. If not full and no reload_func is provided, raises exception.
         PRIVATE: Only AlbumCacheEntry should decide when to reload.
         """
+        album_id = self._dto.get_album_id()
+        # Check global cache (now keyed by AlbumUUID)
+        cached_entry = _album_cache_global.get(album_id)
+        if cached_entry is not None and cached_entry._dto.is_full():
+            raise RedundantAlbumCacheAccessError(
+                f"Redundant access to album cache for album_id={album_id}. "
+                f"This indicates a possible design issue in higher-level logic."
+            )
         if self._dto.is_full():
+            _album_cache_global[album_id] = self
             return self
         # Reload the DTO using the new DTO returned by _from_cache_or_api
-        new_dto: AlbumDtoState = self._from_cache_or_api(
-            album_id=self._dto.get_album_id()
-        )
-        # Use only public API: update with the new AlbumResponseDto and load_source
+        new_dto: AlbumDtoState = self._from_cache_or_api(album_id=album_id)
         self._dto.update(
             dto=new_dto.get_dto(),
             load_source=new_dto.get_load_source(),
         )
+        _album_cache_global[album_id] = self
         return self
 
     def is_empty(self) -> bool:
