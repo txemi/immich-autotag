@@ -62,9 +62,6 @@ class AlbumCacheEntry:
     def _from_cache_or_api(
         cls,
         album_id: AlbumUUID,
-        *,
-        max_age_seconds: int = 3600,
-        use_cache: bool = True,
     ) -> AlbumDtoState:
         """
         Attempts to load the album from cache. If it is stale or does not exist, fetches from API.
@@ -132,9 +129,7 @@ class AlbumCacheEntry:
             return self
         # Reload the DTO using the new DTO returned by _from_cache_or_api
         new_dto: AlbumDtoState = self._from_cache_or_api(
-            album_id=self._dto.get_album_id(),
-            max_age_seconds=self._max_age_seconds,
-            use_cache=False,
+            album_id=self._dto.get_album_id()
         )
         # Use only public API: update with the new AlbumResponseDto and load_source
         self._dto.update(
