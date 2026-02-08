@@ -5,24 +5,6 @@ from immich_autotag.logging.utils import log
 from immich_autotag.types.client_types import ImmichClient
 
 
-def _is_temp_album(album: AlbumResponseWrapper) -> bool:
-    """
-    Returns True if the album is considered temporary (project standard logic).
-    """
-    return album.is_temporary_album()
-
-
-def _is_album_healthy(album: AlbumResponseWrapper) -> bool:
-    """
-    Returns True if the album is considered healthy (project standard logic).
-    """
-    from immich_autotag.assets.albums.temporary_manager.health import (
-        is_temporary_album_healthy,
-    )
-
-    return is_temporary_album_healthy(album)
-
-
 def _delete_album(
     album: AlbumResponseWrapper, client: ImmichClient, albums_collection
 ) -> None:
@@ -50,8 +32,12 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
     albums = albums_collection.get_albums()
     count = 0
 
+    from immich_autotag.assets.albums.temporary_manager.health import (
+        is_temporary_album_healthy,
+    )
+
     for album in albums:
-        if _is_temp_album(album) and not _is_album_healthy(album):
+        if album.is_temporary_album() and not is_temporary_album_healthy(album):
             _delete_album(album, client, albums_collection)
             log(
                 f"[PROGRESS] [ALBUM-DELETE] Deleted unhealthy temporary album: '{album.get_album_name()}' (UUID: {album.get_album_uuid()})",

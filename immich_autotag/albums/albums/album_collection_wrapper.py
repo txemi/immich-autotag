@@ -225,12 +225,23 @@ class AlbumCollectionWrapper:
 
     @typechecked
     def __attrs_post_init__(self) -> None:
+        global _album_collection_singleton
+        if _album_collection_singleton is not None:
+            raise RuntimeError(
+                "AlbumCollectionWrapper singleton violation: a second instance was created. "
+                "Use AlbumCollectionWrapper.get_instance() to access the singleton."
+            )
+        _album_collection_singleton = self
         # Asset map is built on demand, not during initialization
-        pass
 
     @classmethod
     def get_instance(cls) -> "AlbumCollectionWrapper":
-        raise NotImplementedError("Singleton pattern is not implemented.")
+        global _album_collection_singleton
+        if _album_collection_singleton is None:
+            # Create and sync the singleton instance
+            _album_collection_singleton = cls()
+            _album_collection_singleton.resync_from_api()
+        return _album_collection_singleton
 
     @staticmethod
     @typechecked
