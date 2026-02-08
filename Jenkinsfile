@@ -126,13 +126,10 @@ pipeline {
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-success-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
                     echo "🏷️ Creando tag GitHub: ${tagName}"
-                    withCredentials([string(credentialsId: 'immich-autotag', variable: 'GITHUB_TOKEN')]) {
-                        sh "git config user.name 'jenkins'"
-                        sh "git config user.email 'jenkins@localhost'"
-                        sh "git tag ${tagName}"
-                        sh "git remote set-url origin https://jenkins:${GITHUB_TOKEN}@github.com/txemi/immich-autotag.git"
-                        sh "git push origin ${tagName}"
-                    }
+                    sh "git config user.name 'jenkins'"
+                    sh "git config user.email 'jenkins@localhost'"
+                    sh "git tag ${tagName}"
+                    sh "git push origin ${tagName}"
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
@@ -144,13 +141,10 @@ pipeline {
                 if (ENABLE_JENKINS_TAGGING) {
                     def tagName = "jenkins-fail-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
                     echo "🏷️ Creando tag GitHub (fail): ${tagName}"
-                    withCredentials([string(credentialsId: 'immich-autotag', variable: 'GITHUB_TOKEN')]) {
-                        sh "git config user.name 'jenkins'"
-                        sh "git config user.email 'jenkins@localhost'"
-                        sh "git tag ${tagName}"
-                        sh "git remote set-url origin https://jenkins:${GITHUB_TOKEN}@github.com/txemi/immich-autotag.git"
-                        sh "git push origin ${tagName}"
-                    }
+                    sh "git config user.name 'jenkins'"
+                    sh "git config user.email 'jenkins@localhost'"
+                    sh "git tag ${tagName}"
+                    sh "git push origin ${tagName}"
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
