@@ -567,16 +567,12 @@ class AlbumCollectionWrapper:
     @typechecked
     def get_asset_to_albums_map(self) -> AssetToAlbumsMap:
         """
-        Returns the current asset-to-albums map, building it if not already done.
+        Returns the current asset-to-albums map. Uses cached map if available, otherwise builds without cleanup.
         Defensive: always returns AssetToAlbumsMap, never None.
         """
-        # Use cached map if available (batch mode)
         if self._batch_asset_to_albums_map is not None:
             return self._batch_asset_to_albums_map
-        # Fallback to original behavior (non-batch)
         self._ensure_fully_loaded()
-        temp_manager = self._get_temporary_album_manager()
-        temp_manager.cleanup_empty_temporary_albums(self.get_client())
         asset_map_manager = self._get_asset_map_manager()
         return asset_map_manager.get_map()
 
