@@ -34,24 +34,11 @@ pipeline {
         
         stage('Install System Dependencies') {
             steps {
-                sh '''
-                    apt-get update
-                    apt-get install -y git curl nodejs npm shfmt
-                    rm -rf /var/lib/apt/lists/*
-                    
-                    # Install jscpd globally for code duplication detection
-                    npm install -g jscpd
-                '''
-            }
-        }
-        
-        stage('Setup Environment') {
-            steps {
                 script {
-                    echo "Setting up Python environment..."
+                    echo "[JENKINS] Installing all system and dev tools via setup_venv.sh --dev..."
                     sh '''
                         chmod +x setup_venv.sh
-                        bash setup_venv.sh
+                        bash setup_venv.sh --dev
                     '''
                 }
             }

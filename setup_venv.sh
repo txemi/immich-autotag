@@ -188,13 +188,38 @@ install_system_dev_tools() {
 		if ! command -v gh >/dev/null 2>&1; then
 			if command -v apt-get >/dev/null 2>&1; then
 				echo "[DEV] Installing GitHub CLI (gh)..."
-				if command -v sudo >/dev/null 2>&1; then
-					sudo apt-get update && sudo apt-get install -y gh
-				elif [ "$(id -u)" -eq 0 ]; then
-					apt-get update && apt-get install -y gh
+				# Add GitHub CLI repo if not present
+				if ! apt-cache policy | grep -q 'cli.github.com'; then
+					type curl >/dev/null 2>&1 || (echo "curl is required to install gh repo" && exit 1)
+					if command -v sudo >/dev/null 2>&1; then
+						sudo apt-get update
+						sudo apt-get install -y curl
+						curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+						sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+						echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+						sudo apt-get update
+						sudo apt-get install -y gh
+					elif [ "$(id -u)" -eq 0 ]; then
+						apt-get update
+						apt-get install -y curl
+						curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+						chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+						echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
+						apt-get update
+						apt-get install -y gh
+					else
+						echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
+						exit 1
+					fi
 				else
-					echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
-					exit 1
+					if command -v sudo >/dev/null 2>&1; then
+						sudo apt-get update && sudo apt-get install -y gh
+					elif [ "$(id -u)" -eq 0 ]; then
+						apt-get update && apt-get install -y gh
+					else
+						echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
+						exit 1
+					fi
 				fi
 				if ! command -v gh >/dev/null 2>&1; then
 					echo "ERROR: gh CLI installation failed. Please install it manually." >&2
