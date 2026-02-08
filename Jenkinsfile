@@ -129,6 +129,7 @@ pipeline {
                     sh "git config user.name 'jenkins'"
                     sh "git config user.email 'jenkins@localhost'"
                     sh "git tag ${tagName}"
+                    sh "ssh-keygen -F github.com > /dev/null || ssh-keyscan github.com >> $HOME/.ssh/known_hosts"
                     sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
                     sh "git push origin ${tagName}"
                 } else {
@@ -145,6 +146,7 @@ pipeline {
                     sh "git config user.name 'jenkins'"
                     sh "git config user.email 'jenkins@localhost'"
                     sh "git tag ${tagName}"
+                    sh "ssh-keygen -F github.com > /dev/null || ssh-keyscan github.com >> $HOME/.ssh/known_hosts"
                     sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
                     sh "git push origin ${tagName}"
                 } else {
