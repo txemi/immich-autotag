@@ -377,7 +377,7 @@ class AlbumCollectionWrapper:
             if not wrapper.is_duplicate_album():
                 raise RuntimeError(
                     f"Refusing to delete album "
-                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()})": "
+                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}) "
                     "not a temporary or duplicate album."
                 )
         # Remove locally first to avoid errors if already deleted
@@ -689,17 +689,6 @@ class AlbumCollectionWrapper:
         return album
 
     @typechecked
-    def _album_wrapper_from_partial_dto(
-        self, dto: AlbumResponseDto
-    ) -> AlbumResponseWrapper:
-        """
-        Centralized method to create or retrieve an AlbumResponseWrapper from a partial AlbumResponseDto.
-        Ensures singleton and cache logic are respected.
-        """
-        cache_entry = self._get_or_create_album_cache_entry_from_dto(dto)
-        return AlbumResponseWrapper(cache_entry)
-
-    @typechecked
     def _get_or_create_album_cache_entry_from_dto(
         self, dto: AlbumResponseDto
     ) -> AlbumCacheEntry:
@@ -722,6 +711,17 @@ class AlbumCollectionWrapper:
         wrapper = AlbumResponseWrapper(cache_entry_obj)
         self._albums.add(wrapper)
         return cache_entry_obj
+
+    @typechecked
+    def _album_wrapper_from_partial_dto(
+        self, dto: AlbumResponseDto
+    ) -> AlbumResponseWrapper:
+        """
+        Centralized method to create or retrieve an AlbumResponseWrapper from a partial AlbumResponseDto.
+        Ensures singleton and cache logic are respected.
+        """
+        cache_entry = self._get_or_create_album_cache_entry_from_dto(dto)
+        return AlbumResponseWrapper(cache_entry)
 
     @conditional_typechecked
     def create_or_get_album_with_user(
