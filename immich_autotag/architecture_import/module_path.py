@@ -6,7 +6,7 @@ Allows constructing paths from strings, Path, or parts, and performing typical h
 This class is the base for architecture logic regarding imports and module membership.
 """
 
-import inspect
+import functools
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -119,12 +119,26 @@ class ModulePath:
         (relative to project_root), or None if the caller is not inside the project.
         Optimized to use sys._getframe for performance.
         """
-        import sys
+        import inspect
+
         # 0 = current frame, 1 = caller
-        caller_frame = sys._getframe(1)
+        frame = inspect.currentframe()
+        if frame is None or frame.f_back is None:
+            raise RuntimeError(
+                "Could not determine caller frame for ModulePath.from_stack"
+            )
+        caller_frame = frame.f_back
         filename: str = caller_frame.f_code.co_filename
         mp: ModulePath = ModulePath.from_path_string(filename, project_root)
         return mp
+
+    @staticmethod
+    @functools.lru_cache(maxsize=4096)
+    def _cached_from_path_string(
+        path_string: str, project_root_str: str
+    ) -> "ModulePath":
+        rel_path = Path(path_string).resolve().relative_to(Path(project_root_str))
+        return ModulePath.from_path(rel_path)
 
     @classmethod
     def from_path_string(cls, path_string: str, project_root: Path) -> "ModulePath":
@@ -133,12 +147,6 @@ class ModulePath:
         Uses lru_cache for caching.
         """
         return cls._cached_from_path_string(path_string, str(project_root))
-
-    @staticmethod
-    @functools.lru_cache(maxsize=4096)
-    def _cached_from_path_string(path_string: str, project_root_str: str) -> "ModulePath":
-        rel_path = Path(path_string).resolve().relative_to(Path(project_root_str))
-        return ModulePath.from_path(rel_path)
 
     def __repr__(self) -> str:
         return f"ModulePath({self.as_dotstring()})"
