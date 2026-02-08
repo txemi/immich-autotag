@@ -128,8 +128,11 @@ pipeline {
                     echo "🏷️ Creando tag GitHub: ${tagName}"
                     withCredentials([string(credentialsId: 'immich-autotag', variable: 'GITHUB_TOKEN')]) {
                         sh '''
-                            echo $GITHUB_TOKEN | gh auth login --with-token
-                            gh tag create "'"${tagName}"'" --target $(git rev-parse HEAD) --notes "Tag creado por Jenkins"
+                            git config user.name "jenkins"
+                            git config user.email "jenkins@localhost"
+                            git tag ${tagName}
+                            git remote set-url origin https://jenkins:${GITHUB_TOKEN}@github.com/txemi/immich-autotag.git
+                            git push origin ${tagName}
                         '''
                     }
                 } else {
@@ -145,8 +148,11 @@ pipeline {
                     echo "🏷️ Creando tag GitHub (fail): ${tagName}"
                     withCredentials([string(credentialsId: 'immich-autotag', variable: 'GITHUB_TOKEN')]) {
                         sh '''
-                            echo $GITHUB_TOKEN | gh auth login --with-token
-                            gh tag create "'"${tagName}"'" --target $(git rev-parse HEAD) --notes "Tag creado por Jenkins"
+                            git config user.name "jenkins"
+                            git config user.email "jenkins@localhost"
+                            git tag ${tagName}
+                            git remote set-url origin https://jenkins:${GITHUB_TOKEN}@github.com/txemi/immich-autotag.git
+                            git push origin ${tagName}
                         '''
                     }
                 } else {
