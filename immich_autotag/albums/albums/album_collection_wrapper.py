@@ -122,8 +122,24 @@ class AlbumCollectionWrapper:
 
         return self
 
+    def _get_asset_map_manager(self) -> "AssetMapManager":
+        if self._asset_map_manager is None:
+            from immich_autotag.albums.albums.asset_map_manager.manager import (
+                AssetMapManager,
+            )
 
+            self._asset_map_manager = AssetMapManager(collection=self)
+        return self._asset_map_manager
 
+    def _get_temporary_album_manager(self):
+        """
+        Returns an instance of TemporaryAlbumManager bound to this collection.
+        """
+        from immich_autotag.assets.albums.temporary_manager.manager import (
+            TemporaryAlbumManager,
+        )
+
+        return TemporaryAlbumManager(self)
 
     def prepare_batch_asset_to_albums_map(self):
         """
@@ -251,14 +267,6 @@ class AlbumCollectionWrapper:
         """
         all_allbums = self._ensure_fully_loaded()._albums
         return AlbumList([a for a in all_allbums.all() if not a.is_deleted()])
-    def _get_asset_map_manager(self) -> "AssetMapManager":
-        if self._asset_map_manager is None:
-            from immich_autotag.albums.albums.asset_map_manager.manager import (
-                AssetMapManager,
-            )
-
-            self._asset_map_manager = AssetMapManager(collection=self)
-        return self._asset_map_manager
 
     @typechecked
     def _remove_album_from_local_collection(
@@ -279,15 +287,7 @@ class AlbumCollectionWrapper:
         self._get_asset_map_manager()._remove_album(album_wrapper)
         self._albums.remove(album_wrapper)
         return True
-    def _get_temporary_album_manager(self):
-        """
-        Returns an instance of TemporaryAlbumManager bound to this collection.
-        """
-        from immich_autotag.assets.albums.temporary_manager.manager import (
-            TemporaryAlbumManager,
-        )
 
-        return TemporaryAlbumManager(self)
     @typechecked
     def build_asset_map(self) -> AssetToAlbumsMap:
         """Delegates asset map build to AssetMapManager."""
