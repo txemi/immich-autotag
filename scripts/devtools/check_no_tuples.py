@@ -15,13 +15,15 @@ from pathlib import Path
 from typing import List, Tuple
 
 
+import attr
+
+@attr.define(auto_attribs=True, slots=True, hash=True, eq=True, order=True)
 class TupleUsageVisitor(ast.NodeVisitor):
-    def __init__(self, filename: str):
-        self.filename = filename
-        self.issues: List[Tuple[int, str]] = []
-        self._in_class = False
-        self._current_class_name = None
-        self._in_init = False
+    _filename: str
+    _issues: list = attr.ib(factory=list)
+    _in_class: bool = False
+    _current_class_name: str = None
+    _in_init: bool = False
 
     def visit_ClassDef(self, node: ast.ClassDef):
         prev_class = self._in_class
@@ -31,26 +33,20 @@ class TupleUsageVisitor(ast.NodeVisitor):
         # Check class body for assigns/annassign
         for stmt in node.body:
             if isinstance(stmt, ast.AnnAssign):
-                # e.g., attr: Tuple[int, int]
                 if self._is_tuple_annotation(stmt.annotation):
-                    self.issues.append((stmt.lineno, f"Class attribute annotation uses Tuple/tuple in class '{node.name}'"))
+                    self._issues.append((stmt.lineno, f"Class attribute annotation uses Tuple/tuple in class '{node.name}'"))
             elif isinstance(stmt, ast.Assign):
-                # e.g., attr = (1, 2)
-                # EXCEPTION: __slots__ = () or __slots__ = [] are allowed (Python internals)
                 if isinstance(stmt.value, ast.Tuple):
-                    # Check if this is __slots__ assignment - skip if so
                     if any(isinstance(target, ast.Name) and target.id == "__slots__" for target in stmt.targets):
-                        pass  # __slots__ is allowed to use tuples
+                        pass
                     else:
-                        self.issues.append((stmt.lineno, f"Class attribute assigned a tuple literal in class '{node.name}'"))
-        # Visit methods to check __init__ self.attr = tuple
+                        self._issues.append((stmt.lineno, f"Class attribute assigned a tuple literal in class '{node.name}'"))
         for stmt in node.body:
             if isinstance(stmt, ast.FunctionDef) and stmt.name == "__init__":
                 self._in_init = True
                 self.visit(stmt)
                 self._in_init = False
             else:
-                # for other methods, still traverse to find returns
                 self.visit(stmt)
 
         self._in_class = prev_class
@@ -59,19 +55,19 @@ class TupleUsageVisitor(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef):
         # Check return annotation
         if node.returns and self._is_tuple_annotation(node.returns):
-            self.issues.append((node.lineno, f"Function '{node.name}' has a Tuple/tuple return annotation"))
+            self._issues.append((node.lineno, f"Function '{node.name}' has a Tuple/tuple return annotation"))
 
         # Walk the body to find Return nodes and assignments
         for stmt in ast.walk(node):
             if isinstance(stmt, ast.Return):
                 if isinstance(stmt.value, ast.Tuple):
-                    self.issues.append((stmt.lineno, f"Function '{node.name}' returns a tuple literal"))
+                    self._issues.append((stmt.lineno, f"Function '{node.name}' returns a tuple literal"))
             elif isinstance(stmt, ast.Assign):
                 # detect self.attr = (..)
                 for target in stmt.targets:
                     if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name) and target.value.id == "self":
                         if isinstance(stmt.value, ast.Tuple):
-                            self.issues.append((stmt.lineno, f"Instance attribute '{target.attr}' assigned a tuple literal in __init__"))
+                            self._issues.append((stmt.lineno, f"Instance attribute '{target.attr}' assigned a tuple literal in __init__"))
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef):
         # same checks as regular functions
@@ -103,9 +99,9 @@ def check_file(path: Path) -> List[Tuple[int, str]]:
     except SyntaxError as e:
         return [(e.lineno or 0, f"SyntaxError when parsing {path}: {e}")]
 
-    visitor = TupleUsageVisitor(str(path))
+    visitor = TupleUsageVisitor(filename=str(path))
     visitor.visit(tree)
-    return visitor.issues
+    return visitor._issues
 
 
 def main(argv: List[str]) -> int:
@@ -125,21 +121,30 @@ def main(argv: List[str]) -> int:
         except Exception:
             pass
 
-    py_files = list(target.rglob("*.py"))
-    issues_found = 0
+    findings = run_check_no_tuples(target, excludes)
+    import json
+    result = {
+        "findings": findings,
+        "summary": f"Found {len(findings)} tuple-related style issues." if findings else "No tuple issues found."
+    }
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 1 if findings else 0
+
+def run_check_no_tuples(target_dir: Path, excludes: set[str]) -> list:
+    """
+    Run tuple check on target_dir, excluding directories in excludes.
+    Returns a list of findings as NoTuplesFinding objects.
+    """
+    from check_no_tuples_types import NoTuplesFinding
+    py_files = list(target_dir.rglob("*.py"))
+    findings = []
     for p in py_files:
         if any(part in excludes for part in p.parts):
             continue
         issues = check_file(p)
         for lineno, msg in issues:
-            print(f"{p}:{lineno}: {msg}")
-            issues_found += 1
-
-    if issues_found > 0:
-        print(f"Found {issues_found} tuple-related style issues. Please replace tuples with typed classes/dataclasses or explicit types.")
-        return 1
-    print("No tuple return/type or class-member tuple issues found.")
-    return 0
+            findings.append(NoTuplesFinding(file=str(p), line=lineno, message=msg))
+    return findings
 
 
 if __name__ == "__main__":

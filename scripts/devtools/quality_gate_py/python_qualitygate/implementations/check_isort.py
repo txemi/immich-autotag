@@ -1,9 +1,9 @@
 
-import subprocess
-from python_qualitygate.cli.args import QualityGateArgs
 import attr
+from python_qualitygate.cli.args import QualityGateArgs
 from python_qualitygate.core.base import Check
 from python_qualitygate.core.result import QualityGateResult, Finding
+from scripts.devtools.quality_gate_py.python_qualitygate.implementations.common_qualitygate import run_subprocess_and_process
 
 @attr.define(auto_attribs=True, slots=True)
 class CheckIsort(Check):
@@ -14,24 +14,16 @@ class CheckIsort(Check):
 
     def check(self, args: QualityGateArgs) -> QualityGateResult:
         cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--check-only', '--line-length', str(args.line_length), str(args.target_dir)]
-        print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        findings = []
-        if result.returncode != 0:
-            for line in result.stdout.splitlines():
-                # isort output: path:line:col: message (sometimes just file path)
-                if line.strip():
-                    findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="isort"))
-        return QualityGateResult(findings=findings)
+        def process_line(line):
+            if line.strip():
+                return Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="isort")
+            return None
+        return run_subprocess_and_process(cmd, process_line, error_code=1, target_dir=args.target_dir, code="isort")
 
     def apply(self, args: QualityGateArgs) -> QualityGateResult:
         cmd = [args.py_bin, '-m', 'isort', '--profile', 'black', '--line-length', str(args.line_length), str(args.target_dir)]
-        print(f"[RUN] {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        findings = []
-        # isort apply should not fail, but capture output just in case
-        if result.returncode != 0:
-            for line in result.stdout.splitlines():
-                if line.strip():
-                    findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="isort"))
-        return QualityGateResult(findings=findings)
+        def process_line(line):
+            if line.strip():
+                return Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="isort")
+            return None
+        return run_subprocess_and_process(cmd, process_line, error_code=1, target_dir=args.target_dir, code="isort")

@@ -92,10 +92,18 @@ class CheckRuff(Check):
             output = result.stdout + '\n' + result.stderr
             return self._process_check_output(args, output, result.returncode, code=code)
         except subprocess.CalledProcessError as exc:
-            # Distinguish between fatal error and lint errors
-            if _is_fatal_ruff_error(exc.stderr, exc.stdout):
-                raise
             output = (exc.stdout or "") + '\n' + (exc.stderr or "")
+            if _is_fatal_ruff_error(exc.stderr, exc.stdout):
+                # Report fatal error as finding, do not propagate
+                findings = []
+                error_msg = f"Ruff fatal error (exit code {exc.returncode}): {exc}"
+                findings.append(Finding(file_path=args.target_dir, line_number=0, message=error_msg, code="ruff-fatal-error"))
+                # Also parse stderr for details
+                if exc.stderr:
+                    for line in exc.stderr.splitlines():
+                        if line.strip():
+                            findings.append(Finding(file_path=args.target_dir, line_number=0, message=line.strip(), code="ruff-fatal-error"))
+                return QualityGateResult(findings=findings)
             return self._process_check_output(args, output, exc.returncode, code=code)
 
     def check(self, args: QualityGateArgs) -> QualityGateResult:
