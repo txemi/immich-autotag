@@ -1,4 +1,5 @@
 
+
 #!/bin/bash
 # Robust script to create virtual environment, install dependencies, and generate/install the local client
 # Automatically detects Immich server version and downloads the matching OpenAPI spec
@@ -158,7 +159,7 @@ install_python_requirements() {
 		echo "requirements.txt not found."
 	fi
 }
-# Instala Node.js y npm si no están presentes (para jscpd/quality gate)
+# Install Node.js and npm if not present (for jscpd/quality gate)
 install_nodejs_npm() {
 	if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
 		if command -v apt-get >/dev/null 2>&1; then
@@ -183,7 +184,7 @@ install_nodejs_npm() {
 	fi
 }
 
-# Instala shfmt si no está presente
+# Install shfmt if not present
 install_shfmt() {
 	if command -v shfmt >/dev/null 2>&1; then
 		echo "[DEV] shfmt already installed. Skipping system tools installation."
@@ -207,23 +208,36 @@ install_shfmt() {
 		fi
 	fi
 }
-
-# Instala gh CLI si no está presente
+# Install curl if not present
+install_curl() {
+	if ! command -v curl >/dev/null 2>&1; then
+		if command -v apt-get >/dev/null 2>&1; then
+			echo "[DEV] Installing curl..."
+			if command -v sudo >/dev/null 2>&1; then
+				sudo apt-get update && sudo apt-get install -y curl
+			elif [ "$(id -u)" -eq 0 ]; then
+				apt-get update && apt-get install -y curl
+			else
+				echo "ERROR: Neither sudo is available nor running as root. Cannot install curl." >&2
+				exit 1
+			fi
+			if ! command -v curl >/dev/null 2>&1; then
+				echo "ERROR: curl installation failed. Please install it manually." >&2
+				exit 1
+			fi
+		else
+			echo "[DEV] Skipping curl installation: apt-get not found. Install curl manually if needed."
+		fi
+	else
+		echo "[DEV] curl already installed. Skipping."
+	fi
+}
+# Install gh CLI if not present
 install_gh_cli() {
 	if ! command -v gh >/dev/null 2>&1; then
 		if command -v apt-get >/dev/null 2>&1; then
 			echo "[DEV] Installing GitHub CLI (gh)..."
-			# Ensure curl is installed before any usage
-			if ! command -v curl >/dev/null 2>&1; then
-				if command -v sudo >/dev/null 2>&1; then
-					sudo apt-get update && sudo apt-get install -y curl
-				elif [ "$(id -u)" -eq 0 ]; then
-					apt-get update && apt-get install -y curl
-				else
-					echo "ERROR: Neither sudo is available nor running as root. Cannot install curl." >&2
-					exit 1
-				fi
-			fi
+			install_curl
 			# Add GitHub CLI repo if not present
 			if ! apt-cache policy | grep -q 'cli.github.com'; then
 				if command -v sudo >/dev/null 2>&1; then
