@@ -17,6 +17,7 @@ import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
 from typeguard import typechecked
 
+from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
@@ -376,7 +377,7 @@ class AlbumCollectionWrapper:
             if not wrapper.is_duplicate_album():
                 raise RuntimeError(
                     f"Refusing to delete album "
-                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()}): "
+                    f"'{wrapper.get_album_name()}' (id={wrapper.get_album_uuid()})": "
                     "not a temporary or duplicate album."
                 )
         # Remove locally first to avoid errors if already deleted
@@ -687,14 +688,40 @@ class AlbumCollectionWrapper:
         )
         return album
 
+    @typechecked
     def _album_wrapper_from_partial_dto(
-        self, album: AlbumResponseDto
+        self, dto: AlbumResponseDto
     ) -> AlbumResponseWrapper:
         """
-        Centralized helper to create an AlbumResponseWrapper from a partial AlbumResponseDto.
-        Use this method instead of calling AlbumResponseWrapper.from_partial_dto directly.
+        Centralized method to create or retrieve an AlbumResponseWrapper from a partial AlbumResponseDto.
+        Ensures singleton and cache logic are respected.
         """
-        return AlbumResponseWrapper.from_partial_dto(album)
+        cache_entry = self._get_or_create_album_cache_entry_from_dto(dto)
+        return AlbumResponseWrapper(cache_entry)
+
+    @typechecked
+    def _get_or_create_album_cache_entry_from_dto(
+        self, dto: AlbumResponseDto
+    ) -> AlbumCacheEntry:
+        from immich_autotag.albums.album.album_dto_state import (
+            AlbumDtoState,
+            AlbumLoadSource,
+        )
+        from immich_autotag.types.uuid_wrappers import AlbumUUID
+
+        album_id = dto.id
+        album_uuid = AlbumUUID(album_id)
+        # Try to reuse AlbumCacheEntry from internal cache (assume _albums is the dual map)
+        cache_entry = self._albums.get_by_id(album_uuid)
+        if cache_entry is not None:
+            return cache_entry._cache_entry
+        # If not found, create new cache entry
+        state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
+        cache_entry_obj = AlbumCacheEntry.create(dto=state)
+        # Wrap and add to collection
+        wrapper = AlbumResponseWrapper(cache_entry_obj)
+        self._albums.add(wrapper)
+        return cache_entry_obj
 
     @conditional_typechecked
     def create_or_get_album_with_user(

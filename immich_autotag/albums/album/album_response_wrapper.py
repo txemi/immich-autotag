@@ -12,7 +12,7 @@ from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
-from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
+from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
 
@@ -729,20 +729,7 @@ class AlbumResponseWrapper:
                 level=LogLevel.FOCUS,
             )
 
-    @classmethod
-    @typechecked
-    def from_partial_dto(cls, dto: AlbumResponseDto) -> "AlbumResponseWrapper":
-        from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
-
-        state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
-        cache_entry = AlbumCacheEntry.create(dto=state)
-        # See docs/dev/style/python_static_factory_pattern.md for why we use this pattern:
-        # attrs with kw_only fields and validators are incompatible with direct kwarg construction in some cases.
-        # So we use a no-argument constructor and assign the field directly.
-        # See: docs/dev/style/python_static_factory_pattern.md#attrs-single-argument-constructor-pattern
-
-        obj = cls(cache_entry)  # Now positional
-        return obj
+    # Responsibility moved: Album creation/retrieval from DTO now belongs to AlbumCollectionWrapper singleton.
 
     @typechecked
     def rename_album(
