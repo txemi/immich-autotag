@@ -10,8 +10,8 @@ defined for the Immich-autotag project.
 import importlib.machinery
 from typing import Optional
 
-from immich_autotag.architecture_import.module_path import PROJECT_ROOT
 from immich_autotag.architecture_import.rule_evaluator import evaluate_import_rules
+from immich_autotag.architecture_import.shared_symbols import PROJECT_ROOT
 from immich_autotag.config.internal_config import ENABLE_ARCHITECTURE_IMPORT_HOOK
 
 

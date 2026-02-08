@@ -13,8 +13,6 @@ from typing import List, Optional, Union
 import attrs
 from typeguard import typechecked
 
-PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
-
 
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class Parts:
