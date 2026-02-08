@@ -164,22 +164,48 @@ install_system_dev_tools() {
 		# Solo Ubuntu/Debian
 		if command -v shfmt >/dev/null 2>&1; then
 			echo "[DEV] shfmt already installed. Skipping system tools installation."
-			return
-		fi
-		if command -v apt-get >/dev/null 2>&1; then
-			echo "[DEV] Installing system development tools (shfmt, etc.)..."
-			if command -v sudo >/dev/null 2>&1; then
-				sudo apt-get update && sudo apt-get install -y shfmt
-			elif [ "$(id -u)" -eq 0 ]; then
-				apt-get update && apt-get install -y shfmt
+		else
+			if command -v apt-get >/dev/null 2>&1; then
+				echo "[DEV] Installing system development tools (shfmt, etc.)..."
+				if command -v sudo >/dev/null 2>&1; then
+					sudo apt-get update && sudo apt-get install -y shfmt
+				elif [ "$(id -u)" -eq 0 ]; then
+					apt-get update && apt-get install -y shfmt
+				else
+					echo "ERROR: Neither sudo is available nor running as root. Cannot install shfmt." >&2
+					exit 1
+				fi
+				if ! command -v shfmt >/dev/null 2>&1; then
+					echo "ERROR: shfmt installation failed. Please install it manually." >&2
+					exit 1
+				fi
 			else
-				echo "ERROR: Neither sudo is available nor running as root. Cannot install shfmt." >&2
-				exit 1
+				echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
 			fi
-			if ! command -v shfmt >/dev/null 2>&1; then
-				echo "ERROR: shfmt installation failed. Please install it manually." >&2
-				exit 1
+		fi
+
+		# Install gh CLI if not present
+		if ! command -v gh >/dev/null 2>&1; then
+			if command -v apt-get >/dev/null 2>&1; then
+				echo "[DEV] Installing GitHub CLI (gh)..."
+				if command -v sudo >/dev/null 2>&1; then
+					sudo apt-get update && sudo apt-get install -y gh
+				elif [ "$(id -u)" -eq 0 ]; then
+					apt-get update && apt-get install -y gh
+				else
+					echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
+					exit 1
+				fi
+				if ! command -v gh >/dev/null 2>&1; then
+					echo "ERROR: gh CLI installation failed. Please install it manually." >&2
+					exit 1
+				fi
+			else
+				echo "[DEV] Skipping gh CLI installation: apt-get not found. Install gh manually if needed."
 			fi
+		else
+			echo "[DEV] gh CLI already installed. Skipping."
+		fi
 		else
 			echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
 		fi
