@@ -210,26 +210,26 @@ install_shfmt() {
 }
 # Install curl if not present
 install_curl() {
-	if ! command -v curl >/dev/null 2>&1; then
-		if command -v apt-get >/dev/null 2>&1; then
-			echo "[DEV] Installing curl..."
-			if command -v sudo >/dev/null 2>&1; then
-				sudo apt-get update && sudo apt-get install -y curl
-			elif [ "$(id -u)" -eq 0 ]; then
-				apt-get update && apt-get install -y curl
-			else
-				echo "ERROR: Neither sudo is available nor running as root. Cannot install curl." >&2
-				exit 1
-			fi
-			if ! command -v curl >/dev/null 2>&1; then
-				echo "ERROR: curl installation failed. Please install it manually." >&2
-				exit 1
-			fi
-		else
-			echo "[DEV] Skipping curl installation: apt-get not found. Install curl manually if needed."
-		fi
-	else
+	if command -v curl >/dev/null 2>&1; then
 		echo "[DEV] curl already installed. Skipping."
+		return
+	fi
+	if ! command -v apt-get >/dev/null 2>&1; then
+		echo "[DEV] Skipping curl installation: apt-get not found. Install curl manually if needed."
+		return
+	fi
+	echo "[DEV] Installing curl..."
+	if command -v sudo >/dev/null 2>&1; then
+		sudo apt-get update && sudo apt-get install -y curl
+	elif [ "$(id -u)" -eq 0 ]; then
+		apt-get update && apt-get install -y curl
+	else
+		echo "ERROR: Neither sudo is available nor running as root. Cannot install curl." >&2
+		exit 1
+	fi
+	if ! command -v curl >/dev/null 2>&1; then
+		echo "ERROR: curl installation failed. Please install it manually." >&2
+		exit 1
 	fi
 }
 # Install gh CLI if not present
