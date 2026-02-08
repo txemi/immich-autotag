@@ -55,9 +55,9 @@ init_paths() {
 }
 
 clean_env() {
-    echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
-    rm -rf "$VENV_DIR" "$CLIENT_DIR"
-    echo "Cleanup completed."
+	echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
+	rm -rf "$VENV_DIR" "$CLIENT_DIR"
+	echo "Cleanup completed."
 }
 
 extract_config() {
@@ -139,25 +139,27 @@ get_openapi_url() {
 	OPENAPI_URL="$openapi_url"
 }
 create_venv() {
-	if [ ! -d "$VENV_DIR" ]; then
-		python3 -m venv "$VENV_DIR"
-		echo "Virtual environment created at $VENV_DIR"
-	else
+	if [ -d "$VENV_DIR" ]; then
 		echo "Virtual environment already exists at $VENV_DIR"
+		source "$VENV_DIR/bin/activate"
+		echo "Virtual environment activated."
+		return
 	fi
+	python3 -m venv "$VENV_DIR"
+	echo "Virtual environment created at $VENV_DIR"
 	source "$VENV_DIR/bin/activate"
 	echo "Virtual environment activated."
 }
 
 # Instala dependencias Python de runtime
 install_python_requirements() {
-	if [ -f "$REPO_ROOT/requirements.txt" ]; then
-		pip install --upgrade pip
-		grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
-		echo "Runtime dependencies installed."
-	else
+	if [ ! -f "$REPO_ROOT/requirements.txt" ]; then
 		echo "requirements.txt not found."
+		return
 	fi
+	pip install --upgrade pip
+	grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
+	echo "Runtime dependencies installed."
 }
 # Install Node.js and npm if not present (for jscpd/quality gate)
 install_nodejs_npm() {
@@ -288,16 +290,16 @@ install_system_dev_tools() {
 
 # Install Python development dependencies (dev mode only)
 install_python_dev_requirements() {
-	if [ "$MODE" = "dev" ]; then
-		if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then
-			pip install -r "$REPO_ROOT/requirements-dev.txt"
-			echo "Development dependencies installed."
-		else
-			echo "requirements-dev.txt not found. Skipping dev dependencies."
-		fi
-	else
+	if [ "$MODE" != "dev" ]; then
 		echo "Production mode: only runtime dependencies installed."
+		return
 	fi
+	if [ ! -f "$REPO_ROOT/requirements-dev.txt" ]; then
+		echo "requirements-dev.txt not found. Skipping dev dependencies."
+		return
+	fi
+	pip install -r "$REPO_ROOT/requirements-dev.txt"
+	echo "Development dependencies installed."
 }
 
 # Orchestrates dependency installation
@@ -314,25 +316,22 @@ generate_and_install_client() {
 		echo "openapi-python-client installed."
 	fi
 
-	# Generate the client only if the folder does not exist at the root
-	if [ ! -d "$CLIENT_DIR" ]; then
-		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR"
-		echo "immich-client generated."
-	else
+	if [ -d "$CLIENT_DIR" ]; then
 		echo "The folder $CLIENT_DIR already exists. Regenerating..."
 		rm -rf "$CLIENT_DIR" || true
 		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR" --overwrite
 		echo "immich-client regenerated."
+	else
+		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR"
+		echo "immich-client generated."
 	fi
 
-	# Install the local client if the folder exists at the root
-	if [ -d "$CLIENT_DIR" ]; then
-		pip install -e "$CLIENT_DIR"
-		echo "Local immich-client installed."
-	else
+	if [ ! -d "$CLIENT_DIR" ]; then
 		echo "The folder $CLIENT_DIR was not found."
 		exit 1
 	fi
+	pip install -e "$CLIENT_DIR"
+	echo "Local immich-client installed."
 }
 
 # --- MAIN ---
