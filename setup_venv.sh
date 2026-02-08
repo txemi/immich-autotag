@@ -231,9 +231,6 @@ install_system_dev_tools() {
 		else
 			echo "[DEV] gh CLI already installed. Skipping."
 		fi
-		else
-			echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
-		fi
 	fi
 }
 
