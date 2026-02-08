@@ -129,6 +129,7 @@ pipeline {
                     sh "git config user.name 'jenkins'"
                     sh "git config user.email 'jenkins@localhost'"
                     sh "git tag ${tagName}"
+                    sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
                     sh "git push origin ${tagName}"
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
@@ -144,6 +145,7 @@ pipeline {
                     sh "git config user.name 'jenkins'"
                     sh "git config user.email 'jenkins@localhost'"
                     sh "git tag ${tagName}"
+                    sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
                     sh "git push origin ${tagName}"
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
