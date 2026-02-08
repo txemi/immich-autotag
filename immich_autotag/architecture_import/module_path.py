@@ -115,39 +115,30 @@ class ModulePath:
     @typechecked
     def from_stack(project_root: Path) -> Optional["ModulePath"]:
         """
-        Returns a CallerInfo for the first non-frozen caller in the stack
+        Returns a CallerInfo for the immediate caller in the stack
         (relative to project_root), or None if the caller is not inside the project.
+        Optimized to use sys._getframe for performance.
         """
-        found_frozen: bool = False
-        stack = inspect.stack()
-
-        for frame in stack:
-            filename: str = frame.filename
-            mp: ModulePath = ModulePath.from_path_string(filename, project_root)
-            return mp
-            if "frozen" in filename:
-                found_frozen = True
-                continue
-            if found_frozen and "frozen" not in filename:
-                try:
-                    rel_path: Path = Path(filename).resolve().relative_to(project_root)
-                    # Convert rel_path to ImmichModulePath (dot notation)
-                    immich_module_path: ModulePath = ModulePath.from_path(rel_path)
-                    return immich_module_path
-                except ValueError:
-                    return None
-        return None
+        import sys
+        # 0 = current frame, 1 = caller
+        caller_frame = sys._getframe(1)
+        filename: str = caller_frame.f_code.co_filename
+        mp: ModulePath = ModulePath.from_path_string(filename, project_root)
+        return mp
 
     @classmethod
     def from_path_string(cls, path_string: str, project_root: Path) -> "ModulePath":
         """
         Construct a ModulePath from a string path, accepting either dot or slash separators.
+        Uses lru_cache for caching.
         """
+        return cls._cached_from_path_string(path_string, str(project_root))
 
-        rel_path = Path(path_string).resolve().relative_to(project_root)
-        # Convert rel_path to ImmichModulePath (dot notation)
-        immich_module_path = ModulePath.from_path(rel_path)
-        return immich_module_path
+    @staticmethod
+    @functools.lru_cache(maxsize=4096)
+    def _cached_from_path_string(path_string: str, project_root_str: str) -> "ModulePath":
+        rel_path = Path(path_string).resolve().relative_to(Path(project_root_str))
+        return ModulePath.from_path(rel_path)
 
     def __repr__(self) -> str:
         return f"ModulePath({self.as_dotstring()})"
