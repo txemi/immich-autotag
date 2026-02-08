@@ -44,6 +44,9 @@ def process_assets_sequential(
     )
     max_assets = StatisticsManager.get_instance().get_max_assets()
     count = 0
+    albums_collection = context.get_albums_collection()
+    # Prepare and cache the asset-to-albums map and cleanup once before the loop
+    albums_collection.prepare_batch_asset_to_albums_map()
     try:
         for asset_wrapper in context.get_asset_manager().iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
@@ -87,7 +90,7 @@ def process_assets_sequential(
                     )
                     continue
                 else:
-                    # Fatal error - re-raise inmediatamente
+                    # Fatal error - re-raise immediately
                     import traceback
 
                     tb = traceback.format_exc()
@@ -118,6 +121,8 @@ def process_assets_sequential(
         )
         raise
     finally:
+        # Clear the cached map after batch processing
+        albums_collection.clear_batch_asset_to_albums_map()
         log(
             f"Asset processing loop finished. Total assets processed: {count}. The asset for-loop has ended (no more assets in the iterator).",
             level=LogLevel.PROGRESS,

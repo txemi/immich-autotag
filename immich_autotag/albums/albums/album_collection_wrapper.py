@@ -97,14 +97,13 @@ class AlbumCollectionWrapper:
         repr=False,
     )
 
-    def _get_duplicate_album_manager(self) -> "DuplicateAlbumManager":
-        if self._duplicate_manager is None:
-            from immich_autotag.albums.albums.duplicates_manager.manager import (
-                DuplicateAlbumManager,
-            )
-
-            self._duplicate_manager = DuplicateAlbumManager(collection=self)
-        return self._duplicate_manager
+    # Cached asset-to-albums map for batch processing
+    _batch_asset_to_albums_map: AssetToAlbumsMap | None = attrs.field(
+        init=False,
+        default=None,
+        repr=False,
+        eq=False,
+    )
 
     def _ensure_fully_loaded(self):
         """
@@ -122,6 +121,34 @@ class AlbumCollectionWrapper:
         self.resync_from_api()
 
         return self
+
+
+
+
+    def prepare_batch_asset_to_albums_map(self):
+        """
+        Precompute and cache the asset-to-albums map for the current batch. Also performs cleanup of empty temporary albums once.
+        """
+        self._ensure_fully_loaded()
+        temp_manager = self._get_temporary_album_manager()
+        temp_manager.cleanup_empty_temporary_albums(self.get_client())
+        asset_map_manager = self._get_asset_map_manager()
+        self._batch_asset_to_albums_map = asset_map_manager.get_map()
+
+    def clear_batch_asset_to_albums_map(self):
+        """
+        Clear the cached asset-to-albums map after batch processing.
+        """
+        self._batch_asset_to_albums_map = None
+
+    def _get_duplicate_album_manager(self) -> "DuplicateAlbumManager":
+        if self._duplicate_manager is None:
+            from immich_autotag.albums.albums.duplicates_manager.manager import (
+                DuplicateAlbumManager,
+            )
+
+            self._duplicate_manager = DuplicateAlbumManager(collection=self)
+        return self._duplicate_manager
 
     def log_lazy_load_timing(self):
         import time
@@ -224,7 +251,6 @@ class AlbumCollectionWrapper:
         """
         all_allbums = self._ensure_fully_loaded()._albums
         return AlbumList([a for a in all_allbums.all() if not a.is_deleted()])
-
     def _get_asset_map_manager(self) -> "AssetMapManager":
         if self._asset_map_manager is None:
             from immich_autotag.albums.albums.asset_map_manager.manager import (
@@ -253,7 +279,6 @@ class AlbumCollectionWrapper:
         self._get_asset_map_manager()._remove_album(album_wrapper)
         self._albums.remove(album_wrapper)
         return True
-
     def _get_temporary_album_manager(self):
         """
         Returns an instance of TemporaryAlbumManager bound to this collection.
@@ -263,7 +288,6 @@ class AlbumCollectionWrapper:
         )
 
         return TemporaryAlbumManager(self)
-
     @typechecked
     def build_asset_map(self) -> AssetToAlbumsMap:
         """Delegates asset map build to AssetMapManager."""
@@ -546,14 +570,15 @@ class AlbumCollectionWrapper:
         Returns the current asset-to-albums map, building it if not already done.
         Defensive: always returns AssetToAlbumsMap, never None.
         """
+        # Use cached map if available (batch mode)
+        if self._batch_asset_to_albums_map is not None:
+            return self._batch_asset_to_albums_map
+        # Fallback to original behavior (non-batch)
         self._ensure_fully_loaded()
-        # Clean up empty temporary albums before returning the map
-
-        asset_map_manager = self._get_asset_map_manager()
-        map = asset_map_manager.get_map()
         temp_manager = self._get_temporary_album_manager()
         temp_manager.cleanup_empty_temporary_albums(self.get_client())
-        return map
+        asset_map_manager = self._get_asset_map_manager()
+        return asset_map_manager.get_map()
 
     @conditional_typechecked
     def albums_for_asset(
