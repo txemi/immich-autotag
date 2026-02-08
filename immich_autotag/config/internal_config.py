@@ -21,7 +21,7 @@ MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best perf
 # Error handling mode (affects debug/trace behavior)
 DEFAULT_ERROR_MODE = ErrorHandlingMode.CRAZY_DEBUG
 # Enable cProfile CPU profiling regardless of error mode
-ENABLE_PROFILING = False  # Set to True to enable cProfile profiling
+ENABLE_PROFILING = True  # Set to True to enable cProfile profiling
 # Enable tracemalloc memory profiling
 ENABLE_MEMORY_PROFILING = False  # Set to False to disable tracemalloc memory profiling
 
@@ -65,4 +65,4 @@ ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS = False  # Default: disabled for safety
 # ==================== FORCED LIMITS FOR CI/DEV ====================
 # If set to an integer, this value will override any user config for max items to process.
 # If set to None, normal config/user value is used.
-FORCE_MAX_ITEMS_TO_PROCESS: int | None = 100_000  # Example: 50
+FORCE_MAX_ITEMS_TO_PROCESS: int | None = 200  # Limitar para pruebas de rendimiento rápidas
