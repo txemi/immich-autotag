@@ -8,7 +8,9 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro --user root'
+            // Monta ~/.ssh del host en el contenedor como solo lectura para acceso a claves privadas y known_hosts
+            // IMPORTANTE: Asegúrate de que $HOME/.ssh existe y contiene la clave y known_hosts necesarios
+            args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
         }
     }
     
