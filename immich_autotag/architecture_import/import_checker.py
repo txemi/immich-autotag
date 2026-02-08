@@ -47,13 +47,13 @@ class ArchitectureImportChecker:
             return None
         from .module_path import ModulePath
 
-        ci = ModulePath.from_stack(PROJECT_ROOT=PROJECT_ROOT)
-        if ci is None:
+        caller_module_path = ModulePath.from_stack(project_root=PROJECT_ROOT)
+        if caller_module_path is None:
             raise RuntimeError(
-                "ArchitectureImportChecker: Could not determine caller module path (ci is None). Defensive fail-fast."
+                "ArchitectureImportChecker: Could not determine caller module path (caller_module_path is None). Defensive fail-fast."
             )
-        # if False and ci.is_outside_project():
+        # if False and caller_module_path.is_outside_project():
         #    return None
-        imported_module = ModulePath.from_dotstring(fullname)
-        evaluate_import_rules(imported_module, ci)
+        imported_module_path = ModulePath.from_dotstring(fullname)
+        evaluate_import_rules(imported_module_path, caller_module_path)
         return None

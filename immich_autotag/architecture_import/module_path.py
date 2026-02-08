@@ -115,38 +115,38 @@ class ModulePath:
 
     @staticmethod
     @typechecked
-    def from_stack(PROJECT_ROOT) -> Optional["ModulePath"]:
+    def from_stack(project_root: Path) -> Optional["ModulePath"]:
         """
         Returns a CallerInfo for the first non-frozen caller in the stack
-        (relative to PROJECT_ROOT), or None if the caller is not inside the project.
+        (relative to project_root), or None if the caller is not inside the project.
         """
         found_frozen: bool = False
         stack = inspect.stack()
 
         for frame in stack:
-            filename = frame.filename
-            mp = ModulePath.from_path_string(filename, PROJECT_ROOT)
+            filename: str = frame.filename
+            mp: ModulePath = ModulePath.from_path_string(filename, project_root)
             return mp
             if "frozen" in filename:
                 found_frozen = True
                 continue
             if found_frozen and "frozen" not in filename:
                 try:
-                    rel_path = Path(filename).resolve().relative_to(PROJECT_ROOT)
+                    rel_path: Path = Path(filename).resolve().relative_to(project_root)
                     # Convert rel_path to ImmichModulePath (dot notation)
-                    immich_module_path = ModulePath.from_path(rel_path)
+                    immich_module_path: ModulePath = ModulePath.from_path(rel_path)
                     return immich_module_path
                 except ValueError:
                     return None
         return None
 
     @classmethod
-    def from_path_string(cls, path_string: str, PROJECT_ROOT: Path) -> "ModulePath":
+    def from_path_string(cls, path_string: str, project_root: Path) -> "ModulePath":
         """
         Construct a ModulePath from a string path, accepting either dot or slash separators.
         """
 
-        rel_path = Path(path_string).resolve().relative_to(PROJECT_ROOT)
+        rel_path = Path(path_string).resolve().relative_to(project_root)
         # Convert rel_path to ImmichModulePath (dot notation)
         immich_module_path = ModulePath.from_path(rel_path)
         return immich_module_path
