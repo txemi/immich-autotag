@@ -1,3 +1,4 @@
+
 #!/bin/bash
 # Robust script to create virtual environment, install dependencies, and generate/install the local client
 # Automatically detects Immich server version and downloads the matching OpenAPI spec
@@ -157,86 +158,117 @@ install_python_requirements() {
 		echo "requirements.txt not found."
 	fi
 }
+# Instala Node.js y npm si no están presentes (para jscpd/quality gate)
+install_nodejs_npm() {
+	if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+		if command -v apt-get >/dev/null 2>&1; then
+			echo "[DEV] Installing Node.js and npm (for jscpd/quality gate)..."
+			if command -v sudo >/dev/null 2>&1; then
+				sudo apt-get update && sudo apt-get install -y nodejs npm
+			elif [ "$(id -u)" -eq 0 ]; then
+				apt-get update && apt-get install -y nodejs npm
+			else
+				echo "ERROR: Neither sudo is available nor running as root. Cannot install nodejs/npm." >&2
+				exit 1
+			fi
+			if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+				echo "ERROR: Node.js/npm installation failed. Please install them manually." >&2
+				exit 1
+			fi
+		else
+			echo "[DEV] Skipping Node.js/npm installation: apt-get not found. Install nodejs and npm manually if needed."
+		fi
+	else
+		echo "[DEV] Node.js and npm already installed. Skipping."
+	fi
+}
 
+# Instala shfmt si no está presente
+install_shfmt() {
+	if command -v shfmt >/dev/null 2>&1; then
+		echo "[DEV] shfmt already installed. Skipping system tools installation."
+	else
+		if command -v apt-get >/dev/null 2>&1; then
+			echo "[DEV] Installing system development tools (shfmt, etc.)..."
+			if command -v sudo >/dev/null 2>&1; then
+				sudo apt-get update && sudo apt-get install -y shfmt
+			elif [ "$(id -u)" -eq 0 ]; then
+				apt-get update && apt-get install -y shfmt
+			else
+				echo "ERROR: Neither sudo is available nor running as root. Cannot install shfmt." >&2
+				exit 1
+			fi
+			if ! command -v shfmt >/dev/null 2>&1; then
+				echo "ERROR: shfmt installation failed. Please install it manually." >&2
+				exit 1
+			fi
+		else
+			echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
+		fi
+	fi
+}
+
+# Instala gh CLI si no está presente
+install_gh_cli() {
+	if ! command -v gh >/dev/null 2>&1; then
+		if command -v apt-get >/dev/null 2>&1; then
+			echo "[DEV] Installing GitHub CLI (gh)..."
+			# Ensure curl is installed before any usage
+			if ! command -v curl >/dev/null 2>&1; then
+				if command -v sudo >/dev/null 2>&1; then
+					sudo apt-get update && sudo apt-get install -y curl
+				elif [ "$(id -u)" -eq 0 ]; then
+					apt-get update && apt-get install -y curl
+				else
+					echo "ERROR: Neither sudo is available nor running as root. Cannot install curl." >&2
+					exit 1
+				fi
+			fi
+			# Add GitHub CLI repo if not present
+			if ! apt-cache policy | grep -q 'cli.github.com'; then
+				if command -v sudo >/dev/null 2>&1; then
+					curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+					sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+					echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+					sudo apt-get update
+					sudo apt-get install -y gh
+				elif [ "$(id -u)" -eq 0 ]; then
+					curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+					chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+					echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
+					apt-get update
+					apt-get install -y gh
+				else
+					echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
+					exit 1
+				fi
+			else
+				if command -v sudo >/dev/null 2>&1; then
+					sudo apt-get update && sudo apt-get install -y gh
+				elif [ "$(id -u)" -eq 0 ]; then
+					apt-get update && apt-get install -y gh
+				else
+					echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
+					exit 1
+				fi
+			fi
+			if ! command -v gh >/dev/null 2>&1; then
+				echo "ERROR: gh CLI installation failed. Please install it manually." >&2
+				exit 1
+			fi
+		else
+			echo "[DEV] Skipping gh CLI installation: apt-get not found. Install gh manually if needed."
+		fi
+	else
+		echo "[DEV] gh CLI already installed. Skipping."
+	fi
+}
 # Install system development tools (dev mode only)
 install_system_dev_tools() {
 	if [ "$MODE" = "dev" ]; then
-		# Solo Ubuntu/Debian
-		if command -v shfmt >/dev/null 2>&1; then
-			echo "[DEV] shfmt already installed. Skipping system tools installation."
-		else
-			if command -v apt-get >/dev/null 2>&1; then
-				echo "[DEV] Installing system development tools (shfmt, etc.)..."
-				if command -v sudo >/dev/null 2>&1; then
-					sudo apt-get update && sudo apt-get install -y shfmt
-				elif [ "$(id -u)" -eq 0 ]; then
-					apt-get update && apt-get install -y shfmt
-				else
-					echo "ERROR: Neither sudo is available nor running as root. Cannot install shfmt." >&2
-					exit 1
-				fi
-				if ! command -v shfmt >/dev/null 2>&1; then
-					echo "ERROR: shfmt installation failed. Please install it manually." >&2
-					exit 1
-				fi
-			else
-				echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
-			fi
-		fi
-
-		# Install gh CLI if not present
-		if ! command -v gh >/dev/null 2>&1; then
-			if command -v apt-get >/dev/null 2>&1; then
-				echo "[DEV] Installing GitHub CLI (gh)..."
-				# Ensure curl is installed before any usage
-				if ! command -v curl >/dev/null 2>&1; then
-					if command -v sudo >/dev/null 2>&1; then
-						sudo apt-get update && sudo apt-get install -y curl
-					elif [ "$(id -u)" -eq 0 ]; then
-						apt-get update && apt-get install -y curl
-					else
-						echo "ERROR: Neither sudo is available nor running as root. Cannot install curl." >&2
-						exit 1
-					fi
-				fi
-				# Add GitHub CLI repo if not present
-				if ! apt-cache policy | grep -q 'cli.github.com'; then
-					if command -v sudo >/dev/null 2>&1; then
-						curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-						sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-						echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-						sudo apt-get update
-						sudo apt-get install -y gh
-					elif [ "$(id -u)" -eq 0 ]; then
-						curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-						chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-						echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
-						apt-get update
-						apt-get install -y gh
-					else
-						echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
-						exit 1
-					fi
-				else
-					if command -v sudo >/dev/null 2>&1; then
-						sudo apt-get update && sudo apt-get install -y gh
-					elif [ "$(id -u)" -eq 0 ]; then
-						apt-get update && apt-get install -y gh
-					else
-						echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
-						exit 1
-					fi
-				fi
-				if ! command -v gh >/dev/null 2>&1; then
-					echo "ERROR: gh CLI installation failed. Please install it manually." >&2
-					exit 1
-				fi
-			else
-				echo "[DEV] Skipping gh CLI installation: apt-get not found. Install gh manually if needed."
-			fi
-		else
-			echo "[DEV] gh CLI already installed. Skipping."
-		fi
+		install_nodejs_npm
+		install_shfmt
+		install_gh_cli
 	fi
 }
 
