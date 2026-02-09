@@ -102,11 +102,6 @@ def process_single_asset(
 
     log_debug(f"[BUG] START process_single_asset {asset_id}")
 
-    log(
-        f"[DEBUG] [process_single_asset] START asset_id={asset_id}",
-        level=LogLevel.ASSET_SUMMARY,
-    )
-
     asset_url = asset_wrapper.get_immich_photo_url().geturl()
     asset_name = asset_wrapper.get_original_file_name() or "[no name]"
     log(
@@ -149,6 +144,6 @@ def process_single_asset(
     StatisticsManager.get_instance().process_asset_tags(asset_wrapper.get_tag_names())
     log(
         f"[DEBUG] [process_single_asset] END asset_id={asset_wrapper.get_uuid()}",
-        level=LogLevel.ASSET_SUMMARY,
+        level=LogLevel.FOCUS,
     )
     return None
