@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 @typechecked
 def handle_classified_asset(
     asset_wrapper: "AssetResponseWrapper", tag_mod_report: "ModificationReport"
-) -> AlbumAssignmentResult:
+) -> "AlbumAssignmentResultInfo":
     """
     Cleans up temporary albums and updates tags for a classified asset.
     """
@@ -32,18 +32,22 @@ def handle_classified_asset(
         .get_albums_collection()
         .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
-    result=remove_asset_from_autotag_temporary_albums(
+    result = remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
         temporary_albums=all_albums,
         tag_mod_report=tag_mod_report,
     )
-
     # Remove 'unknown' tag if present and update classification tags
-    asset_wrapper.validate_and_update_classification()
+    r2: ClassificationValidationResult = (
+        asset_wrapper.validate_and_update_classification()
+    )
 
     log(
         f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.get_original_file_name()}' classified. "
         f"Temporary album cleanup and tags updated.",
         level=LogLevel.FOCUS,
     )
-    return AlbumAssignmentResult.CLASSIFIED
+
+    from ._handle_unclassified_asset import AlbumAssignmentResultInfo
+
+    return AlbumAssignmentResultInfo(AlbumAssignmentResult.CLASSIFIED, result)

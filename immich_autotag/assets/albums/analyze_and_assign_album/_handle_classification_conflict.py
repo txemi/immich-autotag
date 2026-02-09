@@ -8,6 +8,7 @@ from typeguard import typechecked
 
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_kind import ModificationKind
 
 from .album_assignment_result import AlbumAssignmentResult
@@ -37,7 +38,7 @@ def handle_classification_conflict(
         .get_albums_collection()
         .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
-    result=remove_asset_from_autotag_temporary_albums(
+    result = remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
         temporary_albums=all_albums,
         tag_mod_report=tag_mod_report,
@@ -54,7 +55,7 @@ def handle_classification_conflict(
         level=LogLevel.ERROR,
     )
 
-    tag_mod_report.add_modification(
+    result2: ModificationEntry=tag_mod_report.add_modification(
         kind=ModificationKind.CLASSIFICATION_CONFLICT,
         asset_wrapper=asset_wrapper,
         extra={

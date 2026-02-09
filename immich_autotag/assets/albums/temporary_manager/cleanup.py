@@ -11,7 +11,9 @@ Uses centralized temporary album pattern from temporary_albums module to ensure
 consistency between creation and removal operations.
 """
 
+
 from typing import TYPE_CHECKING
+from immich_autotag.report.modification_entry import ModificationEntry
 
 from typeguard import typechecked
 
@@ -55,12 +57,12 @@ def remove_asset_from_autotag_temporary_albums(
 
         try:
             # Remove asset from album
-            result: ModificationEntry | None=album_wrapper.remove_asset(
+            result: ModificationEntry | None = album_wrapper.remove_asset(
                 asset_wrapper=asset_wrapper,
                 client=client,
                 tag_mod_report=tag_mod_report,
             )
-            removed_albums_result.append((album_wrapper,result))
+            removed_albums_result.append((album_wrapper, result))
 
             log(
                 f"Asset {asset_wrapper.get_id()} removed from temporary album "
