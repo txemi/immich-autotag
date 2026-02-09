@@ -744,7 +744,9 @@ class AlbumResponseWrapper:
         """
         current_name = self.get_album_name()
         if new_name == current_name:
-            raise ValueError(f"Attempted to rename album '{self.get_album_uuid()}' to the same name '{new_name}'. Operation is not allowed.")
+            raise ValueError(
+                f"Attempted to rename album '{self.get_album_uuid()}' to the same name '{new_name}'. Operation is not allowed."
+            )
 
         from immich_client.models.update_album_dto import UpdateAlbumDto
 

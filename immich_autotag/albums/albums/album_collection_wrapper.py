@@ -836,11 +836,11 @@ class AlbumCollectionWrapper:
     @typechecked
     def resync_from_api(self, clear_first: bool = True) -> None:
         """
-        Reloads the album collection from the API, same as from_client but on the current instance.
+        Reloads the album collection from the API, same as _from_client but on the current instance.
         - Downloads all albums from the API (initially without assets).
         - If clear_first is True (default), clears and rebuilds the local collection.
         - If clear_first is False, merges new albums with existing ones (without deleting current ones).
-        - Handles duplicates and logging same as from_client.
+        - Handles duplicates and logging same as _from_client.
         """
         from immich_autotag.api.immich_proxy.albums.get_all_albums import (
             proxy_get_all_albums,
@@ -869,7 +869,7 @@ class AlbumCollectionWrapper:
         if clear_first:
             # Clear the current collection
             self._clear()
-        # Rebuild the collection same as from_client
+        # Rebuild the collection same as _from_client
         for idx, album in enumerate(albums, 1):
             album_wrapper = self._get_or_create_partial_album_wrapper(album)
             # If clear_first, just add; if not, only add if it does not exist
@@ -906,16 +906,6 @@ class AlbumCollectionWrapper:
     @typechecked
     def is_duplicated(self, wrapper: "AlbumResponseWrapper") -> bool:
         return self._get_duplicate_album_manager().is_duplicated(wrapper)
-
-    @classmethod
-    def from_client(cls) -> "AlbumCollectionWrapper":
-        """
-        Instantiates the singleton and loads albums from the API using the default client.
-        Returns the singleton instance.
-        """
-        instance = cls()
-        instance.resync_from_api()
-        return instance
 
     def __len__(self) -> int:
         """

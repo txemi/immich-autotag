@@ -34,22 +34,30 @@ def run_main_inner_logic():
             "[MAINTENANCE] Album cleanup rescue mode enabled. Running rescue operation..."
         )
         run_album_cleanup_rescue()
-        print("[MAINTENANCE] Rescue operation completed. Checking for duplicate album names...")
+        print(
+            "[MAINTENANCE] Rescue operation completed. Checking for duplicate album names..."
+        )
         return
     # Check for duplicate album names after rescue
-    from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
-    from immich_autotag.albums.albums.duplicates_manager.rename_strategy.find_duplicate_names import find_duplicate_album_names
+    from immich_autotag.albums.albums.album_collection_wrapper import (
+        AlbumCollectionWrapper,
+    )
+    from immich_autotag.albums.albums.duplicates_manager.rename_strategy.find_duplicate_names import (
+        find_duplicate_album_names,
+    )
+
     collection = AlbumCollectionWrapper.get_instance()
     duplicates = find_duplicate_album_names(collection)
     if duplicates:
-        raise RuntimeError(f"Duplicate album names still exist after rescue: {duplicates}")
+        raise RuntimeError(
+            f"Duplicate album names still exist after rescue: {duplicates}"
+        )
     print("[MAINTENANCE] No duplicate album names found. Asset processing is skipped.")
-        
 
     delete_unhealthy_temp_albums(context)
     raise NotImplementedError(
         "Maintenance mode is not enabled. Please set ENABLE_ALBUM_CLEANUP_RESCUE to True in internal_config.py to run the album cleanup rescue operation."
-    )    
+    )
     # TODO: Maintenance cleanup disabled during stability testing - causes performance issues
     maintenance_cleanup_labels(client)
     # Apply conversions to all assets before loading tags

@@ -44,7 +44,7 @@ class ImmichContext:
                 AlbumCollectionWrapper,
             )
 
-            self._albums_collection = AlbumCollectionWrapper.from_client()
+            self._albums_collection = AlbumCollectionWrapper.get_instance()
         return self._albums_collection
 
     def get_tag_collection(self) -> "TagCollectionWrapper":

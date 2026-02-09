@@ -6,10 +6,15 @@ Activation is controlled by a config flag. When enabled, only this process runs.
 """
 
 import re
-from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
-from immich_autotag.albums.albums.duplicates_manager.rename_strategy.constants import RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX
 
-RENAMED_PATTERN = re.compile(rf"({re.escape(RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX)})+")
+from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.albums.duplicates_manager.rename_strategy.constants import (
+    RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX,
+)
+
+RENAMED_PATTERN = re.compile(
+    rf"({re.escape(RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX)})+"
+)
 
 
 def _restore_original_name(name: str) -> str:

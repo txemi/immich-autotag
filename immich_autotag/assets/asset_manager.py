@@ -16,6 +16,8 @@ from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.context.immich_context import ImmichContext
+# Singleton instance storage
+_asset_manager_singleton: AssetManager | None = None
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -29,11 +31,25 @@ class AssetManager:
     )
 
     def __attrs_post_init__(self):
+        global _asset_manager_singleton
+        if _asset_manager_singleton is not None:
+            raise RuntimeError(
+                "AssetManager singleton violation: a second instance was created. "
+                "Use AssetManager.get_instance() to access the singleton."
+            )
+        _asset_manager_singleton = self
         self._keep_assets_in_memory = KEEP_ASSETS_IN_MEMORY
         if self._keep_assets_in_memory:
             self._assets = {}
         else:
             self._assets = None
+
+    @classmethod
+    def get_instance(cls) -> "AssetManager":
+        global _asset_manager_singleton
+        if _asset_manager_singleton is None:
+            _asset_manager_singleton = cls()
+        return _asset_manager_singleton
 
     @typechecked
     def iter_assets(
