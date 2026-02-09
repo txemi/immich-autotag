@@ -16,14 +16,9 @@ from immich_autotag.entrypoints.profiling_utils import (  # noqa: E402
 )
 
 
-def run_main_inner() -> None:
-
-    run_main_inner_logic()
-
-
 def run_main():
     """
     Wrapper that runs run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
     """
     setup_profiling_and_memory()
-    run_main_inner()
+    run_main_inner_logic()
