@@ -505,9 +505,11 @@ class AlbumCollectionWrapper:
                     f"Review the logs and investigate the cause."
                 )
         if old_tested_mode:
-            # Merge all duplicates into one
+            # Merge all duplicates into one, including the new album_wrapper
+            found_albums = list(self.find_all_albums_with_name(album_name))
+            combined_albums = found_albums + [album_wrapper]
             surviving_album = self._combine_duplicate_albums(
-                list(self.find_all_albums_with_name(album_name)),
+                combined_albums,
                 context="duplicate_on_create",
             )
             albums_after = list(self.find_all_albums_with_name(album_name))

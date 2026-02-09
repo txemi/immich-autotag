@@ -42,6 +42,13 @@ class DuplicateAlbumManager:
 
         name_existing = existing_album.get_album_name()
         name_incoming = incoming_album.get_album_name()
+
+        # If both albums have the same UUID, return the best one using get_best_cache_entry
+        if existing_album.get_album_uuid() == incoming_album.get_album_uuid():
+            # Use the get_best_cache_entry method to select the best
+            best = existing_album.get_best_cache_entry(incoming_album)
+            return best
+
         if name_existing != name_incoming:
             raise ValueError(
                 f"Integrity check failed in handle_duplicate_album_conflict: "
@@ -152,7 +159,10 @@ class DuplicateAlbumManager:
             raise ValueError(
                 f"No albums provided to combine_duplicate_albums (context: {context})"
             )
-        for album in albums:
+        # Only enforce the is_duplicate_album check if all albums are already in the collection (len == 1)
+        # If merging a new album with existing, skip this strict check
+        if len(albums) < 2:
+            album = albums[0]
             if not album.is_duplicate_album():
                 raise RuntimeError(
                     f"Refusing to combine album '{album.get_album_name()}' "
