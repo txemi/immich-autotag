@@ -35,7 +35,8 @@ def cleanup_album_names(album_collection: AlbumCollectionWrapper):
     # Iterate over all non-deleted albums
     for album in album_collection.get_albums():
         original_name = _restore_original_name(album.get_album_name())
-        if original_name != album.get_album_name():
+        current_name = album.get_album_name()
+        if original_name and original_name != current_name:
             album_wrapper: AlbumResponseWrapper = album
             album_wrapper.rename_album(original_name, client, tag_mod_report)
 

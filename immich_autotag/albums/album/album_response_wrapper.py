@@ -742,6 +742,10 @@ class AlbumResponseWrapper:
             client: The ImmichClient instance for API calls.
             tag_mod_report: The ModificationReport for logging changes.
         """
+        current_name = self.get_album_name()
+        if new_name == current_name:
+            raise ValueError(f"Attempted to rename album '{self.get_album_uuid()}' to the same name '{new_name}'. Operation is not allowed.")
+
         from immich_client.models.update_album_dto import UpdateAlbumDto
 
         from immich_autotag.api.immich_proxy.albums.update_album_info import (
@@ -764,7 +768,7 @@ class AlbumResponseWrapper:
         tag_mod_report.add_album_modification(
             kind=ModificationKind.RENAME_ALBUM,
             album=self,
-            old_value=self.get_album_name(),
+            old_value=current_name,
             new_value=new_name,
         )
         log(

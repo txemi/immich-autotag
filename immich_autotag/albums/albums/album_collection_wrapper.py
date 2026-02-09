@@ -479,6 +479,20 @@ class AlbumCollectionWrapper:
         during runtime album creation.
         """
         albums_list = self._albums  # Access the internal dual map
+        album_id = album_wrapper.get_album_uuid()
+        # First, check for existing by ID
+        try:
+            existing_by_id = albums_list.get_by_id(album_id)
+        except Exception:
+            existing_by_id = None
+        if existing_by_id is not None:
+            # Compare and keep the best
+            best = existing_by_id.get_best_cache_entry(album_wrapper)
+            if best is not existing_by_id:
+                albums_list.remove(existing_by_id)
+                albums_list.add(best)
+            return best
+
         album_name = album_wrapper.get_album_name()
         existing_album = self.find_first_album_with_name(album_name)
         if existing_album is None:
