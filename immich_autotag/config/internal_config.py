@@ -61,6 +61,9 @@ APPLY_CONVERSIONS_AT_START = False  # Set to False to disable mass processing at
 # ==================== MAINTENANCE: DELETE CONFLICT TAGS ====================
 # If False, disables the maintenance_delete_conflict_tags function (prevents accidental mass deletion)
 ENABLE_MAINTENANCE_DELETE_CONFLICT_TAGS = False  # Default: disabled for safety
+# ==================== MAINTENANCE: ALBUM CLEANUP RESCUE ====================
+# If True, enables the one-time album cleanup rescue operation (disables asset processing)
+ENABLE_ALBUM_CLEANUP_RESCUE = False  # Default: disabled for safety
 
 # ==================== FORCED LIMITS FOR CI/DEV ====================
 # If set to an integer, this value will override any user config for max items to process.

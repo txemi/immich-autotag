@@ -1,0 +1,5 @@
+# Common constants for rename strategy
+
+RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX = (
+    "__RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM"
+)

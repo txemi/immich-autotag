@@ -23,7 +23,19 @@ def run_main_inner_logic():
     from immich_autotag.albums.maintenance_tasks.delete_unhealthy_temp_albums import (
         delete_unhealthy_temp_albums,
     )
+    from immich_autotag.config.internal_config import ENABLE_ALBUM_CLEANUP_RESCUE
 
+    if ENABLE_ALBUM_CLEANUP_RESCUE:
+        from immich_autotag.albums.albums.duplicates_manager.rename_strategy.cleanup_rescue import (
+            run_album_cleanup_rescue,
+        )
+
+        print(
+            "[MAINTENANCE] Album cleanup rescue mode enabled. Running rescue operation..."
+        )
+        run_album_cleanup_rescue()
+        print("[MAINTENANCE] Rescue operation completed. Asset processing is skipped.")
+        return
     delete_unhealthy_temp_albums(context)
     # TODO: Maintenance cleanup disabled during stability testing - causes performance issues
     maintenance_cleanup_labels(client)
