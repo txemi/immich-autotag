@@ -78,7 +78,7 @@ class ModificationReport:
         _instance = self
 
     def _get_report_path(self) -> Path:
-        return self.run_execution.get_modification_report_path()
+        return self._run_execution.get_modification_report_path()
 
     @staticmethod
     def get_instance() -> "ModificationReport":
