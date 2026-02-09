@@ -25,7 +25,7 @@ class AlbumDualMap:
         album_id = album.get_album_uuid()
         try:
             self._id_map.append(album)
-        except ValueError as e:
+        except ValueError:
             # Check if it's a duplicate UUID
             existing = self._id_map.get_by_uuid(album_id)
             if existing is not None and existing.get_album_uuid() == album_id:
@@ -35,7 +35,6 @@ class AlbumDualMap:
                 # Use get_best_cache_entry to select the best
                 best = existing.get_best_cache_entry(album)
                 # Remove using the original name of the existing album
-                original_name = existing.get_album_name()
                 self._id_map.remove(existing)
                 self._name_map.remove_by_name_or_id(existing)
                 self._id_map.append(best)

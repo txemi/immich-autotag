@@ -8,7 +8,6 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumNameMap:
-
     """
     Efficient mapping from album name (str) to AlbumResponseWrapper.
     Uses attrs for validation and robustness.
@@ -53,13 +52,6 @@ class AlbumNameMap:
         return self._name_to_album.values()
 
     @typechecked
-    def __contains__(self, name: str) -> bool:
-        return name in self._name_to_album
-
-    @typechecked
-    def __len__(self):
-        return len(self._name_to_album)
-    @typechecked
     def remove_by_name(self, name: str):
         if name not in self._name_to_album:
             raise RuntimeError(
@@ -83,3 +75,11 @@ class AlbumNameMap:
         raise RuntimeError(
             f"Cannot remove: album with name '{name}' and uuid '{album_uuid}' does not exist in AlbumNameMap."
         )
+
+    @typechecked
+    def __contains__(self, name: str) -> bool:
+        return name in self._name_to_album
+
+    @typechecked
+    def __len__(self):
+        return len(self._name_to_album)

@@ -518,7 +518,6 @@ class AlbumCollectionWrapper:
                     f"Surviving album after combining duplicates with name '{album_name}' "
                     "is not present in the collection. This indicates a data integrity issue."
                 )
-            from immich_autotag.config.dev_mode import is_crazy_debug_mode
 
             #
             # Duplicates created by the user (not temporary, not system-generated) are not supported by design.
@@ -526,9 +525,9 @@ class AlbumCollectionWrapper:
             # For now, the safest approach is to raise an exception and fail fast, so the problem is visible and can be fixed manually.
             # The 'crazy_debug_mode' is a development/testing switch, but this strict behavior is likely to remain permanent unless a clear, robust merge policy is defined for user duplicates.
             # Any attempt to "survive" user duplicates with ad-hoc logic is fragile and discouraged.
-
             from immich_autotag.logging.levels import LogLevel
             from immich_autotag.logging.utils import log
+
             log(
                 f"[WARNING] Album duplicate detected: An album with the name '{album_name}' already exists, and this duplicate was created by the user (not a temporary/system album).\n"
                 "This situation cannot be resolved automatically by the application, as merging or deleting user-created albums could result in data loss or unexpected behavior.\n"
