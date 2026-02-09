@@ -117,62 +117,59 @@ def process_single_asset(
     # Execute each phase and store results in the typed report
     from immich_autotag.assets.process.asset_process_report import AssetProcessReport
 
-    # Initialize variables before conditional to avoid UnboundLocalError
-    tag_conversion_result = ModificationEntriesList()
-    date_correction_result = None
-    duplicate_tag_analysis_result = None
-    album_assignment_result = None
-    tag_mod_report = None
 
-    tag_conversion_result = _apply_tag_conversions(asset_wrapper)
-    date_correction_result = _correct_date_if_enabled(asset_wrapper)
-    duplicate_tag_analysis_result = _analyze_duplicate_tags(asset_wrapper)
+    result_01_tag_conversion = _apply_tag_conversions(asset_wrapper)
+    result_02_date_correction = _correct_date_if_enabled(asset_wrapper)
+    result_03_duplicate_tag_analysis = _analyze_duplicate_tags(asset_wrapper)
     tag_mod_report = ModificationReport.get_instance()
-    album_assignment_result = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
-    validation_result: ClassificationValidationResult = (
+    result_04_album_assignment = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
+    result_05_validation: ClassificationValidationResult = (
         asset_wrapper.validate_and_update_classification()
     )
 
+
     log(
-        f"[RESERVED] tag_conversion_result: {tag_conversion_result}",
+        f"[RESERVED] 01_tag_conversion: {result_01_tag_conversion}",
         level=LogLevel.ASSET_SUMMARY,
     )
     log(
-        f"[RESERVED] date_correction_result: {date_correction_result}",
+        f"[RESERVED] 02_date_correction: {result_02_date_correction}",
         level=LogLevel.ASSET_SUMMARY,
     )
     log(
-        f"[RESERVED] duplicate_tag_analysis_result: {duplicate_tag_analysis_result}",
+        f"[RESERVED] 03_duplicate_tag_analysis: {result_03_duplicate_tag_analysis}",
         level=LogLevel.ASSET_SUMMARY,
     )
     log(
-        f"[RESERVED] album_assignment_result: {album_assignment_result.format()}",
+        f"[RESERVED] 04_album_assignment: {result_04_album_assignment.format()}",
         level=LogLevel.ASSET_SUMMARY,
     )
 
     log(
-        f"[RESERVED] validate_result: {validation_result}", level=LogLevel.ASSET_SUMMARY
+        f"[RESERVED] 05_validation: {result_05_validation}", level=LogLevel.ASSET_SUMMARY
     )
 
     tag_mod_report = ModificationReport.get_instance()
 
-    album_date_consistency_result = check_album_date_consistency(
+
+    result_06_album_date_consistency = check_album_date_consistency(
         asset_wrapper, tag_mod_report
     )
     log(
-        f"[RESERVED] album_date_consistency_result: "
-        f"{album_date_consistency_result.format()}",
+        f"[RESERVED] 06_album_date_consistency: "
+        f"{result_06_album_date_consistency.format()}",
         level=LogLevel.ASSET_SUMMARY,
     )
 
     # Create report and add results in execution order
+
     report = AssetProcessReport(asset_wrapper=asset_wrapper)
-    report.add_result(tag_conversion_result)
-    report.add_result(date_correction_result)
-    report.add_result(duplicate_tag_analysis_result)
-    report.add_result(album_date_consistency_result)
-    report.add_result(album_assignment_result)
-    report.add_result(validation_result)
+    report.add_result(result_01_tag_conversion)
+    report.add_result(result_02_date_correction)
+    report.add_result(result_03_duplicate_tag_analysis)
+    report.add_result(result_06_album_date_consistency)
+    report.add_result(result_04_album_assignment)
+    report.add_result(result_05_validation)
 
     log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 

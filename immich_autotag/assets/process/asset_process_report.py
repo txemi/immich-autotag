@@ -138,9 +138,9 @@ class AssetProcessReport(ProcessStepResult):
         # Add individual results for detailed info (symmetric iteration by execution order)
         if self._process_step_results:
             lines.append(f"  Processing steps ({len(self._process_step_results)}):")
-            for result in self._process_step_results:
+            for idx, result in enumerate(self._process_step_results, 1):
                 title = result.get_title()
-                lines.append(f"    • {title}: {result.format()}")
+                lines.append(f"    {idx:02d}. {title}: {result.format()}")
 
         return "\n".join(lines)
 
