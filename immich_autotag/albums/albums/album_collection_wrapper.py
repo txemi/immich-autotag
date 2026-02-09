@@ -526,13 +526,17 @@ class AlbumCollectionWrapper:
             # For now, the safest approach is to raise an exception and fail fast, so the problem is visible and can be fixed manually.
             # The 'crazy_debug_mode' is a development/testing switch, but this strict behavior is likely to remain permanent unless a clear, robust merge policy is defined for user duplicates.
             # Any attempt to "survive" user duplicates with ad-hoc logic is fragile and discouraged.
-            if is_crazy_debug_mode():
-                raise RuntimeError(
-                    f"Album duplicate detected: An album with the name '{album_name}' already exists, and this duplicate was created by the user (not a temporary/system album).\n"
-                    "This situation cannot be resolved automatically by the application, as merging or deleting user-created albums could result in data loss or unexpected behavior.\n"
-                    "Please review your albums in the Immich app or web interface, and manually rename or remove the duplicate(s) to ensure each album name is unique.\n"
-                    "If you are a developer, see the code and comments in AlbumCollectionWrapper for more details about this design decision."
-                )
+
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+            log(
+                f"[WARNING] Album duplicate detected: An album with the name '{album_name}' already exists, and this duplicate was created by the user (not a temporary/system album).\n"
+                "This situation cannot be resolved automatically by the application, as merging or deleting user-created albums could result in data loss or unexpected behavior.\n"
+                "Please review your albums in the Immich app or web interface, y manually rename or remove the duplicate(s) to ensure each album name is unique.\n"
+                "If you are a developer, see the code and comments in AlbumCollectionWrapper for more details about this design decision.",
+                level=LogLevel.WARNING,
+            )
+            # Continue execution: rename and add as below
 
             new_name = f"{album_wrapper.get_album_name()}__RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM"
             album_wrapper.rename_album(new_name, client, tag_mod_report)

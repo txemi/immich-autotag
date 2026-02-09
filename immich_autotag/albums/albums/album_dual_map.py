@@ -22,7 +22,27 @@ class AlbumDualMap:
 
     @typechecked
     def add(self, album: AlbumResponseWrapper):
-        self._id_map.append(album)
+        album_id = album.get_album_uuid()
+        try:
+            self._id_map.append(album)
+        except ValueError as e:
+            # Check if it's a duplicate UUID
+            existing = self._id_map.get_by_uuid(album_id)
+            if existing is not None and existing.get_album_uuid() == album_id:
+                # If it's the same object, treat as no-op
+                if existing is album:
+                    return
+                # Use get_best_cache_entry to select the best
+                best = existing.get_best_cache_entry(album)
+                # Remove using the original name of the existing album
+                original_name = existing.get_album_name()
+                self._id_map.remove(existing)
+                self._name_map.remove_by_name_or_id(existing)
+                self._id_map.append(best)
+                self._name_map.add(best)
+                return
+            else:
+                raise
         self._name_map.add(album)
 
     @typechecked

@@ -181,6 +181,11 @@ class AlbumDtoState:
             return True
         elif self._load_source == AlbumLoadSource.SEARCH:
             return False
+        elif self._load_source == AlbumLoadSource.UPDATE:
+            from immich_client.types import UNSET, Unset
+            if self._dto.assets is UNSET or self._dto.assets is Unset:
+                raise RuntimeError("UPDATE load source must have assets field set.")
+            return True
         else:
             raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
 
