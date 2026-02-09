@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import attrs
 from typeguard import typechecked
 
 from immich_autotag.logging.levels import LogLevel
@@ -13,17 +13,22 @@ from immich_autotag.report.modification_entry import ModificationEntry
 
 from .album_assignment_result import AlbumAssignmentResult
 
-
-@dataclass
-class AlbumAssignmentResultInfo:
-    result: AlbumAssignmentResult
-    entry: ModificationEntry | None
-
-
 if TYPE_CHECKING:
     from immich_autotag.assets.albums.album_decision import AlbumDecision
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.report.modification_report import ModificationReport
+
+
+@attrs.define(auto_attribs=True, slots=True)
+class AlbumAssignmentResultInfo:
+    result: AlbumAssignmentResult = attrs.field(
+        validator=attrs.validators.instance_of(AlbumAssignmentResult)
+    )
+    entry: ModificationEntry | None = attrs.field(
+        validator=attrs.validators.optional(
+            attrs.validators.instance_of(ModificationEntry)
+        )
+    )
 
 
 @typechecked

@@ -8,7 +8,10 @@ import attrs
 
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 
-from ._analyze_and_assign_album import analyze_and_assign_album
+from ._analyze_and_assign_album import (
+    AlbumAssignmentResultInfo,
+    analyze_and_assign_album,
+)
 from .album_assignment_result import AlbumAssignmentResult
 
 if TYPE_CHECKING:
@@ -42,7 +45,17 @@ class AlbumAssignmentReport(ProcessStepResult):
     """
 
     _asset_wrapper: "AssetResponseWrapper" = attrs.field(repr=False)
-    _result: AlbumAssignmentResult = attrs.field(init=False, default=None, repr=True)
+    _result: AlbumAssignmentResultInfo = attrs.field(
+        init=False, default=None, repr=True
+    )
+
+    def __attrs_post_init__(self):
+        if self._result is not None and not isinstance(
+            self._result, AlbumAssignmentResultInfo
+        ):
+            raise TypeError(
+                f"_result must be AlbumAssignmentResultInfo, got {type(self._result)}"
+            )
 
     def has_changes(self) -> bool:
         return self._result in (

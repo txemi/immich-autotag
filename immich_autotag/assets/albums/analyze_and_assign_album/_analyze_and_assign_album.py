@@ -44,19 +44,17 @@ def analyze_and_assign_album(
     match_results = rule_set.matching_rules(asset_wrapper)
     status = match_results.classification_status()
 
-    # 3. Handle based on status
-    if status == ClassificationStatus.CLASSIFIED:
-        return handle_classified_asset(asset_wrapper, tag_mod_report)
-
-    if status == ClassificationStatus.CONFLICT:
-        return handle_classification_conflict(
-            asset_wrapper, tag_mod_report, match_results
-        )
-
-    if status == ClassificationStatus.UNCLASSIFIED:
-        return handle_unclassified_asset(asset_wrapper, tag_mod_report, album_decision)
-
-    # Exhaustive pattern match - should never reach here
-    raise NotImplementedError(
-        f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
-    )
+    # 3. Handle based on status using match-case for exhaustiveness
+    match status:
+        case ClassificationStatus.CLASSIFIED:
+            return handle_classified_asset(asset_wrapper, tag_mod_report)
+        case ClassificationStatus.CONFLICT:
+            return handle_classification_conflict(
+                asset_wrapper, tag_mod_report, match_results
+            )
+        case ClassificationStatus.UNCLASSIFIED:
+            return handle_unclassified_asset(asset_wrapper, tag_mod_report, album_decision)
+        case _:
+            raise NotImplementedError(
+                f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
+            )

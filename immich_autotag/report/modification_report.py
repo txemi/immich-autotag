@@ -249,7 +249,7 @@ class ModificationReport:
         new_value: Optional[str] = None,
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
-    ) -> None:
+    ) -> ModificationEntry:
         """
         Registers a modification related to an album (e.g., rename, create).
         """

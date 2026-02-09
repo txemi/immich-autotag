@@ -24,6 +24,7 @@ from immich_autotag.api.immich_proxy.albums.add_users_to_album import (
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
+from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_kind import ModificationKind
 
 if TYPE_CHECKING:
@@ -134,7 +135,7 @@ def logging_add_user_to_album(
     user: "UserResponseWrapper",
     access_level: AlbumUserRole,
     context: ImmichContext,
-) -> None:
+) -> ModificationEntry:
     """
     Add a single user to album with automatic event logging.
 
@@ -163,7 +164,7 @@ def logging_add_user_to_album(
     from immich_autotag.report.modification_report import ModificationReport
 
     report = ModificationReport.get_instance()
-    report.add_album_modification(
+    return report.add_album_modification(
         kind=ModificationKind.ADD_USER_TO_ALBUM,
         album=album,
         extra={"added_user": str(user.get_uuid())},
