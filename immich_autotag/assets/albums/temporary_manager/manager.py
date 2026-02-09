@@ -30,10 +30,7 @@ class TemporaryAlbumManager:
         tracker = PerformanceTracker.from_args(total_assets=len(albums), max_assets=len(albums), skip_n=0)
         for idx, album_wrapper in enumerate(albums, 1):
             if tracker.should_log_progress(idx):
-                try:
-                    album_url = album_wrapper.get_immich_album_url().geturl()
-                except Exception:
-                    album_url = "<no-url>"
+                album_url = album_wrapper.get_immich_album_url().geturl()
                 progress_msg = tracker.get_progress_description(idx)
                 log(
                     f"[TEMP-ALBUM-CHECK] {progress_msg} | Album: '{album_wrapper.get_album_name()}' | URL: {album_url}",
