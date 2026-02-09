@@ -43,14 +43,14 @@ class ModificationReport:
         default=attrs.Factory(threading.Lock), init=False, repr=False
     )
 
-    run_execution: RunExecution = attrs.field(
+    _run_execution: RunExecution = attrs.field(
         factory=lambda: RunOutputManager.current().get_run_output_dir(),
         validator=attrs.validators.instance_of(RunExecution),
     )
-    batch_size: int = attrs.field(
+    _batch_size: int = attrs.field(
         default=1, validator=attrs.validators.instance_of(int)
     )
-    modifications: list[ModificationEntry] = attrs.field(  # type: ignore
+    _modifications: list[ModificationEntry] = attrs.field(  # type: ignore
         factory=list, init=False
     )
     _since_last_flush: int = attrs.field(
@@ -91,6 +91,9 @@ class ModificationReport:
             _instance = ModificationReport()
         # No explicit assignment needed for F824
         return _instance  # type: ignore[return-value]
+
+    def get_modifications(self) -> list[ModificationEntry]:
+        return self._modifications
 
     # todo: tag is being passed as string in several functions, consider using wrapper
     # todo: asset_wrapper is being passed as Any in several functions, type correctly
@@ -159,7 +162,7 @@ class ModificationReport:
             extra=extra,
             progress=progress_str,
         )
-        self.modifications.append(entry)
+        self._modifications.append(entry)
         # Centralized statistics update for tag actions (now encapsulated in StatisticsManager)
         if tag is not None:
             from immich_autotag.statistics.statistics_manager import StatisticsManager
@@ -168,7 +171,7 @@ class ModificationReport:
                 tag=tag, kind=kind, album=album
             )
         self._since_last_flush += 1
-        if self._since_last_flush >= self.batch_size:
+        if self._since_last_flush >= self._batch_size:
             self.flush()
         return entry
 
@@ -411,7 +414,7 @@ class ModificationReport:
     @typechecked
     def flush(self) -> None:
         """Flushes the report to file (append), thread-safe."""
-        if not self.modifications or self._since_last_flush == 0:
+        if not self._modifications or self._since_last_flush == 0:
             return
         import os
 
@@ -419,7 +422,7 @@ class ModificationReport:
             report_path = self._get_report_path()
             os.makedirs(os.path.dirname(report_path), exist_ok=True)
             with open(report_path, "a", encoding="utf-8") as f:
-                for entry in self.modifications[-self._since_last_flush :]:
+                for entry in self._modifications[-self._since_last_flush :]:
                     f.write(self._format_modification_entry(entry) + "\n")
             self._since_last_flush = 0
 
@@ -429,9 +432,9 @@ class ModificationReport:
         from immich_autotag.logging.utils import log
 
         log("[SUMMARY] Modifications:", level=LogLevel.INFO)
-        for entry in self.modifications:
+        for entry in self._modifications:
             log(self._format_modification_entry(entry), level=LogLevel.INFO)
-        log(f"Total modifications: {len(self.modifications)}", level=LogLevel.INFO)
+        log(f"Total modifications: {len(self._modifications)}", level=LogLevel.INFO)
 
     @typechecked
     def _build_link(
@@ -475,3 +478,12 @@ class ModificationReport:
             # The album URL must be obtainable; do not swallow exceptions here.
             return album_wrapper.get_immich_album_url()
         return None
+
+    def get_modification_details_for_log(self) -> list[str]:
+        """
+        Returns a list of log strings for each modification, formatted for summary output.
+        """
+        return [
+            f"  • {entry.to_serializable().to_log_string()}"
+            for entry in self.get_modifications()
+        ]

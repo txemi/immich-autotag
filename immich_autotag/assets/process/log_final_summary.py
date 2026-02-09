@@ -20,7 +20,7 @@ def log_final_summary() -> None:
 
     # Get modification statistics
     tag_mod_report = ModificationReport.get_instance()
-    total_modifications = len(tag_mod_report.modifications)
+    total_modifications = len(tag_mod_report.get_modifications())
 
     # Build the complete report as a single string
     report_lines = [
