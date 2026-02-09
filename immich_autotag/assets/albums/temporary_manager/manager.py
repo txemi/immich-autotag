@@ -25,7 +25,20 @@ class TemporaryAlbumManager:
         Returns an AlbumList of empty temporary albums to be removed after building the map.
         """
         albums_to_remove = AlbumList()
-        for album_wrapper in self._album_collection.get_albums():
+        albums = self._album_collection.get_albums()
+        from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
+        tracker = PerformanceTracker.from_args(total_assets=len(albums), max_assets=len(albums), skip_n=0)
+        for idx, album_wrapper in enumerate(albums, 1):
+            if tracker.should_log_progress(idx):
+                try:
+                    album_url = album_wrapper.get_immich_album_url().geturl()
+                except Exception:
+                    album_url = "<no-url>"
+                progress_msg = tracker.get_progress_description(idx)
+                log(
+                    f"[TEMP-ALBUM-CHECK] {progress_msg} | Album: '{album_wrapper.get_album_name()}' | URL: {album_url}",
+                    level=LogLevel.PROGRESS,
+                )
             if album_wrapper.is_empty() and is_temporary_album(
                 album_wrapper.get_album_name()
             ):

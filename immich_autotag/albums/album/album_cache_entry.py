@@ -137,16 +137,17 @@ class AlbumCacheEntry:
         """
         album_id = self._dto.get_album_id()
         # Check global cache (now keyed by AlbumUUID)
+
+        if self._dto.is_full():
+            _album_cache_global[album_id] = self
+            return self
+        # Reload the DTO using the new DTO returned by _from_cache_or_api
         cached_entry = _album_cache_global.get(album_id)
         if cached_entry is not None and cached_entry._dto.is_full():
             raise RedundantAlbumCacheAccessError(
                 f"Redundant access to album cache for album_id={album_id}. "
                 f"This indicates a possible design issue in higher-level logic."
-            )
-        if self._dto.is_full():
-            _album_cache_global[album_id] = self
-            return self
-        # Reload the DTO using the new DTO returned by _from_cache_or_api
+            )        
         new_dto: AlbumDtoState = self._from_cache_or_api(album_id=album_id)
         self._dto.update(
             dto=new_dto.get_dto(),
