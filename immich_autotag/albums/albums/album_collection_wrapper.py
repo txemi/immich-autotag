@@ -884,9 +884,10 @@ class AlbumCollectionWrapper:
                 # Log progress and estimated time
                 if tracker.should_log_progress(idx):
                     progress_msg = tracker.get_progress_description(idx)
+                    album_url = album_wrapper.get_immich_album_url().geturl()
                     log(
-                        f"[ALBUM-LOAD][API-BULK] {progress_msg} | Album: '{album_wrapper.get_album_name()}' processed after bulk fetch with {len(albums)} assets.",
-                        level=LogLevel.INFO,
+                        f"[ALBUM-LOAD][API-BULK] {progress_msg} | Album: '{album_wrapper.get_album_name()}' | URL: {album_url} processed after bulk fetch with {len(albums)} assets.",
+                        level=LogLevel.PROGRESS,
                     )
 
         tag_mod_report.flush()

@@ -55,11 +55,9 @@ def run_main_inner_logic():
     print("[MAINTENANCE] No duplicate album names found. Asset processing is skipped.")
 
     delete_unhealthy_temp_albums(context)
-    raise NotImplementedError(
-        "Maintenance mode is not enabled. Please set ENABLE_ALBUM_CLEANUP_RESCUE to True in internal_config.py to run the album cleanup rescue operation."
-    )
     # TODO: Maintenance cleanup disabled during stability testing - causes performance issues
     maintenance_cleanup_labels(client)
+
     # Apply conversions to all assets before loading tags
     from immich_autotag.config.internal_config import APPLY_CONVERSIONS_AT_START
     from immich_autotag.entrypoint.collections import (
@@ -69,7 +67,10 @@ def run_main_inner_logic():
     if APPLY_CONVERSIONS_AT_START:
         apply_conversions_to_all_assets_early(context)
     albums_collection = context.get_albums_collection()
+
+
     force_full_album_loading(albums_collection)
+
     process_permissions(manager, context)
     process_assets_or_filtered(manager, context)
     finalize(manager, client)

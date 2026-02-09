@@ -68,7 +68,7 @@ def proxy_get_album_info(
         album_name = dto.album_name
         log(
             f"[PROGRESS] Album loaded: {album_id} | Title: {album_name}",
-            LogLevel.FOCUS,
+            LogLevel.PROGRESS,
         )
         cache_mgr.save(cache_key, dto.to_dict())
     return dto
