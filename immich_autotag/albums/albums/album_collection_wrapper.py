@@ -537,8 +537,8 @@ class AlbumCollectionWrapper:
             )
             # Continue execution: rename and add as below
 
-            new_name = f"{album_wrapper.get_album_name()}__RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM"
-            album_wrapper.rename_album(new_name, client, tag_mod_report)
+            from immich_autotag.albums.albums.duplicates_manager.rename_strategy.rename_duplicate_album import rename_duplicate_album
+            rename_duplicate_album(album_wrapper, client, tag_mod_report)
 
             albums_list.add(album_wrapper)
             return album_wrapper
