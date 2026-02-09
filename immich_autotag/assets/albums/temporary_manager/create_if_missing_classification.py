@@ -10,6 +10,7 @@ from immich_autotag.assets.albums.temporary_manager.naming import (
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_report import ModificationReport
 
 
@@ -24,7 +25,7 @@ def _extract_album_date(asset_wrapper: AssetResponseWrapper) -> Optional[str]:
 def create_album_if_missing_classification(
     asset_wrapper: AssetResponseWrapper,
     tag_mod_report: ModificationReport,
-) -> Optional[str]:
+) -> ModificationEntry | None:
     """
     Creates and assigns a temporary album for assets with no classification album.
 
@@ -100,10 +101,9 @@ def create_album_if_missing_classification(
         process_album_detection,
     )
 
-    process_album_detection(
+    return process_album_detection(
         asset_wrapper=asset_wrapper,
         tag_mod_report=tag_mod_report,
         detected_album=album_name,
         album_origin="auto-created",
     )
-    return album_name

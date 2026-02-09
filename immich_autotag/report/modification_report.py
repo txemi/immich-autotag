@@ -275,7 +275,7 @@ class ModificationReport:
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind)
-        self.add_modification(
+        return self.add_modification(
             kind=kind,
             asset_wrapper=None,
             album=album,

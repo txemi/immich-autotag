@@ -488,6 +488,23 @@ class AlbumResponseWrapper:
             client=client,
             asset_ids=[asset_wrapper.get_id()],
         )
+        if result is None:
+            raise RuntimeError(
+                f"Failed to remove asset {asset_wrapper.get_id()} from album {self.get_album_uuid()}: API returned None"
+            )
+        if len(result) != 1:
+            raise RuntimeError(
+                f"Failed to remove asset {asset_wrapper.get_id()} from album {self.get_album_uuid()}: API returned empty result list"
+            )
+        result1: BulkIdResponseDto = result[0]
+        if result1.error:
+            raise RuntimeError(
+                f"Failed to remove asset {asset_wrapper.get_id()} from album {self.get_album_uuid()}: API error: {result1.error}"
+            )
+        if not result1.success:
+            raise RuntimeError(
+                f"Failed to remove asset {asset_wrapper.get_id()} from album {self.get_album_uuid()}: API returned success=False"
+            )
         return result
 
     @typechecked
@@ -516,16 +533,15 @@ class AlbumResponseWrapper:
         self,
         asset_wrapper: "AssetResponseWrapper",
         tag_mod_report: "ModificationReport",
-    ) -> None:
+    ) -> ModificationEntry:
         """Records the asset removal in the modification report."""
-        if tag_mod_report:
-            from immich_autotag.report.modification_kind import ModificationKind
+        from immich_autotag.report.modification_kind import ModificationKind
 
-            tag_mod_report.add_assignment_modification(
-                kind=ModificationKind.REMOVE_ASSET_FROM_ALBUM,
-                asset_wrapper=asset_wrapper,
-                album=self,
-            )
+        return tag_mod_report.add_assignment_modification(
+            kind=ModificationKind.REMOVE_ASSET_FROM_ALBUM,
+            asset_wrapper=asset_wrapper,
+            album=self,
+        )
 
     def _handle_album_not_found_during_removal(
         self, error_msg: str | None, asset_url: str, album_url: str
@@ -570,7 +586,7 @@ class AlbumResponseWrapper:
         item: BulkIdResponseDto,
         asset_wrapper: "AssetResponseWrapper",
         tag_mod_report: "ModificationReport",
-    ) -> None:
+    ) -> ModificationEntry:
         """Handles non-success results from removal API."""
         from immich_client.types import UNSET
 
@@ -604,7 +620,7 @@ class AlbumResponseWrapper:
                     album=self,
                     extra={"error": error_msg},
                 )
-                return
+                return tag_mod_report
 
         # Otherwise, treat as fatal
         raise RuntimeError(
@@ -654,7 +670,7 @@ class AlbumResponseWrapper:
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
         tag_mod_report: "ModificationReport",
-    ) -> None:
+    ) -> ModificationEntry | None:
         """
         Removes the asset from the album using the API and validates the result.
 
@@ -663,7 +679,7 @@ class AlbumResponseWrapper:
         """
         # 1. Validation
         if not self._validate_before_remove(asset_wrapper):
-            return
+            return None
 
         # 2. Execution
         result = self._execute_remove_asset_api(asset_wrapper, client)
@@ -672,10 +688,13 @@ class AlbumResponseWrapper:
         item = self._find_asset_result_in_response(result, asset_wrapper.get_id())
         if item:
             if not item.success:
-                self._handle_remove_asset_error(item, asset_wrapper, tag_mod_report)
+                report_entry = self._handle_remove_asset_error(
+                    item, asset_wrapper, tag_mod_report
+                )
+                return report_entry
         else:
             self._handle_missing_remove_response(asset_wrapper)
-            return
+            return None
 
         # 4. Success Log
         log(
@@ -687,12 +706,15 @@ class AlbumResponseWrapper:
         )
 
         # 5. Reporting
-        self._report_removal_to_modification_report(asset_wrapper, tag_mod_report)
+        report_entry: ModificationEntry = self._report_removal_to_modification_report(
+            asset_wrapper, tag_mod_report
+        )
 
         # 6. Consistency Verification
         self._verify_asset_removed_from_album_with_retry(
             asset_wrapper, client, max_retries=3
         )
+        return report_entry
 
     @conditional_typechecked
     def trim_name_if_needed(
@@ -734,7 +756,7 @@ class AlbumResponseWrapper:
     @typechecked
     def rename_album(
         self, new_name: str, client: ImmichClient, tag_mod_report: "ModificationReport"
-    ) -> None:
+    ) -> "ModificationEntry | None":
         """
         Renames the album using the API and updates the cache entry and modification report.
         Args:
@@ -767,7 +789,7 @@ class AlbumResponseWrapper:
         self._cache_entry._dto.update(
             dto=updated_dto, load_source=AlbumLoadSource.UPDATE
         )
-        tag_mod_report.add_album_modification(
+        report_entry = tag_mod_report.add_album_modification(
             kind=ModificationKind.RENAME_ALBUM,
             album=self,
             old_value=current_name,
@@ -777,6 +799,7 @@ class AlbumResponseWrapper:
             f"Album '{self.get_album_uuid()}' renamed to '{new_name}'",
             level=LogLevel.FOCUS,
         )
+        return report_entry
 
     def get_best_cache_entry(
         self, other: "AlbumResponseWrapper"

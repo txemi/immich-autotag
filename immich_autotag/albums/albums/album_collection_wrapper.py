@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from immich_autotag.report.modification_entry import ModificationEntry
+
 if TYPE_CHECKING:
     from immich_autotag.albums.albums.asset_map_manager.manager import AssetMapManager
 
@@ -361,7 +363,7 @@ class AlbumCollectionWrapper:
         tag_mod_report: ModificationReport,
         reason: str = "Album deleted",
         remove_from_map: bool = True,
-    ) -> bool:
+    ) -> ModificationEntry:
         """
         Deletes an album on the server and records the action, whether temporary or not.
         Returns True if deleted successfully or if it no longer exists.
@@ -438,13 +440,13 @@ class AlbumCollectionWrapper:
         from immich_autotag.report.modification_kind import ModificationKind
 
         # On success, err_reason is not set, so use a default
-        tag_mod_report.add_album_modification(
+        report_entry: ModificationEntry = tag_mod_report.add_album_modification(
             kind=ModificationKind.DELETE_ALBUM,
             album=wrapper,
             old_value=wrapper.get_album_name(),
             extra={"reason": f"{reason} (SUCCESS)"},
         )
-        return True
+        return report_entry
 
     def remove_album_local_public(self, album_wrapper: AlbumResponseWrapper) -> bool:
         """
@@ -469,7 +471,7 @@ class AlbumCollectionWrapper:
         client: ImmichClient,
         tag_mod_report: ModificationReport,
         old_tested_mode: bool = True,
-    ) -> AlbumResponseWrapper | None:
+    ) -> (AlbumResponseWrapper | None, "ModificationEntry | None"):
         """Central helper: attempt to append an album wrapper to the albums list with duplicate handling.
 
         If a duplicate name exists and it's a temporary album,
@@ -502,7 +504,7 @@ class AlbumCollectionWrapper:
         # There is already an album with this name: treat as duplicate
         if is_temporary_album(album_name):
             # Delete the temporary duplicate
-            self.delete_album(
+            report_entry: ModificationEntry = self.delete_album(
                 wrapper=album_wrapper,
                 client=client,
                 tag_mod_report=tag_mod_report,
@@ -511,7 +513,7 @@ class AlbumCollectionWrapper:
             )
             albums_after = list(self.find_all_albums_with_name(album_name))
             if len(albums_after) == 1:
-                return albums_after[0]
+                return albums_after[0], report_entry
             else:
                 raise RuntimeError(
                     f"Duplicate albums with name '{album_name}' were found and attempted to delete, "
@@ -555,10 +557,10 @@ class AlbumCollectionWrapper:
                 rename_duplicate_album,
             )
 
-            rename_duplicate_album(album_wrapper, client, tag_mod_report)
+            report_entry = rename_duplicate_album(album_wrapper, client, tag_mod_report)
 
             albums_list.add(album_wrapper)
-            return album_wrapper
+            return album_wrapper, report_entry
 
         else:
             # Non-temporary duplicate: log and skip

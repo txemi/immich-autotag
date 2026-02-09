@@ -143,8 +143,15 @@ class AssetProcessReport(ProcessStepResult):
                 lines.append(f"    {idx:02d}. {title}: {result.format()}")
 
         # Add a final summary line about modifications (in English)
-        if self.has_changes():
-            lines.append("[SUMMARY] Modifications occurred in at least one step.")
+        changed_steps = [
+            result.get_title()
+            for result in self._process_step_results
+            if result.has_changes()
+        ]
+        if changed_steps:
+            lines.append(
+                f"[SUMMARY] Modifications occurred in: {', '.join(changed_steps)}."
+            )
         else:
             lines.append("[SUMMARY] No modifications occurred in any step.")
         return "\n".join(lines)

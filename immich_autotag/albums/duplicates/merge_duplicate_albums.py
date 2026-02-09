@@ -37,7 +37,7 @@ def merge_duplicate_albums(
         )
 
     # Move assets from duplicate to target
-    move_assets_between_albums(
+    result: MoveAssetsResult = move_assets_between_albums(
         collection=collection,
         dest=target_album,
         src=duplicate_album,

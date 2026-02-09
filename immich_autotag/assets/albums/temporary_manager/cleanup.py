@@ -30,7 +30,7 @@ def remove_asset_from_autotag_temporary_albums(
     asset_wrapper: "AssetResponseWrapper",
     temporary_albums: list["AlbumResponseWrapper"],
     tag_mod_report: ModificationReport,
-) -> list[str]:
+) -> list[tuple["AlbumResponseWrapper", "ModificationEntry | None"]]:
     """
     Removes an asset from all temporary autotag albums (albums matching pattern: autotag-temp-unclassified).
 
@@ -41,8 +41,7 @@ def remove_asset_from_autotag_temporary_albums(
     when assets get classified and no longer need temporary albums.
 
     """
-    removed_album_names: list[str] = []
-
+    removed_albums_result: list = []
     for album_wrapper in temporary_albums:
         # Check if album name matches temporary album pattern
         if not is_temporary_album(album_wrapper.get_album_name()):
@@ -56,12 +55,12 @@ def remove_asset_from_autotag_temporary_albums(
 
         try:
             # Remove asset from album
-            album_wrapper.remove_asset(
+            result: ModificationEntry | None=album_wrapper.remove_asset(
                 asset_wrapper=asset_wrapper,
                 client=client,
                 tag_mod_report=tag_mod_report,
             )
-            removed_album_names.append(album_wrapper.get_album_name())
+            removed_albums_result.append((album_wrapper,result))
 
             log(
                 f"Asset {asset_wrapper.get_id()} removed from temporary album "
@@ -82,10 +81,10 @@ def remove_asset_from_autotag_temporary_albums(
             # Continue processing other albums even if one fails
             continue
 
-    if removed_album_names:
+    if removed_albums_result:
         log(
             f"Asset {asset_wrapper.get_id()} cleaned up from {len(removed_album_names)} temporary album(s): {removed_album_names}",
             level=LogLevel.FOCUS,
         )
 
-    return removed_album_names
+    return removed_albums_result

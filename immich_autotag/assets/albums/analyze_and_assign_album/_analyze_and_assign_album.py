@@ -14,8 +14,10 @@ from immich_autotag.classification.classification_status import ClassificationSt
 from ._handle_classification_conflict import handle_classification_conflict
 from ._handle_classified_asset import handle_classified_asset
 from ._handle_duplicate_conflicts import handle_duplicate_conflicts
-from ._handle_unclassified_asset import handle_unclassified_asset
-from .album_assignment_result import AlbumAssignmentResult
+from ._handle_unclassified_asset import (
+    AlbumAssignmentResultInfo,
+    handle_unclassified_asset,
+)
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -26,7 +28,7 @@ if TYPE_CHECKING:
 def analyze_and_assign_album(
     asset_wrapper: "AssetResponseWrapper",
     tag_mod_report: "ModificationReport",
-) -> AlbumAssignmentResult:
+) -> AlbumAssignmentResultInfo:
     """
     Handles all logic related to analyzing potential albums for an asset, deciding assignment, and handling conflicts.
     """

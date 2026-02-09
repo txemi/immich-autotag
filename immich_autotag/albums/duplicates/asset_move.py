@@ -10,11 +10,13 @@ DEVELOPMENT).
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
 
@@ -24,6 +26,13 @@ if TYPE_CHECKING:
     )
 
 
+# Result class for move_assets_between_albums
+@dataclass
+class MoveAssetsResult:
+    moved_count: int
+    report_entries: list
+
+
 @typechecked
 def move_assets_between_albums(
     collection: "AlbumCollectionWrapper",
@@ -31,7 +40,7 @@ def move_assets_between_albums(
     src: AlbumResponseWrapper,
     client: ImmichClient,
     tag_mod_report: Optional[ModificationReport] = None,
-) -> int:
+) -> MoveAssetsResult:
     """Move assets from `src` album into `dest` album one-by-one.
 
     Returns the number of assets successfully moved.
@@ -51,7 +60,7 @@ def move_assets_between_albums(
 
     ctx = ImmichContext.get_default_instance()
     asset_wrappers = src.wrapped_assets(ctx)
-
+    report_entries = []
     for asset_wrapper in asset_wrappers:
         # Add to destination album using wrapper logic (handles duplicates)
         try:
@@ -75,7 +84,12 @@ def move_assets_between_albums(
 
         # Remove from source album using wrapper logic
         try:
-            src.remove_asset(asset_wrapper, client, tag_mod_report)
+            report_entry: ModificationEntry | None = src.remove_asset(
+                asset_wrapper, client, tag_mod_report
+            )
+            if report_entry is not None:
+                report_entries.append(report_entry)
+
         except Exception as e:
             if is_development_mode():
                 raise
@@ -87,4 +101,4 @@ def move_assets_between_albums(
 
         moved_count += 1
 
-    return moved_count
+    return MoveAssetsResult(moved_count=moved_count, report_entries=report_entries)
