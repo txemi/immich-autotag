@@ -544,7 +544,7 @@ class AlbumCollectionWrapper:
             # NOTE: I am not at all convinced that this logic actually solves anything meaningful.
             # Honestly, I don't know what to think about this case, so this branch is effectively deactivated.
             # The proliferation of duplicate-handling logic throughout the codebase is a mess, and I don't yet have a clear or robust solution.
-            # For now, let's do the sensible thing: keep things simple, fail fast on user duplicates, and hope to simplify this code over time as we better understand the real-world scenarios.
+            # For now, let's do the sensible thing, fail fast on user duplicates, and hope to simplify this code over time as we better understand the real-world scenarios.
             self._get_duplicate_album_manager().handle_non_temporary_duplicate(
                 existing=existing_album,
                 incoming_album=album_wrapper,
@@ -689,39 +689,46 @@ class AlbumCollectionWrapper:
         return album
 
     @typechecked
-    def _get_or_create_album_cache_entry_from_dto(
-        self, dto: AlbumResponseDto
-    ) -> AlbumCacheEntry:
+    def _get_or_create_partial_album_wrapper(
+        self, partial_dto: AlbumResponseDto
+    ) -> AlbumResponseWrapper:
+        """
+        Returns an AlbumResponseWrapper for a partial AlbumResponseDto (SEARCH mode).
+        Ensures singleton and cache logic are respected. The DTO is always treated as partial (SEARCH).
+        """
         from immich_autotag.albums.album.album_dto_state import (
             AlbumDtoState,
             AlbumLoadSource,
         )
         from immich_autotag.types.uuid_wrappers import AlbumUUID
 
-        album_id = dto.id
+        album_id = partial_dto.id
         album_uuid = AlbumUUID(album_id)
-        # Try to reuse AlbumCacheEntry from internal cache (assume _albums is the dual map)
-        cache_entry = self._albums.get_by_id(album_uuid)
-        if cache_entry is not None:
-            return cache_entry._cache_entry
-        # If not found, create new cache entry
-        state = AlbumDtoState.create(dto=dto, load_source=AlbumLoadSource.SEARCH)
+        try:
+            cache_entry_wrapper = self._albums.get_by_id(album_uuid)
+        except RuntimeError:
+            cache_entry_wrapper = None
+        if cache_entry_wrapper is not None:
+            existing_wrapper = cache_entry_wrapper
+            new_state = AlbumDtoState.create(
+                dto=partial_dto, load_source=AlbumLoadSource.SEARCH
+            )
+            new_entry = AlbumCacheEntry.create(dto=new_state)
+            best_wrapper = existing_wrapper.get_best_cache_entry(
+                AlbumResponseWrapper(new_entry)
+            )
+            if best_wrapper is not existing_wrapper:
+                self._albums.remove(existing_wrapper)
+                self._albums.add(best_wrapper)
+                return best_wrapper
+            return existing_wrapper
+        state = AlbumDtoState.create(
+            dto=partial_dto, load_source=AlbumLoadSource.SEARCH
+        )
         cache_entry_obj = AlbumCacheEntry.create(dto=state)
-        # Wrap and add to collection
         wrapper = AlbumResponseWrapper(cache_entry_obj)
         self._albums.add(wrapper)
-        return cache_entry_obj
-
-    @typechecked
-    def _album_wrapper_from_partial_dto(
-        self, dto: AlbumResponseDto
-    ) -> AlbumResponseWrapper:
-        """
-        Centralized method to create or retrieve an AlbumResponseWrapper from a partial AlbumResponseDto.
-        Ensures singleton and cache logic are respected.
-        """
-        cache_entry = self._get_or_create_album_cache_entry_from_dto(dto)
-        return AlbumResponseWrapper(cache_entry)
+        return wrapper
 
     @conditional_typechecked
     def create_or_get_album_with_user(
@@ -759,7 +766,7 @@ class AlbumCollectionWrapper:
             )
         user_wrapper: UserResponseWrapper = user_wrapper_opt
 
-        album_wrapper = self._album_wrapper_from_partial_dto(album)
+        album_wrapper = self._get_or_create_partial_album_wrapper(album)
         tag_mod_report.add_album_modification(
             kind=ModificationKind.CREATE_ALBUM,
             album=album_wrapper,
@@ -842,7 +849,7 @@ class AlbumCollectionWrapper:
             self._clear()
         # Rebuild the collection same as from_client
         for idx, album in enumerate(albums, 1):
-            album_wrapper = self._album_wrapper_from_partial_dto(album)
+            album_wrapper = self._get_or_create_partial_album_wrapper(album)
             # If clear_first, just add; if not, only add if it does not exist
             if clear_first or not self.find_first_album_with_name(
                 album_wrapper.get_album_name()

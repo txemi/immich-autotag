@@ -772,6 +772,16 @@ class AlbumResponseWrapper:
             level=LogLevel.FOCUS,
         )
 
+    def get_best_cache_entry(
+        self, other: "AlbumResponseWrapper"
+    ) -> "AlbumResponseWrapper":
+        """
+        Decide which AlbumResponseWrapper is preferred for merging/updating.
+        Delegates to AlbumCacheEntry.get_best_cache_entry.
+        """
+        best_entry = self._cache_entry.get_best_cache_entry(other._cache_entry)
+        return self if best_entry is self._cache_entry else other
+
     def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         """Equality based on album id when possible.
 

@@ -226,3 +226,34 @@ class AlbumCacheEntry:
     def _set_max_age_seconds(self, value: int) -> None:
         """Private setter for _max_age_seconds to support single-argument construction pattern."""
         self._max_age_seconds = value
+
+    def get_best_cache_entry(self, other: "AlbumCacheEntry") -> "AlbumCacheEntry":
+        """
+        Decide which AlbumCacheEntry is preferred for merging/updating.
+        Prefer DETAIL/full over SEARCH/partial. If both are DETAIL, prefer the freshest (loaded_at).
+        If both are SEARCH, prefer the freshest (loaded_at).
+        Raise NotImplementedError for other cases.
+        """
+        self_state = self._dto
+        other_state = other._dto
+        if self_state.is_full() and not other_state.is_full():
+            return self
+        if other_state.is_full() and not self_state.is_full():
+            return other
+        # Both are full, prefer freshest
+        if self_state.is_full() and other_state.is_full():
+            return (
+                self
+                if self_state.get_loaded_at() >= other_state.get_loaded_at()
+                else other
+            )
+        # Both are partial, prefer freshest
+        if not self_state.is_full() and not other_state.is_full():
+            return (
+                self
+                if self_state.get_loaded_at() >= other_state.get_loaded_at()
+                else other
+            )
+        raise NotImplementedError(
+            f"get_best_cache_entry decision logic not implemented yet.\nSelf: {repr(self)}\nOther: {repr(other)}"
+        )
