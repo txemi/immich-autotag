@@ -791,12 +791,12 @@ class AlbumCollectionWrapper:
         user_wrapper: UserResponseWrapper = user_wrapper_opt
 
         album_wrapper = self._get_or_create_partial_album_wrapper(album)
+        # don above:          self._add_album_wrapper(album_wrapper)
         tag_mod_report.add_album_modification(
             kind=ModificationKind.CREATE_ALBUM,
             album=album_wrapper,
             extra={"created": True},
         )
-        self._add_album_wrapper(album_wrapper)
         # Assign user as EDITOR if not already owner
         if album_wrapper.get_owner_uuid() != user_wrapper.get_uuid():
             from immich_autotag.context.immich_context import ImmichContext

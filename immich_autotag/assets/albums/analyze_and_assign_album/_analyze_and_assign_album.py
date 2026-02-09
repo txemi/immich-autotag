@@ -53,7 +53,9 @@ def analyze_and_assign_album(
                 asset_wrapper, tag_mod_report, match_results
             )
         case ClassificationStatus.UNCLASSIFIED:
-            return handle_unclassified_asset(asset_wrapper, tag_mod_report, album_decision)
+            return handle_unclassified_asset(
+                asset_wrapper, tag_mod_report, album_decision
+            )
         case _:
             raise NotImplementedError(
                 f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
