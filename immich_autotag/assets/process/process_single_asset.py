@@ -117,59 +117,31 @@ def process_single_asset(
     # Execute each phase and store results in the typed report
     from immich_autotag.assets.process.asset_process_report import AssetProcessReport
 
-
+    report = AssetProcessReport(asset_wrapper=asset_wrapper)
     result_01_tag_conversion = _apply_tag_conversions(asset_wrapper)
+
+    report.add_result(result_01_tag_conversion)
     result_02_date_correction = _correct_date_if_enabled(asset_wrapper)
+
+    report.add_result(result_02_date_correction)
     result_03_duplicate_tag_analysis = _analyze_duplicate_tags(asset_wrapper)
+
+    report.add_result(result_03_duplicate_tag_analysis)
     tag_mod_report = ModificationReport.get_instance()
-    result_04_album_assignment = _analyze_and_assign_album(asset_wrapper, tag_mod_report)
+    result_04_album_assignment = _analyze_and_assign_album(
+        asset_wrapper, tag_mod_report
+    )
+    report.add_result(result_04_album_assignment)
+
     result_05_validation: ClassificationValidationResult = (
         asset_wrapper.validate_and_update_classification()
     )
-
-
-    log(
-        f"[RESERVED] 01_tag_conversion: {result_01_tag_conversion}",
-        level=LogLevel.ASSET_SUMMARY,
-    )
-    log(
-        f"[RESERVED] 02_date_correction: {result_02_date_correction}",
-        level=LogLevel.ASSET_SUMMARY,
-    )
-    log(
-        f"[RESERVED] 03_duplicate_tag_analysis: {result_03_duplicate_tag_analysis}",
-        level=LogLevel.ASSET_SUMMARY,
-    )
-    log(
-        f"[RESERVED] 04_album_assignment: {result_04_album_assignment.format()}",
-        level=LogLevel.ASSET_SUMMARY,
-    )
-
-    log(
-        f"[RESERVED] 05_validation: {result_05_validation}", level=LogLevel.ASSET_SUMMARY
-    )
-
-    tag_mod_report = ModificationReport.get_instance()
-
+    report.add_result(result_05_validation)
 
     result_06_album_date_consistency = check_album_date_consistency(
         asset_wrapper, tag_mod_report
     )
-    log(
-        f"[RESERVED] 06_album_date_consistency: "
-        f"{result_06_album_date_consistency.format()}",
-        level=LogLevel.ASSET_SUMMARY,
-    )
-
-    # Create report and add results in execution order
-
-    report = AssetProcessReport(asset_wrapper=asset_wrapper)
-    report.add_result(result_01_tag_conversion)
-    report.add_result(result_02_date_correction)
-    report.add_result(result_03_duplicate_tag_analysis)
     report.add_result(result_06_album_date_consistency)
-    report.add_result(result_04_album_assignment)
-    report.add_result(result_05_validation)
 
     log(f"[PROCESS REPORT] {report.summary()}", level=LogLevel.ASSET_SUMMARY)
 

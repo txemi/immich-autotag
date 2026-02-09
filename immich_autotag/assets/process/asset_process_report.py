@@ -142,6 +142,11 @@ class AssetProcessReport(ProcessStepResult):
                 title = result.get_title()
                 lines.append(f"    {idx:02d}. {title}: {result.format()}")
 
+        # Add a final summary line about modifications (in English)
+        if self.has_changes():
+            lines.append("[SUMMARY] Modifications occurred in at least one step.")
+        else:
+            lines.append("[SUMMARY] No modifications occurred in any step.")
         return "\n".join(lines)
 
     def __str__(self):
