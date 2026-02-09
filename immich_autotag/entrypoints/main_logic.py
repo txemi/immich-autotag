@@ -68,7 +68,6 @@ def run_main_inner_logic():
         apply_conversions_to_all_assets_early(context)
     albums_collection = context.get_albums_collection()
 
-
     force_full_album_loading(albums_collection)
 
     process_permissions(manager, context)

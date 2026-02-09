@@ -27,7 +27,10 @@ class TemporaryAlbumManager:
         albums_to_remove = AlbumList()
         albums = self._album_collection.get_albums()
         from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
-        tracker = PerformanceTracker.from_args(total_assets=len(albums), max_assets=len(albums), skip_n=0)
+
+        tracker = PerformanceTracker.from_args(
+            total_assets=len(albums), max_assets=len(albums), skip_n=0
+        )
         for idx, album_wrapper in enumerate(albums, 1):
             if tracker.should_log_progress(idx):
                 album_url = album_wrapper.get_immich_album_url().geturl()

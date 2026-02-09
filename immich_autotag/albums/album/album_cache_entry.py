@@ -147,7 +147,7 @@ class AlbumCacheEntry:
             raise RedundantAlbumCacheAccessError(
                 f"Redundant access to album cache for album_id={album_id}. "
                 f"This indicates a possible design issue in higher-level logic."
-            )        
+            )
         new_dto: AlbumDtoState = self._from_cache_or_api(album_id=album_id)
         self._dto.update(
             dto=new_dto.get_dto(),

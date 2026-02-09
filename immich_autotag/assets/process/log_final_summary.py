@@ -43,10 +43,8 @@ def log_final_summary() -> None:
         # Only show modification details if log level ASSET_SUMMARY is enabled
         from immich_autotag.logging.utils import is_log_level_enabled
 
-        if is_log_level_enabled(LogLevel.ASSET_SUMMARY):
-            for entry in tag_mod_report.modifications:
-                serializable = entry.to_serializable()
-                report_lines.append(f"  • {serializable.to_log_string()}")
+        if is_log_level_enabled(LogLevel.DEBUG):
+            report_lines.extend(tag_mod_report.get_modification_details_for_log())
         else:
             report_lines.append(
                 "(Modification details hidden: use log level ASSET_SUMMARY or higher to see them)"
