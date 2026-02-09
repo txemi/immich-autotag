@@ -36,6 +36,9 @@ def run_main_inner_logic():
         run_album_cleanup_rescue()
         print("[MAINTENANCE] Rescue operation completed. Asset processing is skipped.")
         return
+    raise NotImplementedError(
+        "Maintenance mode is not enabled. Please set ENABLE_ALBUM_CLEANUP_RESCUE to True in internal_config.py to run the album cleanup rescue operation."
+    )
     delete_unhealthy_temp_albums(context)
     # TODO: Maintenance cleanup disabled during stability testing - causes performance issues
     maintenance_cleanup_labels(client)

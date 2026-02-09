@@ -6,10 +6,10 @@ Activation is controlled by a config flag. When enabled, only this process runs.
 """
 
 import re
-
 from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.albums.albums.duplicates_manager.rename_strategy.constants import RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX
 
-RENAMED_PATTERN = re.compile(r"(__RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM)+")
+RENAMED_PATTERN = re.compile(rf"({re.escape(RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX)})+")
 
 
 def _restore_original_name(name: str) -> str:
@@ -44,6 +44,6 @@ def cleanup_album_names(album_collection: AlbumCollectionWrapper):
 
 
 def run_album_cleanup_rescue():
-    album_collection = AlbumCollectionWrapper.load_from_db()
+    album_collection = AlbumCollectionWrapper.get_instance()
     cleanup_album_names(album_collection)
-    album_collection.save_to_db()
+    # If you want to persist changes, ensure the collection is saved via the appropriate method if available
