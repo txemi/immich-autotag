@@ -55,7 +55,7 @@ def handle_classification_conflict(
         level=LogLevel.ERROR,
     )
 
-    result2: ModificationEntry=tag_mod_report.add_modification(
+    result2: ModificationEntry = tag_mod_report.add_modification(
         kind=ModificationKind.CLASSIFICATION_CONFLICT,
         asset_wrapper=asset_wrapper,
         extra={

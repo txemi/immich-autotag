@@ -6,6 +6,9 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
+from immich_autotag.assets.classification_validation_result import (
+    ClassificationValidationResult,
+)
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
