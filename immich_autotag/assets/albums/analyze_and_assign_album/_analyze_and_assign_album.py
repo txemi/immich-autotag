@@ -37,10 +37,8 @@ def analyze_and_assign_album(
 
     album_decision = AlbumDecision(asset_wrapper=asset_wrapper)
 
-    # 1. Handle duplicate conflicts
-    mods: ModificationEntriesList | None = handle_duplicate_conflicts(
-        asset_wrapper, album_decision
-    )
+    # 1. Handle duplicate conflicts and collect modifications
+    duplicate_mods = handle_duplicate_conflicts(asset_wrapper, album_decision)
 
     # 2. Check classification status
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
@@ -50,16 +48,27 @@ def analyze_and_assign_album(
     # 3. Handle based on status using match-case for exhaustiveness
     match status:
         case ClassificationStatus.CLASSIFIED:
-            return handle_classified_asset(asset_wrapper, tag_mod_report)
+            result = handle_classified_asset(asset_wrapper, tag_mod_report)
         case ClassificationStatus.CONFLICT:
-            return handle_classification_conflict(
+            result = handle_classification_conflict(
                 asset_wrapper, tag_mod_report, match_results
             )
         case ClassificationStatus.UNCLASSIFIED:
-            return handle_unclassified_asset(
+            result = handle_unclassified_asset(
                 asset_wrapper, tag_mod_report, album_decision
             )
         case _:
             raise NotImplementedError(
                 f"Unhandled classification status: {status}. This indicates a logic error in ClassificationStatus enum."
             )
+
+    # Combine all modifications into a single ModificationEntriesList
+
+
+    mods = result.get_modifications()
+    combined_modifications = ModificationEntriesList.combine_optional(
+        duplicate_mods, mods
+    )
+
+    # Return a new AlbumAssignmentResultInfo with the combined modifications
+    return AlbumAssignmentResultInfo(result.get_result(), combined_modifications)
