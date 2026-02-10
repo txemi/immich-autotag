@@ -709,8 +709,10 @@ class AlbumResponseWrapper:
         )
 
         # 5. Reporting
-        report_mod_entry: ModificationEntry = self._report_removal_to_modification_report(
-            asset_wrapper, modification_report
+        report_mod_entry: ModificationEntry = (
+            self._report_removal_to_modification_report(
+                asset_wrapper, modification_report
+            )
         )
 
         # 6. Consistency Verification
