@@ -38,7 +38,7 @@ def analyze_and_assign_album(
     album_decision = AlbumDecision(asset_wrapper=asset_wrapper)
 
     # 1. Handle duplicate conflicts
-    mods: ModificationEntriesList = handle_duplicate_conflicts(
+    mods: ModificationEntriesList | None = handle_duplicate_conflicts(
         asset_wrapper, album_decision
     )
 
