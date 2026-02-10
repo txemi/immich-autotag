@@ -18,23 +18,41 @@ from python_qualitygate.implementations.check_ssort import CheckSsort
 from python_qualitygate.implementations.check_pylint_protected_access import CheckPylintProtectedAccess
 
 
-# BATTERY_ORDER is now a list of check classes, defining the execution order statically and robustly
+
+# BATTERY_ORDER: Detailed justification for the order
+#
+# 1. CheckPythonSyntax: Detects critical syntax errors before any further analysis.
+# 2. CheckNoSpanishChars: Detects forbidden characters and words before formatting or analysis.
+# 3. CheckMypy: Static typing is fundamental to catch logical errors before code modification.
+# 4. CheckImportLinter: Architecture/import rules to ensure structure before formatting.
+# 5. CheckNoTuples: Design rules to avoid forbidden patterns before code modification.
+# 6. CheckNoDynamicAttrs: Detects forbidden dynamic attributes, important for robustness before formatting.
+# 7. CheckShfmt: Formats shell scripts, must run before linters to avoid false positives.
+# 8. CheckIsort: Sorts imports, must run before linters and Python formatters.
+# 9. CheckSsort: Sorts structures, if applicable, before general formatting.
+# 10. CheckBlack: Formats Python, must run before linters to avoid false positives.
+# 11. CheckRuff: Modern linter, fast, detects style issues after formatting.
+# 12. CheckFlake8: Traditional linter, may overlap with Ruff, but adds extra rules.
+# 13. CheckPylintProtectedAccess: Specific protected access rules, after formatting and general linters.
+# 14. CheckJscpd: Duplicate detection, expensive, best at the end to avoid blocking the flow.
+# 15. CheckLargeFiles: Large file detection, expensive, best at the end.
+
 BATTERY_ORDER = [
-    CheckPythonSyntax,
-    CheckNoSpanishChars,
-    CheckLargeFiles,
-    CheckMypy,
-    CheckJscpd,
-    CheckImportLinter,
-    CheckNoTuples,
-    CheckShfmt,
-    CheckIsort,
-    CheckSsort,
-    CheckBlack,
-    CheckRuff,
-    CheckFlake8,
-    CheckPylintProtectedAccess,
-    CheckNoDynamicAttrs,
+    CheckPythonSyntax,           # Syntax first: blocks everything else if it fails
+    CheckNoSpanishChars,         # Forbidden chars/words before code modification
+    CheckMypy,                   # Typing before formatting to catch logical errors
+    CheckImportLinter,           # Architecture/imports before formatting
+    CheckNoTuples,               # Design rules before code modification
+    CheckNoDynamicAttrs,         # Robustness before formatting
+    CheckShfmt,                  # Shell formatting before linters
+    CheckIsort,                  # Import sorting before linters
+    CheckSsort,                  # Structure sorting before general formatting
+    CheckBlack,                  # Python formatting before linters
+    CheckRuff,                   # Modern linter after formatting
+    CheckFlake8,                 # Traditional linter after formatting
+    CheckPylintProtectedAccess,  # Specific rules after general linters
+    CheckJscpd,                  # Duplicate detection at the end, expensive
+    CheckLargeFiles,             # Large file detection at the end, expensive
 ]
 
 
