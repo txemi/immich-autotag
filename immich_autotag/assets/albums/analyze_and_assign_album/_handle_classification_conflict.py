@@ -40,14 +40,11 @@ def handle_classification_conflict(
         .get_albums_collection()
         .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
-    report_entry = remove_asset_from_autotag_temporary_albums(
+    modifications: ModificationEntriesList = remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
         temporary_albums=all_albums,
         tag_mod_report=tag_mod_report,
     )
-    modifications = None
-    if report_entry is not None:
-        modifications = ModificationEntriesList(entries=[report_entry])
 
     num_rules_matched = len(list(match_results.rules()))
     asset_name = asset_wrapper.get_original_file_name()
