@@ -6,12 +6,12 @@ Activation is controlled by a config flag. When enabled, only this process runs.
 """
 
 import re
-from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.albums.albums.duplicates_manager.rename_strategy.constants import (
     RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX,
 )
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 RENAMED_PATTERN = re.compile(
     rf"({re.escape(RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX)})+"
@@ -27,12 +27,13 @@ def _restore_original_name(name: str) -> str:
     return RENAMED_PATTERN.split(name)[0]
 
 
-def cleanup_album_names(album_collection: AlbumCollectionWrapper) -> ModificationEntriesList:
+def cleanup_album_names(
+    album_collection: AlbumCollectionWrapper,
+) -> ModificationEntriesList:
     """
     Identifies albums with corrupted names and attempts to restore their original names.
     Merges duplicate albums as needed.
     """
-    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
     # Get client and report
     client = album_collection.get_client()
@@ -40,6 +41,7 @@ def cleanup_album_names(album_collection: AlbumCollectionWrapper) -> Modificatio
 
     # Iterate over all non-deleted albums
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
+
     modifications = ModificationEntriesList()
     for album in album_collection.get_albums():
         original_name = _restore_original_name(album.get_album_name())
@@ -66,3 +68,21 @@ def run_album_cleanup_rescue() -> ModificationEntriesList:
     modifications = cleanup_album_names(album_collection)
     # If you want to persist changes, ensure the collection is saved via the appropriate method if available
     return modifications
+
+
+def report_album_cleanup_modifications(
+    modifications: "ModificationEntriesList",
+) -> None:
+    """
+    Prints a summary of the modifications performed during album cleanup rescue.
+    """
+    if modifications and len(modifications.entries()) > 0:
+        print(
+            f"[MAINTENANCE] Rescue operation completed. {len(modifications.entries())} album(s) renamed."
+        )
+        for entry in modifications.entries():
+            print(f"  - {entry}")
+    else:
+        print(
+            "[MAINTENANCE] Rescue operation completed. No album renames were necessary."
+        )

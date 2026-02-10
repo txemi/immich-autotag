@@ -33,10 +33,13 @@ def run_main_inner_logic():
         print(
             "[MAINTENANCE] Album cleanup rescue mode enabled. Running rescue operation..."
         )
-        run_album_cleanup_rescue()
-        print(
-            "[MAINTENANCE] Rescue operation completed. Checking for duplicate album names..."
+        modifications = run_album_cleanup_rescue()
+        from immich_autotag.albums.albums.duplicates_manager.rename_strategy.cleanup_rescue import (
+            report_album_cleanup_modifications,
         )
+
+        report_album_cleanup_modifications(modifications)
+
         return
     # Check for duplicate album names after rescue
     from immich_autotag.albums.albums.album_collection_wrapper import (
@@ -46,6 +49,7 @@ def run_main_inner_logic():
         find_duplicate_album_names,
     )
 
+    print("[MAINTENANCE] Checking for duplicate album names...")
     collection = AlbumCollectionWrapper.get_instance()
     duplicates = find_duplicate_album_names(collection)
     if duplicates:
