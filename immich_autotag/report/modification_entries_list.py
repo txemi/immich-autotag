@@ -36,6 +36,12 @@ class ModificationEntriesList(ProcessStepResult):
         """Returns a copy of the underlying list of entries."""
         return list(self._entries)
 
+    def get_entries(self) -> list["ModificationEntry"]:
+        """
+        Returns the underlying list of entries.
+        """
+        return self._entries
+
     def has_changes(self) -> bool:
         """Returns True if list contains any modification entries."""
         return len(self._entries) > 0
@@ -117,12 +123,6 @@ class ModificationEntriesList(ProcessStepResult):
 
         word = "modification" if total == 1 else "modifications"
         return f"{total} {word} ({breakdown})"
-
-    def get_entries(self) -> list["ModificationEntry"]:
-        """
-        Returns the underlying list of entries.
-        """
-        return self._entries
 
     def __iter__(self) -> Iterator["ModificationEntry"]:
         """Allows iteration over entries."""
