@@ -42,8 +42,9 @@ def handle_classified_asset(
         temporary_albums=all_albums,
         tag_mod_report=tag_mod_report,
     )
-    # cleanup_results is expected to be a list of (AlbumResponseWrapper, ModificationEntry | None)
-    cleanup_mods = [entry for (_wrapper, entry) in cleanup_results if entry is not None]
+
+    # cleanup_results is a ModificationEntriesList
+    cleanup_mods = list(cleanup_results.entries())
 
     r2: ClassificationValidationResult = (
         asset_wrapper.validate_and_update_classification()
