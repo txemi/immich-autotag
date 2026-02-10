@@ -15,6 +15,7 @@ from immich_autotag.report.modification_entry import ModificationEntry
 from .album_assignment_result import AlbumAssignmentResult
 
 if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.assets.albums.album_decision import AlbumDecision
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
     from immich_autotag.report.modification_report import ModificationReport
@@ -35,36 +36,38 @@ class AlbumAssignmentResultInfo:
     def __attrs_post_init__(self):
         # Integrity: if modifications exist, ensure only one album and one asset
         if self._modifications is not None:
-            albums = list(self._modifications.get_albums())
-            assets = list(self._modifications.get_assets())
-            if len(albums) > 1:
+            album_count = self._modifications.count_albums()
+            asset_count = self._modifications.count_assets()
+            if album_count > 1:
                 raise ValueError(
-                    f"Integrity error: More than one album in modifications: {albums}"
+                    f"Integrity error: More than one album in modifications: {album_count}"
                 )
-            if len(assets) > 1:
+            if asset_count > 1:
                 raise ValueError(
-                    f"Integrity error: More than one asset in modifications: {assets}"
+                    f"Integrity error: More than one asset in modifications: {asset_count}"
                 )
 
-    def get_unique_album(self):
+
+    def get_unique_album(self) -> "AlbumResponseWrapper":
         if self._modifications is None:
             raise ValueError("No modifications present")
-        albums = list(self._modifications.get_albums())
-        if len(albums) != 1:
+        if self._modifications.count_albums() != 1:
+            albums = list(self._modifications.get_albums())
             raise ValueError(
                 f"Expected exactly one album in modifications, found {len(albums)}: {albums}"
             )
-        return albums[0]
+        return next(self._modifications.get_albums())
 
-    def get_unique_asset(self):
+
+    def get_unique_asset(self) -> "AssetResponseWrapper":
         if self._modifications is None:
             raise ValueError("No modifications present")
-        assets = list(self._modifications.get_assets())
-        if len(assets) != 1:
+        if self._modifications.count_assets() != 1:
+            assets = list(self._modifications.get_assets())
             raise ValueError(
                 f"Expected exactly one asset in modifications, found {len(assets)}: {assets}"
             )
-        return assets[0]
+        return next(self._modifications.get_assets())
 
     def get_result(self) -> AlbumAssignmentResult:
         return self._result
