@@ -36,7 +36,6 @@ def handle_duplicate_conflicts(
         modifications = wrapper.ensure_autotag_duplicate_album_conflict(
             conflict=conflict, duplicate_id=duplicate_id
         )
-        if isinstance(modifications, ModificationEntriesList):
-            mods.extend(modifications)
-        # else: skip if None or wrong type
+        if modifications is not None:
+            mods = mods.extend(modifications)
     return mods
