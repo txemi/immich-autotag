@@ -10,6 +10,7 @@ from immich_autotag.classification.classification_rule_set import (
     ClassificationRuleSet,
 )
 from immich_autotag.classification.classification_status import ClassificationStatus
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 from ._handle_classification_conflict import handle_classification_conflict
 from ._handle_classified_asset import handle_classified_asset
@@ -37,7 +38,9 @@ def analyze_and_assign_album(
     album_decision = AlbumDecision(asset_wrapper=asset_wrapper)
 
     # 1. Handle duplicate conflicts
-    handle_duplicate_conflicts(asset_wrapper, album_decision)
+    mods: ModificationEntriesList = handle_duplicate_conflicts(
+        asset_wrapper, album_decision
+    )
 
     # 2. Check classification status
     rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
