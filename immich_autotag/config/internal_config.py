@@ -68,4 +68,4 @@ ENABLE_ALBUM_CLEANUP_RESCUE = False  # Default: disabled for safety
 # ==================== FORCED LIMITS FOR CI/DEV ====================
 # If set to an integer, this value will override any user config for max items to process.
 # If set to None, normal config/user value is used.
-FORCE_MAX_ITEMS_TO_PROCESS: int | None = 2  # Limit for fast performance tests
+FORCE_MAX_ITEMS_TO_PROCESS: int | None = 10  # Limit for fast performance tests
