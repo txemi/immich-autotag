@@ -5,13 +5,15 @@ with convenient query and aggregate methods.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Iterator, List, Set
 
 import attrs
 
 if TYPE_CHECKING:
     from immich_autotag.report.modification_entry import ModificationEntry
     from immich_autotag.report.modification_kind import ModificationKind
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 
@@ -26,21 +28,15 @@ class ModificationEntriesList(ProcessStepResult):
     Access to entries should be through public methods only.
     """
 
-    _entries: list["ModificationEntry"] = attrs.field(
+    _entries: List["ModificationEntry"] = attrs.field(
         default=attrs.Factory(list),
         repr=lambda entries: f"modifications={len(entries)}",
         alias="entries",
     )
 
-    def entries(self) -> list["ModificationEntry"]:
+    def entries(self) -> List["ModificationEntry"]:
         """Returns a copy of the underlying list of entries."""
         return list(self._entries)
-
-    def get_entries(self) -> list["ModificationEntry"]:
-        """
-        Returns the underlying list of entries.
-        """
-        return self._entries
 
     def has_changes(self) -> bool:
         """Returns True if list contains any modification entries."""
@@ -78,10 +74,7 @@ class ModificationEntriesList(ProcessStepResult):
 
     def extend(self, other: "ModificationEntriesList") -> "ModificationEntriesList":
         """Returns a new list with entries from both lists."""
-        if isinstance(other, ModificationEntriesList):
-            combined = self._entries + other.get_entries()
-        else:
-            combined = self._entries + list(other)
+        combined = self._entries + other.entries()
         return ModificationEntriesList(entries=combined)
 
     def append(self, entry: "ModificationEntry") -> "ModificationEntriesList":
@@ -124,13 +117,13 @@ class ModificationEntriesList(ProcessStepResult):
         word = "modification" if total == 1 else "modifications"
         return f"{total} {word} ({breakdown})"
 
-    def get_albums(self) -> set:
+    def get_albums(self) -> Set["AlbumResponseWrapper"]:
         """
         Returns a set of all albums referenced by the modifications.
         """
-        return {entry.album for entry in self._entries if entry is not None}
+        return {entry.album for entry in self._entries if entry.album is not None}
 
-    def get_assets(self) -> set:
+    def get_assets(self) -> Set["AssetResponseWrapper"]:
         """
         Returns a set of all asset wrappers referenced by the modifications.
         Assumes all entries are ModificationEntry and have asset_wrapper attribute.
@@ -140,6 +133,10 @@ class ModificationEntriesList(ProcessStepResult):
             for entry in self._entries
             if entry.asset_wrapper is not None
         }
+
+    def __getitem__(self, index: int) -> "ModificationEntry":
+        """Allows index access to entries (list-like)."""
+        return self._entries[index]
 
     def __iter__(self) -> Iterator["ModificationEntry"]:
         """Allows iteration over entries."""
