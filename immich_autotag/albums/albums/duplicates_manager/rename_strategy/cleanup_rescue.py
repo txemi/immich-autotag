@@ -43,10 +43,10 @@ def cleanup_album_names(album_collection: AlbumCollectionWrapper):
         current_name = album.get_album_name()
         if original_name and original_name != current_name:
             album_wrapper: AlbumResponseWrapper = album.rename_album(
-                    new_name=original_name,
-                    client=client,
-                    modification_report=tag_mod_report,
-                )
+                new_name=original_name,
+                client=client,
+                modification_report=tag_mod_report,
+            )
 
 
 # Entry point for rescue operation
