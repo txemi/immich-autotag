@@ -197,16 +197,19 @@ class DuplicateAlbumManager:
             existing = survivors[0]
             incoming = survivors[1]
             result = self._handle_duplicate_album_conflict(
-                incoming_album=incoming.album,
-                existing_album=existing.album,
+                incoming_album=incoming.get_album(),
+                existing_album=existing.get_album(),
                 context=context,
             )
             combined_modifications = ModificationEntriesList.combine_optional(
-                existing.modifications, result.modifications
+                existing.get_modifications(), result.get_modifications()
             )
+            # Ensure combined_modifications is always a ModificationEntriesList, never None
+            if combined_modifications is None:
+                combined_modifications = ModificationEntriesList()
             survivors = [
                 AlbumAndModification(
-                    album=result.album, modifications=combined_modifications
+                    album=result.get_album(), modifications=combined_modifications
                 )
             ] + survivors[2:]
         return survivors[0]
