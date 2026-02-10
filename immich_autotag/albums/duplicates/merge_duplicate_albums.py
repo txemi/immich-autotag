@@ -1,15 +1,13 @@
-
 from typeguard import typechecked
-from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
-from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 from immich_autotag.albums.album.album_response_wrapper import (
     AlbumResponseWrapper,
 )
+from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.albums.duplicates.asset_move import (
-    MoveAssetsResult,
     move_assets_between_albums,
 )
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
 
@@ -52,6 +50,6 @@ def merge_duplicate_albums(
         reason="Merged and deleted duplicate album",
     )
     # Combine all modifications into a single ModificationEntriesList
-    from immich_autotag.report.modification_entries_list import ModificationEntriesList
+
     combined_mods = modifications.append(delete_mod)
     return combined_mods

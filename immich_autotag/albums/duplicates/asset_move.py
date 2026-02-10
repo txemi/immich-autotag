@@ -10,21 +10,16 @@ DEVELOPMENT).
 
 from __future__ import annotations
 
-
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 from immich_autotag.report.modification_entry import ModificationEntry
-
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
-from immich_autotag.report.modification_entries_list import ModificationEntriesList
-
-from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
-
-
 
 
 @typechecked
@@ -49,8 +44,8 @@ def move_assets_between_albums(
     from immich_autotag.context.immich_context import ImmichContext
     from immich_autotag.logging.levels import LogLevel
     from immich_autotag.logging.utils import log
-
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
+
     tag_mod_report = tag_mod_report or collection.get_modification_report()
 
     ctx = ImmichContext.get_default_instance()
