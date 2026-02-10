@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
+
 if TYPE_CHECKING:
     from immich_autotag.assets.albums.album_decision import AlbumDecision
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -14,7 +16,7 @@ if TYPE_CHECKING:
 @typechecked
 def handle_duplicate_conflicts(
     asset_wrapper: "AssetResponseWrapper", album_decision: "AlbumDecision"
-) -> None:
+) -> ModificationEntriesList:
     """
     Detects album conflicts across duplicate assets and applies the conflict tag logic.
     """
@@ -29,7 +31,10 @@ def handle_duplicate_conflicts(
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()
     )
+    mods=ModificationEntriesList()
     for wrapper in all_wrappers:
-        wrapper.ensure_autotag_duplicate_album_conflict(
+        modifications: ModificationEntriesList = wrapper.ensure_autotag_duplicate_album_conflict(
             conflict=conflict, duplicate_id=duplicate_id
         )
+        mods.extend(modifications)
+    return mods
