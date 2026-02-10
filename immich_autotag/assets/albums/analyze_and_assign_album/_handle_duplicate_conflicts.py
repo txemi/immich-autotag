@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 @typechecked
 def handle_duplicate_conflicts(
     asset_wrapper: "AssetResponseWrapper", album_decision: "AlbumDecision"
-) -> ModificationEntriesList:
+) -> ModificationEntriesList | None:
     """
     Detects album conflicts across duplicate assets and applies the conflict tag logic.
     """
@@ -26,7 +26,7 @@ def handle_duplicate_conflicts(
     duplicate_id_or_none = asset_wrapper.get_duplicate_id_as_uuid()
     # If there's no duplicate ID, this asset has no duplicates - nothing to do
     if duplicate_id_or_none is None:
-        return
+        return None
     duplicate_id: DuplicateUUID = duplicate_id_or_none
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()
