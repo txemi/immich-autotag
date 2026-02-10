@@ -10,13 +10,11 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
-from immich_autotag.albums.duplicates.duplicate_album_reports import (
-    DuplicateAlbumReports,
-)
-from immich_autotag.albums.duplicates.merge_duplicate_albums import (
-    merge_duplicate_albums,
-)
+from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReports
+from immich_autotag.albums.duplicates.merge_duplicate_albums import merge_duplicate_albums
 from immich_autotag.report.modification_report import ModificationReport
+from immich_autotag.albums.album_and_modification import AlbumAndModification
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -31,23 +29,27 @@ class DuplicateAlbumManager:
     collection: "AlbumCollectionWrapper"
     collected_duplicates: "DuplicateAlbumReports" = attrs.Factory(DuplicateAlbumReports)
 
+    from immich_autotag.albums.album_and_modification import AlbumAndModification
+    from immich_autotag.report.modification_entries_list import ModificationEntriesList
     @typechecked
     def _handle_duplicate_album_conflict(
         self,
         incoming_album: "AlbumResponseWrapper",
         existing_album: "AlbumResponseWrapper",
         context: str = "ensure_unique",
-    ) -> "AlbumResponseWrapper":
+    ) -> AlbumAndModification:
         # Import local para evitar ciclo
 
         name_existing = existing_album.get_album_name()
         name_incoming = incoming_album.get_album_name()
 
-        # If both albums have the same UUID, return the best one using get_best_cache_entry
+        # If both albums have the same UUID, treat as no-op modification
         if existing_album.get_album_uuid() == incoming_album.get_album_uuid():
-            # Use the get_best_cache_entry method to select the best
             best = existing_album.get_best_cache_entry(incoming_album)
-            return best
+            return AlbumAndModification(
+                album=best,
+                modifications=ModificationEntriesList(),
+            )
 
         if name_existing != name_incoming:
             raise ValueError(
@@ -60,12 +62,21 @@ class DuplicateAlbumManager:
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
             client = self.collection.get_client()
             tag_mod_report = self.collection.get_modification_report()
-            return merge_duplicate_albums(
+            mods = merge_duplicate_albums(
                 target_album=existing_album,
                 collection=self.collection,
                 duplicate_album=incoming_album,
                 client=client,
                 tag_mod_report=tag_mod_report,
+            )
+            albums = mods.get_albums()
+            if len(albums) != 1 or existing_album not in albums:
+                raise ValueError(
+                    f"ModificationEntriesList integrity error: expected only album '{existing_album.get_album_name()}', got {albums}"
+                )
+            return AlbumAndModification(
+                album=existing_album,
+                modifications=mods,
             )
         else:
             from immich_autotag.config.dev_mode import is_development_mode
@@ -78,7 +89,10 @@ class DuplicateAlbumManager:
         collect_duplicate(
             self.collected_duplicates, existing_album, incoming_album, context
         )
-        return existing_album
+        return AlbumAndModification(
+            album=existing_album,
+            modifications=ModificationEntriesList(),
+        )
 
     @typechecked
     def _handle_non_temporary_duplicate(
@@ -154,13 +168,11 @@ class DuplicateAlbumManager:
     @typechecked
     def combine_duplicate_albums(
         self, albums: list["AlbumResponseWrapper"], context: str
-    ) -> "AlbumResponseWrapper":
+    ) -> AlbumAndModification:
         if not albums:
             raise ValueError(
                 f"No albums provided to combine_duplicate_albums (context: {context})"
             )
-        # Only enforce the is_duplicate_album check if all albums are already in the collection (len == 1)
-        # If merging a new album with existing, skip this strict check
         if len(albums) < 2:
             album = albums[0]
             if not album.is_duplicate_album():
@@ -168,14 +180,21 @@ class DuplicateAlbumManager:
                     f"Refusing to combine album '{album.get_album_name()}' "
                     f"(id={album.get_album_uuid()}): not a duplicate album."
                 )
-        survivors = list(albums)
+            return AlbumAndModification(
+                album=album,
+                modifications=ModificationEntriesList(),
+            )
+        survivors = [AlbumAndModification(album=a, modifications=ModificationEntriesList()) for a in albums]
         while len(survivors) > 1:
-            existing_album = survivors[0]
-            incoming_album = survivors[1]
-            surviving_album = self._handle_duplicate_album_conflict(
-                incoming_album=incoming_album,
-                existing_album=existing_album,
+            existing = survivors[0]
+            incoming = survivors[1]
+            result = self._handle_duplicate_album_conflict(
+                incoming_album=incoming.album,
+                existing_album=existing.album,
                 context=context,
             )
-            survivors = [surviving_album] + survivors[2:]
+            combined_modifications = ModificationEntriesList.combine_optional(
+                existing.modifications, result.modifications
+            )
+            survivors = [AlbumAndModification(album=result.album, modifications=combined_modifications)] + survivors[2:]
         return survivors[0]
