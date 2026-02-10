@@ -1,3 +1,4 @@
+
 """
 ModificationEntriesList: encapsulates a list of ModificationEntry objects
 with convenient query and aggregate methods.
@@ -157,3 +158,9 @@ class ModificationEntriesList(ProcessStepResult):
     def __bool__(self) -> bool:
         """Returns True if list has any entries."""
         return len(self._entries) > 0
+
+    def __add__(self, other: "ModificationEntriesList") -> "ModificationEntriesList":
+        if not isinstance(other, ModificationEntriesList):
+            raise TypeError("Can only add ModificationEntriesList to ModificationEntriesList")
+        combined_entries = self.entries() + other.entries()
+        return ModificationEntriesList(entries=combined_entries)

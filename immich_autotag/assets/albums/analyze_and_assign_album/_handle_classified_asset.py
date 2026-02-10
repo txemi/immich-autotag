@@ -37,25 +37,30 @@ def handle_classified_asset(
         .get_albums_collection()
         .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
-    cleanup_results = remove_asset_from_autotag_temporary_albums(
-        asset_wrapper=asset_wrapper,
-        temporary_albums=all_albums,
-        tag_mod_report=tag_mod_report,
+    cleanup_modifications: ModificationEntriesList = (
+        remove_asset_from_autotag_temporary_albums(
+            asset_wrapper=asset_wrapper,
+            temporary_albums=all_albums,
+            tag_mod_report=tag_mod_report,
+        )
     )
 
-    # cleanup_results is a ModificationEntriesList
-    cleanup_mods = list(cleanup_results.entries())
-
-    r2: ClassificationValidationResult = (
+    classification_result: ClassificationValidationResult = (
         asset_wrapper.validate_and_update_classification()
     )
-    # r2.get_modifications() returns a ModificationEntriesList
-    all_mods = cleanup_mods
-    r2_mods = r2.get_modifications()
-    if r2_mods is not None:
-        all_mods.extend(r2_mods.entries())
+    classification_modifications: ModificationEntriesList = (
+        classification_result.get_modifications()
+    )
 
-    modifications = ModificationEntriesList(entries=all_mods) if all_mods else None
+    modifications = None
+    if cleanup_modifications and classification_modifications:
+        combined = cleanup_modifications + classification_modifications
+        if combined.entries():
+            modifications = combined
+    elif cleanup_modifications and cleanup_modifications.entries():
+        modifications = cleanup_modifications
+    elif classification_modifications and classification_modifications.entries():
+        modifications = classification_modifications
 
     log(
         f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.get_original_file_name()}' classified. "
