@@ -11,10 +11,10 @@ from immich_autotag.assets.classification_validation_result import (
 )
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-
-from .album_assignment_result import AlbumAssignmentResult
-from ._handle_unclassified_asset import AlbumAssignmentResultInfo
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
+
+from ._handle_unclassified_asset import AlbumAssignmentResultInfo
+from .album_assignment_result import AlbumAssignmentResult
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -45,7 +45,9 @@ def handle_classified_asset(
     # cleanup_results is expected to be a list of (AlbumResponseWrapper, ModificationEntry | None)
     cleanup_mods = [entry for (_wrapper, entry) in cleanup_results if entry is not None]
 
-    r2: ClassificationValidationResult = asset_wrapper.validate_and_update_classification()
+    r2: ClassificationValidationResult = (
+        asset_wrapper.validate_and_update_classification()
+    )
     # r2.get_modifications() debe devolver una ModificationEntriesList
     all_mods = cleanup_mods
     r2_mods = r2.get_modifications()
