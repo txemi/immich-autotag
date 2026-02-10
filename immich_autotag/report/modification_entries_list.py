@@ -134,6 +134,14 @@ class ModificationEntriesList(ProcessStepResult):
             if entry.asset_wrapper is not None
         }
 
+    def count_albums(self) -> int:
+        """Returns the number of unique albums referenced by the modifications."""
+        return len(self.get_albums())
+
+    def count_assets(self) -> int:
+        """Returns the number of unique assets referenced by the modifications."""
+        return len(self.get_assets())
+
     def __getitem__(self, index: int) -> "ModificationEntry":
         """Allows index access to entries (list-like)."""
         return self._entries[index]
