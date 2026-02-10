@@ -9,8 +9,8 @@ from typeguard import typechecked
 
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
+from immich_autotag.report.modification_entry import ModificationEntry
 
 from .album_assignment_result import AlbumAssignmentResult
 
@@ -28,16 +28,29 @@ class AlbumAssignmentResultInfo:
 
     _modifications: ModificationEntriesList | None = attrs.field(
         validator=attrs.validators.optional(
-            attrs.validators.instance_of(ModificationEntriesList))
+            attrs.validators.instance_of(ModificationEntriesList)
+        )
     )
 
     def get_result(self) -> AlbumAssignmentResult:
         return self._result
 
-
-
     def get_modifications(self) -> ModificationEntriesList | None:
         return self._modifications
+
+    def format_assignment(self) -> str:
+        result_str = self._result.name
+        modifications = self.get_modifications()
+        if modifications and modifications.entries():
+            entry = modifications.entries()[0]
+            entry_str = (
+                f"kind={entry.kind.name}"
+                if hasattr(entry, "kind") and entry.kind
+                else type(entry).__name__
+            )
+            return f"ALBUM_ASSIGNMENT ({result_str}, {entry_str})"
+        else:
+            return f"ALBUM_ASSIGNMENT ({result_str})"
 
 
 @typechecked

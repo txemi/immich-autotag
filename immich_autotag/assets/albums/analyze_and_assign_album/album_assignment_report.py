@@ -82,7 +82,7 @@ class AlbumAssignmentReport(ProcessStepResult):
         return ModificationEntriesList()
 
     def format(self) -> str:
-        return f"ALBUM_ASSIGNMENT ({self._result.name})"
+        return self._result.format_assignment()
 
     @classmethod
     def analyze(
