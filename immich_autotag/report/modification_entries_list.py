@@ -124,6 +124,12 @@ class ModificationEntriesList(ProcessStepResult):
         word = "modification" if total == 1 else "modifications"
         return f"{total} {word} ({breakdown})"
 
+    def get_albums(self) -> set:
+        """
+        Returns a set of all albums referenced by the modifications.
+        """
+        return {entry.album for entry in self._entries if entry is not None}
+
     def __iter__(self) -> Iterator["ModificationEntry"]:
         """Allows iteration over entries."""
         return iter(self._entries)
