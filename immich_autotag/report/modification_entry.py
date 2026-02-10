@@ -177,3 +177,11 @@ class ModificationEntry:
         if self.asset_wrapper is None:
             raise ValueError("asset_wrapper is None in this ModificationEntry")
         return self.asset_wrapper
+
+    def get_album(self) -> "AlbumResponseWrapper":
+        """
+        Returns the album if present, else raises a ValueError.
+        """
+        if self.album is None:
+            raise ValueError("album is None in this ModificationEntry")
+        return self.album
