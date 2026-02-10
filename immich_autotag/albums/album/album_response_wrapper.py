@@ -709,7 +709,7 @@ class AlbumResponseWrapper:
         )
 
         # 5. Reporting
-        removal_entry: ModificationEntry = self._report_removal_to_modification_report(
+        report_mod_entry: ModificationEntry = self._report_removal_to_modification_report(
             asset_wrapper, modification_report
         )
 
@@ -717,7 +717,7 @@ class AlbumResponseWrapper:
         self._verify_asset_removed_from_album_with_retry(
             asset_wrapper, client, max_retries=3
         )
-        return removal_entry
+        return report_mod_entry
 
     @conditional_typechecked
     def trim_name_if_needed(
