@@ -25,11 +25,7 @@ class AlbumAssignmentResultInfo:
     _result: AlbumAssignmentResult = attrs.field(
         validator=attrs.validators.instance_of(AlbumAssignmentResult)
     )
-    _entry: ModificationEntry | None = attrs.field(
-        validator=attrs.validators.optional(
-            attrs.validators.instance_of(ModificationEntry)
-        )
-    )
+
     _modifications: ModificationEntriesList | None = attrs.field(
         validator=attrs.validators.optional(
             attrs.validators.instance_of(ModificationEntriesList))
@@ -38,8 +34,7 @@ class AlbumAssignmentResultInfo:
     def get_result(self) -> AlbumAssignmentResult:
         return self._result
 
-    def get_entry(self) -> ModificationEntry | None:
-        return self._entry
+
 
     def get_modifications(self) -> ModificationEntriesList | None:
         return self._modifications
@@ -75,8 +70,11 @@ def handle_unclassified_asset(
                 detected_album=detected_album,
                 album_origin=album_origin,
             )
+            modifications = None
+            if report_entry is not None:
+                modifications = ModificationEntriesList(entries=[report_entry])
             return AlbumAssignmentResultInfo(
-                AlbumAssignmentResult.ASSIGNED_UNIQUE, report_entry, None
+                AlbumAssignmentResult.ASSIGNED_UNIQUE, modifications
             )
 
     # If no unique album detected, try to create a temporary album
@@ -89,12 +87,13 @@ def handle_unclassified_asset(
     )
 
     if created_album:
+        modifications = ModificationEntriesList(entries=[created_album])
         return AlbumAssignmentResultInfo(
-            AlbumAssignmentResult.CREATED_TEMPORARY, created_album, None
+            AlbumAssignmentResult.CREATED_TEMPORARY, modifications
         )
 
     log(
         f"[ALBUM ASSIGNMENT] Asset '{asset_name}' is not classified and no album could be assigned.",
         level=LogLevel.DEBUG,
     )
-    return AlbumAssignmentResultInfo(AlbumAssignmentResult.UNCLASSIFIED_NO_ALBUM, None, None)
+    return AlbumAssignmentResultInfo(AlbumAssignmentResult.UNCLASSIFIED_NO_ALBUM, None)
