@@ -9,12 +9,16 @@ if TYPE_CHECKING:
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
-from immich_autotag.albums.duplicates.duplicate_album_reports import DuplicateAlbumReports
-from immich_autotag.albums.duplicates.merge_duplicate_albums import merge_duplicate_albums
-from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.albums.album_and_modification import AlbumAndModification
+from immich_autotag.albums.duplicates.collect_duplicate import collect_duplicate
+from immich_autotag.albums.duplicates.duplicate_album_reports import (
+    DuplicateAlbumReports,
+)
+from immich_autotag.albums.duplicates.merge_duplicate_albums import (
+    merge_duplicate_albums,
+)
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
+from immich_autotag.report.modification_report import ModificationReport
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -31,6 +35,7 @@ class DuplicateAlbumManager:
 
     from immich_autotag.albums.album_and_modification import AlbumAndModification
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
+
     @typechecked
     def _handle_duplicate_album_conflict(
         self,
@@ -184,7 +189,10 @@ class DuplicateAlbumManager:
                 album=album,
                 modifications=ModificationEntriesList(),
             )
-        survivors = [AlbumAndModification(album=a, modifications=ModificationEntriesList()) for a in albums]
+        survivors = [
+            AlbumAndModification(album=a, modifications=ModificationEntriesList())
+            for a in albums
+        ]
         while len(survivors) > 1:
             existing = survivors[0]
             incoming = survivors[1]
@@ -196,5 +204,9 @@ class DuplicateAlbumManager:
             combined_modifications = ModificationEntriesList.combine_optional(
                 existing.modifications, result.modifications
             )
-            survivors = [AlbumAndModification(album=result.album, modifications=combined_modifications)] + survivors[2:]
+            survivors = [
+                AlbumAndModification(
+                    album=result.album, modifications=combined_modifications
+                )
+            ] + survivors[2:]
         return survivors[0]

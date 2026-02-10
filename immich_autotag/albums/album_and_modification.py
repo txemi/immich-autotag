@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import attrs
 from typeguard import typechecked
+
 from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
@@ -10,11 +12,9 @@ class AlbumAndModification:
     _album: AlbumResponseWrapper
     _modifications: ModificationEntriesList
 
-
     @typechecked
     def get_album(self) -> AlbumResponseWrapper:
         return self._album
-
 
     @typechecked
     def get_modifications(self) -> ModificationEntriesList:
