@@ -55,6 +55,12 @@ class AlbumList:
         except ValueError:
             pass  # If not present, do nothing
 
+    def get_album_names(self) -> list[str]:
+        """
+        Returns a list of album names for all albums in the list.
+        """
+        return [album.get_album_name() for album in self._albums]
+
     def __getitem__(self, idx: int) -> AlbumResponseWrapper:
         return self._albums[idx]
 
