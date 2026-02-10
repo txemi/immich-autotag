@@ -61,6 +61,12 @@ class AlbumList:
         """
         return [album.get_album_name() for album in self._albums]
 
+    def is_empty(self) -> bool:
+        """
+        Returns True if the album list is empty.
+        """
+        return len(self._albums) == 0
+
     def __getitem__(self, idx: int) -> AlbumResponseWrapper:
         return self._albums[idx]
 
