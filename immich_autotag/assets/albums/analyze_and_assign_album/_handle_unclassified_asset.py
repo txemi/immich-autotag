@@ -55,7 +55,7 @@ class AlbumAssignmentResultInfo:
             raise ValueError(
                 f"Expected exactly one album in modifications, found {len(albums)}: {albums}"
             )
-        return next(self._modifications.get_albums())
+        return next(iter(self._modifications.get_albums()))
 
     def get_unique_asset(self) -> "AssetResponseWrapper":
         if self._modifications is None:
@@ -65,7 +65,7 @@ class AlbumAssignmentResultInfo:
             raise ValueError(
                 f"Expected exactly one asset in modifications, found {len(assets)}: {assets}"
             )
-        return next(self._modifications.get_assets())
+        return next(iter(self._modifications.get_assets()))
 
     def get_result(self) -> AlbumAssignmentResult:
         return self._result
