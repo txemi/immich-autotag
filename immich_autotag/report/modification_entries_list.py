@@ -135,7 +135,11 @@ class ModificationEntriesList(ProcessStepResult):
         Returns a set of all asset wrappers referenced by the modifications.
         Assumes all entries are ModificationEntry and have asset_wrapper attribute.
         """
-        return {entry.asset_wrapper for entry in self._entries if entry.asset_wrapper is not None}
+        return {
+            entry.asset_wrapper
+            for entry in self._entries
+            if entry.asset_wrapper is not None
+        }
 
     def __iter__(self) -> Iterator["ModificationEntry"]:
         """Allows iteration over entries."""
