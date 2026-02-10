@@ -10,7 +10,10 @@ if TYPE_CHECKING:
 from immich_autotag.albums.album.album_response_wrapper import (
     AlbumResponseWrapper,
 )
-from immich_autotag.albums.duplicates.asset_move import move_assets_between_albums, MoveAssetsResult
+from immich_autotag.albums.duplicates.asset_move import (
+    MoveAssetsResult,
+    move_assets_between_albums,
+)
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
 

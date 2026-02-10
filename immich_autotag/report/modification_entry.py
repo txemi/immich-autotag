@@ -31,13 +31,6 @@ from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 # class ModificationEntry: ...
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=True)
 class ModificationEntry:
-        def get_asset_wrapper(self) -> "AssetResponseWrapper":
-            """
-            Returns the asset_wrapper if present, else raises a ValueError.
-            """
-            if self.asset_wrapper is None:
-                raise ValueError("asset_wrapper is None in this ModificationEntry")
-            return self.asset_wrapper
     """
     Represents a modification in the system using rich objects (wrappers, DTOs, etc.).
     This class is intended for internal logic, validation, advanced formatting, and access to all high-level data.
@@ -176,3 +169,11 @@ class ModificationEntry:
             extra=self.extra,
             progress=self.progress,
         )
+
+    def get_asset_wrapper(self) -> "AssetResponseWrapper":
+        """
+        Returns the asset_wrapper if present, else raises a ValueError.
+        """
+        if self.asset_wrapper is None:
+            raise ValueError("asset_wrapper is None in this ModificationEntry")
+        return self.asset_wrapper

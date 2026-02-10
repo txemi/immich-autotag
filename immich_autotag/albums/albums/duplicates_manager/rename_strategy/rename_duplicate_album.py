@@ -8,8 +8,8 @@ from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrap
 from immich_autotag.albums.albums.duplicates_manager.rename_strategy.constants import (
     RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX,
 )
-from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.report.modification_entry import ModificationEntry
+from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
 
 

@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from immich_autotag.report.modification_report import ModificationReport
 
 
+
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumAssignmentResultInfo:
     _result: AlbumAssignmentResult = attrs.field(
@@ -31,6 +32,32 @@ class AlbumAssignmentResultInfo:
             attrs.validators.instance_of(ModificationEntriesList)
         )
     )
+
+    def __attrs_post_init__(self):
+        # Integrity: if modifications exist, ensure only one album and one asset
+        if self._modifications is not None:
+            albums = [m.album for m in self._modifications.entries() if hasattr(m, 'album') and m.album is not None]
+            assets = [m.asset_wrapper for m in self._modifications.entries() if hasattr(m, 'asset_wrapper') and m.asset_wrapper is not None]
+            if len(albums) > 1:
+                raise ValueError(f"Integrity error: More than one album in modifications: {albums}")
+            if len(assets) > 1:
+                raise ValueError(f"Integrity error: More than one asset in modifications: {assets}")
+
+    def get_unique_album(self):
+        if self._modifications is None:
+            raise ValueError("No modifications present")
+        albums = [m.album for m in self._modifications.entries() if hasattr(m, 'album') and m.album is not None]
+        if len(albums) != 1:
+            raise ValueError(f"Expected exactly one album in modifications, found {len(albums)}: {albums}")
+        return albums[0]
+
+    def get_unique_asset(self):
+        if self._modifications is None:
+            raise ValueError("No modifications present")
+        assets = [m.asset_wrapper for m in self._modifications.entries() if hasattr(m, 'asset_wrapper') and m.asset_wrapper is not None]
+        if len(assets) != 1:
+            raise ValueError(f"Expected exactly one asset in modifications, found {len(assets)}: {assets}")
+        return assets[0]
 
     def get_result(self) -> AlbumAssignmentResult:
         return self._result
