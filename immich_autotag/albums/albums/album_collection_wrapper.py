@@ -471,7 +471,8 @@ class AlbumCollectionWrapper:
         client: ImmichClient,
         tag_mod_report: ModificationReport,
         old_tested_mode: bool = True,
-    ) -> (AlbumResponseWrapper | None, "ModificationEntry | None"):
+    ) -> "AlbumAndModification":
+            from immich_autotag.albums.albums.album_and_modification import AlbumAndModification
         """Central helper: attempt to append an album wrapper to the albums list with duplicate handling.
 
         If a duplicate name exists and it's a temporary album,
@@ -493,18 +494,18 @@ class AlbumCollectionWrapper:
             if best is not existing_by_id:
                 albums_list.remove(existing_by_id)
                 albums_list.add(best)
-            return best
+            return AlbumAndModification(album=best, modification=None)
 
         album_name = album_wrapper.get_album_name()
         existing_album = self.find_first_album_with_name(album_name)
         if existing_album is None:
             # Only add if not present
             albums_list.add(album_wrapper)
-            return album_wrapper
+            return AlbumAndModification(album=album_wrapper, modification=None)
         # There is already an album with this name: treat as duplicate
         if is_temporary_album(album_name):
             # Delete the temporary duplicate
-            report_entry: ModificationEntry = self.delete_album(
+            report_entry: ModificationEntry | None = self.delete_album(
                 wrapper=album_wrapper,
                 client=client,
                 tag_mod_report=tag_mod_report,
@@ -513,7 +514,7 @@ class AlbumCollectionWrapper:
             )
             albums_after = list(self.find_all_albums_with_name(album_name))
             if len(albums_after) == 1:
-                return albums_after[0], report_entry
+                return AlbumAndModification(album=albums_after[0], modification=report_entry)
             else:
                 raise RuntimeError(
                     f"Duplicate albums with name '{album_name}' were found and attempted to delete, "
@@ -560,7 +561,7 @@ class AlbumCollectionWrapper:
             report_entry = rename_duplicate_album(album_wrapper, client, tag_mod_report)
 
             albums_list.add(album_wrapper)
-            return album_wrapper, report_entry
+            return AlbumAndModification(album=album_wrapper, modification=report_entry)
 
         else:
             # Non-temporary duplicate: log and skip
@@ -575,7 +576,7 @@ class AlbumCollectionWrapper:
                 tag_mod_report=tag_mod_report,
                 name=album_name,
             )
-            return None
+            return AlbumAndModification(album=None, modification=None)
 
     @typechecked
     def _add_album_wrapper(
