@@ -34,8 +34,8 @@ class AlbumAndModification:
             return first
         # Combine modifications, keep album from first (or second, as needed)
         return AlbumAndModification(
-            _album=first.get_album(),
-            _modifications=ModificationEntriesList.combine_optional(
+            album=first.get_album(),
+            modifications=ModificationEntriesList.combine_optional(
                 first.get_modifications(), second.get_modifications()
             ),
         )
