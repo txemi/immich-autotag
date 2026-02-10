@@ -614,13 +614,14 @@ class AlbumResponseWrapper:
                     level=LogLevel.WARNING,
                 )
                 # Register warning event in modification report
-                tag_mod_report.add_assignment_modification(
+
+                # Return a ModificationEntry, not the report
+                return tag_mod_report.add_assignment_modification(
                     kind=ModificationKind.WARNING_ASSET_NOT_IN_ALBUM,
                     asset_wrapper=asset_wrapper,
                     album=self,
                     extra={"error": error_msg},
                 )
-                return tag_mod_report
 
         # Otherwise, treat as fatal
         raise RuntimeError(
