@@ -21,6 +21,9 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.albums.album_and_modification import (
+    AlbumAndModification,
+)
 from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
@@ -472,7 +475,6 @@ class AlbumCollectionWrapper:
         tag_mod_report: ModificationReport,
         old_tested_mode: bool = True,
     ) -> "AlbumAndModification":
-            from immich_autotag.albums.albums.album_and_modification import AlbumAndModification
         """Central helper: attempt to append an album wrapper to the albums list with duplicate handling.
 
         If a duplicate name exists and it's a temporary album,
@@ -514,7 +516,9 @@ class AlbumCollectionWrapper:
             )
             albums_after = list(self.find_all_albums_with_name(album_name))
             if len(albums_after) == 1:
-                return AlbumAndModification(album=albums_after[0], modification=report_entry)
+                return AlbumAndModification(
+                    album=albums_after[0], modification=report_entry
+                )
             else:
                 raise RuntimeError(
                     f"Duplicate albums with name '{album_name}' were found and attempted to delete, "
