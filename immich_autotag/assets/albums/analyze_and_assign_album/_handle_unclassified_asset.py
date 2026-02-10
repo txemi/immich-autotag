@@ -10,6 +10,7 @@ from typeguard import typechecked
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_entry import ModificationEntry
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 from .album_assignment_result import AlbumAssignmentResult
 
@@ -21,14 +22,27 @@ if TYPE_CHECKING:
 
 @attrs.define(auto_attribs=True, slots=True)
 class AlbumAssignmentResultInfo:
-    result: AlbumAssignmentResult = attrs.field(
+    _result: AlbumAssignmentResult = attrs.field(
         validator=attrs.validators.instance_of(AlbumAssignmentResult)
     )
-    entry: ModificationEntry | None = attrs.field(
+    _entry: ModificationEntry | None = attrs.field(
         validator=attrs.validators.optional(
             attrs.validators.instance_of(ModificationEntry)
         )
     )
+    _modifications: ModificationEntriesList | None = attrs.field(
+        validator=attrs.validators.optional(
+            attrs.validators.instance_of(ModificationEntriesList))
+    )
+
+    def get_result(self) -> AlbumAssignmentResult:
+        return self._result
+
+    def get_entry(self) -> ModificationEntry | None:
+        return self._entry
+
+    def get_modifications(self) -> ModificationEntriesList | None:
+        return self._modifications
 
 
 @typechecked
@@ -62,7 +76,7 @@ def handle_unclassified_asset(
                 album_origin=album_origin,
             )
             return AlbumAssignmentResultInfo(
-                AlbumAssignmentResult.ASSIGNED_UNIQUE, report_entry
+                AlbumAssignmentResult.ASSIGNED_UNIQUE, report_entry, None
             )
 
     # If no unique album detected, try to create a temporary album
@@ -76,11 +90,11 @@ def handle_unclassified_asset(
 
     if created_album:
         return AlbumAssignmentResultInfo(
-            AlbumAssignmentResult.CREATED_TEMPORARY, created_album
+            AlbumAssignmentResult.CREATED_TEMPORARY, created_album, None
         )
 
     log(
         f"[ALBUM ASSIGNMENT] Asset '{asset_name}' is not classified and no album could be assigned.",
         level=LogLevel.DEBUG,
     )
-    return AlbumAssignmentResultInfo(AlbumAssignmentResult.UNCLASSIFIED_NO_ALBUM, None)
+    return AlbumAssignmentResultInfo(AlbumAssignmentResult.UNCLASSIFIED_NO_ALBUM, None, None)
