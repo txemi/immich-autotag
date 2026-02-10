@@ -42,7 +42,7 @@ def process_album_detection(
         return album_wrapper.add_asset(
             asset_wrapper=asset_wrapper,
             client=client,
-            tag_mod_report=tag_mod_report,
+            modification_report=tag_mod_report,
         )
     else:
         log(

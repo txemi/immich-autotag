@@ -414,9 +414,10 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def add_asset(
         self,
+        *,
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
-        tag_mod_report: "ModificationReport",
+        modification_report: "ModificationReport",
     ) -> "ModificationEntry":
         """
         Adds an asset to the album. If the asset is already present,
@@ -434,7 +435,7 @@ class AlbumResponseWrapper:
         if item:
             if not item.success:
                 self._handle_add_asset_error(
-                    item, asset_wrapper, client, tag_mod_report
+                    item, asset_wrapper, client, modification_report
                 )
         else:
             raise RuntimeError(
@@ -443,7 +444,7 @@ class AlbumResponseWrapper:
 
         # 4. Reporting
         entry = self._report_addition_to_modification_report(
-            asset_wrapper, tag_mod_report
+            asset_wrapper, modification_report
         )
 
         # 5. Consistency Verification
@@ -668,9 +669,10 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def remove_asset(
         self,
+        *,
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
-        tag_mod_report: "ModificationReport",
+        modification_report: "ModificationReport",
     ) -> ModificationEntry | None:
         """
         Removes the asset from the album using the API and validates the result.
@@ -690,7 +692,7 @@ class AlbumResponseWrapper:
         if item:
             if not item.success:
                 report_entry = self._handle_remove_asset_error(
-                    item, asset_wrapper, tag_mod_report
+                    item, asset_wrapper, modification_report
                 )
                 return report_entry
         else:
@@ -708,7 +710,7 @@ class AlbumResponseWrapper:
 
         # 5. Reporting
         report_entry: ModificationEntry = self._report_removal_to_modification_report(
-            asset_wrapper, tag_mod_report
+            asset_wrapper, modification_report
         )
 
         # 6. Consistency Verification
@@ -720,8 +722,9 @@ class AlbumResponseWrapper:
     @conditional_typechecked
     def trim_name_if_needed(
         self,
+        *,
         client: ImmichClient,
-        tag_mod_report: "ModificationReport",
+        modification_report: "ModificationReport",
     ) -> None:
         album_name = self.get_album_name()
         if album_name.startswith(" "):
@@ -741,7 +744,7 @@ class AlbumResponseWrapper:
             )
             from immich_autotag.report.modification_kind import ModificationKind
 
-            tag_mod_report.add_album_modification(
+            modification_report.add_album_modification(
                 kind=ModificationKind.RENAME_ALBUM,
                 album=self,
                 old_value=album_name,
@@ -756,14 +759,18 @@ class AlbumResponseWrapper:
 
     @typechecked
     def rename_album(
-        self, new_name: str, client: ImmichClient, tag_mod_report: "ModificationReport"
+        self,
+        *,
+        new_name: str,
+        client: ImmichClient,
+        modification_report: "ModificationReport",
     ) -> "ModificationEntry | None":
         """
         Renames the album using the API and updates the cache entry and modification report.
         Args:
             new_name: The new name to assign to the album.
             client: The ImmichClient instance for API calls.
-            tag_mod_report: The ModificationReport for logging changes.
+            modification_report: The ModificationReport for logging changes.
         """
         current_name = self.get_album_name()
         if new_name == current_name:
@@ -790,7 +797,7 @@ class AlbumResponseWrapper:
         self._cache_entry._dto.update(
             dto=updated_dto, load_source=AlbumLoadSource.UPDATE
         )
-        report_entry = tag_mod_report.add_album_modification(
+        report_entry = modification_report.add_album_modification(
             kind=ModificationKind.RENAME_ALBUM,
             album=self,
             old_value=current_name,

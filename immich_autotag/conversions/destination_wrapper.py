@@ -54,7 +54,9 @@ class DestinationWrapper:
                         client = context.get_client_wrapper().get_client()
                         tag_mod_report = ModificationReport.get_instance()
                         entry = album_wrapper.add_asset(
-                            asset_wrapper, client, tag_mod_report
+                            asset_wrapper=asset_wrapper,
+                            client=client,
+                            modification_report=tag_mod_report,
                         )
                         if entry:
                             changes = changes.append(entry)

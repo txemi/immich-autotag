@@ -61,7 +61,7 @@ def remove_asset_from_autotag_temporary_albums(
             result: ModificationEntry | None = album_wrapper.remove_asset(
                 asset_wrapper=asset_wrapper,
                 client=client,
-                tag_mod_report=tag_mod_report,
+                modification_report=tag_mod_report,
             )
             if result is not None:
                 # Immediate integrity check: the modification must correspond to the processed album

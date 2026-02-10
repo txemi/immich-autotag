@@ -22,4 +22,8 @@ def rename_duplicate_album(
     Renames a duplicate album by appending the rescue suffix.
     """
     new_name = f"{album_wrapper.get_album_name()}{RENAMED_BY_AUTOTAG_DUPLICATE_USER_ALBUM_SUFFIX}"
-    return album_wrapper.rename_album(new_name, client, tag_mod_report)
+    return album_wrapper.rename_album(
+            new_name=new_name,
+            client=client,
+            modification_report=tag_mod_report,
+        )

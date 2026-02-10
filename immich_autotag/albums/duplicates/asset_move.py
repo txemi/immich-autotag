@@ -64,7 +64,11 @@ def move_assets_between_albums(
     for asset_wrapper in asset_wrappers:
         # Add to destination album using wrapper logic (handles duplicates)
         try:
-            dest.add_asset(asset_wrapper, client, tag_mod_report)
+            dest.add_asset(
+                asset_wrapper=asset_wrapper,
+                client=client,
+                modification_report=tag_mod_report,
+            )
         except Exception as e:
             from immich_autotag.albums.album.album_response_wrapper import (
                 AssetAlreadyInAlbumError,
@@ -85,7 +89,9 @@ def move_assets_between_albums(
         # Remove from source album using wrapper logic
         try:
             report_entry: ModificationEntry | None = src.remove_asset(
-                asset_wrapper, client, tag_mod_report
+                asset_wrapper=asset_wrapper,
+                client=client,
+                modification_report=tag_mod_report,
             )
             if report_entry is not None:
                 report_entries.append(report_entry)
