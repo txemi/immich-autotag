@@ -13,6 +13,8 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 
 from .album_assignment_result import AlbumAssignmentResult
+from ._handle_unclassified_asset import AlbumAssignmentResultInfo
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 if TYPE_CHECKING:
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -35,15 +37,22 @@ def handle_classified_asset(
         .get_albums_collection()
         .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
-    result = remove_asset_from_autotag_temporary_albums(
+    cleanup_results = remove_asset_from_autotag_temporary_albums(
         asset_wrapper=asset_wrapper,
         temporary_albums=all_albums,
         tag_mod_report=tag_mod_report,
     )
-    # Remove 'unknown' tag if present and update classification tags
-    r2: ClassificationValidationResult = (
-        asset_wrapper.validate_and_update_classification()
-    )
+    # cleanup_results is expected to be a list of (AlbumResponseWrapper, ModificationEntry | None)
+    cleanup_mods = [entry for (_wrapper, entry) in cleanup_results if entry is not None]
+
+    r2: ClassificationValidationResult = asset_wrapper.validate_and_update_classification()
+    # r2.get_modifications() debe devolver una ModificationEntriesList
+    all_mods = cleanup_mods
+    r2_mods = r2.get_modifications()
+    if r2_mods is not None:
+        all_mods.extend(r2_mods.entries())
+
+    modifications = ModificationEntriesList(entries=all_mods) if all_mods else None
 
     log(
         f"[ALBUM ASSIGNMENT] Asset '{asset_wrapper.get_original_file_name()}' classified. "
@@ -51,6 +60,4 @@ def handle_classified_asset(
         level=LogLevel.FOCUS,
     )
 
-    from ._handle_unclassified_asset import AlbumAssignmentResultInfo
-
-    return AlbumAssignmentResultInfo(AlbumAssignmentResult.CLASSIFIED, result)
+    return AlbumAssignmentResultInfo(AlbumAssignmentResult.CLASSIFIED, modifications)
