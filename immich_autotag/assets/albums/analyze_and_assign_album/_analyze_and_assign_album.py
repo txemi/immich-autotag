@@ -64,7 +64,6 @@ def analyze_and_assign_album(
 
     # Combine all modifications into a single ModificationEntriesList
 
-
     mods = result.get_modifications()
     combined_modifications = ModificationEntriesList.combine_optional(
         duplicate_mods, mods
