@@ -140,12 +140,15 @@ class AssetProcessReport(ProcessStepResult):
             lines.append(f"  Processing steps ({len(self._process_step_results)}):")
             for idx, result in enumerate(self._process_step_results, 1):
                 title = result.get_title()
-                lines.append(f"    {idx:02d}. {title}: {result.format()}")
+                mod_marker = (
+                    " [MODIFIED ✨]" if result.has_changes() else " [NO MODIFICATION]"
+                )
+                lines.append(f"    {idx:02d}. {title}: {result.format()}{mod_marker}")
 
         # Add a final summary line about modifications (in English)
         changed_steps = [
-            result.get_title()
-            for result in self._process_step_results
+            f"{idx:02d}. {result.get_title()}"
+            for idx, result in enumerate(self._process_step_results, 1)
             if result.has_changes()
         ]
         if changed_steps:
