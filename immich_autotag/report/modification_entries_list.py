@@ -142,6 +142,19 @@ class ModificationEntriesList(ProcessStepResult):
         """Returns the number of unique assets referenced by the modifications."""
         return len(self.get_assets())
 
+    @staticmethod
+    def combine_optional(
+        first: ModificationEntriesList | None, second: ModificationEntriesList | None
+    ) -> ModificationEntriesList | None:
+        if first and second:
+            combined = first + second
+            return combined if combined.entries() else None
+        elif first and first.entries():
+            return first
+        elif second and second.entries():
+            return second
+        return None
+
     def __getitem__(self, index: int) -> "ModificationEntry":
         """Allows index access to entries (list-like)."""
         return self._entries[index]
