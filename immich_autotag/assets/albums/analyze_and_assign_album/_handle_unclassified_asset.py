@@ -47,7 +47,6 @@ class AlbumAssignmentResultInfo:
                     f"Integrity error: More than one asset in modifications: {asset_count}"
                 )
 
-
     def get_unique_album(self) -> "AlbumResponseWrapper":
         if self._modifications is None:
             raise ValueError("No modifications present")
@@ -57,7 +56,6 @@ class AlbumAssignmentResultInfo:
                 f"Expected exactly one album in modifications, found {len(albums)}: {albums}"
             )
         return next(self._modifications.get_albums())
-
 
     def get_unique_asset(self) -> "AssetResponseWrapper":
         if self._modifications is None:
