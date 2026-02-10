@@ -31,10 +31,12 @@ def handle_duplicate_conflicts(
     all_wrappers = [asset_wrapper] + list(
         album_decision.duplicates_info.get_details().values()
     )
-    mods=ModificationEntriesList()
+    mods = ModificationEntriesList()
     for wrapper in all_wrappers:
-        modifications: ModificationEntriesList = wrapper.ensure_autotag_duplicate_album_conflict(
-            conflict=conflict, duplicate_id=duplicate_id
+        modifications: ModificationEntriesList = (
+            wrapper.ensure_autotag_duplicate_album_conflict(
+                conflict=conflict, duplicate_id=duplicate_id
+            )
         )
         mods.extend(modifications)
     return mods
