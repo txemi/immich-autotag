@@ -35,7 +35,7 @@ class ClassificationValidationResult(ProcessStepResult):
         """Get the match results (which rules matched)."""
         return self._match_results
 
-    def modifications(self) -> "ModificationEntriesList":
+    def get_modifications(self) -> "ModificationEntriesList":
         """Get the modifications (what tags were added/removed)."""
         return self._modifications
 
