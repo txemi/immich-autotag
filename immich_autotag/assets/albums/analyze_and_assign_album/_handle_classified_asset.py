@@ -48,7 +48,7 @@ def handle_classified_asset(
     r2: ClassificationValidationResult = (
         asset_wrapper.validate_and_update_classification()
     )
-    # r2.get_modifications() debe devolver una ModificationEntriesList
+    # r2.get_modifications() returns a ModificationEntriesList
     all_mods = cleanup_mods
     r2_mods = r2.get_modifications()
     if r2_mods is not None:
