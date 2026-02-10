@@ -19,40 +19,24 @@ from python_qualitygate.implementations.check_pylint_protected_access import Che
 
 
 
-# BATTERY_ORDER: Detailed justification for the order
-#
-# 1. CheckPythonSyntax: Detects critical syntax errors before any further analysis.
-# 2. CheckNoSpanishChars: Detects forbidden characters and words before formatting or analysis.
-# 3. CheckMypy: Static typing is fundamental to catch logical errors before code modification.
-# 4. CheckImportLinter: Architecture/import rules to ensure structure before formatting.
-# 5. CheckNoTuples: Design rules to avoid forbidden patterns before code modification.
-# 6. CheckNoDynamicAttrs: Detects forbidden dynamic attributes, important for robustness before formatting.
-# 7. CheckShfmt: Formats shell scripts, must run before linters to avoid false positives.
-# 8. CheckIsort: Sorts imports, must run before linters and Python formatters.
-# 9. CheckSsort: Sorts structures, if applicable, before general formatting.
-# 10. CheckBlack: Formats Python, must run before linters to avoid false positives.
-# 11. CheckRuff: Modern linter, fast, detects style issues after formatting.
-# 12. CheckFlake8: Traditional linter, may overlap with Ruff, but adds extra rules.
-# 13. CheckPylintProtectedAccess: Specific protected access rules, after formatting and general linters.
-# 14. CheckJscpd: Duplicate detection, expensive, best at the end to avoid blocking the flow.
-# 15. CheckLargeFiles: Large file detection, expensive, best at the end.
 
+# BATTERY_ORDER: Each module is justified inline for its position relative to the next.
 BATTERY_ORDER = [
-    CheckPythonSyntax,           # Syntax first: blocks everything else if it fails
-    CheckNoSpanishChars,         # Forbidden chars/words before code modification
-    CheckMypy,                   # Typing before formatting to catch logical errors
-    CheckImportLinter,           # Architecture/imports before formatting
-    CheckNoTuples,               # Design rules before code modification
-    CheckNoDynamicAttrs,         # Robustness before formatting
-    CheckShfmt,                  # Shell formatting before linters
-    CheckIsort,                  # Import sorting before linters
-    CheckSsort,                  # Structure sorting before general formatting
-    CheckBlack,                  # Python formatting before linters
-    CheckRuff,                   # Modern linter after formatting
-    CheckFlake8,                 # Traditional linter after formatting
-    CheckPylintProtectedAccess,  # Specific rules after general linters
-    CheckJscpd,                  # Duplicate detection at the end, expensive
-    CheckLargeFiles,             # Large file detection at the end, expensive
+    CheckPythonSyntax,           # Must be first: syntax errors block all further checks. Only after syntax is valid can forbidden chars/words be reliably detected.
+    CheckNoSpanishChars,         # Forbidden chars/words must be removed before static typing, since they may cause mypy to fail or misinterpret code.
+    CheckMypy,                   # Static typing (mypy) should run before architectural checks, as type errors are more fundamental and may block import structure analysis.
+    CheckImportLinter,           # Import structure must be validated before design rules (like tuple usage), since architectural violations are more critical.
+    CheckNoTuples,               # Tuple usage is a design constraint; dynamic attribute checks depend on code structure being valid and tuple rules enforced.
+    CheckNoDynamicAttrs,         # Dynamic attribute checks ensure robustness before formatting shell scripts, as shell formatting does not affect Python robustness.
+    CheckShfmt,                  # Shell formatting must precede import sorting, since shell scripts are independent and should be formatted before Python-specific checks.
+    CheckIsort,                  # Import sorting (isort) should run before structure sorting (ssort), as imports are a distinct structure and must be ordered first.
+    CheckSsort,                  # Structure sorting (ssort) should run before general Python formatting (black), since ssort may change code blocks that black will then format.
+    CheckBlack,                  # Python formatting (black) must run before modern linters (ruff), to avoid false positives and ensure code is well-formatted for linting.
+    CheckRuff,                   # Ruff (modern linter) runs before Flake8 (traditional linter), as Ruff is faster and covers more cases; Flake8 adds extra rules after Ruff.
+    CheckFlake8,                 # Flake8 runs before PylintProtectedAccess, since general linting should precede specific protected access checks.
+    CheckPylintProtectedAccess,  # Protected access checks should run before duplicate detection (jscpd), as jscpd is expensive and should only run after all code is clean.
+    CheckJscpd,                  # Duplicate detection (jscpd) runs before large file detection, since jscpd is more likely to block the pipeline; large file checks are last and most expensive.
+    CheckLargeFiles,             # Large file detection is last, most expensive, and should only run after all other checks pass.
 ]
 
 
