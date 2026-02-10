@@ -691,10 +691,10 @@ class AlbumResponseWrapper:
         item = self._find_asset_result_in_response(result, asset_wrapper.get_id())
         if item:
             if not item.success:
-                report_entry = self._handle_remove_asset_error(
+                removal_entry = self._handle_remove_asset_error(
                     item, asset_wrapper, modification_report
                 )
-                return report_entry
+                return removal_entry
         else:
             self._handle_missing_remove_response(asset_wrapper)
             return None
@@ -709,7 +709,7 @@ class AlbumResponseWrapper:
         )
 
         # 5. Reporting
-        report_entry: ModificationEntry = self._report_removal_to_modification_report(
+        removal_entry: ModificationEntry = self._report_removal_to_modification_report(
             asset_wrapper, modification_report
         )
 
@@ -717,7 +717,7 @@ class AlbumResponseWrapper:
         self._verify_asset_removed_from_album_with_retry(
             asset_wrapper, client, max_retries=3
         )
-        return report_entry
+        return removal_entry
 
     @conditional_typechecked
     def trim_name_if_needed(
