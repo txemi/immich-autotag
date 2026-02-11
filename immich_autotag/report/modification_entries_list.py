@@ -5,7 +5,7 @@ with convenient query and aggregate methods.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator, List
+from typing import TYPE_CHECKING, Iterator
 
 import attrs
 
@@ -22,7 +22,6 @@ from immich_autotag.assets.process.process_step_result_protocol import ProcessSt
 
 @attrs.define(auto_attribs=True, slots=True, frozen=False)
 class ModificationEntriesList(ProcessStepResult):
-
     """
     Encapsulates a list of ModificationEntry objects, providing convenient
     methods for querying, filtering, and aggregating modification data.
@@ -33,21 +32,27 @@ class ModificationEntriesList(ProcessStepResult):
 
     _entries: list[ModificationEntry] | None = attrs.field(
         default=attrs.Factory(list),
-        repr=lambda entries: f"modifications={len(entries)}"
+        repr=lambda entries: f"modifications={len(entries)}",
     )
+
     def __attrs_post_init__(self):
         if self._entries is None:
             self._entries = []
+
     def _get_entries_or_raise(self) -> list["ModificationEntry"]:
         if not self._entries or len(self._entries) == 0:
             raise ValueError("No modification entries available.")
         return self._entries
 
-    def _count_entries_of_kind(self, entries: list["ModificationEntry"], kind: "ModificationKind") -> int:
+    def _count_entries_of_kind(
+        self, entries: list["ModificationEntry"], kind: "ModificationKind"
+    ) -> int:
         """Returns the count of entries of a given kind in the provided entries list."""
         return sum(1 for entry in entries if entry.kind == kind)
 
-    def _count_map_by_kind(self, entries: list["ModificationEntry"]) -> dict["ModificationKind", int]:
+    def _count_map_by_kind(
+        self, entries: list["ModificationEntry"]
+    ) -> dict["ModificationKind", int]:
         """Returns a dict mapping each kind to its count in the provided entries list."""
         kinds = {entry.kind for entry in entries}
         return {kind: self._count_entries_of_kind(entries, kind) for kind in kinds}
@@ -149,9 +154,7 @@ class ModificationEntriesList(ProcessStepResult):
         """
         entries = self._get_entries_or_raise()
         assets: list[AssetResponseWrapper] = [
-            entry.asset_wrapper
-            for entry in entries
-            if entry.asset_wrapper is not None
+            entry.asset_wrapper for entry in entries if entry.asset_wrapper is not None
         ]
         return deduplicate_assets_by_id(assets)
 
@@ -188,11 +191,7 @@ class ModificationEntriesList(ProcessStepResult):
         Considera como cambio cualquier entrada cuyo kind no sea INFO ni NO_OP.
         """
         entries = self._get_entries_or_raise()
-        return sum(
-            1
-            for entry in entries
-            if entry.kind.is_change()
-        )
+        return sum(1 for entry in entries if entry.kind.is_change())
 
     def __getitem__(self, index: int) -> ModificationEntry:
         """Allows index access to entries (list-like). Raises if empty."""
