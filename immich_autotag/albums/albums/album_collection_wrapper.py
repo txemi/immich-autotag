@@ -521,7 +521,9 @@ class AlbumCollectionWrapper:
             )
             albums_after = list(self.find_all_albums_with_name(album_name))
             if len(albums_after) == 1:
-                return AlbumAndModification.from_album_and_entry(albums_after[0], report_entry)
+                return AlbumAndModification.from_album_and_entry(
+                    albums_after[0], report_entry
+                )
             else:
                 raise RuntimeError(
                     f"Duplicate albums with name '{album_name}' were found and attempted to delete, "
