@@ -1,3 +1,4 @@
+
 from enum import Enum
 
 import attrs
@@ -32,10 +33,21 @@ class ModificationKindInfo:
     log_level: LogLevel = attrs.field(type=LogLevel)
     level: ModificationLevel = attrs.field(type=ModificationLevel)
     # is_error/is_change removed; use methods instead
-    requires_asset: bool = attrs.field(type=bool)
-    requires_album: bool = attrs.field(type=bool)
-    requires_tag: bool = attrs.field(type=bool)
+    _requires_asset: bool = attrs.field(type=bool, alias="requires_asset")
+    _requires_album: bool = attrs.field(type=bool, alias="requires_album")
+    _requires_tag: bool = attrs.field(type=bool, alias="requires_tag")
 
+    def requires_asset(self) -> bool:
+        return self._requires_asset
+
+    def requires_album(self) -> bool:
+        return self._requires_album
+
+    def requires_tag(self) -> bool:
+        return self._requires_tag
+    def is_change(self: "ModificationKind") -> bool:  # type: ignore
+        # Consider a change if the level is MODIFICATION
+        return self.value.level.is_modification()  # type: ignore[attr-defined]
 
 class ModificationKind(Enum):
 
