@@ -69,7 +69,7 @@ class AlbumList:
 
     def deduplicate(self) -> "AlbumList":
         """
-        Devuelve un nuevo AlbumList con álbumes únicos por UUID.
+        Return a new AlbumList containing unique albums by UUID.
         """
         seen_ids = set()
         unique_albums = []
@@ -82,19 +82,19 @@ class AlbumList:
 
     def uuids_set(self) -> set:
         """
-        Devuelve un set de UUIDs de los álbumes.
+        Return a set of UUIDs for all albums in the list.
         """
         return set(str(album.get_album_uuid()) for album in self._albums)
 
     def equals(self, other: "AlbumList") -> bool:
         """
-        Compara si dos AlbumList contienen los mismos álbumes (por UUID, sin importar orden).
+        Return True if both AlbumList instances contain the same albums by UUID (order-independent).
         """
         return self.uuids_set() == other.uuids_set()
 
     def difference(self, other: "AlbumList") -> "AlbumList":
         """
-        Devuelve un AlbumList con los álbumes que están en self pero no en other (por UUID).
+        Return an AlbumList containing albums present in self but not in other (by UUID).
         """
         other_uuids = other.uuids_set()
         diff_albums = [
