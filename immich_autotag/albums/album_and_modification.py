@@ -47,7 +47,9 @@ class AlbumAndModification:
 
     @staticmethod
     @typechecked
-    def from_album_and_modifications(album: AlbumResponseWrapper, modifications: ModificationEntriesList) -> "AlbumAndModification":
+    def from_album_and_modifications(
+        album: AlbumResponseWrapper, modifications: ModificationEntriesList
+    ) -> "AlbumAndModification":
         """
         Static constructor for AlbumAndModification.
         Use this to avoid issues with attrs and positional/keyword arguments.
@@ -64,5 +66,6 @@ class AlbumAndModification:
         Static constructor for AlbumAndModification from a single ModificationEntry.
         """
         from immich_autotag.report.modification_entry import ModificationEntry
+
         assert isinstance(entry, ModificationEntry), "entry must be a ModificationEntry"
         return AlbumAndModification(album, ModificationEntriesList([entry]))

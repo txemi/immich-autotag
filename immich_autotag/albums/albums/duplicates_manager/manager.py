@@ -111,10 +111,12 @@ class DuplicateAlbumManager:
         from immich_autotag.config.internal_config import MERGE_DUPLICATE_ALBUMS_ENABLED
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            conflict_result: AlbumAndModification = self._handle_duplicate_album_conflict(
-                incoming_album=incoming_album,
-                existing_album=existing,
-                context="duplicate_on_load",
+            conflict_result: AlbumAndModification = (
+                self._handle_duplicate_album_conflict(
+                    incoming_album=incoming_album,
+                    existing_album=existing,
+                    context="duplicate_on_load",
+                )
             )
             return conflict_result
 
@@ -136,9 +138,9 @@ class DuplicateAlbumManager:
         )
         self.collected_duplicates.append(duplicate_report)
 
-        from immich_autotag.report.modification_kind import ModificationKind
         from immich_autotag.report.modification_entry import ModificationEntry
-        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        from immich_autotag.report.modification_kind import ModificationKind
+
         error_modification: ModificationEntry = tag_mod_report.add_error_modification(
             kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
             error_message=f"duplicate album name encountered: {name}",
