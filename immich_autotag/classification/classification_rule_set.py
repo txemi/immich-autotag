@@ -26,7 +26,6 @@ from immich_autotag.types.uuid_wrappers import AssetUUID
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ClassificationRuleSet:
 
-
     _rules: List[ClassificationRuleWrapper]
 
     @typechecked
@@ -144,14 +143,6 @@ class ClassificationRuleSet:
         return wrappers
 
     @typechecked
-    def __getitem__(self, idx: int) -> ClassificationRuleWrapper:
-        return self._rules[idx]
-
-    @typechecked
-    def __len__(self) -> int:
-        return len(self._rules)
-
-    @typechecked
     def match_asset(self, asset: "AssetResponseWrapper") -> list[MatchResult]:
         """
         Returns a list of MatchResult for all rules that match the given asset.
@@ -169,3 +160,11 @@ class ClassificationRuleSet:
         Public method to access the list of rule wrappers.
         """
         return list(self._rules)
+
+    @typechecked
+    def __getitem__(self, idx: int) -> ClassificationRuleWrapper:
+        return self._rules[idx]
+
+    @typechecked
+    def __len__(self) -> int:
+        return len(self._rules)
