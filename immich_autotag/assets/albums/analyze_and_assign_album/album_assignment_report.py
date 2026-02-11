@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 import attrs
 
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
+from immich_autotag.logging.levels import LogLevel
+from immich_autotag.logging.utils import log
 
 from ._analyze_and_assign_album import AlbumAssignmentResultInfo
 from .album_assignment_result import AlbumAssignmentResult
@@ -103,6 +105,7 @@ class AlbumAssignmentReport(ProcessStepResult):
         asset_wrapper: "AssetResponseWrapper",
         tag_mod_report: "ModificationReport",
     ) -> "AlbumAssignmentReport":
+        log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
         report = cls(asset_wrapper=asset_wrapper)
         report._perform_analysis(tag_mod_report)
         return report

@@ -72,19 +72,6 @@ def _analyze_duplicate_tags(
 
 
 @typechecked
-def _analyze_and_assign_album(
-    asset_wrapper: AssetResponseWrapper,
-    tag_mod_report: ModificationReport,
-) -> AlbumAssignmentReport:
-    """Analyze and assign the asset to an album if needed.
-
-    Returns the result of analyze_and_assign_album.
-    """
-    log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
-    return AlbumAssignmentReport.analyze(asset_wrapper, tag_mod_report)
-
-
-@typechecked
 def process_single_asset(
     asset_wrapper: "AssetResponseWrapper",
 ) -> None:
@@ -122,7 +109,7 @@ def process_single_asset(
 
     report.add_result(result_03_duplicate_tag_analysis)
     tag_mod_report = ModificationReport.get_instance()
-    result_04_album_assignment = _analyze_and_assign_album(
+    result_04_album_assignment = AlbumAssignmentReport.analyze(
         asset_wrapper, tag_mod_report
     )
     report.add_result(result_04_album_assignment)
