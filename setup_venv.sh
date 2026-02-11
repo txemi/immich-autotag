@@ -1,3 +1,5 @@
+
+
 #!/bin/bash
 # Robust script to create virtual environment, install dependencies, and generate/install the local client
 # Automatically detects Immich server version and downloads the matching OpenAPI spec
@@ -53,9 +55,9 @@ init_paths() {
 }
 
 clean_env() {
-    echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
-    rm -rf "$VENV_DIR" "$CLIENT_DIR"
-    echo "Cleanup completed."
+	echo "Cleaning $VENV_DIR and $CLIENT_DIR..."
+	rm -rf "$VENV_DIR" "$CLIENT_DIR"
+	echo "Cleanup completed."
 }
 
 extract_config() {
@@ -137,67 +139,167 @@ get_openapi_url() {
 	OPENAPI_URL="$openapi_url"
 }
 create_venv() {
-	if [ ! -d "$VENV_DIR" ]; then
-		python3 -m venv "$VENV_DIR"
-		echo "Virtual environment created at $VENV_DIR"
-	else
+	if [ -d "$VENV_DIR" ]; then
 		echo "Virtual environment already exists at $VENV_DIR"
+		source "$VENV_DIR/bin/activate"
+		echo "Virtual environment activated."
+		return
 	fi
+	python3 -m venv "$VENV_DIR"
+	echo "Virtual environment created at $VENV_DIR"
 	source "$VENV_DIR/bin/activate"
 	echo "Virtual environment activated."
 }
 
 # Instala dependencias Python de runtime
 install_python_requirements() {
-	if [ -f "$REPO_ROOT/requirements.txt" ]; then
-		pip install --upgrade pip
-		grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
-		echo "Runtime dependencies installed."
-	else
+	if [ ! -f "$REPO_ROOT/requirements.txt" ]; then
 		echo "requirements.txt not found."
+		return
+	fi
+	pip install --upgrade pip
+	grep -v '^immich-client' "$REPO_ROOT/requirements.txt" | grep -v '^#' | xargs -r pip install
+	echo "Runtime dependencies installed."
+}
+# Install Node.js and npm if not present (for jscpd/quality gate)
+install_nodejs_npm() {
+	if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+		echo "[DEV] Node.js and npm already installed. Skipping."
+		return
+	fi
+	if ! command -v apt-get >/dev/null 2>&1; then
+		echo "[DEV] Skipping Node.js/npm installation: apt-get not found. Install nodejs and npm manually if needed."
+		return
+	fi
+	echo "[DEV] Installing Node.js and npm (for jscpd/quality gate)..."
+	if command -v sudo >/dev/null 2>&1; then
+		sudo apt-get update && sudo apt-get install -y nodejs npm
+	elif [ "$(id -u)" -eq 0 ]; then
+		apt-get update && apt-get install -y nodejs npm
+	else
+		echo "ERROR: Neither sudo is available nor running as root. Cannot install nodejs/npm." >&2
+		exit 1
+	fi
+	if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+		echo "ERROR: Node.js/npm installation failed. Please install them manually." >&2
+		exit 1
 	fi
 }
 
+# Install shfmt if not present
+install_shfmt() {
+	if command -v shfmt >/dev/null 2>&1; then
+		echo "[DEV] shfmt already installed. Skipping system tools installation."
+		return
+	fi
+	if ! command -v apt-get >/dev/null 2>&1; then
+		echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
+		return
+	fi
+	echo "[DEV] Installing system development tools (shfmt, etc.)..."
+	if command -v sudo >/dev/null 2>&1; then
+		sudo apt-get update && sudo apt-get install -y shfmt
+	elif [ "$(id -u)" -eq 0 ]; then
+		apt-get update && apt-get install -y shfmt
+	else
+		echo "ERROR: Neither sudo is available nor running as root. Cannot install shfmt." >&2
+		exit 1
+	fi
+	if ! command -v shfmt >/dev/null 2>&1; then
+		echo "ERROR: shfmt installation failed. Please install it manually." >&2
+		exit 1
+	fi
+}
+# Install curl if not present
+install_curl() {
+	if command -v curl >/dev/null 2>&1; then
+		echo "[DEV] curl already installed. Skipping."
+		return
+	fi
+	if ! command -v apt-get >/dev/null 2>&1; then
+		echo "[DEV] Skipping curl installation: apt-get not found. Install curl manually if needed."
+		return
+	fi
+	echo "[DEV] Installing curl..."
+	if command -v sudo >/dev/null 2>&1; then
+		sudo apt-get update && sudo apt-get install -y curl
+	elif [ "$(id -u)" -eq 0 ]; then
+		apt-get update && apt-get install -y curl
+	else
+		echo "ERROR: Neither sudo is available nor running as root. Cannot install curl." >&2
+		exit 1
+	fi
+	if ! command -v curl >/dev/null 2>&1; then
+		echo "ERROR: curl installation failed. Please install it manually." >&2
+		exit 1
+	fi
+}
+# Install gh CLI if not present
+install_gh_cli() {
+	if command -v gh >/dev/null 2>&1; then
+		echo "[DEV] gh CLI already installed. Skipping."
+		return
+	fi
+	if ! command -v apt-get >/dev/null 2>&1; then
+		echo "[DEV] Skipping gh CLI installation: apt-get not found. Install gh manually if needed."
+		return
+	fi
+	echo "[DEV] Installing GitHub CLI (gh)..."
+	install_curl
+	# Add GitHub CLI repo if not present
+	if ! apt-cache policy | grep -q 'cli.github.com'; then
+		if command -v sudo >/dev/null 2>&1; then
+			curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+			sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+			echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+			sudo apt-get update
+			sudo apt-get install -y gh
+		elif [ "$(id -u)" -eq 0 ]; then
+			curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+			chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+			echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
+			apt-get update
+			apt-get install -y gh
+		else
+			echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
+			exit 1
+		fi
+	else
+		if command -v sudo >/dev/null 2>&1; then
+			sudo apt-get update && sudo apt-get install -y gh
+		elif [ "$(id -u)" -eq 0 ]; then
+			apt-get update && apt-get install -y gh
+		else
+			echo "ERROR: Neither sudo is available nor running as root. Cannot install gh CLI." >&2
+			exit 1
+		fi
+	fi
+	if ! command -v gh >/dev/null 2>&1; then
+		echo "ERROR: gh CLI installation failed. Please install it manually." >&2
+		exit 1
+	fi
+}
 # Install system development tools (dev mode only)
 install_system_dev_tools() {
 	if [ "$MODE" = "dev" ]; then
-		# Solo Ubuntu/Debian
-		if command -v shfmt >/dev/null 2>&1; then
-			echo "[DEV] shfmt already installed. Skipping system tools installation."
-			return
-		fi
-		if command -v apt-get >/dev/null 2>&1; then
-			echo "[DEV] Installing system development tools (shfmt, etc.)..."
-			if command -v sudo >/dev/null 2>&1; then
-				sudo apt-get update && sudo apt-get install -y shfmt
-			elif [ "$(id -u)" -eq 0 ]; then
-				apt-get update && apt-get install -y shfmt
-			else
-				echo "ERROR: Neither sudo is available nor running as root. Cannot install shfmt." >&2
-				exit 1
-			fi
-			if ! command -v shfmt >/dev/null 2>&1; then
-				echo "ERROR: shfmt installation failed. Please install it manually." >&2
-				exit 1
-			fi
-		else
-			echo "[DEV] Skipping system tools installation: apt-get not found. Install shfmt and jscpd manually if needed."
-		fi
+		install_nodejs_npm
+		install_shfmt
+		install_gh_cli
 	fi
 }
 
 # Install Python development dependencies (dev mode only)
 install_python_dev_requirements() {
-	if [ "$MODE" = "dev" ]; then
-		if [ -f "$REPO_ROOT/requirements-dev.txt" ]; then
-			pip install -r "$REPO_ROOT/requirements-dev.txt"
-			echo "Development dependencies installed."
-		else
-			echo "requirements-dev.txt not found. Skipping dev dependencies."
-		fi
-	else
+	if [ "$MODE" != "dev" ]; then
 		echo "Production mode: only runtime dependencies installed."
+		return
 	fi
+	if [ ! -f "$REPO_ROOT/requirements-dev.txt" ]; then
+		echo "requirements-dev.txt not found. Skipping dev dependencies."
+		return
+	fi
+	pip install -r "$REPO_ROOT/requirements-dev.txt"
+	echo "Development dependencies installed."
 }
 
 # Orchestrates dependency installation
@@ -214,25 +316,22 @@ generate_and_install_client() {
 		echo "openapi-python-client installed."
 	fi
 
-	# Generate the client only if the folder does not exist at the root
-	if [ ! -d "$CLIENT_DIR" ]; then
-		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR"
-		echo "immich-client generated."
-	else
+	if [ -d "$CLIENT_DIR" ]; then
 		echo "The folder $CLIENT_DIR already exists. Regenerating..."
 		rm -rf "$CLIENT_DIR" || true
 		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR" --overwrite
 		echo "immich-client regenerated."
+	else
+		openapi-python-client generate --url "$OPENAPI_URL" --output-path "$CLIENT_DIR"
+		echo "immich-client generated."
 	fi
 
-	# Install the local client if the folder exists at the root
-	if [ -d "$CLIENT_DIR" ]; then
-		pip install -e "$CLIENT_DIR"
-		echo "Local immich-client installed."
-	else
+	if [ ! -d "$CLIENT_DIR" ]; then
 		echo "The folder $CLIENT_DIR was not found."
 		exit 1
 	fi
+	pip install -e "$CLIENT_DIR"
+	echo "Local immich-client installed."
 }
 
 # --- MAIN ---
