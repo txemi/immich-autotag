@@ -33,9 +33,12 @@ class AlbumAndModification:
         if second is None:
             return first
         # Combine modifications, keep album from first (or second, as needed)
+        combined_mods = ModificationEntriesList.combine_optional(
+            first.get_modifications(), second.get_modifications()
+        )
+        if combined_mods is None:
+            combined_mods = ModificationEntriesList()
         return AlbumAndModification(
             album=first.get_album(),
-            modifications=ModificationEntriesList.combine_optional(
-                first.get_modifications(), second.get_modifications()
-            ),
+            modifications=combined_mods,
         )
