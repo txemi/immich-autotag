@@ -51,7 +51,18 @@ class AssetMapManager:
             from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
             tracker = PerformanceTracker.from_total(total)
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+        log("[PROGRESS] [ALBUM-MAP-BUILD] Starting asset-to-albums map construction...", level=LogLevel.PROGRESS)
+
         for idx, album_wrapper in enumerate(albums, 1):
+            # Crazy debug: if the album has the special UUID, raise exception
+            from immich_autotag.config.dev_mode import is_crazy_debug_mode
+            uuid_to_check_str = "68fc28c1-8f35-418c-9314-72578c8c4687"
+            from immich_autotag.types.uuid_wrappers import AssetUUID
+            if is_crazy_debug_mode():
+                if str(album_wrapper.get_album_uuid()) == uuid_to_check_str:
+                    raise RuntimeError(f"[CRAZY DEV MODE] Processing album with special UUID: {uuid_to_check_str}")
             if album_wrapper.is_empty():
                 from immich_autotag.logging.levels import LogLevel
                 from immich_autotag.logging.utils import log
@@ -93,6 +104,8 @@ class AssetMapManager:
                     level=LogLevel.PROGRESS,
                 )
             asset_map.add_album_for_asset_ids(album_wrapper)
+
+        log("[PROGRESS] [ALBUM-MAP-BUILD] Finished asset-to-albums map construction.", level=LogLevel.PROGRESS)
         # Cleanup of empty temporary albums
 
         self._asset_to_albums_map = asset_map

@@ -4,7 +4,7 @@ from ._internal_types import ErrorHandlingMode
 
 # ==================== API CACHE CONTROL (PER TYPE) ====================
 # Control cache usage for each entity type (developer/debug only)
-USE_CACHE_ASSETS = True
+USE_CACHE_ASSETS = False
 USE_CACHE_ALBUMS = USE_CACHE_ASSETS
 USE_CACHE_ALBUM_PAGES = USE_CACHE_ASSETS
 USE_CACHE_USERS = USE_CACHE_ASSETS
