@@ -10,3 +10,10 @@ from immich_autotag.report.modification_entry import ModificationEntry
 class AlbumAndModification:
     album: Optional[AlbumResponseWrapper] = None
     modification: Optional[ModificationEntry] = None
+    @staticmethod
+    def from_album(album: Optional[AlbumResponseWrapper]) -> "AlbumAndModification":
+        """
+        Static constructor for the common case where only the album is provided.
+        Internally uses an empty ModificationEntriesList or None as appropriate.
+        """
+        return AlbumAndModification(album=album, modification=None)
