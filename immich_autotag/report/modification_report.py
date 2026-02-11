@@ -110,15 +110,15 @@ class ModificationReport:
         extra: Optional[dict[str, Any]] = None,
     ) -> ModificationEntry:
         # Validate required arguments based on kind
-        if kind.value.requires_asset and asset_wrapper is None:
+        if kind.value.requires_asset() and asset_wrapper is None:
             raise ValueError(
                 f"ModificationKind {kind.name} requires asset_wrapper, but got None."
             )
-        if kind.value.requires_album and album is None:
+        if kind.value.requires_album() and album is None:
             raise ValueError(
                 f"ModificationKind {kind.name} requires album, but got None."
             )
-        if kind.value.requires_tag and tag is None:
+        if kind.value.requires_tag() and tag is None:
             raise ValueError(
                 f"ModificationKind {kind.name} requires tag, but got None."
             )
