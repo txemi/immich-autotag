@@ -5,10 +5,12 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
+from immich_autotag.report.modification_entry import ModificationEntry
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumAndModification:
+
     _album: AlbumResponseWrapper
     _modifications: ModificationEntriesList
 
@@ -51,3 +53,16 @@ class AlbumAndModification:
         Use this to avoid issues with attrs and positional/keyword arguments.
         """
         return AlbumAndModification(album, modifications)
+
+    @staticmethod
+    @typechecked
+    def from_album_and_entry(
+        album: AlbumResponseWrapper,
+        entry: ModificationEntry,  # Will refine to ModificationEntry if import allows
+    ) -> "AlbumAndModification":
+        """
+        Static constructor for AlbumAndModification from a single ModificationEntry.
+        """
+        from immich_autotag.report.modification_entry import ModificationEntry
+        assert isinstance(entry, ModificationEntry), "entry must be a ModificationEntry"
+        return AlbumAndModification(album, ModificationEntriesList([entry]))
