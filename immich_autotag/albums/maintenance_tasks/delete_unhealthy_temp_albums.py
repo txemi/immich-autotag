@@ -1,20 +1,25 @@
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_entry import ModificationEntry
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 from immich_autotag.types.client_types import ImmichClient
 
 
 def _delete_album(
-    album: AlbumResponseWrapper, client: ImmichClient, albums_collection
-) -> None:
+    album: AlbumResponseWrapper,
+    client: ImmichClient,
+    albums_collection: AlbumCollectionWrapper,
+) -> ModificationEntry:
     """
     Deletes the album using the AlbumCollectionWrapper API.
     """
     from immich_autotag.report.modification_report import ModificationReport
 
     tag_mod_report = ModificationReport.get_instance()
-    albums_collection.delete_album(
+    return albums_collection.delete_album(
         wrapper=album,
         client=client,
         tag_mod_report=tag_mod_report,
@@ -22,7 +27,7 @@ def _delete_album(
     )
 
 
-def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
+def delete_unhealthy_temp_albums(context: ImmichContext) -> ModificationEntriesList:
     """
     Iterates all albums, finds temporary ones, checks health, and deletes those that are unhealthy.
     Returns the number of deleted albums.
@@ -30,7 +35,7 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
     client = context.get_client_wrapper().get_client()
     albums_collection = context.get_albums_collection()
     albums = albums_collection.get_albums()
-    count = 0
+    modifications: list[ModificationEntry] = []
 
     from immich_autotag.assets.albums.temporary_manager.health import (
         is_temporary_album_healthy,
@@ -38,13 +43,14 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
 
     for album in albums:
         if album.is_temporary_album() and not is_temporary_album_healthy(album):
-            _delete_album(album, client, albums_collection)
+            mod = _delete_album(album, client, albums_collection)
+            modifications.append(mod)
             log(
                 f"[PROGRESS] [ALBUM-DELETE] Deleted unhealthy temporary album: '{album.get_album_name()}' (UUID: {album.get_album_uuid()})",
                 level=LogLevel.PROGRESS,
             )
-            count += 1
 
+    count = len(modifications)
     if count > 0:
         log(
             f"[MAINTENANCE] Deleted {count} unhealthy temporary albums (reason: not healthy, e.g. assets too far apart in time or empty)",
@@ -55,4 +61,4 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> int:
             "[MAINTENANCE] No unhealthy temporary albums found for deletion.",
             level=LogLevel.PROGRESS,
         )
-    return count
+    return ModificationEntriesList(entries=modifications)
