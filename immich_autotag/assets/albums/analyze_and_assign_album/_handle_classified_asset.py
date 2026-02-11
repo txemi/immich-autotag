@@ -37,6 +37,11 @@ def handle_classified_asset(
         .get_albums_collection()
         .albums_wrappers_for_asset_wrapper(asset_wrapper)
     )
+    if len(all_albums) == 1:
+        return AlbumAssignmentResultInfo(AlbumAssignmentResult.CLASSIFIED, None)
+    if len(all_albums) == 0:
+        return AlbumAssignmentResultInfo(AlbumAssignmentResult.CLASSIFIED, None)
+
     cleanup_modifications: ModificationEntriesList = (
         remove_asset_from_autotag_temporary_albums(
             asset_wrapper=asset_wrapper,
