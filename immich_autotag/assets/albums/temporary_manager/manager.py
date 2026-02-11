@@ -32,6 +32,10 @@ class TemporaryAlbumManager:
         tracker = PerformanceTracker.from_args(
             total_assets=len(albums), max_assets=len(albums), skip_n=0
         )
+        log(
+            f"[PROGRESS] Starting scan for empty temporary albums (total albums: {len(albums)})...",
+            level=LogLevel.PROGRESS,
+        )
         for idx, album_wrapper in enumerate(albums, 1):
             if tracker.should_log_progress(idx):
                 album_url = album_wrapper.get_immich_album_url().geturl()
@@ -44,6 +48,11 @@ class TemporaryAlbumManager:
                 album_wrapper.get_album_name()
             ):
                 albums_to_remove.append(album_wrapper)
+        progress_summary = tracker.get_progress_description(len(albums))
+        log(
+            f"[PROGRESS] Finished scan for empty temporary albums. Found: {len(albums_to_remove)} | {progress_summary}",
+            level=LogLevel.PROGRESS,
+        )
         return albums_to_remove
 
     def remove_empty_temporary_albums(
