@@ -70,7 +70,7 @@ def remove_asset_from_autotag_temporary_albums(
                         f"Integrity error: modification does not match the processed album. Modification: {result.album}, expected album: {album_wrapper}"
                     )
                 removed_album_list.append(album_wrapper)
-                modifications = modifications.append(result)
+                modifications.append(result)
 
             log(
                 f"Asset {asset_wrapper.get_id()} removed from temporary album "

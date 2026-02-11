@@ -68,5 +68,5 @@ def handle_classification_conflict(
         },
     )
     # Add the conflict entry to the modifications list
-    modifications = modifications.append(conflict_entry)
+    modifications.append(conflict_entry)
     return AlbumAssignmentResultInfo(AlbumAssignmentResult.CONFLICT, modifications)

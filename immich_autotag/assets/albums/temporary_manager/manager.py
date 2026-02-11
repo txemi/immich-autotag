@@ -1,3 +1,4 @@
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 import attrs
 
 from immich_autotag.albums.albums.album_collection_wrapper import (
