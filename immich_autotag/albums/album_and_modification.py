@@ -11,7 +11,6 @@ from immich_autotag.report.modification_entry import ModificationEntry
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumAndModification:
 
-
     _album: AlbumResponseWrapper
     _modifications: ModificationEntriesList
 
@@ -68,11 +67,13 @@ class AlbumAndModification:
         If entry is None, returns AlbumAndModification with empty modifications.
         """
         from immich_autotag.report.modification_entry import ModificationEntry
+
         if entry is None:
             return AlbumAndModification(album, ModificationEntriesList())
-        assert isinstance(entry, ModificationEntry), "entry must be a ModificationEntry or None"
+        assert isinstance(
+            entry, ModificationEntry
+        ), "entry must be a ModificationEntry or None"
         return AlbumAndModification(album, ModificationEntriesList([entry]))
-
 
     @staticmethod
     @typechecked
