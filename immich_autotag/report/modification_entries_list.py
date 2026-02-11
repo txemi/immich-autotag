@@ -70,7 +70,8 @@ class ModificationEntriesList(ProcessStepResult):
     def has_errors(self: ModificationEntriesList) -> bool:
         """Returns True if list contains any ERROR or WARNING modification entries."""
         return any(
-            entry.kind.is_error() or entry.kind.is_warning() for entry in self._entries
+            bool(entry.kind.is_error()) or bool(entry.kind.is_warning())
+            for entry in self._entries
         )
 
     def get_title(self: ModificationEntriesList) -> str:

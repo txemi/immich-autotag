@@ -45,9 +45,9 @@ class ModificationKindInfo:
     def requires_tag(self) -> bool:
         return self._requires_tag
 
-    def is_change(self: "ModificationKind") -> bool:  # type: ignore
-        # Consider a change if the level is MODIFICATION
-        return self.value.level.is_modification()  # type: ignore[attr-defined]
+    def is_change(self) -> bool:
+        """Return True if this kind represents a modification/change."""
+        return self.value.level.is_modification()
 
 
 class ModificationKind(Enum):
@@ -314,3 +314,7 @@ class ModificationKind(Enum):
 
     def is_unknown(self) -> bool:
         return self.get_level().is_unknown()
+
+    def is_change(self) -> bool:
+        """Return True if this kind represents a modification/change."""
+        return self.value.level.is_modification()
