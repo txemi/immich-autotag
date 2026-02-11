@@ -24,7 +24,7 @@ class AssetMapManager:
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
         factory=AssetToAlbumsMap,
-        repr=lambda x: len(x),
+        repr=lambda x: f"AssetToAlbumsMap(len={len(x)})",
         eq=False,
         metadata={"internal": True},
     )

@@ -21,9 +21,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
-from immich_autotag.albums.albums.album_and_modification import (
-    AlbumAndModification,
-)
+from immich_autotag.albums.album_and_modification import AlbumAndModification
 from immich_autotag.albums.albums.album_dual_map import AlbumDualMap
 from immich_autotag.albums.albums.album_list import AlbumList
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
