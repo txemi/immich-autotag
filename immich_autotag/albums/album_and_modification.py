@@ -3,7 +3,7 @@ from __future__ import annotations
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.albums.album_response_wrapper import AlbumResponseWrapper
+from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
 
 
@@ -26,19 +26,28 @@ class AlbumAndModification:
         first: AlbumAndModification | None,
         second: AlbumAndModification | None,
     ) -> AlbumAndModification | None:
+        """
+        Combine two AlbumAndModification instances, aggregating modifications and keeping the album from the first.
+        Returns None if both are None.
+        """
         if first is None and second is None:
             return None
         if first is None:
             return second
         if second is None:
             return first
-        # Combine modifications, keep album from first (or second, as needed)
         combined_mods = ModificationEntriesList.combine_optional(
             first.get_modifications(), second.get_modifications()
         )
         if combined_mods is None:
             combined_mods = ModificationEntriesList()
-        return AlbumAndModification(
-            album=first.get_album(),
-            modifications=combined_mods,
-        )
+        return AlbumAndModification(first.get_album(), combined_mods)
+
+    @staticmethod
+    @typechecked
+    def from_album_and_modifications(album: AlbumResponseWrapper, modifications: ModificationEntriesList) -> "AlbumAndModification":
+        """
+        Static constructor for AlbumAndModification.
+        Use this to avoid issues with attrs and positional/keyword arguments.
+        """
+        return AlbumAndModification(album, modifications)
