@@ -84,14 +84,19 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
         """
         Returns the AlbumList for the given asset UUID, or an empty AlbumList if none.
         """
-        asset_uuid = (
-            AssetUUID.from_uuid(asset_uuid)
-            if not isinstance(asset_uuid, AssetUUID)
-            else asset_uuid
-        )
         if asset_uuid in self:
-            return self[asset_uuid]
+            temp = self[asset_uuid]
+            return temp
         else:
+            # Crazy debug mode: si el uuid es el especial y no está, lanza excepción
+            from immich_autotag.config.dev_mode import is_crazy_debug_mode
+            uuid_to_check_str = "68fc28c1-8f35-418c-9314-72578c8c4687"
+            from immich_autotag.types.uuid_wrappers import AssetUUID
+            uuid_to_check = AssetUUID(uuid_to_check_str)
+            if is_crazy_debug_mode() and asset_uuid == uuid_to_check:
+                raise RuntimeError(
+                    f"[CRAZY DEV MODE] El mapa no contiene el UUID requerido al consultar: {uuid_to_check_str}"
+                )
             return AlbumList()
 
     def __getitem__(self, key: AssetUUID) -> AlbumList:

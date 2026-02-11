@@ -96,6 +96,18 @@ class AssetMapManager:
         # Cleanup of empty temporary albums
 
         self._asset_to_albums_map = asset_map
+        # Crazy development mode: check for specific UUID in map
+        from immich_autotag.config.dev_mode import is_crazy_debug_mode
+
+        if is_crazy_debug_mode():
+            uuid_to_check_str = "68fc28c1-8f35-418c-9314-72578c8c4687"
+            from immich_autotag.types.uuid_wrappers import AssetUUID
+
+            uuid_to_check = AssetUUID(uuid_to_check_str)
+            if uuid_to_check not in asset_map:
+                raise RuntimeError(
+                    f"[CRAZY DEV MODE] El mapa no contiene el UUID requerido: {uuid_to_check_str}"
+                )
         self._is_map_loaded = True
         return asset_map
 

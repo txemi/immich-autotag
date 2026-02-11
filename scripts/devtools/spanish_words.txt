@@ -1,4 +1,5 @@
 acceder
+al
 antes
 aquellas
 aquellos
@@ -11,14 +12,15 @@ comentario
 compatibilidad
 complejo
 complicado
-encontradas
+consultar
+contiene
 contrato
 correcto
-cualquier
 critico
 criticos
 crítico
 críticos
+cualquier
 datos
 desarrollo
 desconocido
@@ -49,6 +51,7 @@ limpieza
 lista
 luego
 mantenimiento
+mapa
 mayor
 mejor
 menos
@@ -76,6 +79,7 @@ prohibida
 pueden
 referencia
 reglas
+requerido
 salida
 seguro
 sencillo

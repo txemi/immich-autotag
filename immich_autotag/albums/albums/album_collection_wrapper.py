@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from immich_autotag.report.modification_entry import ModificationEntry
+from immich_autotag.types.uuid_wrappers import AssetUUID
 
 if TYPE_CHECKING:
     from immich_autotag.albums.albums.asset_map_manager.manager import AssetMapManager
@@ -626,14 +627,15 @@ class AlbumCollectionWrapper:
         return asset_map_manager.get_map()
 
     @conditional_typechecked
-    def albums_for_asset(
-        self, asset: AssetResponseWrapper
-    ) -> Iterable[AlbumResponseWrapper]:
+    def albums_for_asset(self, asset: AssetResponseWrapper) -> AlbumList:
         """
         Returns an iterable of AlbumResponseWrapper objects for all albums
         the asset belongs to (O(1) lookup via map). Ensures all albums are loaded before proceeding.
         """
-        return self.get_asset_to_albums_map().get_from_uuid(asset.get_id())
+        asset_to_albums_map: AssetToAlbumsMap = self.get_asset_to_albums_map()
+        asset_id: AssetUUID = asset.get_id()
+        albums: AlbumList = asset_to_albums_map.get_from_uuid(asset_id)
+        return albums
 
     @conditional_typechecked
     def album_names_for_asset(self, asset: AssetResponseWrapper) -> list[str]:
