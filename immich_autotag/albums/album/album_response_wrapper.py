@@ -821,24 +821,4 @@ class AlbumResponseWrapper:
         best_entry = self._cache_entry.get_best_cache_entry(other._cache_entry)
         return self if best_entry is self._cache_entry else other
 
-    def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
-        """Equality based on album id when possible.
 
-        If 'other' is not an AlbumResponseWrapper, raise TypeError to signal improper comparison usage.
-        """
-        if not isinstance(other, AlbumResponseWrapper):
-            raise TypeError(
-                f"Cannot compare AlbumResponseWrapper with {type(other).__name__}"
-            )
-        return self.get_album_uuid() == other.get_album_uuid()
-
-    def __hash__(self) -> int:  # pragma: no cover - trivial
-        """Hash by album id when available; fallback to object id.
-
-        This allows storing wrappers in sets while reasoning by identity via
-        the album id (which is stable and unique per album).
-        """
-        try:
-            return hash(self.get_album_uuid())
-        except Exception:
-            return object.__hash__(self)

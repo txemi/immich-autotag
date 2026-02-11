@@ -70,12 +70,15 @@ def _calculate_member_diff(
     target_members: list[UserResponseWrapper],
     current_members: list[UserResponseWrapper],
 ) -> MemberDiff:
-    target_members_set: set[UserResponseWrapper] = set(target_members)
-    current_members_set: set[UserResponseWrapper] = set(current_members)
-    members_to_add: set[UserResponseWrapper] = target_members_set - current_members_set
-    members_to_remove: set[UserResponseWrapper] = (
-        current_members_set - target_members_set
-    )
+    def dedup_by_id(members: list[UserResponseWrapper]) -> dict[str, UserResponseWrapper]:
+        return {m._user.id: m for m in members}
+
+    target_dict = dedup_by_id(target_members)
+    current_dict = dedup_by_id(current_members)
+
+    members_to_add = [m for id_, m in target_dict.items() if id_ not in current_dict]
+    members_to_remove = [m for id_, m in current_dict.items() if id_ not in target_dict]
+
     return MemberDiff(
         members_to_add=members_to_add, members_to_remove=members_to_remove
     )

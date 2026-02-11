@@ -103,11 +103,7 @@ class AssetDateCandidate:
             return NotImplemented
         return self.get_aware_date() < other.get_aware_date()
 
-    @typechecked
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, AssetDateCandidate):
-            return NotImplemented
-        return self.get_aware_date() == other.get_aware_date()
+
 
     @typechecked
     def __str__(self) -> str:

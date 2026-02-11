@@ -119,7 +119,4 @@ class TagWrapper:
             f"get_best_tag decision logic not implemented yet.\nSelf: {repr(self)}\nOther: {repr(other)}"
         )
 
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, TagWrapper):
-            return self.get_id() == other.get_id()
-        return False
+
