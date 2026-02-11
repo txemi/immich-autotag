@@ -319,7 +319,7 @@ class ModificationReport:
         error_message: Optional[str] = None,
         error_category: Optional[str] = None,
         extra: Optional[dict[str, object]] = None,
-    ) -> None:
+    ) -> ModificationEntry:
         """Records a recoverable error event for tracking failed assets.
 
         Args:
@@ -347,7 +347,7 @@ class ModificationReport:
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind)
-        self.add_modification(
+        return self.add_modification(
             kind=kind,
             asset_wrapper=asset_wrapper,
             extra=extra,
@@ -363,7 +363,7 @@ class ModificationReport:
         members: Optional[list["UserResponseWrapper"]] = None,
         access_level: Optional[AlbumUserRole] = None,
         extra: Optional[dict[str, object]] = None,
-    ) -> None:
+    ) -> ModificationEntry:
         """Records album permission events (detection, sharing, failures).
 
         Args:
@@ -399,7 +399,7 @@ class ModificationReport:
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 
         StatisticsManager.get_instance().increment_event(kind)
-        self.add_modification(
+        return self.add_modification(
             kind=kind,
             album=album,
             extra=extra,
