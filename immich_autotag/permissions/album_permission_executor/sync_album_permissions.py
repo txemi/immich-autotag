@@ -20,10 +20,16 @@ if True:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
 
-@dataclass(frozen=True)
+import attrs
+
+@attrs.define(auto_attribs=True, frozen=True, slots=True)
 class MemberDiff:
-    members_to_add: set[UserResponseWrapper]
-    members_to_remove: set[UserResponseWrapper]
+    members_to_add: set[UserResponseWrapper] = attrs.field(
+        validator=attrs.validators.instance_of(set)
+    )
+    members_to_remove: set[UserResponseWrapper] = attrs.field(
+        validator=attrs.validators.instance_of(set)
+    )
 
 
 def _resolve_target_members(
