@@ -5,7 +5,6 @@ SerializableModificationEntry class: serializable version of a modification for 
 from __future__ import annotations
 
 from typing import Any, Optional
-from uuid import UUID
 
 import attrs
 from typeguard import typechecked
