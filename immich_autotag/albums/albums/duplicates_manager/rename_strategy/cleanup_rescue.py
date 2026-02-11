@@ -53,7 +53,7 @@ def cleanup_album_names(
                 modification_report=tag_mod_report,
             )
             if mod_entry is not None:
-                modifications = modifications.append(mod_entry)
+                modifications.append(mod_entry)
     return modifications
 
 

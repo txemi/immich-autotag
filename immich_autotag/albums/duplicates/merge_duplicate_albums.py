@@ -51,5 +51,5 @@ def merge_duplicate_albums(
     )
     # Combine all modifications into a single ModificationEntriesList
 
-    combined_mods = modifications.append(delete_mod)
-    return combined_mods
+    modifications.append(delete_mod)
+    return modifications

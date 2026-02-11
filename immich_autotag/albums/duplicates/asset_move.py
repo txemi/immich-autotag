@@ -84,7 +84,7 @@ def move_assets_between_albums(
                 modification_report=tag_mod_report,
             )
             if report_entry is not None:
-                modifications = modifications.append(report_entry)
+                modifications.append(report_entry)
 
         except Exception as e:
             if is_development_mode():
