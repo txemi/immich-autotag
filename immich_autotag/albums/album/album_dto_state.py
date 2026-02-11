@@ -12,6 +12,8 @@ from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID, UserUUID
 if TYPE_CHECKING:
     from .album_user_list import AlbumUserList
 
+from immich_autotag.albums.album.album_url_helpers import album_url_from_dto
+
 
 class AlbumLoadSource(enum.Enum):
     """
@@ -41,8 +43,10 @@ class AlbumDtoState:
     """
 
     _dto: AlbumResponseDto = attrs.field(
-        validator=attrs.validators.instance_of(AlbumResponseDto)
+        validator=attrs.validators.instance_of(AlbumResponseDto),
+        repr=lambda dto: f"AlbumResponseDto(id={dto.id}, url={album_url_from_dto(dto)})",
     )
+
     _load_source: AlbumLoadSource = attrs.field(
         validator=attrs.validators.instance_of(AlbumLoadSource)
     )
