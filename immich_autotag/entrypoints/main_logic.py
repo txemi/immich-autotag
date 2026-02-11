@@ -59,6 +59,7 @@ def run_main_inner_logic():
     print("[MAINTENANCE] No duplicate album names found. Asset processing is skipped.")
 
     from immich_autotag.report.modification_entries_list import ModificationEntriesList
+
     result: ModificationEntriesList = delete_unhealthy_temp_albums(context)
     print(f"[PROGRESS] Maintenance result: {result.entries()}")
     # TODO: Maintenance cleanup disabled during stability testing - causes performance issues

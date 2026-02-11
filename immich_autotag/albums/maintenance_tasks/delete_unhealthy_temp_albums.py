@@ -3,8 +3,8 @@ from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectio
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
-from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
+from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.types.client_types import ImmichClient
 
 
