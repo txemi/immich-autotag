@@ -151,8 +151,6 @@ class ModificationEntry:
         Calculates asset_link using asset_wrapper.get_immich_photo_url if available.
         Fills album_link using album.get_immich_album_url() if available.
         """
-        asset_id = self._get_asset_id()
-        album_id = self._get_album_id()
         tag_id = self.tag.get_name() if self.tag else None
         user_name = self._get_user_name()
         album_link = None
@@ -164,10 +162,8 @@ class ModificationEntry:
         return SerializableModificationEntry(
             datetime=self.datetime.isoformat(),
             kind=self.kind.name,
-            asset_id=asset_id,
             asset_name=self._get_asset_name(),
             tag_name=tag_id,
-            album_id=album_id,
             album_name=self._get_album_name(),
             old_value=self._get_old_value(),
             new_value=self._get_new_value(),
