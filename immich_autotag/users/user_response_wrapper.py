@@ -63,8 +63,6 @@ class UserResponseWrapper:
     def get_uuid(self) -> UserUUID:
         return UserUUID.from_string(self._user.id)
 
-
-
     @typechecked
     def __str__(self) -> str:
         try:

@@ -820,5 +820,3 @@ class AlbumResponseWrapper:
         """
         best_entry = self._cache_entry.get_best_cache_entry(other._cache_entry)
         return self if best_entry is self._cache_entry else other
-
-

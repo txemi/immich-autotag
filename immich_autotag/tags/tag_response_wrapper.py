@@ -118,5 +118,3 @@ class TagWrapper:
         raise NotImplementedError(
             f"get_best_tag decision logic not implemented yet.\nSelf: {repr(self)}\nOther: {repr(other)}"
         )
-
-

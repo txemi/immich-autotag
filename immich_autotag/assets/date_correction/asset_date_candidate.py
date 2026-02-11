@@ -103,8 +103,6 @@ class AssetDateCandidate:
             return NotImplemented
         return self.get_aware_date() < other.get_aware_date()
 
-
-
     @typechecked
     def __str__(self) -> str:
         try:

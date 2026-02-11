@@ -70,7 +70,9 @@ def _calculate_member_diff(
     target_members: list[UserResponseWrapper],
     current_members: list[UserResponseWrapper],
 ) -> MemberDiff:
-    def dedup_by_id(members: list[UserResponseWrapper]) -> dict[str, UserResponseWrapper]:
+    def dedup_by_id(
+        members: list[UserResponseWrapper],
+    ) -> dict[str, UserResponseWrapper]:
         return {m._user.id: m for m in members}
 
     target_dict = dedup_by_id(target_members)
