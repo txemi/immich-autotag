@@ -3,6 +3,7 @@ from typing import List
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 
+from immich_autotag.api.immich_proxy.debug import write_operation_debug
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.types.uuid_wrappers import AssetUUID, TagUUID
 
@@ -22,6 +23,7 @@ def proxy_tag_action(
     """
     from immich_client.api.tags import tag_assets, untag_assets
 
+    write_operation_debug()
     uuid_ids = [a.to_uuid() for a in asset_ids]
     if action == TagAction.TAG:
         result = tag_assets.sync(

@@ -2,6 +2,8 @@ from immich_client.client import AuthenticatedClient
 from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.create_album_dto import CreateAlbumDto
 
+from immich_autotag.api.immich_proxy.debug import write_operation_debug
+
 
 def proxy_create_album(
     *, client: AuthenticatedClient, body: CreateAlbumDto
@@ -11,6 +13,7 @@ def proxy_create_album(
     """
     from immich_client.api.albums.create_album import sync as create_album_sync
 
+    write_operation_debug()
     result = create_album_sync(client=client, body=body)
     if result is None:
         raise RuntimeError("Failed to create album: API returned None.")

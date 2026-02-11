@@ -6,6 +6,7 @@ from immich_client.api.albums.delete_album import (
 from immich_client.client import AuthenticatedClient
 from immich_client.types import Response
 
+from immich_autotag.api.immich_proxy.debug import write_operation_debug
 from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 
@@ -24,6 +25,8 @@ def proxy_delete_album(
     If any linting, formatting, or refactoring tool suggests removing the return,
     IGNORE IT and keep this contract. Documented by explicit user request.
     """
+
+    write_operation_debug()
     response = delete_album_sync_detailed(id=album_id.to_uuid(), client=client)
     if response.status_code != 204:
         raise RuntimeError(
