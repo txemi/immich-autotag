@@ -47,13 +47,27 @@ class TemporaryAlbumManager:
 
     def remove_empty_temporary_albums(
         self, albums_to_remove: AlbumList, client: ImmichClient
-    ):
+    ) -> ModificationEntriesList:
         """
         Removes empty temporary albums detected after building the map.
-        Raises an exception if any of them is not temporary (integrity).
+        Raises an exception si alguno no es temporal (integridad).
+        Recoge y propaga la lista de modificaciones.
+        Logs progress at entry and exit.
         """
+        from immich_autotag.report.modification_entries_list import (
+            ModificationEntriesList,
+        )
+
+        log(
+            f"[PROGRESS] Starting removal of {len(albums_to_remove)} empty temporary albums...",
+            level=LogLevel.PROGRESS,
+        )
         if not albums_to_remove:
-            return
+            log(
+                "[PROGRESS] No empty temporary albums to remove.",
+                level=LogLevel.PROGRESS,
+            )
+            return ModificationEntriesList()
         # Integrity check: all must be temporary
         for album_wrapper in albums_to_remove:
             if not is_temporary_album(album_wrapper.get_album_name()):
@@ -63,9 +77,10 @@ class TemporaryAlbumManager:
                     f"passed to remove_empty_temporary_albums."
                 )
         tag_mod_report = ModificationReport.get_instance()
+        modification_entries = ModificationEntriesList()
         for album_wrapper in albums_to_remove:
             try:
-                self._album_collection.delete_album(
+                entry = self._album_collection.delete_album(
                     wrapper=album_wrapper,
                     client=client,
                     tag_mod_report=tag_mod_report,
@@ -74,6 +89,7 @@ class TemporaryAlbumManager:
                         "and temporary"
                     ),
                 )
+                modification_entries.append(entry)
             except Exception as e:
                 album_name = album_wrapper.get_album_name()
                 log(
@@ -81,6 +97,12 @@ class TemporaryAlbumManager:
                     level=LogLevel.ERROR,
                 )
                 raise
+        removed_count = len(modification_entries.entries())
+        log(
+            f"[PROGRESS] Finished removal of empty temporary albums. Albums eliminados: {removed_count}",
+            level=LogLevel.PROGRESS,
+        )
+        return modification_entries
 
     def cleanup_empty_temporary_albums(self, client: ImmichClient):
         """

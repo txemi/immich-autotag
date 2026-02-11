@@ -109,6 +109,13 @@ class ModificationReport:
         user: Optional[UserResponseWrapper] = None,
         extra: Optional[dict[str, Any]] = None,
     ) -> ModificationEntry:
+        # Validate required arguments based on kind
+        if kind.requires_asset() and asset_wrapper is None:
+            raise ValueError(f"ModificationKind {kind.name} requires asset_wrapper, but got None.")
+        if kind.requires_album() and album is None:
+            raise ValueError(f"ModificationKind {kind.name} requires album, but got None.")
+        if kind.requires_tag() and tag is None:
+            raise ValueError(f"ModificationKind {kind.name} requires tag, but got None.")
         # Account for the event in the statistics manager
         from immich_autotag.statistics.statistics_manager import StatisticsManager
 

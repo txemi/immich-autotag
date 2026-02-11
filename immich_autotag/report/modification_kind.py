@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 from enum import Enum
+
+import attrs
 
 from immich_autotag.logging.levels import LogLevel
 
@@ -12,136 +13,291 @@ class ModificationLevel(Enum):
     MODIFICATION = "modification"  # Successful action/change
     UNKNOWN = "unknown"  # Unknown or unclassifiable level (should be avoided)
 
+    def is_error(self) -> bool:
+        return self == ModificationLevel.ERROR
 
-@dataclass(frozen=True)
+    def is_warning(self) -> bool:
+        return self == ModificationLevel.WARNING
+
+    def is_modification(self) -> bool:
+        return self == ModificationLevel.MODIFICATION
+
+    def is_unknown(self) -> bool:
+        return self == ModificationLevel.UNKNOWN
+
+
+@attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ModificationKindInfo:
-    name: str
-    log_level: LogLevel = LogLevel.FOCUS
-    level: ModificationLevel = (
-        ModificationLevel.UNKNOWN
-    )  # Default to UNKNOWN - must be explicit
+    name: str = attrs.field(type=str)
+    log_level: LogLevel = attrs.field(type=LogLevel)
+    level: ModificationLevel = attrs.field(type=ModificationLevel)
+    # is_error/is_change removed; use methods instead
+    requires_asset: bool = attrs.field(type=bool)
+    requires_album: bool = attrs.field(type=bool)
+    requires_tag: bool = attrs.field(type=bool)
 
 
 class ModificationKind(Enum):
 
     # --- Asset-related modifications ---
     ADD_TAG_TO_ASSET = ModificationKindInfo(
-        "ADD_TAG_TO_ASSET", level=ModificationLevel.MODIFICATION
+        name="ADD_TAG_TO_ASSET",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=True,
     )
     REMOVE_TAG_FROM_ASSET = ModificationKindInfo(
-        "REMOVE_TAG_FROM_ASSET", level=ModificationLevel.MODIFICATION
+        name="REMOVE_TAG_FROM_ASSET",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=True,
     )
     REMOVE_TAG_GLOBALLY = ModificationKindInfo(
-        "REMOVE_TAG_GLOBALLY", LogLevel.IMPORTANT, ModificationLevel.MODIFICATION
+        name="REMOVE_TAG_GLOBALLY",
+        log_level=LogLevel.IMPORTANT,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=False,
+        requires_tag=True,
     )
     CREATE_TAG = ModificationKindInfo(
-        "CREATE_TAG", LogLevel.IMPORTANT, ModificationLevel.MODIFICATION
+        name="CREATE_TAG",
+        log_level=LogLevel.IMPORTANT,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=False,
+        requires_tag=True,
     )
     WARNING_TAG_REMOVAL_FROM_ASSET_FAILED = ModificationKindInfo(
-        "WARNING_TAG_REMOVAL_FROM_ASSET_FAILED",
-        LogLevel.WARNING,
-        ModificationLevel.WARNING,
+        name="WARNING_TAG_REMOVAL_FROM_ASSET_FAILED",
+        log_level=LogLevel.WARNING,
+        level=ModificationLevel.WARNING,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=True,
     )
     WARNING_TAG_ADDITION_TO_ASSET_FAILED = ModificationKindInfo(
-        "WARNING_TAG_ADDITION_TO_ASSET_FAILED",
-        LogLevel.WARNING,
-        ModificationLevel.WARNING,
+        name="WARNING_TAG_ADDITION_TO_ASSET_FAILED",
+        log_level=LogLevel.WARNING,
+        level=ModificationLevel.WARNING,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=True,
     )
     WARNING_ASSET_ALREADY_IN_ALBUM = ModificationKindInfo(
-        "WARNING_ASSET_ALREADY_IN_ALBUM", LogLevel.WARNING, ModificationLevel.WARNING
+        name="WARNING_ASSET_ALREADY_IN_ALBUM",
+        log_level=LogLevel.WARNING,
+        level=ModificationLevel.WARNING,
+        requires_asset=True,
+        requires_album=True,
+        requires_tag=False,
     )
     WARNING_ASSET_NOT_IN_ALBUM = ModificationKindInfo(
-        "WARNING_ASSET_NOT_IN_ALBUM", LogLevel.WARNING, ModificationLevel.WARNING
+        name="WARNING_ASSET_NOT_IN_ALBUM",
+        log_level=LogLevel.WARNING,
+        level=ModificationLevel.WARNING,
+        requires_asset=True,
+        requires_album=True,
+        requires_tag=False,
     )
     ASSIGN_ASSET_TO_ALBUM = ModificationKindInfo(
-        "ASSIGN_ASSET_TO_ALBUM", level=ModificationLevel.MODIFICATION
+        name="ASSIGN_ASSET_TO_ALBUM",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=True,
+        requires_album=True,
+        requires_tag=False,
     )
     REMOVE_ASSET_FROM_ALBUM = ModificationKindInfo(
-        "REMOVE_ASSET_FROM_ALBUM", level=ModificationLevel.MODIFICATION
+        name="REMOVE_ASSET_FROM_ALBUM",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=True,
+        requires_album=True,
+        requires_tag=False,
     )
     UPDATE_ASSET_DATE = ModificationKindInfo(
-        "UPDATE_ASSET_DATE", level=ModificationLevel.MODIFICATION
+        name="UPDATE_ASSET_DATE",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=False,
     )
     ERROR_ASSET_SKIPPED_RECOVERABLE = ModificationKindInfo(
-        "ERROR_ASSET_SKIPPED_RECOVERABLE", LogLevel.ERROR, ModificationLevel.ERROR
+        name="ERROR_ASSET_SKIPPED_RECOVERABLE",
+        log_level=LogLevel.ERROR,
+        level=ModificationLevel.ERROR,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=False,
     )
     ERROR_ASSET_DELETED = ModificationKindInfo(
-        "ERROR_ASSET_DELETED", LogLevel.ERROR, ModificationLevel.ERROR
+        name="ERROR_ASSET_DELETED",
+        log_level=LogLevel.ERROR,
+        level=ModificationLevel.ERROR,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=False,
     )
 
     # --- Album-related modifications ---
     CREATE_ALBUM = ModificationKindInfo(
-        "CREATE_ALBUM", LogLevel.IMPORTANT, ModificationLevel.MODIFICATION
+        name="CREATE_ALBUM",
+        log_level=LogLevel.IMPORTANT,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     DELETE_ALBUM = ModificationKindInfo(
-        "DELETE_ALBUM", LogLevel.IMPORTANT, ModificationLevel.MODIFICATION
+        name="DELETE_ALBUM",
+        log_level=LogLevel.IMPORTANT,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     DELETE_ALBUM_UNHEALTHY = ModificationKindInfo(
-        "DELETE_ALBUM_UNHEALTHY", LogLevel.IMPORTANT, ModificationLevel.MODIFICATION
+        name="DELETE_ALBUM_UNHEALTHY",
+        log_level=LogLevel.IMPORTANT,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     RENAME_ALBUM = ModificationKindInfo(
-        "RENAME_ALBUM", LogLevel.PROGRESS, ModificationLevel.MODIFICATION
+        name="RENAME_ALBUM",
+        log_level=LogLevel.PROGRESS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ALBUM_DATE_MISMATCH = ModificationKindInfo(
-        "ALBUM_DATE_MISMATCH", LogLevel.WARNING, ModificationLevel.WARNING
+        name="ALBUM_DATE_MISMATCH",
+        log_level=LogLevel.WARNING,
+        level=ModificationLevel.WARNING,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ALBUM_DETECTION_CONFLICT = ModificationKindInfo(
-        "ALBUM_DETECTION_CONFLICT", LogLevel.WARNING, ModificationLevel.WARNING
+        name="ALBUM_DETECTION_CONFLICT",
+        log_level=LogLevel.WARNING,
+        level=ModificationLevel.WARNING,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     CLASSIFICATION_CONFLICT = ModificationKindInfo(
-        "CLASSIFICATION_CONFLICT", LogLevel.WARNING, ModificationLevel.WARNING
+        name="CLASSIFICATION_CONFLICT",
+        log_level=LogLevel.WARNING,
+        level=ModificationLevel.WARNING,
+        requires_asset=False,
+        requires_album=False,
+        requires_tag=False,
     )
 
     # --- Authorization/permission-related modifications ---
     ALBUM_PERMISSION_RULE_MATCHED = ModificationKindInfo(
-        "ALBUM_PERMISSION_RULE_MATCHED", level=ModificationLevel.MODIFICATION
+        name="ALBUM_PERMISSION_RULE_MATCHED",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ALBUM_PERMISSION_GROUPS_RESOLVED = ModificationKindInfo(
-        "ALBUM_PERMISSION_GROUPS_RESOLVED", level=ModificationLevel.MODIFICATION
+        name="ALBUM_PERMISSION_GROUPS_RESOLVED",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ALBUM_PERMISSION_NO_MATCH = ModificationKindInfo(
-        "ALBUM_PERMISSION_NO_MATCH", level=ModificationLevel.MODIFICATION
+        name="ALBUM_PERMISSION_NO_MATCH",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ALBUM_PERMISSION_SHARED = ModificationKindInfo(
-        "ALBUM_PERMISSION_SHARED", level=ModificationLevel.MODIFICATION
+        name="ALBUM_PERMISSION_SHARED",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ALBUM_PERMISSION_REMOVED = ModificationKindInfo(
-        "ALBUM_PERMISSION_REMOVED", level=ModificationLevel.MODIFICATION
+        name="ALBUM_PERMISSION_REMOVED",
+        log_level=LogLevel.FOCUS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ALBUM_PERMISSION_SHARE_FAILED = ModificationKindInfo(
-        "ALBUM_PERMISSION_SHARE_FAILED", LogLevel.ERROR, ModificationLevel.ERROR
+        name="ALBUM_PERMISSION_SHARE_FAILED",
+        log_level=LogLevel.ERROR,
+        level=ModificationLevel.ERROR,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ADD_USER_TO_ALBUM = ModificationKindInfo(
-        "ADD_USER_TO_ALBUM", LogLevel.PROGRESS, ModificationLevel.MODIFICATION
+        name="ADD_USER_TO_ALBUM",
+        log_level=LogLevel.PROGRESS,
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
 
     # --- Error-related modifications ---
     ERROR_ALBUM_NOT_FOUND = ModificationKindInfo(
-        "ERROR_ALBUM_NOT_FOUND", LogLevel.ERROR, ModificationLevel.ERROR
+        name="ERROR_ALBUM_NOT_FOUND",
+        log_level=LogLevel.ERROR,
+        level=ModificationLevel.ERROR,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
     )
     ERROR_PERMISSION_DENIED = ModificationKindInfo(
-        "ERROR_PERMISSION_DENIED", LogLevel.ERROR, ModificationLevel.ERROR
+        name="ERROR_PERMISSION_DENIED",
+        log_level=LogLevel.ERROR,
+        level=ModificationLevel.ERROR,
+        requires_asset=False,
+        requires_album=False,
+        requires_tag=False,
     )
     ERROR_NETWORK_TEMPORARY = ModificationKindInfo(
-        "ERROR_NETWORK_TEMPORARY", LogLevel.ERROR, ModificationLevel.ERROR
+        name="ERROR_NETWORK_TEMPORARY",
+        log_level=LogLevel.ERROR,
+        level=ModificationLevel.ERROR,
+        requires_asset=False,
+        requires_album=False,
+        requires_tag=False,
     )
 
     def get_level(self) -> ModificationLevel:
-        """Returns the level (ERROR, WARNING, MODIFICATION, or UNKNOWN) for this kind."""
         return self.value.level
 
     def is_error(self) -> bool:
-        """Returns True if this kind represents an error."""
-        return self.get_level() == ModificationLevel.ERROR
+        return self.get_level().is_error()
 
     def is_warning(self) -> bool:
-        """Returns True if this kind represents a warning."""
-        return self.get_level() == ModificationLevel.WARNING
+        return self.get_level().is_warning()
 
     def is_modification(self) -> bool:
-        """Returns True if this kind represents a successful modification."""
-        return self.get_level() == ModificationLevel.MODIFICATION
+        return self.get_level().is_modification()
 
     def is_unknown(self) -> bool:
-        """Returns True if this kind's level is unknown or unclassified."""
-        return self.get_level() == ModificationLevel.UNKNOWN
+        return self.get_level().is_unknown()

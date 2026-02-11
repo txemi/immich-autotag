@@ -20,8 +20,9 @@ from immich_autotag.assets.deduplicate_assets import deduplicate_assets_by_id
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 
 
-@attrs.define(auto_attribs=True, slots=True, frozen=True)
+@attrs.define(auto_attribs=True, slots=True, frozen=False)
 class ModificationEntriesList(ProcessStepResult):
+
     """
     Encapsulates a list of ModificationEntry objects, providing convenient
     methods for querying, filtering, and aggregating modification data.
@@ -30,15 +31,30 @@ class ModificationEntriesList(ProcessStepResult):
     Access to entries should be through public methods only.
     """
 
-    _entries: List[ModificationEntry] = attrs.field(
+    _entries: list[ModificationEntry] | None = attrs.field(
         default=attrs.Factory(list),
-        repr=lambda entries: f"modifications={len(entries)}",
-        alias="entries",
+        repr=lambda entries: f"modifications={len(entries)}"
     )
+    def __attrs_post_init__(self):
+        if self._entries is None:
+            self._entries = []
+    def _get_entries_or_raise(self) -> list["ModificationEntry"]:
+        if not self._entries or len(self._entries) == 0:
+            raise ValueError("No modification entries available.")
+        return self._entries
 
-    def entries(self) -> List[ModificationEntry]:
-        """Returns a copy of the underlying list of entries."""
-        return list(self._entries)
+    def _count_entries_of_kind(self, entries: list["ModificationEntry"], kind: "ModificationKind") -> int:
+        """Returns the count of entries of a given kind in the provided entries list."""
+        return sum(1 for entry in entries if entry.kind == kind)
+
+    def _count_map_by_kind(self, entries: list["ModificationEntry"]) -> dict["ModificationKind", int]:
+        """Returns a dict mapping each kind to its count in the provided entries list."""
+        kinds = {entry.kind for entry in entries}
+        return {kind: self._count_entries_of_kind(entries, kind) for kind in kinds}
+
+    def entries(self) -> list[ModificationEntry]:
+        """Returns a copy of the underlying list of entries. Raises if empty."""
+        return list(self._get_entries_or_raise())
 
     def has_changes(self) -> bool:
         """Returns True if list contains any modification entries."""
@@ -79,14 +95,13 @@ class ModificationEntriesList(ProcessStepResult):
         combined = self._entries + other.entries()
         return ModificationEntriesList(entries=combined)
 
-    def append(self, entry: ModificationEntry) -> ModificationEntriesList:
-        """Returns a new list with the entry appended."""
-        new_entries = self._entries + [entry]
-        return ModificationEntriesList(entries=new_entries)
+    def append(self, entry: ModificationEntry) -> None:
+        """Adds the entry to the internal list (in-place)."""
+        self._entries.append(entry)
 
     def to_list(self) -> list[ModificationEntry]:
-        """Returns the underlying list of entries."""
-        return list(self._entries)
+        """Returns the underlying list of entries. Raises if empty."""
+        return list(self._get_entries_or_raise())
 
     def format(self) -> str:
         """
@@ -98,14 +113,11 @@ class ModificationEntriesList(ProcessStepResult):
             A formatted string with total modifications and counts by kind.
             Example: "5 modifications (added=2, removed=3)"
         """
-        total = len(self._entries)
-
-        if total == 0:
-            return "No modifications"
+        entries = self._get_entries_or_raise()
+        total = len(entries)
 
         # Get all kinds and their counts
-        kinds = self.get_all_kinds()
-        kind_counts = {kind: self.count_by_kind(kind) for kind in kinds}
+        kind_counts = self._count_map_by_kind(entries)
 
         # Sort kinds by name for consistent output
         sorted_kinds = sorted(kind_counts.keys(), key=lambda k: str(k))
@@ -122,29 +134,33 @@ class ModificationEntriesList(ProcessStepResult):
     def get_albums(self) -> list[AlbumResponseWrapper]:
         """
         Returns a deduplicated list of all albums referenced by the modifications, using album uuid for uniqueness.
+        Raises if no entries are present.
         """
+        entries = self._get_entries_or_raise()
         albums: list[AlbumResponseWrapper] = [
-            entry.album for entry in self._entries if entry.album is not None
+            entry.album for entry in entries if entry.album is not None
         ]
         return deduplicate_albums_by_id(albums)
 
     def get_assets(self) -> list[AssetResponseWrapper]:
         """
         Returns a deduplicated list of all asset wrappers referenced by the modifications, using asset id for uniqueness.
+        Raises if no entries are present.
         """
+        entries = self._get_entries_or_raise()
         assets: list[AssetResponseWrapper] = [
             entry.asset_wrapper
-            for entry in self._entries
+            for entry in entries
             if entry.asset_wrapper is not None
         ]
         return deduplicate_assets_by_id(assets)
 
     def count_albums(self) -> int:
-        """Returns the number of unique albums referenced by the modifications."""
+        """Returns the number of unique albums referenced by the modifications. Raises if no entries are present."""
         return len(self.get_albums())
 
     def count_assets(self) -> int:
-        """Returns the number of unique assets referenced by the modifications."""
+        """Returns the number of unique assets referenced by the modifications. Raises if no entries are present."""
         return len(self.get_assets())
 
     @staticmethod
@@ -166,17 +182,29 @@ class ModificationEntriesList(ProcessStepResult):
         """
         return self.format()
 
+    def count_changes(self) -> int:
+        """
+        Returns the number of entries that represent a change (modification). Raises if no entries are present.
+        Considera como cambio cualquier entrada cuyo kind no sea INFO ni NO_OP.
+        """
+        entries = self._get_entries_or_raise()
+        return sum(
+            1
+            for entry in entries
+            if entry.kind.is_change()
+        )
+
     def __getitem__(self, index: int) -> ModificationEntry:
-        """Allows index access to entries (list-like)."""
-        return self._entries[index]
+        """Allows index access to entries (list-like). Raises if empty."""
+        return self._get_entries_or_raise()[index]
 
     def __iter__(self) -> Iterator[ModificationEntry]:
-        """Allows iteration over entries."""
-        return iter(self._entries)
+        """Allows iteration over entries. Raises if empty."""
+        return iter(self._get_entries_or_raise())
 
     def __len__(self) -> int:
-        """Returns the number of entries in the list."""
-        return len(self._entries)
+        """Returns the number of entries in the list. Raises if empty."""
+        return len(self._get_entries_or_raise())
 
     def __add__(self, other: ModificationEntriesList) -> ModificationEntriesList:
         if not isinstance(other, ModificationEntriesList):
@@ -187,5 +215,5 @@ class ModificationEntriesList(ProcessStepResult):
         return ModificationEntriesList(entries=combined_entries)
 
     def __bool__(self) -> bool:
-        """Returns True if list has any entries."""
-        return len(self._entries) > 0
+        """Returns True if list has any entries. Raises if empty."""
+        return len(self._get_entries_or_raise()) > 0
