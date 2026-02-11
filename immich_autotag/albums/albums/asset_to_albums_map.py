@@ -11,10 +11,10 @@ from immich_autotag.types.uuid_wrappers import AssetUUID
 @attr.define(slots=True)
 class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
     """
-    Map from asset_id (str) to AlbumList.
-    The map key is the asset_id (string) of each asset.
-    The value is a list of albums (AlbumList) that contain that asset.
-    Allows O(1) queries to know which albums an asset belongs to.
+    Mapping from asset_id (AssetUUID) to AlbumList.
+    The key is the asset_id (AssetUUID) of each asset.
+    The value is a list of albums (AlbumList) that include that asset.
+    Allows O(1) queries to determine which albums an asset belongs to.
     The representation shows only the total size for performance.
     """
 
@@ -88,7 +88,7 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
             temp = self[asset_uuid]
             return temp
         else:
-            # Crazy debug mode: si el uuid es el especial y no está, lanza excepción
+            # Crazy debug mode: if the uuid is the special one and not present, raise exception
             from immich_autotag.config.dev_mode import is_crazy_debug_mode
 
             uuid_to_check_str = "68fc28c1-8f35-418c-9314-72578c8c4687"
@@ -97,7 +97,7 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
             uuid_to_check = AssetUUID(uuid_to_check_str)
             if is_crazy_debug_mode() and asset_uuid == uuid_to_check:
                 raise RuntimeError(
-                    f"[CRAZY DEV MODE] El mapa no contiene el UUID requerido al consultar: {uuid_to_check_str}"
+                    f"[CRAZY DEV MODE] Asset-to-albums map does not contain the required UUID when queried: {uuid_to_check_str}"
                 )
             return AlbumList()
 
