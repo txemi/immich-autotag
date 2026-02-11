@@ -1,5 +1,17 @@
 // ==================== CONFIG FLAGS ====================
 def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
+
+// Helper for tagging (debe estar fuera del pipeline)
+def tagBuild(String type) {
+    def tagName = "jenkins-${type}-${env.BUILD_NUMBER ?: 'manual'}-${env.GIT_COMMIT ?: 'manual'}"
+    echo "🏷️ Creando tag GitHub (${type}): ${tagName}"
+    sh "git config user.name 'jenkins'"
+    sh "git config user.email 'jenkins@localhost'"
+    sh "git tag ${tagName}"
+    sh "ssh-keygen -F github.com > /dev/null || ssh-keyscan github.com >> $HOME/.ssh/known_hosts"
+    sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
+    sh "git push origin ${tagName}"
+}
 pipeline {
     options {
         // Keep only the last 4 builds
@@ -106,17 +118,6 @@ pipeline {
             // Archive run outputs (logs, reports, links) generated per execution, excluding albums cache
             archiveArtifacts artifacts: 'logs_local/**/*', excludes: 'logs_local/*/api_cache/*/**', fingerprint: true, allowEmptyArchive: true
             echo "Pipeline execution completed at ${new Date()}"
-        }
-        // Helper for tagging (must be defined before usage)
-        def tagBuild(String type) {
-            def tagName = "jenkins-${type}-${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'manual'}"
-            echo "🏷️ Creando tag GitHub (${type}): ${tagName}"
-            sh "git config user.name 'jenkins'"
-            sh "git config user.email 'jenkins@localhost'"
-            sh "git tag ${tagName}"
-            sh "ssh-keygen -F github.com > /dev/null || ssh-keyscan github.com >> $HOME/.ssh/known_hosts"
-            sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
-            sh "git push origin ${tagName}"
         }
 
         success {
