@@ -40,8 +40,7 @@ class ModificationEntriesList(ProcessStepResult):
         pass  # _entries is always a list due to attrs.Factory
 
     def _get_entries_or_raise(self: ModificationEntriesList) -> list[ModificationEntry]:
-        if len(self._entries) == 0:
-            raise ValueError("No modification entries available.")
+        # No longer raises if empty; always returns a list
         return self._entries
 
     def _count_entries_of_kind(
@@ -222,5 +221,5 @@ class ModificationEntriesList(ProcessStepResult):
         return ModificationEntriesList(combined_entries)
 
     def __bool__(self: ModificationEntriesList) -> bool:
-        """Returns True if list has any entries. Raises if empty."""
-        return len(self._get_entries_or_raise()) > 0
+        """Returns True if list has any entries. Empty list is falsy, not an error."""
+        return len(self._entries) > 0
