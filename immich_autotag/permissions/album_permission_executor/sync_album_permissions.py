@@ -12,6 +12,7 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.types.email_address import EmailAddress
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
+from immich_autotag.users.user_response_wrapper_list import UserResponseWrapperList
 
 from ._resolve_emails_result import EmailMemberResolution
 
@@ -67,20 +68,13 @@ def _get_current_member_wrappers(
 
 
 def _calculate_member_diff(
-    target_members: list[UserResponseWrapper],
-    current_members: list[UserResponseWrapper],
+    target_members: UserResponseWrapperList,
+    current_members: UserResponseWrapperList,
 ) -> MemberDiff:
-    def dedup_by_id(
-        members: list[UserResponseWrapper],
-    ) -> dict[str, UserResponseWrapper]:
-        return {m._user.id: m for m in members}
-
-    target_dict = dedup_by_id(target_members)
-    current_dict = dedup_by_id(current_members)
-
-    members_to_add = [m for id_, m in target_dict.items() if id_ not in current_dict]
-    members_to_remove = [m for id_, m in current_dict.items() if id_ not in target_dict]
-
+    target = target_members.deduplicate_by_id()
+    current = current_members.deduplicate_by_id()
+    members_to_add = target.difference(current).to_set()
+    members_to_remove = current.difference(target).to_set()
     return MemberDiff(
         members_to_add=members_to_add, members_to_remove=members_to_remove
     )
@@ -155,8 +149,11 @@ def sync_album_permissions(
     assert all(
         isinstance(x, UserResponseWrapper) for x in current_member_wrappers
     ), "current_member_wrappers contains non-UserResponseWrapper"
+    from immich_autotag.users.user_response_wrapper_list import UserResponseWrapperList
+
     member_diff: MemberDiff = _calculate_member_diff(
-        target_members, current_member_wrappers
+        UserResponseWrapperList(target_members),
+        UserResponseWrapperList(current_member_wrappers),
     )
     _apply_member_changes(
         album_wrapper,
