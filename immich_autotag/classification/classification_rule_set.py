@@ -63,7 +63,7 @@ class ClassificationRuleSet:
             ClassificationRuleWrapper(rule)
             for rule in manager.get_config_or_raise().classification.rules
         ]
-        return ClassificationRuleSet(_rules=wrappers)
+        return ClassificationRuleSet(rules=wrappers)
 
     @typechecked
     def matches_album(self, album_name: str) -> bool:
