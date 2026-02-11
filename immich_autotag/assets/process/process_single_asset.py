@@ -4,7 +4,6 @@ from typeguard import typechecked
 
 from immich_autotag.assets.albums.analyze_and_assign_album import (
     AlbumAssignmentReport,
-    analyze_and_assign_album,
 )
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.classification_validation_result import (
@@ -82,7 +81,7 @@ def _analyze_and_assign_album(
     Returns the result of analyze_and_assign_album.
     """
     log("[DEBUG] Analyzing and assigning album...", level=LogLevel.FOCUS)
-    return analyze_and_assign_album(asset_wrapper, tag_mod_report)
+    return AlbumAssignmentReport.analyze(asset_wrapper, tag_mod_report)
 
 
 @typechecked
