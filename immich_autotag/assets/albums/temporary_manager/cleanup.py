@@ -90,11 +90,12 @@ def remove_asset_from_autotag_temporary_albums(
             continue
 
     # Integrity: each modification must correspond to a truly processed album
-    mod_albums = modifications.get_albums()
-    removed_albums = set(removed_album_list.to_list())
-    if mod_albums != removed_albums:
+
+    mod_album_list = AlbumList(modifications.get_albums()).deduplicate()
+    removed_album_list_dedup = removed_album_list.deduplicate()
+    if not mod_album_list.equals(removed_album_list_dedup):
         raise RuntimeError(
-            f"Integrity error: modifications do not exactly match the processed albums. Modifications: {mod_albums}, albums: {removed_albums}"
+            f"Integrity error: modifications do not exactly match the processed albums. Modifications: {mod_album_list.to_list()}, albums: {removed_album_list_dedup.to_list()}"
         )
 
     if not removed_album_list.is_empty():

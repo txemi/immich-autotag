@@ -67,6 +67,43 @@ class AlbumList:
         """
         return len(self._albums) == 0
 
+    def deduplicate(self) -> "AlbumList":
+        """
+        Devuelve un nuevo AlbumList con álbumes únicos por UUID.
+        """
+        seen_ids = set()
+        unique_albums = []
+        for album in self._albums:
+            album_id = str(album.get_album_uuid())
+            if album_id not in seen_ids:
+                seen_ids.add(album_id)
+                unique_albums.append(album)
+        return AlbumList(unique_albums)
+
+    def uuids_set(self) -> set:
+        """
+        Devuelve un set de UUIDs de los álbumes.
+        """
+        return set(str(album.get_album_uuid()) for album in self._albums)
+
+    def equals(self, other: "AlbumList") -> bool:
+        """
+        Compara si dos AlbumList contienen los mismos álbumes (por UUID, sin importar orden).
+        """
+        return self.uuids_set() == other.uuids_set()
+
+    def difference(self, other: "AlbumList") -> "AlbumList":
+        """
+        Devuelve un AlbumList con los álbumes que están en self pero no en other (por UUID).
+        """
+        other_uuids = other.uuids_set()
+        diff_albums = [
+            album
+            for album in self._albums
+            if str(album.get_album_uuid()) not in other_uuids
+        ]
+        return AlbumList(diff_albums)
+
     def __getitem__(self, idx: int) -> AlbumResponseWrapper:
         return self._albums[idx]
 
