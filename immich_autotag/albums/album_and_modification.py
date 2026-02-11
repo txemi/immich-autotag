@@ -11,6 +11,7 @@ from immich_autotag.report.modification_entry import ModificationEntry
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumAndModification:
 
+
     _album: AlbumResponseWrapper
     _modifications: ModificationEntriesList
 
@@ -69,3 +70,12 @@ class AlbumAndModification:
 
         assert isinstance(entry, ModificationEntry), "entry must be a ModificationEntry"
         return AlbumAndModification(album, ModificationEntriesList([entry]))
+
+
+    @staticmethod
+    @typechecked
+    def from_album(album: AlbumResponseWrapper) -> "AlbumAndModification":
+        """
+        Static constructor for AlbumAndModification with no modifications.
+        """
+        return AlbumAndModification(album, ModificationEntriesList())
