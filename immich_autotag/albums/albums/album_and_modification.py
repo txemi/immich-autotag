@@ -8,12 +8,6 @@ from immich_autotag.report.modification_entry import ModificationEntry
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class AlbumAndModification:
-        @staticmethod
-        def from_album_and_entry(album: Optional[AlbumResponseWrapper], entry: Optional[ModificationEntry]) -> "AlbumAndModification":
-            """
-            Static constructor for the common case where only one modification entry is present.
-            """
-            return AlbumAndModification(album=album, modification=entry)
     album: Optional[AlbumResponseWrapper] = None
     modification: Optional[ModificationEntry] = None
     @staticmethod
@@ -23,3 +17,10 @@ class AlbumAndModification:
         Internally uses an empty ModificationEntriesList or None as appropriate.
         """
         return AlbumAndModification(album=album, modification=None)
+
+    @staticmethod
+    def from_album_and_entry(album: Optional[AlbumResponseWrapper], entry: Optional[ModificationEntry]) -> "AlbumAndModification":
+        """
+        Static constructor for the common case where only one modification entry is present.
+        """
+        return AlbumAndModification(album=album, modification=entry)
