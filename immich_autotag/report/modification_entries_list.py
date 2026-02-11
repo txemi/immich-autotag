@@ -1,3 +1,4 @@
+
 """
 ModificationEntriesList: encapsulates a list of ModificationEntry objects
 with convenient query and aggregate methods.
@@ -178,3 +179,9 @@ class ModificationEntriesList(ProcessStepResult):
     def __bool__(self) -> bool:
         """Returns True if list has any entries."""
         return len(self._entries) > 0
+
+    def format_first_entry_kind(self) -> str:
+        """
+        Returns a summary string for the modifications using the class's format() method.
+        """
+        return self.format()
