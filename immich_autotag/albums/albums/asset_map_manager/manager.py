@@ -64,8 +64,6 @@ class AssetMapManager:
             from immich_autotag.config.dev_mode import is_crazy_debug_mode
 
             uuid_to_check_str = "68fc28c1-8f35-418c-9314-72578c8c4687"
-            from immich_autotag.types.uuid_wrappers import AssetUUID
-
             if is_crazy_debug_mode():
                 if str(album_wrapper.get_album_uuid()) == uuid_to_check_str:
                     log(
