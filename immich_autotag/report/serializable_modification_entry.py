@@ -24,10 +24,7 @@ class SerializableModificationEntry:
 
     datetime: str = attrs.field(validator=attrs.validators.instance_of(str))
     kind: str = attrs.field(validator=attrs.validators.instance_of(str))
-    asset_id: Optional[UUID] = attrs.field(
-        default=None,
-        validator=attrs.validators.optional(attrs.validators.instance_of(UUID)),
-    )
+    # asset_id removed
     asset_name: Optional[str] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
@@ -36,7 +33,8 @@ class SerializableModificationEntry:
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
-    album_id: Optional[str] = attrs.field(
+    # album_id removed
+    album_link: Optional[str] = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
@@ -73,15 +71,14 @@ class SerializableModificationEntry:
     def to_log_string(self) -> str:
         parts = [f"{self.datetime}"]
         parts.append(f"kind={self.kind}")
-        # asset_id hidden, no longer printed in the log
         if self.asset_link:
             parts.append(f"asset_link={self.asset_link}")
         if self.asset_name:
             parts.append(f"name={self.asset_name}")
         if self.tag_name:
             parts.append(f"tag={self.tag_name}")
-        if self.album_id:
-            parts.append(f"album_id={self.album_id}")
+        if self.album_link:
+            parts.append(f"album_link={self.album_link}")
         if self.album_name:
             parts.append(f"album_name={self.album_name}")
         if self.old_value is not None:
