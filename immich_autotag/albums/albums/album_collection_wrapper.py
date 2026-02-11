@@ -498,6 +498,7 @@ class AlbumCollectionWrapper:
         if existing_by_id is not None:
             # Compare and keep the best
             best = existing_by_id.get_best_cache_entry(album_wrapper)
+
             if best is not existing_by_id:
                 albums_list.remove(existing_by_id)
                 albums_list.add(best)

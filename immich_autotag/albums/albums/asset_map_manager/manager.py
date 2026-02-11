@@ -20,7 +20,6 @@ class AssetMapManager:
     _collection: "AlbumCollectionWrapper" = attrs.field(
         init=True,
         metadata={"required": True},
-        doc="Required: must be provided at initialization.",
     )
     _asset_to_albums_map: AssetToAlbumsMap = attrs.field(
         init=False,
@@ -28,7 +27,6 @@ class AssetMapManager:
         repr=lambda x: len(x),
         eq=False,
         metadata={"internal": True},
-        doc="Internal: managed by AssetMapManager, do not pass in constructor.",
     )
     _is_map_loaded: bool = attrs.field(
         init=False,
@@ -36,7 +34,6 @@ class AssetMapManager:
         repr=True,
         eq=False,
         metadata={"internal": True},
-        doc="Internal: managed by AssetMapManager, do not pass in constructor.",
     )
 
     # Method removed: now handled by TemporaryAlbumManager
