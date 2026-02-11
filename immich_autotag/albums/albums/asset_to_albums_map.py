@@ -90,8 +90,10 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
         else:
             # Crazy debug mode: si el uuid es el especial y no está, lanza excepción
             from immich_autotag.config.dev_mode import is_crazy_debug_mode
+
             uuid_to_check_str = "68fc28c1-8f35-418c-9314-72578c8c4687"
             from immich_autotag.types.uuid_wrappers import AssetUUID
+
             uuid_to_check = AssetUUID(uuid_to_check_str)
             if is_crazy_debug_mode() and asset_uuid == uuid_to_check:
                 raise RuntimeError(

@@ -41,6 +41,14 @@ class BaseUUIDWrapper:
     def to_uuid(self) -> uuid.UUID:
         return self.value
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.value == other.value
+        return False
+
+    def __hash__(self):
+        return hash((self.__class__, self.value))
+
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value})"
 
