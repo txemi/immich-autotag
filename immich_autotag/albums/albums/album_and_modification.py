@@ -24,3 +24,10 @@ class AlbumAndModification:
         Static constructor for the common case where only one modification entry is present.
         """
         return AlbumAndModification(album=album, modification=entry)
+
+    @staticmethod
+    def empty() -> "AlbumAndModification":
+        """
+        Static constructor for the case where both album and modification are empty.
+        """
+        return AlbumAndModification(album=None, modification=None)
