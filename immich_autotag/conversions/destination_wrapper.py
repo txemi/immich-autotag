@@ -59,7 +59,7 @@ class DestinationWrapper:
                             modification_report=tag_mod_report,
                         )
                         if entry:
-                            changes = changes.append(entry)
+                            changes.append(entry)
                     else:
                         # Album not found - log but don't create entry since add_asset wasn't called
                         pass

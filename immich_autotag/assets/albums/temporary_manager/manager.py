@@ -1,4 +1,3 @@
-from immich_autotag.report.modification_entries_list import ModificationEntriesList
 import attrs
 
 from immich_autotag.albums.albums.album_collection_wrapper import (
@@ -8,6 +7,7 @@ from immich_autotag.albums.albums.album_collection_wrapper import (
 from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_album
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
+from immich_autotag.report.modification_entries_list import ModificationEntriesList
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
 
