@@ -51,14 +51,10 @@ class MatchResultList:
         """
         Private method to get matches with lazy loading.
         Computes matches on first call, subsequent calls return cached result.
+        Delegates matching logic to ClassificationRuleSet for better separation.
         """
         if self._matches is None:
-            matches: list[MatchResult] = []
-            for wrapper in self._rules.rules:
-                match = wrapper.matches_asset(self._asset)
-                if match is not None:
-                    matches.append(match)
-            self._matches = matches
+            self._matches = self._rules.match_asset(self._asset)
         return self._matches
 
     @typechecked

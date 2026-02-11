@@ -9,6 +9,7 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.classification.classification_rule_wrapper import (
     ClassificationRuleWrapper,
 )
+from immich_autotag.classification.match_result import MatchResult
 from immich_autotag.classification.match_result_list import MatchResultList
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.types.uuid_wrappers import AssetUUID
@@ -25,12 +26,13 @@ from immich_autotag.types.uuid_wrappers import AssetUUID
 @attrs.define(auto_attribs=True, slots=True, kw_only=True)
 class ClassificationRuleSet:
 
-    rules: List[ClassificationRuleWrapper]
+
+    _rules: List[ClassificationRuleWrapper]
 
     @typechecked
     def as_dicts(self) -> List[Dict[str, object]]:
         """Return the rules as a list of dicts (for debugging/logging)."""
-        return [wrapper.rule.model_dump() for wrapper in self.rules]
+        return [wrapper.rule.model_dump() for wrapper in self._rules]
 
     @typechecked
     def print_rules(self) -> None:
@@ -61,7 +63,7 @@ class ClassificationRuleSet:
             ClassificationRuleWrapper(rule)
             for rule in manager.get_config_or_raise().classification.rules
         ]
-        return ClassificationRuleSet(rules=wrappers)
+        return ClassificationRuleSet(_rules=wrappers)
 
     @typechecked
     def matches_album(self, album_name: str) -> bool:
@@ -69,8 +71,8 @@ class ClassificationRuleSet:
         Returns True if the album_name matches any album_name_patterns in any rule.
         """
         # Use MatchResultList logic to centralize matches
-        for wrapper in self.rules:
-            if wrapper.matches_album(album_name):
+        for rule_wrapper in self._rules:
+            if rule_wrapper.matches_album(album_name):
                 return True
         return False
 
@@ -88,8 +90,8 @@ class ClassificationRuleSet:
         Returns True when any rule in the set targets concrete assets via `asset_links`.
         Filtering by tags or albums alone does not count as focused.
         """
-        for wrapper in self.rules:
-            if wrapper.is_focused():
+        for rule_wrapper in self._rules:
+            if rule_wrapper.is_focused():
                 return True
         return False
 
@@ -113,12 +115,12 @@ class ClassificationRuleSet:
         """
 
         all_uuids: List[AssetUUID] = []
-        for wrapper in self.rules:
+        for rule_wrapper in self._rules:
             # Only add non-None AssetUUIDs
             all_uuids.extend(
                 [
                     uuid
-                    for uuid in wrapper.extract_uuids_from_asset_links()
+                    for uuid in rule_wrapper.extract_uuids_from_asset_links()
                     if isinstance(uuid, AssetUUID)
                 ]
             )
@@ -143,8 +145,27 @@ class ClassificationRuleSet:
 
     @typechecked
     def __getitem__(self, idx: int) -> ClassificationRuleWrapper:
-        return self.rules[idx]
+        return self._rules[idx]
 
     @typechecked
     def __len__(self) -> int:
-        return len(self.rules)
+        return len(self._rules)
+
+    @typechecked
+    def match_asset(self, asset: "AssetResponseWrapper") -> list[MatchResult]:
+        """
+        Returns a list of MatchResult for all rules that match the given asset.
+        This encapsulates the matching logic for better separation of responsibilities.
+        """
+        matches: list[MatchResult] = []
+        for rule_wrapper in self._rules:
+            match = rule_wrapper.matches_asset(asset)
+            if match is not None:
+                matches.append(match)
+        return matches
+
+    def get_rules(self) -> list[ClassificationRuleWrapper]:
+        """
+        Public method to access the list of rule wrappers.
+        """
+        return list(self._rules)
