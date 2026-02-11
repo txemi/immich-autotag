@@ -5,7 +5,7 @@ with convenient query and aggregate methods.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator, List, Set
+from typing import TYPE_CHECKING, Iterator, List
 
 import attrs
 
@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
     from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
+from immich_autotag.albums.deduplicate_albums import deduplicate_albums_by_id
+from immich_autotag.assets.deduplicate_assets import deduplicate_assets_by_id
 from immich_autotag.assets.process.process_step_result_protocol import ProcessStepResult
 
 
@@ -117,22 +119,25 @@ class ModificationEntriesList(ProcessStepResult):
         word = "modification" if total == 1 else "modifications"
         return f"{total} {word} ({breakdown})"
 
-    def get_albums(self) -> Set[AlbumResponseWrapper]:
+    def get_albums(self) -> list[AlbumResponseWrapper]:
         """
-        Returns a set of all albums referenced by the modifications.
+        Returns a deduplicated list of all albums referenced by the modifications, using album uuid for uniqueness.
         """
-        return {entry.album for entry in self._entries if entry.album is not None}
+        albums: list[AlbumResponseWrapper] = [
+            entry.album for entry in self._entries if entry.album is not None
+        ]
+        return deduplicate_albums_by_id(albums)
 
-    def get_assets(self) -> Set[AssetResponseWrapper]:
+    def get_assets(self) -> list[AssetResponseWrapper]:
         """
-        Returns a set of all asset wrappers referenced by the modifications.
-        Assumes all entries are ModificationEntry and have asset_wrapper attribute.
+        Returns a deduplicated list of all asset wrappers referenced by the modifications, using asset id for uniqueness.
         """
-        return {
+        assets: list[AssetResponseWrapper] = [
             entry.asset_wrapper
             for entry in self._entries
             if entry.asset_wrapper is not None
-        }
+        ]
+        return deduplicate_assets_by_id(assets)
 
     def count_albums(self) -> int:
         """Returns the number of unique albums referenced by the modifications."""
