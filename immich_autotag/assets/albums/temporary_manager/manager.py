@@ -50,8 +50,8 @@ class TemporaryAlbumManager:
     ) -> ModificationEntriesList:
         """
         Removes empty temporary albums detected after building the map.
-        Raises an exception si alguno no es temporal (integridad).
-        Recoge y propaga la lista de modificaciones.
+        Raises an exception if any album is not temporary (integrity check).
+        Collects and propagates the modification entries.
         Logs progress at entry and exit.
         """
         from immich_autotag.report.modification_entries_list import (

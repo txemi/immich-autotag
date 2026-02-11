@@ -188,7 +188,7 @@ class ModificationEntriesList(ProcessStepResult):
     def count_changes(self) -> int:
         """
         Returns the number of entries that represent a change (modification). Raises if no entries are present.
-        Considera como cambio cualquier entrada cuyo kind no sea INFO ni NO_OP.
+        Considers as change any entry whose kind is not INFO or NO_OP.
         """
         entries = self._get_entries_or_raise()
         return sum(1 for entry in entries if entry.kind.is_change())
