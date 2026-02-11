@@ -1,4 +1,3 @@
-
 from typeguard import typechecked
 
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy

@@ -67,7 +67,6 @@ class AlbumAssignmentReport(ProcessStepResult):
                     "This exception is intentional and documents the future plan to remove the _asset_wrapper attribute."
                 )
 
-
     def has_changes(self) -> bool:
         modifications = self._result.get_modifications()
         if modifications is not None and modifications.has_changes():
@@ -78,7 +77,6 @@ class AlbumAssignmentReport(ProcessStepResult):
         ):
             return True
         return False
-
 
     def has_errors(self) -> bool:
         modifications = self._result.get_modifications()
