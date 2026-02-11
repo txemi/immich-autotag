@@ -134,7 +134,7 @@ class AlbumCollectionWrapper:
                 AssetMapManager,
             )
 
-            self._asset_map_manager = AssetMapManager(collection=self)
+            self._asset_map_manager = AssetMapManager(self)
         return self._asset_map_manager
 
     def _get_temporary_album_manager(self):
@@ -343,7 +343,7 @@ class AlbumCollectionWrapper:
                 UnavailableAlbumManager,
             )
 
-            self._unavailable_manager = UnavailableAlbumManager(collection=self)
+            self._unavailable_manager = UnavailableAlbumManager(self)
         return self._unavailable_manager
 
     @typechecked
@@ -460,10 +460,13 @@ class AlbumCollectionWrapper:
     @typechecked
     def _combine_duplicate_albums(
         self, albums: list[AlbumResponseWrapper], context: str
-    ) -> AlbumResponseWrapper:
-        return self._get_duplicate_album_manager().combine_duplicate_albums(
+    ) -> AlbumAndModification:
+        # The manager now returns AlbumAndModification, but this method expects AlbumResponseWrapper
+        from immich_autotag.albums.albums.album_and_modification import AlbumAndModification
+        result: AlbumAndModification = self._get_duplicate_album_manager().combine_duplicate_albums(
             albums, context
         )
+        return result
 
     @typechecked
     # Non-temporary duplicate logic delegated to manager
@@ -474,7 +477,7 @@ class AlbumCollectionWrapper:
         client: ImmichClient,
         tag_mod_report: ModificationReport,
         old_tested_mode: bool = True,
-    ) -> "AlbumAndModification":
+    ) -> AlbumAndModification:
         """Central helper: attempt to append an album wrapper to the albums list with duplicate handling.
 
         If a duplicate name exists and it's a temporary album,
@@ -496,14 +499,15 @@ class AlbumCollectionWrapper:
             if best is not existing_by_id:
                 albums_list.remove(existing_by_id)
                 albums_list.add(best)
-            return AlbumAndModification(album=best, modification=None)
+            return AlbumAndModification.from_album(best)
 
         album_name = album_wrapper.get_album_name()
         existing_album = self.find_first_album_with_name(album_name)
         if existing_album is None:
             # Only add if not present
             albums_list.add(album_wrapper)
-            return AlbumAndModification(album=album_wrapper, modification=None)
+            from immich_autotag.report.modification_entries_list import ModificationEntriesList
+            return AlbumAndModification.from_album(album_wrapper)
         # There is already an album with this name: treat as duplicate
         if is_temporary_album(album_name):
             # Delete the temporary duplicate
@@ -516,9 +520,7 @@ class AlbumCollectionWrapper:
             )
             albums_after = list(self.find_all_albums_with_name(album_name))
             if len(albums_after) == 1:
-                return AlbumAndModification(
-                    album=albums_after[0], modification=report_entry
-                )
+                return AlbumAndModification.from_album_and_entry(albums_after[0], report_entry)
             else:
                 raise RuntimeError(
                     f"Duplicate albums with name '{album_name}' were found and attempted to delete, "
@@ -565,7 +567,7 @@ class AlbumCollectionWrapper:
             report_entry = rename_duplicate_album(album_wrapper, client, tag_mod_report)
 
             albums_list.add(album_wrapper)
-            return AlbumAndModification(album=album_wrapper, modification=report_entry)
+            return AlbumAndModification.from_album(album_wrapper)
 
         else:
             # Non-temporary duplicate: log and skip
@@ -574,13 +576,14 @@ class AlbumCollectionWrapper:
             # Honestly, I don't know what to think about this case, so this branch is effectively deactivated.
             # The proliferation of duplicate-handling logic throughout the codebase is a mess, and I don't yet have a clear or robust solution.
             # For now, let's do the sensible thing, fail fast on user duplicates, and hope to simplify this code over time as we better understand the real-world scenarios.
-            self._get_duplicate_album_manager().handle_non_temporary_duplicate(
+            result: AlbumAndModification = self._get_duplicate_album_manager().handle_non_temporary_duplicate(
                 existing=existing_album,
                 incoming_album=album_wrapper,
                 tag_mod_report=tag_mod_report,
                 name=album_name,
             )
-            return AlbumAndModification(album=None, modification=None)
+            # result now contains both the album and any modifications, propagate as needed
+            return result
 
     @typechecked
     def _add_album_wrapper(
