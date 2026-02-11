@@ -56,19 +56,37 @@ class AlbumAssignmentReport(ProcessStepResult):
             raise TypeError(
                 f"_result must be AlbumAssignmentResultInfo, got {type(self._result)}"
             )
+        # Integrity check: ensure the asset in _result matches the asset in this report
+        # This is intended to allow future removal of the _asset_wrapper attribute
+        if self._result is not None:
+            # Direct attribute access: AlbumAssignmentResultInfo always has .asset
+            result_asset = self._result.get_unique_asset()
+            if result_asset is not None and result_asset is not self._asset_wrapper:
+                raise ValueError(
+                    "Integrity check failed: asset in _result does not match asset in AlbumAssignmentReport. "
+                    "This exception is intentional and documents the future plan to remove the _asset_wrapper attribute."
+                )
+
 
     def has_changes(self) -> bool:
-        return self._result in (
-            AlbumAssignmentResult.CLASSIFIED,
+        modifications = self._result.get_modifications()
+        if modifications is not None and modifications.has_changes():
+            return True
+        if self._result.get_result() in (
             AlbumAssignmentResult.ASSIGNED_UNIQUE,
             AlbumAssignmentResult.CREATED_TEMPORARY,
-        )
+        ):
+            return True
+        return False
+
 
     def has_errors(self) -> bool:
-        return self._result in (
-            AlbumAssignmentResult.CONFLICT,
-            AlbumAssignmentResult.ERROR,
-        )
+        modifications = self._result.get_modifications()
+        if modifications is not None and modifications.has_errors():
+            return True
+        if self._result.get_result() in (AlbumAssignmentResult.ERROR,):
+            return True
+        return False
 
     def get_title(self) -> str:
         return "Album assignment logic"

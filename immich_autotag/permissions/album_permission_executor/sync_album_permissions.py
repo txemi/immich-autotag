@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from typeguard import typechecked
 
@@ -19,8 +18,8 @@ from ._resolve_emails_result import EmailMemberResolution
 if True:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 
-
 import attrs
+
 
 @attrs.define(auto_attribs=True, frozen=True, slots=True)
 class MemberDiff:
