@@ -107,38 +107,39 @@ class DuplicateAlbumManager:
         incoming_album: "AlbumResponseWrapper",
         tag_mod_report: ModificationReport,
         name: str,
-    ) -> None:
+    ) -> AlbumAndModification:
         from immich_autotag.config.internal_config import MERGE_DUPLICATE_ALBUMS_ENABLED
 
         if MERGE_DUPLICATE_ALBUMS_ENABLED:
-            self._handle_duplicate_album_conflict(
+            conflict_result: AlbumAndModification = self._handle_duplicate_album_conflict(
                 incoming_album=incoming_album,
                 existing_album=existing,
                 context="duplicate_on_load",
             )
-            return
+            return conflict_result
+
         from immich_autotag.config.dev_mode import is_development_mode
 
         if is_development_mode():
-            raise RuntimeError(
-                f"Duplicate album name detected when adding album: {name!r}"
-            )
-            return
+            error_message = f"Duplicate album name detected when adding album: {name!r}"
+            raise RuntimeError(error_message)
+
         from immich_autotag.albums.duplicates.duplicate_album_reports import (
             DuplicateAlbumReport,
         )
 
-        self.collected_duplicates.append(
-            DuplicateAlbumReport(
-                album_name=name,
-                existing_album=existing,
-                incoming_album=incoming_album,
-                note="duplicate skipped during initial load",
-            )
+        duplicate_report: DuplicateAlbumReport = DuplicateAlbumReport(
+            album_name=name,
+            existing_album=existing,
+            incoming_album=incoming_album,
+            note="duplicate skipped during initial load",
         )
-        from immich_autotag.report.modification_kind import ModificationKind
+        self.collected_duplicates.append(duplicate_report)
 
-        tag_mod_report.add_error_modification(
+        from immich_autotag.report.modification_kind import ModificationKind
+        from immich_autotag.report.modification_entry import ModificationEntry
+        from immich_autotag.report.modification_entries_list import ModificationEntriesList
+        error_modification: ModificationEntry = tag_mod_report.add_error_modification(
             kind=ModificationKind.ERROR_ALBUM_NOT_FOUND,
             error_message=f"duplicate album name encountered: {name}",
             error_category="DUPLICATE_ALBUM",
@@ -147,7 +148,7 @@ class DuplicateAlbumManager:
                 "incoming_id": incoming_album.get_album_uuid(),
             },
         )
-        return
+        return AlbumAndModification.from_album_and_entry(existing, error_modification)
 
     def handle_non_temporary_duplicate(
         self,
@@ -156,7 +157,7 @@ class DuplicateAlbumManager:
         incoming_album: "AlbumResponseWrapper",
         tag_mod_report: ModificationReport,
         name: str,
-    ) -> None:
+    ) -> AlbumAndModification:
         return self._handle_non_temporary_duplicate(
             existing=existing,
             incoming_album=incoming_album,
