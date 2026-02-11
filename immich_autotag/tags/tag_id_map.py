@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 @attrs.define(auto_attribs=True, slots=True)
 class TagIdMap:
     """
-    Mapa eficiente de id (UUID o str) a TagWrapper.
+    Efficient mapping from id (UUID or str) to TagWrapper.
     """
 
     _id_to_tag: Dict[TagUUID, "TagWrapper"] = attrs.field(
