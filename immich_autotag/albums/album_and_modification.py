@@ -61,14 +61,16 @@ class AlbumAndModification:
     @typechecked
     def from_album_and_entry(
         album: AlbumResponseWrapper,
-        entry: ModificationEntry,  # Will refine to ModificationEntry if import allows
+        entry: ModificationEntry | None,
     ) -> "AlbumAndModification":
         """
-        Static constructor for AlbumAndModification from a single ModificationEntry.
+        Static constructor for AlbumAndModification from a single ModificationEntry or None.
+        If entry is None, returns AlbumAndModification with empty modifications.
         """
         from immich_autotag.report.modification_entry import ModificationEntry
-
-        assert isinstance(entry, ModificationEntry), "entry must be a ModificationEntry"
+        if entry is None:
+            return AlbumAndModification(album, ModificationEntriesList())
+        assert isinstance(entry, ModificationEntry), "entry must be a ModificationEntry or None"
         return AlbumAndModification(album, ModificationEntriesList([entry]))
 
 
