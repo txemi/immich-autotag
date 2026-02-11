@@ -45,7 +45,9 @@ class ModificationEntriesList(ProcessStepResult):
         return self._entries
 
     def _count_entries_of_kind(
-        self: ModificationEntriesList, entries: list[ModificationEntry], kind: ModificationKind
+        self: ModificationEntriesList,
+        entries: list[ModificationEntry],
+        kind: ModificationKind,
     ) -> int:
         """Returns the count of entries of a given kind in the provided entries list."""
         return sum(1 for entry in entries if entry.kind == kind)
@@ -78,11 +80,15 @@ class ModificationEntriesList(ProcessStepResult):
         """Returns all modification entries (events) from this result."""
         return self
 
-    def has_entries_of_kind(self: ModificationEntriesList, kind: ModificationKind) -> bool:
+    def has_entries_of_kind(
+        self: ModificationEntriesList, kind: ModificationKind
+    ) -> bool:
         """Returns True if list contains entries of the specified kind."""
         return any(entry.kind == kind for entry in self._entries)
 
-    def filter_by_kind(self: ModificationEntriesList, kind: ModificationKind) -> ModificationEntriesList:
+    def filter_by_kind(
+        self: ModificationEntriesList, kind: ModificationKind
+    ) -> ModificationEntriesList:
         """Returns a new list containing only entries of the specified kind."""
         filtered = [entry for entry in self._entries if entry.kind == kind]
         return ModificationEntriesList(filtered)
@@ -95,7 +101,9 @@ class ModificationEntriesList(ProcessStepResult):
         """Returns a set of all ModificationKind values present in the list."""
         return {entry.kind for entry in self._entries}
 
-    def extend(self: ModificationEntriesList, other: ModificationEntriesList) -> ModificationEntriesList:
+    def extend(
+        self: ModificationEntriesList, other: ModificationEntriesList
+    ) -> ModificationEntriesList:
         """Returns a new list with entries from both lists."""
         combined = self._entries + other.entries()
         return ModificationEntriesList(combined)
@@ -168,7 +176,8 @@ class ModificationEntriesList(ProcessStepResult):
 
     @staticmethod
     def combine_optional(
-        first: Optional[ModificationEntriesList], second: Optional[ModificationEntriesList]
+        first: Optional[ModificationEntriesList],
+        second: Optional[ModificationEntriesList],
     ) -> Optional[ModificationEntriesList]:
         if first and second:
             combined = first + second
@@ -205,7 +214,9 @@ class ModificationEntriesList(ProcessStepResult):
         """Returns the number of entries in the list. Raises if empty."""
         return len(self._get_entries_or_raise())
 
-    def __add__(self: ModificationEntriesList, other: ModificationEntriesList) -> ModificationEntriesList:
+    def __add__(
+        self: ModificationEntriesList, other: ModificationEntriesList
+    ) -> ModificationEntriesList:
         combined_entries = self.entries() + other.entries()
         return ModificationEntriesList(combined_entries)
 

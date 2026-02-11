@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 import attrs
@@ -45,9 +44,11 @@ class ModificationKindInfo:
 
     def requires_tag(self) -> bool:
         return self._requires_tag
+
     def is_change(self: "ModificationKind") -> bool:  # type: ignore
         # Consider a change if the level is MODIFICATION
         return self.value.level.is_modification()  # type: ignore[attr-defined]
+
 
 class ModificationKind(Enum):
 
