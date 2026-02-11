@@ -28,13 +28,13 @@ class ModificationLevel(Enum):
 
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
 class ModificationKindInfo:
-    name: str = attrs.field(type=str)
-    log_level: LogLevel = attrs.field(type=LogLevel)
-    level: ModificationLevel = attrs.field(type=ModificationLevel)
+    name: str = attrs.field()
+    log_level: LogLevel = attrs.field()
+    level: ModificationLevel = attrs.field()
     # is_error/is_change removed; use methods instead
-    _requires_asset: bool = attrs.field(type=bool, alias="requires_asset")
-    _requires_album: bool = attrs.field(type=bool, alias="requires_album")
-    _requires_tag: bool = attrs.field(type=bool, alias="requires_tag")
+    _requires_asset: bool = attrs.field(alias="requires_asset")
+    _requires_album: bool = attrs.field(alias="requires_album")
+    _requires_tag: bool = attrs.field(alias="requires_tag")
 
     def requires_asset(self) -> bool:
         return self._requires_asset
