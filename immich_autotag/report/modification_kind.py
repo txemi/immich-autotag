@@ -47,7 +47,7 @@ class ModificationKindInfo:
 
     def is_change(self) -> bool:
         """Return True if this kind represents a modification/change."""
-        return self.value.level.is_modification()
+        return self.level.is_modification()
 
 
 class ModificationKind(Enum):
