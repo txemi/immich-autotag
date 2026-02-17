@@ -1,27 +1,27 @@
 def generic_debug_operation():
     """
-    Función genérica para operaciones de debug/proxy.
-    Recibe datos y retorna una respuesta de debug.
+    Generic function for debug/proxy operations.
+    Receives input and returns a debug response.
     """
-    # Aquí iría la lógica genérica
+    # Here would be the generic logic
     pass
 
 
 def read_operation_debug():
     """
-    Función explícita para operaciones de lectura/consulta.
-    Recibe datos y retorna una respuesta de lectura.
+    Explicit function for read/query operations.
+    Receives input and returns a read response.
     """
-    # Aquí iría la lógica de lectura
+    # Here would be the logic for reading
     pass
 
 
 def write_operation_debug():
     """
-    Función explícita para operaciones de escritura/modificación.
-    Recibe datos y el tipo de operación a realizar.
+    Explicit function for write/modify operations.
+    Receives input and the operation type to perform.
     """
-    # Aquí iría la lógica de modificación
+    # Here would be the logic for modification
     pass
 
 
