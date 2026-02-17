@@ -48,11 +48,12 @@ def process_assets_sequential(
     # Prepare and cache the asset-to-albums map and cleanup once before the loop
     albums_collection.prepare_batch_asset_to_albums_map()
     try:
+
         for asset_wrapper in context.get_asset_manager().iter_assets(
             context, max_assets=max_assets, skip_n=skip_n
         ):
             asset_id = asset_wrapper.get_id()
-            log_debug(f"[BUG] Processing asset: {asset_id}")
+            log_debug(f"[BUG] Processing asset {count+1}: {asset_id}")
 
             try:
                 process_single_asset(asset_wrapper)
@@ -103,7 +104,7 @@ def process_assets_sequential(
 
             asset_id = asset_wrapper.get_id()
             log(
-                f"Iteration completed for asset: {asset_id}",
+                f"Iteration {count+1} completed for asset: {asset_id}",
                 level=LogLevel.DEBUG,
             )
             count += 1
