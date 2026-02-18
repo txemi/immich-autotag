@@ -56,7 +56,7 @@ def process_assets_sequential(
             asset_url = asset_wrapper.get_immich_asset_url().geturl()
             log(
                 f"[PROGRESS] Processing asset {count+1}: {asset_id} | Link: {asset_url}",
-                level=LogLevel.PROGRESS,
+                level=LogLevel.ASSET_SUMMARY,
             )
 
             try:
