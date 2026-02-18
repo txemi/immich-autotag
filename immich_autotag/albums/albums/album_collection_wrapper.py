@@ -926,14 +926,14 @@ class AlbumCollectionWrapper:
         return self._get_duplicate_album_manager().is_duplicated(wrapper)
 
     def update_asset_to_albums_map_for_asset(
-        self, asset_wrapper: "AssetResponseWrapper", album:AlbumResponseWrapper
+        self, *, asset_wrapper: "AssetResponseWrapper", album: AlbumResponseWrapper
     ) -> None:
         """
         Updates the asset-to-albums map for the given asset by adding all albums for that asset.
         This is used after creating a new album for an asset to ensure the map is up to date.
         """
         asset_map_manager = self._get_asset_map_manager()
-        asset_map_manager.update_for_asset(self, asset_wrapper, album)
+        asset_map_manager.add_album_for_asset(asset_wrapper, album)
 
     def __len__(self) -> int:
         """

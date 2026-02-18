@@ -63,17 +63,6 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
             for asset_uuid in to_remove:
                 del self._map[asset_uuid]
 
-    def update_for_asset(
-        self,
-        album_collection: "AlbumCollectionWrapper",
-        asset_wrapper: "AssetResponseWrapper",
-    ) -> None:
-        """
-        Updates the map for the given asset by adding all albums for that asset from the album collection.
-        """
-        for album in album_collection.albums_for_asset(asset_wrapper):
-            self.add_album_for_asset_ids(album)
-
     @typechecked
     def add_album_for_asset_ids(self, album_wrapper: AlbumResponseWrapper) -> None:
         """

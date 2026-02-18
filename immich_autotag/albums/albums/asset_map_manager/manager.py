@@ -4,6 +4,7 @@ import attrs
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.albums.albums.asset_to_albums_map import AssetToAlbumsMap
+from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 
 if TYPE_CHECKING:
     from immich_autotag.albums.albums.album_collection_wrapper import (
@@ -136,6 +137,15 @@ class AssetMapManager:
                 )
         self._is_map_loaded = True
         return asset_map
+
+    def add_album_for_asset(
+        self, asset_wrapper: "AssetResponseWrapper", album_wrapper: AlbumResponseWrapper
+    ) -> None:
+        """
+        Adds the given album to the map for the given asset. Creates a new AlbumList if needed.
+         (This is used after creating a new album for an asset to ensure the map is up to date, and
+        """
+        raise NotImplementedError("revisar")
 
     def rebuild_map(self) -> None:
         """Rebuilds the mapping from scratch and updates it in the manager."""
