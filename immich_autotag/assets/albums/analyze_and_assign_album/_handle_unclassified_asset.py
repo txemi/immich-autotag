@@ -128,7 +128,7 @@ def handle_unclassified_asset(
     created_album: ModificationEntry | None = create_album_if_missing_classification(
         asset_wrapper, tag_mod_report
     )
-
+    # TODO: LA COleccion de albums hay que actualizar el mapa para añdir este caso
     if created_album:
         modifications = ModificationEntriesList(entries=[created_album])
         return AlbumAssignmentResultInfo(
