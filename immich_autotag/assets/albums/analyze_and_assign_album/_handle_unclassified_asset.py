@@ -128,11 +128,10 @@ def handle_unclassified_asset(
     created_album: ModificationEntry | None = create_album_if_missing_classification(
         asset_wrapper, tag_mod_report
     )
-    # Actualizar el asset-to-albums map de la colección si se ha creado un álbum temporal
+    # Update the asset-to-albums map if a temporary album was created
     if created_album:
-        # Obtener la colección de álbumes desde el contexto del asset
         albums_collection = asset_wrapper.get_context().get_albums_collection()
-        # Actualizar el mapa para reflejar la nueva relación asset-álbum
+        # Update the map to reflect the new asset-album relationship
         albums_collection.update_asset_to_albums_map(asset_wrapper)
         modifications = ModificationEntriesList(entries=[created_album])
         return AlbumAssignmentResultInfo(
