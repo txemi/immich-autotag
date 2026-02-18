@@ -49,10 +49,8 @@ class ImmichContext:
 
     def get_tag_collection(self) -> "TagCollectionWrapper":
         if self._tag_collection is None:
-            from immich_autotag.tags.list_tags import list_tags
-
-            client = self.get_client_wrapper().get_client()
-            self._tag_collection = list_tags(client)
+            from immich_autotag.tags.tag_collection_wrapper import TagCollectionWrapper
+            self._tag_collection = TagCollectionWrapper.get_instance()
         return self._tag_collection
 
     def get_duplicates_collection(self) -> "DuplicateCollectionWrapper":

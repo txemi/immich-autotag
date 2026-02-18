@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -24,6 +25,8 @@ class TagCollectionWrapperLoadError(Exception):
 
 @attrs.define(auto_attribs=True, slots=True)
 class TagCollectionWrapper:
+
+
 
     _index: TagDualMap = attrs.field(factory=TagDualMap)
     _fully_loaded: bool = attrs.field(default=False, init=False)
@@ -274,3 +277,22 @@ class TagCollectionWrapper:
         if not self._fully_loaded:
             self._load_all_from_api()
         return len(self._index)
+    def log_tags(self) -> None:
+        """
+        Logs the tags in the collection using the project's logging system at PROGRESS level.
+        """
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+        total = len(self)
+        if total <= 20:
+            log("Tags:", level=LogLevel.PROGRESS)
+            for tag in self:
+                log(f"- {tag.get_name()}", level=LogLevel.PROGRESS)
+        log(f"Total tags: {total}\n", level=LogLevel.PROGRESS)
+    
+    def log_and_return_self(self) -> "TagCollectionWrapper":
+        """
+        Logs the tags in the collection and returns the collection itself.
+        """
+        self.log_tags()
+        return self
