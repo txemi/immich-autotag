@@ -53,7 +53,11 @@ def process_assets_sequential(
             context, max_assets=max_assets, skip_n=skip_n
         ):
             asset_id = asset_wrapper.get_id()
-            log_debug(f"[BUG] Processing asset {count+1}: {asset_id}")
+            asset_url = asset_wrapper.get_immich_asset_url().geturl()
+            log(
+                f"[PROGRESS] Processing asset {count+1}: {asset_id} | Link: {asset_url}",
+                level=LogLevel.PROGRESS,
+            )
 
             try:
                 process_single_asset(asset_wrapper)
