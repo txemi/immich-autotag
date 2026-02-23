@@ -93,7 +93,7 @@ def process_single_asset(
     asset_name = asset_wrapper.get_original_file_name() or "[no name]"
     log(
         f"Processing asset: {asset_url} | Name: {asset_name}",
-        level=LogLevel.ASSET_SUMMARY,
+        level=LogLevel.FOCUS,
     )
 
     # Execute each phase and store results in the typed report
