@@ -1,3 +1,4 @@
+from immich_autotag.types.timestamp import Timestamp
 import time
 from enum import Enum
 
@@ -39,7 +40,7 @@ class TagWrapper:
     )
 
     _source: TagSource = attrs.field(init=True, repr=True)
-    _loaded_at: float = attrs.field(init=True, factory=lambda: time.time(), repr=True)
+    _loaded_at: Timestamp = attrs.field(init=True, factory=lambda: time.time(), repr=True)
 
     def get_id(self) -> TagUUID:
         id_val = self._tag.id
@@ -148,7 +149,7 @@ class TagWrapper:
             f"get_best_tag decision logic not implemented yet.\nSelf: {repr(self)}\nOther: {repr(other)}{time_info}"
         )
 
-    def get_loaded_at(self) -> float:
+    def get_loaded_at(self) -> Timestamp:
         """
         Public accessor for the loaded_at timestamp.
         """

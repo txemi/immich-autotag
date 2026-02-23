@@ -1,6 +1,8 @@
+from immich_autotag.types.timestamp import Timestamp
 from __future__ import annotations
 
 from typing import Optional
+from immich_autotag.types.timestamp import Timestamp
 
 import attrs
 
@@ -19,7 +21,7 @@ class AlbumErrorEntry:
         api_exc: AlbumApiExceptionInfo object (optional) for richer error context
     """
 
-    timestamp: float = attrs.field(validator=attrs.validators.instance_of(float))
+    timestamp: Timestamp = attrs.field(validator=attrs.validators.instance_of(float))
     code: str = attrs.field(validator=attrs.validators.instance_of(str))
     message: str = attrs.field(default="", validator=attrs.validators.instance_of(str))
     api_exc: Optional[AlbumApiExceptionInfo] = attrs.field(default=None)
