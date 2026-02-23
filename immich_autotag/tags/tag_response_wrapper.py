@@ -89,8 +89,11 @@ class TagWrapper:
         """
         Decide which TagWrapper is preferred for merging/updating.
 
-        If one is from GET_ALL_TAGS and the other is from ASSET_PAYLOAD, prefer GET_ALL_TAGS.
-        Otherwise, raise NotImplementedError with info about both candidates.
+        - If one is from GET_ALL_TAGS and the other is from ASSET_PAYLOAD, prefer GET_ALL_TAGS.
+        - If one is from CREATE_TAG and the other is from ASSET_PAYLOAD, prefer CREATE_TAG.
+        - If one is from GET_TAG_BY_ID and the other is from ASSET_PAYLOAD, prefer GET_TAG_BY_ID.
+        - If both have the same name and one is GET_TAG_BY_ID, prefer GET_TAG_BY_ID.
+        - Otherwise, prefer the most recent (highest loaded_at).
         """
         # If self is CREATE_TAG and other is ASSET_PAYLOAD, prefer self
         if (
@@ -104,18 +107,32 @@ class TagWrapper:
             and self._source == TagSource.ASSET_PAYLOAD
         ):
             return other
-        # Existing logic for GET_ALL_TAGS vs ASSET_PAYLOAD
+        # If self is GET_ALL_TAGS and other is ASSET_PAYLOAD, prefer self
         if (
             self._source == TagSource.GET_ALL_TAGS
             and other._source == TagSource.ASSET_PAYLOAD
         ):
             return self
+        # If other is GET_ALL_TAGS and self is ASSET_PAYLOAD, prefer other
         if (
             other._source == TagSource.GET_ALL_TAGS
             and self._source == TagSource.ASSET_PAYLOAD
         ):
             return other
-        # Compare loaded_at timestamps
+        # If self is GET_TAG_BY_ID and other is ASSET_PAYLOAD, prefer self
+        if (
+            self._source == TagSource.GET_TAG_BY_ID
+            and other._source == TagSource.ASSET_PAYLOAD
+        ):
+            return self
+        # If other is GET_TAG_BY_ID and self is ASSET_PAYLOAD, prefer other
+        if (
+            other._source == TagSource.GET_TAG_BY_ID
+            and self._source == TagSource.ASSET_PAYLOAD
+        ):
+            return other
+        # If both have the same name and one is GET_TAG_BY_ID, prefer GET_TAG_BY_ID
+
         self_time = self._loaded_at
         other_time = other._loaded_at
         time_info = ""
