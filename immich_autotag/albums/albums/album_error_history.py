@@ -1,4 +1,3 @@
-from immich_autotag.types.timestamp import Timestamp
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional

@@ -1,12 +1,11 @@
-from immich_autotag.types.timestamp import Timestamp
 from __future__ import annotations
 
 from typing import Optional
-from immich_autotag.types.timestamp import Timestamp
 
 import attrs
 
 from immich_autotag.albums.albums.album_api_exception_info import AlbumApiExceptionInfo
+from immich_autotag.types.timestamp import Timestamp
 
 
 @attrs.define(auto_attribs=True, slots=True)

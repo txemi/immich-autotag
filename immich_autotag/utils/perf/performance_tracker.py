@@ -1,4 +1,3 @@
-from immich_autotag.types.timestamp import Timestamp
 import time
 from dataclasses import dataclass
 from typing import Optional
@@ -6,6 +5,7 @@ from typing import Optional
 import attr
 from typeguard import typechecked
 
+from immich_autotag.types.timestamp import Timestamp
 from immich_autotag.utils.perf.estimator import AdaptiveTimeEstimator
 from immich_autotag.utils.perf.time_estimation_mode import TimeEstimationMode
 

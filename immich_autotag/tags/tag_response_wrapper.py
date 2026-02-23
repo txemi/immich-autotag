@@ -1,10 +1,10 @@
-from immich_autotag.types.timestamp import Timestamp
 import time
 from enum import Enum
 
 import attrs
 
 from immich_autotag.api.logging_proxy.types import TagResponseDto
+from immich_autotag.types.timestamp import Timestamp
 from immich_autotag.types.uuid_wrappers import TagUUID
 
 
@@ -17,7 +17,6 @@ class TagSource(Enum):
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class TagWrapper:
-
     """
     Wrapper for TagResponseDto that allows adding useful methods and properties.
 
@@ -40,7 +39,9 @@ class TagWrapper:
     )
 
     _source: TagSource = attrs.field(init=True, repr=True)
-    _loaded_at: Timestamp = attrs.field(init=True, factory=lambda: time.time(), repr=True)
+    _loaded_at: Timestamp = attrs.field(
+        init=True, factory=lambda: time.time(), repr=True
+    )
 
     def get_id(self) -> TagUUID:
         id_val = self._tag.id
