@@ -5,7 +5,6 @@ Core statistics management logic for tracking progress, statistics, and historic
 Handles YAML serialization, extensibility, and replaces legacy checkpoint logic.
 """
 
-from pathlib import Path
 from threading import RLock
 from typing import TYPE_CHECKING, Optional
 
@@ -52,9 +51,7 @@ class StatisticsManager:
     _current_stats: Optional[RunStatistics] = attr.ib(
         default=None, init=False, repr=False
     )  # noqa
-    _current_file: Optional[Path] = attr.ib(
-        default=None, init=False, repr=False
-    )  # noqa
+
     _checkpoint: CheckpointManager = attr.ib(
         default=None, init=False, repr=False
     )  # noqa
@@ -137,7 +134,7 @@ class StatisticsManager:
         self._set_skip_n()
 
     def save_to_file(self) -> None:
-        if self._current_stats and self._current_file:
+        if self._current_stats:
             # Always update progress_description before saving
             self.get_or_create_run_stats().progress_description = (
                 self.get_progress_description()
@@ -267,7 +264,7 @@ class StatisticsManager:
             self.get_or_create_run_stats().last_processed_id = str(last_processed_id)
             self.get_or_create_run_stats().count = count
             # Only save to disk every 100 assets (not every asset) for performance
-            if count % 100 == 0:
+            if count % 100 == 0 or count < 10:
                 self.save_to_file()
         self.maybe_print_progress(count)
         return self.get_or_create_run_stats()
