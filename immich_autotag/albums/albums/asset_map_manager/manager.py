@@ -143,9 +143,13 @@ class AssetMapManager:
     ) -> None:
         """
         Adds the given album to the map for the given asset. Creates a new AlbumList if needed.
-         (This is used after creating a new album for an asset to ensure the map is up to date, and
+        This is used after creating a new album for an asset to ensure the map is up to date.
         """
-        raise NotImplementedError("revisar")
+        asset_uuid = asset_wrapper.get_id()
+        album_list = self._asset_to_albums_map.get_from_uuid(asset_uuid)
+        # Only add if not already present
+        if album_wrapper not in album_list:
+            album_list.append(album_wrapper)
 
     def rebuild_map(self) -> None:
         """Rebuilds the mapping from scratch and updates it in the manager."""
