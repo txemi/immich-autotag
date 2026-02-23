@@ -16,6 +16,7 @@ class TagSource(Enum):
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True)
 class TagWrapper:
+
     """
     Wrapper for TagResponseDto that allows adding useful methods and properties.
 
@@ -133,8 +134,8 @@ class TagWrapper:
             return other
         # If both have the same name and one is GET_TAG_BY_ID, prefer GET_TAG_BY_ID
 
-        self_time = self._loaded_at
-        other_time = other._loaded_at
+        self_time = self.get_loaded_at()
+        other_time = other.get_loaded_at()
         time_info = ""
         if self_time is not None and other_time is not None:
             if self_time > other_time:
@@ -146,3 +147,9 @@ class TagWrapper:
         raise NotImplementedError(
             f"get_best_tag decision logic not implemented yet.\nSelf: {repr(self)}\nOther: {repr(other)}{time_info}"
         )
+
+    def get_loaded_at(self) -> float:
+        """
+        Public accessor for the loaded_at timestamp.
+        """
+        return self._loaded_at
