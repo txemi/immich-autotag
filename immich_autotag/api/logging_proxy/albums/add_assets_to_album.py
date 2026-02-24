@@ -145,10 +145,9 @@ def _handle_add_asset_error(
 
 @typechecked
 def _find_asset_result_in_response(
-    result: list[BulkIdResponseDto], asset_id: "AssetUUID"
+    result: list[BulkIdResponseDto], asset_id: AssetUUID
 ) -> BulkIdResponseDto | None:
     """Finds the result item for a specific asset in the API response list."""
-    from immich_autotag.types.uuid_wrappers import AssetUUID
 
     for item in result:
         # Validate that success is a boolean (can be True or False)

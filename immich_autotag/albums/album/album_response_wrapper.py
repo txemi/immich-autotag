@@ -15,9 +15,6 @@ if TYPE_CHECKING:
     from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 
 from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
-from immich_autotag.api.logging_proxy.albums.add_assets_to_album import (
-    _find_asset_result_in_response,
-)
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
 
@@ -525,6 +522,10 @@ class AlbumResponseWrapper:
         result = self._execute_remove_asset_api(asset_wrapper, client)
 
         # 3. Handle result
+        from immich_autotag.api.logging_proxy.albums.add_assets_to_album import (
+            _find_asset_result_in_response,
+        )
+
         item = _find_asset_result_in_response(result, asset_wrapper.get_id())
         if item:
             if not item.success:
