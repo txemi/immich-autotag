@@ -113,8 +113,8 @@ def process_assets_sequential(
 
             asset_id = asset_wrapper.get_id()
             log(
-                f"Iteration {count+1} completed for asset: {asset_id}",
-                level=LogLevel.DEBUG,
+                f"Iteration {count+1} completed for asset: {asset_url}",
+                level=LogLevel.ASSET_SUMMARY,
             )
             count += 1
             StatisticsManager.get_instance().update_checkpoint(

@@ -123,7 +123,7 @@ class AssetProcessReport(ProcessStepResult):
     def summary(self) -> str:
         """Generate a comprehensive summary of the asset processing results."""
         lines: List[str] = []
-        asset_url = self.asset_wrapper.get_immich_photo_url().geturl()
+        asset_url = self._asset_wrapper.get_immich_photo_url().geturl()
 
         # Build header with overall status
         changes_indicator = "✓ CHANGES" if self.has_changes() else "○ NO CHANGES"
@@ -153,10 +153,10 @@ class AssetProcessReport(ProcessStepResult):
         ]
         if changed_steps:
             lines.append(
-                f"[SUMMARY] Modifications occurred in: {', '.join(changed_steps)}."
+                f"Modifications occurred in: {', '.join(changed_steps)}."
             )
         else:
-            lines.append("[SUMMARY] No modifications occurred in any step.")
+            lines.append("No modifications occurred in any step.")
         return "\n".join(lines)
 
     def __str__deprecated_use_attrs(self):
