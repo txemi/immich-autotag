@@ -38,8 +38,13 @@ def log_final_summary() -> None:
         "───────────────────────────────────────────────────────",
     ]
 
-    # Add entry_type_counts to report
-    report_lines.append(f"Modification type counts: {entry_type_counts}")
+    # Add entry_type_counts to report in a clear, human-readable way
+    if entry_type_counts:
+        report_lines.append("Modification type counts:")
+        for mod_type, count in entry_type_counts.items():
+            report_lines.append(f"  - {mod_type}: {count}")
+    else:
+        report_lines.append("Modification type counts: none")
 
     report_lines.append("═══════════════════════════════════════════════════════")
 
