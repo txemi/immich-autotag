@@ -8,6 +8,9 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
+from immich_autotag.api.logging_proxy.albums.remove_asset_from_album import (
+    logging_remove_asset_from_album,
+)
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
@@ -296,3 +299,12 @@ class AlbumCacheEntry:
         from immich_autotag.utils.url_helpers import get_immich_album_url
 
         return get_immich_album_url(self.get_album_uuid())
+
+    def remove_asset(
+        self, *, asset_wrapper: "AssetResponseWrapper", album: "AlbumResponseWrapper"
+    ) -> ModificationEntry | None:
+        if not self.has_asset_wrapper(asset_wrapper):
+            raise NotImplementedError(
+                "Attempting to remove asset that is not in album. This should have been prevented by validation logic."
+            )
+        return logging_remove_asset_from_album(asset_wrapper=asset_wrapper, album=album)
