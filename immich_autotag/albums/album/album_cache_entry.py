@@ -5,15 +5,19 @@ from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 
 import attrs
-from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.api.immich_proxy.types import ImmichClient
 from immich_autotag.api.logging_proxy.albums.add_assets_to_album import (
     logging_add_assets_to_album,
 )
 from immich_autotag.config.cache_config import DEFAULT_CACHE_MAX_AGE_SECONDS
+from immich_autotag.report.modification_entry import ModificationEntry
 from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID, UserUUID
 from immich_autotag.utils.decorators import conditional_typechecked
 
@@ -276,10 +280,15 @@ class AlbumCacheEntry:
         *,
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
-        album_wrapper,
-    ) -> list[BulkIdResponseDto]:
+        album_wrapper: "AlbumResponseWrapper",
+    ) -> ModificationEntry:
         """Executes the API call to add an asset to the album."""
-        ret = logging_add_assets_to_album()
+        ret = logging_add_assets_to_album(
+            asset_wrapper=asset_wrapper,
+            client=client,
+            album_wrapper=album_wrapper,
+            album_state=self.get_state(),
+        )
         return ret
 
     @conditional_typechecked

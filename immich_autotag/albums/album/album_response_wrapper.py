@@ -11,8 +11,14 @@ from immich_client.models.album_response_dto import AlbumResponseDto
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from immich_autotag.albums.album.album_cache_entry import AlbumCacheEntry
 from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
+from immich_autotag.api.logging_proxy.albums.add_assets_to_album import (
+    _find_asset_result_in_response,
+)
 from immich_autotag.types.client_types import ImmichClient
 from immich_autotag.types.uuid_wrappers import AlbumUUID, UserUUID
 
@@ -280,7 +286,7 @@ class AlbumResponseWrapper:
         self._validate_before_add(asset_wrapper)
 
         # 2. Execution
-        result = self._cache_entry._execute_add_asset_api(
+        entry: ModificationEntry = self._cache_entry._execute_add_asset_api(
             asset_wrapper=asset_wrapper, client=client, album_wrapper=self
         )
 
@@ -522,7 +528,7 @@ class AlbumResponseWrapper:
         result = self._execute_remove_asset_api(asset_wrapper, client)
 
         # 3. Handle result
-        item = self._find_asset_result_in_response(result, asset_wrapper.get_id())
+        item = _find_asset_result_in_response(result, asset_wrapper.get_id())
         if item:
             if not item.success:
                 removal_entry = self._handle_remove_asset_error(

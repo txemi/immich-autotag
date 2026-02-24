@@ -169,7 +169,7 @@ def logging_add_assets_to_album(
     client: ImmichClient,
     album_wrapper: AlbumResponseWrapper,
     album_state: AlbumDtoState,
-) -> list[BulkIdResponseDto]:
+) -> ModificationEntry:
     """Executes the API call to add an asset to the album."""
     from immich_autotag.api.immich_proxy.albums.add_assets_to_album import (
         proxy_add_assets_to_album,
@@ -202,6 +202,10 @@ def logging_add_assets_to_album(
     )
 
     # 5. Consistency Verification
-    self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
+    _verify_asset_in_album_with_retry(
+        asset_wrapper=asset_wrapper,
+        client=client,
+        album_id=album_wrapper.get_album_uuid(),
+    )
 
-    return result
+    return entry
