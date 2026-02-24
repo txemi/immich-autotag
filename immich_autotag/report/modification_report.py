@@ -92,14 +92,21 @@ class ModificationReport:
         # No explicit assignment needed for F824
         return _instance  # type: ignore[return-value]
 
-    def get_modifications(self) -> list[ModificationEntry]:
+    def get_entries(self) -> list[ModificationEntry]:
         return self._modifications
+
+    def get_entry_type_counts(self) -> dict[ModificationKind, int]:
+        counts: dict[ModificationKind, int] = {}
+        for entry in self._modifications:
+            counts[entry.kind] = counts.get(entry.kind, 0) + 1
+        return counts
 
     # todo: tag is being passed as string in several functions, consider using wrapper
     # todo: asset_wrapper is being passed as Any in several functions, type correctly
     @typechecked
     def add_modification(
         self,
+        *,
         kind: ModificationKind,
         asset_wrapper: Optional["AssetResponseWrapper"] = None,
         tag: Optional["TagWrapper"] = None,
@@ -301,6 +308,7 @@ class ModificationReport:
     @typechecked
     def add_assignment_modification(
         self,
+        *,
         kind: ModificationKind,
         asset_wrapper: Optional["AssetResponseWrapper"] = None,
         album: Optional["AlbumResponseWrapper"] = None,
@@ -327,6 +335,7 @@ class ModificationReport:
     @typechecked
     def add_error_modification(
         self,
+        *,
         kind: ModificationKind,
         asset_wrapper: Optional["AssetResponseWrapper"] = None,
         error_message: Optional[str] = None,
@@ -498,5 +507,5 @@ class ModificationReport:
         """
         return [
             f"  • {entry.to_serializable().to_log_string()}"
-            for entry in self.get_modifications()
+            for entry in self.get_entries()
         ]

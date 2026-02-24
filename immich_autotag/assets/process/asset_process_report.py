@@ -152,9 +152,7 @@ class AssetProcessReport(ProcessStepResult):
             if result.has_changes()
         ]
         if changed_steps:
-            lines.append(
-                f"Modifications occurred in: {', '.join(changed_steps)}."
-            )
+            lines.append(f"Modifications occurred in: {', '.join(changed_steps)}.")
         else:
             lines.append("No modifications occurred in any step.")
         return "\n".join(lines)

@@ -20,7 +20,11 @@ def log_final_summary() -> None:
 
     # Get modification statistics
     tag_mod_report = ModificationReport.get_instance()
-    total_modifications = len(tag_mod_report.get_modifications())
+
+    # Show modification type counts for better communication
+    entry_type_counts = tag_mod_report.get_entry_type_counts()
+    log(f"Modification type counts: {entry_type_counts}", level=LogLevel.DEBUG)
+    total_modifications = len(tag_mod_report.get_entries())
 
     # Build the complete report as a single string
     report_lines = [
@@ -34,21 +38,8 @@ def log_final_summary() -> None:
         "───────────────────────────────────────────────────────",
     ]
 
-    if total_modifications == 0:
-        report_lines.append("✓ NO CHANGES - All assets processed without modifications")
-    else:
-        report_lines.append(
-            f"⚠ CHANGES DETECTED: {total_modifications} modification(s)"
-        )
-        # Only show modification details if log level ASSET_SUMMARY is enabled
-        from immich_autotag.logging.utils import is_log_level_enabled
-
-        if is_log_level_enabled(LogLevel.DEBUG):
-            report_lines.extend(tag_mod_report.get_modification_details_for_log())
-        else:
-            report_lines.append(
-                "(Modification details hidden: use log level ASSET_SUMMARY or higher to see them)"
-            )
+    # Add entry_type_counts to report
+    report_lines.append(f"Modification type counts: {entry_type_counts}")
 
     report_lines.append("═══════════════════════════════════════════════════════")
 
