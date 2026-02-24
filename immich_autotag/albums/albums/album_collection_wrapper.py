@@ -362,7 +362,6 @@ class AlbumCollectionWrapper:
         self,
         wrapper: AlbumResponseWrapper,
         client: ImmichClient,
-        tag_mod_report: ModificationReport,
         reason: str = "Album deleted",
         remove_from_map: bool = True,
     ) -> ModificationEntry:
@@ -455,7 +454,6 @@ class AlbumCollectionWrapper:
             report_entry: ModificationEntry | None = self.delete_album(
                 wrapper=album_wrapper,
                 client=client,
-                tag_mod_report=tag_mod_report,
                 reason="Removed duplicate temporary album during add",
                 remove_from_map=False,  # Not in map yet, so skip local removal
             )
@@ -621,7 +619,6 @@ class AlbumCollectionWrapper:
         album: AlbumResponseWrapper,
         user: UserResponseWrapper,
         context: ImmichContext,
-        tag_mod_report: ModificationReport,
     ) -> None:
         """
         Public helper to add a user as EDITOR to an album. Handles only user addition, error reporting, and event logging.
@@ -760,7 +757,6 @@ class AlbumCollectionWrapper:
                 album=album_wrapper,
                 user=user_wrapper,
                 context=context,
-                tag_mod_report=tag_mod_report,
             )
         return album_wrapper
 

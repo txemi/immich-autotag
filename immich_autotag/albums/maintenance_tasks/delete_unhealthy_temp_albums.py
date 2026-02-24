@@ -16,13 +16,10 @@ def _delete_album(
     """
     Deletes the album using the AlbumCollectionWrapper API.
     """
-    from immich_autotag.report.modification_report import ModificationReport
 
-    tag_mod_report = ModificationReport.get_instance()
     return albums_collection.delete_album(
         wrapper=album,
         client=client,
-        tag_mod_report=tag_mod_report,
         reason="Unhealthy temporary album deleted automatically",
     )
 

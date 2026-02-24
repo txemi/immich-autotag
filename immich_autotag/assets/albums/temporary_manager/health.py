@@ -97,19 +97,16 @@ def cleanup_unhealthy_album(
     from immich_autotag.albums.albums.album_collection_wrapper import (
         AlbumCollectionWrapper,
     )
-    from immich_autotag.report.modification_report import ModificationReport
 
     album_name = album_wrapper.get_album_name()
     collection = AlbumCollectionWrapper.get_instance()
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
     client = ImmichClientWrapper.get_default_instance()
-    tag_mod_report = ModificationReport.get_instance()
 
     collection.delete_album(
         wrapper=album_wrapper,
         client=client.get_client(),
-        tag_mod_report=tag_mod_report,
         reason="Unhealthy temporary album deleted automatically",
     )
     print(f"Deleted unhealthy album: {album_name}")

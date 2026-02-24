@@ -46,7 +46,6 @@ def merge_duplicate_albums(
     delete_mod = collection.delete_album(
         wrapper=duplicate_album,
         client=client,
-        tag_mod_report=tag_mod_report,
         reason="Merged and deleted duplicate album",
     )
     # Combine all modifications into a single ModificationEntriesList

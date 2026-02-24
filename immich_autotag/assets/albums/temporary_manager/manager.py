@@ -8,7 +8,6 @@ from immich_autotag.assets.albums.temporary_manager.naming import is_temporary_a
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_entries_list import ModificationEntriesList
-from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.types.client_types import ImmichClient
 
 
@@ -86,14 +85,12 @@ class TemporaryAlbumManager:
                     f"(id={album_wrapper.get_album_uuid()}) is not temporary but was "
                     f"passed to remove_empty_temporary_albums."
                 )
-        tag_mod_report = ModificationReport.get_instance()
         modification_entries = ModificationEntriesList()
         for album_wrapper in albums_to_remove:
             try:
                 entry = self._album_collection.delete_album(
                     wrapper=album_wrapper,
                     client=client,
-                    tag_mod_report=tag_mod_report,
                     reason=(
                         "Removed automatically after map build because it was empty "
                         "and temporary"
