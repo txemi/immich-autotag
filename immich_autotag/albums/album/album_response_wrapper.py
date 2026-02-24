@@ -262,53 +262,8 @@ class AlbumResponseWrapper:
                 f"Asset {asset_wrapper.get_id()} is already in album {self.get_album_uuid()}"
             )
 
-    @typechecked
-    def _report_addition_to_modification_report(
-        self,
-        asset_wrapper: "AssetResponseWrapper",
-        tag_mod_report: "ModificationReport",
-    ) -> "ModificationEntry":
-        """Records the asset addition in the modification report."""
-        from immich_autotag.report.modification_kind import ModificationKind
 
-        return tag_mod_report.add_assignment_modification(
-            kind=ModificationKind.ASSIGN_ASSET_TO_ALBUM,
-            asset_wrapper=asset_wrapper,
-            album=self,
-        )
 
-    @conditional_typechecked
-    def _verify_asset_in_album_with_retry(
-        self,
-        asset_wrapper: "AssetResponseWrapper",
-        client: ImmichClient,
-        max_retries: int = 3,
-    ) -> None:
-        """
-        Verifies that an asset appears in the album after adding it,
-        with retry logic for eventual consistency.
-        Uses exponential backoff to handle API delays.
-        """
-        import time
-
-        for attempt in range(max_retries):
-            if self._cache_entry.has_asset_wrapper(asset_wrapper):
-                return  # Success - asset is in album
-
-            if attempt < max_retries - 1:
-                # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
-                wait_time = 0.1 * (2**attempt)
-                time.sleep(wait_time)
-            else:
-                log(
-                    (
-                        f"After {max_retries} retries, asset {asset_wrapper.get_id()} "
-                        f"does NOT appear in album {self.get_album_uuid()}. "
-                        f"This may be an eventual consistency or "
-                        f"API issue."
-                    ),
-                    level=LogLevel.WARNING,
-                )
 
     # --- 8. Public Methods - Modification Actions ---
     @conditional_typechecked
@@ -328,9 +283,9 @@ class AlbumResponseWrapper:
         self._validate_before_add(asset_wrapper)
 
         # 2. Execution
-        result = self._cache_entry._execute_add_asset_api(asset_wrapper=asset_wrapper, client= client, album_wrapper=self)
-
-
+        result = self._cache_entry._execute_add_asset_api(
+            asset_wrapper=asset_wrapper, client=client, album_wrapper=self
+        )
 
         return entry
 

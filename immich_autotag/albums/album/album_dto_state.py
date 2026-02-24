@@ -219,3 +219,10 @@ class AlbumDtoState:
 
     def get_assets(self):
         return self._dto.assets
+
+    def get_album_uuid(self) -> AlbumUUID:
+        return AlbumUUID.from_uuid_string(self._dto.id)
+    
+
+    def get_immich_album_url(self):
+        return album_url_from_dto(self._dto)
