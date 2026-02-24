@@ -8,10 +8,10 @@ import attrs
 from typeguard import typechecked
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
+
 from immich_autotag.api.immich_proxy.types import ImmichClient
 from immich_autotag.api.logging_proxy.albums.add_assets_to_album import (
     logging_add_assets_to_album,
