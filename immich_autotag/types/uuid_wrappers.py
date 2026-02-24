@@ -38,6 +38,10 @@ class BaseUUIDWrapper:
     def from_uuid(cls, value: uuid.UUID):
         return cls(value)
 
+    @classmethod
+    def from_uuid_string(cls, value: str):
+        return cls(uuid.UUID(value))
+
     def to_uuid(self) -> uuid.UUID:
         return self.value
 

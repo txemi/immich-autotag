@@ -99,25 +99,6 @@ class AlbumResponseWrapper:
 
         return ImmichClientWrapper.get_default_instance().get_client()
 
-    @staticmethod
-    @typechecked
-    def _find_asset_result_in_response(
-        result: list[BulkIdResponseDto], asset_id: "AssetUUID"
-    ) -> BulkIdResponseDto | None:
-        """Finds the result item for a specific asset in the API response list."""
-        from immich_autotag.types.uuid_wrappers import AssetUUID
-
-        for item in result:
-            # Validate that success is a boolean (can be True or False)
-            if not isinstance(item.success, bool):
-                raise RuntimeError(
-                    f"API returned non-boolean success value in BulkIdResponseDto: {type(item.success)} = {item.success}"
-                )
-            if AssetUUID.from_uuid(UUID(item.id)) == asset_id:
-                return item
-
-        return None
-
     # --- 5. Public Methods - Metadata and Identification ---
 
     @typechecked
@@ -282,22 +263,6 @@ class AlbumResponseWrapper:
             )
 
     @typechecked
-    def _execute_add_asset_api(
-        self, asset_wrapper: "AssetResponseWrapper", client: ImmichClient
-    ) -> list[BulkIdResponseDto]:
-        """Executes the API call to add an asset to the album."""
-        from immich_autotag.api.immich_proxy.albums.add_assets_to_album import (
-            proxy_add_assets_to_album,
-        )
-
-        result = proxy_add_assets_to_album(
-            album_id=self.get_album_uuid(),
-            client=client,
-            asset_ids=[asset_wrapper.get_id()],
-        )
-        return result
-
-    @typechecked
     def _report_addition_to_modification_report(
         self,
         asset_wrapper: "AssetResponseWrapper",
@@ -311,71 +276,6 @@ class AlbumResponseWrapper:
             asset_wrapper=asset_wrapper,
             album=self,
         )
-
-    def _handle_add_asset_error(
-        self,
-        item: BulkIdResponseDto,
-        asset_wrapper: "AssetResponseWrapper",
-        client: ImmichClient,
-        tag_mod_report: "ModificationReport",
-    ) -> None:
-        """Handles non-success results from addition API."""
-        error_msg = item.error
-        asset_url = asset_wrapper.get_immich_photo_url().geturl()
-        album_url = self.get_immich_album_url().geturl()
-
-        # If the error is 'duplicate', reactive refresh:
-        # reload album data from API.
-        if error_msg and "duplicate" in str(error_msg).lower():
-            log(
-                (
-                    f"Asset {asset_wrapper.get_id()} already in album "
-                    f"{self.get_album_uuid()} (API duplicate error). "
-                    f"Raising AssetAlreadyInAlbumError."
-                ),
-                level=LogLevel.FOCUS,
-            )
-            # Instead of self.reload_from_api, use _cache_entry.ensure_full_loaded if available
-            # AlbumCacheEntry._ensure_full_loaded is protected; use get_asset_uuids to force reload
-            self._cache_entry.get_asset_uuids()
-
-            from immich_autotag.report.modification_kind import ModificationKind
-
-            tag_mod_report.add_assignment_modification(
-                kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
-                asset_wrapper=asset_wrapper,
-                album=self,
-                extra={
-                    "error": error_msg,
-                    "asset_url": asset_url,
-                    "album_url": album_url,
-                    "reason": "Stale cached album data detected and reloaded",
-                    "details": (
-                        f"Asset {asset_wrapper.get_id()} was not successfully added to album "
-                        f"{self.get_album_uuid()}: {error_msg}\n"
-                        f"Asset link: {asset_url}\n"
-                        f"Album link: {album_url}"
-                    ),
-                },
-            )
-            from immich_autotag.albums.album.album_response_wrapper import (
-                AssetAlreadyInAlbumError,
-            )
-
-            raise AssetAlreadyInAlbumError(
-                f"Asset {asset_wrapper.get_id()} already in album {self.get_album_uuid()} (API duplicate error)\n"
-                f"Asset link: {asset_wrapper.get_link().geturl()}\n"
-                f"Album link: {self.get_immich_album_url().geturl()}"
-            )
-        else:
-            raise RuntimeError(
-                (
-                    f"Asset {asset_wrapper.get_id()} was not successfully added to album "
-                    f"{self.get_album_uuid()}: {error_msg}\n"
-                    f"Asset link: {asset_url}\n"
-                    f"Album link: {album_url}"
-                )
-            )
 
     @conditional_typechecked
     def _verify_asset_in_album_with_retry(
@@ -428,27 +328,9 @@ class AlbumResponseWrapper:
         self._validate_before_add(asset_wrapper)
 
         # 2. Execution
-        result = self._execute_add_asset_api(asset_wrapper, client)
+        result = self._cache_entry._execute_add_asset_api(asset_wrapper=asset_wrapper, client= client, album_wrapper=self)
 
-        # 3. Handle result
-        item = self._find_asset_result_in_response(result, asset_wrapper.get_id())
-        if item:
-            if not item.success:
-                self._handle_add_asset_error(
-                    item, asset_wrapper, client, modification_report
-                )
-        else:
-            raise RuntimeError(
-                f"Asset {asset_wrapper.get_id()} not found in add_assets_to_album response."
-            )
 
-        # 4. Reporting
-        entry = self._report_addition_to_modification_report(
-            asset_wrapper, modification_report
-        )
-
-        # 5. Consistency Verification
-        self._verify_asset_in_album_with_retry(asset_wrapper, client, max_retries=3)
 
         return entry
 
