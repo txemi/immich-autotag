@@ -24,11 +24,11 @@ import attrs
 
 @attrs.define(auto_attribs=True, frozen=True, slots=True)
 class MemberDiff:
-    members_to_add: set[UserResponseWrapper] = attrs.field(
-        validator=attrs.validators.instance_of(set)
+    members_to_add: UserResponseWrapperList = attrs.field(
+        validator=attrs.validators.instance_of(UserResponseWrapperList)
     )
-    members_to_remove: set[UserResponseWrapper] = attrs.field(
-        validator=attrs.validators.instance_of(set)
+    members_to_remove: UserResponseWrapperList = attrs.field(
+        validator=attrs.validators.instance_of(UserResponseWrapperList)
     )
 
 
