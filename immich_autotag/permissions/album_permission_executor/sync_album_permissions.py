@@ -88,8 +88,8 @@ def _calculate_member_diff(
 
 def _apply_member_changes(
     album_wrapper: "AlbumResponseWrapper",
-    members_to_add: set[UserResponseWrapper],
-    members_to_remove: set[UserResponseWrapper],
+    members_to_add: UserResponseWrapperList,
+    members_to_remove: UserResponseWrapperList,
     resolved_policy: ResolvedAlbumPolicy,
     context: ImmichContext,
 ) -> None:
