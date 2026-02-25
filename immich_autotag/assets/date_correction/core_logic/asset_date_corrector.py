@@ -29,7 +29,7 @@ class AssetDateCorrector(ProcessStepResult):
     what happened during the process.
     """
 
-    asset_wrapper: AssetResponseWrapper
+    _asset_wrapper: AssetResponseWrapper
 
     # Private state (initialized after execute())
     _date_sources_list: AssetDateSourcesList = attrs.field(
@@ -65,21 +65,22 @@ class AssetDateCorrector(ProcessStepResult):
             DateCorrectionStepResult indicating the outcome of the correction attempt.
         """
 
-        wrappers = self.asset_wrapper.get_all_duplicate_wrappers(include_self=True)
+
+        wrappers = self._asset_wrapper.get_all_duplicate_wrappers(include_self=True)
         self._date_sources_list = AssetDateSourcesList.from_wrappers(
-            self.asset_wrapper, wrappers
+            self._asset_wrapper, wrappers
         )
         flat_candidates = self._date_sources_list.to_flat_candidates()
-        immich_date: datetime = self.asset_wrapper.get_best_date()
+        immich_date: datetime = self._asset_wrapper.get_best_date()
 
         step_result = check_filename_candidate_and_fix(
-            self.asset_wrapper, self._date_sources_list, immich_date
+            self._asset_wrapper, self._date_sources_list, immich_date
         )
         if DateCorrectionStepResult.should_exit(step_result):
             self._step_result = step_result
             self._reasoning = "Date corrected by filename"
             log(
-                f"[DATE CORRECTION] Date corrected by filename for asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] Date corrected by filename for asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return step_result
@@ -88,7 +89,7 @@ class AssetDateCorrector(ProcessStepResult):
             self._step_result = DateCorrectionStepResult.EXIT
             self._reasoning = "No date candidates found"
             log(
-                f"[DATE CORRECTION] No date candidates found for asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] No date candidates found for asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return DateCorrectionStepResult.EXIT
@@ -98,7 +99,7 @@ class AssetDateCorrector(ProcessStepResult):
             self._step_result = DateCorrectionStepResult.EXIT
             self._reasoning = "No valid oldest candidate found"
             log(
-                f"[DATE CORRECTION] No valid oldest candidate found for asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] No valid oldest candidate found for asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return DateCorrectionStepResult.EXIT
@@ -110,7 +111,7 @@ class AssetDateCorrector(ProcessStepResult):
             self._step_result = DateCorrectionStepResult.EXIT
             self._reasoning = "Immich date is already the oldest or equal"
             log(
-                f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do. Asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] Immich date {immich_date} is already the oldest or equal to the oldest suggested ({oldest}), nothing to do. Asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return DateCorrectionStepResult.EXIT
@@ -118,7 +119,7 @@ class AssetDateCorrector(ProcessStepResult):
             self._step_result = DateCorrectionStepResult.EXIT
             self._reasoning = "Immich date is the same day as the oldest"
             log(
-                f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do. Asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] Immich date {immich_date} is the same day as the oldest {oldest}, nothing to do. Asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return DateCorrectionStepResult.EXIT
@@ -128,7 +129,7 @@ class AssetDateCorrector(ProcessStepResult):
                 "Immich date is precise and suggested is rounded and very close (<4h)"
             )
             log(
-                f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do. Asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] Immich date {immich_date} is precise and the suggested {oldest} is rounded and very close (<4h). Nothing to do. Asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return DateCorrectionStepResult.EXIT
@@ -139,15 +140,15 @@ class AssetDateCorrector(ProcessStepResult):
                 "Difference between Immich date and oldest is less than 20h"
             )
             log(
-                f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do. Asset {self.asset_wrapper.get_id()} ({self.asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] Difference between Immich date and oldest is less than 16h: {diff_seconds_abs/3600:.2f} hours. Nothing to do. Asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return DateCorrectionStepResult.EXIT
 
-        photo_url_obj = self.asset_wrapper.get_immich_photo_url()
+        photo_url_obj = self._asset_wrapper.get_immich_photo_url()
         photo_url = photo_url_obj.geturl()
         log(
-            f"[DATE CORRECTION][LINK] Asset {self.asset_wrapper.get_id()} -> {photo_url}",
+            f"[DATE CORRECTION][LINK] Asset {self._asset_wrapper.get_id()} -> {photo_url}",
             level=LogLevel.FOCUS,
         )
 
@@ -246,8 +247,8 @@ class AssetDateCorrector(ProcessStepResult):
         lines.append("=" * 60)
         lines.append("DATE CORRECTION DIAGNOSIS")
         lines.append("=" * 60)
-        lines.append(f"Asset ID: {self.asset_wrapper.get_id()}")
-        lines.append(f"Asset Name: {self.asset_wrapper.get_original_file_name()}")
+        lines.append(f"Asset ID: {self._asset_wrapper.get_id()}")
+        lines.append(f"Asset Name: {self._asset_wrapper.get_original_file_name()}")
         lines.append(f"Result: {self._step_result}")
         lines.append(f"Reasoning: {self._reasoning}")
 
