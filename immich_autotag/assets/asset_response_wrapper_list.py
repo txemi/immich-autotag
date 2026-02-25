@@ -1,8 +1,13 @@
-from typing import Iterator, List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Iterator, List
 
 import attrs
+from typeguard import typechecked
 
-from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+# Removed top-level import to avoid circular import
 
 
 @attrs.define(auto_attribs=True, slots=True)
@@ -15,6 +20,7 @@ class AssetResponseWrapperList:
         factory=list, repr=lambda assets: f"size={len(assets)}"
     )
 
+    @typechecked
     def append(self, asset: AssetResponseWrapper) -> None:
         self._assets.append(asset)
 
