@@ -165,15 +165,16 @@ class AssetResponseWrapper:
     @typechecked
     def get_all_duplicate_wrappers(
         self, *, include_self: bool = True
-    ) -> list["AssetResponseWrapper"]:
+    ) -> "AssetResponseWrapperList":
         """
-        Returns a list of AssetResponseWrapper objects for all duplicates of this asset.
+        Returns an AssetResponseWrapperList for all duplicates of this asset.
         If include_self is True, includes this asset as well.
         """
+        from immich_autotag.assets.asset_response_wrapper_list import AssetResponseWrapperList
 
         context = self.get_context()
         duplicate_id = self.get_duplicate_id_as_uuid()
-        wrappers: list[AssetResponseWrapper] = []
+        wrappers = AssetResponseWrapperList()
         if duplicate_id:
             group = context.get_duplicates_collection().get_group(duplicate_id)
             for dup_id in group:
@@ -185,6 +186,8 @@ class AssetResponseWrapper:
                 dup_asset = context.get_asset_manager().get_asset(dup_id, context)
                 if dup_asset is not None:
                     wrappers.append(dup_asset)
+                else:
+                    raise RuntimeError(f"Duplicate asset with ID {dup_id} not found in asset manager")
         if include_self and (self not in wrappers):
             wrappers.append(self)
         return wrappers
