@@ -170,7 +170,9 @@ class AssetResponseWrapper:
         Returns an AssetResponseWrapperList for all duplicates of this asset.
         If include_self is True, includes this asset as well.
         """
-        from immich_autotag.assets.asset_response_wrapper_list import AssetResponseWrapperList
+        from immich_autotag.assets.asset_response_wrapper_list import (
+            AssetResponseWrapperList,
+        )
 
         context = self.get_context()
         duplicate_id = self.get_duplicate_id_as_uuid()
@@ -187,7 +189,9 @@ class AssetResponseWrapper:
                 if dup_asset is not None:
                     wrappers.append(dup_asset)
                 else:
-                    raise RuntimeError(f"Duplicate asset with ID {dup_id} not found in asset manager")
+                    raise RuntimeError(
+                        f"Duplicate asset with ID {dup_id} not found in asset manager"
+                    )
         if include_self and (self not in wrappers):
             wrappers.append(self)
         return wrappers
