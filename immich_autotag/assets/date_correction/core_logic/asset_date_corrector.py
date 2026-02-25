@@ -66,11 +66,10 @@ class AssetDateCorrector(ProcessStepResult):
         """
 
 
-        wrappers = self._asset_wrapper.get_all_duplicate_wrappers(include_self=True)
+        wrappers = self._asset_wrapper.get_all_duplicate_wrappers(include_self=False)
         self._date_sources_list = AssetDateSourcesList.from_wrappers(
             self._asset_wrapper, wrappers
         )
-        flat_candidates = self._date_sources_list.to_flat_candidates()
         immich_date: datetime = self._asset_wrapper.get_best_date()
 
         step_result = check_filename_candidate_and_fix(
@@ -85,6 +84,7 @@ class AssetDateCorrector(ProcessStepResult):
             )
             return step_result
 
+        flat_candidates = self._date_sources_list.to_flat_candidates()
         if not flat_candidates:
             self._step_result = DateCorrectionStepResult.EXIT
             self._reasoning = "No date candidates found"
