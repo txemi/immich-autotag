@@ -15,7 +15,12 @@ from immich_autotag.api.logging_proxy.types import Unset, UpdateAssetDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
 )
-from immich_autotag.assets.asset_response_wrapper_list import AssetResponseWrapperList
+
+if TYPE_CHECKING:
+    from immich_autotag.assets.asset_response_wrapper_list import (
+        AssetResponseWrapperList,
+    )
+
 from immich_autotag.classification.classification_status import ClassificationStatus
 from immich_autotag.classification.match_classification_result import (
     MatchClassificationResult,
