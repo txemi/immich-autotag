@@ -8,7 +8,7 @@ from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 @attrs.define(auto_attribs=True, slots=True)
 class AssetResponseWrapperList:
     """
-    Encapsula una lista de AssetResponseWrapper, proporcionando métodos utilitarios y deduplicación futura.
+    Encapsulates a collection of AssetResponseWrapper, providing utility methods and future deduplication.
     """
 
     _assets: List[AssetResponseWrapper] = attrs.field(
