@@ -702,6 +702,31 @@ class AlbumCollectionWrapper:
         )
         cache_entry_obj = AlbumCacheEntry.create(dto=state)
         wrapper = AlbumResponseWrapper(cache_entry_obj)
+        duplicated_by_name = self._albums.get_by_name(wrapper.get_album_name()) 
+        if duplicated_by_name is not None:
+            # Name conflict: log and skip adding to collection (will be handled by duplicate logic later)
+            from immich_autotag.logging.levels import LogLevel
+            from immich_autotag.logging.utils import log
+
+            log(
+                f"[WARNING] Album name conflict detected during wrapper creation: An album with the name '{wrapper.get_album_name()}' already exists in the collection. "
+                f"The new album with ID {wrapper.get_album_uuid()} will be created but not added to the collection to avoid immediate conflicts. "
+                "This may indicate a duplicate album scenario that will be resolved later by the duplicate handling logic. "
+                "Review the albums in the Immich app or web interface to identify and resolve any duplicates.",
+                level=LogLevel.WARNING,
+            )
+            if wrapper.is_temporary_album():
+                self.delete_album(
+                    wrapper=wrapper,
+                    client=self.get_client(),
+                    reason="Deleted album with conflicting name during wrapper creation",
+                    remove_from_map=False,  # Not in map yet, so skip local removal
+                )
+                return duplicated_by_name
+            else:
+                raise NotImplementedError(
+                    "Album name conflict detected during wrapper creation. This scenario is not fully implemented. Review the logs for details and investigate the cause of the duplicate."
+                )
         self._albums.add(wrapper)
         return wrapper
 
