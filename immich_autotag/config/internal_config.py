@@ -71,6 +71,6 @@ ENABLE_ALBUM_CLEANUP_RESCUE = False  # Default: disabled for safety
 FORCE_MAX_ITEMS_TO_PROCESS: int | None = None  # Limit for fast performance tests
 # ==================== FILTER OVERRIDES FOR DEV/CI ====================
 # If set, this asset UUID will be injected as a filter override in user config (for testing/dev convenience).
-FILTER_OVERRIDE_ASSET_UUID: str | None = (
-    "4cc4171f-f8a5-47eb-bbc1-a4834cc51bce"  # Example: "4cc4171f-f8a5-47eb-bbc1-a4834cc51bce"
-)
+# Example: "4cc4171f-f8a5-47eb-bbc1-a4834cc51bce"
+
+FILTER_OVERRIDE_ASSET_UUID: str | None = None
