@@ -49,9 +49,6 @@ def apply_config_overrides(user_config: UserConfig):
 
     if FILTER_OVERRIDE_ASSET_UUID is not None:
         add_asset_filter_override(user_config, FILTER_OVERRIDE_ASSET_UUID)
-    # Example: override asset processing limit
-    raise NotImplementedError(
-        "Override logic not implemented yet. This is a placeholder."
-    )
+
     # Add more overrides as needed
     return user_config
