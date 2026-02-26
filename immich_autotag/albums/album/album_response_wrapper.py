@@ -282,8 +282,11 @@ class AlbumResponseWrapper:
         entry: ModificationEntry = self._cache_entry._execute_add_asset_api(
             asset_wrapper=asset_wrapper, client=client, album_wrapper=self
         )
-        # Actualiza el mapa asset->albums en la colección para evitar duplicados en get_or_create
-        from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+        # Update the asset-to-albums mapping in the collection to avoid duplicates in get_or_create
+        from immich_autotag.albums.albums.album_collection_wrapper import (
+            AlbumCollectionWrapper,
+        )
+
         AlbumCollectionWrapper.get_instance().update_asset_to_albums_map_for_asset(
             asset=asset_wrapper, album=self
         )
