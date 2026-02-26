@@ -32,20 +32,25 @@ class ImmichUrlUuidExtractor:
         if not self._parsed:
             album_uuid = None
             asset_uuid = None
-            # .../albums/{album_uuid}/photos/{asset_uuid}
-            m = re.search(
-                r"/albums/([a-fA-F0-9\-]{36})/photos/([a-fA-F0-9\-]{36})", self._url
-            )
-            if m:
-                album_uuid = UUID(m.group(1))
-                asset_uuid = UUID(m.group(2))
-            else:
-                m = re.search(r"/albums/([a-fA-F0-9\-]{36})", self._url)
+            # If the URL is directly a UUID, treat it as an asset UUID
+            try:
+                possible_uuid = UUID(self._url)
+                asset_uuid = possible_uuid
+            except Exception:
+                # .../albums/{album_uuid}/photos/{asset_uuid}
+                m = re.search(
+                    r"/albums/([a-fA-F0-9\-]{36})/photos/([a-fA-F0-9\-]{36})", self._url
+                )
                 if m:
                     album_uuid = UUID(m.group(1))
-                m2 = re.search(r"/photos/([a-fA-F0-9\-]{36})", self._url)
-                if m2:
-                    asset_uuid = UUID(m2.group(1))
+                    asset_uuid = UUID(m.group(2))
+                else:
+                    m = re.search(r"/albums/([a-fA-F0-9\-]{36})", self._url)
+                    if m:
+                        album_uuid = UUID(m.group(1))
+                    m2 = re.search(r"/photos/([a-fA-F0-9\-]{36})", self._url)
+                    if m2:
+                        asset_uuid = UUID(m2.group(1))
             self._album_uuid = AlbumUUID(album_uuid) if album_uuid else None
             self._asset_uuid = AssetUUID(asset_uuid) if asset_uuid else None
             self._parsed = True

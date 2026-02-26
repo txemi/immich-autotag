@@ -150,6 +150,7 @@ class ClassificationRuleWrapper:
 
         if not self.rule.asset_links:
             return []
+        
         from immich_autotag.classification.link_parsing.immich_url_uuid_extractor import (
             ImmichUrlUuidExtractor,
         )
