@@ -734,7 +734,7 @@ class AssetResponseWrapper:
         if changes.has_changes():
             for entry in changes:
                 log(
-                    f"[TAG CONVERSION] {entry.kind.value.name} on asset {self.get_id()} ({self.get_original_file_name()})",
+                    f"[TAG CONVERSION] {entry.kind.value.get_name()} on asset {self.get_id()} ({self.get_original_file_name()})",
                     level=LogLevel.FOCUS,
                 )
         else:

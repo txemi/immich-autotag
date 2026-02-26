@@ -12,6 +12,7 @@ class ModificationLevel(Enum):
     WARNING = "warning"  # Non-critical issues that were handled gracefully
     MODIFICATION = "modification"  # Successful action/change
     UNKNOWN = "unknown"  # Unknown or unclassifiable level (should be avoided)
+    READ_ONLY = "read_only"  # Informational entries that did not involve a change
 
     def is_error(self) -> bool:
         return self == ModificationLevel.ERROR
@@ -162,7 +163,6 @@ class ModificationKind(Enum):
     )
     ERROR_ASSET_DELETED = ModificationKindInfo(
         name="ERROR_ASSET_DELETED",
-        log_level=LogLevel.ERROR,
         level=ModificationLevel.ERROR,
         requires_asset=True,
         requires_album=False,
@@ -172,7 +172,6 @@ class ModificationKind(Enum):
     # --- Album-related modifications ---
     CREATE_ALBUM = ModificationKindInfo(
         name="CREATE_ALBUM",
-        log_level=LogLevel.IMPORTANT,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -180,7 +179,6 @@ class ModificationKind(Enum):
     )
     DELETE_ALBUM = ModificationKindInfo(
         name="DELETE_ALBUM",
-        log_level=LogLevel.IMPORTANT,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -188,7 +186,6 @@ class ModificationKind(Enum):
     )
     DELETE_ALBUM_UNHEALTHY = ModificationKindInfo(
         name="DELETE_ALBUM_UNHEALTHY",
-        log_level=LogLevel.IMPORTANT,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -196,7 +193,6 @@ class ModificationKind(Enum):
     )
     RENAME_ALBUM = ModificationKindInfo(
         name="RENAME_ALBUM",
-        log_level=LogLevel.PROGRESS,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -204,7 +200,6 @@ class ModificationKind(Enum):
     )
     ALBUM_DATE_MISMATCH = ModificationKindInfo(
         name="ALBUM_DATE_MISMATCH",
-        log_level=LogLevel.WARNING,
         level=ModificationLevel.WARNING,
         requires_asset=False,
         requires_album=True,
@@ -212,7 +207,6 @@ class ModificationKind(Enum):
     )
     ALBUM_DETECTION_CONFLICT = ModificationKindInfo(
         name="ALBUM_DETECTION_CONFLICT",
-        log_level=LogLevel.WARNING,
         level=ModificationLevel.WARNING,
         requires_asset=False,
         requires_album=False,
@@ -220,7 +214,6 @@ class ModificationKind(Enum):
     )
     CLASSIFICATION_CONFLICT = ModificationKindInfo(
         name="CLASSIFICATION_CONFLICT",
-        log_level=LogLevel.WARNING,
         level=ModificationLevel.WARNING,
         requires_asset=False,
         requires_album=False,
@@ -230,7 +223,6 @@ class ModificationKind(Enum):
     # --- Authorization/permission-related modifications ---
     ALBUM_PERMISSION_RULE_MATCHED = ModificationKindInfo(
         name="ALBUM_PERMISSION_RULE_MATCHED",
-        log_level=LogLevel.FOCUS,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -238,7 +230,6 @@ class ModificationKind(Enum):
     )
     ALBUM_PERMISSION_GROUPS_RESOLVED = ModificationKindInfo(
         name="ALBUM_PERMISSION_GROUPS_RESOLVED",
-        log_level=LogLevel.FOCUS,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -246,7 +237,6 @@ class ModificationKind(Enum):
     )
     ALBUM_PERMISSION_NO_MATCH = ModificationKindInfo(
         name="ALBUM_PERMISSION_NO_MATCH",
-        log_level=LogLevel.FOCUS,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -254,7 +244,6 @@ class ModificationKind(Enum):
     )
     ALBUM_PERMISSION_SHARED = ModificationKindInfo(
         name="ALBUM_PERMISSION_SHARED",
-        log_level=LogLevel.FOCUS,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -262,7 +251,6 @@ class ModificationKind(Enum):
     )
     ALBUM_PERMISSION_REMOVED = ModificationKindInfo(
         name="ALBUM_PERMISSION_REMOVED",
-        log_level=LogLevel.FOCUS,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -270,7 +258,6 @@ class ModificationKind(Enum):
     )
     ALBUM_PERMISSION_SHARE_FAILED = ModificationKindInfo(
         name="ALBUM_PERMISSION_SHARE_FAILED",
-        log_level=LogLevel.ERROR,
         level=ModificationLevel.ERROR,
         requires_asset=False,
         requires_album=True,
@@ -278,7 +265,6 @@ class ModificationKind(Enum):
     )
     ADD_USER_TO_ALBUM = ModificationKindInfo(
         name="ADD_USER_TO_ALBUM",
-        log_level=LogLevel.PROGRESS,
         level=ModificationLevel.MODIFICATION,
         requires_asset=False,
         requires_album=True,
@@ -288,7 +274,6 @@ class ModificationKind(Enum):
     # --- Error-related modifications ---
     ERROR_ALBUM_NOT_FOUND = ModificationKindInfo(
         name="ERROR_ALBUM_NOT_FOUND",
-        log_level=LogLevel.ERROR,
         level=ModificationLevel.ERROR,
         requires_asset=False,
         requires_album=True,
@@ -296,7 +281,6 @@ class ModificationKind(Enum):
     )
     ERROR_PERMISSION_DENIED = ModificationKindInfo(
         name="ERROR_PERMISSION_DENIED",
-        log_level=LogLevel.ERROR,
         level=ModificationLevel.ERROR,
         requires_asset=False,
         requires_album=False,
@@ -304,7 +288,6 @@ class ModificationKind(Enum):
     )
     ERROR_NETWORK_TEMPORARY = ModificationKindInfo(
         name="ERROR_NETWORK_TEMPORARY",
-        log_level=LogLevel.ERROR,
         level=ModificationLevel.ERROR,
         requires_asset=False,
         requires_album=False,

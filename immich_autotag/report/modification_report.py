@@ -243,7 +243,7 @@ class ModificationReport:
         # Log the tag modification action
         from immich_autotag.logging.utils import log
 
-        level = kind.value.log_level
+        level = kind.value.get_log_level()
         msg = self._build_tag_modification_log_message(kind, tag, asset_wrapper)
         log(msg, level=level)
 
@@ -281,7 +281,7 @@ class ModificationReport:
         # Centralize the log here if appropriate
         from immich_autotag.logging.utils import log
 
-        level = kind.value.log_level
+        level = kind.value.get_log_level()
         # Mensajes por tipo
         if kind == ModificationKind.DELETE_ALBUM:
             msg = f"[DELETE_ALBUM] Album '{album.get_album_name()}' (id={album.get_album_uuid()}) deleted. Reason: {extra.get('reason') if extra else ''}"
