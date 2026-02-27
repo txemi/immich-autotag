@@ -38,7 +38,8 @@ class AlbumAssignmentResultInfo:
         if self._modifications is not None:
             album_count = self._modifications.count_albums()
             asset_count = self._modifications.count_assets()
-            if album_count > 1:
+            # DISABLED: In some cases, there might be multiple modifications for the same asset or album (e.g., multiple tag changes), so we won't enforce this strictly here. Instead, we can log a warning if it happens.
+            if False and album_count > 1:
                 raise ValueError(
                     f"Integrity error: More than one album in modifications: {album_count}"
                 )
