@@ -37,13 +37,25 @@ def delete_unhealthy_temp_albums(context: ImmichContext) -> ModificationEntriesL
     from immich_autotag.assets.albums.temporary_manager.health import (
         is_temporary_album_healthy,
     )
+    from immich_autotag.utils.perf.performance_tracker import PerformanceTracker
 
-    for album in albums:
+    total = len(albums)
+    tracker = PerformanceTracker.from_total(total)
+
+    for idx, album in enumerate(albums, 1):
         if album.is_temporary_album() and not is_temporary_album_healthy(album):
             mod = _delete_album(album, client, albums_collection)
             modifications.append(mod)
+            # Always log deletion
             log(
                 f"[PROGRESS] [ALBUM-DELETE] Deleted unhealthy temporary album: '{album.get_album_name()}' (UUID: {album.get_album_uuid()})",
+                level=LogLevel.PROGRESS,
+            )
+        # Detailed progress log at tracker intervals
+        if tracker.should_log_progress(idx):
+            progress_msg = tracker.get_progress_description(idx)
+            log(
+                f"[ALBUM-DELETE][PROGRESS] {progress_msg} | checking temporary album: '{album.get_album_name()}' (UUID: {album.get_album_uuid()})",
                 level=LogLevel.PROGRESS,
             )
 
