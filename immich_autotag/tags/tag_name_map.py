@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Dict, List
 import attrs
 from typeguard import typechecked
 
+from immich_autotag.tags.errors import TagNotFoundError
+
 if TYPE_CHECKING:
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
@@ -35,7 +37,10 @@ class TagNameMap:
     @typechecked
     def get(self, name: str) -> "TagWrapper":
         if name not in self._name_to_tag:
-            raise RuntimeError(f"Tag with name '{name}' does not exist in TagNameMap.")
+            raise TagNotFoundError(
+                tag_name=name,
+                message=f"Tag with name '{name}' does not exist in TagNameMap.",
+            )
         return self._name_to_tag[name]
 
     def to_list(self) -> List["TagWrapper"]:

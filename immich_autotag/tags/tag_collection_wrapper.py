@@ -88,15 +88,21 @@ class TagCollectionWrapper:
             return tag_obj
         return None
 
-    def _load_single_by_name_from_api(self, name: str):
+    def _load_single_by_name_from_api(self, name: str) -> "TagWrapper | None":
         """
         Centralizes full loading: if not fully_loaded, loads all tags and
         searches in the index. This avoids duplication and keeps the logic in
         one place.
         """
+        from immich_autotag.tags.errors import TagNotFoundError
+
         if not self._fully_loaded:
             self._load_all_from_api()
-        return self._index.get_by_name(name)
+        try:
+            return self._index.get_by_name(name)
+        except TagNotFoundError:
+            # Tag doesn't exist in the collection after full load
+            return None
 
     @typechecked
     def create_tag_if_not_exists(
@@ -144,9 +150,13 @@ class TagCollectionWrapper:
 
     @typechecked
     def find_by_name(self, name: str) -> "TagWrapper | None":
+        from immich_autotag.tags.errors import TagNotFoundError
+
         try:
             tag = self._index.get_by_name(name)
             return tag
+        except TagNotFoundError:
+            pass
         except Exception:
             pass
         # Lazy-load individual tag if not fully_loaded
