@@ -27,11 +27,11 @@ def _execute_remove_asset_api(
     from immich_autotag.context.immich_client_wrapper import ImmichClientWrapper
 
     client = ImmichClientWrapper.get_default_instance().get_client()
-    
+
     # Construct URLs for better debugging
     asset_url = asset_wrapper.get_immich_photo_url().geturl()
     album_url = album.get_immich_album_url().geturl()
-    
+
     result = proxy_remove_asset_from_album(
         album_id=album.get_album_uuid(),
         client=client,

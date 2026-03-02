@@ -269,19 +269,40 @@ class AlbumResponseWrapper:
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
         modification_report: "ModificationReport",
-    ) -> "ModificationEntry":
+        raise_on_duplicate: bool = True,
+    ) -> "ModificationEntry | None":
         """
-        Adds an asset to the album. If the asset is already present,
-        raises AssetAlreadyInAlbumError.
-        Returns the ModificationEntry created by the operation.
+        Adds an asset to the album. If the asset is already present and raise_on_duplicate=True,
+        raises AssetAlreadyInAlbumError. If raise_on_duplicate=False, logs warning and returns None.
+
+        Args:
+            raise_on_duplicate: If True, raises AssetAlreadyInAlbumError when asset is already in album.
+                               If False, logs warning and continues execution.
+
+        Returns:
+            ModificationEntry if successful or None if asset already in album and raise_on_duplicate=False.
         """
         # 1. Validation
         self._validate_before_add(asset_wrapper)
 
         # 2. Execution
-        entry: ModificationEntry = self._cache_entry._execute_add_asset_api(
-            asset_wrapper=asset_wrapper, client=client, album_wrapper=self
+        entry: ModificationEntry | None = self._cache_entry._execute_add_asset_api(
+            asset_wrapper=asset_wrapper,
+            client=client,
+            album_wrapper=self,
+            raise_on_duplicate=raise_on_duplicate,
         )
+
+        # If entry is None, asset was already in album and we're not raising
+        if entry is not None and entry.kind is ModificationKind.ASSIGN_ASSET_TO_ALBUM:
+            pass
+        elif entry is not None and entry.kind is ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM:
+            pass
+        else:
+            raise NotImplementedError(
+                "Unexpected case: entry is None but kind is ASSIGN_ASSET_TO_ALBUM, or entry is not None but kind is not ASSIGN_ASSET_TO_ALBUM"
+            )
+
         # Update the asset-to-albums mapping in the collection to avoid duplicates in get_or_create
         from immich_autotag.albums.albums.album_collection_wrapper import (
             AlbumCollectionWrapper,

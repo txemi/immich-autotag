@@ -81,8 +81,14 @@ def _handle_add_asset_error(
     asset_wrapper: "AssetResponseWrapper",
     album_wrapper: AlbumResponseWrapper,
     album_state: AlbumDtoState,
-) -> None:
-    """Handles non-success results from addition API."""
+    raise_on_duplicate: bool = True,
+) -> ModificationEntry | None:
+    """Handles non-success results from addition API.
+
+    Args:
+        raise_on_duplicate: If True, raises AssetAlreadyInAlbumError on duplicate.
+                           If False, logs warning and returns ModificationEntry.
+    """
     error_msg = bulk_id_response_dto.error
     asset_url = asset_wrapper.get_immich_photo_url().geturl()
     album_url = album_wrapper.get_immich_album_url().geturl()
@@ -106,7 +112,7 @@ def _handle_add_asset_error(
         from immich_autotag.report.modification_report import ModificationReport
 
         tag_mod_report = ModificationReport.get_instance()
-        tag_mod_report.add_assignment_modification(
+        entry = tag_mod_report.add_assignment_modification(
             kind=ModificationKind.WARNING_ASSET_ALREADY_IN_ALBUM,
             asset_wrapper=asset_wrapper,
             album=album_wrapper,
@@ -123,15 +129,28 @@ def _handle_add_asset_error(
                 ),
             },
         )
-        from immich_autotag.albums.album.album_response_wrapper import (
-            AssetAlreadyInAlbumError,
-        )
 
-        raise AssetAlreadyInAlbumError(
-            f"Asset {asset_wrapper.get_id()} already in album {album_state.get_album_uuid()} (API duplicate error)\n"
-            f"Asset link: {asset_wrapper.get_link().geturl()}\n"
-            f"Album link: {album_state.get_immich_album_url()}"
-        )
+        if raise_on_duplicate:
+            from immich_autotag.albums.album.album_response_wrapper import (
+                AssetAlreadyInAlbumError,
+            )
+
+            raise AssetAlreadyInAlbumError(
+                f"Asset {asset_wrapper.get_id()} already in album {album_state.get_album_uuid()} (API duplicate error)\n"
+                f"Asset link: {asset_wrapper.get_link().geturl()}\n"
+                f"Album link: {album_state.get_immich_album_url()}"
+            )
+        else:
+            log(
+                (
+                    f"[WARNING] Asset {asset_wrapper.get_id()} already in album "
+                    f"{album_state.get_album_uuid()} (API duplicate error). Continuing execution.\n"
+                    f"Asset link: {asset_wrapper.get_link().geturl()}\n"
+                    f"Album link: {album_state.get_immich_album_url()}"
+                ),
+                level=LogLevel.WARNING,
+            )
+        return entry
     else:
         raise RuntimeError(
             (
@@ -168,8 +187,17 @@ def logging_add_assets_to_album(
     client: ImmichClient,
     album_wrapper: AlbumResponseWrapper,
     album_state: AlbumDtoState,
-) -> ModificationEntry:
-    """Executes the API call to add an asset to the album."""
+    raise_on_duplicate: bool = True,
+) -> ModificationEntry | None:
+    """Executes the API call to add an asset to the album.
+
+    Args:
+        raise_on_duplicate: If True, raises AssetAlreadyInAlbumError when asset is already in album.
+                           If False, logs warning and continues execution, returning None.
+
+    Returns:
+        ModificationEntry if successful or None if asset already in album and raise_on_duplicate=False.
+    """
     from immich_autotag.api.immich_proxy.albums.add_assets_to_album import (
         proxy_add_assets_to_album,
     )
@@ -184,12 +212,16 @@ def logging_add_assets_to_album(
     item = _find_asset_result_in_response(result, asset_wrapper.get_id())
     if item:
         if not item.success:
-            _handle_add_asset_error(
+            error_entry = _handle_add_asset_error(
                 bulk_id_response_dto=item,
                 asset_wrapper=asset_wrapper,
                 album_wrapper=album_wrapper,
                 album_state=album_state,
+                raise_on_duplicate=raise_on_duplicate,
             )
+            # If we didn't raise (raise_on_duplicate=False), return the error entry
+            if error_entry is not None:
+                return error_entry
     else:
         raise RuntimeError(
             f"Asset {asset_wrapper.get_id()} not found in add_assets_to_album response."

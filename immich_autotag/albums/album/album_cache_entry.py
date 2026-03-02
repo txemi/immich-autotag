@@ -286,13 +286,23 @@ class AlbumCacheEntry:
         asset_wrapper: "AssetResponseWrapper",
         client: ImmichClient,
         album_wrapper: "AlbumResponseWrapper",
-    ) -> ModificationEntry:
-        """Executes the API call to add an asset to the album."""
+        raise_on_duplicate: bool = True,
+    ) -> ModificationEntry | None:
+        """Executes the API call to add an asset to the album.
+
+        Args:
+            raise_on_duplicate: If True, raises AssetAlreadyInAlbumError when asset is already in album.
+                               If False, logs warning and continues execution.
+
+        Returns:
+            ModificationEntry if successful or None if asset already in album and raise_on_duplicate=False.
+        """
         ret = logging_add_assets_to_album(
             asset_wrapper=asset_wrapper,
             client=client,
             album_wrapper=album_wrapper,
             album_state=self.get_state(),
+            raise_on_duplicate=raise_on_duplicate,
         )
         return ret
 

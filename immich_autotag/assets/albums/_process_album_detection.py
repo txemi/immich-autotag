@@ -43,6 +43,7 @@ def process_album_detection(
             asset_wrapper=asset_wrapper,
             client=client,
             modification_report=tag_mod_report,
+            raise_on_duplicate=False,
         )
     else:
         log(
