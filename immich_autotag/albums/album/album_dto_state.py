@@ -199,11 +199,13 @@ class AlbumDtoState:
             raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
 
     def is_empty(self) -> bool:
-        if self._load_source == AlbumLoadSource.SEARCH:
-            raise RuntimeError(
-                "Cannot determine if album is empty from SEARCH load source."
-            )
-        return len(self._dto.assets) == 0
+        """
+        Returns whether the album has no assets.
+
+        Uses the asset_count field from the DTO, which is available
+        regardless of load source and avoids deserializing the full assets list.
+        """
+        return self._dto.asset_count == 0
 
     def get_asset_uuids(self) -> set[AssetUUID]:
         """
