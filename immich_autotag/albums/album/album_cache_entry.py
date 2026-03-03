@@ -198,14 +198,14 @@ class AlbumCacheEntry:
 
     @conditional_typechecked
     def get_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
-        # Ensure the album is fully loaded before accessing assets
-        self._ensure_full_loaded()
+        # Ensure the album is fully loaded once, then reuse the loaded state
+        loaded_entry = self._ensure_full_loaded()
         from immich_autotag.assets.asset_dto_state import AssetDtoType
 
         asset_manager = context.get_asset_manager()
         # asset_manager should not be None; if it is, this is a programming error
         result: list["AssetResponseWrapper"] = []
-        for a in self._ensure_full_loaded()._dto.get_assets():
+        for a in loaded_entry._dto.get_assets():
             b = asset_manager.get_wrapper_for_asset_dto(
                 asset_dto=a,
                 dto_type=AssetDtoType.ALBUM,
