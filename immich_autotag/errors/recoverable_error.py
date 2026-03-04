@@ -35,6 +35,19 @@ class RecoverableError(Exception):
 class ImmichApiError(RecoverableError):
     """Base class for API errors from Immich server, enriched with context URLs."""
 
+    def _format_message(self) -> str:
+        """Format error message with context URLs."""
+        parts = [self.message]
+        if self.status_code:
+            parts.append(f"(HTTP {self.status_code})")
+        if self.album_url:
+            parts.append(f"\nAlbum URL: {self.album_url.geturl()}")
+        if self.asset_url:
+            parts.append(f"\nAsset URL: {self.asset_url.geturl()}")
+        if self.response_content:
+            parts.append(f"\nAPI Response: {self.response_content}")
+        return " ".join(parts)
+
     def __init__(
         self,
         message: str,
@@ -49,19 +62,6 @@ class ImmichApiError(RecoverableError):
         self.album_url = album_url
         self.asset_url = asset_url
         super().__init__(self._format_message())
-
-    def _format_message(self) -> str:
-        """Format error message with context URLs."""
-        parts = [self.message]
-        if self.status_code:
-            parts.append(f"(HTTP {self.status_code})")
-        if self.album_url:
-            parts.append(f"\nAlbum URL: {self.album_url.geturl()}")
-        if self.asset_url:
-            parts.append(f"\nAsset URL: {self.asset_url.geturl()}")
-        if self.response_content:
-            parts.append(f"\nAPI Response: {self.response_content}")
-        return " ".join(parts)
 
 
 class AlbumNotFoundError(ImmichApiError):

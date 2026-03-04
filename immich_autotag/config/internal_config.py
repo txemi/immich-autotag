@@ -74,3 +74,9 @@ FORCE_MAX_ITEMS_TO_PROCESS: int | None = None  # Limit for fast performance test
 # Example: "4cc4171f-f8a5-47eb-bbc1-a4834cc51bce"
 
 FILTER_OVERRIDE_ASSET_UUID: str | None = None
+
+# ==================== ERROR HANDLING OVERRIDES ====================
+# If set (True/False), this will override user config's fail_fast_on_asset_errors.
+# If None, user config value is used.
+# Set to False to enable fault-tolerant mode (continue processing on errors) for large batch runs.
+FORCE_FAIL_FAST_ON_ASSET_ERRORS: bool | None = False

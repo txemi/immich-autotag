@@ -4,7 +4,6 @@ from typeguard import typechecked
 
 from immich_autotag.assets.process.asset_process_report import AssetProcessReport
 from immich_autotag.assets.process.process_single_asset import process_single_asset
-from immich_autotag.config.dev_mode import is_development_mode
 from immich_autotag.config.manager import ConfigManager
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.errors.recoverable_error import categorize_error
@@ -72,22 +71,32 @@ def process_assets_sequential(
                 is_recoverable = categorized.is_recoverable
                 category = categorized.category_name
 
-                # If recoverable, or not recoverable but we are in BATCH mode, treat the same
-                if is_recoverable and not is_development_mode():
+                # Check if we should continue on errors based on config
+                config = ConfigManager.get_instance().get_config()
+                fail_fast = config.performance.fail_fast_on_asset_errors
+                should_skip = is_recoverable or (not fail_fast)
+
+                if should_skip:
                     import traceback
 
                     tb = traceback.format_exc()
                     asset_id = asset_wrapper.get_id()
+                    error_prefix = "[WARN]" if is_recoverable else "[ERROR]"
                     log(
-                        f"[WARN] {category} - Skipping asset {asset_id}: {e}\nTraceback:\n{tb}",
+                        f"{error_prefix} {category} - Skipping asset {asset_id}: {e}\nTraceback:\n{tb}",
                         level=LogLevel.IMPORTANT,
                     )
                     from immich_autotag.report.modification_kind import ModificationKind
 
                     tag_mod_report = ModificationReport.get_instance()
                     if tag_mod_report:
+                        error_kind = (
+                            ModificationKind.ERROR_ASSET_SKIPPED_RECOVERABLE
+                            if is_recoverable
+                            else ModificationKind.ERROR_ASSET_SKIPPED_FATAL
+                        )
                         tag_mod_report.add_error_modification(
-                            kind=ModificationKind.ERROR_ASSET_SKIPPED_RECOVERABLE,
+                            kind=error_kind,
                             asset_wrapper=asset_wrapper,
                             error_message=str(e),
                             error_category=category,

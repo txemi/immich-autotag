@@ -161,6 +161,13 @@ class ModificationKind(Enum):
         requires_album=False,
         requires_tag=False,
     )
+    ERROR_ASSET_SKIPPED_FATAL = ModificationKindInfo(
+        name="ERROR_ASSET_SKIPPED_FATAL",
+        level=ModificationLevel.ERROR,
+        requires_asset=True,
+        requires_album=False,
+        requires_tag=False,
+    )
     ERROR_ASSET_DELETED = ModificationKindInfo(
         name="ERROR_ASSET_DELETED",
         level=ModificationLevel.ERROR,

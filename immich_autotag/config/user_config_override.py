@@ -45,10 +45,18 @@ def apply_config_overrides(user_config: UserConfig):
     that should take precedence, update user_config accordingly.
     This is a stub; actual logic will be added iteratively.
     """
-    from immich_autotag.config.internal_config import FILTER_OVERRIDE_ASSET_UUID
+    from immich_autotag.config.internal_config import (
+        FILTER_OVERRIDE_ASSET_UUID,
+        FORCE_FAIL_FAST_ON_ASSET_ERRORS,
+    )
 
     if FILTER_OVERRIDE_ASSET_UUID is not None:
         add_asset_filter_override(user_config, FILTER_OVERRIDE_ASSET_UUID)
+
+    if FORCE_FAIL_FAST_ON_ASSET_ERRORS is not None:
+        user_config.performance.fail_fast_on_asset_errors = (
+            FORCE_FAIL_FAST_ON_ASSET_ERRORS
+        )
 
     # Add more overrides as needed
     return user_config
