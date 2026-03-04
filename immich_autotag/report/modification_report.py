@@ -353,6 +353,7 @@ class ModificationReport:
         """
         assert kind in {
             ModificationKind.ERROR_ASSET_SKIPPED_RECOVERABLE,
+            ModificationKind.ERROR_ASSET_SKIPPED_FATAL,
             ModificationKind.ERROR_ALBUM_NOT_FOUND,
             ModificationKind.ERROR_PERMISSION_DENIED,
             ModificationKind.ERROR_ASSET_DELETED,

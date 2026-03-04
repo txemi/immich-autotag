@@ -74,7 +74,8 @@ def process_assets_sequential(
                 # Check if we should continue on errors based on config
                 config = ConfigManager.get_instance().get_config()
                 fail_fast = config.performance.fail_fast_on_asset_errors
-                should_skip = is_recoverable or (not fail_fast)
+                # Skip asset if error is recoverable OR if fail_fast is disabled
+                should_skip = is_recoverable or not fail_fast
 
                 if should_skip:
                     import traceback

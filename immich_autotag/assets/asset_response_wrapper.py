@@ -384,7 +384,8 @@ class AssetResponseWrapper:
                 user=user_wrapper,
                 extra={"error": error_msg},
             )
-            return ModificationEntriesList(entries=[entry])
+            # Re-raise the exception so it can be handled by fail_fast logic
+            raise
         log(f"[DEBUG] Response proxy_tag_assets: {response}", level=LogLevel.DEBUG)
         log(
             f"[INFO] Added tag '{tag_name}' to asset.id={self.get_id()}.",

@@ -126,6 +126,20 @@ def categorize_error(exc: Exception) -> CategorizedError:
     if "404" in exc_str or "not found" in exc_str.lower():
         return CategorizedError(True, "Recoverable (API 404 - Asset deleted)")
 
+    # 5xx/Server errors - temporary server issues (recoverable)
+    if (
+        "500" in exc_str
+        or "501" in exc_str
+        or "502" in exc_str
+        or "503" in exc_str
+        or "504" in exc_str
+        or "Internal Server Error" in exc_str
+        or "Bad Gateway" in exc_str
+        or "Service Unavailable" in exc_str
+        or "Gateway Timeout" in exc_str
+    ):
+        return CategorizedError(True, "Recoverable (API 5xx - Temporary server error)")
+
     # Timeout errors (temporary network issues)
     if any(
         x in type(exc).__name__.lower()
