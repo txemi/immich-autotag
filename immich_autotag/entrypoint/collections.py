@@ -27,10 +27,39 @@ def apply_conversions_to_all_assets_early(context: ImmichContext) -> None:
     """
     Iterates over all assets and applies the configured conversions as early as possible,
     before tags are accessed (lazy-load).
+    Skips assets on error based on fail_fast_on_asset_errors config.
     """
     from immich_autotag.conversions.tag_conversions import TagConversions
+    from immich_autotag.config.manager import ConfigManager
+    from immich_autotag.errors.recoverable_error import categorize_error
+    from immich_autotag.logging.levels import LogLevel
+    from immich_autotag.logging.utils import log
 
     tag_conversions = TagConversions.from_config_manager()
     asset_manager = context.get_asset_manager()
+    config = ConfigManager.get_instance().get_config()
+    fail_fast = config.performance.fail_fast_on_asset_errors
+
     for asset in asset_manager.iter_assets(context):
-        asset.apply_tag_conversions(tag_conversions=tag_conversions)
+        try:
+            asset.apply_tag_conversions(tag_conversions=tag_conversions)
+        except Exception as e:
+            categorized = categorize_error(e)
+            is_recoverable = categorized.is_recoverable
+            category = categorized.category_name
+            should_skip = is_recoverable or not fail_fast
+
+            if should_skip:
+                import traceback
+
+                tb = traceback.format_exc()
+                asset_id = asset.get_id()
+                error_prefix = "[WARN]" if is_recoverable else "[ERROR]"
+                log(
+                    f"{error_prefix} {category} - Skipping conversion for asset {asset_id}: {e}\nTraceback:\n{tb}",
+                    level=LogLevel.IMPORTANT,
+                )
+                continue
+            else:
+                # Fatal error in fail-fast mode - re-raise
+                raise
