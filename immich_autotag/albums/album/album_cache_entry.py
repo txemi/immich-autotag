@@ -53,7 +53,6 @@ class AlbumCacheEntry:
 
     _dto: AlbumDtoState
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
-    _asset_ids_cache: set[str] | None = attrs.field(default=None, init=False)
 
     def merge_from_dto(
         self, dto: "AlbumResponseDto", load_source: "AlbumLoadSource"
