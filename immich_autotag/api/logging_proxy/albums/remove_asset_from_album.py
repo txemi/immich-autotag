@@ -207,39 +207,6 @@ def _report_removal_to_modification_report(
 
 
 @conditional_typechecked
-def _verify_asset_removed_from_album_with_retry(
-    *,
-    album: "AlbumResponseWrapper",
-    asset_wrapper: "AssetResponseWrapper",
-    max_retries: int = 3,
-) -> None:
-    """
-    Verifies that an asset has been removed from the album after removing it,
-    with retry logic for eventual consistency.
-    Uses exponential backoff to handle API delays.
-    """
-    import time
-
-    for attempt in range(max_retries):
-        if not album.has_asset_wrapper(asset_wrapper):
-            return  # Success - asset is no longer in album
-
-        if attempt < max_retries - 1:
-            # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
-            wait_time = 0.1 * (2**attempt)
-            time.sleep(wait_time)
-        else:
-            log(
-                (
-                    f"After {max_retries} retries, asset {asset_wrapper.get_id()} "
-                    f"still appears in album {album.get_album_uuid()}. "
-                    f"This may be an eventual consistency or API issue."
-                ),
-                level=LogLevel.WARNING,
-            )
-
-
-@conditional_typechecked
 def logging_remove_asset_from_album(
     *,
     album: "AlbumResponseWrapper",
@@ -290,8 +257,4 @@ def logging_remove_asset_from_album(
         album=album, asset_wrapper=asset_wrapper, tag_mod_report=tag_mod_report
     )
 
-    # 6. Consistency Verification
-    _verify_asset_removed_from_album_with_retry(
-        asset_wrapper=asset_wrapper, max_retries=3, album=album
-    )
     return report_mod_entry
