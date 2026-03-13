@@ -3,7 +3,11 @@ import atexit
 from immich_client.api.assets import get_asset_info as _get_asset_info
 from immich_client.models.asset_response_dto import AssetResponseDto
 
-from immich_autotag.api.immich_proxy.debug import read_operation_debug
+from immich_autotag.api.immich_proxy.debug import (
+    format_api_debug_context,
+    read_operation_debug,
+    timed_api_call,
+)
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.types.client_types import ImmichClient
@@ -36,9 +40,12 @@ def proxy_get_asset_info(
     global _asset_api_call_count
     _asset_api_call_count += 1
     _asset_api_ids.add(str(asset_id))
-    # Calls the API directly, without cache logic
-
-    return _get_asset_info.sync(id=asset_id.to_uuid(), client=client)
+    context = format_api_debug_context(asset_id=asset_id, use_cache=use_cache)
+    return timed_api_call(
+        operation="get_asset_info",
+        context=context,
+        func=lambda: _get_asset_info.sync(id=asset_id.to_uuid(), client=client),
+    )
 
 
 __all__ = ["AssetResponseDto", "proxy_get_asset_info"]

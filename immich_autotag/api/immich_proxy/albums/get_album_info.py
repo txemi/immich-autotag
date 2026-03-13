@@ -9,6 +9,10 @@ from immich_client.api.albums import (
 from immich_client.client import AuthenticatedClient
 from immich_client.models.album_response_dto import AlbumResponseDto
 
+from immich_autotag.api.immich_proxy.debug import (
+    format_api_debug_context,
+    timed_api_call,
+)
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.types.uuid_wrappers import AlbumUUID
 from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
@@ -61,7 +65,11 @@ def proxy_get_album_info(
             )
     _album_api_call_count += 1
     _album_api_ids.add(cache_key)
-    dto = get_album_info.sync(id=album_id.to_uuid(), client=client)
+    dto = timed_api_call(
+        operation="get_album_info",
+        context=format_api_debug_context(album_id=album_id, use_cache=use_cache),
+        func=lambda: get_album_info.sync(id=album_id.to_uuid(), client=client),
+    )
     if dto is not None:
         from immich_autotag.logging.utils import log
 
