@@ -11,7 +11,9 @@ from typing import TYPE_CHECKING
 
 from typeguard import typechecked
 
-from immich_autotag.albums.permissions.album_policy_resolver import resolve_album_policy
+from immich_autotag.albums.permissions.album_policy_resolver import (
+    resolve_album_policy,
+)
 from immich_autotag.context.immich_context import ImmichContext
 
 if TYPE_CHECKING:
@@ -33,6 +35,7 @@ def process_album_permissions(
     from immich_autotag.logging.utils import log
     from immich_autotag.report.modification_kind import ModificationKind
     from immich_autotag.report.modification_report import ModificationReport
+    from immich_autotag.utils.perf.stall_watchdog import report_progress_heartbeat
 
     if not user_config or not isinstance(user_config, UserConfig):
         return
@@ -44,6 +47,10 @@ def process_album_permissions(
     log(
         "[ALBUM_PERMISSIONS] Starting Phase 1 (dry-run detection)...",
         level=LogLevel.FOCUS,
+    )
+    report_progress_heartbeat(
+        phase="album_permissions",
+        detail="starting_phase_1_detection",
     )
 
     report = ModificationReport.get_instance()
@@ -58,7 +65,13 @@ def process_album_permissions(
     # Process each album
     matched_count = 0
     unmatched_count = 0
-    for album_wrapper in albums_collection.get_albums():
+    for idx, album_wrapper in enumerate(albums_collection.get_albums(), 1):
+        report_progress_heartbeat(
+            phase="album_permissions",
+            detail=f"album_index={idx},album={album_wrapper.get_album_name()}",
+            processed_count=idx,
+            last_processed_id=str(album_wrapper.get_album_uuid()),
+        )
         resolved_policy = resolve_album_policy(
             album=album_wrapper,
             user_groups=user_groups_dict,
@@ -102,4 +115,10 @@ def process_album_permissions(
     log(
         f"[ALBUM_PERMISSIONS] Summary: {matched_count} matched, {unmatched_count} unmatched",
         level=LogLevel.FOCUS,
+    )
+    report_progress_heartbeat(
+        phase="album_permissions",
+        detail=(
+            f"finished_phase_1_detection matched={matched_count} unmatched={unmatched_count}"
+        ),
     )

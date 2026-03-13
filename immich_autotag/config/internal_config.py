@@ -25,6 +25,15 @@ ENABLE_PROFILING = False  # Set to True to enable cProfile profiling
 # Enable tracemalloc memory profiling
 ENABLE_MEMORY_PROFILING = False  # Set to False to disable tracemalloc memory profiling
 
+# Detect processing stalls and dump all Python thread stacks automatically
+ENABLE_DEADLOCK_STALL_WATCHDOG = True
+# Poll interval for stall detection loop
+STALL_WATCHDOG_CHECK_INTERVAL_SECONDS = 15.0
+# If processed count does not move for this long, generate a thread dump
+STALL_WATCHDOG_THRESHOLD_SECONDS = 90.0
+# Minimum time between consecutive stall dumps
+STALL_WATCHDOG_DUMP_COOLDOWN_SECONDS = 120.0
+
 # ==================== MEMORY CONTROL ====================
 # Control whether assets are kept in memory (True = keep in memory, False = release after use)
 KEEP_ASSETS_IN_MEMORY = False  # Default False; set to True to keep assets in memory

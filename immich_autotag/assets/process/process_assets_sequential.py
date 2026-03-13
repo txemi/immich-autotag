@@ -11,6 +11,7 @@ from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_report import ModificationReport
 from immich_autotag.statistics.statistics_manager import StatisticsManager
+from immich_autotag.utils.perf.stall_watchdog import report_progress_heartbeat
 
 
 @typechecked
@@ -20,6 +21,11 @@ def process_assets_sequential(
     log(
         "Entering asset processing loop...",
         level=LogLevel.PROGRESS,
+    )
+    report_progress_heartbeat(
+        phase="asset_processing",
+        detail="entering_asset_processing_loop",
+        processed_count=0,
     )
     log("[DEBUG] Before iterating assets (start of for loop)", level=LogLevel.DEBUG)
     cm = ConfigManager.get_instance()
@@ -54,6 +60,12 @@ def process_assets_sequential(
         ):
             asset_id = asset_wrapper.get_id()
             asset_url = asset_wrapper.get_immich_photo_url().geturl()
+            report_progress_heartbeat(
+                phase="asset_processing",
+                detail=f"before_process_single_asset url={asset_url}",
+                processed_count=skip_n + count,
+                last_processed_id=str(asset_id),
+            )
             log(
                 f"[PROGRESS] Processing asset {count+1}: {asset_id} | Link: {asset_url}",
                 level=LogLevel.ASSET_SUMMARY,
@@ -108,6 +120,12 @@ def process_assets_sequential(
                         last_processed_id=asset_wrapper.get_id(),
                         count=skip_n + count,
                     )
+                    report_progress_heartbeat(
+                        phase="asset_processing",
+                        detail="recoverable_error_asset_skipped",
+                        processed_count=skip_n + count,
+                        last_processed_id=str(asset_wrapper.get_id()),
+                    )
                     continue
                 else:
                     # Fatal error - re-raise immediately
@@ -131,6 +149,12 @@ def process_assets_sequential(
                 last_processed_id=asset_wrapper.get_id(),
                 count=skip_n + count,
             )
+            report_progress_heartbeat(
+                phase="asset_processing",
+                detail="asset_processed",
+                processed_count=skip_n + count,
+                last_processed_id=str(asset_wrapper.get_id()),
+            )
     except Exception as e:
         import traceback
 
@@ -146,5 +170,10 @@ def process_assets_sequential(
         log(
             f"Asset processing loop finished. Total assets processed: {count}. The asset for-loop has ended (no more assets in the iterator).",
             level=LogLevel.PROGRESS,
+        )
+        report_progress_heartbeat(
+            phase="asset_processing",
+            detail="asset_processing_loop_finished",
+            processed_count=skip_n + count,
         )
     return count
