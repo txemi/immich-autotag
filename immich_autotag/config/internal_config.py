@@ -89,3 +89,10 @@ FILTER_OVERRIDE_ASSET_UUID: str | None = None
 # If None, user config value is used.
 # Set to False to enable fault-tolerant mode (continue processing on errors) for large batch runs.
 FORCE_FAIL_FAST_ON_ASSET_ERRORS: bool | None = True
+
+# ==================== ALBUM DETECTION OVERRIDES ====================
+# If set (True/False), this will override user config's
+# album_detection_from_folders.enabled value.
+# Set to False to disable inferring/creating albums from containing folders
+# across development, CI, and normal runs without touching user config files.
+FORCE_ENABLE_ALBUM_DETECTION_FROM_FOLDERS: bool | None = False
