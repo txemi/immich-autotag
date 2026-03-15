@@ -144,6 +144,31 @@ Once decided, implementation can be prepared as a small controlled change in `Je
 
 ---
 
+## Jenkins UI quick template (first safe run)
+
+Use these values in **Build with Parameters** for the orchestrator job:
+
+- `LOOP_ENABLED=true`
+- `TARGET_JOB=<copy exact Full project name from Jenkins branch job page>`
+- `SLEEP_SECONDS_SUCCESS=20`
+- `SLEEP_SECONDS_FAILURE=60`
+- `SLEEP_SECONDS_ABORTED=30`
+- `MAX_CYCLES=2` (test mode)
+- `MAX_CONSECUTIVE_FAILURES=3` (test mode)
+- `STOP_ON_ABORTED=true`
+
+After validating 2 successful cycles, switch to continuous mode:
+
+- `MAX_CYCLES=0`
+- `MAX_CONSECUTIVE_FAILURES=12`
+
+### Important note about `TARGET_JOB`
+
+Do not guess this value. In Jenkins, open the target branch build and copy the **Full project name** exactly as shown.
+In multibranch setups, branch names may appear encoded (example: `ops%2Fcontinuous-processing`).
+
+---
+
 ## Included assets in this folder
 
 - `README.md` (this document)
