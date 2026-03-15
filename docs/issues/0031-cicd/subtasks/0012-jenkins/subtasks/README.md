@@ -79,6 +79,21 @@ post {
 
 ---
 
+## Subtask 003 (Proposed): Continuous Execution / Auto-Relaunch
+
+### Objective:
+- Keep Jenkins relaunching asset processing after success/failure to maximize processed assets.
+- Avoid dangerous loops in multibranch setups.
+
+### Focus:
+- Analyze branch scoping (single branch vs all branches).
+- Define safe relaunch strategy (self-relaunch vs orchestrator job).
+- Add mandatory guardrails (`disableConcurrentBuilds`, `timeout`, branch guard, kill switch).
+
+**[→ Go to Subtask 003](003-continuous-execution-resilience/)**
+
+---
+
 ## Both Together = Complete Solution
 
 **Recommended workflow:**
@@ -125,3 +140,4 @@ Why both?
 
 1. [001: Groovy Script](001-jenkins-build-retention-groovy-script/) - Immediate cleanup
 2. [002: Pipeline & Plugins](002-jenkins-retention-pipeline-plugins-analysis/) - Sustainable prevention
+3. [003: Continuous Execution / Auto-Relaunch](003-continuous-execution-resilience/) - Maximize processing continuity (proposed)
