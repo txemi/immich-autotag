@@ -49,10 +49,11 @@ def _add_members_to_album(
     album_id = album.get_album_uuid()
     album_name = album.get_album_name()
     user_ids = [user.get_uuid() for user in users]
+    member_emails = ", ".join(str(user.get_email()) for user in users)
 
     log(
         f"[ALBUM_PERMISSIONS] Adding {len(user_ids)} members to {album_name} "
-        f"(access: {access_level})",
+        f"(access: {access_level}) [members: {member_emails}]",
         level=LogLevel.PROGRESS,
     )
 
