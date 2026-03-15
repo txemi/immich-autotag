@@ -96,3 +96,55 @@ Decide first:
 3. **Safety limits:** max retries, timeout, and whether relaunch should also happen on `aborted`.
 
 Once decided, implementation can be prepared as a small controlled change in `Jenkinsfile` (or orchestrator pipeline), with explicit guardrails.
+
+---
+
+## Option B in practice (what is Jenkins UI vs repo code)
+
+### What is configured in Jenkins UI
+
+1. Create a new Jenkins job of type **Pipeline**.
+2. Name it, for example: `immich-autotag-continuous-orchestrator`.
+3. In Pipeline definition, choose one of:
+  - **Pipeline script from SCM** (recommended for versioning), or
+  - **Pipeline script** (paste directly in Jenkins UI).
+4. Use the script provided in:
+  - `orchestrator_pipeline.groovy`
+
+### What is modified in repository code
+
+- For Option B minimum viable setup: **nothing is required** in product `Jenkinsfile`.
+- Optional hardening in product pipeline is still recommended (`disableConcurrentBuilds`, stage timeouts).
+
+---
+
+## Step-by-step setup (recommended)
+
+1. Create branch dedicated to continuous execution (example):
+  - `ops/continuous-processing`
+2. Ensure multibranch job discovers that branch.
+3. Open target branch job page in Jenkins and copy **Full project name**.
+4. Configure orchestrator parameter `TARGET_JOB` with that full name.
+5. Start with conservative values:
+  - `MAX_CYCLES=0` (infinite)
+  - `MAX_CONSECUTIVE_FAILURES=12`
+  - `SLEEP_SECONDS_SUCCESS=20`
+  - `SLEEP_SECONDS_FAILURE=60`
+  - `STOP_ON_ABORTED=true`
+6. Run orchestrator manually first and observe 2–3 cycles.
+
+---
+
+## Operational controls
+
+- **Stop safely:** run job with `LOOP_ENABLED=false`.
+- **Pause behavior after failures:** tune `SLEEP_SECONDS_FAILURE`.
+- **Prevent infinite error storms:** keep `MAX_CONSECUTIVE_FAILURES` finite.
+- **Do not target all branches:** point `TARGET_JOB` to one dedicated branch job.
+
+---
+
+## Included assets in this folder
+
+- `README.md` (this document)
+- `orchestrator_pipeline.groovy` (production-safe orchestrator reference)
