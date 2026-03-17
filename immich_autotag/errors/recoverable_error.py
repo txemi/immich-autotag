@@ -76,6 +76,20 @@ class PermissionDeniedError(ImmichApiError):
     pass
 
 
+class RemoveAssetFromAlbumApiError(ImmichApiError):
+    """Raised when the Immich API returns an error response while removing an asset from an album.
+
+    This is a recoverable error: the asset processing loop can catch it, log a warning,
+    and continue to the next asset instead of crashing the entire run.
+
+    Typical causes:
+    - ``not_found``: the asset is no longer part of the album (stale cache).
+    - ``no_permission``: the authenticated user lost access to the album.
+    """
+
+    pass
+
+
 class AssetDeletedError(RecoverableError):
     """Raised when an asset is deleted during processing."""
 

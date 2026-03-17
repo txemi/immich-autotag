@@ -6,6 +6,7 @@ from typeguard import typechecked
 
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.errors.recoverable_error import RemoveAssetFromAlbumApiError
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log
 from immich_autotag.report.modification_entry import ModificationEntry
@@ -51,10 +52,13 @@ def _execute_remove_asset_api(
         )
     result1: BulkIdResponseDto = result[0]
     if result1.error:
-        raise RuntimeError(
-            f"Failed to remove asset {asset_wrapper.get_id()} from album {album.get_album_uuid()}: API error: {result1.error}\n"
-            f"Asset: {asset_url}\n"
-            f"Album: {album_url}"
+        raise RemoveAssetFromAlbumApiError(
+            message=(
+                f"Failed to remove asset {asset_wrapper.get_id()} from album {album.get_album_uuid()}: "
+                f"API error: {result1.error}"
+            ),
+            asset_url=asset_wrapper.get_immich_photo_url(),
+            album_url=album.get_immich_album_url(),
         )
     if not result1.success:
         raise RuntimeError(

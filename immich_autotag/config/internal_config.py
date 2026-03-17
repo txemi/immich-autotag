@@ -79,7 +79,7 @@ FILTER_OVERRIDE_ASSET_UUID: str | None = None
 # If set (True/False), this will override user config's fail_fast_on_asset_errors.
 # If None, user config value is used.
 # Set to False to enable fault-tolerant mode (continue processing on errors) for large batch runs.
-FORCE_FAIL_FAST_ON_ASSET_ERRORS: bool | None = True
+FORCE_FAIL_FAST_ON_ASSET_ERRORS: bool | None = False
 
 # ==================== ALBUM DETECTION OVERRIDES ====================
 # If set (True/False), this will override user config's
