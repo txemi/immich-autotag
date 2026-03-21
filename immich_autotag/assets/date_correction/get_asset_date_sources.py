@@ -36,7 +36,7 @@ def get_asset_date_candidates(
         )
 
     # WhatsApp filename date
-    filename :Path= asset_wrapper.get_original_file_name()
+    filename: Path = asset_wrapper.get_original_file_name()
     wa_filename_dt = extract_whatsapp_date_from_path(str(filename))
     if wa_filename_dt:
         candidates.add(
@@ -49,7 +49,7 @@ def get_asset_date_candidates(
         )
 
     # WhatsApp path date
-    path :Path= asset_wrapper.get_original_path()
+    path: Path = asset_wrapper.get_original_path()
     wa_path_dt = extract_whatsapp_date_from_path(str(path))
     if wa_path_dt:
         candidates.add(

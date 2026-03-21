@@ -38,7 +38,10 @@ def _apply_tag_conversions(
     """Apply tag conversions to the asset using the current config."""
     config = ConfigManager.get_instance().get_config()
     if not config.conversions.enabled:
-        log("[DEBUG] Tag conversions disabled by config; skipping.", level=LogLevel.FOCUS)
+        log(
+            "[DEBUG] Tag conversions disabled by config; skipping.",
+            level=LogLevel.FOCUS,
+        )
         return ModificationEntriesList()
 
     log("[DEBUG] Applying tag conversions...", level=LogLevel.FOCUS)
@@ -112,7 +115,9 @@ def _validate_classification_if_enabled(
     asset_wrapper: AssetResponseWrapper,
 ) -> ClassificationValidationResult | None:
     """Run classification validation unless disabled in internal config."""
-    from immich_autotag.config.internal_config import FORCE_ENABLE_CLASSIFICATION_VALIDATION
+    from immich_autotag.config.internal_config import (
+        FORCE_ENABLE_CLASSIFICATION_VALIDATION,
+    )
 
     if FORCE_ENABLE_CLASSIFICATION_VALIDATION is False:
         log(
@@ -130,7 +135,9 @@ def _check_album_date_consistency_if_enabled(
     tag_mod_report: ModificationReport,
 ) -> AlbumDateConsistencyResult | None:
     """Run album date consistency check unless disabled in internal config."""
-    from immich_autotag.config.internal_config import FORCE_ENABLE_ALBUM_DATE_CONSISTENCY
+    from immich_autotag.config.internal_config import (
+        FORCE_ENABLE_ALBUM_DATE_CONSISTENCY,
+    )
 
     if FORCE_ENABLE_ALBUM_DATE_CONSISTENCY is False:
         log(

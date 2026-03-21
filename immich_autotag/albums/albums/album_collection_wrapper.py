@@ -147,14 +147,13 @@ class AlbumCollectionWrapper:
 
         return TemporaryAlbumManager(self)
 
-    def prepare_batch_asset_to_albums_map(self) :
+    def prepare_batch_asset_to_albums_map(self):
         """
         TODO: renombrar esta funcion, ya no hace lo que dice
         """
         self._ensure_fully_loaded()
         temp_manager = self._get_temporary_album_manager()
         temp_manager.cleanup_empty_temporary_albums(self.get_client())
-
 
     def clear_batch_asset_to_albums_map(self):
         """
