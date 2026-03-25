@@ -15,8 +15,8 @@ Master checklist for final release preparation tasks. This covers all the items 
 - [ ] Review the internal configuration (ensure we are not in debug mode)
 - [ ] Review the general documentation
 - [ ] Update the CHANGELOG.md
-- [ ] Revisar la seguridad del workflow de release en GitHub Actions ([ver subtask 001](subtasks/001-github-actions-release-safety/))
-- [ ] **Stability testing with incremental asset volumes** ([ver subtask 002](subtasks/002-stability-testing-incremental-volumes/))
+- [ ] Review release workflow security in GitHub Actions ([see subtask 001](subtasks/001-github-actions-release-safety/))
+- [ ] **Stability testing with incremental asset volumes** ([see subtask 002](subtasks/002-stability-testing-incremental-volumes/))
 // [ ] Review and refactor the hardcoded logic for the project root in `immich_autotag/run_output/manager.py` (function `get_run_output_dir`).
 //      - Currently, the path is calculated rigidly; it should be flexible and reviewed before the release.
 
