@@ -33,6 +33,7 @@ def remove_asset_from_autotag_temporary_albums(
     asset_wrapper: "AssetResponseWrapper",
     temporary_albums: list["AlbumResponseWrapper"],
     tag_mod_report: ModificationReport,
+    fail_on_error: bool = True,
 ) -> ModificationEntriesList:
     """
     Removes an asset from all temporary autotag albums (albums matching pattern: autotag-temp-unclassified).
@@ -79,9 +80,8 @@ def remove_asset_from_autotag_temporary_albums(
             )
 
         except Exception as e:
-            from immich_autotag.config.dev_mode import is_development_mode
 
-            if is_development_mode():
+            if fail_on_error:
                 raise
             log(
                 f"Failed to remove asset {asset_wrapper.get_id()} from temporary album {album_wrapper.get_album_name()}: {e}",

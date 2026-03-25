@@ -106,6 +106,7 @@ class DuplicateAlbumManager:
         incoming_album: "AlbumResponseWrapper",
         tag_mod_report: ModificationReport,
         name: str,
+        fail_on_duplicates: bool = True,
     ) -> AlbumAndModification:
         from immich_autotag.config.internal_config import MERGE_DUPLICATE_ALBUMS_ENABLED
 
@@ -119,9 +120,7 @@ class DuplicateAlbumManager:
             )
             return conflict_result
 
-        from immich_autotag.config.dev_mode import is_development_mode
-
-        if is_development_mode():
+        if fail_on_duplicates:
             error_message = f"Duplicate album name detected when adding album: {name!r}"
             raise RuntimeError(error_message)
 

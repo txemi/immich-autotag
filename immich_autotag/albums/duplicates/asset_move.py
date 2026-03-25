@@ -30,6 +30,7 @@ def move_assets_between_albums(
     src: AlbumResponseWrapper,
     client: ImmichClient,
     tag_mod_report: Optional[ModificationReport] = None,
+    fail_on_error: bool = True,
 ) -> ModificationEntriesList:
     """Move assets from `src` album into `dest` album one-by-one.
 
@@ -67,7 +68,7 @@ def move_assets_between_albums(
             if isinstance(e, AssetAlreadyInAlbumError):
                 # Asset already in album: treat as non-error, continue as normal
                 pass
-            elif is_development_mode():
+            elif fail_on_error:
                 raise
             else:
                 log(

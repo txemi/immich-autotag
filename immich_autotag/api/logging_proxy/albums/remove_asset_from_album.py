@@ -173,7 +173,10 @@ def _handle_remove_asset_error(
 
 @typechecked
 def _handle_missing_remove_response(
-    *, album: "AlbumResponseWrapper", asset_wrapper: "AssetResponseWrapper"
+    *,
+    album: "AlbumResponseWrapper",
+    asset_wrapper: "AssetResponseWrapper",
+    fail_on_error: bool = True,
 ) -> None:
     """Handles the case where the asset is not found in the removal response."""
     log(
@@ -184,9 +187,8 @@ def _handle_missing_remove_response(
         ),
         level=LogLevel.WARNING,
     )
-    from immich_autotag.config.dev_mode import is_development_mode
 
-    if is_development_mode():
+    if fail_on_error:
         raise RuntimeError(
             f"Asset {asset_wrapper.get_id()} not found in removal response for album "
             f"{album.get_album_uuid()}."

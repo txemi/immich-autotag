@@ -23,7 +23,7 @@ class UnavailableAlbumManager:
     _collection: "AlbumCollectionWrapper"
     _unavailable: UnavailableAlbums = attrs.Factory(UnavailableAlbums)
 
-    def _evaluate_global_policy(self) -> None:
+    def _evaluate_global_policy(self, fail_on_threshold: bool = True) -> None:
         """Evaluate global unavailable-albums policy and act according to config."""
         from immich_autotag.config.internal_config import GLOBAL_UNAVAILABLE_THRESHOLD
         from immich_autotag.report.modification_kind import ModificationKind
@@ -32,9 +32,8 @@ class UnavailableAlbumManager:
         threshold = int(GLOBAL_UNAVAILABLE_THRESHOLD)
         if not self._unavailable.count >= threshold:
             return
-        from immich_autotag.config.dev_mode import is_development_mode
 
-        if is_development_mode():
+        if fail_on_threshold:
             raise RuntimeError(
                 f"Too many albums marked unavailable during run: "
                 f"{self._unavailable.count} >= {threshold}. "
