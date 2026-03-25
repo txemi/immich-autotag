@@ -42,6 +42,7 @@ class DuplicateAlbumManager:
         incoming_album: "AlbumResponseWrapper",
         existing_album: "AlbumResponseWrapper",
         context: str = "ensure_unique",
+        fail_on_duplicates: bool = True,
     ) -> AlbumAndModification:
         # Import local para evitar ciclo
 
@@ -84,9 +85,7 @@ class DuplicateAlbumManager:
                 modifications=mods,
             )
         else:
-            from immich_autotag.config.dev_mode import is_development_mode
-
-            if is_development_mode():
+            if fail_on_duplicates:
                 raise RuntimeError(
                     f"Duplicate album name detected when adding album: "
                     f"{existing_album.get_album_name()!r}"
