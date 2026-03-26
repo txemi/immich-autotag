@@ -1,15 +1,10 @@
 # 1. Immich AutoTag
 
-## 1.1. Project Description (2 lines)
+## 1.1. What is Immich AutoTag? (2 lines)
 
-Immich AutoTag is a basic process and rule engine to automate actions on images and videos (assets) in Immich. It can create and assign albums, generate and assign tags, and repair dates based on a user-defined configuration file.
+Immich AutoTag is a rule engine designed to apply batch changes to Immich assets (images and videos). It can create and assign albums, generate and assign tags, fix dates based, assign permissions automatically—very useful capabilities that are not available by default in the product. All this based on a user-defined configuration file.
 
 ## 1.2. Motivation
-
-
-### 1.2.1. What is Immich AutoTag?
-
-Immich AutoTag is a rule engine designed to apply batch changes to Immich assets (images and videos). Based on different criteria, it can add and remove tags, create and assign albums, fix dates, and assign permissions automatically—very useful capabilities that are not available by default in the product.
 
 
 ### 1.2.2. Why Immich?
