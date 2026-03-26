@@ -10,7 +10,7 @@ Imagine you have hundreds of thousands of photos from many years, different phon
 - **Fixes dates:** If a photo has the wrong date (for example, because it was sent by WhatsApp or copied from another device), Immich AutoTag can often figure out the real date from the filename or other clues and fix it for you.
 - **Uses your rules:** By default, it assumes albums that start with a date are already organized, but you can change the rules to fit your style.
 - **Works with duplicates:** If you organize or tag one copy of a photo, Immich AutoTag can automatically tag all its duplicates or add them to an album, saving you lots of time.
-- **Creates albums from old folders:** If you used to organize photos in folders, it can turn those folders into albums in Immich.
+- **Creates albums from dates or old folders:** If you used to organize photos in folders, it can turn those folders into albums in Immich.
 - **Easy to review:** After each run, you can click on special tags in Immich to see only the photos that need organizing or have conflicts.
 
 **How does it help you?**
