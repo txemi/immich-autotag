@@ -69,6 +69,9 @@ class ApiCacheManager:
         return run_execution.get_api_cache_dir(self._cache_type.value)
 
     def save(self, key: str, data: dict[str, object] | list[dict[str, object]]) -> None:
+        if not self._use_cache:
+            return
+
         cache_dir = self._get_cache_dir()
         path = cache_dir / f"{key}.json"
         with open(path, "w", encoding="utf-8") as f:
