@@ -14,7 +14,7 @@ Master checklist for final release preparation tasks. This covers all the items 
 - [x] Review that the configuration is documented
 - [?] Review the internal configuration (ensure we are not in debug mode)
 - [x]deshabilitar no solo usar cache sino escribirla
-- [ ] Review the general documentation
+- [x] Review the general documentation
 - [ ] Update the CHANGELOG.md
 - [ ] Review release workflow security in GitHub Actions ([see subtask 001](subtasks/001-github-actions-release-safety/))
 // [ ] Review and refactor the hardcoded logic for the project root in `immich_autotag/run_output/manager.py` (function `get_run_output_dir`).
