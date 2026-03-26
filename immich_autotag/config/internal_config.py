@@ -19,7 +19,7 @@ MAX_WORKERS = 1  # Set to 1 for sequential processing (recommended for best perf
 
 # ==================== DEBUGGING / PROFILING / PERFORMANCE ====================
 # Error handling mode (affects debug/trace behavior)
-DEFAULT_ERROR_MODE = ErrorHandlingMode.CRAZY_DEBUG
+DEFAULT_ERROR_MODE = ErrorHandlingMode.USER
 # Enable cProfile CPU profiling regardless of error mode
 ENABLE_PROFILING = False  # Set to True to enable cProfile profiling
 # Enable tracemalloc memory profiling
