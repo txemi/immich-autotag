@@ -102,12 +102,8 @@ class AssetToAlbumsMap(MutableMapping[AssetUUID, AlbumList]):
             temp = self[asset_uuid]
             return temp
         else:
-            # Crazy debug mode: if the uuid is the special one and not present, raise exception
-
-            uuid_to_check_str = "68fc28c1-8f35-418c-9314-72578c8c4687"
-            raise RuntimeError(
-                f"[CRAZY DEV MODE] Asset-to-albums map does not contain the required UUID when queried: {uuid_to_check_str}"
-            )
+            # Asset not in any known album (may be in inaccessible albums or no album at all)
+            return AlbumList()
 
     def __getitem__(self, key: AssetUUID) -> AlbumList:
         if not isinstance(key, AssetUUID):
