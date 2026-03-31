@@ -74,10 +74,12 @@ You can run Immich AutoTag using any of the following methods:
       ```bash
       bash scripts/pypi/run_immich_autotag.sh
       ```
+      Script source: [`scripts/pypi/run_immich_autotag.sh`](./scripts/pypi/run_immich_autotag.sh)
     - Run in a loop (for continuous tagging/classification):
       ```bash
       bash scripts/pypi/loop_immich_autotag.sh
       ```
+      Script source: [`scripts/pypi/loop_immich_autotag.sh`](./scripts/pypi/loop_immich_autotag.sh)
 
 **B. With Docker (recommended for most users)**
 
