@@ -52,6 +52,7 @@ Excluded:
 
 - Parent issue: `docs/issues/0031-cicd/`
 - Release preparation context: `docs/issues/0022-release-preparation/`
+- GitHub incident: `https://github.com/txemi/immich-autotag/issues/43`
 
 ## Notes
 

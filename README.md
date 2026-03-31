@@ -81,6 +81,13 @@ You can run Immich AutoTag using any of the following methods:
 
 **B. With Docker (recommended for most users)**
 
+  known issues:
+
+  - ⚠️ **Docker known issue (version `0.80.3`)**: in some environments, the Docker image may fail when accessing the Immich API.
+    - GitHub incident: [Issue #43](https://github.com/txemi/immich-autotag/issues/43)
+    - Local tracking doc: [`docs/issues/0031-cicd/subtasks/0016-docker-image-immich-api-access-instability/README.md`](./docs/issues/0031-cicd/subtasks/0016-docker-image-immich-api-access-instability/README.md)
+    - If you hit this issue, please use the **pipx** method documented above in section **A. With pipx (no code download required)**.
+
   - **One-shot execution (run once):**
     - Using the public image:
       ```bash
