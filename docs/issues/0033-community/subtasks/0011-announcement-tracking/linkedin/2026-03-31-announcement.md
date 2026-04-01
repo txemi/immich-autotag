@@ -13,6 +13,7 @@ Testing this software against my own infrastructure of **360k+ assets** allowed 
 Whether you’re into Open Source, data management at scale, or just want to regain control of your digital life, this release is for you.
 
 👇 **Check out the full technical breakdown and the "Deep Dive" in the repository:**
-[LINK_TO_YOUR_GITHUB_HERE]
+- 🔗 [Official Announcement URL](https://github.com/txemi/immich-autotag/blob/main/docs/releases/v0.80.0-announcement.md)
+- 🏠 [Homepage](https://github.com/txemi/immich-autotag)
 
 #OpenSource #Immich #SelfHosted #Engineering #CloudArchitecture #Automation #SoftwareDevelopment #DataGovernance #Scalability #DataIntegrity
