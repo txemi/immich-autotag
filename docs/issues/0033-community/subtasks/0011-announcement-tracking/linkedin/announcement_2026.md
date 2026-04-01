@@ -27,3 +27,34 @@ Learn more and get started:
 Feedback and collaboration are welcome! If you have questions or suggestions, feel free to connect or open an issue on GitHub.
 
 #OpenSource #PhotoManagement #Automation #Python #Immich #Productivity
+
+---
+
+## v0.80.0 — 2026-03-31
+
+Immich AutoTag v0.80.0: User Groups, Smarter Rule Engine & Production-Ready Continuous Mode
+
+I'm excited to share v0.80.0 of Immich AutoTag — a major milestone release that consolidates months of work and marks the beginning of our stabilization roadmap toward v1.0.0.
+
+Key highlights:
+
+• 👥 User Permissions & Groups: Automatic access control for albums based on configurable user group rules — tested with 500+ albums.
+• 🔁 Continuous Batch Mode: Fully stable long-running mode that processes new assets automatically without restarts.
+• 🧩 Enhanced Rule Engine: Now supports both regex and simplified patterns for flexible, powerful asset classification.
+• 🗂️ Duplicate Album Recovery: Safely resolves same-name album conflicts with cleanup and rename strategies.
+• ✅ Checkpoint Resume: Stable and enabled by default — resume from where you left off after any interruption.
+• 🗃️ Auto Album Creation from Folders: Stable and enabled by default.
+• ⚙️ Configurable Execution Phases: Toggle processing phases independently for fine-grained control.
+• 🔧 API Architecture Refactor: Cleaner modular structure for better long-term maintainability.
+
+⚠️ Note: The Docker image has a known issue in some environments (DNS instability). Recommended workaround: use pipx (`pipx run immich-autotag`). Full tracking at GitHub Issue #43.
+
+Get started: https://github.com/txemi/immich-autotag#quick-start
+Full changelog: https://github.com/txemi/immich-autotag/blob/main/CHANGELOG.md
+ELI5 explanation: https://github.com/txemi/immich-autotag/blob/main/docs/explain-like-im-5.md
+
+Feedback and collaboration always welcome!
+
+#OpenSource #PhotoManagement #Automation #Python #Immich #Productivity #SelfHosted
+
+<!-- STATUS: draft — not yet posted -->

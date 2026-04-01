@@ -32,6 +32,10 @@ Track and manage all announcements and outreach efforts for the project across v
 | Reddit r/pythoncoding (2026)         | https://www.reddit.com/r/pythoncoding/comments/1q8irny/showcase_immich_autotag_new_instant_cli_autoalbum/ | Announced      | Major new release showcase |
 | LinkedIn (2026)                      | https://www.linkedin.com/posts/josemiguelmartinezaguayo_immich-autotagdocsexplain-like-im-5md-activity-7415486122899906560-tlq9?utm_source=share&utm_medium=member_desktop&rcm=ACoAAAK8A1IBLT-ZuwmLh4VrvuLuP46gYSY0wnY | Announced      | Major new release showcase |
 | Hacker News (2026)                   | https://news.ycombinator.com/edit?id=46558757 | Announced      | Major new release showcase |
+| GitHub Discussions (Immich, v0.80.0) |  | **Draft** | v0.80.0 — user groups, rule engine, continuous mode. See [`github-discussions/announcement_2026.md`](github-discussions/announcement_2026.md) |
+| Reddit r/immich (v0.80.0)            |  | **Draft** | v0.80.0 showcase. See [`reddit/announcement_2026.md`](reddit/announcement_2026.md) |
+| Reddit r/selfhosted (v0.80.0)        |  | **Draft** | v0.80.0 showcase. See [`reddit/announcement_2026.md`](reddit/announcement_2026.md) |
+| LinkedIn (v0.80.0)                   |  | **Draft** | v0.80.0 release. See [`linkedin/announcement_2026.md`](linkedin/announcement_2026.md) |
 
 ## Acceptance Criteria
 - All relevant platforms are listed and links are provided.

@@ -22,8 +22,8 @@ When starting to use Immich, it is common to import large volumes of photos from
 
 ## 1.3. Key Features
 
-- **Automatic album creation and assignment:** Create and assign albums based on detected duplicates in Immich, or from folders in your file system (if enabled). Both methods can be used to save time when organizing large libraries.
-- **Rule-based classification engine:** Define flexible rules using tags and album name patterns to automatically categorize assets. Immich AutoTag will label each asset as classified, in conflict, or pending classification using output tags.
+- **Automatic album creation from date of folders and assignment:** Create and assign albums based on detected duplicates in Immich, or from folders in your file system (if enabled). Both methods can be used to save time when organizing large libraries.
+- **Autotag based on Rule-based classification engine:** Define flexible rules using tags and album name patterns to automatically categorize assets. Immich AutoTag will label each asset as classified, in conflict, or pending classification using output tags.
 - **Permission management:** Configure user groups and rules in the config file to automatically assign album permissions to large sets of albums, based on keywords in album names.
 - **Automatic date correction:** If enabled, the tool can automatically fix asset dates using duplicate analysis or by extracting dates from filenames (e.g., Android or WhatsApp photo naming patterns).
 - **Global filtering:** Use inclusion or exclusion filters to process only specific assets, albums, or tags, instead of the entire library.
