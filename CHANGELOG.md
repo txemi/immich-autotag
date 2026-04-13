@@ -562,6 +562,14 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 - Improved duplicate-album conflict handling in album workflows, including conflict detection and safer rename paths.
 
 
+
+## [0.80.4] - 2026-04-13
+**Description:** Patch release that fixes a production crash during album resync on libraries smaller than 200,000 assets.
+### Fixed
+- Removed leftover CRAZY_DEBUG assertions in the performance tracker that could terminate runs during album synchronization on smaller libraries. ([GitHub Issue #46](https://github.com/txemi/immich-autotag/issues/46))
+
+
+
 ## [Planned: Date Correction Improvements]
 **Description:** Planned improvements to date correction logic for edge cases and scenarios not currently handled correctly.
 ### Added
