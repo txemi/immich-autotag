@@ -1,16 +1,11 @@
 
 # Changelog
 
-
-
 All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md).
 
 **Convention:**
 - Functional or user-relevant changes (MAJOR/MINOR) are documented here.
 - Increments of the third digit (PATCH) can be used to mark internal milestones (e.g., Quality Gate) and do not require a detailed entry unless you want to explicitly record the milestone.
-
-
-
 
 ## [0.10] - 2025-12-23
 **Description:** First version with automatic tags based on criteria, laying the groundwork for a future rule engine and conflict detection.
