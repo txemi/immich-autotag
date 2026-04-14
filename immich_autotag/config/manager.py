@@ -5,7 +5,7 @@ Singleton Manager for the new experimental configuration.
 """
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import attrs
 import yaml
@@ -164,26 +164,14 @@ class ConfigManager:
         """Dumps the current configuration to a YAML file in the default logs/output folder."""
         if self._config is None:
             raise RuntimeError("No configuration loaded to dump to YAML.")
-        import yaml
 
         from immich_autotag.run_output.manager import RunOutputManager
 
         run_execution = RunOutputManager.current().get_run_output_dir()
         path = run_execution.get_user_config_dump_path()
-        import enum
-
-        @typechecked
-        def enum_representer(dumper: Any, data: "enum.Enum") -> Any:
-            try:
-                rep = str(data.value)
-            except Exception:
-                rep = str(data)
-            return dumper.represent_data(rep)
-
-        yaml.add_representer(enum.Enum, enum_representer)
-        # Standard dump only
+        serializable_config = self._config.model_dump(mode="json")
         with open(str(path), "w", encoding="utf-8") as f:
-            yaml.dump(self._config.model_dump(), f, allow_unicode=True, sort_keys=False)
+            yaml.safe_dump(serializable_config, f, allow_unicode=True, sort_keys=False)
 
     @typechecked
     def print_config(self):

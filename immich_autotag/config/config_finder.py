@@ -2,15 +2,67 @@ import importlib.util
 import os
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 import attrs
 import yaml
 from typeguard import typechecked
+from yaml.constructor import ConstructorError
 
 
 class ConfigType(Enum):
     PYTHON = "python"
     YAML = "yaml"
+
+
+class _CompatSafeLoader(yaml.SafeLoader):
+    """Safe YAML loader with compatibility for legacy config tags."""
+
+
+def _legacy_python_apply_constructor(loader: Any, suffix: str, node: Any) -> str:
+    """Handle legacy !!python/object/apply tags in historical config files.
+
+    We only allow the legacy ConversionMode tag and normalize it to a plain
+    string ("move" or "copy") so pydantic enum parsing keeps working.
+    """
+    if suffix != "immich_autotag.config.models.ConversionMode":
+        raise ConstructorError(
+            None,
+            None,
+            (
+                "Unsupported legacy YAML python tag "
+                f"'tag:yaml.org,2002:python/object/apply:{suffix}'. "
+                "Only immich_autotag.config.models.ConversionMode is allowed."
+            ),
+            node.start_mark,
+        )
+
+    if isinstance(node, yaml.SequenceNode):
+        values: list[Any] = loader.construct_sequence(node)
+        if not values:
+            raise ConstructorError(
+                None,
+                None,
+                "Legacy ConversionMode tag requires one value (move/copy).",
+                node.start_mark,
+            )
+        return str(values[0]).strip().lower()
+
+    if isinstance(node, yaml.ScalarNode):
+        return str(loader.construct_scalar(node)).strip().lower()
+
+    raise ConstructorError(
+        None,
+        None,
+        "Legacy ConversionMode tag must be a scalar or sequence node.",
+        node.start_mark,
+    )
+
+
+_CompatSafeLoader.add_multi_constructor(  # pyright: ignore[reportUnknownMemberType]
+    "tag:yaml.org,2002:python/object/apply:",
+    _legacy_python_apply_constructor,
+)
 
 
 @attrs.define(frozen=True, auto_attribs=True, slots=True)
@@ -109,5 +161,5 @@ def load_python_config(path: Path):
 @typechecked
 def load_yaml_config(path: Path):
     with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+        data = yaml.load(f, Loader=_CompatSafeLoader)
     return data
