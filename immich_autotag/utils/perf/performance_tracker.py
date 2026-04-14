@@ -73,13 +73,6 @@ class PerformanceTracker:
                 "[PERFORMANCE TRACKER] EWMA mode requires a valid estimator. "
                 "Cannot initialize the tracker."
             )
-        # --- CRAZY CONDITION IN CONSTRUCTOR ---
-
-        if self._total_assets is not None and self._total_assets < 1000:
-            raise Exception(
-                "CRAZY_DEBUG mode: total_assets too low (<100000) during "
-                "PerformanceTracker initialization"
-            )
 
     @staticmethod
     def from_args(
@@ -276,13 +269,6 @@ class PerformanceTracker:
         previous_sessions_time = self._printable_value_previous_sessions_time()
         abs_count = self._printable_value_abs_count(count)
         abs_total = self._printable_value_abs_total()
-
-        # --- CRAZY CONDITION ---
-        # If mode is CRAZY_DEBUG, abs_total is not None and abs_total < 200000,
-        # raise exception
-
-        if abs_total is not None and abs_total < 1000:
-            raise Exception("CRAZY_DEBUG mode: abs_total too low (<200000)")
 
         est_remaining_session = self._printable_value_est_remaining_session(
             count, elapsed

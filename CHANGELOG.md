@@ -1,16 +1,11 @@
 
 # Changelog
 
-
-
 All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md).
 
 **Convention:**
 - Functional or user-relevant changes (MAJOR/MINOR) are documented here.
 - Increments of the third digit (PATCH) can be used to mark internal milestones (e.g., Quality Gate) and do not require a detailed entry unless you want to explicitly record the milestone.
-
-
-
 
 ## [0.10] - 2025-12-23
 **Description:** First version with automatic tags based on criteria, laying the groundwork for a future rule engine and conflict detection.
@@ -560,6 +555,14 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 ### Fixed
 - Added dedicated error handling for asset-removal API failures to improve recovery behavior and diagnostics.
 - Improved duplicate-album conflict handling in album workflows, including conflict detection and safer rename paths.
+
+
+
+## [0.80.4] - 2026-04-13
+**Description:** Patch release that fixes a production crash during album resync on libraries smaller than 200,000 assets.
+### Fixed
+- Removed leftover CRAZY_DEBUG assertions in the performance tracker that could terminate runs during album synchronization on smaller libraries. ([GitHub Issue #46](https://github.com/txemi/immich-autotag/issues/46))
+
 
 
 ## [Planned: Date Correction Improvements]
