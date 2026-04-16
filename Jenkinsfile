@@ -90,6 +90,9 @@ pipeline {
             }
         }
         stage('Quality Gate (Shell Script)') {
+            when {
+                expression { false } // Disabled: deprecated shell quality gate. Keep stage for history, skip execution.
+            }
             steps {
                 script {
                     echo '🚨🚨 DEPRECATED: QUALITY GATE (SHELL SCRIPT) - USE PYTHON VERSION INSTEAD 🚨🚨'
