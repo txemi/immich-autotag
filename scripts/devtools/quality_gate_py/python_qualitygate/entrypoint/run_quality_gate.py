@@ -14,7 +14,12 @@ def run_quality_gate():
         rc = check.check(args) if args.mode == QualityGateMode.CHECK else check.apply(args)
         sys.exit(rc)
     # Battery
-    battery = Battery([cls() for cls in BATTERY_ORDER])
+    # Apply skip checks if requested via CLI `--skip-checks`.
+    ordered = BATTERY_ORDER
+    if getattr(args, 'skip_checks', None):
+        skips = set(args.skip_checks)
+        ordered = [cls for cls in BATTERY_ORDER if cls().get_name() not in skips]
+    battery = Battery([cls() for cls in ordered])
     rc = battery.run(args.mode, args)
     print("")
     print("═══════════════════════════════════════════════════════════════════════════════")

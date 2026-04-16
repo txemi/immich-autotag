@@ -24,6 +24,8 @@ def parse_args():
     parser.add_argument('--py-bin', default=None)
     parser.add_argument('--max-line-length', type=int, default=88)
     parser.add_argument('--only-check', default='')
+    parser.add_argument('--skip-checks', default='',
+                        help='Comma-separated list of check names to skip (e.g. check_mypy,check_black)')
     parser.add_argument('target_dir', nargs='?', default='immich_autotag')
     args = parser.parse_args()
     # Detect venv if py-bin is not provided
@@ -37,6 +39,10 @@ def parse_args():
         if only_check_cls is None:
             valid_checks = ', '.join(list(CHECKS.keys()))
             raise ValueError(f"Unknown check: {args.only_check}. Valid options: {valid_checks}")
+    # Parse skip-checks into a set
+    skip_checks_set = set()
+    if getattr(args, 'skip_checks', None):
+        skip_checks_set = {s.strip() for s in args.skip_checks.split(',') if s.strip()}
     return QualityGateArgs(
         level=QualityGateLevel(args.level),
         mode=QualityGateMode(args.mode),
@@ -44,4 +50,5 @@ def parse_args():
         line_length=args.max_line_length,
         target_dir=Path(args.target_dir),
         only_check=only_check_cls,
+        skip_checks=skip_checks_set,
     )

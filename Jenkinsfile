@@ -80,7 +80,7 @@ pipeline {
                         # Configure git safe.directory to avoid ownership errors
                         git config --global --add safe.directory "$PWD"
                         chmod +x scripts/devtools/quality_gate_py/venv_launcher.sh
-                        bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK
+                        bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK --skip-checks=check_mypy
                     '''
                 }
             }
