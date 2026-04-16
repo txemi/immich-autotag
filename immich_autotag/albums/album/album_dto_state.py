@@ -192,7 +192,9 @@ class AlbumDtoState:
         elif self._load_source == AlbumLoadSource.UPDATE:
             from immich_client.types import UNSET, Unset
 
-            if self._dto.assets is UNSET or self._dto.assets is Unset:
+            assets = getattr(self._dto, "assets", None)
+
+            if assets is UNSET or assets is Unset:
                 raise RuntimeError("UPDATE load source must have assets field set.")
             return True
         else:
@@ -233,7 +235,11 @@ class AlbumDtoState:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
         from immich_autotag.types.uuid_wrappers import AssetUUID
 
-        return set(AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets)
+        assets = getattr(self._dto, "assets", None)
+        if assets is None:
+            raise RuntimeError("Cannot get asset UUIDs from DTO without assets field.")
+
+        return set(AssetUUID.from_uuid(UUID(a.id)) for a in assets)
 
     def is_stale(self) -> bool:
         import time
@@ -248,7 +254,7 @@ class AlbumDtoState:
         may be empty even if asset_count > 0. Use get_asset_count() for
         checking the number of assets without deserializing this list.
         """
-        return self._dto.assets
+        return getattr(self._dto, "assets", None)
 
     def get_album_uuid(self) -> AlbumUUID:
         return AlbumUUID.from_uuid_string(self._dto.id)
