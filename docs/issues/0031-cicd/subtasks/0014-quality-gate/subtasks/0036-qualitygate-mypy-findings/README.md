@@ -56,6 +56,44 @@ Siguientes pasos propuestos (priorizados)
 Adjuntos / logs
 - Copiar aquí el trozo de log seleccionado (ya incluido en este README). Añadir más trazas si es necesario.
 
+Log (extracto relevante seleccionado):
+
+```
+[CHECK] Running check_mypy …
+[RUN] mypy API on immich_autotag
+[FAIL] check_mypy failed: 5 findings found
+
+  [ERROR 1] immich_autotag/albums/album/album_user_wrapper.py:43: Argument 1 to "from_string" of "BaseUUIDWrapper" has incompatible type "UUID"; expected "str" [arg-type]
+  [ERROR 2] immich_autotag/albums/album/album_dto_state.py:195: "AlbumResponseDto" has no attribute "assets" [attr-defined]
+  [ERROR 3] immich_autotag/albums/album/album_dto_state.py:236: "AlbumResponseDto" has no attribute "assets" [attr-defined]
+  [ERROR 4] immich_autotag/users/user_response_wrapper.py:64: Argument 1 to "from_string" of "BaseUUIDWrapper" has incompatible type "UUID"; expected "str" [arg-type]
+  [ERROR 5] immich_autotag/users/user_response_wrapper.py:72: Incompatible return value type (got "str | UUID", expected "str") [return-value]
+```
+
+AI Help Prompt (para copiar a otra IA)
+
+Contexto breve:
+- Pipeline Jenkins ejecuta `check_mypy` y falla con 5 findings listados arriba. Local la app arranca y el venv está correcto.
+- Archivos implicados: `immich_autotag/albums/album/album_user_wrapper.py`, `immich_autotag/albums/album/album_dto_state.py`, `immich_autotag/users/user_response_wrapper.py`.
+
+Preguntas que quiero que la IA analice:
+1. ¿Cuál es la causa más probable de cada error de mypy listado?
+2. Proponer correcciones de tipo concretas (cambio de firma, conversión explícita, o anotaciones `| UUID` / `# type: ignore`) con fragmentos de código de ejemplo.
+3. Señalar riesgos de cada corrección y si hay alternativas menos invasivas.
+4. Sugerir comandos para reproducir localmente exactamente el mismo mypy que falla en CI (incluyendo flags y versión sugerida de mypy).
+
+Archivos y líneas a revisar (incluir en el contexto al pedir ayuda):
+- immich_autotag/albums/album/album_user_wrapper.py (línea ~43)
+- immich_autotag/albums/album/album_dto_state.py (líneas ~195, ~236)
+- immich_autotag/users/user_response_wrapper.py (líneas ~64, ~72)
+
+Salida esperada de la IA:
+- Diagnóstico por error (1–5) con la línea implicada y la explicación corta.
+- Parche sugerido por cada error (patch unified o snippet) listo para PR.
+- Comando exacto para reproducir mypy y comprobar que la corrección resuelve el fallo.
+
+---
+
 Asignación
 - Dejar sin asignar; asignar a quien haga triage del CI/mypy o a la persona que conozca el submódulo de `albums`/`users`.
 
