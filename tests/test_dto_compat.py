@@ -9,6 +9,7 @@ from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole
 from immich_client.models.user_avatar_color import UserAvatarColor
 from immich_client.models.user_response_dto import UserResponseDto
+from immich_client.types import UNSET
 
 from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
 from immich_autotag.albums.album.album_user_wrapper import AlbumUserWrapper
@@ -26,7 +27,7 @@ def _build_user_dto(*, user_id: str | UUID) -> UserResponseDto:
     )
 
 
-def _build_album_dto(*, album_id: str, assets: list[object]) -> AlbumResponseDto:
+def _build_album_dto(*, album_id: str, assets: list[Any]) -> AlbumResponseDto:
     owner = _build_user_dto(user_id=str(uuid4()))
     return AlbumResponseDto(
         album_name="Album",
@@ -49,7 +50,9 @@ def _build_album_dto(*, album_id: str, assets: list[object]) -> AlbumResponseDto
 class _AlbumWithoutAssets(AlbumResponseDto):
     def __getattribute__(self, name: str):
         if name == "assets":
-            raise AttributeError("assets not available in this DTO version")
+            raise AttributeError(
+                "assets attribute intentionally unavailable for testing"
+            )
         return super().__getattribute__(name)
 
 
@@ -86,6 +89,12 @@ class TestDtoCompatibility(unittest.TestCase):
             shared=False,
             updated_at=datetime.datetime.now(),
         )
+        state = AlbumDtoState.create(dto=album, load_source=AlbumLoadSource.DETAIL)
+        self.assertEqual(state.get_asset_uuids(), set())
+
+    def test_album_dto_state_handles_unset_assets(self) -> None:
+        album = _build_album_dto(album_id=str(uuid4()), assets=[])
+        album.assets = cast(Any, UNSET)
         state = AlbumDtoState.create(dto=album, load_source=AlbumLoadSource.DETAIL)
         self.assertEqual(state.get_asset_uuids(), set())
 

@@ -194,7 +194,7 @@ class AlbumDtoState:
             from immich_client.types import UNSET, Unset
 
             assets = getattr(self._dto, "assets", UNSET)
-            if assets is UNSET or assets is Unset:
+            if assets is UNSET or isinstance(assets, Unset):
                 raise RuntimeError("UPDATE load source must have assets field set.")
             return True
         else:
@@ -230,6 +230,8 @@ class AlbumDtoState:
         """
         Returns the set of asset UUIDs in the album.
         Only allowed in DETAIL/full mode.
+        Supports both object-based assets (generated DTO instances) and
+        mapping-based assets (older/alternate DTO payload shapes).
         """
         if self._load_source != AlbumLoadSource.DETAIL:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
@@ -249,7 +251,10 @@ class AlbumDtoState:
             if raw_id is None:
                 continue
 
-            uuids.add(AssetUUID.from_uuid(UUID(str(raw_id))))
+            try:
+                uuids.add(AssetUUID.from_uuid(UUID(str(raw_id))))
+            except (TypeError, ValueError) as exc:
+                raise RuntimeError(f"Invalid asset id in album DTO: {raw_id!r}") from exc
 
         return uuids
 
@@ -269,7 +274,7 @@ class AlbumDtoState:
         from immich_client.types import UNSET, Unset
 
         assets = getattr(self._dto, "assets", UNSET)
-        if assets is UNSET or assets is Unset:
+        if assets is UNSET or isinstance(assets, Unset):
             return None
         return assets
 
