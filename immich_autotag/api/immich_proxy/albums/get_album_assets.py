@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Iterable
 
 from immich_client.client import AuthenticatedClient
 
@@ -8,7 +7,11 @@ from immich_autotag.types.uuid_wrappers import AlbumUUID
 
 
 def proxy_get_album_assets(
-    *, album_id: AlbumUUID, client: AuthenticatedClient, page: int | None = None, size: int | None = None
+    *,
+    album_id: AlbumUUID,
+    client: AuthenticatedClient,
+    page: int | None = None,
+    size: int | None = None,
 ) -> list[dict]:
     """
     Fetches album assets directly from the Immich API using the underlying httpx client.
