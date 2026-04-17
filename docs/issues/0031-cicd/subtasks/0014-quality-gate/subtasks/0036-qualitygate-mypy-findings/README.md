@@ -53,6 +53,12 @@ Proposed next steps (prioritized)
 2. Open a PR with minimal typing fixes in the listed files (preferred) or add justified `# type: ignore` annotations.
 3. Re-evaluate Quality Gate rules if false positives persist.
 
+Current actions
+- **LLM report:** An LLM-ready report with diagnosis, evidence and reproduction commands has been added at [docs/issues/0031-cicd/subtasks/0014-quality-gate/subtasks/0036-qualitygate-mypy-findings/analysis_llm_report.md](docs/issues/0031-cicd/subtasks/0014-quality-gate/subtasks/0036-qualitygate-mypy-findings/analysis_llm_report.md).
+- **Applied patches:** Minimal patches were applied to the affected files to avoid mypy false positives (explicit `str` conversions and guarded `getattr` access). See repository changes for details.
+
+If you want me to open a PR with these changes, tell me and I will push a branch and create the PR.
+
 Attachments / logs
 - Copy the selected log excerpt here (included below). Add more traces if needed.
 
