@@ -44,7 +44,8 @@ class AlbumUserWrapper:
         uid = self._user.user.id
         if isinstance(uid, UUID):
             return UserUUID.from_uuid(uid)
-        return UserUUID.from_string(uid)
+        # Ensure we pass a string to from_string to avoid mypy confusion
+        return UserUUID.from_string(str(uid))
 
     def __str__(self) -> str:
         try:
