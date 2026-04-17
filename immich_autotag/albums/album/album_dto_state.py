@@ -1,5 +1,6 @@
 import datetime
 import enum
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -192,7 +193,8 @@ class AlbumDtoState:
         elif self._load_source == AlbumLoadSource.UPDATE:
             from immich_client.types import UNSET, Unset
 
-            if self._dto.assets is UNSET or self._dto.assets is Unset:
+            assets = getattr(self._dto, "assets", UNSET)
+            if assets is UNSET or assets is Unset:
                 raise RuntimeError("UPDATE load source must have assets field set.")
             return True
         else:
@@ -233,7 +235,23 @@ class AlbumDtoState:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
         from immich_autotag.types.uuid_wrappers import AssetUUID
 
-        return set(AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets)
+        assets = self.get_assets()
+        if assets is None:
+            return set()
+
+        uuids: set[AssetUUID] = set()
+        for asset in assets:
+            if isinstance(asset, Mapping):
+                raw_id = asset.get("id")
+            else:
+                raw_id = getattr(asset, "id", None)
+
+            if raw_id is None:
+                continue
+
+            uuids.add(AssetUUID.from_uuid(UUID(str(raw_id))))
+
+        return uuids
 
     def is_stale(self) -> bool:
         import time
@@ -248,7 +266,12 @@ class AlbumDtoState:
         may be empty even if asset_count > 0. Use get_asset_count() for
         checking the number of assets without deserializing this list.
         """
-        return self._dto.assets
+        from immich_client.types import UNSET, Unset
+
+        assets = getattr(self._dto, "assets", UNSET)
+        if assets is UNSET or assets is Unset:
+            return None
+        return assets
 
     def get_album_uuid(self) -> AlbumUUID:
         return AlbumUUID.from_uuid_string(self._dto.id)

@@ -65,7 +65,7 @@ class UserResponseWrapper:
         uid = self._user.id
         if isinstance(uid, UUID):
             return UserUUID.from_uuid(uid)
-        return UserUUID.from_string(uid)
+        return UserUUID.from_string(str(uid))
 
     @typechecked
     def __str__(self) -> str:
