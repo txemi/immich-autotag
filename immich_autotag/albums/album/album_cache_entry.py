@@ -223,13 +223,56 @@ class AlbumCacheEntry:
         asset_manager = context.get_asset_manager()
         # asset_manager should not be None; if it is, this is a programming error
         result: list["AssetResponseWrapper"] = []
-        for a in loaded_entry._dto.get_assets():
-            b = asset_manager.get_wrapper_for_asset_dto(
-                asset_dto=a,
-                dto_type=AssetDtoType.ALBUM,
-                context=context,
+        # Try to use the embedded assets list from the DTO. If the server
+        # no longer embeds assets in the album DTO, fall back to the
+        # dedicated album-assets endpoint via the proxy helper.
+        try:
+            dto_assets = loaded_entry._dto.get_assets()
+        except Exception:
+            dto_assets = None
+
+        if dto_assets:
+            for a in dto_assets:
+                b = asset_manager.get_wrapper_for_asset_dto(
+                    asset_dto=a,
+                    dto_type=AssetDtoType.ALBUM,
+                    context=context,
+                )
+                result.append(b)
+            return result
+
+        # Fallback: call album-assets endpoint (paginated) and convert raw items
+        from immich_autotag.api.immich_proxy.albums.get_album_assets import (
+            proxy_get_album_assets,
+        )
+
+        client = context.get_client_wrapper().get_client()
+        page = 1
+        page_size = 5000
+        while True:
+            items = proxy_get_album_assets(
+                album_id=self.get_album_id(), client=client, page=page, size=page_size
             )
-            result.append(b)
+            if not items:
+                break
+            for raw in items:
+                # Convert raw dict to DTO using generated model if available
+                try:
+                    from immich_client.models.asset_response_dto import (
+                        AssetResponseDto,
+                    )
+
+                    asset_dto = AssetResponseDto.from_dict(raw)  # type: ignore[arg-type]
+                except Exception:
+                    # As a last resort, use the raw dict directly
+                    asset_dto = raw
+                b = asset_manager.get_wrapper_for_asset_dto(
+                    asset_dto=asset_dto, dto_type=AssetDtoType.ALBUM, context=context
+                )
+                result.append(b)
+            if len(items) < page_size:
+                break
+            page += 1
         return result
 
     def get_album_id(self) -> AlbumUUID:
