@@ -1,11 +1,11 @@
 Title: LLM Report — Detailed analysis of mypy failures (Quality Gate)
 
 Objective
-- Provide another language model (or an engineer) with full, reproducible information to diagnose why `check_mypy` fails on branch `ci/skip-mypy-temporary` of the repository `txemi/immich-autotag`.
+- Provide another language model (or an engineer) with full, reproducible information to diagnose why `check_mypy` fails on branch `fix/immich-client-dto-compat` of the repository `txemi/immich-autotag`.
 
 Repository / branch
 - Repo: https://github.com/txemi/immich-autotag
-- Branch: https://github.com/txemi/immich-autotag/tree/ci/skip-mypy-temporary
+- Branch: https://github.com/txemi/immich-autotag/tree/fix/immich-client-dto-compat
 
 Problem summary
 - The Jenkins Quality Gate `check_mypy` reports 5 findings that block the pipeline.
