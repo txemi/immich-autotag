@@ -42,6 +42,40 @@ for asset in album_assets:
     print(f"Processing asset: {asset.id}")
 ```
 
+Legacy example (what used to work)
+
+Previously, client code often relied on the album response including an embedded `assets` list. That pattern now fails:
+
+```python
+# Legacy: assumed assets were embedded in the album DTO
+album = client.album_api.get_album_info(id=album_id)
+for asset in album.assets:            # <-- raises AttributeError in newer server versions
+    process_asset(asset)
+```
+
+Paginated, memory-safe replacement
+
+If the server supports pagination for the assets endpoint, iterate in pages to avoid high memory use:
+
+```python
+def iter_album_assets(client, album_id, page_size=5000):
+    page = 1
+    while True:
+        resp = client.album_api.get_album_assets(id=album_id, page=page, size=page_size)
+        # adapt depending on SDK: resp may be a list or an object with `.items`
+        items = getattr(resp, 'items', resp)
+        if not items:
+            break
+        for asset in items:
+            yield asset
+        if len(items) < page_size:
+            break
+        page += 1
+
+for asset in iter_album_assets(client, album_id):
+    process_asset(asset)
+```
+
 Pagination and scalability notes (important for large albums)
 
 - For very large albums, retrieving all assets in one request may cause timeouts or excessive memory use.
