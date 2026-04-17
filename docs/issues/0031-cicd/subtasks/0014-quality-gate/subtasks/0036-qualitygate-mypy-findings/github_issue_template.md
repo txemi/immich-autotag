@@ -6,7 +6,8 @@ Summary
 - The Jenkins Quality Gate `check_mypy` is failing with typing errors that appear to be caused by changes or discrepancies in the `immich-client` generated DTOs. These failures block CI for branch `fix/immich-client-dto-compat` and may be caused by the server/client changing the shape/types of Album/User DTOs (notably `id` and `assets`).
 
 Why this matters
-- The failures result in runtime AttributeError in production workflows (see backtrace) and prevent CI from passing. We need a coordinated investigation because the fix may require updating wrappers, adding robust adapters, or clarifying contract expectations between client and server.
+Why this matters
+- These are not only static-type warnings: they lead to runtime failures (see backtrace) and indicate a possible change in the API contract between server and generated client DTOs. We do NOT want temporary ignores; we want to understand the new API surface and implement a correct, long-term fix (adapter/wrapper/tests or updated codegen). This issue coordinates that investigation.
 
 Branch and related artifacts
 - Branch created for investigation and minimal fixes: `fix/immich-client-dto-compat`
