@@ -379,6 +379,10 @@ main() {
 		clean_env
 	fi
 
+	# Ensure curl is present before server-version detection.
+	# In minimal CI images (e.g., python:slim), detection runs before dev tool install.
+	install_curl
+
 	# Get the appropriate OpenAPI URL
 	get_openapi_url "$CONFIG_FILE"
 
