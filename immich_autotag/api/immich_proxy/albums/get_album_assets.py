@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from immich_client.client import AuthenticatedClient
 
 from immich_autotag.types.uuid_wrappers import AlbumUUID
