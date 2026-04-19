@@ -85,12 +85,17 @@ get_immich_version() {
 	fi
 	local url="http://$host:$port/api/server/version"
 	echo "[DEBUG] Calling API: $url" >&2
-	local response
-	response=$(curl -s -m 5 -H "x-api-key: $api_key" "$url" 2>&1)
+	local response_raw
+	response_raw=$(curl -sS --connect-timeout 5 -m 12 --retry 2 --retry-delay 1 --retry-connrefused -H "x-api-key: $api_key" -w "\n__HTTP_STATUS__:%{http_code}" "$url" 2>&1)
 	local curl_exit=$?
+	local http_status
+	http_status=$(echo "$response_raw" | tail -n 1 | sed -E 's/^__HTTP_STATUS__://')
+	local response
+	response=$(echo "$response_raw" | sed '$d')
 	echo "[DEBUG] curl exit code: $curl_exit" >&2
+	echo "[DEBUG] HTTP status: ${http_status:-unknown}" >&2
 	echo "[DEBUG] API response: $response" >&2
-	if [ $curl_exit -ne 0 ] || [ -z "$response" ]; then
+	if [ $curl_exit -ne 0 ] || [ -z "$response" ] || [ "${http_status:-0}" -ne 200 ]; then
 		echo "[DEBUG] curl failed or empty response, returning 'main'" >&2
 		echo "main"
 		return
@@ -141,7 +146,6 @@ get_immich_version() {
 # Gets the appropriate OpenAPI URL according to the configuration
 get_openapi_url() {
 	local config_file="$1"
-	local default_version="v2.4.1"
 	local immich_host=""
 	local immich_port=""
 	local immich_api_key=""
@@ -158,10 +162,17 @@ get_openapi_url() {
 		echo "Connecting to Immich at http://$immich_host:$immich_port to detect version..."
 		immich_version=$(get_immich_version "$immich_host" "$immich_port" "$immich_api_key")
 		echo "Detected Immich version: $immich_version"
+		if [ "$immich_version" = "main" ]; then
+			echo "ERROR: Failed to detect concrete Immich server version (detected 'main')." >&2
+			echo "ERROR: Refusing to generate immich-client from 'main' because this can produce an incompatible version." >&2
+			echo "ERROR: Verify network access to /api/server/version and API key validity." >&2
+			exit 1
+		fi
 	else
-		echo "WARNING: Could not read Immich config. Config values: host='$immich_host' port='$immich_port' api_key_length=${#immich_api_key}"
-		echo "WARNING: Using default OpenAPI spec version: $default_version"
-		immich_version="$default_version"
+		echo "ERROR: Could not read Immich config required for version detection." >&2
+		echo "ERROR: Config values: host='$immich_host' port='$immich_port' api_key_length=${#immich_api_key}" >&2
+		echo "ERROR: Refusing to continue without a concrete server version." >&2
+		exit 1
 	fi
 	local openapi_url="https://raw.githubusercontent.com/immich-app/immich/$immich_version/open-api/immich-openapi-specs.json"
 	echo "Using OpenAPI spec from: $openapi_url"
