@@ -52,6 +52,7 @@ pipeline {
                     echo "[JENKINS] Installing all system and dev tools via setup_venv.sh --dev..."
                     sh '''
                         chmod +x setup_venv.sh
+                        # use clean in case immich server updated version and we need to refresh client
                         bash setup_venv.sh --clean --dev 
                     '''
                 }
