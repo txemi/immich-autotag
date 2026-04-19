@@ -84,7 +84,8 @@ pipeline {
                         # type/model discrepancies are resolved. Remove this flag and
                         # revert to full Quality Gate once fixes are applied.
                         # FIXME: ensure we don't forget to remove this.
-                        bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK --skip-checks=check_mypy
+                        #bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK --skip-checks=check_mypy
+                        bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK 
                     '''
                 }
             }
