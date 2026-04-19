@@ -85,7 +85,8 @@ get_immich_version() {
 	fi
 	local url="http://$host:$port/api/server/version"
 	echo "[DEBUG] Calling API: $url" >&2
-	local response=$(curl -s -m 5 -H "x-api-key: $api_key" "$url" 2>&1)
+	local response
+	response=$(curl -s -m 5 -H "x-api-key: $api_key" "$url" 2>&1)
 	local curl_exit=$?
 	echo "[DEBUG] curl exit code: $curl_exit" >&2
 	echo "[DEBUG] API response: $response" >&2
@@ -94,18 +95,47 @@ get_immich_version() {
 		echo "main"
 		return
 	fi
-	local major=$(echo "$response" | grep -o '"major":[0-9]*' | cut -d':' -f2)
-	local minor=$(echo "$response" | grep -o '"minor":[0-9]*' | cut -d':' -f2)
-	local patch=$(echo "$response" | grep -o '"patch":[0-9]*' | cut -d':' -f2)
-	echo "[DEBUG] Extracted: major='$major' minor='$minor' patch='$patch'" >&2
-	if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
-		echo "[DEBUG] Failed to extract version numbers, returning 'main'" >&2
-		echo "main"
-	else
+
+	# Try multiple parsing strategies for the version information.
+	# 1) JSON fields: "major", "minor", "patch"
+	local major
+	local minor
+	local patch
+	major=$(echo "$response" | grep -o '"major"[[:space:]]*:[[:space:]]*[0-9]\+' | grep -o '[0-9]\+') || true
+	minor=$(echo "$response" | grep -o '"minor"[[:space:]]*:[[:space:]]*[0-9]\+' | grep -o '[0-9]\+') || true
+	patch=$(echo "$response" | grep -o '"patch"[[:space:]]*:[[:space:]]*[0-9]\+' | grep -o '[0-9]\+') || true
+	if [ -n "$major" ] && [ -n "$minor" ] && [ -n "$patch" ]; then
 		local version="v${major}.${minor}.${patch}"
-		echo "[DEBUG] Detected version: $version" >&2
+		echo "[DEBUG] Detected version (major/minor/patch): $version" >&2
 		echo "$version"
+		return
 	fi
+
+	# 2) JSON field: "version": "vX.Y.Z" or "tag_name": "vX.Y.Z"
+	local version_str
+	version_str=$(echo "$response" | grep -o '"version"[[:space:]]*:[[:space:]]*"[vV]?[0-9]\+\.[0-9]\+\.[0-9]\+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
+	if [ -z "$version_str" ]; then
+		version_str=$(echo "$response" | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[vV]?[0-9]\+\.[0-9]\+\.[0-9]\+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
+	fi
+	if [ -n "$version_str" ]; then
+		# normalize to leading 'v'
+		version_str="${version_str#v}"
+		echo "[DEBUG] Detected version (version field): v$version_str" >&2
+		echo "v$version_str"
+		return
+	fi
+
+	# 3) Fallback: find first semver-like tag anywhere in the response (e.g., v2.6.3)
+	local semver
+	semver=$(echo "$response" | grep -o -m 1 'v[0-9]\+\.[0-9]\+\.[0-9]\+' || true)
+	if [ -n "$semver" ]; then
+		echo "[DEBUG] Detected version (semver fallback): $semver" >&2
+		echo "$semver"
+		return
+	fi
+
+	echo "[DEBUG] Could not detect version from server response, returning 'main'" >&2
+	echo "main"
 }
 
 # Gets the appropriate OpenAPI URL according to the configuration
