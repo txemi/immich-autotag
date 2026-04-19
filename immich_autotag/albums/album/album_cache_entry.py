@@ -247,6 +247,8 @@ class AlbumCacheEntry:
         )
 
         client = context.get_client_wrapper().get_client()
+        from immich_client.models.asset_response_dto import AssetResponseDto
+
         page = 1
         page_size = 5000
         while True:
@@ -256,16 +258,11 @@ class AlbumCacheEntry:
             if not items:
                 break
             for raw in items:
-                # Convert raw dict to DTO using generated model if available
+                # Convert raw dict to DTO; skip malformed entries.
                 try:
-                    from immich_client.models.asset_response_dto import (
-                        AssetResponseDto,
-                    )
-
-                    asset_dto = AssetResponseDto.from_dict(raw)  # type: ignore[arg-type]
+                    asset_dto: AssetResponseDto = AssetResponseDto.from_dict(raw)
                 except Exception:
-                    # As a last resort, use the raw dict directly
-                    asset_dto = raw
+                    continue
                 b = asset_manager.get_wrapper_for_asset_dto(
                     asset_dto=asset_dto, dto_type=AssetDtoType.ALBUM, context=context
                 )
