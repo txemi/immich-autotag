@@ -52,7 +52,7 @@ pipeline {
                     echo "[JENKINS] Installing all system and dev tools via setup_venv.sh --dev..."
                     sh '''
                         chmod +x setup_venv.sh
-                        bash setup_venv.sh --dev
+                        bash setup_venv.sh --clean --dev 
                     '''
                 }
             }
