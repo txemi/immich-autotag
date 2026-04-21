@@ -49,9 +49,11 @@ git add "$PYPROJECT_TOML" "$PROJECT_ROOT/immich_autotag/version.py"
 git commit -m "Bump version to $NEW_VERSION"
 
 # 4. Create git tag (AFTER all version updates are committed)
+# 4. Create an annotated git tag (AFTER all version updates are committed)
+# Use annotated tags for releases so they include author/date/message metadata
 TAG="v$NEW_VERSION"
-git tag "$TAG"
-echo "[INFO] Git tag created: $TAG"
+git tag -a -m "Release $TAG" "$TAG"
+echo "[INFO] Annotated git tag created: $TAG"
 
 # 5. Update version.py again to capture the new tag in git describe
 bash "$UPDATE_SCRIPT"

@@ -10,12 +10,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../..")"
 cd "$PROJECT_ROOT"
 
-# Call setup_venv.sh if it exists
+# Call setup_venv.sh if it exists. Forward any CLI args so callers (workflows)
+# can pass --immich-version explicitly.
 if [ -f "$PROJECT_ROOT/setup_venv.sh" ]; then
 	echo "[INFO] Running setup_venv.sh to ensure venv and client are ready..."
-	bash "$PROJECT_ROOT/setup_venv.sh"
+	bash "$PROJECT_ROOT/setup_venv.sh" "$@"
 else
-	echo "[WARN] setup_venv.sh not found, proceeding without it."
+	echo "[ERROR] setup_venv.sh not found in project root ($PROJECT_ROOT). Aborting." >&2
+	exit 1
 fi
 
 # --- Optionally increment patch number in pyproject.toml ---

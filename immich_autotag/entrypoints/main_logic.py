@@ -17,6 +17,11 @@ def run_main_inner_logic():
 
     client_wrapper = ImmichClientWrapper.get_default_instance()
     client = client_wrapper.get_client()
+    from immich_autotag.api.logging_proxy.server.get_server_version import (
+        assert_client_server_version_match,
+    )
+
+    assert_client_server_version_match(client)
     # Initialize context early so it's available for maintenance operations
     context = init_collections_and_context(client_wrapper)
     # Maintenance: delete unhealthy temporary albums

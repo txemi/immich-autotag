@@ -52,7 +52,8 @@ pipeline {
                     echo "[JENKINS] Installing all system and dev tools via setup_venv.sh --dev..."
                     sh '''
                         chmod +x setup_venv.sh
-                        bash setup_venv.sh --dev
+                        # use clean in case immich server updated version and we need to refresh client
+                        bash setup_venv.sh --clean --dev 
                     '''
                 }
             }
@@ -80,12 +81,20 @@ pipeline {
                         # Configure git safe.directory to avoid ownership errors
                         git config --global --add safe.directory "$PWD"
                         chmod +x scripts/devtools/quality_gate_py/venv_launcher.sh
-                        bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK
+                        # TODO: Temporary workaround - skipping `check_mypy` in CI until
+                        # type/model discrepancies are resolved. Remove this flag and
+                        # revert to full Quality Gate once fixes are applied.
+                        # FIXME: ensure we don't forget to remove this.
+                        #bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK --skip-checks=check_mypy
+                        bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK 
                     '''
                 }
             }
         }
         stage('Quality Gate (Shell Script)') {
+            when {
+                expression { false } // Disabled: deprecated shell quality gate. Keep stage for history, skip execution.
+            }
             steps {
                 script {
                     echo '🚨🚨 DEPRECATED: QUALITY GATE (SHELL SCRIPT) - USE PYTHON VERSION INSTEAD 🚨🚨'

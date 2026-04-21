@@ -3,6 +3,8 @@
 
 All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md).
 
+
+
 **Convention:**
 - Functional or user-relevant changes (MAJOR/MINOR) are documented here.
 - Increments of the third digit (PATCH) can be used to mark internal milestones (e.g., Quality Gate) and do not require a detailed entry unless you want to explicitly record the milestone.
@@ -563,6 +565,15 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 ### Fixed
 - Removed leftover CRAZY_DEBUG assertions in the performance tracker that could terminate runs during album synchronization on smaller libraries. ([GitHub Issue #46](https://github.com/txemi/immich-autotag/issues/46))
 
+## [0.80.7] - 2026-04-21
+**Description:** Bugfix and compatibility update for Immich server API changes.
+### Compatibility
+- **Tested with:** Immich server `v2.6.3`.
+- **Compatibility note:** This release restores compatibility with the Immich API changes introduced in `v2.6.x`. Users should run this version when connecting to Immich `v2.6.0` or later within the same minor series. If you require support for older or newer major Immich releases, verify with `setup_venv.sh` and update `docs/compatibility.md` accordingly.
+### Added
+- Documentation: explicit compatibility statement and guidance in `docs/compatibility.md`.
+### Fixed
+- API compatibility fixes to restore correct behavior with Immich `v2.6.3` (see relevant commit/PR).
 
 
 ## [Planned: Date Correction Improvements]

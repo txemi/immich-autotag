@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Union
+from uuid import UUID
 
 import attrs
 from typeguard import typechecked
@@ -61,12 +62,16 @@ class UserResponseWrapper:
 
     @typechecked
     def get_uuid(self) -> UserUUID:
-        return UserUUID.from_string(self._user.id)
+        uid = self._user.id
+        if isinstance(uid, UUID):
+            return UserUUID.from_uuid(uid)
+        return UserUUID.from_string(uid)
 
     @typechecked
     def __str__(self) -> str:
         try:
             user_id = self._user.id  # type: ignore[attr-defined]
+            user_id = str(user_id) if user_id is not None else None
         except (AttributeError, TypeError):
             user_id = None
         return self.get_name() or user_id or "<unknown user>"

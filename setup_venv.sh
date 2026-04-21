@@ -13,33 +13,52 @@ set -e
 
 # --- MAIN FUNCTIONS ---
 
+
 parse_args() {
 	CLEAN=0
 	SHOW_HELP=0
 	MODE="dev" # Default mode
-	for arg in "$@"; do
-		case $arg in
+	CLI_IMMICH_VERSION=""
+
+	while [ $# -gt 0 ]; do
+		case "$1" in
 		--clean)
 			CLEAN=1
+			shift
 			;;
 		--prod)
 			MODE="prod"
+			shift
 			;;
 		--dev)
 			MODE="dev"
+			shift
 			;;
-		--help | -h)
+		--help|-h)
 			SHOW_HELP=1
+			shift
+			;;
+		--immich-version)
+			CLI_IMMICH_VERSION="$2"
+			shift 2
+			;;
+		--immich-version=*)
+			CLI_IMMICH_VERSION="${1#*=}"
+			shift
+			;;
+		*)
+			shift
 			;;
 		esac
 	done
 }
 
 print_help() {
-	echo "Usage: $0 [--clean] [--prod] [--dev] [--help]"
+	echo "Usage: $0 [--clean] [--prod] [--dev] [--help] [--immich-version <version>]"
 	echo "  --clean   Deletes .venv and immich-client before creating environment and client."
 	echo "  --prod    Only installs runtime (production) dependencies."
 	echo "  --dev     Installs development dependencies (default)."
+	echo "  --immich-version <vX.Y.Z>  Explicit Immich server version to use for immich-client generation."
 	echo "  --help    Shows this help and exits."
 }
 # --- AUXILIARY FUNCTIONS ---
@@ -85,33 +104,67 @@ get_immich_version() {
 	fi
 	local url="http://$host:$port/api/server/version"
 	echo "[DEBUG] Calling API: $url" >&2
-	local response=$(curl -s -m 5 -H "x-api-key: $api_key" "$url" 2>&1)
+	local response_raw
+	response_raw=$(curl -sS --connect-timeout 5 -m 12 --retry 2 --retry-delay 1 --retry-connrefused -H "x-api-key: $api_key" -w "\n__HTTP_STATUS__:%{http_code}" "$url" 2>&1)
 	local curl_exit=$?
+	local http_status
+	http_status=$(echo "$response_raw" | tail -n 1 | sed -E 's/^__HTTP_STATUS__://')
+	local response
+	response=$(echo "$response_raw" | sed '$d')
 	echo "[DEBUG] curl exit code: $curl_exit" >&2
+	echo "[DEBUG] HTTP status: ${http_status:-unknown}" >&2
 	echo "[DEBUG] API response: $response" >&2
-	if [ $curl_exit -ne 0 ] || [ -z "$response" ]; then
+	if [ $curl_exit -ne 0 ] || [ -z "$response" ] || [ "${http_status:-0}" -ne 200 ]; then
 		echo "[DEBUG] curl failed or empty response, returning 'main'" >&2
 		echo "main"
 		return
 	fi
-	local major=$(echo "$response" | grep -o '"major":[0-9]*' | cut -d':' -f2)
-	local minor=$(echo "$response" | grep -o '"minor":[0-9]*' | cut -d':' -f2)
-	local patch=$(echo "$response" | grep -o '"patch":[0-9]*' | cut -d':' -f2)
-	echo "[DEBUG] Extracted: major='$major' minor='$minor' patch='$patch'" >&2
-	if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
-		echo "[DEBUG] Failed to extract version numbers, returning 'main'" >&2
-		echo "main"
-	else
+
+	# Try multiple parsing strategies for the version information.
+	# 1) JSON fields: "major", "minor", "patch"
+	local major
+	local minor
+	local patch
+	major=$(echo "$response" | grep -Eo '"major"[[:space:]]*:[[:space:]]*[0-9]+' | grep -Eo '[0-9]+') || true
+	minor=$(echo "$response" | grep -Eo '"minor"[[:space:]]*:[[:space:]]*[0-9]+' | grep -Eo '[0-9]+') || true
+	patch=$(echo "$response" | grep -Eo '"patch"[[:space:]]*:[[:space:]]*[0-9]+' | grep -Eo '[0-9]+') || true
+	if [ -n "$major" ] && [ -n "$minor" ] && [ -n "$patch" ]; then
 		local version="v${major}.${minor}.${patch}"
-		echo "[DEBUG] Detected version: $version" >&2
+		echo "[DEBUG] Detected version (major/minor/patch): $version" >&2
 		echo "$version"
+		return
 	fi
+
+	# 2) JSON field: "version": "vX.Y.Z" or "tag_name": "vX.Y.Z"
+	local version_str
+	version_str=$(echo "$response" | grep -Eo '"version"[[:space:]]*:[[:space:]]*"[vV]?[0-9]+\.[0-9]+\.[0-9]+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
+	if [ -z "$version_str" ]; then
+		version_str=$(echo "$response" | grep -Eo '"tag_name"[[:space:]]*:[[:space:]]*"[vV]?[0-9]+\.[0-9]+\.[0-9]+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
+	fi
+	if [ -n "$version_str" ]; then
+		# normalize to leading 'v'
+		version_str="${version_str#v}"
+		echo "[DEBUG] Detected version (version field): v$version_str" >&2
+		echo "v$version_str"
+		return
+	fi
+
+	# 3) Fallback: find first semver-like tag anywhere in the response (e.g., v2.6.3)
+	local semver
+	semver=$(echo "$response" | grep -Eo -m 1 'v[0-9]+\.[0-9]+\.[0-9]+' || true)
+	if [ -n "$semver" ]; then
+		echo "[DEBUG] Detected version (semver fallback): $semver" >&2
+		echo "$semver"
+		return
+	fi
+
+	echo "[DEBUG] Could not detect version from server response, returning 'main'" >&2
+	echo "main"
 }
 
 # Gets the appropriate OpenAPI URL according to the configuration
 get_openapi_url() {
 	local config_file="$1"
-	local default_version="v2.4.1"
 	local immich_host=""
 	local immich_port=""
 	local immich_api_key=""
@@ -124,15 +177,62 @@ get_openapi_url() {
 		immich_api_key=$(extract_config "api_key")
 	fi
 
-	if [ -n "$immich_host" ] && [ -n "$immich_port" ] && [ -n "$immich_api_key" ]; then
+	# Priorities for determining immich_version (simple and explicit):
+	# 1) CLI argument --immich-version (stored in CLI_IMMICH_VERSION)
+	# 2) ENV var IMMICH_CLIENT_FALLBACK
+	# 3) compatibility.yml (key: tested_immich)
+	# 4) If real Immich config present (host/port/api_key) -> query server
+	# 5) If running in Jenkins -> fail (coercive behavior retained)
+	# 6) Otherwise -> error
+
+	immich_version=""
+
+	# 1) CLI argument
+	if [ -n "${CLI_IMMICH_VERSION:-}" ]; then
+		immich_version="$CLI_IMMICH_VERSION"
+		echo "Using CLI immich version: $immich_version"
+	fi
+
+	# 2) ENV fallback (removed): prefer explicit CLI arg or compatibility.yml
+	# Note: IMMICH_CLIENT_FALLBACK support was removed to keep a single
+	# explicit source of truth (CLI arg or compatibility.yml). If you need
+	# an override in CI, pass --immich-version or set compatibility.yml.
+
+	# 3) compatibility.yml support removed: prefer explicit CLI arg or real server
+	# Note: To keep the script simple and explicit, the compatibility.yml
+	# automatic read was removed. Callers should pass --immich-version or
+	# ensure server access (host/port/api_key) so the script can query the server.
+
+	# 4) If we have concrete server config, query it
+	if [ -z "$immich_version" ] && [ -n "$immich_host" ] && [ -n "$immich_port" ] && [ -n "$immich_api_key" ]; then
 		echo "Connecting to Immich at http://$immich_host:$immich_port to detect version..."
 		immich_version=$(get_immich_version "$immich_host" "$immich_port" "$immich_api_key")
 		echo "Detected Immich version: $immich_version"
-	else
-		echo "WARNING: Could not read Immich config. Config values: host='$immich_host' port='$immich_port' api_key_length=${#immich_api_key}"
-		echo "WARNING: Using default OpenAPI spec version: $default_version"
-		immich_version="$default_version"
+		if [ "$immich_version" = "main" ]; then
+			echo "ERROR: Failed to detect concrete Immich server version (detected 'main')." >&2
+			echo "ERROR: Refusing to generate immich-client from 'main' because this can produce an incompatible version." >&2
+			echo "ERROR: Verify network access to /api/server/version and API key validity." >&2
+			exit 1
+		fi
 	fi
+
+	# 5) Jenkins: be strict and fail if no version determined
+	IS_JENKINS=false
+	if [ -n "${JENKINS_URL:-}" ] || [ -n "${JENKINS_HOME:-}" ]; then
+		IS_JENKINS=true
+	fi
+	if [ "${IS_JENKINS}" = "true" ] && [ -z "$immich_version" ]; then
+		echo "Running in Jenkins and no Immich server/config detected: failing as configured." >&2
+		exit 1
+	fi
+
+	# 6) final error if still empty
+	if [ -z "$immich_version" ]; then
+		echo "ERROR: Could not determine Immich version (no CLI arg, env, compatibility.yml, or server available)." >&2
+		echo "ERROR: Config values: host='$immich_host' port='$immich_port' api_key_length=${#immich_api_key}" >&2
+		exit 1
+	fi
+
 	local openapi_url="https://raw.githubusercontent.com/immich-app/immich/$immich_version/open-api/immich-openapi-specs.json"
 	echo "Using OpenAPI spec from: $openapi_url"
 	# Export for use in main
@@ -348,6 +448,10 @@ main() {
 	if [ "$CLEAN" = "1" ]; then
 		clean_env
 	fi
+
+	# Ensure curl is present before server-version detection.
+	# In minimal CI images (e.g., python:slim), detection runs before dev tool install.
+	install_curl
 
 	# Get the appropriate OpenAPI URL
 	get_openapi_url "$CONFIG_FILE"

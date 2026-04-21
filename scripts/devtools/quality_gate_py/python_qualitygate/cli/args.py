@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import attr
 from pathlib import Path
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Set
 from python_qualitygate.core.enums_mode import QualityGateMode
 from python_qualitygate.core.enums_level import QualityGateLevel
 
@@ -20,3 +20,4 @@ class QualityGateArgs:
     line_length: int = 88
     target_dir: Path = Path('immich_autotag')
     only_check: Optional[type["Check"]] = attr.field(default=None, validator=attr.validators.optional(attr.validators.instance_of(type)))
+    skip_checks: Set[str] = attr.field(factory=set)

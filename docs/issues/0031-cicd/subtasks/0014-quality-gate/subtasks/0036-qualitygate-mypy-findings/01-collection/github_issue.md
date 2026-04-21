@@ -1,0 +1,1 @@
+https://github.com/txemi/immich-autotag/issues/51

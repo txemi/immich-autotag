@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 import attrs
 from typeguard import typechecked
@@ -40,7 +41,11 @@ class AlbumUserWrapper:
     @typechecked
     def get_uuid(self) -> UserUUID:
         # Try to extract the user id from the wrapped DTO
-        return UserUUID.from_string(self._user.user.id)
+        uid = self._user.user.id
+        if isinstance(uid, UUID):
+            return UserUUID.from_uuid(uid)
+        # Ensure we pass a string to from_string to avoid mypy confusion
+        return UserUUID.from_string(str(uid))
 
     def __str__(self) -> str:
         try:
