@@ -125,9 +125,9 @@ get_immich_version() {
 	local major
 	local minor
 	local patch
-	major=$(echo "$response" | grep -o '"major"[[:space:]]*:[[:space:]]*[0-9]\+' | grep -o '[0-9]\+') || true
-	minor=$(echo "$response" | grep -o '"minor"[[:space:]]*:[[:space:]]*[0-9]\+' | grep -o '[0-9]\+') || true
-	patch=$(echo "$response" | grep -o '"patch"[[:space:]]*:[[:space:]]*[0-9]\+' | grep -o '[0-9]\+') || true
+	major=$(echo "$response" | grep -Eo '"major"[[:space:]]*:[[:space:]]*[0-9]+' | grep -Eo '[0-9]+') || true
+	minor=$(echo "$response" | grep -Eo '"minor"[[:space:]]*:[[:space:]]*[0-9]+' | grep -Eo '[0-9]+') || true
+	patch=$(echo "$response" | grep -Eo '"patch"[[:space:]]*:[[:space:]]*[0-9]+' | grep -Eo '[0-9]+') || true
 	if [ -n "$major" ] && [ -n "$minor" ] && [ -n "$patch" ]; then
 		local version="v${major}.${minor}.${patch}"
 		echo "[DEBUG] Detected version (major/minor/patch): $version" >&2
@@ -137,9 +137,9 @@ get_immich_version() {
 
 	# 2) JSON field: "version": "vX.Y.Z" or "tag_name": "vX.Y.Z"
 	local version_str
-	version_str=$(echo "$response" | grep -o '"version"[[:space:]]*:[[:space:]]*"[vV]?[0-9]\+\.[0-9]\+\.[0-9]\+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
+	version_str=$(echo "$response" | grep -Eo '"version"[[:space:]]*:[[:space:]]*"[vV]?[0-9]+\.[0-9]+\.[0-9]+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
 	if [ -z "$version_str" ]; then
-		version_str=$(echo "$response" | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[vV]?[0-9]\+\.[0-9]\+\.[0-9]\+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
+		version_str=$(echo "$response" | grep -Eo '"tag_name"[[:space:]]*:[[:space:]]*"[vV]?[0-9]+\.[0-9]+\.[0-9]+"' | sed -E 's/.*"([vV]?[0-9]+\.[0-9]+\.[0-9]+)".*/\1/') || true
 	fi
 	if [ -n "$version_str" ]; then
 		# normalize to leading 'v'
@@ -151,7 +151,7 @@ get_immich_version() {
 
 	# 3) Fallback: find first semver-like tag anywhere in the response (e.g., v2.6.3)
 	local semver
-	semver=$(echo "$response" | grep -o -m 1 'v[0-9]\+\.[0-9]\+\.[0-9]\+' || true)
+	semver=$(echo "$response" | grep -Eo -m 1 'v[0-9]+\.[0-9]+\.[0-9]+' || true)
 	if [ -n "$semver" ]; then
 		echo "[DEBUG] Detected version (semver fallback): $semver" >&2
 		echo "$semver"
