@@ -13,33 +13,52 @@ set -e
 
 # --- MAIN FUNCTIONS ---
 
+
 parse_args() {
 	CLEAN=0
 	SHOW_HELP=0
 	MODE="dev" # Default mode
-	for arg in "$@"; do
-		case $arg in
+	CLI_IMMICH_VERSION=""
+
+	while [ $# -gt 0 ]; do
+		case "$1" in
 		--clean)
 			CLEAN=1
+			shift
 			;;
 		--prod)
 			MODE="prod"
+			shift
 			;;
 		--dev)
 			MODE="dev"
+			shift
 			;;
-		--help | -h)
+		--help|-h)
 			SHOW_HELP=1
+			shift
+			;;
+		--immich-version)
+			CLI_IMMICH_VERSION="$2"
+			shift 2
+			;;
+		--immich-version=*)
+			CLI_IMMICH_VERSION="${1#*=}"
+			shift
+			;;
+		*)
+			shift
 			;;
 		esac
 	done
 }
 
 print_help() {
-	echo "Usage: $0 [--clean] [--prod] [--dev] [--help]"
+	echo "Usage: $0 [--clean] [--prod] [--dev] [--help] [--immich-version <version>]"
 	echo "  --clean   Deletes .venv and immich-client before creating environment and client."
 	echo "  --prod    Only installs runtime (production) dependencies."
 	echo "  --dev     Installs development dependencies (default)."
+	echo "  --immich-version <vX.Y.Z>  Explicit Immich server version to use for immich-client generation."
 	echo "  --help    Shows this help and exits."
 }
 # --- AUXILIARY FUNCTIONS ---
@@ -158,7 +177,34 @@ get_openapi_url() {
 		immich_api_key=$(extract_config "api_key")
 	fi
 
-	if [ -n "$immich_host" ] && [ -n "$immich_port" ] && [ -n "$immich_api_key" ]; then
+	# Priorities for determining immich_version (simple and explicit):
+	# 1) CLI argument --immich-version (stored in CLI_IMMICH_VERSION)
+	# 2) ENV var IMMICH_CLIENT_FALLBACK
+	# 3) compatibility.yml (key: tested_immich)
+	# 4) If real Immich config present (host/port/api_key) -> query server
+	# 5) If running in Jenkins -> fail (coercive behavior retained)
+	# 6) Otherwise -> error
+
+	immich_version=""
+
+	# 1) CLI argument
+	if [ -n "${CLI_IMMICH_VERSION:-}" ]; then
+		immich_version="$CLI_IMMICH_VERSION"
+		echo "Using CLI immich version: $immich_version"
+	fi
+
+	# 2) ENV fallback (removed): prefer explicit CLI arg or compatibility.yml
+	# Note: IMMICH_CLIENT_FALLBACK support was removed to keep a single
+	# explicit source of truth (CLI arg or compatibility.yml). If you need
+	# an override in CI, pass --immich-version or set compatibility.yml.
+
+	# 3) compatibility.yml support removed: prefer explicit CLI arg or real server
+	# Note: To keep the script simple and explicit, the compatibility.yml
+	# automatic read was removed. Callers should pass --immich-version or
+	# ensure server access (host/port/api_key) so the script can query the server.
+
+	# 4) If we have concrete server config, query it
+	if [ -z "$immich_version" ] && [ -n "$immich_host" ] && [ -n "$immich_port" ] && [ -n "$immich_api_key" ]; then
 		echo "Connecting to Immich at http://$immich_host:$immich_port to detect version..."
 		immich_version=$(get_immich_version "$immich_host" "$immich_port" "$immich_api_key")
 		echo "Detected Immich version: $immich_version"
@@ -168,12 +214,25 @@ get_openapi_url() {
 			echo "ERROR: Verify network access to /api/server/version and API key validity." >&2
 			exit 1
 		fi
-	else
-		echo "ERROR: Could not read Immich config required for version detection." >&2
-		echo "ERROR: Config values: host='$immich_host' port='$immich_port' api_key_length=${#immich_api_key}" >&2
-		echo "ERROR: Refusing to continue without a concrete server version." >&2
+	fi
+
+	# 5) Jenkins: be strict and fail if no version determined
+	IS_JENKINS=false
+	if [ -n "${JENKINS_URL:-}" ] || [ -n "${JENKINS_HOME:-}" ]; then
+		IS_JENKINS=true
+	fi
+	if [ "${IS_JENKINS}" = "true" ] && [ -z "$immich_version" ]; then
+		echo "Running in Jenkins and no Immich server/config detected: failing as configured." >&2
 		exit 1
 	fi
+
+	# 6) final error if still empty
+	if [ -z "$immich_version" ]; then
+		echo "ERROR: Could not determine Immich version (no CLI arg, env, compatibility.yml, or server available)." >&2
+		echo "ERROR: Config values: host='$immich_host' port='$immich_port' api_key_length=${#immich_api_key}" >&2
+		exit 1
+	fi
+
 	local openapi_url="https://raw.githubusercontent.com/immich-app/immich/$immich_version/open-api/immich-openapi-specs.json"
 	echo "Using OpenAPI spec from: $openapi_url"
 	# Export for use in main

@@ -38,12 +38,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
+      - name: Read tested Immich version
+        id: read_tested
+        run: |
+          if [ -f compatibility.yml ]; then
+            TESTED=$(grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+' compatibility.yml | head -n1 || true)
+            if [ -n "$TESTED" ]; then
+              echo "TESTED_IMMICH=$TESTED" >> $GITHUB_ENV
+              echo "Found tested immich version: $TESTED"
+            else
+              echo "No tested immich version found in compatibility.yml" >&2
+            fi
+          else
+            echo "compatibility.yml not found, no tested immich version set" >&2
+          fi
+
       - name: Build and upload Python package (incluye immich_client)
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
-          bash scripts/pypi/package_and_upload.sh
+          echo "Using TESTED_IMMICH=${{ env.TESTED_IMMICH }}"
+          bash scripts/pypi/package_and_upload.sh --immich-version "${{ env.TESTED_IMMICH }}"
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
