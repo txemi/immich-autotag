@@ -116,38 +116,27 @@ user_config = UserConfig(
             "This feature allows you to perform batch conversion operations on assets."
         ),
         conversions=[
+            # Example conversion with COPY mode for testing
             Conversion(
-                source=ClassificationRule(tag_names=[_MEME_SUFFIX]),
-                destination=Destination(tag_names=[_AUTOTAG_INPUT_MEME]),
-            ),
-            Conversion(
-                source=ClassificationRule(tag_names=[_ADULT_MEME]),
-                destination=Destination(tag_names=[_AUTOTAG_INPUT_ADULT_MEME]),
+                description="Unify different ways to identify memes to just one, note MOVE mode for cleaning old tags.",
+                source=ClassificationRule(
+                    tag_names=[_AUTOTAG_INPUT_MEME,_MEME_SUFFIX],
+                ),
+                destination=Destination(
+                    album_names=[_AUTOTAG_INPUT_MEME]
+                ),
+                mode=ConversionMode.MOVE,
             ),
             # Example conversion with COPY mode for testing
             Conversion(
-                description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
+                description="Unify different ways to identify adult memes to just one, note MOVE mode for cleaning old tags.",
                 source=ClassificationRule(
-                    tag_names=[_AUTOTAG_INPUT_MEME],
-                    album_name_patterns=[_AUTOTAG_INPUT_MEME],
+                    tag_names=[_AUTOTAG_INPUT_ADULT_MEME,_ADULT_MEME],
                 ),
                 destination=Destination(
-                    tag_names=[_AUTOTAG_INPUT_MEME], album_names=[_AUTOTAG_INPUT_MEME]
-                ),
-                mode=ConversionMode.COPY,
-            ),
-            # Example conversion with COPY mode for testing
-            Conversion(
-                description="Testing both tags and albums: This conversion is for experiments, to quickly populate the index with both tags and albums. In some cases, tags are faster and better; in others, albums work better. This lets us compare both approaches in the database.",
-                source=ClassificationRule(
-                    tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
-                    album_name_patterns=[_AUTOTAG_INPUT_ADULT_MEME],
-                ),
-                destination=Destination(
-                    tag_names=[_AUTOTAG_INPUT_ADULT_MEME],
                     album_names=[_AUTOTAG_INPUT_ADULT_MEME],
                 ),
-                mode=ConversionMode.COPY,
+                mode=ConversionMode.MOVE,
             ),
         ],
     ),
@@ -274,7 +263,7 @@ user_config = UserConfig(
     ),
     create_album_from_date_if_missing=True,  # Enables creation of generic daily albums for unclassified assets, you can rename or modify them later
     # -------------------------------------------------------------------------
-    # ALBUM PERMISSIONS: Automatic album sharing to user groups based on keywords
+    # ALBUM PERMISSIONS: Automatic album sharing to user groups based on keywords in album names.
     #
     # This section lets you define user groups and assign users (by email) to each group.
     # You can also define rules that automatically share albums with specific groups based on keywords in the album name.
