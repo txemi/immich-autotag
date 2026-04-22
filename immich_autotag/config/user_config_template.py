@@ -34,7 +34,6 @@ from immich_autotag.config.models import (
     UserConfig,
     UserGroup,
 )
-
 from immich_autotag.utils.links.github import github_doc_url
 
 # ---------------------------------------------------------------------------
@@ -205,8 +204,8 @@ user_config = UserConfig(
             # --- Memes / jokes (not events, should not end up in date albums) ---
             ClassificationRule(
                 tag_names=[
-                    _MEME_SUFFIX,           # legacy bare tag — kept for compatibility
-                    _AUTOTAG_INPUT_MEME,    # canonical input tag
+                    _MEME_SUFFIX,  # legacy bare tag — kept for compatibility
+                    _AUTOTAG_INPUT_MEME,  # canonical input tag
                 ],
                 album_name_patterns=[
                     rf"^{_AUTOTAG_INPUT_MEME}$",
@@ -216,7 +215,7 @@ user_config = UserConfig(
             # --- Adult / NSFW content (kept separate from family environment) ---
             ClassificationRule(
                 tag_names=[
-                    _ADULT_MEME_SUFFIX,         # legacy bare tag — kept for compatibility
+                    _ADULT_MEME_SUFFIX,  # legacy bare tag — kept for compatibility
                     _AUTOTAG_INPUT_ADULT_MEME,  # canonical input tag
                 ],
                 album_name_patterns=[
