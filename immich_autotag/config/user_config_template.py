@@ -34,6 +34,7 @@ from immich_autotag.config.models import (
     UserConfig,
     UserGroup,
 )
+
 from immich_autotag.utils.links.github import github_doc_url
 
 # ---------------------------------------------------------------------------
@@ -105,7 +106,8 @@ _AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH = (
 
 user_config = UserConfig(
     description=(
-        "Immich autotag configuration. "
+        "Immich autotag configuration — manages classification, duplicate handling, "
+        "album sharing, and date correction for your Immich library. "
         "For authoritative field documentation see: "
         f"{github_doc_url('immich_autotag/config/models.py')}"
     ),
@@ -117,22 +119,44 @@ user_config = UserConfig(
     # api_key — generate one in Immich: Account Settings → API Keys → New key
     # -------------------------------------------------------------------------
     server=ServerConfig(
+        description=(
+            "Connection details for the Immich server API. "
+            "Get your API key in Immich: Account Settings → API Keys → New key."
+        ),
         host="immich.example.com",
         port=2283,
         api_key="YOUR_API_KEY_HERE",
     ),
     # Strip leading/trailing spaces from album names when comparing or creating them.
     enable_album_name_strip=True,
-    # skip_n: skip the first N assets (useful for resuming after an interruption).
+    # skip_n: skip the first N assets (useful for one-off manual offsets).
     # resume_previous: automatically resume from the last successfully processed asset.
-    skip=SkipConfig(skip_n=0, resume_previous=True),
+    # max_items: stop after this many assets (handy for incremental or test runs).
+    skip=SkipConfig(
+        description=(
+            "Controls how many assets to skip and whether to resume from the last "
+            "successful position. Use skip_n for a manual offset; resume_previous "
+            "resumes automatically after an interrupted run; max_items caps the "
+            "number of assets processed in a single run."
+        ),
+        skip_n=0,
+        resume_previous=True,
+        max_items=1_000_000,
+    ),
     # -------------------------------------------------------------------------
     # FILTERS: Restrict which assets are processed.
     #
     # Leave as FilterConfig() to process all assets, or pass tag/album filters
     # to target a specific subset. See FilterConfig in models.py for options.
     # -------------------------------------------------------------------------
-    filters=FilterConfig(),
+    filters=FilterConfig(
+        description=(
+            "Global asset filter applied before any processing. "
+            "filter_in limits processing to assets that match at least one rule; "
+            "filter_out excludes assets that match any rule. "
+            "Leave both lists empty to process all assets."
+        ),
+    ),
     # -------------------------------------------------------------------------
     # CONVERSIONS: Batch-rename or move tags/albums across assets.
     #
@@ -140,20 +164,22 @@ user_config = UserConfig(
     # a single canonical one, or to migrate from tags to albums (or vice versa).
     #
     # mode=COPY keeps the source; mode=MOVE removes it after copying.
-    #
     # Set enabled=False to skip this step entirely.
     # -------------------------------------------------------------------------
     conversions=ConversionConfig(
         enabled=True,
         description=(
-            "Consolidate legacy tag variants into canonical input tags so that "
-            "the classification rules only need to check one name per category."
+            "Batch conversion rules applied before classification. "
+            "Use these to consolidate legacy tag variants into canonical input tags "
+            "so that classification rules only need to check one name per category. "
+            "MOVE mode removes the source tag/album after copying to the destination; "
+            "COPY mode adds the destination while keeping the source."
         ),
         conversions=[
             Conversion(
                 description=(
-                    "Merge bare 'meme' tag (legacy, no prefix) into the canonical "
-                    "input tag. MOVE mode removes the old tag after copying."
+                    "Merge the bare 'meme' tag (legacy, no prefix) into the canonical "
+                    "input album. MOVE mode removes the old tag after copying."
                 ),
                 source=ClassificationRule(
                     tag_names=[_MEME_SUFFIX, _AUTOTAG_INPUT_MEME],
@@ -165,8 +191,8 @@ user_config = UserConfig(
             ),
             Conversion(
                 description=(
-                    "Merge bare 'adult_meme' tag (legacy, no prefix) into the "
-                    "canonical input tag. MOVE mode removes the old tag after copying."
+                    "Merge the bare 'adult_meme' tag (legacy, no prefix) into the "
+                    "canonical input album. MOVE mode removes the old tag after copying."
                 ),
                 source=ClassificationRule(
                     tag_names=[_ADULT_MEME_SUFFIX, _AUTOTAG_INPUT_ADULT_MEME],
@@ -196,16 +222,19 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     classification=ClassificationConfig(
         description=(
-            "Rules that define asset categories. Assets not matching any rule "
-            "are tagged as unknown; assets matching multiple rules are tagged as "
-            "conflict — both are easy to find and review in Immich."
+            "Defines what 'classified' means for your library. "
+            "Each rule describes one category (matched by tag name, album name, or regex pattern). "
+            "Assets matching exactly one rule are considered classified. "
+            "Assets matching none are tagged autotag_output_unknown. "
+            "Assets matching more than one are tagged autotag_output_conflict. "
+            "Both states are easy to find and fix in the Immich UI."
         ),
         rules=[
             # --- Memes / jokes (not events, should not end up in date albums) ---
             ClassificationRule(
                 tag_names=[
-                    _MEME_SUFFIX,  # legacy bare tag — kept for compatibility
-                    _AUTOTAG_INPUT_MEME,  # canonical input tag
+                    _MEME_SUFFIX,           # legacy bare tag — kept for compatibility
+                    _AUTOTAG_INPUT_MEME,    # canonical input tag
                 ],
                 album_name_patterns=[
                     rf"^{_AUTOTAG_INPUT_MEME}$",
@@ -215,7 +244,7 @@ user_config = UserConfig(
             # --- Adult / NSFW content (kept separate from family environment) ---
             ClassificationRule(
                 tag_names=[
-                    _ADULT_MEME_SUFFIX,  # legacy bare tag — kept for compatibility
+                    _ADULT_MEME_SUFFIX,         # legacy bare tag — kept for compatibility
                     _AUTOTAG_INPUT_ADULT_MEME,  # canonical input tag
                 ],
                 album_name_patterns=[
@@ -266,8 +295,10 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     duplicate_processing=DuplicateProcessingConfig(
         description=(
-            "Propagate albums, tags, and dates between assets that Immich has "
-            "identified as duplicates, and flag any inconsistencies."
+            "Synchronises albums, tags, and dates between assets that Immich has "
+            "identified as duplicates. Any inconsistency between duplicates — "
+            "different albums, different classification, or different capture dates — "
+            "is flagged with a dedicated output tag so you can review and resolve it."
         ),
         # Tag for duplicates where the two copies belong to different albums
         autotag_album_conflict=_AUTOTAG_OUTPUT_DUPLICATE_ASSET_ALBUM_CONFLICT,
@@ -278,6 +309,13 @@ user_config = UserConfig(
         # Tag for assets where multiple candidate folders were found during album detection
         autotag_album_detection_conflict=_AUTOTAG_OUTPUT_ALBUM_DETECTION_CONFLICT,
         date_correction=DateCorrectionConfig(
+            description=(
+                "Attempts to recover a more accurate capture date for each asset by "
+                "extracting a date from the filename (e.g. WhatsApp or Android naming "
+                "conventions) or inheriting it from a confirmed duplicate. "
+                "extraction_timezone is applied when the extracted date string contains "
+                "no timezone information."
+            ),
             # Attempt to correct the asset date using the filename or folder name
             enabled=True,
             # Timezone assumed when a date string contains no timezone info
@@ -296,8 +334,11 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     album_date_consistency=AlbumDateConsistencyConfig(
         description=(
-            "Check that assets in date-named albums are temporally close to the "
-            "album's date; flag outliers with an output tag for review."
+            "Checks that every asset in a date-named album (e.g. '2024-07-15 Beach trip') "
+            "was actually taken within threshold_days of the album's date. "
+            "Outliers are tagged autotag_output_album_date_mismatch for review. "
+            "Recommended workflow: start at 180 days and tighten progressively "
+            "(180 → 90 → 60 → 30 → 7) as you fix each batch of mismatches."
         ),
         enabled=True,
         autotag_album_date_mismatch=_AUTOTAG_OUTPUT_ALBUM_DATE_MISMATCH,
@@ -315,8 +356,10 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     album_detection_from_folders=AlbumDetectionFromFoldersConfig(
         description=(
-            "Assign or create albums based on the folder path of each asset "
-            "in the library. Excluded paths are skipped."
+            "Scans each asset's file path for a date-containing folder and assigns "
+            "(or creates) a matching album. Useful when files are already organised "
+            "into event folders on disk. Paths matching any pattern in excluded_paths "
+            "are ignored (e.g. WhatsApp media dumps that should not become albums)."
         ),
         enabled=False,
         excluded_paths=[r"whatsapp"],  # Add more patterns as needed
@@ -341,14 +384,16 @@ user_config = UserConfig(
     # -------------------------------------------------------------------------
     album_permissions=AlbumPermissionsConfig(
         description=(
-            "Share albums with groups of users automatically based on keywords "
-            "in the album name, instead of managing permissions one by one."
+            "Automatically shares albums with groups of users based on keywords in "
+            "the album name, instead of managing permissions one by one in the Immich UI. "
+            "On each run the rules are enforced: users in a group gain access to matching "
+            "albums; users removed from a group lose access."
         ),
         enabled=True,
         user_groups=[
             UserGroup(
                 name=_FAMILY,
-                description="Family members who should see family albums",
+                description="Family members who should see albums containing 'family' in the name.",
                 members=[
                     "grandpa@example.com",
                     "grandma@example.com",
@@ -357,7 +402,7 @@ user_config = UserConfig(
             ),
             UserGroup(
                 name=_FRIENDS,
-                description="Close friends who should see friends albums",
+                description="Close friends who should see albums containing 'friends' in the name.",
                 members=[
                     "john@example.com",
                     "jane@example.com",
@@ -366,12 +411,20 @@ user_config = UserConfig(
         ],
         selection_rules=[
             AlbumSelectionRule(
+                description=(
+                    "Share any album whose name contains the word 'family' "
+                    "with all members of the family group."
+                ),
                 name="Share albums with 'family' in the name",
                 keyword=_FAMILY,
                 groups=[_FAMILY],
                 access="view",
             ),
             AlbumSelectionRule(
+                description=(
+                    "Share any album whose name contains the word 'friends' "
+                    "with all members of the friends group."
+                ),
                 name="Share albums with 'friends' in the name",
                 keyword=_FRIENDS,
                 groups=[_FRIENDS],
@@ -387,8 +440,17 @@ user_config = UserConfig(
     # enable_type_checking=False disables @typechecked decorators, which gives
     # roughly a 50 % speed improvement in production.
     # Keep it True during development to catch type errors early.
+    # fail_fast_on_asset_errors=True stops on the first asset error instead of
+    # logging and continuing — useful when debugging a specific problem.
     # -------------------------------------------------------------------------
     performance=PerformanceConfig(
+        description=(
+            "Runtime performance and error-handling settings. "
+            "Disable enable_type_checking in production for a ~50 % speed gain; "
+            "keep it True during development to catch type errors early. "
+            "Set fail_fast_on_asset_errors=True to stop on the first asset error "
+            "instead of logging it and continuing to the next asset."
+        ),
         enable_type_checking=True,
     ),
 )
