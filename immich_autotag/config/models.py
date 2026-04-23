@@ -24,6 +24,10 @@ class ServerConfig(BaseModel):
     """
 
     model_config = {"extra": "forbid"}
+    description: Optional[str] = Field(
+        default=None,
+        description="Optional description for the server configuration block.",
+    )
     host: str = Field(
         ..., description="Immich server host (e.g., 'localhost' or IP address)"
     )
@@ -63,6 +67,10 @@ class FilterConfig(BaseModel):
     """
 
     model_config = {"extra": "forbid"}
+    description: Optional[str] = Field(
+        default=None,
+        description="Optional description for the filter configuration block.",
+    )
     filter_in: List[ClassificationRule] = Field(
         default_factory=list,
         description="Positive filter: only items matching these rules will be processed.",
@@ -167,6 +175,10 @@ class DateCorrectionConfig(BaseModel):
     """
 
     model_config = {"extra": "forbid"}
+    description: Optional[str] = Field(
+        default=None,
+        description="Optional description for the date correction configuration block.",
+    )
     enabled: bool = Field(..., description="Enable date correction for assets.")
     extraction_timezone: str = Field(
         ..., description="Timezone to use for adjusting extracted dates."
@@ -292,6 +304,10 @@ class AlbumSelectionRule(BaseModel):
     """
 
     model_config = {"extra": "forbid"}
+    description: Optional[str] = Field(
+        default=None,
+        description="Optional description for this album selection rule.",
+    )
     name: str = Field(..., description="Rule name (e.g., 'Share with Family').")
     keyword: str = Field(
         ...,
@@ -341,6 +357,10 @@ class SkipConfig(BaseModel):
     """
 
     model_config = {"extra": "forbid"}
+    description: Optional[str] = Field(
+        default=None,
+        description="Optional description for the skip/resume configuration block.",
+    )
     skip_n: int = Field(
         default=0, description="Number of items to skip when processing."
     )
