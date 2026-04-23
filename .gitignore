@@ -28,3 +28,4 @@ immich-autotag.local.code-workspace
 .pytest_cache/
 *.pyc
 .coverage.claude/settings.local.json
+.claude.local.md
