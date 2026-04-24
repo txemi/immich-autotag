@@ -69,5 +69,7 @@ class ConversionWrapper:
             if self.conversion.mode == ConversionMode.MOVE and match_result is not None:
                 # Note: remove_matches still returns list[str], but that's being updated separately
                 # For now, we just skip those entries since they're info messages
-                self.get_source_wrapper().remove_matches(asset_wrapper, match_result)
+                self.get_source_wrapper().remove_matches(
+                    asset_wrapper, match_result, remove_source_albums=False
+                )
         return changes

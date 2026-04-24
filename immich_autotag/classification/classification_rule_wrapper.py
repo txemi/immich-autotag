@@ -161,7 +161,11 @@ class ClassificationRuleWrapper:
 
     @typechecked
     def remove_matches(
-        self, asset_wrapper: "AssetResponseWrapper", match_result: "MatchResult"
+        self,
+        asset_wrapper: "AssetResponseWrapper",
+        match_result: "MatchResult",
+        *,
+        remove_source_albums: bool = True,
     ) -> list[str]:
         """
         Removes all tags and albums from the asset that matched this rule (based on the MatchResult).
@@ -174,19 +178,22 @@ class ClassificationRuleWrapper:
                 asset_wrapper.remove_tag_by_name(tag_name=tag)
                 changes.append(f"Removed matched tag '{tag}'")
         # Remove matched albums
-        from immich_autotag.albums.albums.album_collection_wrapper import (
-            AlbumCollectionWrapper,
-        )
-
-        for album_name in match_result.albums_matched():
-            album_wrapper = (
-                AlbumCollectionWrapper.get_instance().find_first_album_with_name(
-                    album_name
-                )
+        if remove_source_albums:
+            from immich_autotag.albums.albums.album_collection_wrapper import (
+                AlbumCollectionWrapper,
             )
-            if album_wrapper and album_wrapper.has_asset_wrapper(asset_wrapper):
-                album_wrapper.remove_asset_for_conversion(asset_wrapper=asset_wrapper)
-                changes.append(f"Removed asset from matched album '{album_name}'")
+
+            for album_name in match_result.albums_matched():
+                album_wrapper = (
+                    AlbumCollectionWrapper.get_instance().find_first_album_with_name(
+                        album_name
+                    )
+                )
+                if album_wrapper and album_wrapper.has_asset_wrapper(asset_wrapper):
+                    album_wrapper.remove_asset_for_conversion(
+                        asset_wrapper=asset_wrapper
+                    )
+                    changes.append(f"Removed asset from matched album '{album_name}'")
         return changes
 
     # You can add more utility methods as needed
