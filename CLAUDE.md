@@ -88,6 +88,14 @@ All Pydantic config models live in `immich_autotag/config/models.py`. Every mode
 - `docs-track` — documentation-only changes (no code); permanent, do not delete.
 - Feature branches use prefixes: `feature/`, `fix/`, `refactor/`, `perf/`, `improvement/`.
 
+## Issue tracking (`docs/issues/`)
+
+Working documentation for features, bugs, and design decisions lives under `docs/issues/`.
+
+- **Registry**: `docs/issues/registry.md` — all active issues with status and links.
+- **Per-issue**: each folder has a `README.md` (index of what exists) and optionally an `ai-context.md` with current state and key decisions. **Read `ai-context.md` before starting work on a feature area** — it contains architectural decisions and current state that are not derivable from the code alone. Check the `Last verified:` date to gauge staleness.
+- **Conventions**: `docs/issues/CONVENTIONS.md`.
+
 ## Project-level skills (`.claude/commands/`)
 
 Project-specific slash commands can be added as Markdown files under `.claude/commands/`. They are available as `/command-name` in Claude Code and are committed to the repo so all contributors share them.
