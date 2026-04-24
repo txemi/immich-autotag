@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(git tag*)",
+      "Bash(ls*)",
+      "Bash(find*)",
+      "Bash(grep*)",
+      "Bash(python -c*)",
+      "Bash(python3 -c*)",
+      "Bash(python -m immich_autotag.config*)",
+      "Bash(bash scripts/devtools/quality_gate_py/venv_launcher.sh*)",
+      "Bash(curl -s -u*)"
+    ],
+    "deny": []
+  }
+}
