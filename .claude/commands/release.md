@@ -2,7 +2,7 @@ Execute a release for immich-autotag.
 
 ## Steps
 
-1. If the user provided a version number as argument, use it. Otherwise ask: "¿Qué versión quieres publicar? (actual: `cat pyproject.toml | grep ^version`)"
+1. If the user provided a version number as argument, use it. Otherwise ask: "Which version do you want to publish? (current: `cat pyproject.toml | grep ^version`)"
 
 2. Check preconditions:
    - Run `git status` — abort if there are uncommitted changes.
