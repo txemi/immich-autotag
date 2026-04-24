@@ -394,6 +394,7 @@ class AlbumResponseWrapper:
         from immich_autotag.albums.albums.album_collection_wrapper import (
             AlbumCollectionWrapper,
         )
+
         AlbumCollectionWrapper.get_instance().remove_asset_from_album_in_map(
             asset=asset_wrapper, album=self
         )
