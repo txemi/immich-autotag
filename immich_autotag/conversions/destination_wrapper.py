@@ -65,7 +65,7 @@ class DestinationWrapper:
                         pass
                 except Exception:
                     # Exceptions are already recorded as ModificationEntry objects in add_asset()
-                    pass
+                    raise
         return changes
 
     def __attrs_post_init__(self):

@@ -173,11 +173,13 @@ class ClassificationRuleWrapper:
             if asset_wrapper.has_tag(tag_name=tag):
                 asset_wrapper.remove_tag_by_name(tag_name=tag)
                 changes.append(f"Removed matched tag '{tag}'")
-        # Remove matched albums (if logic exists for it)
-        # for album in match_result.albums_matched():
-        #     if album in asset_wrapper.get_album_names():
-        #         ... # logic to remove asset from album
-        #         changes.append(f"Removed asset from matched album '{album}'")
+        # Remove matched albums
+        from immich_autotag.albums.albums.album_collection_wrapper import AlbumCollectionWrapper
+        for album_name in match_result.albums_matched():
+            album_wrapper = AlbumCollectionWrapper.get_instance().find_first_album_with_name(album_name)
+            if album_wrapper and album_wrapper.has_asset_wrapper(asset_wrapper):
+                album_wrapper.remove_asset_for_conversion(asset_wrapper=asset_wrapper)
+                changes.append(f"Removed asset from matched album '{album_name}'")
         return changes
 
     # You can add more utility methods as needed
