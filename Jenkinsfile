@@ -5,12 +5,16 @@ def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
 def tagBuild(String type) {
     def tagName = "jenkins-${type}-${env.BUILD_NUMBER ?: 'manual'}-${env.GIT_COMMIT ?: 'manual'}"
     echo "🏷️ Creando tag GitHub (${type}): ${tagName}"
-    sh "git config user.name 'jenkins'"
-    sh "git config user.email 'jenkins@localhost'"
-    sh "git tag ${tagName}"
-    sh 'mkdir -p $HOME/.ssh && (ssh-keygen -F github.com > /dev/null 2>&1 || ssh-keyscan github.com >> $HOME/.ssh/known_hosts)'
-    sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
-    sh "git push origin ${tagName}"
+    try {
+        sh "git config user.name 'jenkins'"
+        sh "git config user.email 'jenkins@localhost'"
+        sh "git tag ${tagName}"
+        sh 'cp /root/.ssh/known_hosts /tmp/known_hosts 2>/dev/null || true; ssh-keygen -F github.com -f /tmp/known_hosts > /dev/null 2>&1 || ssh-keyscan github.com >> /tmp/known_hosts'
+        sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
+        sh "GIT_SSH_COMMAND='ssh -o UserKnownHostsFile=/tmp/known_hosts' git push origin ${tagName}"
+    } catch (e) {
+        echo "⚠️ GitHub tagging failed (non-fatal): ${e.message}"
+    }
 }
 pipeline {
     options {
