@@ -289,6 +289,8 @@ class PerformanceTracker:
             msg += f"{abs_count}"
         else:
             msg += f"{count}/{abs_count}(abs_count)"
+            if skip_n and total_to_process:
+                msg += f"/{skip_n + total_to_process}(abs_end)"
 
         # Show only abs_total if it is equal to total_to_process and exists
         if abs_total and total_to_process and abs_total == total_to_process:
