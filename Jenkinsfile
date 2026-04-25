@@ -9,9 +9,14 @@ def tagBuild(String type) {
         sh "git config user.name 'jenkins'"
         sh "git config user.email 'jenkins@localhost'"
         sh "git tag ${tagName}"
-        sh 'cp /root/.ssh/known_hosts /tmp/known_hosts 2>/dev/null || true; ssh-keygen -F github.com -f /tmp/known_hosts > /dev/null 2>&1 || ssh-keyscan github.com >> /tmp/known_hosts'
-        sh "git remote set-url origin git@github.com:txemi/immich-autotag.git"
-        sh "GIT_SSH_COMMAND='ssh -o UserKnownHostsFile=/tmp/known_hosts' git push origin ${tagName}"
+        withCredentials([usernamePassword(
+            credentialsId: 'app_github_para_ubuntu20jenkins.ad3.lab',
+            usernameVariable: 'GH_USER',
+            passwordVariable: 'GH_TOKEN'
+        )]) {
+            sh "git remote set-url origin https://\${GH_USER}:\${GH_TOKEN}@github.com/txemi/immich-autotag.git"
+            sh "git push origin ${tagName}"
+        }
     } catch (e) {
         echo "⚠️ GitHub tagging failed (non-fatal): ${e.message}"
     }
