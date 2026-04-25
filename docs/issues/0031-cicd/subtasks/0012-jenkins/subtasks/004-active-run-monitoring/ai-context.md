@@ -13,6 +13,11 @@ Each run should:
 The goal is to advance through the full asset library in increments of 30 000 until
 all assets have been processed at least once.
 
+**Why short runs instead of one long run:** the album map is loaded once at startup and
+becomes stale over time. Multi-day runs end up operating on outdated data and produce
+incorrect results. Short runs (a few hours each) reload a fresh map every time, are
+easier to diagnose, and chain correctly via the checkpoint system.
+
 ## How to verify a run is healthy
 
 From the console log, look for:
