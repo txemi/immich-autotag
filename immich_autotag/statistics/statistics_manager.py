@@ -160,11 +160,23 @@ class StatisticsManager:
                 event_kind, extra_key=extra_key
             )
 
+    def _to_session_count(self, abs_count: int) -> int:
+        """Convert absolute count (skip_n + session_count) to session-relative count.
+
+        run_stats.count accumulates across sessions so the checkpoint can resume
+        from the right position. The PerformanceTracker, however, works relative
+        to the start of the current session (0..max_assets), so we subtract skip_n
+        before handing the value over.
+        """
+        skip_n = self.get_or_create_run_stats().skip_n or 0
+        return max(0, abs_count - skip_n)
+
     @typechecked
     def get_progress_description(self) -> str:
-        count = self.get_or_create_run_stats().count
-
-        return self._get_or_create_perf_tracker().get_progress_description(count)
+        abs_count = self.get_or_create_run_stats().count
+        return self._get_or_create_perf_tracker().get_progress_description(
+            self._to_session_count(abs_count)
+        )
 
     @typechecked
     def set_total_assets(self, total_assets: int) -> None:
@@ -174,7 +186,7 @@ class StatisticsManager:
             self._get_or_create_perf_tracker()
 
     def maybe_print_progress(self, count: int) -> None:
-        self._get_or_create_perf_tracker().update(count)
+        self._get_or_create_perf_tracker().update(self._to_session_count(count))
 
     @typechecked
     def print_progress(self, count: int) -> None:
@@ -183,7 +195,9 @@ class StatisticsManager:
                 "PerformanceTracker not initialized: totals missing. "
                 "Call set_total_assets or set_max_assets before processing."
             )
-        self._get_or_create_perf_tracker().print_progress(count=count)
+        self._get_or_create_perf_tracker().print_progress(
+            count=self._to_session_count(count)
+        )
 
     @staticmethod
     def get_instance() -> "StatisticsManager":
