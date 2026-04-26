@@ -2,9 +2,6 @@
 
 **Last verified:** 2026-04-26
 
-**Working session:** `738e7fd0-e55e-4078-afe5-4ec7446cc7b3`
-(resume with `claude --resume 738e7fd0-e55e-4078-afe5-4ec7446cc7b3` on the same machine)
-
 ---
 
 ## Context and overall strategy
@@ -102,6 +99,8 @@ From the console log, look for:
   stopping at 48700 out of 403746 total"
 - Final line: `Total assets processed: 30000`
 - No new temp-unclassified albums created for assets that were already classified
+  (**observation mode** — sequential runs will determine if this was a parallelism issue
+  or a code bug; see [linked incident](../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md))
 
 ---
 

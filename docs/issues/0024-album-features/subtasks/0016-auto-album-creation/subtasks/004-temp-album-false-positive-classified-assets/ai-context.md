@@ -6,7 +6,24 @@ Last verified: 2026-04-26
 
 ## Current state
 
-Root cause identified with precision. **Fix implemented, pending review.** Branch `fix/conversion-album-move`.
+Root cause identified. **Fix exists locally but has NOT been pushed.** Observation mode active.
+
+### Why the fix is on hold
+
+The anomalous temp albums were observed while two Jenkins builds were running in parallel.
+Parallel execution is a plausible alternative explanation for the same symptoms:
+- Two builds with independent album-map snapshots can disagree on asset state
+- One build removes a tag; the other still sees the asset as unclassified and creates a temp album
+
+From 2026-04-26, only one sequential build runs at a time. The next few runs will determine
+whether temp albums for already-classified assets still appear without the code fix.
+
+**Decision rule:**
+- If anomalous temp albums reappear in sequential runs → the code fix is needed, push it
+- If they do not reappear → parallel execution was the cause; close this issue without a code change
+
+The local fix (in `conversion_wrapper.py` and `destination_wrapper.py`) should not be pushed
+until this observation period confirms it is necessary.
 
 ---
 
