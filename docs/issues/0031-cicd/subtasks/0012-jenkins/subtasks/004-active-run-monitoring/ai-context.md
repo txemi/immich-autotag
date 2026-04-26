@@ -149,3 +149,38 @@ See `immich_autotag/statistics/checkpoint_manager.py` and
 | `Total assets processed: N` where N < 30 000 | Run aborted or timed out | Abort reason in log |
 | Temp album created for a classified meme asset | Bug in `conversion_wrapper.py` not yet deployed, or data remediation needed | See incident link above |
 | Two builds show same `Skip:N` | Parallel execution or stale checkpoint | Confirm sequential-only mode is active |
+
+---
+
+## Diagnostic procedure for a single suspect asset
+
+When a user reports a specific asset that looks misclassified or stuck in the wrong
+album (e.g. has the meme tag but is in a temp-unclassified album), follow this:
+
+1. **Search Jenkins logs for the asset ID and the album name**
+   - Loop the recent builds (`curl .../consoleText | grep <asset-id>` and the album
+     name) — the album ID alone usually does NOT appear, because albums are logged
+     by name.
+   - **No matches** → the asset has not been processed in any retained run yet. It
+     is legacy state. Wait for the next slice that covers it. Stop here.
+   - **Matches** → continue.
+
+2. **Query Immich API directly for the current state**
+   - Credentials live in `~/.config/immich_autotag/config.py` (`server.host`,
+     `server.port`, `server.api_key`).
+   - Tags: `GET /api/assets/{id}` → field `tags`
+   - Albums: `GET /api/albums?assetId={id}`
+   - Header: `x-api-key: <key>`
+
+3. **Cross-check with the classification rules** (in the same config)
+   - Rule matching is **OR** between `tag_names`, `album_name_patterns`, `asset_links`.
+     A single matching tag is enough.
+   - See linked incident for full semantics:
+     [`004-temp-album-false-positive-classified-assets/ai-context.md`](../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
+
+4. **Conclude**
+   - The asset *should* match a rule but doesn't → real bug, gather log evidence
+   - The asset matches but log shows it stayed in temp → real bug, gather log evidence
+   - The asset is legacy state and hasn't been touched yet → wait
+   - The asset has stale `autotag_output_*` tags from past runs → expected legacy,
+     will clean up on next traversal

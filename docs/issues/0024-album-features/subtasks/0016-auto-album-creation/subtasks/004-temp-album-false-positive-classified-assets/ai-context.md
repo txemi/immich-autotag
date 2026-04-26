@@ -27,6 +27,52 @@ until this observation period confirms it is necessary.
 
 ---
 
+## ClassificationRule matching semantics — important
+
+Reading the user config it is not obvious how the criteria of a `ClassificationRule`
+combine. Confirmed in `immich_autotag/classification/classification_rule_wrapper.py`
+inside `matches_asset()`:
+
+```python
+if not tags_matched and not albums_matched and not asset_links_matched:
+    return None  # No match
+return MatchResult(...)  # Match
+```
+
+The combination is **OR**: a rule matches if ANY of `tag_names`, `album_name_patterns`
+or `asset_links` produces a hit on the asset. So an asset that has the meme tag but
+is NOT in the meme album still matches the meme classification rule.
+
+This means: **any asset carrying `autotag_input_meme` is, by definition, classifiable
+as a meme** regardless of which album it is in. If such an asset is found stuck in a
+temp-unclassified album, the next time it is processed it should match → CLASSIFIED →
+removed from the temp album.
+
+---
+
+## Real diagnosed case (legacy state, not a current bug)
+
+On 2026-04-26 a user-reported asset was investigated:
+- **Tags**: `autotag_input_meme` + `autotag_output_unknown`
+- **Albums**: only `YYYY-MM-DD-autotag-temp-unclassified` (matches the bug pattern)
+- **Recent build logs**: the asset does NOT appear in any recent sequential build
+
+**Interpretation:** the `autotag_output_unknown` tag was written by the tool in some
+past run when the asset was classified as `UNCLASSIFIED` — most likely during the
+parallel-execution period where two builds had divergent views of the asset state.
+The `autotag_input_meme` tag is still present, so when a sequential run finally
+reaches this asset:
+- The meme rule will match (OR semantics, by tag)
+- Status = CLASSIFIED → handler removes it from the temp album
+- The stale `autotag_output_unknown` should be cleaned up by maintenance
+
+**This is a legacy state, not evidence of a current bug.** The presence of stuck
+assets is expected until the full library is re-traversed sequentially. Only if such
+an asset still appears stuck AFTER being touched by a sequential run does it count
+as a current-bug signal.
+
+---
+
 ## Incident observation
 
 On 2026-04-25, an Immich album `2016-10-20-autotag-temp-unclassified` was observed in the UI containing meme-content assets from October 2016. These assets should never be placed in a temp album.
