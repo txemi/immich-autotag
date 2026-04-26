@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Current Focus (2026-04-26)
+
+Active work is on branch `fix/conversion-album-move`. Two things are in progress simultaneously:
+
+1. **Batch processing run** — Jenkins is executing sequential 30 000-asset batches to
+   process the full library. Each run resumes via checkpoint.
+   → Read before touching CI or the stats/perf code:
+   [`docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md`](docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md)
+
+2. **Bug — temp-unclassified albums for already-classified assets** — fix implemented,
+   pending review. Assets that underwent a MOVE conversion lost their classification
+   signal and were incorrectly placed in temp albums.
+   → Read before touching conversion, classification, or temp-album logic:
+   [`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
+
+---
+
 ## What this project is
 
 Immich AutoTag is a rule engine that applies batch changes to [Immich](https://immich.app) photo/video libraries: creates and assigns albums, generates and assigns tags, fixes asset dates, and manages album permissions — all driven by a user-defined configuration file.

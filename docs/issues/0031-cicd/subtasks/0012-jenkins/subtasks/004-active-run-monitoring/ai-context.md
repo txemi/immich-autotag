@@ -2,6 +2,9 @@
 
 **Last verified:** 2026-04-26
 
+**Working session:** `738e7fd0-e55e-4078-afe5-4ec7446cc7b3`
+(resume with `claude --resume 738e7fd0-e55e-4078-afe5-4ec7446cc7b3` on the same machine)
+
 ---
 
 ## Context and overall strategy
