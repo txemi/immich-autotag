@@ -1,82 +1,149 @@
 # Active Run Monitoring — ai-context
 
-**Last verified:** 2026-04-25
+**Last verified:** 2026-04-26
+
+---
+
+## Context and overall strategy
+
+The goal is to process the full Immich asset library (~400 000 assets) using a sequence
+of short CI runs, each processing a fixed-size batch of 30 000 assets. Each run resumes
+where the previous one left off via the checkpoint system.
+
+**Why short runs instead of one long run:**
+- The album map is loaded once at startup and becomes stale over time — multi-day or
+  multi-hour runs end up operating on outdated data and produce incorrect results.
+- Short runs (a few hours each) reload a fresh map every time.
+- Shorter runs are much easier to diagnose: a failure or anomaly is contained to a
+  smaller window and reproducible sooner.
+- The checkpoint system handles continuity: each run saves its final position and the
+  next one picks up from there (with a 100-asset overlap as safety margin).
+
+**The manual workflow running in parallel (the user's side):**
+Between CI runs, the user manually reviews the temporary "unclassified" albums that
+the tool creates for assets it could not classify. The workflow is:
+
+1. Filter temp albums (`*-autotag-temp-unclassified`) sorted by number of photos
+2. Review those with more than 8 photos — decide whether to promote to a permanent
+   album or move assets to the `autotag_input_meme` album (for meme content)
+3. To avoid accidents, a new permanent album is created rather than reusing the temp one
+4. The temp album is then deleted
+5. Albums with 8 or fewer photos are left for now — they are too small to justify manual
+   classification effort at this stage
+
+**Signal that something is wrong:** if an album with more than 8 photos appears containing
+assets that were already classified (e.g. already in a meme album, or already tagged with
+`autotag_output_*`), that is a bug symptom, not expected behaviour. See the linked
+incident below.
+
+---
+
+## Active incident being monitored
+
+**Temp-unclassified albums incorrectly created for already-classified assets**
+
+→ See full diagnosis and fix:
+[`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
+
+**Summary:** assets that had `autotag_input_meme` removed by a MOVE conversion were not
+being added to the destination album when that album did not yet exist at processing time.
+The tag was removed unconditionally even though the album assignment was silently skipped.
+This left assets with no classification signal → they were placed in temp-unclassified
+albums on subsequent runs.
+
+**Status as of 2026-04-26:** fix implemented in `conversion_wrapper.py` and
+`destination_wrapper.py`, pending review. The anomalous temp albums already created
+require manual data remediation (re-tag assets or move them to the correct album).
+
+---
+
+## Why parallel execution was stopped (2026-04-26)
+
+For a period, two CI agents were running builds concurrently on this branch. This caused:
+
+- **Album map staleness**: both agents loaded their map at start and then operated on
+  independent snapshots. Actions by one build were invisible to the other.
+- **Checkpoint conflicts**: both builds wrote their `run_stats.yaml` independently;
+  the next run could pick up the checkpoint from either, leading to gaps or double
+  processing.
+- **Duplicate temp albums**: both builds could create the same temp album name
+  concurrently, producing the duplicate-name conflicts visible in early build logs.
+- **Unclear root cause**: with two parallel runs it was impossible to tell whether
+  anomalous behaviour (e.g. temp albums for already-classified assets) came from a
+  software bug or from the parallel execution interference.
+
+**Resolution:** the second CI agent node was taken offline. From 2026-04-26 onwards,
+only one build runs at a time. This makes runs deterministic and fully reproducible.
+
+---
 
 ## What we are tracking
 
-Branch `fix/conversion-album-move` is being executed repeatedly by Jenkins.
+Branch `fix/conversion-album-move` is being executed sequentially by Jenkins.
 Each run should:
 - Process exactly `max_assets = 30 000` assets
 - Resume from the checkpoint left by the previous run (`resume_previous = true`, overlap = 100)
-- Push a `jenkins-success-<N>-<sha>` git tag to GitHub on success
+- Push a `jenkins-success-<N>-<sha>` git tag to GitHub on success (pending GitHub App
+  permission fix — currently the app only has read access)
 
-The goal is to advance through the full asset library in increments of 30 000 until
-all assets have been processed at least once.
-
-**Why short runs instead of one long run:** the album map is loaded once at startup and
-becomes stale over time. Multi-day runs end up operating on outdated data and produce
-incorrect results. Short runs (a few hours each) reload a fresh map every time, are
-easier to diagnose, and chain correctly via the checkpoint system.
+---
 
 ## How to verify a run is healthy
 
 From the console log, look for:
 - `[PERF]` lines: `Processed:<session_count>/...` — session_count should grow from ~0 to ~30 000
-- `Skip:<N>` — N should match the `count` from the previous run minus the overlap (100)
-- `Remaining:` — should be positive and decreasing (negative = bug, see fix below)
+- `Skip:<N>` — N should match the `count` from the previous run minus the overlap (~100)
+- `Remaining:` — should be positive and decreasing (negative = bug, see fixes below)
+- `abs_end` in PERF (builds from commit `4247e1e6` onwards) — shows the absolute
+  endpoint of this slice, e.g. `37775(abs_count)/48700(abs_end)` meaning "at 37775,
+  stopping at 48700 out of 403746 total"
 - Final line: `Total assets processed: 30000`
-- A `jenkins-success-*` tag pushed to the GitHub repo
+- No new temp-unclassified albums created for assets that were already classified
 
-## Fixes applied in this session (2026-04-25)
+---
 
-### fix(perf): negative remaining time with skip_n
+## Fixes applied in this session (2026-04-25 / 2026-04-26)
+
+### fix(perf): negative remaining time with skip_n — `95daca3f`
 - **File:** `immich_autotag/statistics/statistics_manager.py`
-- **Commit:** `95daca3f`
 - **Root cause:** `run_stats.count` stores `skip_n + session_count` (correct for
   checkpoint resume), but `PerformanceTracker` expected only `session_count`.
-  This caused `remaining = total_to_process - abs_count < 0` on every resumed run.
-- **Fix:** `_to_session_count()` helper subtracts `skip_n` before handing the value
-  to the tracker. All three call sites (`get_progress_description`,
-  `maybe_print_progress`, `print_progress`) use it.
+  Caused `remaining < 0` on every resumed run.
+- **Fix:** `_to_session_count()` helper subtracts `skip_n` before passing to tracker.
 
-### fix(ci): Jenkins GitHub tagging using HTTPS credentials
+### fix(ci): Jenkins GitHub tagging via HTTPS — `66a26278`
 - **File:** `Jenkinsfile`
-- **Commit:** `66a26278`
-- **Root cause:** `tagBuild()` used SSH (`git@github.com`) but the Jenkins agent
-  running this branch does not have a GitHub SSH deploy key configured.
-  Push failed with `Permission denied (publickey)`.
-- **Fix:** replaced SSH block with `withCredentials` using the same HTTPS credential
-  already used for checkout. No server-side changes required.
+- **Root cause:** `tagBuild()` used SSH but the CI agent has no GitHub SSH deploy key.
+- **Fix:** replaced SSH block with `withCredentials` using the HTTPS credential already
+  used for checkout.
+- **Remaining issue:** the GitHub App only has read access → push returns 403.
+  Fix: grant `Contents: Read and write` to the app in GitHub repository settings.
+
+### feat(perf): abs_end in PERF log when processing a slice — `4247e1e6`
+- **File:** `immich_autotag/utils/perf/performance_tracker.py`
+- **Change:** when `skip_n > 0`, PERF line now shows `abs_end = skip_n + total_to_process`
+  so it is immediately visible where the current slice ends in absolute terms.
+
+---
 
 ## Checkpoint mechanics (how resume works)
 
 See `immich_autotag/statistics/checkpoint_manager.py` and
 `immich_autotag/statistics/_find_max_skip_n_recent.py`.
 
-- At the end of each run, `run_stats.count = skip_n + session_count` is saved to YAML.
-- The next run reads all recent YAML files, takes the maximum `count`, subtracts an
-  overlap of 100, and uses the result as `skip_n`.
-- This means runs chain: run 1 ends at ~30 000 → run 2 starts at skip_n ~29 900, etc.
+- At end of each run, `run_stats.count = skip_n + session_count` is saved to YAML.
+- Next run reads recent YAMLs, takes max `count`, subtracts overlap of 100 → new `skip_n`.
+- Chain: run 1 ends at ~30 000 → run 2 starts at skip_n ~29 900 → run 2 ends at ~60 000 → …
 
-## Sequential-only mode (from 2026-04-26)
-
-The second Jenkins node was taken down. Builds now run strictly sequentially — one at a
-time. This eliminates album-map staleness and checkpoint conflicts that caused anomalous
-behaviour when two builds ran in parallel.
-
-**What to watch for in each build:**
-- `Skip:N` should match approximately `previous_run.count - 100` (the overlap)
-- No temp-unclassified albums should be created for assets already tagged as memes —
-  if they appear, it means the fix in `conversion_wrapper.py` is not yet deployed or
-  there is a data remediation case. See
-  `docs/issues/0024-album-features/.../004-temp-album-false-positive-classified-assets/ai-context.md`
-- Albums with >8 photos that appear for already-classified assets are a signal of the bug
+---
 
 ## What to do if a run looks wrong
 
 | Symptom | Likely cause | Where to look |
 |---|---|---|
-| `Remaining:` is negative | Old code without `95daca3f` | Check deployed version |
-| `Skip:0` when it should resume | Checkpoint YAML not found or too old (>3h) | `logs_local/` on the Jenkins agent |
-| Tag not pushed | HTTPS credential missing or renamed | Jenkinsfile `credentialsId` |
-| `Total assets processed: N` where N < 30 000 | Run was aborted or timed out | Check abort reason in log |
+| `Remaining:` is negative | Old code without `95daca3f` | Check deployed commit |
+| `Skip:0` when it should resume | Checkpoint YAML not found or >3h old | `logs_local/` on the CI agent |
+| Tag not pushed (403) | GitHub App missing write permission | GitHub repo → Settings → GitHub Apps |
+| `Total assets processed: N` where N < 30 000 | Run aborted or timed out | Abort reason in log |
+| Temp album created for a classified meme asset | Bug in `conversion_wrapper.py` not yet deployed, or data remediation needed | See incident link above |
+| Two builds show same `Skip:N` | Parallel execution or stale checkpoint | Confirm sequential-only mode is active |
