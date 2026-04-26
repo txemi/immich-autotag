@@ -58,6 +58,20 @@ See `immich_autotag/statistics/checkpoint_manager.py` and
   overlap of 100, and uses the result as `skip_n`.
 - This means runs chain: run 1 ends at ~30 000 → run 2 starts at skip_n ~29 900, etc.
 
+## Sequential-only mode (from 2026-04-26)
+
+The second Jenkins node was taken down. Builds now run strictly sequentially — one at a
+time. This eliminates album-map staleness and checkpoint conflicts that caused anomalous
+behaviour when two builds ran in parallel.
+
+**What to watch for in each build:**
+- `Skip:N` should match approximately `previous_run.count - 100` (the overlap)
+- No temp-unclassified albums should be created for assets already tagged as memes —
+  if they appear, it means the fix in `conversion_wrapper.py` is not yet deployed or
+  there is a data remediation case. See
+  `docs/issues/0024-album-features/.../004-temp-album-false-positive-classified-assets/ai-context.md`
+- Albums with >8 photos that appear for already-classified assets are a signal of the bug
+
 ## What to do if a run looks wrong
 
 | Symptom | Likely cause | Where to look |
