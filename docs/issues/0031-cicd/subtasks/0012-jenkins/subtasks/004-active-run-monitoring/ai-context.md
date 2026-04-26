@@ -2,6 +2,21 @@
 
 **Last verified:** 2026-04-26
 
+## Operational record (private repo)
+
+The running historical table of builds (timestamps, agents, slice ranges, skip_n
+chain, per-asset rates) is maintained in the private config repo, where machine
+names, internal URLs and asset/album IDs can live unredacted:
+
+```
+~/.config/immich_autotag/issues/004-active-run-monitoring/
+  README.md
+  historical-runs.md
+```
+
+This public document focuses on strategy, decisions and reusable procedure.
+The private one holds the data and concrete diagnosed cases.
+
 ---
 
 ## Context and overall strategy
