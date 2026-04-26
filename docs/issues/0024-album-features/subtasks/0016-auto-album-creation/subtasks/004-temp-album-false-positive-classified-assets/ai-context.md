@@ -1,90 +1,155 @@
 # AI Context · 004 · Temp-unclassified albums for already-classified assets
 
-Last verified: 2026-04-25
+Last verified: 2026-04-26
 
 ---
 
 ## Current state
 
-Bug identified live. **Not fixed.** Active on branch `fix/conversion-album-move`.
+Root cause identified with precision. **Fix implemented, pending review.** Branch `fix/conversion-album-move`.
 
 ---
 
 ## Incident observation
 
-On 2026-04-25, an Immich album `2016-10-20-autotag-temp-unclassified` was observed in the UI containing meme-content assets from October 2016. These assets had been classified as memes long ago (had `autotag_input_meme` or `autotag_output_meme` tags) and should never be placed in a temp album.
+On 2026-04-25, an Immich album `2016-10-20-autotag-temp-unclassified` was observed in the UI containing meme-content assets from October 2016. These assets should never be placed in a temp album.
+
+At the time, two Jenkins builds were running simultaneously on `fix/conversion-album-move`:
+
+| Build | Started | Status at discovery |
+|---|---|---|
+| [#4](http://ubuntu20jenkins.ad3.lab:8080/job/immich-autotag/job/fix%252Fconversion-album-move/4/) | 2026-04-24 12:34 | Conversion phase, ~78%, removing `autotag_output_unknown` |
+| [#13](http://ubuntu20jenkins.ad3.lab:8080/job/immich-autotag/job/fix%252Fconversion-album-move/13/) | 2026-04-25 19:54 | Classification phase, ~9.5%, active `autotag_input_meme` removals |
+
+**Both builds were stopped.** On 2026-04-26 the second Jenkins node was taken down to prevent parallel runs and make future runs easier to diagnose.
 
 ---
 
-## Active Jenkins builds at time of discovery
+## Root cause (confirmed from code + log analysis)
 
-Two builds were running simultaneously on `fix/conversion-album-move`:
+### The conversion config (from `user_config_template.py`)
 
-| Build | Started | Progress | Total assets | Role |
-|---|---|---|---|---|
-| [#4](http://ubuntu20jenkins.ad3.lab:8080/job/immich-autotag/job/fix%252Fconversion-album-move/4/) | 2026-04-24 12:34 | ~78% | 403,736 | Full conversion pass, removing `autotag_output_unknown` |
-| [#13](http://ubuntu20jenkins.ad3.lab:8080/job/immich-autotag/job/fix%252Fconversion-album-move/13/) | 2026-04-25 19:54 | ~9.5% | 30,000 (batch) | Filtered batch; actively removing `autotag_input_meme`, many classification conflicts |
-
-**Build #13 is the likely creator** of the bad temp albums. Its logs show:
+```python
+Conversion(
+    source=ClassificationRule(tag_names=["meme", "autotag_input_meme"]),
+    destination=Destination(album_names=["autotag_input_meme"]),
+    mode=ConversionMode.MOVE,
+)
 ```
-[PROGRESS] [REMOVE_TAG_FROM_ASSET] Tag 'autotag_input_meme' removed from asset bc614388...
-[ERROR] [ALBUM ASSIGNMENT] Asset '...' matched 2 classification rules. Classification conflict
+
+This conversion should: find assets with the tag → add to `autotag_input_meme` album → remove tag.
+
+### The classification rule (from `user_config_template.py`)
+
+```python
+ClassificationRule(
+    tag_names=["meme", "autotag_input_meme"],
+    album_name_patterns=["^autotag_input_meme$"],
+)
 ```
-Build #4 was in the conversion phase removing `autotag_output_unknown` and not in classification territory at that moment.
+
+After a successful conversion, the asset is in the album → this rule matches → `CLASSIFIED`. The design is sound.
+
+### Where it breaks: `destination_wrapper.py` + `conversion_wrapper.py`
+
+**In `destination_wrapper.apply_action()`**, when the destination album doesn't exist in the collection:
+
+```python
+album_wrapper = albums_collection.find_first_album_with_name(album_name)
+if album_wrapper:
+    entry = album_wrapper.add_asset(...)
+else:
+    pass  # ← silent skip, no log, no error
+```
+
+**In `conversion_wrapper.apply_to_asset()`**, `remove_matches()` is called unconditionally after `apply_action()`:
+
+```python
+changes = changes.extend(result_action.apply_action(asset_wrapper))  # may silently fail
+if self.conversion.mode == ConversionMode.MOVE and match_result is not None:
+    self.get_source_wrapper().remove_matches(...)  # ← ALWAYS runs, even if apply_action did nothing
+```
+
+### The failure sequence
+
+1. First run on this branch: album `autotag_input_meme` doesn't exist in Immich yet
+2. `apply_action()`: `find_first_album_with_name("autotag_input_meme")` → `None` → silent skip
+3. `remove_matches()`: removes tag `autotag_input_meme` from asset — **unconditionally**
+4. Asset state: no tag, not in album → `ClassificationStatus.UNCLASSIFIED`
+5. `create_album_if_missing_classification()` → creates `2016-10-20-autotag-temp-unclassified`
+
+The album `autotag_input_meme` was created later (when processing other assets or runs), but the 2016 batch assets had already lost their classification signal and were trapped in temp albums.
+
+### Build #13 startup log confirms prior damage
+
+Build #13's startup showed **dozens of duplicate temp-unclassified albums** from March–April 2017 being deleted at init:
+```
+[WARNING] Album name conflict: '2017-03-30-autotag-temp-unclassified' already exists...
+[PROGRESS] [DELETE_ALBUM] Album '2017-03-30-autotag-temp-unclassified' deleted.
+```
+These duplicates came from multiple parallel runs all creating the same temp albums concurrently — confirming the bug triggered at scale.
 
 ---
 
-## Root cause analysis
+## Fix implemented (pending review)
 
-The pipeline in this branch runs:
-1. `apply_conversions_to_all_assets()` — conversions detect `autotag_input_meme`, move asset to meme album, remove `autotag_input_meme` tag
-2. `process_assets_or_filtered()` — classification phase runs on the same assets
+### Bug 1 — `conversion_wrapper.py`
 
-After step 1, the asset no longer has `autotag_input_meme`. In step 2:
-- `ClassificationRuleSet.matching_rules(asset_wrapper)` checks current tags against rule definitions
-- The meme rule matches on `autotag_input_meme` — now absent → **no match**
-- `ClassificationStatus` → `UNCLASSIFIED`
-- `_handle_unclassified_asset()` → `create_album_if_missing_classification()` → temp album created
+**Before**: `remove_matches()` always runs after `apply_action()`, even when album assignment was skipped.
 
-The safety check in `create_if_missing_classification.py` (line 60) only blocks the flow if a rule matches. It does **not** check whether the asset already has `autotag_output_*` tags or is already in a classified album.
+**After**: source tags are only removed if all destination albums are confirmed to be in the asset's album membership after the action. If any destination album is missing, a WARNING is logged and the source tag is preserved.
 
-### Secondary problem
+Key logic:
+```python
+current_album_names = set(asset_wrapper.get_album_names())
+all_destinations_resolved = all(
+    album_name in current_album_names for album_name in destination_albums
+)
+if all_destinations_resolved:
+    self.get_source_wrapper().remove_matches(...)
+else:
+    log("[CONVERSION] Skipping source removal: destination album not resolved ...", WARNING)
+```
 
-Build #13 also shows frequent `matched 2 classification rules` errors — some assets match both the meme rule and another rule simultaneously. This is a separate classification-conflict issue but may be contributing to inconsistent state.
+This works because `album_response_wrapper.add_asset()` calls `update_asset_to_albums_map_for_asset()` on success, so `get_album_names()` reflects the new state immediately. Assets already in the album (no API call needed) also pass the check correctly.
+
+### Bug 2 — `destination_wrapper.py`
+
+**Before**: silent `pass` when destination album not found.
+
+**After**: ERROR log that makes the problem visible in Jenkins output.
 
 ---
 
 ## Key files
 
-| File | Relevance |
+| File | Role |
 |---|---|
-| `immich_autotag/assets/albums/temporary_manager/create_if_missing_classification.py` | Where the temp album assignment happens; line 60 is the classification status check |
-| `immich_autotag/assets/albums/analyze_and_assign_album/_handle_unclassified_asset.py` | Routes UNCLASSIFIED assets to temp album logic |
-| `immich_autotag/assets/albums/analyze_and_assign_album/_analyze_and_assign_album.py` | Top-level dispatcher by ClassificationStatus |
-| `immich_autotag/classification/classification_rule_wrapper.py` | Rule matching — only checks `tag_names` in rule definition, not output tags |
-| `immich_autotag/assets/asset_response_wrapper.py` | `apply_tag_conversions()` — conversion execution |
+| `immich_autotag/conversions/conversion_wrapper.py` | **Fixed** — conditional `remove_matches()` |
+| `immich_autotag/conversions/destination_wrapper.py` | **Fixed** — ERROR log when album not found |
+| `immich_autotag/assets/albums/temporary_manager/create_if_missing_classification.py` | Downstream victim, not changed |
+| `immich_autotag/assets/albums/analyze_and_assign_album/_handle_unclassified_asset.py` | Downstream victim, not changed |
+| `immich_autotag/config/user_config_template.py` | Shows conversion + classification rule design |
 
 ---
 
-## Proposed fixes (not implemented)
+## Data remediation needed (not yet done)
 
-**Option A — skip if asset has any `autotag_output_*` tag** (recommended for quick fix):
-In `create_album_if_missing_classification`, before the album assignment, check if the asset has any tag starting with `autotag_output_`. If yes, skip temp album creation. These tags are written by autotag and indicate a prior classification pass completed successfully.
+The assets trapped in existing temp albums (e.g. `2016-10-20-autotag-temp-unclassified`) have lost their classification signal:
+- No `autotag_input_meme` tag
+- Not in `autotag_input_meme` album
 
-**Option B — recognise `autotag_output_*` as a classification signal** (more correct long-term):
-In `ClassificationRuleWrapper` or `ClassificationRuleSet`, extend the matching logic so that if an asset has a tag `autotag_output_X` that corresponds to an existing rule, it is treated as `CLASSIFIED`. This would also fix the case where the input tag was lost by accident.
-
-**Option C — prevent conversion from removing the input tag until after classification** (architectural):
-Decouple the conversion phase from the classification phase so that input tags are preserved during the classification step, then cleaned up afterward. Higher risk/effort.
+Options:
+- **Manual**: in Immich UI, add those assets to the `autotag_input_meme` album → next run will classify them correctly and clean the temp album
+- **Run with filter**: run autotag with `filter_in: album_name_patterns=["*-autotag-temp-unclassified"]` after re-tagging
 
 ---
 
-## Next steps (to pick up from here)
+## Next steps
 
-1. Read `create_if_missing_classification.py` (lines 40–63) and `_handle_unclassified_asset.py` to confirm the exact call path
-2. Decide between Option A (fast) or Option B (correct)
-3. Implement + add a test that covers: asset with `autotag_output_meme` and no `autotag_input_meme` must not get a temp album
-4. Confirm Build #13 has finished and check if `2016-10-20-autotag-temp-unclassified` was populated further or cleaned up
-5. Manually delete or reassign any incorrectly created temp-unclassified albums containing meme assets
+1. Review the fix locally (diff in `conversion_wrapper.py` and `destination_wrapper.py`)
+2. Run on a small batch to confirm the WARNING log fires when expected and no temp albums are created
+3. Perform data remediation on the existing temp albums with meme content
+4. Consider adding a test: mock a conversion where destination album doesn't exist → assert source tag is preserved
 
 ---

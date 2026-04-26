@@ -61,8 +61,16 @@ class DestinationWrapper:
                         if entry:
                             changes.append(entry)
                     else:
-                        # Album not found - log but don't create entry since add_asset wasn't called
-                        pass
+                        from immich_autotag.logging.levels import LogLevel
+                        from immich_autotag.logging.utils import log
+
+                        log(
+                            f"[CONVERSION] Destination album '{album_name}' not found in collection. "
+                            f"Asset '{asset_wrapper.get_original_file_name()}' "
+                            f"({asset_wrapper.get_id()}) not added. "
+                            f"If using MOVE mode, source tag will be preserved to avoid data loss.",
+                            level=LogLevel.ERROR,
+                        )
                 except Exception:
                     # Exceptions are already recorded as ModificationEntry objects in add_asset()
                     raise
