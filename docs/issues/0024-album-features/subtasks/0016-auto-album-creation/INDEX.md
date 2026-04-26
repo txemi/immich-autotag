@@ -39,6 +39,22 @@ These design documents represent **initial analysis** of this phase. Implementat
 
 ---
 
+### 🐛 Subtask 004: False-positive temp albums for already-classified assets (BUG — NOT FIXED)
+
+**Status:** Identified, not fixed  
+**Branch:** `fix/conversion-album-move`  
+**Discovered:** 2026-04-25
+
+**Problem:**
+Assets already classified as memes (having `autotag_output_*` tags or whose `autotag_input_meme` tag was removed by a prior conversion) are incorrectly placed into `YYYY-MM-DD-autotag-temp-unclassified` albums.
+
+**Root cause:** After the conversion phase removes `autotag_input_meme`, the classification step sees no matching rule → `UNCLASSIFIED` → temp album created. The check in `create_album_if_missing_classification.py` (line 60) does not consider `autotag_output_*` tags.
+
+**Documentation:**
+- `subtasks/004-temp-album-false-positive-classified-assets/ai-context.md` — full diagnosis, build state, proposed fixes
+
+---
+
 ### 🔄 Subtask 002: Cleanup - Remove Assets from Temporary Albums (IN PROGRESS)
 
 **Status:** Analysis phase (not yet started)  
@@ -88,6 +104,7 @@ Not blocking: Release v0.72-v0.73 (optional enhancement)
 |---------|--------|--------|
 | 001 | Multiple (merged) | ✅ Complete |
 | 002 | `feat/0016-cleanup` (planned) | 🔄 Not started |
+| 004 | `fix/conversion-album-move` | 🐛 Bug identified, not fixed |
 
 ---
 
