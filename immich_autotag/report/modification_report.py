@@ -216,9 +216,11 @@ class ModificationReport:
             )
             return f"[ADD_TAG_TO_ASSET] Tag '{tag_name}' added{asset_info}."
         elif kind == ModificationKind.REMOVE_TAG_FROM_ASSET:
-            asset_info = (
-                f" from asset {asset_wrapper.get_uuid()}" if asset_wrapper else ""
-            )
+            if asset_wrapper:
+                link = asset_wrapper.get_immich_photo_url().geturl()
+                asset_info = f" from asset {asset_wrapper.get_uuid()} (link: {link})"
+            else:
+                asset_info = ""
             return f"[REMOVE_TAG_FROM_ASSET] Tag '{tag_name}' removed{asset_info}."
         else:
             return f"[TAG_MODIFICATION] Tag '{tag_name}' (id={tag_id}): {kind.name}"

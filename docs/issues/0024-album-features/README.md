@@ -23,6 +23,7 @@ This `README` describes **the purpose of this folder** and links only to documen
 	- `subtasks/001-create-temporary-albums/` — `ARCHITECTURE.md`, `README.md`, `REQUIREMENTS.md`, `ai-context.md`
 	- `subtasks/002-cleanup-from-temporary-albums/` — `IMPLEMENTATION_PLAN.md`
 	- `subtasks/003-temporary-album-health-check/` — `README.md`
+	- `subtasks/004-temp-album-false-positive-classified-assets/` — `README.md`, `ai-context.md`
 
 - `subtasks/0019-album-date-consistency-config/`
 	- `ai-context.md`

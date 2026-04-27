@@ -379,6 +379,28 @@ class AlbumResponseWrapper:
         return report_mod_entry
 
     @conditional_typechecked
+    def remove_asset_for_conversion(
+        self,
+        *,
+        asset_wrapper: "AssetResponseWrapper",
+    ) -> ModificationEntry | None:
+        """
+        Removes the asset from this album as part of a MOVE conversion.
+        Unlike remove_asset(), not restricted to temporary or duplicate albums.
+        """
+        report_mod_entry = self._cache_entry.remove_asset(
+            asset_wrapper=asset_wrapper, album=self
+        )
+        from immich_autotag.albums.albums.album_collection_wrapper import (
+            AlbumCollectionWrapper,
+        )
+
+        AlbumCollectionWrapper.get_instance().remove_asset_from_album_in_map(
+            asset=asset_wrapper, album=self
+        )
+        return report_mod_entry
+
+    @conditional_typechecked
     def trim_name_if_needed(
         self,
         *,

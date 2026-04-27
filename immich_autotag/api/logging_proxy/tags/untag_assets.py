@@ -48,10 +48,8 @@ def _logging_untag_assets(
             asset_wrapper=asset_wrapper,
         )
         entries.append(entry)
-    for asset_wrapper in asset_wrappers:
-        asset_url = asset_wrapper.get_immich_photo_url().geturl()
-        logger.info(
-            f"[UNTAG_ASSETS] Tag '{tag_name}' (id={tag_id}) removed from asset {asset_wrapper.get_id()} (link: {asset_url})"
+        logger.debug(
+            f"[UNTAG_ASSETS] Tag '{tag_name}' (id={tag_id}) removed from asset {asset_wrapper.get_id()}"
         )
     return entries
 

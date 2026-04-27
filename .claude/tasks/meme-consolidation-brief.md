@@ -1,5 +1,19 @@
 # Task brief: Meme album consolidation + MOVE conversion bug fix
 
+## ⛔ DO NOT RUN IN BATCH BEFORE READING THIS
+
+A partial test run was executed. The following was **observed** (cause not yet confirmed):
+
+- An asset (`IMG-20260331-WA0000.jpg`, UUID `56eab4be-2f41-492b-8c01-2b2fffc4688d`) appeared with no meme album and tag `autotag_output_unknown`.
+- The log shows it was removed from `2026-03-31-autotag-temp-unclassified` (a temporary album) — NOT from a date-based meme album.
+- It is only present in "WhatsApp Images".
+
+**Note:** removal from a temp-unclassified album is normal behavior. It is not clear whether this asset was ever in a meme album or whether the MOVE conversion bug (described below) is actually responsible. The concern is that some assets may have lost their meme album membership during the run. Root cause requires further investigation before running again.
+
+Do not run against real Immich data in batch until the `conversion_wrapper.py` fix is applied and a single-asset test confirms the full add→verify→remove sequence works correctly.
+
+---
+
 ## Goal
 
 Consolidate date-based meme albums (e.g. `2020-04-29-memes`) into a single canonical album (`autotag_input_meme`). A structural bug in the conversion engine was found and must be fixed first.
