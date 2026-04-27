@@ -575,6 +575,16 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 ### Fixed
 - API compatibility fixes to restore correct behavior with Immich `v2.6.3` (see relevant commit/PR).
 
+## [0.80.10] - 2026-04-27
+**Description:** Patch release improving observability and reliability when resuming long batch runs from a checkpoint. No behavioural changes for first-time runs; resumed runs now report progress correctly and conversions fail loud instead of silently skipping work.
+### Added
+- `[PERF]` progress log now shows the absolute slice endpoint (`abs_end = skip_n + total_to_process`) when running a partial batch, so the position within the full library is immediately visible without mental arithmetic.
+### Fixed
+- Performance tracker reported a negative `Remaining` time on every run resumed via checkpoint. The session counter was being conflated with the absolute counter; both displayed counts and the time-per-asset average were inflated. Resumed runs now report accurate remaining time and progress percentages.
+- MOVE conversions now log an error when the destination album cannot be resolved, instead of silently dropping the assignment. Surfaces what was previously a hidden failure mode.
+- Reduced redundant per-asset `REMOVE_TAG_FROM_ASSET` log noise that obscured higher-signal messages in production logs.
+### CI
+- Jenkins build tagging migrated from SSH to the same HTTPS credential already used for checkout. Tagging now works on agents without a configured GitHub SSH deploy key.
 
 ## [Planned: Date Correction Improvements]
 **Description:** Planned improvements to date correction logic for edge cases and scenarios not currently handled correctly.
