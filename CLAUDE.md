@@ -2,18 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Current Focus (2026-04-26)
+## Current Focus (2026-04-27)
 
-Active work is on branch `fix/conversion-album-move`. Two things are in progress simultaneously:
+Active work is on branch `ops/batch-processing` (the predecessor `fix/conversion-album-move`
+was merged into main as PR #57 and released as `v0.80.10`). Two things are in progress:
 
 1. **Batch processing run** — Jenkins is executing sequential 30 000-asset batches to
-   process the full library. Each run resumes via checkpoint.
+   process the full library on `ops/batch-processing`. Each run resumes via checkpoint.
+   The chain restarts once on the new branch (one-time `skip_n=0`) and chains forward
+   from there.
    → Read before touching CI or the stats/perf code:
    [`docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md`](docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md)
 
-2. **Bug — temp-unclassified albums for already-classified assets** — fix implemented,
-   pending review. Assets that underwent a MOVE conversion lost their classification
-   signal and were incorrectly placed in temp albums.
+2. **Bug — temp-unclassified albums for already-classified assets** — under observation.
+   First-layer fix is in main; a second-layer fix exists locally on `ops/batch-processing`
+   but is intentionally not committed until sequential runs confirm it is needed.
    → Read before touching conversion, classification, or temp-album logic:
    [`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
 
