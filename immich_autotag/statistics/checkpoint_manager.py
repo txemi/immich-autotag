@@ -41,7 +41,7 @@ class CheckpointManager:
         origen = None
         if enable_checkpoint_resume and config_resume_previous:
             max_skip_n = get_max_skip_n_from_recent(
-                max_age_hours=3, overlap=self.OVERLAP
+                max_age_hours=24, overlap=self.OVERLAP
             )
             if max_skip_n is not None and max_skip_n > 0:
                 skip_n = max_skip_n
