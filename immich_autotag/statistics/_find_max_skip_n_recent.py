@@ -9,7 +9,7 @@ from immich_autotag.statistics.run_statistics import RunStatistics
 
 @typechecked
 def get_max_skip_n_from_recent(
-    logs_dir: Optional[Path] = None, max_age_hours: int = 24, overlap: int = 100
+    logs_dir: Optional[Path] = None, max_age_hours: int = 72, overlap: int = 100
 ) -> Optional[int]:
     """
     Searches all run_statistics.yaml from the last max_age_hours hours and returns the maximum count minus overlap.
