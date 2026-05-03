@@ -281,11 +281,4 @@ def logging_add_assets_to_album(
         asset_wrapper=asset_wrapper, album_wrapper=album_wrapper
     )
 
-    # 5. Consistency Verification
-    _verify_asset_in_album_with_retry(
-        asset_wrapper=asset_wrapper,
-        client=client,
-        album_id=album_wrapper.get_album_uuid(),
-    )
-
     return entry
