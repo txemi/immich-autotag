@@ -242,8 +242,12 @@ class AlbumDtoState:
         if self._load_source != AlbumLoadSource.DETAIL:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
         if self._asset_uuids_cache is None:
-            from immich_autotag.types.uuid_wrappers import AssetUUID
-
+            # AssetUUID is already imported at module scope (line 11).
+            # A local `from ... import AssetUUID` here would shadow that module-level
+            # binding and make AssetUUID a *local* variable for the whole function;
+            # then typeguard's evaluation of the `set[AssetUUID]` return annotation
+            # (under conditional_typechecked) raises UnboundLocalError on the cached
+            # code path, where the import line is skipped.
             self._asset_uuids_cache = set(
                 AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets
             )
