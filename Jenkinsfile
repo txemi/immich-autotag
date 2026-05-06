@@ -23,8 +23,12 @@ def tagBuild(String type) {
 }
 pipeline {
     options {
-        // Keep only the last 4 builds
-        buildDiscarder(logRotator(numToKeepStr: '4'))
+        // Keep last 30 builds or 30 days, whichever is smaller. The previous
+        // value of 4 was effectively bypassed because every SUCCESS build was
+        // pinned via `currentBuild.keepLog = true` (now removed in the
+        // success post-action below), so old builds never rotated and ate
+        // tens of GB on the master.
+        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '30'))
     }
     agent {
         docker {
@@ -141,8 +145,10 @@ pipeline {
         success {
             echo "✅ Pipeline succeeded - All stages passed"
             script {
-                currentBuild.keepLog = true
-                echo "🔒 Build marked as 'Keep this build forever' (success)"
+                // Do NOT pin successful builds with keepLog=true. Pinning bypasses
+                // buildDiscarder and historical builds accumulate forever, filling
+                // the master disk (we hit 99% in May 2026). If a specific build
+                // needs to be retained, mark it manually from the UI instead.
                 if (ENABLE_JENKINS_TAGGING) {
                     tagBuild('success')
                 } else {
