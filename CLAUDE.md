@@ -119,3 +119,23 @@ Working documentation for features, bugs, and design decisions lives under `docs
 ## Project-level skills (`.claude/commands/`)
 
 Project-specific slash commands can be added as Markdown files under `.claude/commands/`. They are available as `/command-name` in Claude Code and are committed to the repo so all contributors share them.
+
+## Working with the maintainer
+
+These rules are explicit project policy because the maintainer (txemi) has had to repeat them across sessions on multiple machines/users. Treat them as absolute, on top of the general system instructions.
+
+### Git: never commit or push without explicit authorization in the same turn
+
+- **Never run `git commit`** without an explicit instruction in the SAME turn ("commit", "haz el commit", "make the commit", or equivalent). An authorisation given in an earlier turn does NOT carry over: every commit needs fresh confirmation.
+- **Never run `git push`** without explicit instruction in the same turn. Push is even stricter than commit.
+- Speech-to-text input is unreliable: words like "cómic" / "comics" are almost always "commit" — interpret them as commit. But the rule about explicit authorisation still applies; if the intent is unclear, ask.
+- `git add` / staging is fine without explicit permission as preparation for a commit, but stop before `git commit`.
+- After file edits, the default flow is: summarise the change, optionally show the diff, then ask "¿hago el commit?" or equivalent. Wait for the answer.
+
+### Auto mode does not relax git rules
+
+Auto mode allows acting on low-risk reversible work without confirmation. Commits and pushes are NOT in that bucket because they affect git history, which is shared state. The git rules above override auto mode.
+
+### Scope discipline
+
+Don't expand the scope of a task without asking. If the maintainer asks to fix X, don't take the opportunity to refactor Y "while you're there".
