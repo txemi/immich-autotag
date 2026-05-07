@@ -369,6 +369,17 @@ class StatisticsManager:
         self.get_or_create_run_stats().total_assets = total_assets
         self.set_total_assets(total_assets)
 
+        # Cycle wrap-around: if a recent run already covered the whole
+        # library, archive its YAMLs and reset skip_n so this run starts a
+        # fresh pass from the beginning. The check has to happen here
+        # (rather than in __attrs_post_init__) because total_assets is only
+        # known after fetch_total_assets returns, just before this method
+        # is called. The pre-existing _set_skip_n() call from construction
+        # used the old high count; we recompute now that the workspace has
+        # been cleared.
+        if self._checkpoint.maybe_archive_completed_cycle(total_assets):
+            self._set_skip_n()
+
     def get_max_assets(self) -> int | None:
         """
         Returns the updated value of max_assets, applying refresh logic if necessary.
