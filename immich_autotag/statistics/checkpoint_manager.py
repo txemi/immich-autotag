@@ -129,9 +129,7 @@ class CheckpointManager:
 
         # Use the parent of any recent run dir as the logs_local root
         logs_dir = recent_dirs[0].path.parent
-        archive_root = (
-            logs_dir / "_archive" / f"cycle-{datetime.now():%Y%m%d_%H%M%S}"
-        )
+        archive_root = logs_dir / "_archive" / f"cycle-{datetime.now():%Y%m%d_%H%M%S}"
         archive_root.mkdir(parents=True, exist_ok=True)
 
         archived = 0
