@@ -126,11 +126,11 @@ These rules are explicit project policy because the maintainer (txemi) has had t
 
 ### Git: never commit or push without explicit authorization in the same turn
 
-- **Never run `git commit`** without an explicit instruction in the SAME turn ("commit", "haz el commit", "make the commit", or equivalent). An authorisation given in an earlier turn does NOT carry over: every commit needs fresh confirmation.
+- **Never run `git commit`** without an explicit instruction in the SAME turn ("commit", "go ahead and commit", "make the commit", or equivalent). An authorisation given in an earlier turn does NOT carry over: every commit needs fresh confirmation.
 - **Never run `git push`** without explicit instruction in the same turn. Push is even stricter than commit.
-- Speech-to-text input is unreliable: words like "cómic" / "comics" are almost always "commit" — interpret them as commit. But the rule about explicit authorisation still applies; if the intent is unclear, ask.
+- The maintainer's speech-to-text sometimes mistranscribes "commit"; interpret obvious typos accordingly. The explicit-authorisation rule still applies; if intent is unclear, ask.
 - `git add` / staging is fine without explicit permission as preparation for a commit, but stop before `git commit`.
-- After file edits, the default flow is: summarise the change, optionally show the diff, then ask "¿hago el commit?" or equivalent. Wait for the answer.
+- After file edits, the default flow is: summarise the change, optionally show the diff, then ask "do I commit?" or equivalent. Wait for the answer.
 
 ### Auto mode does not relax git rules
 
