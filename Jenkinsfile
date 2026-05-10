@@ -137,8 +137,15 @@ pipeline {
     
     post {
         always {
-            // Archive run outputs (logs, reports, links) generated per execution, excluding albums cache
-            archiveArtifacts artifacts: 'logs_local/**/*', excludes: 'logs_local/*/api_cache/*/**', fingerprint: true, allowEmptyArchive: true
+            // Archive run-dir outputs only. Two changes vs the previous pattern:
+            //   * `*_PID*` matches the run dir naming scheme and skips `_archive/`,
+            //     which the wrap-around fills with snapshots of completed cycles
+            //     and grows unbounded over time.
+            //   * `fingerprint: false` — SHA1ing all run files dominated build wall
+            //     time (5-47h per build for the post-actions phase). We don't
+            //     consume these artifacts across pipelines, so the fingerprints
+            //     have no consumer.
+            archiveArtifacts artifacts: 'logs_local/*_PID*/**', excludes: 'logs_local/*/api_cache/**', fingerprint: false, allowEmptyArchive: true
             echo "Pipeline execution completed at ${new Date()}"
         }
 
