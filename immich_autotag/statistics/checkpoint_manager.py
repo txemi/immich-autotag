@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 @attr.s(auto_attribs=True, kw_only=True, slots=True)
 class CheckpointManager:
     stats_manager: "StatisticsManager" = attr.ib(init=True)
-    OVERLAP: int = attr.ib(default=100, init=False)
+    OVERLAP: int = attr.ib(default=500, init=False)
 
     @stats_manager.validator
     def _validate_stats_manager(self, attribute, value):
