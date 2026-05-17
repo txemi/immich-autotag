@@ -1,6 +1,5 @@
-from typeguard import typechecked
-
 from immich_client.models.album_user_role import AlbumUserRole
+from typeguard import typechecked
 
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
 from immich_autotag.api.logging_proxy.albums.add_users_to_album import (
@@ -117,8 +116,7 @@ def _calculate_member_diff(
     drift_list: list[UserResponseWrapper] = [
         m
         for m in current
-        if m.get_uuid() in in_both
-        and current_role_map.get(m.get_uuid()) != target_role
+        if m.get_uuid() in in_both and current_role_map.get(m.get_uuid()) != target_role
     ]
     members_to_update_role = UserResponseWrapperList(drift_list).deduplicate_by_id()
 
