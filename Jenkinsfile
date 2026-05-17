@@ -1,5 +1,9 @@
 // ==================== CONFIG FLAGS ====================
 def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
+def ENABLE_AUTO_CHAIN = true      // Set to true to auto-trigger the next build on success
+                                  // (keeps the batch-processing chain self-perpetuating
+                                  // without external dispatch). Failure stops the chain
+                                  // by design — re-enable manually after investigating.
 
 // Helper for tagging (debe estar fuera del pipeline)
 def tagBuild(String type) {
@@ -160,6 +164,12 @@ pipeline {
                     tagBuild('success')
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
+                }
+                if (ENABLE_AUTO_CHAIN) {
+                    echo "🔁 Auto-chain enabled: triggering next build on this branch"
+                    build job: env.JOB_NAME, wait: false, propagate: false
+                } else {
+                    echo "[INFO] Auto-chain disabled by ENABLE_AUTO_CHAIN flag."
                 }
             }
         }
