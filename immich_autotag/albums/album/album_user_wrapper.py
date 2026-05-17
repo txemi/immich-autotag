@@ -11,6 +11,7 @@ from immich_autotag.types.uuid_wrappers import UserUUID
 
 if TYPE_CHECKING:
     from immich_client.models.album_user_response_dto import AlbumUserResponseDto
+    from immich_client.models.album_user_role import AlbumUserRole
 
 
 @attrs.define(auto_attribs=True, slots=True, frozen=True, kw_only=False)
@@ -46,6 +47,10 @@ class AlbumUserWrapper:
             return UserUUID.from_uuid(uid)
         # Ensure we pass a string to from_string to avoid mypy confusion
         return UserUUID.from_string(str(uid))
+
+    @typechecked
+    def get_role(self) -> "AlbumUserRole":
+        return self._user.role
 
     def __str__(self) -> str:
         try:
