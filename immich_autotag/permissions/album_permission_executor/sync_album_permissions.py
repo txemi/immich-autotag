@@ -93,13 +93,11 @@ def _apply_member_changes(
     resolved_policy: ResolvedAlbumPolicy,
     context: ImmichContext,
 ) -> None:
-    from immich_autotag.api.logging_proxy.types import AlbumUserRole
-
     if members_to_add:
         logging_add_members_to_album(
             album=album_wrapper,
             members=list(members_to_add),
-            access_level=AlbumUserRole.EDITOR,
+            access_level=resolved_policy.access_level,
             context=context,
             matched_rules=resolved_policy.matched_rules,
             groups=resolved_policy.groups,
