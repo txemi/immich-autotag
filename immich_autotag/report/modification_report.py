@@ -406,6 +406,7 @@ class ModificationReport:
             ModificationKind.ALBUM_PERMISSION_NO_MATCH,
             ModificationKind.ALBUM_PERMISSION_SHARED,
             ModificationKind.ALBUM_PERMISSION_REMOVED,
+            ModificationKind.ALBUM_PERMISSION_ROLE_CHANGED,
             ModificationKind.ALBUM_PERMISSION_SHARE_FAILED,
         }
         if extra is None:
