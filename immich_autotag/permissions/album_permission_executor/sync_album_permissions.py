@@ -1,3 +1,4 @@
+from immich_client.models.album_user_role import AlbumUserRole
 from typeguard import typechecked
 
 from immich_autotag.albums.permissions.album_policy_resolver import ResolvedAlbumPolicy
@@ -7,10 +8,14 @@ from immich_autotag.api.logging_proxy.albums.add_users_to_album import (
 from immich_autotag.api.logging_proxy.albums.remove_user_from_album import (
     logging_remove_members_from_album,
 )
+from immich_autotag.api.logging_proxy.albums.update_album_user_role import (
+    logging_update_members_role,
+)
 from immich_autotag.context.immich_context import ImmichContext
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import log, log_debug
 from immich_autotag.types.email_address import EmailAddress
+from immich_autotag.types.uuid_wrappers import UserUUID
 from immich_autotag.users.user_response_wrapper import UserResponseWrapper
 from immich_autotag.users.user_response_wrapper_list import UserResponseWrapperList
 
@@ -28,6 +33,9 @@ class MemberDiff:
         validator=attrs.validators.instance_of(UserResponseWrapperList)
     )
     members_to_remove: UserResponseWrapperList = attrs.field(
+        validator=attrs.validators.instance_of(UserResponseWrapperList)
+    )
+    members_to_update_role: UserResponseWrapperList = attrs.field(
         validator=attrs.validators.instance_of(UserResponseWrapperList)
     )
 
@@ -73,16 +81,49 @@ def _get_current_member_wrappers(
     return wrappers
 
 
+def _get_current_role_map(
+    album_wrapper: "AlbumResponseWrapper",
+) -> dict[UserUUID, AlbumUserRole]:
+    """
+    Return a map user_uuid -> current role for each shared user in the album.
+    Used by drift detection in _calculate_member_diff.
+    """
+    return {
+        album_user.get_uuid(): album_user.get_role()
+        for album_user in album_wrapper.get_album_users()
+    }
+
+
 def _calculate_member_diff(
     target_members: UserResponseWrapperList,
     current_members: UserResponseWrapperList,
+    current_role_map: dict[UserUUID, AlbumUserRole],
+    target_role: AlbumUserRole,
 ) -> MemberDiff:
     target = target_members.deduplicate_by_id()
     current = current_members.deduplicate_by_id()
     members_to_add = target.difference(current).deduplicate_by_id()
     members_to_remove = current.difference(target).deduplicate_by_id()
+
+    # Drift detection: users present in BOTH target and current but with the
+    # wrong role get their role updated. Without this, a one-time mismatch
+    # (e.g. introduced by a manual UI share or a past bug) would persist
+    # across every autotag run because add/remove logic only acts on set
+    # membership, never on role.
+    target_uuids = {m.get_uuid() for m in target}
+    current_uuids = {m.get_uuid() for m in current}
+    in_both = target_uuids & current_uuids
+    drift_list: list[UserResponseWrapper] = [
+        m
+        for m in current
+        if m.get_uuid() in in_both and current_role_map.get(m.get_uuid()) != target_role
+    ]
+    members_to_update_role = UserResponseWrapperList(drift_list).deduplicate_by_id()
+
     return MemberDiff(
-        members_to_add=members_to_add, members_to_remove=members_to_remove
+        members_to_add=members_to_add,
+        members_to_remove=members_to_remove,
+        members_to_update_role=members_to_update_role,
     )
 
 
@@ -90,16 +131,15 @@ def _apply_member_changes(
     album_wrapper: "AlbumResponseWrapper",
     members_to_add: UserResponseWrapperList,
     members_to_remove: UserResponseWrapperList,
+    members_to_update_role: UserResponseWrapperList,
     resolved_policy: ResolvedAlbumPolicy,
     context: ImmichContext,
 ) -> None:
-    from immich_autotag.api.logging_proxy.types import AlbumUserRole
-
     if members_to_add:
         logging_add_members_to_album(
             album=album_wrapper,
             members=list(members_to_add),
-            access_level=AlbumUserRole.EDITOR,
+            access_level=resolved_policy.access_level,
             context=context,
             matched_rules=resolved_policy.matched_rules,
             groups=resolved_policy.groups,
@@ -108,6 +148,15 @@ def _apply_member_changes(
         logging_remove_members_from_album(
             album=album_wrapper,
             members=list(members_to_remove),
+            context=context,
+            matched_rules=resolved_policy.matched_rules,
+            groups=resolved_policy.groups,
+        )
+    if members_to_update_role:
+        logging_update_members_role(
+            album=album_wrapper,
+            members=list(members_to_update_role),
+            role=resolved_policy.access_level,
             context=context,
             matched_rules=resolved_policy.matched_rules,
             groups=resolved_policy.groups,
@@ -157,21 +206,32 @@ def sync_album_permissions(
     ), "current_member_wrappers contains non-UserResponseWrapper"
     from immich_autotag.users.user_response_wrapper_list import UserResponseWrapperList
 
+    current_role_map = _get_current_role_map(album_wrapper)
     member_diff: MemberDiff = _calculate_member_diff(
         UserResponseWrapperList(target_members),
         UserResponseWrapperList(current_member_wrappers),
+        current_role_map=current_role_map,
+        target_role=resolved_policy.access_level,
     )
     _apply_member_changes(
         album_wrapper,
         member_diff.members_to_add,
         member_diff.members_to_remove,
+        member_diff.members_to_update_role,
         resolved_policy,
         context,
     )
-    if member_diff.members_to_add or member_diff.members_to_remove:
+    any_change = (
+        member_diff.members_to_add
+        or member_diff.members_to_remove
+        or member_diff.members_to_update_role
+    )
+    if any_change:
         log(
             f"[ALBUM_PERMISSIONS] Synced {album_name}: "
-            f"+{len(member_diff.members_to_add)} PONER, -{len(member_diff.members_to_remove)} QUITAR",
+            f"+{len(member_diff.members_to_add)} PONER, "
+            f"-{len(member_diff.members_to_remove)} QUITAR, "
+            f"~{len(member_diff.members_to_update_role)} ROL",
             level=LogLevel.FOCUS,
         )
     else:

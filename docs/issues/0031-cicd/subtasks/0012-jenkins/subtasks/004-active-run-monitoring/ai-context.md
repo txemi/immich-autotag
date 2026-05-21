@@ -1,6 +1,19 @@
 # Active Run Monitoring — ai-context
 
-**Last verified:** 2026-04-26
+**Last verified:** 2026-04-27
+
+## Branch in use
+
+Active branch: **`ops/batch-processing`**
+
+The previous branch `fix/conversion-album-move` was merged to main (PR #57) and released
+as `v0.80.10` on 2026-04-27. Operational batch runs were moved to a dedicated branch so
+the `fix/*` namespace is not abused as a long-lived ops home. The first build on
+`ops/batch-processing` starts with `skip_n=0` (one-time chain reset, ~1-2h overhead)
+and chains forward from there.
+
+The historical Jenkins job for `fix/conversion-album-move` remains accessible until the
+multibranch orphan strategy purges it.
 
 ## Operational record (private repo)
 
@@ -94,7 +107,7 @@ only one build runs at a time. This makes runs deterministic and fully reproduci
 
 ## What we are tracking
 
-Branch `fix/conversion-album-move` is being executed sequentially by Jenkins.
+Branch `ops/batch-processing` is being executed sequentially by Jenkins.
 Each run should:
 - Process exactly `max_assets = 30 000` assets
 - Resume from the checkpoint left by the previous run (`resume_previous = true`, overlap = 100)

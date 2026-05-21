@@ -1,5 +1,9 @@
 // ==================== CONFIG FLAGS ====================
 def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
+def ENABLE_AUTO_CHAIN = true      // Set to true to auto-trigger the next build on success
+                                  // (keeps the batch-processing chain self-perpetuating
+                                  // without external dispatch). Failure stops the chain
+                                  // by design — re-enable manually after investigating.
 
 // Helper for tagging (debe estar fuera del pipeline)
 def tagBuild(String type) {
@@ -23,8 +27,12 @@ def tagBuild(String type) {
 }
 pipeline {
     options {
-        // Keep only the last 4 builds
-        buildDiscarder(logRotator(numToKeepStr: '4'))
+        // Keep last 30 builds or 30 days, whichever is smaller. The previous
+        // value of 4 was effectively bypassed because every SUCCESS build was
+        // pinned via `currentBuild.keepLog = true` (now removed in the
+        // success post-action below), so old builds never rotated and ate
+        // tens of GB on the master.
+        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '30'))
     }
     agent {
         docker {
@@ -133,20 +141,35 @@ pipeline {
     
     post {
         always {
-            // Archive run outputs (logs, reports, links) generated per execution, excluding albums cache
-            archiveArtifacts artifacts: 'logs_local/**/*', excludes: 'logs_local/*/api_cache/*/**', fingerprint: true, allowEmptyArchive: true
+            // Archive run-dir outputs only. Two changes vs the previous pattern:
+            //   * `*_PID*` matches the run dir naming scheme and skips `_archive/`,
+            //     which the wrap-around fills with snapshots of completed cycles
+            //     and grows unbounded over time.
+            //   * `fingerprint: false` — SHA1ing all run files dominated build wall
+            //     time (5-47h per build for the post-actions phase). We don't
+            //     consume these artifacts across pipelines, so the fingerprints
+            //     have no consumer.
+            archiveArtifacts artifacts: 'logs_local/*_PID*/**', excludes: 'logs_local/*/api_cache/**', fingerprint: false, allowEmptyArchive: true
             echo "Pipeline execution completed at ${new Date()}"
         }
 
         success {
             echo "✅ Pipeline succeeded - All stages passed"
             script {
-                currentBuild.keepLog = true
-                echo "🔒 Build marked as 'Keep this build forever' (success)"
+                // Do NOT pin successful builds with keepLog=true. Pinning bypasses
+                // buildDiscarder and historical builds accumulate forever, filling
+                // the master disk (we hit 99% in May 2026). If a specific build
+                // needs to be retained, mark it manually from the UI instead.
                 if (ENABLE_JENKINS_TAGGING) {
                     tagBuild('success')
                 } else {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
+                }
+                if (ENABLE_AUTO_CHAIN) {
+                    echo "🔁 Auto-chain enabled: triggering next build on this branch"
+                    build job: env.JOB_NAME, wait: false, propagate: false
+                } else {
+                    echo "[INFO] Auto-chain disabled by ENABLE_AUTO_CHAIN flag."
                 }
             }
         }

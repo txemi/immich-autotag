@@ -60,50 +60,72 @@ class AssetMapManager:
             level=LogLevel.PROGRESS,
         )
 
+        from immich_client.errors import UnexpectedStatus
+
+        skipped_stale_albums = 0
         for idx, album_wrapper in enumerate(albums, 1):
             # Crazy debug: if the album has the special UUID, raise exception
 
-            if album_wrapper.is_empty():
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
+            try:
+                if album_wrapper.is_empty():
+                    from immich_autotag.logging.levels import LogLevel
+                    from immich_autotag.logging.utils import log
 
-                log(
-                    f"Album '{album_wrapper.get_album_name()}' "
-                    f"has no assets after forced reload.",
-                    level=LogLevel.WARNING,
-                )
-                if album_wrapper.get_asset_uuids():
-                    album_url = album_wrapper.get_immich_album_url().geturl()
-                    raise RuntimeError(
-                        f"[DEBUG] Anomalous behavior: Album "
-                        f"'{album_wrapper.get_album_name()}' (URL: {album_url}) "
-                        "had empty asset_ids after initial load, "
-                        "but after a redundant reload it now has assets. "
-                        "This suggests a possible synchronization or lazy loading bug. "
-                        "Please review the album loading logic."
-                    )
-                from immich_autotag.assets.albums.temporary_manager.naming import (
-                    is_temporary_album,
-                )
-
-                if is_temporary_album(album_wrapper.get_album_name()):
                     log(
-                        f"Temporary album '{album_wrapper.get_album_name()}' "
-                        f"marked for removal after map build.",
+                        f"Album '{album_wrapper.get_album_name()}' "
+                        f"has no assets after forced reload.",
                         level=LogLevel.WARNING,
                     )
-            if tracker and tracker.should_log_progress(idx):
-                progress_msg = tracker.get_progress_description(idx)
-                from immich_autotag.logging.levels import LogLevel
-                from immich_autotag.logging.utils import log
+                    if album_wrapper.get_asset_uuids():
+                        album_url = album_wrapper.get_immich_album_url().geturl()
+                        raise RuntimeError(
+                            f"[DEBUG] Anomalous behavior: Album "
+                            f"'{album_wrapper.get_album_name()}' (URL: {album_url}) "
+                            "had empty asset_ids after initial load, "
+                            "but after a redundant reload it now has assets. "
+                            "This suggests a possible synchronization or lazy loading bug. "
+                            "Please review the album loading logic."
+                        )
+                    from immich_autotag.assets.albums.temporary_manager.naming import (
+                        is_temporary_album,
+                    )
 
-                log(
-                    f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}. Album "
-                    f"'{album_wrapper.get_album_name()}' reloaded with "
-                    f"{len(album_wrapper.get_asset_uuids())} assets.",
-                    level=LogLevel.PROGRESS,
-                )
-            asset_map.add_album_for_asset_ids(album_wrapper)
+                    if is_temporary_album(album_wrapper.get_album_name()):
+                        log(
+                            f"Temporary album '{album_wrapper.get_album_name()}' "
+                            f"marked for removal after map build.",
+                            level=LogLevel.WARNING,
+                        )
+                if tracker and tracker.should_log_progress(idx):
+                    progress_msg = tracker.get_progress_description(idx)
+                    from immich_autotag.logging.levels import LogLevel
+                    from immich_autotag.logging.utils import log
+
+                    log(
+                        f"[ALBUM-MAP-BUILD][PROGRESS] {progress_msg}. Album "
+                        f"'{album_wrapper.get_album_name()}' reloaded with "
+                        f"{len(album_wrapper.get_asset_uuids())} assets.",
+                        level=LogLevel.PROGRESS,
+                    )
+                asset_map.add_album_for_asset_ids(album_wrapper)
+            except UnexpectedStatus as e:
+                # Album disappeared from Immich between collection load and
+                # this point (e.g. user deleted it, or API returns 400/404 for
+                # stale ids). Skip it and continue building the rest of the map
+                # — otherwise a single stale album aborts the whole build and
+                # forces a full retry on every subsequent asset.
+                if e.status_code in (400, 404):
+                    skipped_stale_albums += 1
+                    log(
+                        f"[ALBUM-MAP-BUILD] Skipping stale album "
+                        f"'{album_wrapper.get_album_name()}' "
+                        f"(uuid={album_wrapper.get_album_uuid()}): "
+                        f"API returned {e.status_code} (likely deleted). "
+                        f"Total skipped so far: {skipped_stale_albums}.",
+                        level=LogLevel.WARNING,
+                    )
+                    continue
+                raise
 
         log(
             "[PROGRESS] [ALBUM-MAP-BUILD] Finished asset-to-albums map construction.",

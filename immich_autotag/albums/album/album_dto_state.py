@@ -58,6 +58,16 @@ class AlbumDtoState:
 
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
 
+    # Lazy cache for the asset UUID set: get_asset_uuids() is called many times
+    # per processed asset (e.g. via has_asset_wrapper before each add). Building
+    # the set from `self._dto.assets` is O(N) per call, with N up to ~100k for
+    # the largest albums; typeguard validation of every UUID dominates CPU.
+    # The state is effectively immutable (the DTO does not mutate after load),
+    # so caching the set is safe within the lifetime of this state instance.
+    _asset_uuids_cache: "set[AssetUUID] | None" = attrs.field(
+        default=None, init=False, eq=False, repr=False
+    )
+
     def __attrs_post_init__(self):
         # _dto is always required and validated by attrs; no need to check for None
         pass
@@ -231,9 +241,17 @@ class AlbumDtoState:
         """
         if self._load_source != AlbumLoadSource.DETAIL:
             raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
-        from immich_autotag.types.uuid_wrappers import AssetUUID
-
-        return set(AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets)
+        if self._asset_uuids_cache is None:
+            # AssetUUID is already imported at module scope (line 11).
+            # A local `from ... import AssetUUID` here would shadow that module-level
+            # binding and make AssetUUID a *local* variable for the whole function;
+            # then typeguard's evaluation of the `set[AssetUUID]` return annotation
+            # (under conditional_typechecked) raises UnboundLocalError on the cached
+            # code path, where the import line is skipped.
+            self._asset_uuids_cache = set(
+                AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets
+            )
+        return self._asset_uuids_cache
 
     def is_stale(self) -> bool:
         import time

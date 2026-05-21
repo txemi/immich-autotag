@@ -263,6 +263,13 @@ class ModificationKind(Enum):
         requires_album=True,
         requires_tag=False,
     )
+    ALBUM_PERMISSION_ROLE_CHANGED = ModificationKindInfo(
+        name="ALBUM_PERMISSION_ROLE_CHANGED",
+        level=ModificationLevel.MODIFICATION,
+        requires_asset=False,
+        requires_album=True,
+        requires_tag=False,
+    )
     ALBUM_PERMISSION_SHARE_FAILED = ModificationKindInfo(
         name="ALBUM_PERMISSION_SHARE_FAILED",
         level=ModificationLevel.ERROR,

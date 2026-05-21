@@ -2,18 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Current Focus (2026-04-26)
+## Current Focus (2026-04-27)
 
-Active work is on branch `fix/conversion-album-move`. Two things are in progress simultaneously:
+Active work is on branch `ops/batch-processing` (the predecessor `fix/conversion-album-move`
+was merged into main as PR #57 and released as `v0.80.10`). Two things are in progress:
 
 1. **Batch processing run** — Jenkins is executing sequential 30 000-asset batches to
-   process the full library. Each run resumes via checkpoint.
+   process the full library on `ops/batch-processing`. Each run resumes via checkpoint.
+   The chain restarts once on the new branch (one-time `skip_n=0`) and chains forward
+   from there.
    → Read before touching CI or the stats/perf code:
    [`docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md`](docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md)
 
-2. **Bug — temp-unclassified albums for already-classified assets** — fix implemented,
-   pending review. Assets that underwent a MOVE conversion lost their classification
-   signal and were incorrectly placed in temp albums.
+2. **Bug — temp-unclassified albums for already-classified assets** — under observation.
+   First-layer fix is in main; a second-layer fix exists locally on `ops/batch-processing`
+   but is intentionally not committed until sequential runs confirm it is needed.
    → Read before touching conversion, classification, or temp-album logic:
    [`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
 
@@ -116,3 +119,23 @@ Working documentation for features, bugs, and design decisions lives under `docs
 ## Project-level skills (`.claude/commands/`)
 
 Project-specific slash commands can be added as Markdown files under `.claude/commands/`. They are available as `/command-name` in Claude Code and are committed to the repo so all contributors share them.
+
+## Working with the maintainer
+
+These rules are explicit project policy because the maintainer (txemi) has had to repeat them across sessions on multiple machines/users. Treat them as absolute, on top of the general system instructions.
+
+### Git: never commit or push without explicit authorization in the same turn
+
+- **Never run `git commit`** without an explicit instruction in the SAME turn ("commit", "go ahead and commit", "make the commit", or equivalent). An authorisation given in an earlier turn does NOT carry over: every commit needs fresh confirmation.
+- **Never run `git push`** without explicit instruction in the same turn. Push is even stricter than commit.
+- The maintainer's speech-to-text sometimes mistranscribes "commit"; interpret obvious typos accordingly. The explicit-authorisation rule still applies; if intent is unclear, ask.
+- `git add` / staging is fine without explicit permission as preparation for a commit, but stop before `git commit`.
+- After file edits, the default flow is: summarise the change, optionally show the diff, then ask "do I commit?" or equivalent. Wait for the answer.
+
+### Auto mode does not relax git rules
+
+Auto mode allows acting on low-risk reversible work without confirmation. Commits and pushes are NOT in that bucket because they affect git history, which is shared state. The git rules above override auto mode.
+
+### Scope discipline
+
+Don't expand the scope of a task without asking. If the maintainer asks to fix X, don't take the opportunity to refactor Y "while you're there".
