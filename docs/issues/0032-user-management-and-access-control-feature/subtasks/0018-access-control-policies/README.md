@@ -48,8 +48,8 @@ Immich does not provide native user groups, but we need to assign album access a
 - **Well-reported**: Detailed logging in modification_report for audit trail
 
 ## Design Documents
-- [Operational Specification](design/OPERATIONAL_SPEC.md) - **START HERE**: User requirements and implementation details
-- [Technical Design](design/technical_design.md) - Lower-level implementation patterns
+- [Operational Specification](design/OPERATIONAL_SPEC.md) <!-- uuid: 89aa0c6b-8243-41af-acfd-a5d9d79c3e06 --> - **START HERE**: User requirements and implementation details
+- [Technical Design](design/technical_design.md) <!-- uuid: 00aef780-c8c6-49ee-b4d3-2020470eb433 --> - Lower-level implementation patterns
 
 ## Definition of Done (DoD)
 - Config supports `user_groups` and `album_selection_rules` blocks

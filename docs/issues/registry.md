@@ -1,3 +1,7 @@
+---
+uuid: 805cc158-bb61-497d-96dd-7a6efece6acf
+---
+
 # Issue Registry
 
 Current active issues (v2.0 system with thematic organization):

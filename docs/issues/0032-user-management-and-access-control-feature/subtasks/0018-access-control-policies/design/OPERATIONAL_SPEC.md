@@ -1,3 +1,7 @@
+---
+uuid: 89aa0c6b-8243-41af-acfd-a5d9d79c3e06
+---
+
 # Operational Specification - Album Permission Groups (0018)
 
 **Author**: txemi  
