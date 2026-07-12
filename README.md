@@ -271,7 +271,7 @@ For questions, issues, or feature requests, please use the [GitHub Issues](https
 
 ## 1.9. Other projects
 
-- [darnlink](https://github.com/txemi/darnlink) — self-healing Markdown links: repairs relative links by UUID when files move, and upgrades plain links to robust ones. No database, editor-agnostic, ships a pre-commit hook.
+- [darnlink](https://github.com/txemi/darnlink) — self-healing Markdown links: repairs relative links by UUID when files move, and upgrades plain links to robust ones. No database, editor-agnostic, ships a pre-commit hook. **This project uses it** as a docs-link quality gate (see [`scripts/devtools/darnlink_docs_gate.sh`](scripts/devtools/darnlink_docs_gate.sh)).
 
 ## 1.10. License
 This project is licensed under the GNU GPL v3. See the [LICENSE](./LICENSE) file for details.
