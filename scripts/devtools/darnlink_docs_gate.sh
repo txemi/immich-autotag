@@ -19,8 +19,8 @@
 #   - GitHub Actions (.github/workflows/docs-links.yml)
 #
 # Env overrides:
-#   DARNLINK_REF   git tag/branch of darnlink to use   (default: v0.1.1)
-#   DARNLINK_FROM  full uvx --from spec (path or git+)  (default: the pinned tag)
+#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.1.1)
+#   DARNLINK_FROM  full uvx --from spec (path or git+)  (default: the pinned SHA)
 #                  e.g. DARNLINK_FROM=/path/to/local/darnlink for local dev
 #
 # Args:
@@ -28,7 +28,10 @@
 #       build the uuid index, so scan the repo root, not a single file.
 set -euo pipefail
 
-DARNLINK_REF="${DARNLINK_REF:-v0.1.1}"
+# Pinned to an immutable commit SHA (== tag v0.1.1). Tags can be force-moved,
+# which would weaken CI reproducibility / supply-chain integrity, so we pin the
+# SHA and keep the tag only as a human-readable note.
+DARNLINK_REF="${DARNLINK_REF:-5929bb50590a86970a011d15e2f19a7e26e5a7c9}"  # v0.1.1
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 

@@ -115,9 +115,10 @@ pipeline {
                     echo "[DOCS LINK GATE] Checking uuid-anchored Markdown links (read-only, no --write)"
                     sh '''
                         git config --global --add safe.directory "$PWD"
-                        # darnlink runs via uvx; ensure uv is available on the agent
-                        command -v uvx >/dev/null 2>&1 || pip install --quiet uv
-                        chmod +x scripts/devtools/darnlink_docs_gate.sh
+                        # darnlink runs via uvx; ensure uv is available in a
+                        # predictable location (user site, not a global pip).
+                        export PATH="$HOME/.local/bin:$PATH"
+                        command -v uvx >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
                         bash scripts/devtools/darnlink_docs_gate.sh .
                     '''
                 }

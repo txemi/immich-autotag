@@ -6,11 +6,14 @@ repos:
     hooks:
       # darnlink docs-link gate: fails the commit if any uuid-anchored Markdown
       # link needs repair (e.g. a doc was moved but a link still points at the
-      # old path). Read-only. To fix:  darnlink . --write
+      # old path). Read-only. To fix:
+      #   uvx --from "git+https://github.com/txemi/darnlink@v0.1.1" darnlink . --write
       - id: darnlink-docs-links
         name: darnlink docs-link gate
-        entry: scripts/devtools/darnlink_docs_gate.sh
-        language: script
+        # invoked via `bash` (not relying on the file's executable bit), matching
+        # how devtools scripts are run elsewhere in the repo.
+        entry: bash scripts/devtools/darnlink_docs_gate.sh
+        language: system
         # darnlink builds a repo-wide uuid index, so run once over the tree
         # (not per staged file) whenever any Markdown file changes.
         files: \.md$
