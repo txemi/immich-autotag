@@ -64,12 +64,42 @@ class ConversionWrapper:
         if source_matched:
             # Applies the destination action (add tags, albums, etc.)
             result_action = self.get_destination_wrapper()
-            changes = changes.extend(result_action.apply_action(asset_wrapper))
+            action_changes = result_action.apply_action(asset_wrapper)
+            changes = changes.extend(action_changes)
             # Depending on the conversion mode, removes the source tags/albums
             if self.conversion.mode == ConversionMode.MOVE and match_result is not None:
-                # Note: remove_matches still returns list[str], but that's being updated separately
-                # For now, we just skip those entries since they're info messages
-                self.get_source_wrapper().remove_matches(
-                    asset_wrapper, match_result, remove_source_albums=False
-                )
+                destination_albums = result_action.get_album_names()
+                if destination_albums:
+                    # Only remove source tags if all destination albums are now in the asset's
+                    # album membership. If any album was not found/created, keep the source tag
+                    # so the asset retains its classification signal on future runs.
+                    current_album_names = set(asset_wrapper.get_album_names())
+                    all_destinations_resolved = all(
+                        album_name in current_album_names
+                        for album_name in destination_albums
+                    )
+                    if all_destinations_resolved:
+                        self.get_source_wrapper().remove_matches(
+                            asset_wrapper, match_result, remove_source_albums=False
+                        )
+                    else:
+                        from immich_autotag.logging.levels import LogLevel
+                        from immich_autotag.logging.utils import log
+
+                        missing = [
+                            a
+                            for a in destination_albums
+                            if a not in current_album_names
+                        ]
+                        log(
+                            f"[CONVERSION] Skipping source tag removal for "
+                            f"'{asset_wrapper.get_original_file_name()}': destination album(s) "
+                            f"{missing} not resolved. Classification signal preserved.",
+                            level=LogLevel.WARNING,
+                        )
+                else:
+                    # Pure tag-to-tag conversion: no album involved, remove source tags unconditionally.
+                    self.get_source_wrapper().remove_matches(
+                        asset_wrapper, match_result, remove_source_albums=False
+                    )
         return changes
