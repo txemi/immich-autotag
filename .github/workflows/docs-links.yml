@@ -1,0 +1,26 @@
+name: Docs link gate
+
+# Read-only darnlink gate for the docs' uuid-anchored Markdown links.
+# Independent of the (currently disabled) test CI: it needs no Immich client
+# library, only uv + the darnlink CLI, so it can run on every push/PR.
+on:
+  push:
+    paths:
+      - '**/*.md'
+      - 'scripts/devtools/darnlink_docs_gate.sh'
+      - '.github/workflows/docs-links.yml'
+  pull_request:
+    paths:
+      - '**/*.md'
+      - 'scripts/devtools/darnlink_docs_gate.sh'
+      - '.github/workflows/docs-links.yml'
+
+jobs:
+  darnlink:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: darnlink docs-link gate
+        run: bash scripts/devtools/darnlink_docs_gate.sh .

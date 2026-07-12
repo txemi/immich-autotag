@@ -108,6 +108,21 @@ pipeline {
                 }
             }
         }
+        stage('Quality Gate (Docs Links)') {
+            steps {
+                script {
+                    echo "================ DOCS LINK GATE (darnlink) ================"
+                    echo "[DOCS LINK GATE] Checking uuid-anchored Markdown links (read-only, no --write)"
+                    sh '''
+                        git config --global --add safe.directory "$PWD"
+                        # darnlink runs via uvx; ensure uv is available on the agent
+                        command -v uvx >/dev/null 2>&1 || pip install --quiet uv
+                        chmod +x scripts/devtools/darnlink_docs_gate.sh
+                        bash scripts/devtools/darnlink_docs_gate.sh .
+                    '''
+                }
+            }
+        }
         stage('Quality Gate (Shell Script)') {
             when {
                 expression { false } // Disabled: deprecated shell quality gate. Keep stage for history, skip execution.

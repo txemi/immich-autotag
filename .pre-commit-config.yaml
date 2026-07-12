@@ -1,0 +1,17 @@
+# pre-commit hooks for immich-autotag.
+# Install once:  pipx install pre-commit && pre-commit install
+# See https://pre-commit.com
+repos:
+  - repo: local
+    hooks:
+      # darnlink docs-link gate: fails the commit if any uuid-anchored Markdown
+      # link needs repair (e.g. a doc was moved but a link still points at the
+      # old path). Read-only. To fix:  darnlink . --write
+      - id: darnlink-docs-links
+        name: darnlink docs-link gate
+        entry: scripts/devtools/darnlink_docs_gate.sh
+        language: script
+        # darnlink builds a repo-wide uuid index, so run once over the tree
+        # (not per staged file) whenever any Markdown file changes.
+        files: \.md$
+        pass_filenames: false
