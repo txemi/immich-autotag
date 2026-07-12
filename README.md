@@ -269,7 +269,11 @@ If you would like to contribute, please see the new [Contributing Guide](./docs/
 ## 1.8. Support
 For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/txemi/immich-autotag/issues) ticketing system.
 
-## 1.9. License
+## 1.9. Other projects
+
+- [darnlink](https://github.com/txemi/darnlink) — self-healing Markdown links: repairs relative links by UUID when files move, and upgrades plain links to robust ones. No database, editor-agnostic, ships a pre-commit hook.
+
+## 1.10. License
 This project is licensed under the GNU GPL v3. See the [LICENSE](./LICENSE) file for details.
 
 
