@@ -1,3 +1,7 @@
+---
+uuid: 0fe0abb8-5ac1-4868-8e99-4210639a02fc
+---
+
 # 1. Contributing to Immich AutoTag
 
 Thank you for your interest in contributing to Immich AutoTag! This project is developed in spare time and all contributions are welcome.
@@ -84,7 +88,7 @@ Once these are in place, they will be enforced before any merge to `main`. **Unt
 - **Always target `develop` branch with your PRs, not `main`** (except for critical hotfixes, which require discussion first)
 
 ## 1.5. Getting Started
-- See the [Developer Guide](./development.md) for technical details and project structure.
+- See the [Developer Guide](./development.md) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 --> for technical details and project structure.
 - If you have questions, open an issue or start a discussion on GitHub.
 
 ## 1.6. Publishing

@@ -1,3 +1,7 @@
+---
+uuid: 351461cb-9f8e-46f4-acdd-545ec2f92e20
+---
+
 # Versioning and Release Workflow for immich-autotag
 
 ## Versioning conventions (SemVer + Quality Gate)

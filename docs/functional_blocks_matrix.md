@@ -27,5 +27,5 @@ This table lists the main functional blocks (features) of Immich AutoTag, their 
 - This table maps functional blocks to active issues in the v2.0 issue system (issues 0020+).
 - Legacy issues (0001-0019) have been archived and consolidated into the current thematic organization.
 - Issue links use the naming convention `NNNN-descriptive-slug` for consistency with the registry.
-- See [Issue Registry](./issues/registry.md) for the complete list of active and legacy issues.
+- See [Issue Registry](./issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf --> for the complete list of active and legacy issues.
 - Status indicates current implementation progress; "In progress" may include completed features with ongoing refinement.

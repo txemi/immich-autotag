@@ -1,3 +1,7 @@
+---
+uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6
+---
+
 # 1. Developer Guide: Immich Autotag
 
 
