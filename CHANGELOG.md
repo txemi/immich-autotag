@@ -1,7 +1,7 @@
 
 # Changelog
 
-All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md).
+All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md) <!-- uuid: 351461cb-9f8e-46f4-acdd-545ec2f92e20 -->.
 
 
 

@@ -7,11 +7,12 @@
 # darnlink anchors each internal Markdown link to the target file's `uuid`
 # (frontmatter + an inline `<!-- uuid: ... -->` comment). When a file moves,
 # the path in the link goes stale but the uuid still points at the target.
-# This gate runs darnlink in its default *report* mode (NO --write): it exits
-# non-zero if any anchored link needs repair, has an unresolved uuid, or a
-# target has invalid frontmatter. To fix locally:
+# This gate runs `darnlink check` (report-only, NO --write): BOTH axes in one
+# pass — integrity (broken/unresolvable anchored links + invalid frontmatter)
+# AND strict (a plain link whose target has a uuid, left un-anchored). Exit
+# 0 clean / 2 integrity / 3 strict-only. To fix locally:
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.1.1" darnlink . --write
+#     uvx --from "git+https://github.com/txemi/darnlink@v0.5.0" darnlink . --robustify --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -28,12 +29,12 @@
 #       build the uuid index, so scan the repo root, not a single file.
 set -euo pipefail
 
-# Pinned to an immutable commit SHA (== tag v0.1.1). Tags can be force-moved,
+# Pinned to an immutable commit SHA (== tag v0.5.0). Tags can be force-moved,
 # which would weaken CI reproducibility / supply-chain integrity, so we pin the
 # SHA and keep the tag only as a human-readable note.
-DARNLINK_REF="${DARNLINK_REF:-5929bb50590a86970a011d15e2f19a7e26e5a7c9}"  # v0.1.1
+DARNLINK_REF="${DARNLINK_REF:-70c142e9361eeead3d676cf71d384706bea17c78}"  # v0.5.0
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
-echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (read-only)"
-exec uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}"
+echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (check: integrity + strict, read-only)"
+exec uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}"
