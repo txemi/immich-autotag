@@ -45,7 +45,7 @@ editor lock-in. It is **not** a broken-link checker: it maintains the
 If the gate is red, a doc moved and a link is stale. Repair and commit:
 
 ```bash
-uvx --from "git+https://github.com/txemi/darnlink@v0.1.1" darnlink . --write
+uvx --from "git+https://github.com/txemi/darnlink@v0.5.0" darnlink . --write
 ```
 
 ## Status
