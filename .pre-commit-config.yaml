@@ -7,7 +7,7 @@ repos:
       # darnlink docs-link gate: fails the commit if any uuid-anchored Markdown
       # link needs repair (e.g. a doc was moved but a link still points at the
       # old path). Read-only. To fix:
-      #   uvx --from "git+https://github.com/txemi/darnlink@v0.1.1" darnlink . --write
+      #   uvx --from "git+https://github.com/txemi/darnlink@v0.5.0" darnlink . --write
       - id: darnlink-docs-links
         name: darnlink docs-link gate
         # invoked via `bash` (not relying on the file's executable bit), matching
