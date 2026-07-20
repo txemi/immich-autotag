@@ -185,7 +185,7 @@ You can run Immich AutoTag using any of the following methods:
 That's it! Your Immich autotagging tool is ready to use.
 
 > **Do you prefer to download the code and run it manually?**
-> See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) in the [Development Guide](./docs/development.md).
+> See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 --> in the [Development Guide](./docs/development.md) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 -->.
 
 
 ## 1.5. Reviewing Results: Example Links
@@ -262,9 +262,9 @@ You can define also special tags or albums for photos that do not belong to any 
 
 ## 1.7. Development
 
-For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md).
+For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 -->.
 
-If you would like to contribute, please see the new [Contributing Guide](./docs/CONTRIBUTING.md). Any help is welcome—especially with re-enabling GitHub Actions (CI/CD), which is currently disabled due to the challenge of embedding the Immich client library in the build process. This project is developed in spare time, so all contributions are greatly appreciated!
+If you would like to contribute, please see the new [Contributing Guide](./docs/CONTRIBUTING.md) <!-- uuid: 0fe0abb8-5ac1-4868-8e99-4210639a02fc -->. Any help is welcome—especially with re-enabling GitHub Actions (CI/CD), which is currently disabled due to the challenge of embedding the Immich client library in the build process. This project is developed in spare time, so all contributions are greatly appreciated!
 
 ## 1.8. Support
 For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/txemi/immich-autotag/issues) ticketing system.
