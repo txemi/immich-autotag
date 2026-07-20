@@ -20,7 +20,7 @@
 #   - GitHub Actions (.github/workflows/docs-links.yml)
 #
 # Env overrides:
-#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.1.1)
+#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.5.0)
 #   DARNLINK_FROM  full uvx --from spec (path or git+)  (default: the pinned SHA)
 #                  e.g. DARNLINK_FROM=/path/to/local/darnlink for local dev
 #
