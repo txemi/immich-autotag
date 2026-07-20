@@ -12,7 +12,7 @@
 # AND strict (a plain link whose target has a uuid, left un-anchored). Exit
 # 0 clean / 2 integrity / 3 strict-only. To fix locally:
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.5.0" darnlink . --robustify --write
+#     uvx --from "git+https://github.com/txemi/darnlink@v0.6.0" darnlink . --robustify --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -32,7 +32,7 @@ set -euo pipefail
 # Pinned to an immutable commit SHA (== tag v0.5.0). Tags can be force-moved,
 # which would weaken CI reproducibility / supply-chain integrity, so we pin the
 # SHA and keep the tag only as a human-readable note.
-DARNLINK_REF="${DARNLINK_REF:-70c142e9361eeead3d676cf71d384706bea17c78}"  # v0.5.0
+DARNLINK_REF="${DARNLINK_REF:-a5f7b7ab54735a8198784293b67f8d0980aa1196}"  # v0.6.0
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
