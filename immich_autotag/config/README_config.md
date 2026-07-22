@@ -1,3 +1,7 @@
+---
+uuid: b2884393-d332-4e6f-bf55-e93b6cdfb4f9
+---
+
 # Immich Autotag Configuration Guide
 
 This document explains how to configure the Immich autotag system for your instance.

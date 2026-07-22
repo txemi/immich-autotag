@@ -7,12 +7,20 @@
 # darnlink anchors each internal Markdown link to the target file's `uuid`
 # (frontmatter + an inline `<!-- uuid: ... -->` comment). When a file moves,
 # the path in the link goes stale but the uuid still points at the target.
-# This gate runs `darnlink check` (report-only, NO --write): BOTH axes in one
-# pass — integrity (broken/unresolvable anchored links + invalid frontmatter)
-# AND strict (a plain link whose target has a uuid, left un-anchored). Exit
-# 0 clean / 2 integrity / 3 strict-only. To fix locally:
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.6.0" darnlink . --robustify --write
+# This gate runs at the MAXIMUM (fail-closed) level, report-only (NO --write):
+#
+#     darnlink . --robustify --create-frontmatter
+#
+# It fails the build if ANY internal Markdown link points at a file that does
+# not carry a `uuid` in its frontmatter. In other words: every link target is
+# uuid-anchored, so no refactor (moving/renaming a file or a whole subtree) can
+# ever silently break a link — darnlink can always re-anchor by uuid. This is
+# strictly stronger than the previous `darnlink check` (integrity + strict);
+# it additionally requires that *linkable* targets be uuid-bearing.
+# Exit 0 = clean, non-zero = findings. To fix locally (writes uuids):
+#
+#     uvx --from "git+https://github.com/txemi/darnlink@v0.7.1" darnlink . --robustify --create-frontmatter --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -29,12 +37,12 @@
 #       build the uuid index, so scan the repo root, not a single file.
 set -euo pipefail
 
-# Pinned to an immutable commit SHA (== tag v0.5.0). Tags can be force-moved,
+# Pinned to an immutable commit SHA (== tag v0.7.1). Tags can be force-moved,
 # which would weaken CI reproducibility / supply-chain integrity, so we pin the
 # SHA and keep the tag only as a human-readable note.
-DARNLINK_REF="${DARNLINK_REF:-a5f7b7ab54735a8198784293b67f8d0980aa1196}"  # v0.6.0
+DARNLINK_REF="${DARNLINK_REF:-129783c5826705b9665d5b429b320bf493cf1cd9}"  # v0.7.1
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
-echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (check: integrity + strict, read-only)"
-exec uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}"
+echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (max: fail-closed, read-only)"
+exec uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" --robustify --create-frontmatter

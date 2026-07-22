@@ -1,3 +1,7 @@
+---
+uuid: 35cc748a-37a9-4b5e-beae-637f7b35c26e
+---
+
 # AI Context · 004 · Temp-unclassified albums for already-classified assets
 
 Last verified: 2026-04-26

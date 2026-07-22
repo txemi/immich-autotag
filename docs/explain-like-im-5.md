@@ -1,3 +1,7 @@
+---
+uuid: 5246c36f-d80d-4eec-80a7-920e5a6dba68
+---
+
 # Immich AutoTag – Explain Like I'm 5
 
 Imagine you have hundreds of thousands of photos from many years, different phones, computers, and old folders. Some are important memories, some are just memes or random images, and everything is mixed up. Over time, you lost track of what’s organized and what’s not. Some photos aren’t in any album, some have the wrong date, and some are duplicates.

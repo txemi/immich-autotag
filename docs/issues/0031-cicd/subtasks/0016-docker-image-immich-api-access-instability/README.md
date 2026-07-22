@@ -1,3 +1,7 @@
+---
+uuid: d9c4095f-d264-459c-b409-a90a168238bd
+---
+
 # 0016 · Docker Image Immich API Access Instability
 
 ## Status
