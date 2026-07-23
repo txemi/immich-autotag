@@ -1,3 +1,7 @@
+---
+uuid: 252d0f15-e793-4594-b670-dc099ac8e60a
+---
+
 # Issue 0034 · Branching and Development Workflow
 
 This `README` describes **the purpose of this folder** and links only to documentation/subtasks that **currently exist** under `docs/issues/0034-branching-and-devel-workflow/`.

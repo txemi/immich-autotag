@@ -1,3 +1,7 @@
+---
+uuid: 0443c418-37e9-4a30-be7a-ec1286afb322
+---
+
 # Issue 0031 · CI/CD
 
 This `README` describes **the purpose of this folder** and links only to documentation/subtasks that **currently exist** under `docs/issues/0031-cicd/`.

@@ -37,7 +37,7 @@
 
 ## References
 - [0021 - Profiling & Performance Reports](../)
-- [Memory snapshots and analysis scripts](../../../..)
+- [Memory snapshots and analysis scripts](../../../..) <!-- uuid: 78985aa6-836b-4e7f-818b-958d5834facf -->
 - [Relevant code: AssetManager, AssetResponseWrapper, asset_response_dto]
 
 ---

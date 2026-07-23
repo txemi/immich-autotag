@@ -18,7 +18,7 @@ This issue will serve as a reference point for:
 ---
 
 ## Subtasks
-- [001-structure-review-and-improvement/](subtasks/001-structure-review-and-improvement/): Review and improvement of the structure and organization of the task manager.
+- [001-structure-review-and-improvement/](subtasks/001-structure-review-and-improvement/) <!-- uuid: c269775d-021b-49ee-8c74-a63a450d0533 -->: Review and improvement of the structure and organization of the task manager.
 
 ---
 
