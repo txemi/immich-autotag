@@ -20,7 +20,7 @@
 # it additionally requires that *linkable* targets be uuid-bearing.
 # Exit 0 = clean, non-zero = findings. To fix locally (writes uuids):
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.13.0" darnlink . --robustify --create-frontmatter --write
+#     uvx --from "git+https://github.com/txemi/darnlink@v0.15.0" darnlink . --robustify --create-frontmatter --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -40,7 +40,7 @@ set -euo pipefail
 # Pinned to an immutable commit SHA (== tag v0.7.1). Tags can be force-moved,
 # which would weaken CI reproducibility / supply-chain integrity, so we pin the
 # SHA and keep the tag only as a human-readable note.
-DARNLINK_REF="${DARNLINK_REF:-23a4bdad7c6bfd9092b9a774623dbaaff327149f}"  # v0.13.0
+DARNLINK_REF="${DARNLINK_REF:-35805f1ff9e7821ded81a79943fe978fee0233e5}"  # v0.15.0
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
