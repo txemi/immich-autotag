@@ -8,15 +8,17 @@
 # (frontmatter + an inline `<!-- uuid: ... -->` comment). When a file moves,
 # the path in the link goes stale but the uuid still points at the target.
 #
-# This gate runs at the MAXIMUM (fail-closed) level, report-only (NO --write):
+# This gate runs at the MAXIMUM (fail-closed) level, report-only (NO --write),
+# as TWO passes (mode=max = the union of both axes; `set -e` aborts on the first):
 #
-#     darnlink . --robustify --create-frontmatter
+#     darnlink check .                          # integrity + strict axis
+#     darnlink . --robustify --create-frontmatter   # create-frontmatter axis
 #
 # It fails the build if ANY internal Markdown link points at a file that does
 # not carry a `uuid` in its frontmatter. In other words: every link target is
 # uuid-anchored, so no refactor (moving/renaming a file or a whole subtree) can
-# ever silently break a link — darnlink can always re-anchor by uuid. This is
-# strictly stronger than the previous `darnlink check` (integrity + strict);
+# ever silently break a link — darnlink can always re-anchor by uuid. The added
+# `check` pass also covers integrity + strict (broken robust links / un-anchored);
 # it additionally requires that *linkable* targets be uuid-bearing.
 # Exit 0 = clean, non-zero = findings. To fix locally (writes uuids):
 #
