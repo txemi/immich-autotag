@@ -9,10 +9,11 @@
 # the path in the link goes stale but the uuid still points at the target.
 #
 # This gate runs at the MAXIMUM (fail-closed) level, report-only (NO --write),
-# as TWO passes (mode=max = the union of both axes; `set -e` aborts on the first):
+# as THREE passes (mode=max = the union of all axes; `set -e` aborts on the first):
 #
 #     darnlink check .                          # integrity + strict axis
 #     darnlink . --robustify --create-frontmatter   # create-frontmatter axis
+#     darnlink web-check . --online             # web axis (cross-repo links; skip: DARNLINK_SKIP_WEB=1)
 #
 # It fails the build if ANY internal Markdown link points at a file that does
 # not carry a `uuid` in its frontmatter. In other words: every link target is
@@ -47,8 +48,16 @@ DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK
 SCAN_ROOT="${1:-.}"
 
 echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (max: fail-closed, read-only)"
-# mode=max = check (integrity + strict) UNION create-frontmatter. `check` catches broken robust
-# links + un-anchored plain links; the second pass catches plain links whose target has no uuid.
-# `set -e` aborts on the first failure -> a true superset of both axes.
+# mode=max = check (integrity + strict) UNION create-frontmatter UNION web. `check` catches broken
+# robust links + un-anchored plain links; the 2nd pass catches plain links whose target has no uuid;
+# the 3rd (web) verifies cross-repo GitHub links still resolve to the destination's uuid (read online).
+# `set -e` aborts on the first failure -> a true superset of all axes.
 uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}"
-exec uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" --robustify --create-frontmatter
+uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" --robustify --create-frontmatter
+
+# WEB axis: cross-repo links to PUBLIC repos must still resolve to the destination file's uuid (read
+# online, tokenless). Anchored with `<!-- web-uuid: X -->`. Fail-closed on a broken cross-repo link.
+# Skippable offline (DARNLINK_SKIP_WEB=1, e.g. a disconnected pre-commit); pre-push/CI always has network.
+if [ "${DARNLINK_SKIP_WEB:-0}" != "1" ]; then
+  exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" --online
+fi
