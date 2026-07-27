@@ -9,10 +9,11 @@
 # the path in the link goes stale but the uuid still points at the target.
 #
 # This gate runs at the MAXIMUM (fail-closed) level, report-only (NO --write),
-# as TWO passes (mode=max = the union of both axes; `set -e` aborts on the first):
+# as THREE passes (mode=max = the union of all axes; `set -e` aborts on the first):
 #
 #     darnlink check .                          # integrity + strict axis
 #     darnlink . --robustify --create-frontmatter   # create-frontmatter axis
+#     darnlink web-check . --online             # web axis (cross-repo links; skip: DARNLINK_SKIP_WEB=1)
 #
 # It fails the build if ANY internal Markdown link points at a file that does
 # not carry a `uuid` in its frontmatter. In other words: every link target is
