@@ -37,6 +37,11 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
+            // Pin to the batch agent: the checkpoint chain (logs_local/) lives in this
+            // node's workspace, and sequential single-node execution is required
+            // (see issue 004-active-run-monitoring). Without a label the build can land
+            // on the Windows agent (no docker) or the controller.
+            label 'ub20jenkins4ub20'
             // Mounts ~/.ssh from host into the container as read-only for private key and known_hosts access
             // Ensure $HOME/.ssh exists and contains the required key and known_hosts files
             args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
