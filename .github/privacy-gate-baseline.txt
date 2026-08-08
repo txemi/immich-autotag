@@ -1,0 +1,10 @@
+# Pre-existing private references, tolerated so the gate can be adopted today.
+# Format: file:line. Never the offending text — this file is public.
+# This list may only shrink. Adding to it means letting a new leak through.
+
+# The Jenkins credential ID embeds the CI host's internal name. Unlike the rest, this is CODE, not
+# documentation: `withCredentials` resolves it against a credential that exists in Jenkins under
+# exactly this id, so editing the string alone breaks tag pushing. Clearing it is an infrastructure
+# change, in this order: create the credential again in Jenkins under a neutral id, point the
+# Jenkinsfile at it, delete the old one, then delete this line.
+Jenkinsfile:17

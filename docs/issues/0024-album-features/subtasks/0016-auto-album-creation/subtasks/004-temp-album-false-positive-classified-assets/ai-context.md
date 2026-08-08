@@ -85,8 +85,8 @@ At the time, two Jenkins builds were running simultaneously on `fix/conversion-a
 
 | Build | Started | Status at discovery |
 |---|---|---|
-| [#4](http://ubuntu20jenkins.ad3.lab:8080/job/immich-autotag/job/fix%252Fconversion-album-move/4/) | 2026-04-24 12:34 | Conversion phase, ~78%, removing `autotag_output_unknown` |
-| [#13](http://ubuntu20jenkins.ad3.lab:8080/job/immich-autotag/job/fix%252Fconversion-album-move/13/) | 2026-04-25 19:54 | Classification phase, ~9.5%, active `autotag_input_meme` removals |
+| #4 | 2026-04-24 12:34 | Conversion phase, ~78%, removing `autotag_output_unknown` |
+| #13 | 2026-04-25 19:54 | Classification phase, ~9.5%, active `autotag_input_meme` removals |
 
 **Both builds were stopped.** On 2026-04-26 the second Jenkins node was taken down to prevent parallel runs and make future runs easier to diagnose.
 
