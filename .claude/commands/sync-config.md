@@ -28,4 +28,4 @@ Synchronise the private config file with the latest template, preserving all per
 2. Identify differences: what the template has that the private config lacks or has outdated.
 3. Show a brief summary of the planned changes before editing.
 4. Apply the changes to `~/.config/immich_autotag/config.py`.
-5. Verify the updated file loads without errors: `python -m immich_autotag.config.user_config_template` equivalent — run `python -c "exec(open('~/.config/immich_autotag/config.py').read())" 2>&1 | tail -3` and confirm no traceback.
+5. Verify the updated file loads without errors: `python -m immich_autotag.config.user_config_template` equivalent — run `python -c "import os; exec(open(os.path.expanduser('~/.config/immich_autotag/config.py')).read())" 2>&1 | tail -3` and confirm no traceback.
