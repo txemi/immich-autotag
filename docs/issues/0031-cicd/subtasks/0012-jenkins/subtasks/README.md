@@ -1,10 +1,14 @@
+---
+uuid: beff4072-d20e-432f-a46f-f28e074c54bd
+---
+
 # Jenkins Retention Strategies - Subtasks
 
 ## Quick Choice
 
 **Do you have disk space problems RIGHT NOW?**
-- **YES** → Go to [001](001-jenkins-build-retention-groovy-script/) (quick cleanup)
-- **NO** → Go to [002](002-jenkins-retention-pipeline-plugins-analysis/) (prevent future)
+- **YES** → Go to [001](001-jenkins-build-retention-groovy-script/) <!-- uuid: 12650f21-93dd-4011-b113-e49b0a3fa31e --> (quick cleanup)
+- **NO** → Go to [002](002-jenkins-retention-pipeline-plugins-analysis/) <!-- uuid: 9896cffa-88f5-4757-a603-ad53e1a33fb2 --> (prevent future)
 - **NOT SURE** → Start with 001, then implement 002
 
 ---
@@ -34,7 +38,7 @@
 3. If satisfied, set dryRun = false and run (execute)
 4. Schedule monthly via Scriptler or Pipeline job
 
-**[→ Go to Subtask 001](001-jenkins-build-retention-groovy-script/)**
+**[→ Go to Subtask 001](001-jenkins-build-retention-groovy-script/) <!-- uuid: 12650f21-93dd-4011-b113-e49b0a3fa31e -->**
 
 ---
 
@@ -75,7 +79,7 @@ post {
 - Version-controlled in Jenkinsfile
 - Works per-job or globally
 
-**[→ Go to Subtask 002](002-jenkins-retention-pipeline-plugins-analysis/)**
+**[→ Go to Subtask 002](002-jenkins-retention-pipeline-plugins-analysis/) <!-- uuid: 9896cffa-88f5-4757-a603-ad53e1a33fb2 -->**
 
 ---
 
@@ -90,7 +94,7 @@ post {
 - Define safe relaunch strategy (self-relaunch vs orchestrator job).
 - Add mandatory guardrails (`disableConcurrentBuilds`, `timeout`, branch guard, kill switch).
 
-**[→ Go to Subtask 003](003-continuous-execution-resilience/)**
+**[→ Go to Subtask 003](003-continuous-execution-resilience/) <!-- uuid: dcc4c27f-5d61-4098-9555-287618f17459 -->**
 
 ---
 
@@ -138,6 +142,6 @@ Why both?
 
 **Choose your path:**
 
-1. [001: Groovy Script](001-jenkins-build-retention-groovy-script/) - Immediate cleanup
-2. [002: Pipeline & Plugins](002-jenkins-retention-pipeline-plugins-analysis/) - Sustainable prevention
-3. [003: Continuous Execution / Auto-Relaunch](003-continuous-execution-resilience/) - Maximize processing continuity (proposed)
+1. [001: Groovy Script](001-jenkins-build-retention-groovy-script/) <!-- uuid: 12650f21-93dd-4011-b113-e49b0a3fa31e --> - Immediate cleanup
+2. [002: Pipeline & Plugins](002-jenkins-retention-pipeline-plugins-analysis/) <!-- uuid: 9896cffa-88f5-4757-a603-ad53e1a33fb2 --> - Sustainable prevention
+3. [003: Continuous Execution / Auto-Relaunch](003-continuous-execution-resilience/) <!-- uuid: dcc4c27f-5d61-4098-9555-287618f17459 --> - Maximize processing continuity (proposed)

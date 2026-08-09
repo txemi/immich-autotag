@@ -1,3 +1,7 @@
+---
+uuid: f58163b4-d269-449f-bc3d-53184168f084
+---
+
 # Issue 0032 · User Management and Access Control Feature
 
 This `README` describes **the purpose of this folder** and links only to documentation/subtasks that **currently exist** under `docs/issues/0032-user-management-and-access-control-feature/`.

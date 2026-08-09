@@ -1,3 +1,7 @@
+---
+uuid: e3240f50-01a0-41f8-8fbc-c8b9f8978e5f
+---
+
 # Issue 0028 · Project Management
 
 This `README` describes **the purpose of this folder** and links only to documentation/subtasks that **currently exist** under `docs/issues/0028-project-management/`.

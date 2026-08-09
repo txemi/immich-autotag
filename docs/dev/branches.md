@@ -54,16 +54,16 @@ This document outlines the branching strategy used in immich-autotag, particular
 
 ## Related Documentation
 
-- **Versioning & Release Workflow:** See [versioning_workflow.md](./versioning_workflow.md)
+- **Versioning & Release Workflow:** See [versioning_workflow.md](./versioning_workflow.md) <!-- uuid: 351461cb-9f8e-46f4-acdd-545ec2f92e20 -->
   - How versions are tagged
   - When to create tags
   - How develop relates to version management
 
-- **Contributing Guidelines:** See [../CONTRIBUTING.md](../CONTRIBUTING.md)
+- **Contributing Guidelines:** See [../CONTRIBUTING.md](../CONTRIBUTING.md) <!-- uuid: 0fe0abb8-5ac1-4868-8e99-4210639a02fc -->
   - General contribution process
   - PR requirements
 
-- **Git Hygiene Practices:** See [../development.md](../development.md)
+- **Git Hygiene Practices:** See [../development.md](../development.md) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 -->
   - Commit message conventions
   - When to squash vs. merge
 

@@ -1,3 +1,7 @@
+---
+uuid: a99a26b1-b93b-4c72-a7df-7d9149721f7a
+---
+
 # Python QualityGate
 
 Python QualityGate is a modular, extensible tool designed to enforce code quality standards in Python projects. Inspired by CI/CD quality gates, it provides a unified framework to run static analysis, formatting, linting, and custom policy checks in a configurable and pluggable way.

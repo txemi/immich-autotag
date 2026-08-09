@@ -45,7 +45,7 @@ Each issue resides in its own numbered folder (`00XX-slug`):
 
 ## Registry
 
-See [`registry.md`](./registry.md) for a complete list of active issues with status and version information.
+See [`registry.md`](./registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf --> for a complete list of active issues with status and version information.
 
 ---
 

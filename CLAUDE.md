@@ -12,13 +12,13 @@ was merged into main as PR #57 and released as `v0.80.10`). Two things are in pr
    The chain restarts once on the new branch (one-time `skip_n=0`) and chains forward
    from there.
    → Read before touching CI or the stats/perf code:
-   [`docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md`](docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md)
+   [`docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md`](docs/issues/0031-cicd/subtasks/0012-jenkins/subtasks/004-active-run-monitoring/ai-context.md) <!-- uuid: 6471286b-48a1-40c8-a2ff-16e3692b102c -->
 
 2. **Bug — temp-unclassified albums for already-classified assets** — under observation.
    First-layer fix is in main; a second-layer fix exists locally on `ops/batch-processing`
    but is intentionally not committed until sequential runs confirm it is needed.
    → Read before touching conversion, classification, or temp-album logic:
-   [`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
+   [`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md) <!-- uuid: 35cc748a-37a9-4b5e-beae-637f7b35c26e -->
 
 ---
 

@@ -1,7 +1,11 @@
+---
+uuid: 2582dca7-b9de-491d-a906-7603c2d682b8
+---
+
 
 # Changelog
 
-All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md).
+All versions follow [Semantic Versioning](https://semver.org/). For details on how version digits are used and the meaning of Quality Gate points, see [`docs/dev/versioning_workflow.md`](docs/dev/versioning_workflow.md) <!-- uuid: 351461cb-9f8e-46f4-acdd-545ec2f92e20 -->.
 
 
 
@@ -466,7 +470,7 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 ## [0.74.4] - 2026-02-01
 **Description:** Quality Gate milestone - Python modular Quality Gate system fully operational with all checks passing in Jenkins CI/CD pipeline.
 ### Added
-- Modular, object-oriented Python Quality Gate system replacing hardcoded Bash scripts. ([feature](scripts/devtools/quality_gate_py/))
+- Modular, object-oriented Python Quality Gate system replacing hardcoded Bash scripts. ([feature](scripts/devtools/quality_gate_py/) <!-- uuid: a99a26b1-b93b-4c72-a7df-7d9149721f7a -->)
 - Dynamic registration of custom log levels with automatic detection and validation. ([feature](immich_autotag/logging/))
 - Robust error handling in `jscpd` check with fallback to `npx` for environments without global installation.
 - Complete test coverage for Quality Gate checks with per-module validation.

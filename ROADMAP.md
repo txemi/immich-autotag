@@ -1,6 +1,10 @@
+---
+uuid: 7cd9075a-da44-4800-9f79-e340b6771d6f
+---
+
 # 1. Roadmap: Immich AutoTag
 
-> **Note:** This roadmap is pending update. For the most up-to-date information, please refer to the [Changelog](./CHANGELOG.md).
+> **Note:** This roadmap is pending update. For the most up-to-date information, please refer to the [Changelog](./CHANGELOG.md) <!-- uuid: 2582dca7-b9de-491d-a906-7603c2d682b8 -->.
 
 
 This document lists upcoming rules, features, and improvements planned for the Immich AutoTag project. Please update this file as new ideas or requirements arise.

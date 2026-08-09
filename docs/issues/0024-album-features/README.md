@@ -1,3 +1,7 @@
+---
+uuid: 186d6b69-5c4f-45d0-9b73-594ce5d73ff5
+---
+
 # Issue 0024 · Album Features
 
 This `README` describes **the purpose of this folder** and links only to documentation/subtasks that **currently exist** under `docs/issues/0024-album-features/`.

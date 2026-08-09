@@ -1,3 +1,7 @@
+---
+uuid: 9896cffa-88f5-4757-a603-ad53e1a33fb2
+---
+
 # Jenkins: Build/Workspace Retention and Cleanup via Pipeline and Plugins
 
 ## Context

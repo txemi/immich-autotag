@@ -1,3 +1,7 @@
+---
+uuid: cd591adc-fcd7-4048-96c1-63cad439664f
+---
+
 # 0016.1 - Create Temporary Albums from Date (COMPLETED)
 
 **Status:** Completed  

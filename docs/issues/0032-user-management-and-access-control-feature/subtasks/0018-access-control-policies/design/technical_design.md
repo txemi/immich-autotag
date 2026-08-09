@@ -1,3 +1,7 @@
+---
+uuid: 00aef780-c8c6-49ee-b4d3-2020470eb433
+---
+
 # Technical Design - 0018 User Groups and Album Policies
 
 ## Overview
