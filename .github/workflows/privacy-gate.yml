@@ -50,9 +50,10 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -uo pipefail
-          # Orden de BYTES, no del locale. `comm` exige que sus dos entradas esten ordenadas con el
-          # mismo criterio que el suyo; con un locale como es_ES.UTF-8, `sort` colaciona distinto y
-          # comm empieza a dar entradas del baseline como si fueran nuevas. Visto en pruebas.
+          # BYTE order, not locale order. `comm` requires both of its inputs to be sorted with
+          # the same collation it uses itself; under a locale such as es_ES.UTF-8, `sort` collates
+          # differently and `comm` starts reporting baseline entries as if they were new. Seen in
+          # testing.
           export LC_ALL=C
 
           if [ -z "${DENYLIST:-}" ]; then
