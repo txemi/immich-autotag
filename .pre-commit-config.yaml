@@ -7,7 +7,7 @@ repos:
       # darnlink docs-link gate (max / fail-closed): fails the commit if any
       # internal Markdown link points at a file without a `uuid`, or if a
       # uuid-anchored link needs repair (e.g. a doc was moved). Read-only. Fix:
-      #   uvx --from "git+https://github.com/txemi/darnlink@v0.17.0" darnlink . --robustify --create-frontmatter --write
+      #   uvx --from "git+https://github.com/txemi/darnlink@v0.19.1" darnlink . --robustify --create-frontmatter --write
       - id: darnlink-docs-links
         name: darnlink docs-link gate
         # invoked via `bash` (not relying on the file's executable bit), matching
