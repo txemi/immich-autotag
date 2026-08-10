@@ -49,7 +49,7 @@ set -euo pipefail
 # v0.16.0. A pin whose human-readable note lies is worse than one with no note --
 # it is what an auditor reads instead of resolving the SHA. When you bump the SHA
 # on the line below, bump BOTH mentions or neither.
-DARNLINK_REF="${DARNLINK_REF:-19d39496149887840eca52afe39a7a262f1357af}"  # v0.20.2
+DARNLINK_REF="${DARNLINK_REF:-19d39496149887840eca52afe39a7a262f1357af}" # v0.20.2
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
@@ -65,5 +65,5 @@ uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" --robustify --create-front
 # online, tokenless). Anchored with `<!-- web-uuid: X -->`. Fail-closed on a broken cross-repo link.
 # Skippable offline (DARNLINK_SKIP_WEB=1, e.g. a disconnected pre-commit); pre-push/CI always has network.
 if [ "${DARNLINK_SKIP_WEB:-0}" != "1" ]; then
-  exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" --online
+	exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" --online
 fi
