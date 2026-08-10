@@ -42,11 +42,24 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            // Pin to the batch agent: the checkpoint chain (logs_local/) lives in this
+            // Pin to the batch agent: the checkpoint chain (logs_local/) lives in that
             // node's workspace, and sequential single-node execution is required
             // (see issue 004-active-run-monitoring). Without a label the build can land
             // on the Windows agent (no docker) or the controller.
-            label 'ub20jenkins4ub20'
+            //
+            // The label is a PURPOSE, not a hostname. It used to say
+            // 'ub20jenkins4ub20', which happens to work because Jenkins exposes every
+            // node's own name as an implicit label -- but that is not a label anyone
+            // declared: this controller only defines two, `linux` and `windows`. Binding
+            // the pipeline to a machine name means renaming or replacing that machine
+            // requires a code change and a PR to a protected branch, and it silently
+            // bypasses the label scheme.
+            //
+            // `immich-batch` is declared on the node in Jenkins (2026-08-10). Moving the
+            // batch to another machine is now a checkbox there, not a commit here. NOTE:
+            // it is deliberately assigned to ONE node -- until the checkpoint stops
+            // living in a node's workspace, a second node would reprocess from zero.
+            label 'immich-batch'
             // Mounts ~/.ssh from host into the container as read-only for private key and known_hosts access
             // Ensure $HOME/.ssh exists and contains the required key and known_hosts files
             args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
