@@ -300,17 +300,6 @@ class ModificationKind(Enum):
         requires_album=False,
         requires_tag=False,
     )
-    # One album's permission sync failed and was skipped. Distinct from
-    # ERROR_PERMISSION_DENIED, which is about *us* lacking permission: this one says the
-    # album is known and reachable but its sync raised, so the album keeps whatever
-    # sharing it had. Carries the album so the report can name it.
-    ERROR_ALBUM_PERMISSION_SYNC_FAILED = ModificationKindInfo(
-        name="ERROR_ALBUM_PERMISSION_SYNC_FAILED",
-        level=ModificationLevel.ERROR,
-        requires_asset=False,
-        requires_album=True,
-        requires_tag=False,
-    )
     ERROR_NETWORK_TEMPORARY = ModificationKindInfo(
         name="ERROR_NETWORK_TEMPORARY",
         level=ModificationLevel.ERROR,
