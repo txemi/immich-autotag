@@ -23,7 +23,7 @@
 # it additionally requires that *linkable* targets be uuid-bearing.
 # Exit 0 = clean, non-zero = findings. To fix locally (writes uuids):
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.20.2" darnlink . --robustify --create-frontmatter --write
+#     uvx --from "git+https://github.com/txemi/darnlink@v0.20.3" darnlink . --robustify --create-frontmatter --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -31,7 +31,7 @@
 #   - GitHub Actions (.github/workflows/docs-links.yml)
 #
 # Env overrides:
-#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.20.2)
+#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.20.3)
 #   DARNLINK_FROM  full uvx --from spec (path or git+)  (default: the pinned SHA)
 #                  e.g. DARNLINK_FROM=/path/to/local/darnlink for local dev
 #
@@ -40,16 +40,16 @@
 #       build the uuid index, so scan the repo root, not a single file.
 set -euo pipefail
 
-# Pinned to an immutable commit SHA (== tag v0.20.2). Tags can be force-moved,
+# Pinned to an immutable commit SHA (== tag v0.20.3). Tags can be force-moved,
 # which would weaken CI reproducibility / supply-chain integrity, so we pin the
 # SHA and keep the tag only as a human-readable note.
 #
 # ^ That note is the WHOLE point of the tag comment, and it went stale for four
-# releases: the SHA was bumped v0.16.0 -> v0.20.2 while this line kept saying
+# releases: the SHA was bumped v0.16.0 -> v0.20.3 while this line kept saying
 # v0.16.0. A pin whose human-readable note lies is worse than one with no note --
 # it is what an auditor reads instead of resolving the SHA. When you bump the SHA
 # on the line below, bump BOTH mentions or neither.
-DARNLINK_REF="${DARNLINK_REF:-19d39496149887840eca52afe39a7a262f1357af}" # v0.20.2
+DARNLINK_REF="${DARNLINK_REF:-66a9647b2a78fcde65635af8660696cb948e7105}" # v0.20.3
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
