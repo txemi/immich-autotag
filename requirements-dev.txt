@@ -1,7 +1,10 @@
 pylint
 ssort @ git+https://github.com/bwhmather/ssort.git@0.16.0
 
-ruff
+# ruff 0.16.0 (jul-2026) enables new default rules (UP/RUF/PIE/BLE...) -> ~800
+# findings on this codebase and the Quality Gate fails. Pin below 0.16 until the
+# findings are triaged (0.15.0 verified clean: "All checks passed!").
+ruff<0.16
 black
 isort
 flake8

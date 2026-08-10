@@ -1,6 +1,11 @@
 // ==================== CONFIG FLAGS ====================
 def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
-def ENABLE_AUTO_CHAIN = true      // Set to true to auto-trigger the next build on success
+// Auto-chain: on success the build re-triggers itself, so the batch keeps walking the library
+// without anyone pressing a button. It belongs ONLY to the operational branch: on any other
+// branch it would spin a second infinite loop competing for the SAME single agent
+// (ub20jenkins4ub20), where each run can take hours. main is for validating, not for
+// processing the library.
+def ENABLE_AUTO_CHAIN = (env.BRANCH_NAME == 'ops/batch-processing')
                                   // (keeps the batch-processing chain self-perpetuating
                                   // without external dispatch). Failure stops the chain
                                   // by design — re-enable manually after investigating.
@@ -37,6 +42,11 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
+            // Pin to the batch agent: the checkpoint chain (logs_local/) lives in this
+            // node's workspace, and sequential single-node execution is required
+            // (see issue 004-active-run-monitoring). Without a label the build can land
+            // on the Windows agent (no docker) or the controller.
+            label 'ub20jenkins4ub20'
             // Mounts ~/.ssh from host into the container as read-only for private key and known_hosts access
             // Ensure $HOME/.ssh exists and contains the required key and known_hosts files
             args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
