@@ -3,8 +3,8 @@ def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
 // Auto-chain: on success the build re-triggers itself, so the batch keeps walking the library
 // without anyone pressing a button. It belongs ONLY to the operational branch: on any other
 // branch it would spin a second infinite loop competing for the SAME single agent
-// (ub20jenkins4ub20), where each run can take hours. main is for validating, not for
-// processing the library.
+// (the one carrying the `immich-batch` label), where each run can take hours. main is
+// for validating, not for processing the library.
 def ENABLE_AUTO_CHAIN = (env.BRANCH_NAME == 'ops/batch-processing')
                                   // (keeps the batch-processing chain self-perpetuating
                                   // without external dispatch). Failure stops the chain
