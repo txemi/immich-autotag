@@ -66,19 +66,24 @@ SCAN_ROOT="${1:-.}"
 # This is repo-wide on purpose, not branch-specific: Jenkinsfile runs run_app.sh on
 # EVERY branch and archives logs_local/*_PID*/**, so main produces them too and would
 # hit the same wall as soon as it got past the earlier gates.
-DARNLINK_EXCLUDES=(--exclude 'logs_local' --exclude '_archive')
+#
+# ONE entry, not two. The archived cycles live at logs_local/_archive/cycle-*, so they
+# are already covered. Excluding '_archive' as well would be redundant here and too
+# broad everywhere else: excludes are directory-NAME globs, so it would silently skip
+# any _archive/ added anywhere in the repo later. Narrow beats convenient in a gate.
+DARNLINK_EXCLUDES=(--exclude 'logs_local')
 
 echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (max: fail-closed, read-only)"
 # mode=max = check (integrity + strict) UNION create-frontmatter UNION web. `check` catches broken
 # robust links + un-anchored plain links; the 2nd pass catches plain links whose target has no uuid;
 # the 3rd (web) verifies cross-repo GitHub links still resolve to the destination's uuid (read online).
 # `set -e` aborts on the first failure -> a true superset of all axes.
-uvx --from "${DARNLINK_FROM}" darnlink check "${DARNLINK_EXCLUDES[@]}" "${SCAN_ROOT}"
-uvx --from "${DARNLINK_FROM}" darnlink "${DARNLINK_EXCLUDES[@]}" "${SCAN_ROOT}" --robustify --create-frontmatter
+uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}"
+uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --robustify --create-frontmatter
 
 # WEB axis: cross-repo links to PUBLIC repos must still resolve to the destination file's uuid (read
 # online, tokenless). Anchored with `<!-- web-uuid: X -->`. Fail-closed on a broken cross-repo link.
 # Skippable offline (DARNLINK_SKIP_WEB=1, e.g. a disconnected pre-commit); pre-push/CI always has network.
 if [ "${DARNLINK_SKIP_WEB:-0}" != "1" ]; then
-	exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${DARNLINK_EXCLUDES[@]}" "${SCAN_ROOT}" --online
+	exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --online
 fi
