@@ -53,17 +53,32 @@ DARNLINK_REF="${DARNLINK_REF:-66a9647b2a78fcde65635af8660696cb948e7105}" # v0.20
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
+# EXCLUDES: directories the gate must not walk.
+#
+# `logs_local/` is RUNTIME OUTPUT, not documentation: the batch writes a fresh
+# `immich_autotag_links.md` (plus an `_archive/cycle-*/` tree) on every pass, and
+# `.gitignore` already excludes it -- none of it is tracked. Without this the gate
+# demanded `web-uuid` anchors on files the job had just generated, so the pipeline
+# failed on its own output: build #358 of ops/batch-processing died with 24 pending
+# anchors, every one of them under logs_local/. Anchoring them would not have fixed
+# anything either -- the next run regenerates them unanchored.
+#
+# This is repo-wide on purpose, not branch-specific: Jenkinsfile runs run_app.sh on
+# EVERY branch and archives logs_local/*_PID*/**, so main produces them too and would
+# hit the same wall as soon as it got past the earlier gates.
+DARNLINK_EXCLUDES=(--exclude 'logs_local' --exclude '_archive')
+
 echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (max: fail-closed, read-only)"
 # mode=max = check (integrity + strict) UNION create-frontmatter UNION web. `check` catches broken
 # robust links + un-anchored plain links; the 2nd pass catches plain links whose target has no uuid;
 # the 3rd (web) verifies cross-repo GitHub links still resolve to the destination's uuid (read online).
 # `set -e` aborts on the first failure -> a true superset of all axes.
-uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}"
-uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" --robustify --create-frontmatter
+uvx --from "${DARNLINK_FROM}" darnlink check "${DARNLINK_EXCLUDES[@]}" "${SCAN_ROOT}"
+uvx --from "${DARNLINK_FROM}" darnlink "${DARNLINK_EXCLUDES[@]}" "${SCAN_ROOT}" --robustify --create-frontmatter
 
 # WEB axis: cross-repo links to PUBLIC repos must still resolve to the destination file's uuid (read
 # online, tokenless). Anchored with `<!-- web-uuid: X -->`. Fail-closed on a broken cross-repo link.
 # Skippable offline (DARNLINK_SKIP_WEB=1, e.g. a disconnected pre-commit); pre-push/CI always has network.
 if [ "${DARNLINK_SKIP_WEB:-0}" != "1" ]; then
-	exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" --online
+	exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${DARNLINK_EXCLUDES[@]}" "${SCAN_ROOT}" --online
 fi
