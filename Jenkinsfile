@@ -62,7 +62,39 @@ pipeline {
             label 'immich-batch'
             // Mounts ~/.ssh from host into the container as read-only for private key and known_hosts access
             // Ensure $HOME/.ssh exists and contains the required key and known_hosts files
-            args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
+            //
+            // ⚠️ Do NOT mount the AGENT's `$HOME/.cache` into `/root/.cache`.
+            //
+            // This container runs with `--user root` (it needs to: the mounts below land under
+            // `/root/...`, which is mode 700, so a non-root uid could not even traverse it).
+            // Inside the container `HOME=/root`, so `-v $HOME/.cache:/root/.cache` was really the
+            // AGENT's `~/.cache`, mounted read-write and written as uid 0. Hundreds of root-owned
+            // files ended up in the agent's `uv` cache, which from then on it could READ but not
+            // UPDATE.
+            //
+            // The damage lands on OTHER jobs of the same node, and hours later, which is what
+            // makes it expensive to diagnose:
+            //   · they stay green for as long as `uv` can serve the cache as-is;
+            //   · for a TAG, `uv` resolves tag -> SHA through GitHub's API fast path, and that
+            //     anonymous bucket is 60/h per public IP, shared by every machine behind the same
+            //     NAT. When it runs out, `uv` does a real `git fetch`, needs to WRITE, and fails
+            //     with `Git operation failed`;
+            //   · the darnlink recipe surfaces that as "bad ref / no network" -- pointing at two
+            //     things that are perfectly fine.
+            // Measured 2026-08-11: 327 root-owned files, and a link gate on a sibling job going
+            // red 11 minutes after this job ran.
+            //
+            // The cache now belongs to the CONTAINER: it dies with it and touches nobody's home.
+            // Note this is not a net loss -- with the old mount, pip DISABLED its cache entirely
+            // (`check_path_owner`: running as euid 0 it refuses a dir owned by uid 1002, see
+            // "The cache has been disabled" in older build logs). Same 163 downloads before and
+            // after; the difference is that the cache now works within a build.
+            //
+            // NOT changed on purpose: `--user root`. Dropping it has its own risk (the mounts
+            // above) and would still leave root-owned files in the WORKSPACE, which is a separate
+            // decision. A root cron currently sweeps workspaces of DEAD branches only -- it does
+            // not clean live ones, so that half is still open.
+            args '-v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root -e XDG_CACHE_HOME=/tmp/cache -e UV_CACHE_DIR=/tmp/cache/uv'
         }
     }
     
