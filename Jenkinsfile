@@ -62,7 +62,37 @@ pipeline {
             label 'immich-batch'
             // Mounts ~/.ssh from host into the container as read-only for private key and known_hosts access
             // Ensure $HOME/.ssh exists and contains the required key and known_hosts files
-            args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
+            //
+            // ⚠️ NO se monta el `$HOME/.cache` DEL AGENTE en `/root/.cache`. Rompe la CI de
+            // OTROS repos, y con 12 horas de retardo.
+            //
+            // Este contenedor corre con `--user root` (lo necesita: los montajes de abajo van a
+            // `/root/...`, que un usuario no-root no podria leer). Y dentro del contenedor
+            // HOME=/root, asi que aquel `-v $HOME/.cache:/root/.cache` resultaba ser el
+            // `~/.cache` DEL AGENTE, montado en escritura y escrito por uid 0. Resultado:
+            // cientos de ficheros de root dentro de la cache de `uv` del agente, que a partir de
+            // ahi puede LEERLA pero no ACTUALIZARLA.
+            //
+            // Se manifiesta lejos y tarde: los otros gates del nodo siguen verdes mientras a `uv`
+            // le baste la cache tal cual. Cuando toca refrescar (para un TAG, uv depende del
+            // "fast path" de la API de GitHub, y ese cubo anonimo son 60/h por IP publica
+            // COMPARTIDA por todo el homelab), hace un `git fetch` de verdad, necesita escribir,
+            // y falla con `Git operation failed`. La receta de darnlink lo reporta como
+            // "bad ref / no network", que apunta a dos cosas que estan bien.
+            // Medido el 2026-08-11: 327 ficheros de root y `txnet1__darnlink_gate #173/#174` en
+            // rojo, 11 minutos despues de que este job corriera. Ver `txnet1`, Regla 4 de
+            // `systems/jenkins/reglas.md`.
+            //
+            // La cache pasa a ser del CONTENEDOR: se muere con el y no toca el home de nadie.
+            // Se pierde el reuso entre builds; el precio de reconstruirla es mucho menor que
+            // dejar la CI de la flota en rojo con un mensaje que apunta a otro sitio.
+            //
+            // ⚠️ Lo que NO se toca aqui, a proposito: `--user root`. Quitarlo tiene su propio
+            // riesgo -- los dos montajes de abajo van a `/root/...`, y un usuario no-root no
+            // podria leerlos-- y ademas seguiria dejando el WORKSPACE con ficheros de root, que
+            // es otro sintoma del mismo problema y hoy lo barre un cron. Eso es una segunda
+            // decision, no esta.
+            args '-v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root -e XDG_CACHE_HOME=/tmp/cache -e UV_CACHE_DIR=/tmp/cache/uv'
         }
     }
     
