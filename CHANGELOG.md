@@ -25,7 +25,7 @@ All versions follow [Semantic Versioning](https://semver.org/). For details on h
 **Description:** Adds date repair, asset exclusions, improved statistics, checkpoint resume, and automatic album creation.
 ### Added
 - Automatic detection and **date repair** of asset dates based on file names and duplicate analysis. ([issue](docs/issues/0026-statistics-feature/subtasks/0008-statistics-checkpoint) <!-- uuid: 67f5b575-9bc1-4366-a4dc-5305e3b0fb17 -->)
-- **Automatic classification of photos based on duplicates:** auto-assignment of classification tags and albums when duplicate assets are detected. ([issue 0003-duplicates-management](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->)
+- **Automatic classification of photos based on duplicates:** auto-assignment of classification tags and albums when duplicate assets are detected. ([issue 0003-duplicates-management](docs/issues/0025-asset-features/subtasks/0003-duplicate-asset--management/))
 - Option to remove leading/trailing spaces from album names for cleaner organization. ([issue](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->)
 - New loop script for continuous asset tagging/classification during heavy editing sessions. ([issue](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->)
 - Ability to **exclude sets of assets** from processing by specifying their web link (asset link exclusion). ([issue](docs/issues/0025-asset-features/subtasks/0005-filter-assets) <!-- uuid: a1a06657-f2a1-4345-8e53-b5f42b587f9a -->)
@@ -71,13 +71,13 @@ All versions follow [Semantic Versioning](https://semver.org/). For details on h
 **Description:** [Convenience version, not a real product release] This version is used to register infrastructure, community, and automation features that were implemented incrementally and do not correspond to a real product release. Please improve this description if needed.
 ### Added
 - Announcement and outreach tracking across platforms ([issue](docs/issues/0033-community/subtasks/0011-announcement-tracking) <!-- uuid: 88b959cb-227d-4b1b-8d87-9e0a8bfb074a -->)
-- Documentation coordination and planning via docs-track branch ([issue](docs/issues/0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch) <!-- uuid: 39934be1-5b1b-442b-a8f0-6ea2a86c2455 -->)
+- Documentation coordination and planning via docs-track branch ([issue](docs/issues/0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch) <!-- uuid: d5033d3c-1e57-4c0a-abf1-e02ef7feba59 -->)
 - System initialization and setup ([issue](docs/issues/0028-project-management/subtasks/0001-system-initialization) <!-- uuid: e4a8306c-db95-4ee0-bcc2-dad1b2b6a0d3 -->)
 - Local issue system adoption ([issue](docs/issues/0028-project-management/subtasks/0002-adopt-local-issue-system) <!-- uuid: 6c1c2e93-ffef-43f3-a85e-d912ae7403e8 -->)
-- Orphan albums and process refactor ([issue](docs/issues/0024-album-features/subtasks/0006-orphan-albums) <!-- uuid: e959b9c6-c874-4c0e-87c2-ac88c51474e0 -->, [issue 0007-refactor-process-single-asset](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->)
-- Cleanup and redeployment for public releases ([issue 0012-cleanup-redeploy](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->)
+- Orphan albums and process refactor ([issue](docs/issues/0024-album-features/subtasks/0006-orphan-albums) <!-- uuid: e959b9c6-c874-4c0e-87c2-ac88c51474e0 -->, [issue 0007-refactor-process-single-asset](docs/issues/0029-core-logic/subtasks/0007-refactor-core-logic/) <!-- uuid: e232fd0a-0365-4dd4-aedd-0a1c90391b89 -->)
+- Cleanup and redeployment for public releases ([issue 0012-cleanup-redeploy](docs/issues/0031-cicd/subtasks/0012-jenkins/) <!-- uuid: 2468d9eb-98aa-4b34-a146-31b6292f53ab -->)
 - Git version traceability in statistics ([issue](docs/issues/0026-statistics-feature/subtasks/0013-git-version-null-in-stats) <!-- uuid: 97dd304b-588f-44a2-bd8b-dd4c3a1f939d -->)
-- Jenkins pipeline containerization ([issue 0014-jenkins-pipeline-containerization](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->)
+- Jenkins pipeline containerization ([issue 0014-jenkins-pipeline-containerization](docs/issues/0031-cicd/subtasks/0014-quality-gate/))
 - GitHub Actions PyPI publishing ([issue](docs/issues/0031-cicd/subtasks/0015-github-actions-pypi-publishing) <!-- uuid: 5dbbadb8-81e0-44b3-a965-63aab5d524ce -->)
 
 ## [0.70.7-2-g8b496cb-dirty] - 2026-01-12
@@ -337,7 +337,7 @@ This release consolidates significant work across 5 major feature areas:
 ### Changed
 - Deep refactor of [album and asset management](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->: better encapsulation, singleton patterns, and improved collection/cache management.
 - Centralized and more robust [error handling](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->: error handling mode is now configurable and consistent throughout the album asset removal flow.
-- [Logging system improvements](docs/issues/0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch) <!-- uuid: 39934be1-5b1b-442b-a8f0-6ea2a86c2455 -->: clearer messages, better traceability, and new log levels for warnings and important events.
+- [Logging system improvements](docs/issues/0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch) <!-- uuid: d5033d3c-1e57-4c0a-abf1-e02ef7feba59 -->: clearer messages, better traceability, and new log levels for warnings and important events.
 - Refactor and cleanup of imports, type hints, and annotations across the codebase for maintainability and robustness.
 - Improved [configuration management and validation](docs/issues/0027-config-feature/subtasks/0009-config-system-refactor) <!-- uuid: f8bcfbe8-b240-4e61-90a3-144dabbc4ea0 -->: stricter Pydantic models, additional validations, and clearer error handling in ConfigManager.
 - [Statistics and event logic improvements](docs/issues/0026-statistics-feature/subtasks/0008-statistics-checkpoint) <!-- uuid: 67f5b575-9bc1-4366-a4dc-5305e3b0fb17 -->: now supports incremental event logging and per-key statistics.
@@ -407,7 +407,7 @@ Run full integration tests on current codebase (feat/album-permission-groups + m
 ### Added
 - **Automatic album creation and assignment (FB-001):** Logging of unmatched albums in user configuration ([issue](docs/issues/0024-album-features/subtasks/0016-auto-album-creation) <!-- uuid: 9f27894f-4114-4ca0-91b2-56c29bb7df44 -->)
 - **Rule-based classification engine (FB-002):** Enhanced user configuration template: improved skip options and album permissions ([issue](docs/issues/0030-rule-engine/subtasks/0017-rules-tag-album-combination) <!-- uuid: 1cbe993e-4e54-41db-80f2-b101535afd64 -->)
-- **Batch tag/album conversions (FB-009):** Batch tag/album conversions feature added to README ([FB-009 en la matriz de bloques](docs/functional_blocks_matrix.md) <!-- uuid: ccb2c8bd-b14a-447f-a9d6-037fd14c5592 -->)
+- **Batch tag/album conversions (FB-009):** Batch tag/album conversions feature added to README ([FB-009 in the functional blocks matrix](docs/functional_blocks_matrix.md) <!-- uuid: ccb2c8bd-b14a-447f-a9d6-037fd14c5592 -->)
 - **Modification and statistics logs (FB-007):** YAML configuration generator with comments from Pydantic model descriptions ([issue](docs/issues/0027-config-feature/subtasks/0009-config-system-refactor) <!-- uuid: f8bcfbe8-b240-4e61-90a3-144dabbc4ea0 -->)
 
 ### Changed

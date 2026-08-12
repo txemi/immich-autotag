@@ -133,7 +133,7 @@ Why both?
 ## Related Context
 
 - **Parent:** [0031-cicd: CI/CD Infrastructure](../../) <!-- uuid: f80f63cd-099a-4eb1-a5ba-c33b79f7ca6b -->
-- **Related:** [issue 0014-jenkins-pipeline-containerization](../../../../registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->
+- **Related:** [issue 0014-jenkins-pipeline-containerization](../../0014-quality-gate/)
 - **Related:** [0022-release-preparation](../../../../0022-release-preparation) <!-- uuid: be57ab2c-6b18-4517-a6bf-0bd09265f08c -->
 
 ---

@@ -36,7 +36,7 @@ Note: This roadmap lists upcoming features in order of priority, based on a subj
 3. **Refactor and modularize codebase:**
 	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution). ([issue](docs/issues/0027-config-feature/subtasks/0009-config-system-refactor) <!-- uuid: f8bcfbe8-b240-4e61-90a3-144dabbc4ea0 -->)
 4. **Similar photo detection:**
-	Implement logic to detect duplicate or near-duplicate photos (e.g., WhatsApp copies) using available metadata. ([issue 0003-duplicates-management](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->)
+	Implement logic to detect duplicate or near-duplicate photos (e.g., WhatsApp copies) using available metadata. ([issue 0003-duplicates-management](docs/issues/0025-asset-features/subtasks/0003-duplicate-asset--management/))
 5. **Date correction for assets:**
 	Many photos have incorrect dates. Analyze strategies to recover the true date, e.g., from folder names or from similar/identical photos with correct dates. ([issue](docs/issues/0026-statistics-feature/subtasks/0008-statistics-checkpoint) <!-- uuid: 67f5b575-9bc1-4366-a4dc-5305e3b0fb17 -->)
 6. **Containerization:**
@@ -58,7 +58,7 @@ The following are integrity rules, which ensure that the tagging and classificat
 
 
 1. Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums). ([issue](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->)
-2. Assist in the detection and management of duplicate folders or files within the photo library. ([issue 0003-duplicates-management](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->)
+2. Assist in the detection and management of duplicate folders or files within the photo library. ([issue 0003-duplicates-management](docs/issues/0025-asset-features/subtasks/0003-duplicate-asset--management/))
 3. Provide an official Docker image for easy deployment and usage (requested by users).
 
 

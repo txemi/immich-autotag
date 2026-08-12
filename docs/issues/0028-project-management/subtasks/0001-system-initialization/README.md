@@ -1,5 +1,17 @@
 ---
 uuid: e4a8306c-db95-4ee0-bcc2-dad1b2b6a0d3
+status: Done
 ---
+# 0001 - System Initialization
 
-# 0001-system-initialization
+**Tech Stack:** #Git #PlainText #LLM #Python
+
+## Context
+This issue initializes the local-first, plain-text issue tracking system for the project. All tasks, discussions, and design documents will be managed within the repository under `docs/issues/`, using sequential IDs and human-readable folders. This approach ensures full transparency, versioning, and LLM-friendly context without relying on external tools.
+
+## Definition of Done (DoD)
+- [x] `docs/issues/` directory exists
+- [x] `docs/issues/registry.md` created and initialized
+- [x] First issue folder (`0001-system-initialization`) created
+- [x] Issue template files present (`readme.md`, `ai-context.md`, `design/`)
+- [ ] System announced in project documentation

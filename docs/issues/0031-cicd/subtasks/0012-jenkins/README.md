@@ -1,3 +1,7 @@
+---
+uuid: 2468d9eb-98aa-4b34-a146-31b6292f53ab
+---
+
 # Jenkins Build and Workspace Retention
 
 ## Problem

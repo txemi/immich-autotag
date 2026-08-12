@@ -29,7 +29,7 @@ This document outlines the branching strategy used in immich-autotag, particular
   - Never add code or build artifacts
   - Keep reasonably up-to-date with main
   
- **For detailed guidelines:** See [Issue 0020 — docs-track Branch](../issues/0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch/readme.md) <!-- uuid: d5033d3c-1e57-4c0a-abf1-e02ef7feba59 -->
+ **For detailed guidelines:** See [Issue 0020 — docs-track Branch](../issues/0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch/README.md) <!-- uuid: d5033d3c-1e57-4c0a-abf1-e02ef7feba59 -->
 
 ## Feature / Experimental Branches
 

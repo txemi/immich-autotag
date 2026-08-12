@@ -88,15 +88,19 @@ uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" 
 # through every one of them.
 #
 # Read the axis out of --json, which is what the shared recipe does, and fail closed on any finding.
-uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --json > /tmp/darnlink_dangling.json
-python3 - "$?" <<'PY'
+# mktemp, NOT a fixed /tmp path: the pre-commit and pre-push hooks run on developer
+# machines where several worktrees can commit at once, and a shared path lets one run
+# overwrite another's report -- a red build could read a clean JSON and go green.
+DL_JSON="$(mktemp)"; trap 'rm -f "${DL_JSON}"' EXIT
+uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --json > "${DL_JSON}"
+python3 - "${DL_JSON}" <<'PY'
 import json, sys
-d = json.load(open("/tmp/darnlink_dangling.json"))
+d = json.load(open(sys.argv[1]))
 f = (d.get("dangling") or {}).get("findings") or []
 if f:
     print(f"darnlink dangling: {len(f)} link(s) point at a path that does not exist:", file=sys.stderr)
     for x in f[:20]:
-        print("  " + x.get("detail", str(x))[:160], file=sys.stderr)
+        print(f"  {x.get('file','?')}:{x.get('line','?')}  {x.get('detail','')}", file=sys.stderr)
     if len(f) > 20:
         print(f"  ... and {len(f)-20} more", file=sys.stderr)
     sys.exit(1)
