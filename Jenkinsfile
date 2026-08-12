@@ -178,14 +178,29 @@ pipeline {
                 script {
                     echo "================ DOCS LINK GATE (darnlink) ================"
                     echo "[DOCS LINK GATE] Checking uuid-anchored Markdown links (read-only, no --write)"
-                    sh '''
-                        git config --global --add safe.directory "$PWD"
-                        # darnlink runs via uvx; ensure uv is available in a
-                        # predictable location (user site, not a global pip).
-                        export PATH="$HOME/.local/bin:$PATH"
-                        command -v uvx >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
-                        bash scripts/devtools/darnlink_docs_gate.sh .
-                    '''
+                    // Token for the WEB axis — QUOTA, not permissions. This repo is public and its
+                    // cross-repo links point only at itself, so the probe needs no privileges. What
+                    // it needs is a rate limit: anonymous GitHub API calls are capped at 60/h PER
+                    // PUBLIC IP, and this agent shares one with the rest of the homelab. Measured on
+                    // this repo, same tree: without token `ok 0 | unverifiable 52`, with token
+                    // `ok 7`. That zero does not mean "nothing to check", it means "could not look"
+                    // — and it is indistinguishable from a repo that has no cross-repo links, so the
+                    // axis stops verifying while the stage stays green.
+                    // Reuses the App credential this Jenkinsfile already holds for tagging.
+                    withCredentials([usernamePassword(
+                        credentialsId: 'app_github_para_ubuntu20jenkins.ad3.lab',
+                        usernameVariable: 'GH_USER',
+                        passwordVariable: 'GITHUB_TOKEN'
+                    )]) {
+                        sh '''
+                            git config --global --add safe.directory "$PWD"
+                            # darnlink runs via uvx; ensure uv is available in a
+                            # predictable location (user site, not a global pip).
+                            export PATH="$HOME/.local/bin:$PATH"
+                            command -v uvx >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
+                            bash scripts/devtools/darnlink_docs_gate.sh .
+                        '''
+                    }
                 }
             }
         }
