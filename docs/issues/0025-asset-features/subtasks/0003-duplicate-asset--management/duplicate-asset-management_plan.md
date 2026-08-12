@@ -1,3 +1,7 @@
+---
+uuid: ebd85fe4-dbe6-4a35-a225-cab3ea46a729
+---
+
 # Duplicate Asset Management in Immich: Problem Statement and Solution Plan
 
 ## Context

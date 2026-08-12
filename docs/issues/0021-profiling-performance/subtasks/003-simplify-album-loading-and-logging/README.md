@@ -3,7 +3,7 @@
 
 **Status:** Proposed
 **Created:** 2026-01-23
-**Parent Issue:** [0021-profiling-performance](../)
+**Parent Issue:** [0021-profiling-performance](../) <!-- uuid: 68a55cd6-0d20-4ebf-a520-de5ec919a3c7 -->
 
 ## Context & Motivation
 

@@ -23,7 +23,7 @@
 # it additionally requires that *linkable* targets be uuid-bearing.
 # Exit 0 = clean, non-zero = findings. To fix locally (writes uuids):
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.20.3" darnlink . --robustify --create-frontmatter --write
+#     uvx --from "git+https://github.com/txemi/darnlink@v0.20.4" darnlink . --robustify --create-frontmatter --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -31,7 +31,7 @@
 #   - GitHub Actions (.github/workflows/docs-links.yml)
 #
 # Env overrides:
-#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.20.3)
+#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.20.4)
 #   DARNLINK_FROM  full uvx --from spec (path or git+)  (default: the pinned SHA)
 #                  e.g. DARNLINK_FROM=/path/to/local/darnlink for local dev
 #
@@ -40,7 +40,7 @@
 #       build the uuid index, so scan the repo root, not a single file.
 set -euo pipefail
 
-# Pinned to an immutable commit SHA (== tag v0.20.3). Tags can be force-moved,
+# Pinned to an immutable commit SHA (== tag v0.20.4). Tags can be force-moved,
 # which would weaken CI reproducibility / supply-chain integrity, so we pin the
 # SHA and keep the tag only as a human-readable note.
 #
@@ -49,7 +49,7 @@ set -euo pipefail
 # v0.16.0. A pin whose human-readable note lies is worse than one with no note --
 # it is what an auditor reads instead of resolving the SHA. When you bump the SHA
 # on the line below, bump BOTH mentions or neither.
-DARNLINK_REF="${DARNLINK_REF:-66a9647b2a78fcde65635af8660696cb948e7105}" # v0.20.3
+DARNLINK_REF="${DARNLINK_REF:-57f110fb665c826d560746ce86ebd22a92a78744}" # v0.20.4
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
@@ -81,9 +81,37 @@ echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}'
 uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}"
 uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --robustify --create-frontmatter
 
+# DANGLING axis (v0.20.x) — the one this gate was MISSING, and the reason 108 dead links lived here
+# unnoticed for months. `check` reports a plain link to a NON-EXISTENT file under `dangling`, but its
+# exit code ignores that axis: the build went green while the links were dead. It is not a category
+# the other passes cover — a dangling link is neither `unresolvable` nor `robustify`, so it fell
+# through every one of them.
+#
+# Read the axis out of --json, which is what the shared recipe does, and fail closed on any finding.
+# mktemp, NOT a fixed /tmp path: the pre-commit and pre-push hooks run on developer
+# machines where several worktrees can commit at once, and a shared path lets one run
+# overwrite another's report -- a red build could read a clean JSON and go green.
+DL_JSON="$(mktemp)"; trap 'rm -f "${DL_JSON}"' EXIT
+uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --json > "${DL_JSON}"
+python3 - "${DL_JSON}" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+f = (d.get("dangling") or {}).get("findings") or []
+if f:
+    print(f"darnlink dangling: {len(f)} link(s) point at a path that does not exist:", file=sys.stderr)
+    for x in f[:20]:
+        print(f"  {x.get('file','?')}:{x.get('line','?')}  {x.get('detail','')}", file=sys.stderr)
+    if len(f) > 20:
+        print(f"  ... and {len(f)-20} more", file=sys.stderr)
+    sys.exit(1)
+print("darnlink dangling: 0 -> ok")
+PY
+
 # WEB axis: cross-repo links to PUBLIC repos must still resolve to the destination file's uuid (read
 # online, tokenless). Anchored with `<!-- web-uuid: X -->`. Fail-closed on a broken cross-repo link.
 # Skippable offline (DARNLINK_SKIP_WEB=1, e.g. a disconnected pre-commit); pre-push/CI always has network.
 if [ "${DARNLINK_SKIP_WEB:-0}" != "1" ]; then
-	exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --online
+	# NO `exec`: reemplazaria la imagen del shell y el trap EXIT no correria, dejando
+	# el temporal de mktemp en cada ejecucion completa (medido: una fuga por push).
+	uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --online
 fi

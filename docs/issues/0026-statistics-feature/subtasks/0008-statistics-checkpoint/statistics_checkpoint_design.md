@@ -1,3 +1,7 @@
+---
+uuid: 4632984b-e2a6-46ff-8fbc-17c405f07a7e
+---
+
 # Design: Statistics and Checkpoint Management for Immich-Autotag
 
 ## Context

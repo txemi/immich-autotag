@@ -1,3 +1,7 @@
+---
+uuid: 7456cd24-177c-4a9b-9a7d-7445d28c58c6
+---
+
 # Subtask: Review GitHub Actions Release Safety
 
 ## Goal

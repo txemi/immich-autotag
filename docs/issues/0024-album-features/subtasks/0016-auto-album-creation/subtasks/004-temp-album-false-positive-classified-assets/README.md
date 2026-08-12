@@ -16,7 +16,7 @@ Identified — **Not fixed**. Observed live in Jenkins on `fix/conversion-album-
 ## Cross-References
 
 - **Parent subtask:** [001-create-temporary-albums](../001-create-temporary-albums/) <!-- uuid: cd591adc-fcd7-4048-96c1-63cad439664f -->
-- **Related subtask:** [002-cleanup-from-temporary-albums](../002-cleanup-from-temporary-albums/)
+- **Related subtask:** [002-cleanup-from-temporary-albums](../002-cleanup-from-temporary-albums/) <!-- uuid: 09c4e79b-d8cb-4166-882c-4bae7877d680 -->
 - **Key source file:** `immich_autotag/assets/albums/temporary_manager/create_if_missing_classification.py`
 - **Classification routing:** `immich_autotag/assets/albums/analyze_and_assign_album/_handle_unclassified_asset.py`
 

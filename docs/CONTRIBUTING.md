@@ -20,7 +20,7 @@ All contributors must follow the project's coding style guide for attribute acce
 
 For full details, examples, and rationale, see:
 
-- [docs/dev/style.md](./dev/style.md) — Coding Style Guide (explicit attribute access, type safety, model conventions)
+- [docs/dev/style.md](./dev/style/README.md) <!-- uuid: 058b5e05-8af1-4cde-a690-21c80add2078 --> — Coding Style Guide (explicit attribute access, type safety, model conventions)
 
 If in doubt, ask before using introspection or dynamic access.
 

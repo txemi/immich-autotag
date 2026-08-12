@@ -1,3 +1,7 @@
+---
+uuid: bed9b1e3-252f-4c3d-8657-4bf59711e20f
+---
+
 Title: LLM Report — Detailed analysis of mypy failures (Quality Gate)
 
 Objective

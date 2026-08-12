@@ -87,7 +87,7 @@ rule = ClassificationRule(album_name_patterns=[r"^\d{4}"])
 
 ## 📚 Related Documentation
 
-- `docs/issues/0017-rules-tag-album-combination/readme.md` - Full specification
+- `docs/issues/0017-rules-tag-album-combination/README.md` - Full specification
 - `docs/issues/0017-rules-tag-album-combination/ai-context.md` - Development notes
 - `docs/issues/0017-rules-tag-album-combination/design/technical_design.md` - Technical details
 - `docs/ISSUE_SYSTEM_CONVENTION.md` - Issue management system
