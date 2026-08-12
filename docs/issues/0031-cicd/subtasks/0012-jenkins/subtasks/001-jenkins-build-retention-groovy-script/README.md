@@ -80,6 +80,6 @@ You can automate the periodic execution of this Groovy script in Jenkins to ensu
 ---
 
 ## Related
-- [Issue 0012: Cleanup and Redeployment](../../plan.md)
-- [Manual Cleanup Links](../../manual_cleanup_links.md)
-- [Issue 0014: Jenkins Pipeline Containerization](../../../0014-jenkins-pipeline-containerization/index.md)
+- [Issue 0012: Cleanup and Redeployment](../../../0015-github-actions-pypi-publishing/subtasks/003-clean-up/plan.md) <!-- uuid: d0b81fec-e1f7-4977-acf4-399fdd6f9a11 -->
+- [Manual Cleanup Links](../../../0015-github-actions-pypi-publishing/subtasks/003-clean-up/manual_cleanup_links.md) <!-- uuid: 5e0bf637-cd11-4182-bc69-cf038ccc6b41 -->
+- [issue 0014-jenkins-pipeline-containerization](../../../../../registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->

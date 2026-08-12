@@ -29,7 +29,7 @@ This document outlines the branching strategy used in immich-autotag, particular
   - Never add code or build artifacts
   - Keep reasonably up-to-date with main
   
- **For detailed guidelines:** See [Issue 0020 — docs-track Branch](../issues/0020-docs-track-branch/readme.md)
+ **For detailed guidelines:** See [Issue 0020 — docs-track Branch](../issues/0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch/readme.md) <!-- uuid: d5033d3c-1e57-4c0a-abf1-e02ef7feba59 -->
 
 ## Feature / Experimental Branches
 
@@ -42,7 +42,7 @@ This document outlines the branching strategy used in immich-autotag, particular
 - **Purpose:** Performance optimization or profiling branches
 - **Naming:** `perf/profiling-0021`, `perf/symmetric-rules-with-performance`
 - **Policy:** Include profiling data, performance benchmarks, optimization experiments
-- **Linked Issue:** [Issue 0021 — Profiling & Performance Reports](../issues/0021-profiling-performance/)
+- **Linked Issue:** [Issue 0021 — Profiling & Performance Reports](../issues/0021-profiling-performance/) <!-- uuid: 679d0035-a83a-4ba6-8631-f9500db5eedd -->
 
 ### `fix/*` branches
 - **Purpose:** Bug fixes or targeted corrections

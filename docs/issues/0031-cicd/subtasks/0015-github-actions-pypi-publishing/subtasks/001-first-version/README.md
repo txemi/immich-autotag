@@ -106,8 +106,8 @@ When Immich server is upgraded to a new version:
 ## Related Documentation
 
 - GitHub Issue: [#32 Enable automated PyPI publishing via GitHub Actions](https://github.com/txemi/immich-autotag/issues/32)
-- Script: [`setup_venv.sh`](../../../setup_venv.sh)
-- Workflow: [`.github/workflows/release.yml`](../../../.github/workflows/release.yml)
+- Script: [`setup_venv.sh`](../../../../../../../setup_venv.sh)
+- Workflow: [`.github/workflows/release.yml`](../../../../../../../.github/workflows/release.yml)
 
 ## Next Steps
 

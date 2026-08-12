@@ -35,9 +35,9 @@ Current status of the subtask (e.g., Not Started, In Progress, Blocked, Complete
 
 ## Cross-References
 
-- **Related issues:** [0020-docs-track-branch](../../0020-docs-track-branch/)
-- **Related subtasks:** [../001-another-subtask](../001-another-subtask/)
-- **Related design docs:** [../../design/architecture.md](../../design/architecture.md)
+- **Related issues:** [0020-docs-track-branch](0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch) <!-- uuid: 39934be1-5b1b-442b-a8f0-6ea2a86c2455 -->
+- **Related subtasks:** `../001-another-subtask/` (ejemplo: sustituir por una subtarea real)
+- **Related design docs:** [../dev/architecture.md](../dev/architecture.md) <!-- uuid: eaae0122-064d-429d-8db5-b2f9fa25b565 -->
 
 ## Notes
 

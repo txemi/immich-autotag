@@ -32,10 +32,10 @@ Track and manage all announcements and outreach efforts for the project across v
 | Reddit r/pythoncoding (2026)         | https://www.reddit.com/r/pythoncoding/comments/1q8irny/showcase_immich_autotag_new_instant_cli_autoalbum/ | Announced      | Major new release showcase |
 | LinkedIn (2026)                      | https://www.linkedin.com/posts/josemiguelmartinezaguayo_immich-autotagdocsexplain-like-im-5md-activity-7415486122899906560-tlq9?utm_source=share&utm_medium=member_desktop&rcm=ACoAAAK8A1IBLT-ZuwmLh4VrvuLuP46gYSY0wnY | Announced      | Major new release showcase |
 | Hacker News (2026)                   | https://news.ycombinator.com/edit?id=46558757 | Announced      | Major new release showcase |
-| GitHub Discussions (Immich, v0.80.0) |  | **Draft** | v0.80.0 — user groups, rule engine, continuous mode. See [`github-discussions/announcement_2026.md`](github-discussions/announcement_2026.md) |
-| Reddit r/immich (v0.80.0)            |  | **Draft** | v0.80.0 showcase. See [`reddit/announcement_2026.md`](reddit/announcement_2026.md) |
-| Reddit r/selfhosted (v0.80.0)        |  | **Draft** | v0.80.0 showcase. See [`reddit/announcement_2026.md`](reddit/announcement_2026.md) |
-| LinkedIn (v0.80.0)                   |  | **Draft** | v0.80.0 release. See [`linkedin/announcement_2026.md`](linkedin/announcement_2026.md) |
+| GitHub Discussions (Immich, v0.80.0) |  | **Draft** | v0.80.0 — user groups, rule engine, continuous mode. See [`github-discussions/announcement_2026.md`](github-discussions/2026-03-31-announcement_2026.md) <!-- uuid: 559f4559-e9eb-4ac6-bbef-20cf6c108967 --> |
+| Reddit r/immich (v0.80.0)            |  | **Draft** | v0.80.0 showcase. See [`reddit/announcement_2026.md`](reddit/2026-02-01-announcement_2026.md) <!-- uuid: 8c1794fb-6c15-4ddc-87c6-42ed820f99e1 --> |
+| Reddit r/selfhosted (v0.80.0)        |  | **Draft** | v0.80.0 showcase. See [`reddit/announcement_2026.md`](reddit/2026-02-01-announcement_2026.md) <!-- uuid: 8c1794fb-6c15-4ddc-87c6-42ed820f99e1 --> |
+| LinkedIn (v0.80.0)                   |  | **Draft** | v0.80.0 release. See [`linkedin/announcement_2026.md`](linkedin/2026-03-31-announcement.md) <!-- uuid: f79203fd-793e-45c0-bfc3-7fd277fd1b15 --> |
 
 ## Acceptance Criteria
 - All relevant platforms are listed and links are provided.

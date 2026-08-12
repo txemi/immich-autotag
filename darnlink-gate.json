@@ -1,0 +1,20 @@
+{
+  "ref": "git+https://github.com/txemi/darnlink@v0.20.4",
+  "excludes": [
+    "old",
+    "old_*",
+    "*_old",
+    "*.old",
+    ".venv",
+    "node_modules",
+    "jenkins_logs"
+  ],
+  "ignore_blocks": [
+    "txmd-autogrid"
+  ],
+  "mode": "max",
+  "dangling": "repo",
+  "scope": "repo",
+  "web": true,
+  "create_readme": true
+}

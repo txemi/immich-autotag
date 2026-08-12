@@ -36,7 +36,7 @@
 5. Document all findings and update this subtask.
 
 ## References
-- [0021 - Profiling & Performance Reports](../)
+- [0021 - Profiling & Performance Reports](../) <!-- uuid: 68a55cd6-0d20-4ebf-a520-de5ec919a3c7 -->
 - [Memory snapshots and analysis scripts](../../../..) <!-- uuid: 78985aa6-836b-4e7f-818b-958d5834facf -->
 - [Relevant code: AssetManager, AssetResponseWrapper, asset_response_dto]
 

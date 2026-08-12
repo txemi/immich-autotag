@@ -1,3 +1,7 @@
+---
+uuid: f79203fd-793e-45c0-bfc3-7fd277fd1b15
+---
+
 # 🚀 How do you manage a library of over 360,000 photos and videos without losing your mind?
 
 Organizing digital memories at a massive scale is an engineering challenge, not just a storage one. That’s why I’ve spent the last few months evolving **Immich AutoTag**, my open-source project for advanced media library automation.

@@ -1,3 +1,7 @@
+---
+uuid: 5e0bf637-cd11-4182-bc69-cf038ccc6b41
+---
+
 # Manual Cleanup: Public Registries
 
 To quickly delete all old images and versions from public registries, access the following links and manually remove obsolete resources. Have your access credentials ready.
