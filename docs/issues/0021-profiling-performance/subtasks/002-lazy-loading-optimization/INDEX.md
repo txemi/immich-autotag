@@ -150,7 +150,7 @@
 - See next steps: `OPTIMIZATION_ROADMAP.md`
 
 ### Related Documents
-- Parent issue: `docs/issues/0021-profiling-performance/readme.md`
+- Parent issue: `docs/issues/0021-profiling-performance/README.md`
 - Parallel experiment: `subtasks/001-profiling-parallel-experiment/README.md`
 
 ### Jenkins Integration

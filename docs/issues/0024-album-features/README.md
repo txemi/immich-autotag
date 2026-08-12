@@ -23,7 +23,7 @@ This `README` describes **the purpose of this folder** and links only to documen
 
 - `subtasks/0016-auto-album-creation/`
 	- `INDEX.md`
-	- `readme.md`
+	- `README.md`
 	- `subtasks/001-create-temporary-albums/` — `ARCHITECTURE.md`, `README.md`, `REQUIREMENTS.md`, `ai-context.md`
 	- `subtasks/002-cleanup-from-temporary-albums/` — `IMPLEMENTATION_PLAN.md`
 	- `subtasks/003-temporary-album-health-check/` — `README.md`
@@ -31,7 +31,7 @@ This `README` describes **the purpose of this folder** and links only to documen
 
 - `subtasks/0019-album-date-consistency-config/`
 	- `ai-context.md`
-	- `readme.md`
+	- `README.md`
 	- `design/technical_design.md`
 
 - `subtasks/0022-duplicate-name-albums/`
@@ -47,8 +47,8 @@ This `README` describes **the purpose of this folder** and links only to documen
 
 - Album detection from folders: `subtasks/0004-album-detection/plan_album_detection.md`
 - Orphan albums: `subtasks/0006-orphan-albums/immich_issue_orphan_albums.md`
-- Auto album creation: `subtasks/0016-auto-album-creation/readme.md`
-- Album date consistency config: `subtasks/0019-album-date-consistency-config/readme.md`
+- Auto album creation: `subtasks/0016-auto-album-creation/README.md`
+- Album date consistency config: `subtasks/0019-album-date-consistency-config/README.md`
 - Duplicate name albums: `subtasks/0022-duplicate-name-albums/README.md`
 
 ## Note

@@ -111,5 +111,7 @@ PY
 # online, tokenless). Anchored with `<!-- web-uuid: X -->`. Fail-closed on a broken cross-repo link.
 # Skippable offline (DARNLINK_SKIP_WEB=1, e.g. a disconnected pre-commit); pre-push/CI always has network.
 if [ "${DARNLINK_SKIP_WEB:-0}" != "1" ]; then
-	exec uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --online
+	# NO `exec`: reemplazaria la imagen del shell y el trap EXIT no correria, dejando
+	# el temporal de mktemp en cada ejecucion completa (medido: una fuga por push).
+	uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --online
 fi

@@ -16,11 +16,11 @@ This `README` describes **the purpose of this folder** and links only to documen
 
 - `subtasks/0001-system-initialization/`
 	- `ai-context.md`
-	- `readme.md`
+	- `README.md`
 
 - `subtasks/0002-adopt-local-issue-system/`
 	- `ai-context.md`
-	- `readme.md`
+	- `README.md`
 	- `design/migration-plan.md`
 
 - `subtasks/0023-task-system-organization/`
@@ -29,8 +29,8 @@ This `README` describes **the purpose of this folder** and links only to documen
 
 ## Quick references
 
-- System initialization: `subtasks/0001-system-initialization/readme.md`
-- Adopt local issue system: `subtasks/0002-adopt-local-issue-system/readme.md`
+- System initialization: `subtasks/0001-system-initialization/README.md`
+- Adopt local issue system: `subtasks/0002-adopt-local-issue-system/README.md`
 - Task system organization: `subtasks/0023-task-system-organization/README.md`
 
 ## Note

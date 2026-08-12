@@ -65,7 +65,7 @@ Files modified:
 
 ### ✅ Documentation Complete
 
-- Main issue: `docs/issues/0021-profiling-performance/readme.md` (updated)
+- Main issue: `docs/issues/0021-profiling-performance/README.md` (updated)
 - Subtask 001: `subtasks/001-profiling-parallel-experiment/README.md`
   - Finding: Parallel processing NOT beneficial (rate limiting, GIL, contention)
 - Subtask 002: `subtasks/002-lazy-loading-optimization/README.md`

@@ -25,7 +25,7 @@ All versions follow [Semantic Versioning](https://semver.org/). For details on h
 **Description:** Adds date repair, asset exclusions, improved statistics, checkpoint resume, and automatic album creation.
 ### Added
 - Automatic detection and **date repair** of asset dates based on file names and duplicate analysis. ([issue](docs/issues/0026-statistics-feature/subtasks/0008-statistics-checkpoint) <!-- uuid: 67f5b575-9bc1-4366-a4dc-5305e3b0fb17 -->)
-- **Automatic classification of photos based on duplicates:** auto-assignment of classification tags and albums when duplicate assets are detected. ([issue 0003-duplicates-management](docs/issues/0025-asset-features/subtasks/0003-duplicate-asset--management/))
+- **Automatic classification of photos based on duplicates:** auto-assignment of classification tags and albums when duplicate assets are detected. ([issue 0003-duplicates-management](docs/issues/0025-asset-features/subtasks/0003-duplicate-asset--management/duplicate-asset-management_plan.md) <!-- uuid: ebd85fe4-dbe6-4a35-a225-cab3ea46a729 -->)
 - Option to remove leading/trailing spaces from album names for cleaner organization. ([issue](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->)
 - New loop script for continuous asset tagging/classification during heavy editing sessions. ([issue](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->)
 - Ability to **exclude sets of assets** from processing by specifying their web link (asset link exclusion). ([issue](docs/issues/0025-asset-features/subtasks/0005-filter-assets) <!-- uuid: a1a06657-f2a1-4345-8e53-b5f42b587f9a -->)
@@ -75,9 +75,9 @@ All versions follow [Semantic Versioning](https://semver.org/). For details on h
 - System initialization and setup ([issue](docs/issues/0028-project-management/subtasks/0001-system-initialization) <!-- uuid: e4a8306c-db95-4ee0-bcc2-dad1b2b6a0d3 -->)
 - Local issue system adoption ([issue](docs/issues/0028-project-management/subtasks/0002-adopt-local-issue-system) <!-- uuid: 6c1c2e93-ffef-43f3-a85e-d912ae7403e8 -->)
 - Orphan albums and process refactor ([issue](docs/issues/0024-album-features/subtasks/0006-orphan-albums) <!-- uuid: e959b9c6-c874-4c0e-87c2-ac88c51474e0 -->, [issue 0007-refactor-process-single-asset](docs/issues/0029-core-logic/subtasks/0007-refactor-core-logic/) <!-- uuid: e232fd0a-0365-4dd4-aedd-0a1c90391b89 -->)
-- Cleanup and redeployment for public releases ([issue 0012-cleanup-redeploy](docs/issues/0031-cicd/subtasks/0012-jenkins/) <!-- uuid: 2468d9eb-98aa-4b34-a146-31b6292f53ab -->)
+- Cleanup and redeployment for public releases ([issue 0012 — cleanup and redeployment](docs/issues/0031-cicd/subtasks/0015-github-actions-pypi-publishing/subtasks/003-clean-up/plan.md) <!-- uuid: d0b81fec-e1f7-4977-acf4-399fdd6f9a11 -->)
 - Git version traceability in statistics ([issue](docs/issues/0026-statistics-feature/subtasks/0013-git-version-null-in-stats) <!-- uuid: 97dd304b-588f-44a2-bd8b-dd4c3a1f939d -->)
-- Jenkins pipeline containerization ([issue 0014-jenkins-pipeline-containerization](docs/issues/0031-cicd/subtasks/0014-quality-gate/))
+- Jenkins pipeline containerization ([issue 0014-jenkins-pipeline-containerization](docs/issues/0031-cicd/subtasks/0014-quality-gate/index.md) <!-- uuid: a8383b79-04fa-49a9-a058-b59b3a8b61e8 -->)
 - GitHub Actions PyPI publishing ([issue](docs/issues/0031-cicd/subtasks/0015-github-actions-pypi-publishing) <!-- uuid: 5dbbadb8-81e0-44b3-a965-63aab5d524ce -->)
 
 ## [0.70.7-2-g8b496cb-dirty] - 2026-01-12
@@ -114,7 +114,7 @@ All versions follow [Semantic Versioning](https://semver.org/). For details on h
   - Detects which albums match configured user group keywords
   - Phase 1 performs detection and logging only (no API calls)
   - Foundation for Phase 2 synchronization
-  - Link: [issue 0018-album-permission-groups](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->
+  - Link: [issue 0018 — user groups and album permissions](docs/issues/0032-user-management-and-access-control-feature/subtasks/0018-access-control-policies/README.md) <!-- uuid: 7cf17e0e-e1d0-48e7-a96f-dc983cb12fb0 -->
 
 ### Features included
 - Configuration-based user groups with member lists
@@ -139,7 +139,7 @@ All versions follow [Semantic Versioning](https://semver.org/). For details on h
   - Automatically removes members no longer in configuration
   - Email→UUID resolution for member lookup
   - Idempotent operations (safe to run multiple times)
-  - Link: [issue 0018-album-permission-groups](docs/issues/registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf -->
+  - Link: [issue 0018 — user groups and album permissions](docs/issues/0032-user-management-and-access-control-feature/subtasks/0018-access-control-policies/README.md) <!-- uuid: 7cf17e0e-e1d0-48e7-a96f-dc983cb12fb0 -->
 
 ### Changed
 - Album permissions now execute BEFORE asset tagging for proper sequencing
