@@ -111,6 +111,16 @@ PY
 # online, tokenless). Anchored with `<!-- web-uuid: X -->`. Fail-closed on a broken cross-repo link.
 # Skippable offline (DARNLINK_SKIP_WEB=1, e.g. a disconnected pre-commit); pre-push/CI always has network.
 if [ "${DARNLINK_SKIP_WEB:-0}" != "1" ]; then
+	# ⚠️ SAY IT WHEN THE AXIS CANNOT ACTUALLY VERIFY. Anonymous GitHub API calls are
+	# capped at 60/h per public IP, shared by everything behind it. With the bucket
+	# empty this pass reports `ok 0 | unverifiable N` — which reads like "nothing to
+	# check" and is indistinguishable from a repo with no cross-repo links. It is not
+	# a failure (offline dev must still be able to commit), but an unannounced 0 is
+	# how a gate stops meaning anything. Measured here: 0 -> 7 verified with a token.
+	if [ -z "${GITHUB_TOKEN:-}" ]; then
+		echo "darnlink web axis: no GITHUB_TOKEN → running on the ANONYMOUS 60/h-per-IP quota." >&2
+		echo "  A result of 'ok 0' below means COULD NOT LOOK, not 'nothing to verify'." >&2
+	fi
 	# NO `exec`: reemplazaria la imagen del shell y el trap EXIT no correria, dejando
 	# el temporal de mktemp en cada ejecucion completa (medido: una fuga por push).
 	uvx --from "${DARNLINK_FROM}" darnlink web-check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --online
