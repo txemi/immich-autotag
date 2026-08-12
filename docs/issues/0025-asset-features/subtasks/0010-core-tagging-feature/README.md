@@ -19,7 +19,7 @@ This issue documents the core functionality released in v0.10: automatic tagging
 
 ---
 
-Se PROPUSO dividir este issue en las subtareas de abajo, pero la carpeta `subtasks/` nunca llegó a crearse: siguen sin escribirse. Use this as the main entry point for tagging feature development and tracking.
+Splitting this issue into the subtasks below was PROPOSED, but the `subtasks/` folder was never created: they remain unwritten. Use this as the main entry point for tagging feature development and tracking.
 
 ## Subtasks
 - `001-api-tagging` — propuesta, sin escribir

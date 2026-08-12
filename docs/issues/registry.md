@@ -8,7 +8,7 @@ Current active issues (v2.0 system with thematic organization):
 
 | ID   | Title                   | Status   | Created Date | Version | Link |
 |------|-------------------------|----------|--------------|---------|------|
-| 0020 | docs-track Branch - Documentation Tracking | Active | 2026-01-15 | - | [link](0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch/) <!-- uuid: 39934be1-5b1b-442b-a8f0-6ea2a86c2455 --> |
+| 0020 | docs-track Branch - Documentation Tracking | Active | 2026-01-15 | - | [link](0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch/) <!-- uuid: d5033d3c-1e57-4c0a-abf1-e02ef7feba59 --> |
 | 0021 | Profiling & Performance Reports | Proposed | 2026-01-15 | v1.0 | [link](0021-profiling-performance/) <!-- uuid: 679d0035-a83a-4ba6-8631-f9500db5eedd --> |
 | 0022 | Release Preparation | Open | 2026-01-10 | v0.70 | [link](0022-release-preparation/) <!-- uuid: be57ab2c-6b18-4517-a6bf-0bd09265f08c --> |
 | 0024 | Album Features | Open | 2026-01-14 | v1.0 | [link](0024-album-features/) <!-- uuid: 186d6b69-5c4f-45d0-9b73-594ce5d73ff5 --> |
