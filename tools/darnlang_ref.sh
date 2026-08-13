@@ -14,5 +14,5 @@
 # darnlang is told to use THIS repo's wordlist (`--words-file`), so the policy stays here and only
 # the plumbing is shared. One tool for the surface nobody was watching, not a second opinion about
 # the files.
-export DARNLANG_REF="git+https://github.com/txemi/darnlang@v0.6.0"
+export DARNLANG_REF="git+https://github.com/txemi/darnlang@v0.7.0"
 export DARNLANG_WORDS="$(git rev-parse --show-toplevel)/scripts/devtools/spanish_words.txt"
