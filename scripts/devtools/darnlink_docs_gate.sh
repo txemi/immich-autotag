@@ -91,8 +91,9 @@ uvx --from "${DARNLINK_FROM}" darnlink "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" 
 # mktemp, NOT a fixed /tmp path: the pre-commit and pre-push hooks run on developer
 # machines where several worktrees can commit at once, and a shared path lets one run
 # overwrite another's report -- a red build could read a clean JSON and go green.
-DL_JSON="$(mktemp)"; trap 'rm -f "${DL_JSON}"' EXIT
-uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --json > "${DL_JSON}"
+DL_JSON="$(mktemp)"
+trap 'rm -f "${DL_JSON}"' EXIT
+uvx --from "${DARNLINK_FROM}" darnlink check "${SCAN_ROOT}" "${DARNLINK_EXCLUDES[@]}" --json >"${DL_JSON}"
 python3 - "${DL_JSON}" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1]))
