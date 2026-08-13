@@ -189,6 +189,58 @@ pipeline {
                 }
             }
         }
+        // ── The surfaces no file gate can see, on the wall that does not bill ─────────────────
+        //
+        // `check_no_spanish_chars` already runs above, inside the Python quality gate, and it is
+        // better than darnlang on FILES: every tracked file, file names too, a curated wordlist.
+        // Nothing here touches it.
+        //
+        // What no file gate can see is what is written straight into GitHub. The same check runs in
+        // Actions, and it is duplicated here on purpose: Actions is the surface that stops when a
+        // payment fails -- three-second red runs with no steps, on this account, this month --
+        // while this controller is self-hosted and does not bill. The published surfaces are also
+        // the least retractable ones there are, so they are the last place to accept a wall that
+        // can be switched off by an invoice.
+        //
+        // A multibranch build exposes CHANGE_TITLE / CHANGE_BODY / CHANGE_TARGET on a PR, so the
+        // same three surfaces are reachable from here.
+        stage('Quality Gate (Language, published surfaces)') {
+            steps {
+                sh '''
+                    set -eu
+                    export PATH="$HOME/.local/bin:$PATH"
+                    command -v uvx >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
+                    . tools/darnlang_ref.sh
+                    # Resolve first, judge second: uvx exits 1 when it cannot reach the ref, the same
+                    # code a finding uses, and conflating them reads a network hiccup as Spanish.
+                    uvx --from "$DARNLANG_REF" darnlang --help >/dev/null
+
+                    # ONE MESSAGE AT A TIME: concatenating a range and judging it as a single text
+                    # lets one English line hide a Spanish one.
+                    if [ -n "${CHANGE_TARGET:-}" ]; then
+                      git fetch --no-tags origin "$CHANGE_TARGET"
+                      RANGE="FETCH_HEAD..HEAD"
+                    else
+                      RANGE="HEAD -1"
+                    fi
+                    fail=0
+                    for sha in $(git log --format=%H $RANGE); do
+                      git log -1 --format=%B "$sha" > .darnlang-msg
+                      uvx --from "$DARNLANG_REF" darnlang prose .darnlang-msg \
+                        --label "commit message $sha" || fail=1
+                    done
+                    rm -f .darnlang-msg
+
+                    if [ -n "${CHANGE_TITLE:-}" ]; then
+                      printf '%s\n\n%s\n' "$CHANGE_TITLE" "${CHANGE_BODY:-}" > .darnlang-pr
+                      uvx --from "$DARNLANG_REF" darnlang prose .darnlang-pr \
+                        --label "PR title/description" || fail=1
+                      rm -f .darnlang-pr
+                    fi
+                    exit "$fail"
+                '''
+            }
+        }
         stage('Quality Gate (Shell Script)') {
             when {
                 expression { false } // Disabled: deprecated shell quality gate. Keep stage for history, skip execution.
