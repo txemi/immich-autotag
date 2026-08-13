@@ -1,3 +1,7 @@
+---
+uuid: d9b0bce8-9e90-4882-8d5d-64dc25de00c0
+---
+
 # Feature: Album Detection from Folder Structure
 
 ## Intent and Objective

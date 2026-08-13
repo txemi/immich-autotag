@@ -132,9 +132,9 @@ Why both?
 
 ## Related Context
 
-- **Parent:** [0031-cicd: CI/CD Infrastructure](../../)
-- **Related:** [0014-jenkins-pipeline-containerization](../../../0014-jenkins-pipeline-containerization/)
-- **Related:** [0022-release-preparation](../../../0022-release-preparation/)
+- **Parent:** [0031-cicd: CI/CD Infrastructure](../../) <!-- uuid: f80f63cd-099a-4eb1-a5ba-c33b79f7ca6b -->
+- **Related:** [issue 0014-jenkins-pipeline-containerization](../../0014-quality-gate/index.md) <!-- uuid: a8383b79-04fa-49a9-a058-b59b3a8b61e8 -->
+- **Related:** [0022-release-preparation](../../../../0022-release-preparation) <!-- uuid: be57ab2c-6b18-4517-a6bf-0bd09265f08c -->
 
 ---
 

@@ -1,4 +1,5 @@
 ---
+uuid: 00b18a8d-c8d6-460a-af8e-2e91ba62eb43
 status: Done
 version: v0.10
 created: 2025-12-23
@@ -18,11 +19,11 @@ This issue documents the core functionality released in v0.10: automatic tagging
 
 ---
 
-This issue is now split into focused subtasks, each tracked in the `subtasks/` folder. Use this as the main entry point for tagging feature development and tracking.
+Splitting this issue into the subtasks below was PROPOSED, but the `subtasks/` folder was never created: they remain unwritten. Use this as the main entry point for tagging feature development and tracking.
 
 ## Subtasks
-- [001-api-tagging](subtasks/001-api-tagging/README.md)
-- [002-ui-tagging](subtasks/002-ui-tagging/README.md)
+- `001-api-tagging` — proposed, not written
+- `002-ui-tagging` — proposed, not written
 
 ## Rationale
 Splitting broad issues into focused subtasks improves clarity and enables parallel progress on different aspects of the tagging feature.

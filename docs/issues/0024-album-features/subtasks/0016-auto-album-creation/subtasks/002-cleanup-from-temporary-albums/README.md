@@ -1,3 +1,7 @@
+---
+uuid: 09c4e79b-d8cb-4166-882c-4bae7877d680
+---
+
 # Feature Analysis: Remove Assets from Auto-Generated Temporary Albums
 
 **Date:** January 17, 2026  

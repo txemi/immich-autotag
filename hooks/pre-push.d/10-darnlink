@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # immich-autotag pre-push — WHOLE-REPO darnlink wall (piece 3 of 4), run by the global git-hooks
 # dispatcher (pre-push -> _dispatch). Mirrors the pre-commit-framework gate but for the push wall,
-# so nothing broken leaves the machine even if a commit used --no-verify. Same script, same v0.9.0 pin.
+# so nothing broken leaves the machine even if a commit used --no-verify. Same script, same v0.20.4 pin.
 # Bypass (discouraged): git push --no-verify
 set -euo pipefail
 root="$(git rev-parse --show-toplevel)"

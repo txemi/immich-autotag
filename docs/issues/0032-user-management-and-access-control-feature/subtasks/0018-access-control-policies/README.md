@@ -1,4 +1,5 @@
 ---
+uuid: 7cf17e0e-e1d0-48e7-a96f-dc983cb12fb0
 status: In Progress
 version: v1.0
 created: 2026-01-15
@@ -14,7 +15,7 @@ This issue was previously named `user-group-policies`. It is now renamed and cla
 Renaming clarifies the scope and aligns with current project terminology.
 
 ## Cross-References
-- Related: [0010-core-tagging-feature](../0010-core-tagging-feature/README.md)
+- Related: [0010-core-tagging-feature](../../../0025-asset-features/subtasks/0010-core-tagging-feature/README.md) <!-- uuid: 00b18a8d-c8d6-460a-af8e-2e91ba62eb43 -->
 
 ---
 

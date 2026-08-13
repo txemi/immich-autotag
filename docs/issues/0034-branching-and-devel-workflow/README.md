@@ -15,11 +15,11 @@ This `README` describes **the purpose of this folder** and links only to documen
 ## Actual structure (existing)
 
 - `subtasks/0020-docs-track-branch/`
-	- `readme.md`
+	- `README.md`
 
 ## Quick references
 
-- docs-track branch workflow: `subtasks/0020-docs-track-branch/readme.md`
+- docs-track branch workflow: `subtasks/0020-docs-track-branch/README.md`
 
 ## Note
 

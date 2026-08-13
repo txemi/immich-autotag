@@ -19,7 +19,7 @@ Note: This roadmap lists upcoming features in order of priority, based on a subj
 
 	<!-- Planned for version 0.20 -->
     
-	[See detailed design document →](docs/feature-album-detection-from-folders.md)
+	[See detailed design document →](docs/issues/0024-album-features/subtasks/0004-album-detection/feature-album-detection-from-folders.md) <!-- uuid: d9b0bce8-9e90-4882-8d5d-64dc25de00c0 -->
     
 	**Current sub-tasks and context:**
 	- We have started a major refactor to split the monolithic script into smaller, maintainable modules. This is necessary due to the growing complexity and size of the codebase.
@@ -29,16 +29,16 @@ Note: This roadmap lists upcoming features in order of priority, based on a subj
 	- Once these foundational changes are complete, we will resume and finish the folder detection feature.
 
 2. **Core tagging system for asset categorization (COMPLETED):**
-	- Clear definition of asset categories using configuration files. ([issue](docs/issues/0010-core-tagging-feature/))
-	- Automatic tags to inform users about categorized and uncategorized assets. ([issue](docs/issues/0010-core-tagging-feature/))
-	- Conflict tags when categorization issues are detected. ([issue](docs/issues/0010-core-tagging-feature/))
+	- Clear definition of asset categories using configuration files. ([issue](docs/issues/0025-asset-features/subtasks/0010-core-tagging-feature) <!-- uuid: 00b18a8d-c8d6-460a-af8e-2e91ba62eb43 -->)
+	- Automatic tags to inform users about categorized and uncategorized assets. ([issue](docs/issues/0025-asset-features/subtasks/0010-core-tagging-feature) <!-- uuid: 00b18a8d-c8d6-460a-af8e-2e91ba62eb43 -->)
+	- Conflict tags when categorization issues are detected. ([issue](docs/issues/0025-asset-features/subtasks/0010-core-tagging-feature) <!-- uuid: 00b18a8d-c8d6-460a-af8e-2e91ba62eb43 -->)
 
 3. **Refactor and modularize codebase:**
-	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution). ([issue](docs/issues/0009-config-system-refactor/))
+	Split the main script into smaller, maintainable modules. Evaluate moving configuration out of code files (users have requested a non-code config solution). ([issue](docs/issues/0027-config-feature/subtasks/0009-config-system-refactor) <!-- uuid: f8bcfbe8-b240-4e61-90a3-144dabbc4ea0 -->)
 4. **Similar photo detection:**
-	Implement logic to detect duplicate or near-duplicate photos (e.g., WhatsApp copies) using available metadata. ([issue](docs/issues/0003-duplicates-management/))
+	Implement logic to detect duplicate or near-duplicate photos (e.g., WhatsApp copies) using available metadata. ([issue 0003-duplicates-management](docs/issues/0025-asset-features/subtasks/0003-duplicate-asset--management/duplicate-asset-management_plan.md) <!-- uuid: ebd85fe4-dbe6-4a35-a225-cab3ea46a729 -->)
 5. **Date correction for assets:**
-	Many photos have incorrect dates. Analyze strategies to recover the true date, e.g., from folder names or from similar/identical photos with correct dates. ([issue](docs/issues/0008-statistics-checkpoint/))
+	Many photos have incorrect dates. Analyze strategies to recover the true date, e.g., from folder names or from similar/identical photos with correct dates. ([issue](docs/issues/0026-statistics-feature/subtasks/0008-statistics-checkpoint) <!-- uuid: 67f5b575-9bc1-4366-a4dc-5305e3b0fb17 -->)
 6. **Containerization:**
 	Some users have requested a containerized version of this application. This is under consideration. See: https://github.com/txemi/immich-autotag/issues/1
 
@@ -57,8 +57,8 @@ The following are integrity rules, which ensure that the tagging and classificat
 ## 1.3. Automation and Utilities
 
 
-1. Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums). ([issue](docs/issues/0004-album-detection/))
-2. Assist in the detection and management of duplicate folders or files within the photo library. ([issue](docs/issues/0003-duplicates-management/))
+1. Automatically create albums based on existing regular folder structures (e.g., import folder hierarchies as albums). ([issue](docs/issues/0024-album-features/subtasks/0004-album-detection) <!-- uuid: e372ae3e-7d5d-494f-b5ae-5063863399d1 -->)
+2. Assist in the detection and management of duplicate folders or files within the photo library. ([issue 0003-duplicates-management](docs/issues/0025-asset-features/subtasks/0003-duplicate-asset--management/duplicate-asset-management_plan.md) <!-- uuid: ebd85fe4-dbe6-4a35-a225-cab3ea46a729 -->)
 3. Provide an official Docker image for easy deployment and usage (requested by users).
 
 

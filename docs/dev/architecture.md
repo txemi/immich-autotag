@@ -1,3 +1,7 @@
+---
+uuid: eaae0122-064d-429d-8db5-b2f9fa25b565
+---
+
 # Project Architecture
 
 ## Package Structure and Responsibilities
