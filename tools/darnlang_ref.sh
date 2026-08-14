@@ -22,6 +22,12 @@
 # Auto-detection is the behaviour we want here. But it is bound to the FILENAME, so renaming or
 # moving that file drops the 100 words in silence, and the variable below will not save it — it is
 # read by nobody. Kept, and labelled, because deleting it would hide where the list lives.
+#
+# ⚠️ DO NOT QUOTE A SAMPLE WORD ANYWHERE IN THIS FILE. It is tracked, so `check_no_spanish_chars`
+# scans it like any other, and it has no general "this is only an example" marker — the single
+# per-line opt-out is the literal `SPANISH_PATTERN=`, reserved for the shell gate's own regex.
+# Quoting two samples in the twin comment of `.github/workflows/lang-surfaces.yml` is what turned
+# four Jenkins rows red on 2026-08-13. Name the list file instead; that is what it is for.
 export DARNLANG_REF="git+https://github.com/txemi/darnlang@v0.7.0"
 # Documentation only: darnlang finds this path by name, it is not passed as a flag anywhere.
 export DARNLANG_WORDS="$(git rev-parse --show-toplevel)/scripts/devtools/spanish_words.txt"
