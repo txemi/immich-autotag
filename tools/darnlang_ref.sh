@@ -28,6 +28,6 @@
 # per-line opt-out is the literal `SPANISH_PATTERN=`, reserved for the shell gate's own regex.
 # Quoting two samples in the twin comment of `.github/workflows/lang-surfaces.yml` is what turned
 # four Jenkins rows red on 2026-08-13. Name the list file instead; that is what it is for.
-export DARNLANG_REF="git+https://github.com/txemi/darnlang@v0.7.0"
+export DARNLANG_REF="git+https://github.com/txemi/darnlang@v0.9.0"
 # Documentation only: darnlang finds this path by name, it is not passed as a flag anywhere.
 export DARNLANG_WORDS="$(git rev-parse --show-toplevel)/scripts/devtools/spanish_words.txt"
