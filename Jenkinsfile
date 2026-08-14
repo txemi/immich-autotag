@@ -208,6 +208,26 @@ pipeline {
 
 
         stage('Run Application') {
+            // Only the operational branch touches the real library. Every other branch
+            // -- main, PRs, worktrees -- stops after the gates.
+            //
+            // Same condition that already drives ENABLE_AUTO_CHAIN, on purpose: "this is
+            // the operational branch" is ONE fact, and two copies of it would drift.
+            //
+            // Measured before adding this (2026-08-11/13), with PR and main builds
+            // running the app against the same Immich as the batch chain:
+            //   chain alone .............. 0.052 s/asset
+            //   chain + a PR classifying .. 2.253 s/asset   (43x)
+            //   chain + main classifying .. 5.040 s/asset   (70x)
+            // Two builds also fork the checkpoint: Jenkins hands the second one a
+            // `@2` workspace, and skip_n lives in the workspace, so they walk the
+            // library independently without knowing about each other.
+            //
+            // The other half is worse than slowness: a PR is unreviewed code writing
+            // tags, albums and SHARING PERMISSIONS to a real family photo library. And
+            // it made CI failures and production failures the same failure -- a Spanish
+            // word in a YAML comment stopped photo classification for a day.
+            when { branch 'ops/batch-processing' }
             steps {
                 script {
                     echo "Running immich-autotag application..."
