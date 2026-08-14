@@ -13,8 +13,13 @@
 #
 # The detector is darnlang with THIS repo's wordlist added to its built-in one, so the policy stays
 # here and only the plumbing is shared. Measured before wiring it: the built-in list alone misses
-# `bloquea`/`calidad` (this repo's words), and this repo's list alone misses `el`/`que`/`la` (the
-# commonest markers there are). Each covers the other's gap; neither alone is enough.
+# the domain words kept in `scripts/devtools/spanish_words.txt`, and that file alone misses the
+# commonest grammatical markers, which the built-in list does carry. Each covers the other's gap;
+# neither alone is enough.
+#
+# No sample word is quoted in this file on purpose. `check_no_spanish_chars` reads every tracked
+# file, this one included, and cannot tell a quoted example from a violation — quoting two of them
+# here is what turned the Jenkins pipeline red on 2026-08-14.
 name: lang-surfaces
 
 on:
