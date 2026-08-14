@@ -12,14 +12,17 @@
 # previous text readable through the API.
 #
 # The detector is darnlang with THIS repo's wordlist added to its built-in one, so the policy stays
-# here and only the plumbing is shared. Measured before wiring it: the built-in list alone misses
-# the domain words kept in `scripts/devtools/spanish_words.txt`, and that file alone misses the
-# commonest grammatical markers, which the built-in list does carry. Each covers the other's gap;
-# neither alone is enough.
+# here and only the plumbing is shared. Measured before wiring it against the pinned v0.7.0: the
+# built-in list alone misses 94 of the 100 words kept in `scripts/devtools/spanish_words.txt` (the
+# 6 it does carry are grammatical markers, not domain words), and that file alone misses 45 of the
+# 51 commonest grammatical markers, which the built-in list does carry. Each covers the other's
+# gap; neither alone is enough.
 #
 # No sample word is quoted in this file on purpose. `check_no_spanish_chars` reads every tracked
-# file, this one included, and cannot tell a quoted example from a violation — quoting two of them
-# here is what turned the Jenkins pipeline red on 2026-08-14.
+# file, this one included, and has NO general "this is only an example" marker: its single per-line
+# opt-out is the literal `SPANISH_PATTERN=`, reserved for the shell gate's own regex. So a quoted
+# sample here is indistinguishable from a violation — quoting two of them is what turned the
+# Jenkins pipeline red when #79 landed on 2026-08-13 (spotted on the master a day later).
 name: lang-surfaces
 
 on:
