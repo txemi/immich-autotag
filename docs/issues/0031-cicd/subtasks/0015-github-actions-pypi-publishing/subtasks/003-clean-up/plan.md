@@ -1,3 +1,7 @@
+---
+uuid: d0b81fec-e1f7-4977-acf4-399fdd6f9a11
+---
+
 # Issue 0020: Cleanup and Redeployment Plan for Public Releases
 
 ## Context

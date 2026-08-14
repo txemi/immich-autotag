@@ -1,4 +1,5 @@
 ---
+uuid: 075f3831-169f-4751-b00d-46cf6713be52
 status: Proposed
 version: v1.0
 created: 2026-01-15

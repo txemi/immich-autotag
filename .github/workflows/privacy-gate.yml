@@ -1,0 +1,130 @@
+# Privacy gate — blocks private references from reaching this public repo.
+#
+# WHY THIS EXISTS. An audit on 2026-08-08 across every public repository of this account found
+# private identifiers in two of them. Here it was internal infrastructure: the hostname and domain
+# of a private CI server, pasted as build URLs into a debugging note, and a local home path in an
+# agent command. No credential ever leaked. It got in through *examples* — a note records what
+# actually happened, and what actually happened was on a private network. That is not something a
+# one-off review catches, because the next debugging note re-introduces it. So it is a gate.
+#
+# WHAT IT CHECKS, and why each surface matters:
+#   1. Tracked files      — recoverable with a commit, but permanent in git history.
+#   2. PR title and body  — the worst surface. Rendered as public HTML, indexed by search engines,
+#                           and IMPOSSIBLE to retract: editing a PR body keeps the previous text
+#                           readable through the API (userContentEdits), and PR bodies cannot be
+#                           deleted. Catching these before merge is the only chance there is.
+#   3. Commit messages    — cannot be changed after push without rewriting history.
+#
+# THE PATTERN LIST IS A SECRET (`PRIVACY_DENYLIST`, one extended-regex per line) for the obvious
+# reason: a list of private names cannot live in the repo it is protecting.
+#
+# TWO DELIBERATE CHOICES:
+#   - FAIL-CLOSED on a missing secret. If the list is absent the job fails instead of passing, so a
+#     misconfigured repo can never look green while checking nothing.
+#   - NEVER PRINT THE MATCH. CI logs on a public repo are public, so reporting the offending text
+#     would leak it in the very place meant to prevent that. Only `file:line` is printed. (Actions
+#     would mask the value anyway; this does not rely on that.)
+name: privacy-gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for private references
+        env:
+          DENYLIST: ${{ secrets.PRIVACY_DENYLIST }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -uo pipefail
+          # BYTE order, not locale order. `comm` requires both of its inputs to be sorted with
+          # the same collation it uses itself; under a locale such as es_ES.UTF-8, `sort` collates
+          # differently and `comm` starts reporting baseline entries as if they were new. Seen in
+          # testing.
+          export LC_ALL=C
+
+          if [ -z "${DENYLIST:-}" ]; then
+            echo "::error::PRIVACY_DENYLIST secret is not set. Failing closed:"
+            echo "a privacy gate with no patterns would report success while checking nothing."
+            exit 1
+          fi
+          printf '%s\n' "$DENYLIST" | grep -v '^[[:space:]]*$' > /tmp/denylist.txt
+          # Re-check AFTER stripping blank lines, not only before. A secret holding nothing but
+          # whitespace passes the -z test above and then leaves zero patterns, and GNU grep -f with
+          # an empty pattern file matches NOTHING and exits 1 -> every surface would report "clean"
+          # while checking nothing, which is exactly the failure this job exists to make impossible.
+          # (Worth knowing: ugrep does the opposite on the same input, so a local test can disagree
+          # with the runner. Hence an explicit check instead of relying on either behaviour.)
+          if [ ! -s /tmp/denylist.txt ]; then
+            echo "::error::PRIVACY_DENYLIST contains no usable patterns (blank/whitespace only)."
+            echo "Failing closed rather than scanning with an empty pattern set."
+            exit 1
+          fi
+          echo "Patterns loaded: $(wc -l < /tmp/denylist.txt) (contents intentionally not printed)"
+
+          fail=0
+
+          # Baseline of pre-existing violations, as `file:line`, same idea as the entity-structure
+          # baseline in the documentation monorepo: adopt the gate on a repo that is not clean yet,
+          # then let the list only ever shrink. It holds file:line and never the offending text, so
+          # the baseline itself is safe to keep in a public repo. Being brittle is deliberate — if
+          # the line moves, the entry stops matching and the case comes back for a fresh look.
+          BASELINE=.github/privacy-gate-baseline.txt
+          grep -v '^[[:space:]]*\(#\|$\)' "$BASELINE" 2>/dev/null | sort -u > /tmp/baseline.txt || : > /tmp/baseline.txt
+          echo "Baseline entries: $(wc -l < /tmp/baseline.txt)"
+
+          # 1. Tracked files. Only file:line is reported — never the matching text.
+          echo "--- tracked files ---"
+          git ls-files -z | xargs -0 grep -nIiEf /tmp/denylist.txt 2>/dev/null \
+            | cut -d: -f1,2 | sort -u > /tmp/all_hits.txt || :
+          comm -23 /tmp/all_hits.txt /tmp/baseline.txt > /tmp/hits.txt
+          if [ -s /tmp/hits.txt ]; then
+            sed 's/^/  /' /tmp/hits.txt
+            echo "::error::private reference(s) found in tracked files (see file:line above)"
+            fail=1
+          else
+            echo "  clean ($(comm -12 /tmp/all_hits.txt /tmp/baseline.txt | wc -l) known, in baseline)"
+          fi
+          # Una entrada del baseline que ya no casa es deuda saldada: fuera, para que no pueda volver.
+          if [ -n "$(comm -13 /tmp/all_hits.txt /tmp/baseline.txt)" ]; then
+            echo "::warning::baseline entries no longer matching — remove them from $BASELINE:"
+            comm -13 /tmp/all_hits.txt /tmp/baseline.txt | sed 's/^/  /'
+          fi
+
+          # 2. PR title and body. Unretractable once merged — this is the important one.
+          if [ -n "${PR_BODY:-}${PR_TITLE:-}" ]; then
+            echo "--- pull request title/body ---"
+            if printf '%s\n%s\n' "${PR_TITLE:-}" "${PR_BODY:-}" | grep -qiEf /tmp/denylist.txt; then
+              echo "::error::private reference in the PR title or body. Edit it BEFORE merging:"
+              echo "editing later does not remove it (the old revision stays readable via the API)."
+              fail=1
+            else
+              echo "  clean"
+            fi
+          fi
+
+          # 3. Commit messages introduced by this PR.
+          if [ -n "${BASE_SHA:-}" ]; then
+            echo "--- commit messages ---"
+            if git log --format='%s%n%b' "${BASE_SHA}..HEAD" | grep -qiEf /tmp/denylist.txt; then
+              echo "::error::private reference in a commit message: amend/rebase before merging."
+              fail=1
+            else
+              echo "  clean"
+            fi
+          fi
+
+          exit $fail

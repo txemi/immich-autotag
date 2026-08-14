@@ -1,3 +1,7 @@
+---
+uuid: 351461cb-9f8e-46f4-acdd-545ec2f92e20
+---
+
 # Versioning and Release Workflow for immich-autotag
 
 ## Versioning conventions (SemVer + Quality Gate)
@@ -12,7 +16,7 @@ This project follows [Semantic Versioning (SemVer)](https://semver.org/) with th
 
 **Note:** If you want to record a Quality Gate milestone, you may add a brief entry in the changelog, but it is not required to detail every PATCH if there are no functional changes.
 
-For more details on how versions and Quality Gate milestones are reflected, see the header of [`../CHANGELOG.md`](../CHANGELOG.md).
+For more details on how versions and Quality Gate milestones are reflected, see the header of [`../../CHANGELOG.md`](../../CHANGELOG.md) <!-- uuid: 2582dca7-b9de-491d-a906-7603c2d682b8 -->.
 
 ## Workflow Consensus (2026-01-10)
 

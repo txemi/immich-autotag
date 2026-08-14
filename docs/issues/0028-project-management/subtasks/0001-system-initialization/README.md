@@ -1,4 +1,5 @@
 ---
+uuid: e4a8306c-db95-4ee0-bcc2-dad1b2b6a0d3
 status: Done
 ---
 # 0001 - System Initialization
@@ -12,5 +13,5 @@ This issue initializes the local-first, plain-text issue tracking system for the
 - [x] `docs/issues/` directory exists
 - [x] `docs/issues/registry.md` created and initialized
 - [x] First issue folder (`0001-system-initialization`) created
-- [x] Issue template files present (`readme.md`, `ai-context.md`, `design/`)
+- [x] Issue template files present (`README.md`, `ai-context.md`, `design/`)
 - [ ] System announced in project documentation

@@ -94,7 +94,7 @@ Not blocking: Release v0.72-v0.73 (optional enhancement)
 - **Original architecture:** `subtasks/001-create-temporary-albums/ARCHITECTURE.md`
 
 ### For Parent Issue Context
-- **Main README:** `readme.md` (parent issue overview)
+- **Main README:** `README.md` (parent issue overview)
 
 ---
 

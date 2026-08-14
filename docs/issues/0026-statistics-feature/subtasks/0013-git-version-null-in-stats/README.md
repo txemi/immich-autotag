@@ -1,3 +1,7 @@
+---
+uuid: 97dd304b-588f-44a2-bd8b-dd4c3a1f939d
+---
+
 # Issue 0013: git_version is null in statistics output
 
 ## Context

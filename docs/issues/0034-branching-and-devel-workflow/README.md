@@ -1,3 +1,7 @@
+---
+uuid: 252d0f15-e793-4594-b670-dc099ac8e60a
+---
+
 # Issue 0034 · Branching and Development Workflow
 
 This `README` describes **the purpose of this folder** and links only to documentation/subtasks that **currently exist** under `docs/issues/0034-branching-and-devel-workflow/`.
@@ -11,11 +15,11 @@ This `README` describes **the purpose of this folder** and links only to documen
 ## Actual structure (existing)
 
 - `subtasks/0020-docs-track-branch/`
-	- `readme.md`
+	- `README.md`
 
 ## Quick references
 
-- docs-track branch workflow: `subtasks/0020-docs-track-branch/readme.md`
+- docs-track branch workflow: `subtasks/0020-docs-track-branch/README.md`
 
 ## Note
 

@@ -1,9 +1,13 @@
+---
+uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6
+---
+
 # 1. Developer Guide: Immich Autotag
 
 
 This document is intended for contributors and developers. Here you'll find information about project structure, development workflow, architecture, and technical details relevant for contribution and maintenance.
 
-For user documentation, onboarding, and execution options, see the [README.md](../README.md), which now includes both quick start and useful links for review and daily use.
+For user documentation, onboarding, and execution options, see the [README.md](../README.md) <!-- uuid: 21598d5c-cd73-46c4-9340-6ac6ccdc4adc -->, which now includes both quick start and useful links for review and daily use.
 
 
 
@@ -35,7 +39,7 @@ Run the main application:
 ./run_app.sh
 ```
 
-You can also check the  [README.md](../README.md) for other execution options, such as pipx or Docker (in progress).
+You can also check the  [README.md](../README.md) <!-- uuid: 21598d5c-cd73-46c4-9340-6ac6ccdc4adc --> for other execution options, such as pipx or Docker (in progress).
 
 ## 1.3. Structure
 - `immich_api_examples/`: Example scripts showing how to use the Immich API and test integration:
@@ -56,7 +60,7 @@ You can also check the  [README.md](../README.md) for other execution options, s
 - `scripts/`: Utility scripts for project hygiene and automation:
 	- `clean_pycache.sh`: Cleans all `.pyc` files and `__pycache__` folders in the project.
 - `LICENSE`: GPL v3 license ([local link](../LICENSE)).
-- [`README.md`](../README.md): Main documentation and user guide.
+- [`README.md`](../README.md) <!-- uuid: 21598d5c-cd73-46c4-9340-6ac6ccdc4adc -->: Main documentation and user guide.
 
 ## 1.4. Custom Developer Configuration
 

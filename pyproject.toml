@@ -77,7 +77,10 @@ extend-select = ["E", "F", "W"]
 
 [project.optional-dependencies]
 dev = [
-	"ruff",
+	# Keep in sync with requirements-dev.txt: ruff 0.16.0 turns on new rules by
+	# default and breaks the quality gate. Two files advertise this dependency,
+	# so an unpinned one here silently defeats the pin over there.
+	"ruff<0.16",
 	"black",
 	"isort",
 	"flake8",

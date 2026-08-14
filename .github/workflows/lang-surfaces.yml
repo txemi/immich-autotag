@@ -1,0 +1,77 @@
+# English-only on the surfaces this repo's own gate cannot see.
+#
+# ⚠️ THIS DOES NOT REPLACE `check_no_spanish_chars`, and nothing here touches it. That check is
+# BETTER than darnlang on files: it reads every tracked file rather than a chosen list of
+# extensions, it judges file NAMES, and it carries a curated wordlist plus an optional langdetect
+# layer. It stays exactly as it is, in Jenkins, where it already runs.
+#
+# What no file gate can see is what is written straight into GitHub. Measured on 2026-08-13 with
+# THIS repo's own detector, while the file gate was green: 42 lines across the last 400 commit
+# messages, 1 of 10 issues, and 10 of 60 pull requests. Those are also the least retractable
+# surfaces there are — an indexed pull-request title cannot be withdrawn, and editing it leaves the
+# previous text readable through the API.
+#
+# The detector is darnlang with THIS repo's wordlist added to its built-in one, so the policy stays
+# here and only the plumbing is shared. Measured before wiring it against the pinned v0.7.0: the
+# built-in list alone misses 94 of the 100 words kept in `scripts/devtools/spanish_words.txt` (the
+# 6 it does carry are grammatical markers, not domain words), and that file alone misses 45 of the
+# 51 commonest grammatical markers, which the built-in list does carry. Each covers the other's
+# gap; neither alone is enough.
+#
+# No sample word is quoted in this file on purpose. `check_no_spanish_chars` reads every tracked
+# file, this one included, and has NO general "this is only an example" marker: its single per-line
+# opt-out is the literal `SPANISH_PATTERN=`, reserved for the shell gate's own regex. So a quoted
+# sample here is indistinguishable from a violation — quoting two of them is what turned the
+# Jenkins pipeline red when #79 landed on 2026-08-13 (spotted on the master a day later).
+name: lang-surfaces
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  surfaces:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the commit-message step needs a range to walk
+      - uses: astral-sh/setup-uv@v5
+
+      # Resolve in a step of its OWN. `uvx --from <ref> darnlang …` in one call cannot tell "could
+      # not resolve" (uvx exits 1) from "found something" (darnlang exits 1), and conflating them
+      # turns a network hiccup into a language finding.
+      - name: Install darnlang
+        run: |
+          . tools/darnlang_ref.sh
+          uv tool install "$DARNLANG_REF"
+
+      # ONE MESSAGE AT A TIME. Concatenating the range and judging it as one text is how a single
+      # English line hides a Spanish one.
+      - name: Commit messages added by this push or PR
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            RANGE="${{ github.event.after }} -1"
+          else
+            RANGE="${{ github.event.before }}..${{ github.event.after }}"
+          fi
+          fail=0
+          while IFS= read -r sha; do
+            [ -z "$sha" ] && continue
+            git log -1 --format=%B "$sha" > "$RUNNER_TEMP/one.txt"
+            darnlang prose "$RUNNER_TEMP/one.txt" --label "commit message $sha" || fail=1
+          done < <(git log --format=%H $RANGE)
+          exit "$fail"
+
+      # Through the environment, never interpolated into `run:` — a title is attacker-controlled on
+      # a public repo, and `run: echo "${{ github.event… }}"` is a shell injection.
+      - name: PR title and description
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n\n%s\n' "$PR_TITLE" "$PR_BODY" > "$RUNNER_TEMP/pr.txt"
+          darnlang prose "$RUNNER_TEMP/pr.txt" --label "PR title/description"

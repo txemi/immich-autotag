@@ -41,11 +41,11 @@ Each issue resides in its own numbered folder (`00XX-slug`):
 - Update `README.md` files to reflect current structure and cross-links
 - Use tables for major reorganizations or categorizations
 - Document rationale for significant changes
-- Reference related issues via links (e.g., `[0020-docs-track-branch](../0020-docs-track-branch/)`)
+- Reference related issues via links (e.g., `[0020-docs-track-branch](../0034-branching-and-devel-workflow/subtasks/0020-docs-track-branch/)`)
 
 ## Registry
 
-See [`registry.md`](./registry.md) for a complete list of active issues with status and version information.
+See [`registry.md`](./registry.md) <!-- uuid: 805cc158-bb61-497d-96dd-7a6efece6acf --> for a complete list of active issues with status and version information.
 
 ---
 

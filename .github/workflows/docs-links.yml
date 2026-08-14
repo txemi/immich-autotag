@@ -1,0 +1,43 @@
+name: Docs link gate
+
+# Read-only darnlink gate for the docs' uuid-anchored Markdown links.
+# Independent of the (currently disabled) test CI: it needs no Immich client
+# library, only uv + the darnlink CLI, so it can run on every push/PR.
+on:
+  push:
+    paths:
+      - '**/*.md'
+      - 'scripts/devtools/darnlink_docs_gate.sh'
+      - '.github/workflows/docs-links.yml'
+  pull_request:
+    paths:
+      - '**/*.md'
+      - 'scripts/devtools/darnlink_docs_gate.sh'
+      - '.github/workflows/docs-links.yml'
+
+jobs:
+  darnlink:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: darnlink docs-link gate
+        # GITHUB_TOKEN for the WEB axis — and the reason is QUOTA, not permissions.
+        # This repo is public and its cross-repo links point only at itself, so the
+        # probe needs no privileges. What it needs is a rate limit: anonymous API
+        # calls are capped at 60/h PER PUBLIC IP, shared by everything behind it.
+        # Measured on this repo, same tree, minutes apart:
+        #     without token -> ok 0 | unverifiable 52
+        #     with token    -> ok 7 | unverifiable 45
+        # The zero is not "nothing to check": it is "could not look". With the
+        # bucket empty, a repo with no cross-repo links and one whose probe was
+        # throttled report the same reassuring number — the axis silently stops
+        # verifying while the build stays green. The automatic token raises the
+        # limit to 1000/h and makes the result deterministic instead of a function
+        # of what time the build ran.
+        # (The 45 that stay unverifiable with a token are correct: they are not
+        # GitHub URLs — semver.org and friends — and this axis only reads GitHub.)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/devtools/darnlink_docs_gate.sh .

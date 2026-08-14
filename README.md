@@ -1,3 +1,7 @@
+---
+uuid: 21598d5c-cd73-46c4-9340-6ac6ccdc4adc
+---
+
 # 1. Immich AutoTag
 
 ## 1.1. What is Immich AutoTag? (2 lines)
@@ -15,7 +19,7 @@ In recent years, [Immich](https://immich.app) has become one of the most popular
 
 When starting to use Immich, it is common to import large volumes of photos from older systems, where organization was done in folders or with other apps. This creates a challenge: many photos and videos remain unorganized or misclassified. Although Immich is powerful, manual classification can be slow and tedious. This project aims to make organization faster and easier through automatic rules and tagging.
 
-> **Note:** Some users have found it hard to understand what this tool actually does. For a much simpler, intentionally non-technical explanation, see [Explain Like I'm 5](./docs/explain-like-im-5.md).
+> **Note:** Some users have found it hard to understand what this tool actually does. For a much simpler, intentionally non-technical explanation, see [Explain Like I'm 5](./docs/explain-like-im-5.md) <!-- uuid: 5246c36f-d80d-4eec-80a7-920e5a6dba68 -->.
 
 
 
@@ -32,7 +36,7 @@ When starting to use Immich, it is common to import large volumes of photos from
 - **Continuous or scheduled tagging:** A dedicated script allows for continuous asset tagging/classification during heavy editing sessions, or can be easily scheduled (e.g., nightly runs) using Docker or cron—making it easy to keep up with rapid changes or automate regular organization.
 - **Batch tag/album conversions:** Apply new tags or albums to assets in bulk (by name pattern, tag, or asset), keeping or removing originals—ideal for reorganizing or refactoring your library as your needs evolve.
 
-For a more structured and detailed overview (including internal tools and links to technical issues), see the [Functional Blocks Matrix](./docs/functional_blocks_matrix.md).
+For a more structured and detailed overview (including internal tools and links to technical issues), see the [Functional Blocks Matrix](./docs/functional_blocks_matrix.md) <!-- uuid: ccb2c8bd-b14a-447f-a9d6-037fd14c5592 -->.
 
 This classification relies on a rule engine that is continuously evolving to become more abstract and flexible, allowing adaptation to the specific needs of different users.
 
@@ -43,7 +47,7 @@ It helps to:
 - Speed up the review and mass organization of your photo library.
 
 
-> For more details and upcoming features, see the [Roadmap](./ROADMAP.md) and [Changelog](./CHANGELOG.md).
+> For more details and upcoming features, see the [Roadmap](./ROADMAP.md) <!-- uuid: 7cd9075a-da44-4800-9f79-e340b6771d6f --> and [Changelog](./CHANGELOG.md) <!-- uuid: 2582dca7-b9de-491d-a906-7603c2d682b8 -->.
 
 DISCLAIMER: A lot of features have been added recently. If you find a bug, please report it at: https://github.com/txemi/immich-autotag/issues
 
@@ -55,7 +59,7 @@ To get started quickly:
 ### 1.4.1. Copy the configuration file
 
 - Place your config at `~/.config/immich_autotag/config.yaml` (recommended XDG location).
-- See the [Configuration Guide](./immich_autotag/config/README_config.md) for details and an example config file.
+- See the [Configuration Guide](./immich_autotag/config/README_config.md) <!-- uuid: b2884393-d332-4e6f-bf55-e93b6cdfb4f9 --> for details and an example config file.
 
 ### 1.4.2. Run the tool (choose one method)
 
@@ -87,7 +91,7 @@ You can run Immich AutoTag using any of the following methods:
 
   - ⚠️ **Docker known issue (version `0.80.3`)**: in some environments, the Docker image may fail when accessing the Immich API.
     - GitHub incident: [Issue #43](https://github.com/txemi/immich-autotag/issues/43)
-    - Local tracking doc: [`docs/issues/0031-cicd/subtasks/0016-docker-image-immich-api-access-instability/README.md`](./docs/issues/0031-cicd/subtasks/0016-docker-image-immich-api-access-instability/README.md)
+    - Local tracking doc: [`docs/issues/0031-cicd/subtasks/0016-docker-image-immich-api-access-instability/README.md`](./docs/issues/0031-cicd/subtasks/0016-docker-image-immich-api-access-instability/README.md) <!-- uuid: d9c4095f-d264-459c-b409-a90a168238bd -->
     - If you hit this issue, please use the **pipx** method documented above in section **A. With pipx (no code download required)**.
 
   - **One-shot execution (run once):**
@@ -185,7 +189,7 @@ You can run Immich AutoTag using any of the following methods:
 That's it! Your Immich autotagging tool is ready to use.
 
 > **Do you prefer to download the code and run it manually?**
-> See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) in the [Development Guide](./docs/development.md).
+> See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 --> in the [Development Guide](./docs/development.md) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 -->.
 
 
 ## 1.5. Reviewing Results: Example Links
@@ -224,7 +228,7 @@ After the motivation, let's describe a practical use case for this tool.
 
 
 
-**Step 1: Review and adjust your [configuration file](./immich_autotag/config/README_config.md)**
+**Step 1: Review and adjust your [configuration file](./immich_autotag/config/README_config.md) <!-- uuid: b2884393-d332-4e6f-bf55-e93b6cdfb4f9 -->**
 
   - Decide if you want Immich AutoTag to create albums automatically:
     - From dates (e.g., daily albums for unclassified assets)
@@ -258,18 +262,22 @@ You can define also special tags or albums for photos that do not belong to any 
 **Tips for Classification:**
 - To find memes or photos that should be tagged to avoid being candidates for albums, use Immich's "find similar" feature (AI-powered), which helps you quickly locate and tag such photos in bulk.
 
-> For a complete and detailed list of features, improvements, and changes, see the [Changelog](./CHANGELOG.md).
+> For a complete and detailed list of features, improvements, and changes, see the [Changelog](./CHANGELOG.md) <!-- uuid: 2582dca7-b9de-491d-a906-7603c2d682b8 -->.
 
 ## 1.7. Development
 
-For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md).
+For information about project structure, contributing, and technical details, see the [Developer Guide](./docs/development.md) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 -->.
 
-If you would like to contribute, please see the new [Contributing Guide](./docs/CONTRIBUTING.md). Any help is welcome—especially with re-enabling GitHub Actions (CI/CD), which is currently disabled due to the challenge of embedding the Immich client library in the build process. This project is developed in spare time, so all contributions are greatly appreciated!
+If you would like to contribute, please see the new [Contributing Guide](./docs/CONTRIBUTING.md) <!-- uuid: 0fe0abb8-5ac1-4868-8e99-4210639a02fc -->. Any help is welcome—especially with re-enabling GitHub Actions (CI/CD), which is currently disabled due to the challenge of embedding the Immich client library in the build process. This project is developed in spare time, so all contributions are greatly appreciated!
 
 ## 1.8. Support
 For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/txemi/immich-autotag/issues) ticketing system.
 
-## 1.9. License
+## 1.9. Other projects
+
+- [darnlink](https://github.com/txemi/darnlink) — self-healing Markdown links: repairs relative links by UUID when files move, and upgrades plain links to robust ones. No database, editor-agnostic, ships a pre-commit hook. **This project uses it** as a docs-link quality gate (see [`scripts/devtools/darnlink_docs_gate.sh`](scripts/devtools/darnlink_docs_gate.sh)).
+
+## 1.10. License
 This project is licensed under the GNU GPL v3. See the [LICENSE](./LICENSE) file for details.
 
 

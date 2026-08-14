@@ -1,3 +1,7 @@
+---
+uuid: 6471286b-48a1-40c8-a2ff-16e3692b102c
+---
+
 # Active Run Monitoring — ai-context
 
 **Last verified:** 2026-04-27
@@ -71,7 +75,7 @@ incident below.
 **Temp-unclassified albums incorrectly created for already-classified assets**
 
 → See full diagnosis and fix:
-[`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
+[`docs/issues/0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md`](../../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md) <!-- uuid: 35cc748a-37a9-4b5e-beae-637f7b35c26e -->
 
 **Summary:** assets that had `autotag_input_meme` removed by a MOVE conversion were not
 being added to the destination album when that album did not yet exist at processing time.
@@ -128,7 +132,7 @@ From the console log, look for:
 - Final line: `Total assets processed: 30000`
 - No new temp-unclassified albums created for assets that were already classified
   (**observation mode** — sequential runs will determine if this was a parallelism issue
-  or a code bug; see [linked incident](../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md))
+  or a code bug; see [linked incident](../../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md) <!-- uuid: 35cc748a-37a9-4b5e-beae-637f7b35c26e -->)
 
 ---
 
@@ -204,7 +208,7 @@ album (e.g. has the meme tag but is in a temp-unclassified album), follow this:
    - Rule matching is **OR** between `tag_names`, `album_name_patterns`, `asset_links`.
      A single matching tag is enough.
    - See linked incident for full semantics:
-     [`004-temp-album-false-positive-classified-assets/ai-context.md`](../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md)
+     [`004-temp-album-false-positive-classified-assets/ai-context.md`](../../../../../0024-album-features/subtasks/0016-auto-album-creation/subtasks/004-temp-album-false-positive-classified-assets/ai-context.md) <!-- uuid: 35cc748a-37a9-4b5e-beae-637f7b35c26e -->
 
 4. **Conclude**
    - The asset *should* match a rule but doesn't → real bug, gather log evidence

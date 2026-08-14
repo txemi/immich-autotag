@@ -1,3 +1,7 @@
+---
+uuid: 9a61cabb-12f9-4641-a659-1ee4f04d1c85
+---
+
 # Statistics and Checkpoint Management: Implementation Plan
 
 ## Next Steps

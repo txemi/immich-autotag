@@ -1,3 +1,7 @@
+---
+uuid: 2468d9eb-98aa-4b34-a146-31b6292f53ab
+---
+
 # Jenkins Build and Workspace Retention
 
 ## Problem
@@ -31,4 +35,4 @@ In multi-branch Jenkins setups, accumulated builds and orphaned workspaces consu
 
 ## Navigation
 
-See [subtasks/](subtasks/) for detailed implementations of both approaches.
+See [subtasks/](subtasks/) <!-- uuid: beff4072-d20e-432f-a46f-f28e074c54bd --> for detailed implementations of both approaches.

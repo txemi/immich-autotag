@@ -1,6 +1,11 @@
 // ==================== CONFIG FLAGS ====================
 def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
-def ENABLE_AUTO_CHAIN = true      // Set to true to auto-trigger the next build on success
+// Auto-chain: on success the build re-triggers itself, so the batch keeps walking the library
+// without anyone pressing a button. It belongs ONLY to the operational branch: on any other
+// branch it would spin a second infinite loop competing for the SAME single agent
+// (the one carrying the `immich-batch` label), where each run can take hours. main is
+// for validating, not for processing the library.
+def ENABLE_AUTO_CHAIN = (env.BRANCH_NAME == 'ops/batch-processing')
                                   // (keeps the batch-processing chain self-perpetuating
                                   // without external dispatch). Failure stops the chain
                                   // by design — re-enable manually after investigating.
@@ -37,9 +42,69 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
+            // Pin to the batch agent: the checkpoint chain (logs_local/) lives in that
+            // node's workspace, and sequential single-node execution is required
+            // (see issue 004-active-run-monitoring). Without a label the build can land
+            // on the Windows agent (no docker) or the controller.
+            //
+            // The label is a PURPOSE, not a hostname. It used to say
+            // 'ub20jenkins4ub20', which happens to work because Jenkins exposes every
+            // node's own name as an implicit label -- but that is not a label anyone
+            // declared: this controller only defines two, `linux` and `windows`. Binding
+            // the pipeline to a machine name means renaming or replacing that machine
+            // requires a code change and a PR to a protected branch, and it silently
+            // bypasses the label scheme.
+            //
+            // `immich-batch` is declared on the node in Jenkins (2026-08-10). Moving the
+            // batch to another machine is now a checkbox there, not a commit here. NOTE:
+            // it is deliberately assigned to ONE node -- until the checkpoint stops
+            // living in a node's workspace, a second node would reprocess from zero.
+            label 'immich-batch'
             // Mounts ~/.ssh from host into the container as read-only for private key and known_hosts access
             // Ensure $HOME/.ssh exists and contains the required key and known_hosts files
-            args '-v $HOME/.cache:/root/.cache -v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root'
+            //
+            // ⚠️ Do NOT mount the AGENT's `$HOME/.cache` into `/root/.cache`.
+            //
+            // This container runs with `--user root` (it needs to: the mounts below land under
+            // `/root/...`, which is mode 700, so a non-root uid could not even traverse it).
+            // Inside the container `HOME=/root`, so `-v $HOME/.cache:/root/.cache` was really the
+            // AGENT's `~/.cache`, mounted read-write and written as uid 0. Hundreds of root-owned
+            // files ended up in the agent's `uv` cache, which from then on it could READ but not
+            // UPDATE.
+            //
+            // The damage lands on OTHER jobs of the same node, and hours later, which is what
+            // makes it expensive to diagnose:
+            //   · they stay green for as long as `uv` can serve the cache as-is;
+            //   · for a TAG, `uv` resolves tag -> SHA through GitHub's API fast path, and that
+            //     anonymous bucket is 60/h per public IP, shared by every machine behind the same
+            //     NAT. When it runs out, `uv` does a real `git fetch`, needs to WRITE, and fails
+            //     with `Git operation failed`;
+            //   · the darnlink recipe surfaces that as "bad ref / no network" -- pointing at two
+            //     things that are perfectly fine.
+            // Measured 2026-08-11: 327 root-owned files, and a link gate on a sibling job of the
+            // same node going red 11 minutes later.
+            //
+            // ⚠️ The writer was the `ops/batch-processing` branch, which carries its OWN copy of
+            // this file and re-triggers itself every few hours. Merging this to `main` does NOT
+            // stop it: the change has to reach that branch too.
+            //
+            // The cache now belongs to the CONTAINER: it dies with it and touches nobody's home.
+            //
+            // The trade, measured, is not the same for both tools:
+            //   · pip lost NOTHING -- with the old mount it disabled its cache outright
+            //     (`check_path_owner`: as euid 0 it refuses a dir owned by another uid; "The cache
+            //     has been disabled" appears 6 times in the older build logs). Same 163 downloads
+            //     before and after.
+            //   · uv DID lose cross-build reuse: it has no such guard, so as root it happily wrote
+            //     into the agent's `~/.cache/uv` -- which is where 323 of those 327 root-owned
+            //     files came from. Each build now reclones and rebuilds its pinned tools.
+            // That cost is small and it is the price of the fix, not a free lunch.
+            //
+            // NOT changed on purpose: `--user root`. Dropping it has its own risk (the mounts
+            // above) and would still leave root-owned files in the WORKSPACE, which is a separate
+            // decision. A root cron currently sweeps workspaces of DEAD branches only -- it does
+            // not clean live ones, so that half is still open.
+            args '-v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root -e XDG_CACHE_HOME=/tmp/cache -e UV_CACHE_DIR=/tmp/cache/uv'
         }
     }
     
@@ -104,6 +169,22 @@ pipeline {
                         # FIXME: ensure we don't forget to remove this.
                         #bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK --skip-checks=check_mypy
                         bash scripts/devtools/quality_gate_py/venv_launcher.sh --level=STANDARD --mode=CHECK 
+                    '''
+                }
+            }
+        }
+        stage('Quality Gate (Docs Links)') {
+            steps {
+                script {
+                    echo "================ DOCS LINK GATE (darnlink) ================"
+                    echo "[DOCS LINK GATE] Checking uuid-anchored Markdown links (read-only, no --write)"
+                    sh '''
+                        git config --global --add safe.directory "$PWD"
+                        # darnlink runs via uvx; ensure uv is available in a
+                        # predictable location (user site, not a global pip).
+                        export PATH="$HOME/.local/bin:$PATH"
+                        command -v uvx >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
+                        bash scripts/devtools/darnlink_docs_gate.sh .
                     '''
                 }
             }

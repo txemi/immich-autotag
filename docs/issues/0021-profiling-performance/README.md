@@ -1,3 +1,7 @@
+---
+uuid: 679d0035-a83a-4ba6-8631-f9500db5eedd
+---
+
 # 0021 - Profiling & Performance Reports
 
 **Status:** Proposed
@@ -21,7 +25,7 @@ There are existing local profiling scripts, but no standardized CI integration. 
 
 ## Acceptance Criteria
 
-- A `docs/issues/0021-profiling-performance/readme.md` describing the approach (this file).
+- A `docs/issues/0021-profiling-performance/README.md` describing the approach (this file).
 - CI pipeline(s) updated to run profiling jobs and archive artifacts (example configs for Jenkins and GitHub Actions included or referenced).
 - A short `scripts/profiling/README.md` or example script exists and runs in CI producing artifacts.
 - A PR demonstrates profiling artifacts in CI for at least one pipeline run.
