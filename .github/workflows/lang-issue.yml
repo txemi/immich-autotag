@@ -1,0 +1,111 @@
+# English-only, applied to ISSUES — the surface where the rule leaked worst.
+#
+# WHY THIS IS A SEPARATE, WEAKER MECHANISM. Every other surface has a wall: a hook refuses the
+# commit, a red check blocks the merge. An issue has neither — GitHub has no pre-receive equivalent
+# for issues, so by the time any automation runs, the text is already published. The honest design
+# is therefore not a gate but a SIGNAL: label the issue and say so once, in a comment.
+#
+# It still earns its place. On 2026-08-11 both open issues in this public repo were written entirely
+# in Spanish — title and body — and had been for days, with CI green the whole time, because
+# nothing anywhere was looking at that surface. A visible label the owner sees in the issue list is
+# the difference between "found in three days" and "found never".
+#
+# Note for people arriving from outside: this is a house rule about the language the project is
+# written in, not a filter on who may report a bug. A report in another language is welcome and
+# will be translated — the label is a to-do, not a rejection.
+name: lang-issue
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  # `contents: read` is NOT redundant. Declaring a `permissions:` block sets every scope you do not
+  # list to `none`, so `actions/checkout` loses its read grant and dies with a 403. It bites on
+  # PRIVATE repositories only -- a public clone is anonymous -- which is worse, not better: the
+  # surface this workflow exists to watch would go unwatched, in silence, in exactly the repos where
+  # nobody would notice. Measured on a sibling repo earlier today.
+  contents: read
+  issues: write
+
+jobs:
+  english:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      # Resolve the tool in its OWN step. Merging "install" and "judge" into one `uvx` call was a
+      # critical defect: uvx exits 1 when it cannot resolve the ref -- offline, bad tag, network
+      # policy -- which is indistinguishable from "found something". On this workflow that meant a
+      # perfectly English issue got LABELLED and publicly told its language was wrong because the
+      # runner could not reach a git tag. Separated, a resolve failure fails this step and turns the
+      # job red without touching anybody's issue, and the judging step below can only exit with
+      # darnlang's own codes.
+      - name: Install darnlang
+        run: |
+          . tools/darnlang_ref.sh
+          uv tool install "darnlang[strict] @ $DARNLANG_REF"
+
+      - name: Judge the issue title and body
+        id: check
+        # Through the environment, never through the shell: an issue title on a public repo is
+        # written by anyone at all, and `run: echo "${{ github.event… }}"` is script injection.
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          printf '%s\n\n%s\n' "$ISSUE_TITLE" "$ISSUE_BODY" > "$RUNNER_TEMP/issue.txt"
+          set +e
+          darnlang prose "$RUNNER_TEMP/issue.txt" --strict --label issue
+          rc=$?
+          set -e
+          # THE EXIT CODE IS A CONTRACT, and this is the one place where confusing its values hurts
+          # a PERSON rather than a build. `if cmd; then` mapped EVERY non-zero to "wrong language",
+          # including 3 = "I could not run" -- so a broken gate would label a stranger's bug report
+          # and publicly tell them their language is wrong. Only 1 is a finding.
+          case "$rc" in
+            0) echo "english=true"  >> "$GITHUB_OUTPUT" ;;
+            1) echo "english=false" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::darnlang could not run (rc=$rc). Not labelling anybody over a broken gate."
+               exit "$rc" ;;
+          esac
+
+      - name: Flag it
+        if: steps.check.outputs.english == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          # Already labelled means this issue was already commented on: an `edited` event fires on
+          # every keystroke-batch GitHub sends, and a bot that repeats itself gets muted.
+          ALREADY: ${{ contains(github.event.issue.labels.*.name, 'needs-english') }}
+        run: |
+          gh label create needs-english -R "$REPO" \
+            --color D93F0B --description "Written in another language; needs translating" || true
+          gh issue edit "$NUMBER" -R "$REPO" --add-label needs-english
+          if [ "$ALREADY" != "true" ]; then
+            # Heredoc + --body-file, not an inline --body: an indented multi-line shell string
+            # carries its own indentation into the comment, and four leading spaces are a code
+            # block in Markdown.
+            cat > "$RUNNER_TEMP/comment.md" <<EOF
+          This project is written in English throughout — code, docs, commit messages, PR titles and
+          issues (see [CONTRIBUTING.md](https://github.com/$REPO/blob/main/CONTRIBUTING.md)). This
+          issue looks like it is in another language, so it has been labelled \`needs-english\`.
+
+          Nothing is wrong with the report itself and it will be read as it stands; the label only
+          marks that the text still needs translating. Posted automatically by
+          \`.github/workflows/lang-issue.yml\`.
+          EOF
+            gh issue comment "$NUMBER" -R "$REPO" --body-file "$RUNNER_TEMP/comment.md"
+          fi
+          # Fail on purpose: the red run in the Actions tab is the durable record. The label can be
+          # removed by hand, a comment scrolls away, but the run stays attached to the event.
+          exit 1
+
+      - name: Clear the flag once it is translated
+        if: steps.check.outputs.english == 'true' && contains(github.event.issue.labels.*.name, 'needs-english')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: gh issue edit "$NUMBER" -R "$REPO" --remove-label needs-english
