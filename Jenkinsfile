@@ -5,7 +5,14 @@ def ENABLE_JENKINS_TAGGING = true // Set to true to enable GitHub tagging
 // branch it would spin a second infinite loop competing for the SAME single agent
 // (the one carrying the `immich-batch` label), where each run can take hours. main is
 // for validating, not for processing the library.
-def ENABLE_AUTO_CHAIN = (env.BRANCH_NAME == 'ops/batch-processing')
+// ONE literal for "the operational branch". Two copies of this string would drift, and
+// the drift is not benign: if only one is updated on a rename, the chain keeps
+// re-triggering while the application never runs -- an endless run of 7-minute GREEN
+// builds that process nothing and push a git tag per cycle. A different branch name for
+// this same role is still referenced by an enabled scheduler entry, so the rename is not
+// hypothetical.
+def OPS_BRANCH = 'ops/batch-processing'
+def ENABLE_AUTO_CHAIN = (env.BRANCH_NAME == OPS_BRANCH)
                                   // (keeps the batch-processing chain self-perpetuating
                                   // without external dispatch). Failure stops the chain
                                   // by design — re-enable manually after investigating.
@@ -208,6 +215,28 @@ pipeline {
 
 
         stage('Run Application') {
+            // Only the operational branch touches the real library. Every other branch
+            // -- main, PRs, worktrees -- stops after the gates.
+            //
+            // Uses the SAME variable and the SAME comparison as ENABLE_AUTO_CHAIN, not a
+            // second copy of the string: "this is the operational branch" has to be one
+            // fact. `when { branch '...' }` would have been a second copy AND a second
+            // mechanism (ANT glob instead of `==`).
+            //
+            // Measured before adding this (2026-08-11/13), with PR and main builds
+            // running the app against the same Immich as the batch chain:
+            //   chain alone .............. 0.052 s/asset
+            //   chain + a PR classifying .. 2.253 s/asset   (43x)
+            //   chain + main classifying .. 5.040 s/asset   (70x)
+            // Two builds also fork the checkpoint: Jenkins hands the second one a
+            // `@2` workspace, and skip_n lives in the workspace, so they walk the
+            // library independently without knowing about each other.
+            //
+            // The other half is worse than slowness: a PR is unreviewed code writing
+            // tags, albums and SHARING PERMISSIONS to a real family photo library. And
+            // it made CI failures and production failures the same failure -- a Spanish
+            // word in a YAML comment stopped photo classification for a day.
+            when { expression { env.BRANCH_NAME == OPS_BRANCH } }
             steps {
                 script {
                     echo "Running immich-autotag application..."
@@ -230,7 +259,17 @@ pipeline {
             //     time (5-47h per build for the post-actions phase). We don't
             //     consume these artifacts across pipelines, so the fingerprints
             //     have no consumer.
-            archiveArtifacts artifacts: 'logs_local/*_PID*/**', excludes: 'logs_local/*/api_cache/**', fingerprint: false, allowEmptyArchive: true
+            // Only archive where the application actually ran. The workspace is
+            // persistent and `logs_local/` survives across builds, so on a branch that
+            // stops at the gates this would publish ANOTHER build's run directories --
+            // measured on main #50: 30 files from 5 stale runs, up to 4 days old,
+            // including `run_statistics.yaml`, presented as if this build had produced
+            // them. Intermittent before the `when` above; the steady state after it.
+            script {
+                if (env.BRANCH_NAME == OPS_BRANCH) {
+                    archiveArtifacts artifacts: 'logs_local/*_PID*/**', excludes: 'logs_local/*/api_cache/**', fingerprint: false, allowEmptyArchive: true
+                }
+            }
             echo "Pipeline execution completed at ${new Date()}"
         }
 
