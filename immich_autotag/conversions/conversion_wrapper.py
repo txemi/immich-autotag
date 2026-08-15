@@ -64,12 +64,66 @@ class ConversionWrapper:
         if source_matched:
             # Applies the destination action (add tags, albums, etc.)
             result_action = self.get_destination_wrapper()
-            changes = changes.extend(result_action.apply_action(asset_wrapper))
+            action_changes = result_action.apply_action(asset_wrapper)
+            changes = changes.extend(action_changes)
             # Depending on the conversion mode, removes the source tags/albums
             if self.conversion.mode == ConversionMode.MOVE and match_result is not None:
-                # Note: remove_matches still returns list[str], but that's being updated separately
-                # For now, we just skip those entries since they're info messages
-                self.get_source_wrapper().remove_matches(
-                    asset_wrapper, match_result, remove_source_albums=False
-                )
+                destination_albums = result_action.get_album_names()
+                if destination_albums:
+                    # Only remove the source tag once every destination album is real for
+                    # this asset. If one was not found/created, keep the tag so the asset
+                    # keeps its classification signal for the next run.
+                    #
+                    # Resolution is decided from what apply_action ACTUALLY DID, not from
+                    # the membership cache alone. The cache does not record the add for an
+                    # asset that was in ZERO albums -- `AssetToAlbumsMap.get_from_uuid`
+                    # returns a fresh `AlbumList` on a miss and never stores it, so the
+                    # append that follows mutates a throwaway object. That is precisely the
+                    # population a tag-to-album migration targets, so reading the cache
+                    # alone would report "not resolved" for almost every asset the
+                    # conversion just moved correctly: the tag would survive one extra full
+                    # pass, and this warning -- meant to flag a MISSING album -- would drown
+                    # in false positives.
+                    #
+                    # Two sources, because apply_action produces an entry only when it adds:
+                    # an album already containing the asset yields no entry at all.
+                    added_album_names = {
+                        album.get_album_name()
+                        for album in (
+                            action_changes.get_albums()
+                            if action_changes.has_changes()
+                            else []
+                        )
+                    }
+                    current_album_names = (
+                        set(asset_wrapper.get_album_names()) | added_album_names
+                    )
+                    all_destinations_resolved = all(
+                        album_name in current_album_names
+                        for album_name in destination_albums
+                    )
+                    if all_destinations_resolved:
+                        self.get_source_wrapper().remove_matches(
+                            asset_wrapper, match_result, remove_source_albums=False
+                        )
+                    else:
+                        from immich_autotag.logging.levels import LogLevel
+                        from immich_autotag.logging.utils import log
+
+                        missing = [
+                            a
+                            for a in destination_albums
+                            if a not in current_album_names
+                        ]
+                        log(
+                            f"[CONVERSION] Skipping source tag removal for "
+                            f"'{asset_wrapper.get_original_file_name()}': destination album(s) "
+                            f"{missing} not resolved. Classification signal preserved.",
+                            level=LogLevel.WARNING,
+                        )
+                else:
+                    # Pure tag-to-tag conversion: no album involved, remove source tags unconditionally.
+                    self.get_source_wrapper().remove_matches(
+                        asset_wrapper, match_result, remove_source_albums=False
+                    )
         return changes
