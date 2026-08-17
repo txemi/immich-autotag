@@ -23,7 +23,7 @@
 # it additionally requires that *linkable* targets be uuid-bearing.
 # Exit 0 = clean, non-zero = findings. To fix locally (writes uuids):
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.20.4" darnlink . --robustify --create-frontmatter --write
+#     uvx --from "git+https://github.com/txemi/darnlink@v0.24.0" darnlink . --robustify --create-frontmatter --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -49,7 +49,7 @@ set -euo pipefail
 # v0.16.0. A pin whose human-readable note lies is worse than one with no note --
 # it is what an auditor reads instead of resolving the SHA. When you bump the SHA
 # on the line below, bump BOTH mentions or neither.
-DARNLINK_REF="${DARNLINK_REF:-57f110fb665c826d560746ce86ebd22a92a78744}" # v0.20.4
+DARNLINK_REF="${DARNLINK_REF:-c61a9e0bf80e044f61d2ca2e00c2f1e84f6da6ea}" # v0.24.0
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
