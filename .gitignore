@@ -27,5 +27,6 @@ immich-autotag.local.code-workspace
 .mypy_cache/
 .pytest_cache/
 *.pyc
-.coverage.claude/settings.local.json
+.coverage
+.claude/settings.local.json
 .claude.local.md
