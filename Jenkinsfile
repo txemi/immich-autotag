@@ -44,7 +44,17 @@ pipeline {
         // pinned via `currentBuild.keepLog = true` (now removed in the
         // success post-action below), so old builds never rotated and ate
         // tens of GB on the master.
-        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '30'))
+        // `artifactNumToKeepStr` is NOT redundant with `numToKeepStr`: the latter caps how many
+        // builds are kept, not how much they weigh. The `ops/batch-processing` branch archives
+        // its own run logs as artifacts (`logs_local/*_PID*/**`, ~345 MB per build, with single
+        // `modification_report.txt` files of 20-28 MB), so 30 retained builds are ~10 GB by
+        // design — not a leak. That is enough to fill a controller disk, and when it fills,
+        // Jenkins keeps assigning build numbers to runs it can no longer persist: they vanish
+        // without a log.
+        //
+        // Keeping 3 preserves all 30 builds and their console logs — the evidence — and drops
+        // only the artifacts of the older ones. Steady state: ~10 GB -> ~1 GB.
+        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '30', artifactNumToKeepStr: '3'))
         // One build per branch at a time. This is NOT about tidiness: the checkpoint
         // (`skip_n`) lives in `logs_local/` INSIDE the workspace, and when two builds of
         // the same branch overlap, Jenkins hands the second one a separate `@2`
