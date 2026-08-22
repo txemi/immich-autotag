@@ -19,7 +19,7 @@ Synchronise the private config file with the latest template, preserving all per
 - `date_correction`: `extraction_timezone`
 - All `UserGroup` entries: `name`, `members` (emails), `description` if already personalised
 - All `AlbumSelectionRule` entries: `keyword`, `groups`, `access`, `name`
-- Any constants defined in the private config that are not in the template (e.g. `_ALL_AGES_MEME`, `_TAG_KEYWORD_MEME`, `_BAIGOMAR`, `_AGUAMAR`)
+- Any constants defined in the private config that are not in the template
 - Any `skip`, `filters`, `performance`, `threshold_days` values that differ from the template defaults
 
 ## Process

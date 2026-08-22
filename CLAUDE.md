@@ -118,7 +118,13 @@ Working documentation for features, bugs, and design decisions lives under `docs
 
 ## Project-level skills (`.claude/commands/`)
 
-Project-specific slash commands can be added as Markdown files under `.claude/commands/`. They are available as `/command-name` in Claude Code and are committed to the repo so all contributors share them.
+Project-specific slash commands can be added as Markdown files under `.claude/commands/`. They
+are committed to the repo so all contributors share them.
+
+**They live in a namespace folder, and the folder becomes the prefix.** This project's commands
+sit in `.claude/commands/immich/`, so they are invoked as `/immich:release`, `/immich:quality-gate`,
+`/immich:diagnose-jenkins` and `/immich:sync-config`. The prefix names the project a command acts
+on, so a generic verb like `release` can never be ambiguous about which repository it belongs to.
 
 ## Working with the maintainer
 

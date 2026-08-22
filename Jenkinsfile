@@ -44,7 +44,35 @@ pipeline {
         // pinned via `currentBuild.keepLog = true` (now removed in the
         // success post-action below), so old builds never rotated and ate
         // tens of GB on the master.
-        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '30'))
+        // `artifactNumToKeepStr` is NOT redundant with `numToKeepStr`: the latter caps how many
+        // builds are kept, not how much they weigh. The `ops/batch-processing` branch archives
+        // its own run logs as artifacts (`logs_local/*_PID*/**`, ~345 MB per build, with single
+        // `modification_report.txt` files of 20-28 MB), so 30 retained builds are ~10 GB by
+        // design — not a leak. That is enough to fill a controller disk, and when it fills,
+        // Jenkins keeps assigning build numbers to runs it can no longer persist: they vanish
+        // without a log.
+        //
+        // Keeping 3 preserves all 30 builds and their console logs — the evidence — and drops
+        // only the artifacts of the older ones. Steady state: ~10 GB -> ~1 GB.
+        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '30', artifactNumToKeepStr: '3'))
+        // One build per branch at a time. This is NOT about tidiness: the checkpoint
+        // (`skip_n`) lives in `logs_local/` INSIDE the workspace, and when two builds of
+        // the same branch overlap, Jenkins hands the second one a separate `@2`
+        // workspace -- so they do not duplicate work, they FORK the traversal, and
+        // neither knows the other exists.
+        //
+        // It happens without anyone doing anything wrong: a build waits for the single
+        // executor while the auto-chain fires the next one. Seen 2026-08-12, builds #369
+        // and #371 -- the second died 30 min in with "process apparently never started"
+        // in its `@2` workspace, after rebuilding the album map for nothing.
+        //
+        // Scope is exactly right here: `disableConcurrentBuilds()` acts PER JOB, and in a
+        // multibranch job that is per branch. It was considered and rejected earlier for
+        // a different question -- stopping `main` and the operational branch from
+        // competing -- where it does nothing, because those are different jobs. Rejecting
+        // an option answers ONE question; it has to be reconsidered when the question
+        // changes.
+        disableConcurrentBuilds()
     }
     agent {
         docker {

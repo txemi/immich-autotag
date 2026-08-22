@@ -28,6 +28,12 @@ name: lang-surfaces
 on:
   push:
   pull_request:
+    # `edited` is NOT decoration, and this repo is where its absence was measured. GitHub's default
+    # for `pull_request` is [opened, synchronize, reopened] -- so a body typed or rewritten AFTER the
+    # pull request was opened is never judged. This repo SQUASH-merges, so the body becomes the
+    # commit message: the gap publishes permanent history in the wrong language while every check
+    # shows green. That is precisely how ad713a7a5 got in on 2026-08-14, and it cannot be undone.
+    types: [opened, edited, reopened, synchronize]
 
 jobs:
   surfaces:

@@ -30,7 +30,7 @@ editor lock-in. It is **not** a broken-link checker: it maintains the
 2. **Gate (ongoing):** `scripts/devtools/darnlink_docs_gate.sh` runs darnlink in
    its default *report* mode (no `--write`) over the repo. It exits non-zero if
    any anchored link needs repair, is unresolved, or a target has invalid
-   frontmatter. The darnlink version is pinned (`v0.20.4`).
+   frontmatter. The darnlink version is pinned (`v0.24.0`).
 
 ## Where it runs (one script, three gates)
 
@@ -45,7 +45,7 @@ editor lock-in. It is **not** a broken-link checker: it maintains the
 If the gate is red, a doc moved and a link is stale. Repair and commit:
 
 ```bash
-uvx --from "git+https://github.com/txemi/darnlink@v0.20.4" darnlink . --write
+uvx --from "git+https://github.com/txemi/darnlink@v0.24.0" darnlink . --write
 ```
 
 ## Status
