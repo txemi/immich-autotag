@@ -30,3 +30,7 @@ immich-autotag.local.code-workspace
 .coverage
 .claude/settings.local.json
 .claude.local.md
+
+# Session worktrees (`git worktree add worktrees/<slug>`), the fleet-wide convention.
+# Gitignored so their tracked content never shows up as untracked noise in the outer tree.
+/worktrees/

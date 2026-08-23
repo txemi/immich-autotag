@@ -71,7 +71,17 @@ SCAN_ROOT="${1:-.}"
 # are already covered. Excluding '_archive' as well would be redundant here and too
 # broad everywhere else: excludes are directory-NAME globs, so it would silently skip
 # any _archive/ added anywhere in the repo later. Narrow beats convenient in a gate.
-DARNLINK_EXCLUDES=(--exclude 'logs_local')
+#
+# `worktrees/` are SESSION WORKTREES living inside the clone (`git worktree add worktrees/<slug>`),
+# the account-wide convention for this fleet. Every file in them is a SECOND COPY of a tracked
+# file, so darnlink sees each `uuid` twice and fails integrity -- and integrity is fail-closed,
+# so it blocks EVERY push by everyone, not just the session that made the worktree. Measured
+# 2026-08-23: one worktree (`ops/batch-processing`) produced 342 `integrity/ambiguous` findings
+# and this repo could not accept a single push, not even a branch DELETION. Excluding it: 0.
+#
+# ⚠️ A permanently-red wall is worse than no wall: it teaches people to reach for `--no-verify`,
+# and then it stops catching the thing it exists for. txnet1 already carries this exclude.
+DARNLINK_EXCLUDES=(--exclude 'logs_local' --exclude 'worktrees')
 
 echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (max: fail-closed, read-only)"
 # mode=max = check (integrity + strict) UNION create-frontmatter UNION web. `check` catches broken
