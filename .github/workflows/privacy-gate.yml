@@ -29,7 +29,20 @@ name: privacy-gate
 on:
   push:
     branches: [main]
+  # `edited` and `reopened` are NOT in the default set (opened, synchronize, reopened) for `edited`,
+  # and both matter for the surface this gate calls the worst one.
+  #
+  # MEASURED 2026-08-22. This gate correctly blocked a merge because the PR body carried a private
+  # reference. The body was then corrected — and the check stayed red, because editing a PR body
+  # does not re-trigger `pull_request`. The only way to get it re-evaluated was to close and reopen
+  # the PR, which is not something anyone would guess.
+  #
+  # That failure mode is bad in both directions:
+  #   - a corrected body keeps showing as failing, so the gate looks broken and gets worked around;
+  #   - and a body edited AFTER a green run is never re-scanned at all, so a private reference can
+  #     be introduced post-approval and merged clean. That is the hole that matters.
   pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
 
 permissions:
   contents: read
