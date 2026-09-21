@@ -16,8 +16,13 @@ try:
 except FileNotFoundError:
     print("repo_policy_check: repo_policy.yaml is missing at the repo root", file=sys.stderr)
     sys.exit(1)
-missing = [k for k in REQUIRED if k not in data]
+if not isinstance(data, dict):
+    print("repo_policy_check: repo_policy.yaml must be a mapping of sections, not a list or a scalar",
+          file=sys.stderr)
+    sys.exit(1)
+# A key with no value (`ci:`) parses to None: present, but it declares nothing.
+missing = [k for k in REQUIRED if not isinstance(data.get(k), dict) or not data[k]]
 if missing:
-    print(f"repo_policy_check: required sections missing: {missing}", file=sys.stderr)
+    print(f"repo_policy_check: required sections missing or empty: {missing}", file=sys.stderr)
     sys.exit(1)
 print("repo_policy_check: repo_policy.yaml parses and has " + ", ".join(REQUIRED) + ".")

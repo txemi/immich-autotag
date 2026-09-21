@@ -14,8 +14,10 @@
 # (cannot change after a push without rewriting history), tracked files (permanent in git history).
 #
 # Two deliberate choices:
-#   - FAIL-CLOSED on a missing or empty list. A gate with no patterns reports success while checking
-#     nothing, so it refuses to run instead.
+#   - FAIL-CLOSED whenever the gate cannot really judge: a missing or empty list, a list with CRLF line
+#     ends or with a pattern that is not a valid extended regex (grep then exits 2 and matches NOTHING,
+#     which reads as "clean"), a PR_TEXT_FILE that does not exist, a BASE_SHA that does not resolve.
+#     Exit 2 means "could not judge"; exit 1 means "found something".
 #   - NEVER PRINT THE MATCH. Logs on a public repo are public, so only file:line is reported.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -37,6 +39,17 @@ grep -v '^[[:space:]]*$' "$DENYLIST_FILE" > "$work/denylist.txt" || true
 if [ ! -s "$work/denylist.txt" ]; then
   echo "ERROR: the deny list contains no usable patterns (blank or whitespace only). Failing closed."
   exit 1
+fi
+if grep -q $'\r' "$work/denylist.txt"; then
+  echo "ERROR: the deny list has CRLF line ends: every pattern would carry a trailing CR and match"
+  echo "nothing. Failing closed. Convert it to LF."
+  exit 2
+fi
+# One bad pattern disables the WHOLE scan: grep exits 2 and prints no match. Probe the list first.
+grep -qiEf "$work/denylist.txt" /dev/null 2>/dev/null
+if [ "$?" -ne 1 ]; then
+  echo "ERROR: the deny list holds a pattern that is not a valid extended regex. Failing closed."
+  exit 2
 fi
 echo "Patterns loaded: $(wc -l < "$work/denylist.txt") (contents intentionally not printed)"
 
@@ -68,23 +81,39 @@ fi
 
 if [ -n "${PR_TEXT_FILE:-}" ]; then
   echo "--- pull request title/body ---"
-  if grep -qiEf "$work/denylist.txt" "$PR_TEXT_FILE"; then
-    echo "ERROR: private reference in the PR title or body. Edit it BEFORE merging:"
-    echo "editing later does not remove it (the old revision stays readable via the API)."
-    fail=1
-  else
-    echo "  clean"
+  if [ ! -f "$PR_TEXT_FILE" ]; then
+    echo "ERROR: PR_TEXT_FILE is set but is not a file. Failing closed."
+    exit 2
   fi
+  grep -qiEf "$work/denylist.txt" "$PR_TEXT_FILE"
+  case "$?" in
+    0) echo "ERROR: private reference in the PR title or body. Edit it BEFORE merging:"
+       echo "editing later does not remove it (the old revision stays readable via the API)."
+       fail=1 ;;
+    1) echo "  clean" ;;
+    *) echo "ERROR: could not scan the PR text. Failing closed."; exit 2 ;;
+  esac
 fi
 
 if [ -n "${BASE_SHA:-}" ]; then
   echo "--- commit messages ---"
-  if git log --format='%s%n%b' "${BASE_SHA}..HEAD" | grep -qiEf "$work/denylist.txt"; then
-    echo "ERROR: private reference in a commit message: amend or rebase before merging."
-    fail=1
-  else
-    echo "  clean"
+  # An all-zero sha (a push that creates a branch) or any ref that does not resolve: there is no
+  # range to read, and `git log` failing into a pipe would read as "clean".
+  if ! git rev-parse --verify --quiet "${BASE_SHA}^{commit}" >/dev/null; then
+    echo "ERROR: BASE_SHA does not resolve to a commit. Failing closed."
+    exit 2
   fi
+  if ! git log --format='%s%n%b' "${BASE_SHA}..HEAD" > "$work/messages.txt"; then
+    echo "ERROR: could not read the commit messages. Failing closed."
+    exit 2
+  fi
+  grep -qiEf "$work/denylist.txt" "$work/messages.txt"
+  case "$?" in
+    0) echo "ERROR: private reference in a commit message: amend or rebase before merging."
+       fail=1 ;;
+    1) echo "  clean" ;;
+    *) echo "ERROR: could not scan the commit messages. Failing closed."; exit 2 ;;
+  esac
 fi
 
 exit "$fail"
