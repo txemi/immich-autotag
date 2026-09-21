@@ -44,32 +44,18 @@ jobs:
           fetch-depth: 0   # the commit-message step needs a range to walk
       - uses: astral-sh/setup-uv@v5
 
-      # Resolve in a step of its OWN. `uvx --from <ref> darnlang …` in one call cannot tell "could
-      # not resolve" (uvx exits 1) from "found something" (darnlang exits 1), and conflating them
-      # turns a network hiccup into a language finding.
-      - name: Install darnlang
-        run: |
-          . tools/darnlang_ref.sh
-          uv tool install "$DARNLANG_REF"
-
-      # ONE MESSAGE AT A TIME. Concatenating the range and judging it as one text is how a single
-      # English line hides a Spanish one.
+      # Which range and where the text comes from is decided here; how it is judged lives in the
+      # scripts, which Jenkins calls too. Resolving darnlang happens in a step of its OWN inside
+      # them, so "could not resolve" is never confused with a finding.
       - name: Commit messages added by this push or PR
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+            bash tools/lang_commits.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
           elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            RANGE="${{ github.event.after }} -1"
+            bash tools/lang_commits.sh --last "${{ github.event.after }}"
           else
-            RANGE="${{ github.event.before }}..${{ github.event.after }}"
+            bash tools/lang_commits.sh "${{ github.event.before }}" "${{ github.event.after }}"
           fi
-          fail=0
-          while IFS= read -r sha; do
-            [ -z "$sha" ] && continue
-            git log -1 --format=%B "$sha" > "$RUNNER_TEMP/one.txt"
-            darnlang prose "$RUNNER_TEMP/one.txt" --label "commit message $sha" || fail=1
-          done < <(git log --format=%H $RANGE)
-          exit "$fail"
 
       # Through the environment, never interpolated into `run:` — a title is attacker-controlled on
       # a public repo, and `run: echo "${{ github.event… }}"` is a shell injection.
@@ -80,4 +66,4 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           printf '%s\n\n%s\n' "$PR_TITLE" "$PR_BODY" > "$RUNNER_TEMP/pr.txt"
-          darnlang prose "$RUNNER_TEMP/pr.txt" --label "PR title/description"
+          bash tools/lang_gate.sh pr-text "$RUNNER_TEMP/pr.txt"
