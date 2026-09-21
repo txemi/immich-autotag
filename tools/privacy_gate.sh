@@ -63,8 +63,24 @@ grep -v '^[[:space:]]*\(#\|$\)' "$BASELINE" 2>/dev/null | sort -u > "$work/basel
 echo "Baseline entries: $(wc -l < "$work/baseline.txt")"
 
 echo "--- tracked files ---"
-git ls-files -z | xargs -0 grep -nIiEf "$work/denylist.txt" 2>/dev/null \
-  | cut -d: -f1,2 | sort -u > "$work/all_hits.txt" || :
+# Per-file, not `xargs -0 grep ... 2>/dev/null`: that swallowed EVERY grep failure on a tracked
+# file, not just "no match" (exit 1) -- a file grep cannot read (permission denied, a dangling
+# symlink) exits 2 and prints nothing, and the old pipeline recorded that as "clean". A secret in
+# a file with the read permission pulled would pass silently. One invocation per file makes each
+# grep's exit code unambiguous, unlike a single xargs-batched call whose exit status blends
+# several files' outcomes.
+: > "$work/raw_hits.txt"
+scan_failed=0
+while IFS= read -r -d '' f; do
+  grep -nHIiEf "$work/denylist.txt" -- "$f" >> "$work/raw_hits.txt" 2>/dev/null
+  case "$?" in
+    0|1) ;;  # 0 = match(es) recorded above; 1 = no match, both judged
+    *) echo "ERROR: could not scan tracked file '$f' (unreadable?). Failing closed."
+       scan_failed=1 ;;
+  esac
+done < <(git ls-files -z)
+if [ "$scan_failed" -ne 0 ]; then exit 2; fi
+cut -d: -f1,2 "$work/raw_hits.txt" | sort -u > "$work/all_hits.txt"
 comm -23 "$work/all_hits.txt" "$work/baseline.txt" > "$work/hits.txt"
 if [ -s "$work/hits.txt" ]; then
   sed 's/^/  /' "$work/hits.txt"

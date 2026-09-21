@@ -80,6 +80,22 @@ def test_control_a_clean_tree_is_green(repo, tmp_path):
     assert rc == 0
 
 
+def test_an_unreadable_tracked_file_fails_closed(repo, tmp_path):
+    # A tracked file grep cannot open (permission denied) used to be swallowed by the old
+    # `xargs -0 grep ... 2>/dev/null || :` pipeline: the pattern inside it never got judged, and
+    # the surface reported "clean". The secret stayed readable through git history the whole time.
+    locked = repo / "locked.txt"
+    locked.write_text("forbiddenhost lives here\n")
+    git(repo, "add", ".")
+    git(repo, "commit", "-q", "--no-verify", "-m", "add a file that will be locked")
+    os.chmod(locked, 0)
+    try:
+        rc, out = run(repo, tmp_path, b"forbiddenhost\n")
+        assert rc == 2 and "locked.txt" in out and "Failing closed" in out
+    finally:
+        os.chmod(locked, 0o644)
+
+
 def test_an_invalid_regex_does_not_switch_the_scan_off(repo, tmp_path):
     rc, out = run(repo, tmp_path, b"forbiddenhost\n(unclosed\n")
     assert rc == 2 and "valid extended regex" in out
