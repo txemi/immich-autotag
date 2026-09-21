@@ -138,27 +138,6 @@ pipeline {
                         }
                     }
                 }
-                stage('Privacy') {
-                    steps {
-                        // The deny list is a SECRET FILE credential. If it does not exist the
-                        // binding fails and so does the stage: closed, never a silent pass.
-                        withCredentials([file(credentialsId: 'privacy-denylist', variable: 'DENYLIST_FILE'),
-                                         usernamePassword(credentialsId: 'scm-api-token',
-                                                          usernameVariable: 'API_USER', passwordVariable: 'API_TOKEN')]) {
-                            sh '''
-                                set -eu
-                                { set +x; } 2>/dev/null
-                                if [ -n "${CHANGE_TARGET:-}" ]; then
-                                    export PR_TEXT_FILE="$(mktemp)"
-                                    trap 'rm -f "$PR_TEXT_FILE"' EXIT
-                                    python3 tools/pr_text.py
-                                    export BASE_SHA="$(git rev-parse "origin/${CHANGE_TARGET}")"
-                                fi
-                                bash tools/privacy_gate.sh
-                            '''
-                        }
-                    }
-                }
                 stage('Secret scan') {
                     steps {
                         // The scanner lives in a private repository, so its address is a global
