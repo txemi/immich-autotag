@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
-# English-only gate for the text of a pull request.
-#
-#   lang_gate.sh pr-text <file>   judge a file holding the PR title and description
-#
-# The file gate for the tracked tree is `check_no_spanish_chars` in the Python quality gate; it is
-# better than darnlang on files and stays as it is. This covers what that check cannot see: what is
-# written straight into the forge. Same script for every place that runs it. Pin: tools/darnlang_ref.sh.
+# English-only gate. One script for the workflows, Jenkins and a hand run.
+#   lang_gate.sh tree            the tracked files, against the baseline
+#   lang_gate.sh pr-text <file>  a PR title and description, strict
+# tools/darnlang_ref.sh names what to install: DARNLANG_REF, and DARNLANG_STRICT_REF when the
+# strict build is not simply "darnlang[strict] @ $DARNLANG_REF" (this repo installs itself).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# shellcheck source=darnlang_ref.sh
 . tools/darnlang_ref.sh
-
+# Install first, judge after: with `uvx --from`, a failed install (rc 1) reads as a finding (rc 1).
+uv tool install --quiet --force "${DARNLANG_STRICT_REF:-darnlang[strict] @ $DARNLANG_REF}"
+export PATH="$(uv tool dir --bin):$PATH"
 case "${1:-}" in
+  tree)
+    darnlang check --ext all
+    ;;
   pr-text)
-    f="${2:?usage: lang_gate.sh pr-text <file>}"
-    uv tool install --quiet "$DARNLANG_REF"
-    export PATH="$(uv tool dir --bin):$PATH"
-    darnlang prose "$f" --label "PR title/description"
+    darnlang prose "${2:?usage: lang_gate.sh pr-text <file>}" --strict --label "PR title/description"
     ;;
   *)
-    echo "usage: lang_gate.sh pr-text <file>" >&2
+    echo "usage: lang_gate.sh tree | pr-text <file>" >&2
     exit 2
     ;;
 esac
