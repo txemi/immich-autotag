@@ -97,12 +97,17 @@ pipeline {
                 stage('Fetch target') {
                     steps {
                         // A pull-request checkout only fetches its own head; the stages below judge
-                        // "what this change adds" against the target branch.
-                        sh '''
-                            if [ -n "${CHANGE_TARGET:-}" ]; then
-                                git fetch --quiet origin "+refs/heads/${CHANGE_TARGET}:refs/remotes/origin/${CHANGE_TARGET}"
-                            fi
-                        '''
+                        // "what this change adds" against the target branch. The `sh` step does NOT
+                        // inherit the checkout's credential (measured: "could not read Username",
+                        // rc=128, on a private repo), so git gets it through GIT_ASKPASS: never in the
+                        // URL, argv or the trace.
+                        withCredentials([gitUsernamePassword(credentialsId: 'scm-api-token')]) {
+                            sh '''
+                                if [ -n "${CHANGE_TARGET:-}" ]; then
+                                    git fetch --quiet origin "+refs/heads/${CHANGE_TARGET}:refs/remotes/origin/${CHANGE_TARGET}"
+                                fi
+                            '''
+                        }
                         sh 'command -v uv >/dev/null 2>&1 || curl -LsSf "https://astral.sh/uv/${UV_PIN}/install.sh" | sh'
                     }
                 }
