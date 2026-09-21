@@ -1,0 +1,23 @@
+# Remote policy. Internal detail (hosts, backups, CI servers) lives in the private infrastructure repo.
+version: 1
+
+fuente_de_verdad:
+  remoto: forgejo
+  como_empujar: "git push forgejo main"
+
+espejo:
+  remoto: origin
+  url_tipica: "https://github.com/txemi/immich-autotag.git"
+  push_directo: prohibido
+  excepciones: ninguna_por_rama
+
+respaldo_offsite:
+  estado: activo_no_verificado
+
+ci:
+  job: "immich-autotag__forgejo"
+  contexto_exigido: null
+  exigido_en_forgejo: false
+  motivo: >
+    The Jenkinsfile is added by this change. The required context is set, and exigido_en_forgejo
+    flipped to true, once its first pull-request build has reported one.

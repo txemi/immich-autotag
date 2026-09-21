@@ -74,7 +74,125 @@ pipeline {
         // changes.
         disableConcurrentBuilds()
     }
-    agent {
+    agent none
+
+    environment {
+        PYTHONUNBUFFERED = '1'
+    }
+    
+    stages {
+        // ==================== REPO GATES (Jenkins == GitHub Actions == local hook) ====================
+        // Every stage here runs a script that also runs somewhere else (a GitHub Actions workflow, a
+        // git hook or by hand); nothing is re-implemented in this file, so the gates cannot drift.
+        // They run on a plain `linux` node, NOT on the single `immich-batch` node: a pull request
+        // must not queue behind an hours-long batch run just to be checked.
+        stage('Repo gates') {
+            agent { label 'linux' }
+            environment {
+                PATH = "${HOME}/.local/bin:${PATH}"
+                // Pinned installer: an unversioned one changes what the pipeline does silently.
+                UV_PIN = '0.4.29'
+            }
+            stages {
+                stage('Fetch target') {
+                    steps {
+                        // A pull-request checkout only fetches its own head; the stages below judge
+                        // "what this change adds" against the target branch.
+                        sh '''
+                            if [ -n "${CHANGE_TARGET:-}" ]; then
+                                git fetch --quiet origin "+refs/heads/${CHANGE_TARGET}:refs/remotes/origin/${CHANGE_TARGET}"
+                            fi
+                        '''
+                        sh 'command -v uv >/dev/null 2>&1 || curl -LsSf "https://astral.sh/uv/${UV_PIN}/install.sh" | sh'
+                    }
+                }
+                stage('Repo policy') {
+                    steps { sh 'python3 tools/repo_policy_check.py' }
+                }
+                stage('Language: commit messages') {
+                    steps {
+                        sh '''
+                            if [ -n "${CHANGE_TARGET:-}" ]; then
+                                bash tools/lang_commits.sh "origin/${CHANGE_TARGET}" HEAD
+                            else
+                                bash tools/lang_commits.sh HEAD~1 HEAD   # branch build: the commit just pushed
+                            fi
+                        '''
+                    }
+                }
+                stage('Language: PR title and description') {
+                    when { changeRequest() }
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: 'scm-api-token',
+                                                          usernameVariable: 'API_USER', passwordVariable: 'API_TOKEN')]) {
+                            // Never print API_USER or API_TOKEN: for this credential class the token
+                            // can also come out as the user name.
+                            sh '''
+                                set -eu
+                                { set +x; } 2>/dev/null
+                                export PR_TEXT_FILE="$(mktemp)"
+                                trap 'rm -f "$PR_TEXT_FILE"' EXIT
+                                python3 tools/pr_text.py
+                                bash tools/lang_gate.sh pr-text "$PR_TEXT_FILE"
+                            '''
+                        }
+                    }
+                }
+                stage('Privacy') {
+                    steps {
+                        // The deny list is a SECRET FILE credential. If it does not exist the
+                        // binding fails and so does the stage: closed, never a silent pass.
+                        withCredentials([file(credentialsId: 'privacy-denylist', variable: 'DENYLIST_FILE'),
+                                         usernamePassword(credentialsId: 'scm-api-token',
+                                                          usernameVariable: 'API_USER', passwordVariable: 'API_TOKEN')]) {
+                            sh '''
+                                set -eu
+                                { set +x; } 2>/dev/null
+                                if [ -n "${CHANGE_TARGET:-}" ]; then
+                                    export PR_TEXT_FILE="$(mktemp)"
+                                    trap 'rm -f "$PR_TEXT_FILE"' EXIT
+                                    python3 tools/pr_text.py
+                                    export BASE_SHA="$(git rev-parse "origin/${CHANGE_TARGET}")"
+                                fi
+                                bash tools/privacy_gate.sh
+                            '''
+                        }
+                    }
+                }
+                stage('Secret scan') {
+                    steps {
+                        // The scanner lives in a private repository, so its address is a global
+                        // Jenkins variable (a raw URL pinned by commit), not something written in
+                        // this public file. No variable, no scan: fail closed, because a skipped
+                        // scan is indistinguishable from a clean one.
+                        withCredentials([usernamePassword(credentialsId: 'scm-api-token',
+                                                          usernameVariable: 'API_USER', passwordVariable: 'API_TOKEN')]) {
+                            sh '''
+                                set -eu
+                                { set +x; } 2>/dev/null
+                                [ -n "${SECRET_SCAN_URL:-}" ] || { echo "secret scan: SECRET_SCAN_URL is not defined; failing closed" >&2; exit 1; }
+                                scan="$(mktemp)"
+                                trap 'rm -f "$scan"' EXIT
+                                printf 'header = "Authorization: token %s"\\n' "$API_TOKEN" | curl -fsS --config - -o "$scan" "$SECRET_SCAN_URL"
+                                if [ -n "${CHANGE_TARGET:-}" ]; then
+                                    python3 "$scan" --against "origin/${CHANGE_TARGET}"
+                                else
+                                    python3 "$scan" --against HEAD~1
+                                fi
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        // ==================== BUILD, QUALITY GATES AND THE APPLICATION ====================
+        // Unchanged from before this file was split in two: same agent, same stages, same post
+        // actions. Only their position moved (inside this stage), and they are NOT re-indented, so
+        // that the diff shows what was added rather than what was shifted.
+        stage('Build and run') {
+        // ---- agent (moved verbatim from the top of the pipeline) ----
+        agent {
         docker {
             image 'python:3.11-slim'
             // Pin to the batch agent: the checkpoint chain (logs_local/) lives in that
@@ -142,12 +260,8 @@ pipeline {
             args '-v $HOME/.config/immich_autotag:/root/.config/immich_autotag:ro -v $HOME/.ssh:/root/.ssh:ro --user root -e XDG_CACHE_HOME=/tmp/cache -e UV_CACHE_DIR=/tmp/cache/uv'
         }
     }
-    
-    environment {
-        PYTHONUNBUFFERED = '1'
-    }
-    
-    stages {
+        // ---- stages (verbatim) ----
+        stages {
         stage('Clean Python Caches') {
             steps {
                 script {
@@ -275,8 +389,8 @@ pipeline {
                 }
             }
         }
-    }
-    
+        }
+
     post {
         always {
             // Archive run-dir outputs only. Two changes vs the previous pattern:
@@ -340,6 +454,8 @@ pipeline {
                     echo "[INFO] Jenkins tagging and push is disabled by ENABLE_JENKINS_TAGGING flag."
                 }
             }
+        }
+    }
         }
     }
 }
