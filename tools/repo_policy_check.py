@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Check that repo_policy.yaml exists at the repo root, parses, and has the four required sections."""
+"""Check that repo_policy.yaml exists at the repo root, parses, and has the three required sections.
+
+A public repo does not publish a `ci` section (fleet governance decision), so it is not required here."""
 import sys
 
-REQUIRED = ["fuente_de_verdad", "espejo", "respaldo_offsite", "ci"]
+REQUIRED = ["fuente_de_verdad", "espejo", "respaldo_offsite"]
 
 try:
     import yaml

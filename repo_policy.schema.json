@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:repo-policy:v1",
+  "title": "Repository policy (repo_policy.yaml)",
+  "description": "The policy of one repository, as the hooks and gates of every clone read it: which remote holds the source of truth, which one is a read-only mirror, and which CI context the main branch requires. The file is GENERATED and is never edited in place: its `source` key says where its master copy is. An editor finds this schema through the first line of the file (`# yaml-language-server: $schema=<path or address of this schema>`; a repository that carries a copy of the schema next to the file links it by its relative path); a command-line validator has to be given the path (`check-jsonschema --schemafile <this schema> repo_policy.yaml`). Only the shape that tools rely on is fixed here: any other key is free. Key names are in Spanish because existing readers already depend on them.",
+  "$defs": {
+    "oneline": {
+      "description": "A single line: no line breaks (not even in the middle) and no leading or trailing whitespace; inner spaces are fine.",
+      "type": "string",
+      "pattern": "^[^\\s](?:[^\\n\\r]*[^\\s])?(?![\\s\\S])"
+    }
+  },
+  "type": "object",
+  "required": ["source", "version", "fuente_de_verdad"],
+  "propertyNames": { "type": "string" },
+  "properties": {
+    "source": {
+      "description": "Where this file comes from: a reference BETWEEN repositories, to the document that describes this repository in the repository that holds its master copy. It is the data equivalent of a darnlink anchored web link: `uuid` is the identifier of the target document (the part that survives a move or a rename) and `url` is the way a reader gets there. It does NOT use darnlink's `ref` type, because that type is for links inside one repository, with a relative path.",
+      "type": "object",
+      "required": ["uuid"],
+      "additionalProperties": false,
+      "properties": {
+        "uuid": {
+          "description": "The uuid of the target document: 8-4-4-4-12 hexadecimal, any version, any case.",
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        },
+        "url": {
+          "description": "Web address of the master copy. Absent when that address is not public information.",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "version": { "const": 1 },
+    "fuente_de_verdad": {
+      "description": "The source of truth: the remote that every push goes to.",
+      "type": "object",
+      "required": ["remoto"],
+      "properties": { "remoto": { "type": "string", "minLength": 1 } }
+    },
+    "ci": {
+      "description": "The CI that the main branch requires. Optional: a repository may publish this file without it.",
+      "type": ["object", "null"],
+      "properties": {
+        "exigido_en_forgejo": { "type": "boolean" },
+        "contexto_exigido": {
+          "description": "A single line, or empty (or null).",
+          "type": ["string", "null"],
+          "pattern": "^(?:[^\\s](?:[^\\n\\r]*[^\\s])?)?(?![\\s\\S])"
+        },
+        "extra_required_contexts": { "type": "array", "items": { "$ref": "#/$defs/oneline" } }
+      }
+    },
+    "espejo": {
+      "description": "The read-only mirror: nobody pushes to it by hand.",
+      "type": ["object", "null"],
+      "properties": {
+        "url_tipica": {
+          "description": "The read-only mirror on GitHub: `https://github.com/<owner>/<repo>`, with an optional trailing `.git`.",
+          "type": ["string", "null"],
+          "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/(?!\\.git(?![\\s\\S]))(?![A-Za-z0-9_.-]*\\.git\\.git(?![\\s\\S]))[A-Za-z0-9_.-]+(?![\\s\\S])"
+        },
+        "excepciones_temporales": {
+          "description": "The scripts that may still push to the mirror, one by one. `script` is a path relative to the ROOT of this repository.",
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "required": ["script"],
+            "properties": { "script": { "$ref": "#/$defs/oneline" } }
+          }
+        }
+      }
+    }
+  }
+}
