@@ -1,5 +1,5 @@
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from typeguard import typechecked
 
@@ -56,7 +56,16 @@ def to_extraction_timezone(dt: datetime) -> datetime:
     tz_name = duplicate_processing.date_correction.extraction_timezone
     if not tz_name:
         return dt
-    return dt.astimezone(ZoneInfo(tz_name))
+    try:
+        tz = ZoneInfo(tz_name)
+    except (ZoneInfoNotFoundError, ValueError):
+        log(
+            f"[DATE CORRECTION] extraction_timezone {tz_name!r} is not a valid timezone; "
+            f"sending {dt} unchanged",
+            level=LogLevel.FOCUS,
+        )
+        return dt
+    return dt.astimezone(tz)
 
 
 @typechecked

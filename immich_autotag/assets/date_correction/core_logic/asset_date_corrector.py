@@ -58,8 +58,10 @@ class AssetDateCorrector(ProcessStepResult):
         - This approach prioritizes clarity, explicitness, and robustness over minimalism,
           making the logic easy to audit and debug.
 
-        For WhatsApp assets, finds the oldest date among Immich and filename-extracted dates
-        from all duplicates. Applies all relevant heuristics and thresholds to avoid false positives.
+        An asset with its own filename date (FILENAME or WHATSAPP_FILENAME) keeps it: the
+        duplicates are not consulted. Only an asset without one takes the oldest date among
+        Immich and filename-extracted dates from all duplicates. Applies all relevant
+        heuristics and thresholds to avoid false positives.
 
         Returns:
             DateCorrectionStepResult indicating the outcome of the correction attempt.
@@ -81,7 +83,9 @@ class AssetDateCorrector(ProcessStepResult):
             if step_result == DateCorrectionStepResult.FIXED:
                 self._reasoning = "Date corrected by filename"
             else:
-                self._reasoning = "Asset has its own filename date; duplicates not consulted"
+                self._reasoning = (
+                    "Asset has its own filename date; duplicates not consulted"
+                )
             log(
                 f"[DATE CORRECTION] {self._reasoning} for asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
