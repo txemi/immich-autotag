@@ -78,9 +78,12 @@ class AssetDateCorrector(ProcessStepResult):
         )
         if DateCorrectionStepResult.should_exit(step_result):
             self._step_result = step_result
-            self._reasoning = "Date corrected by filename"
+            if step_result == DateCorrectionStepResult.FIXED:
+                self._reasoning = "Date corrected by filename"
+            else:
+                self._reasoning = "Asset has its own filename date; duplicates not consulted"
             log(
-                f"[DATE CORRECTION] Date corrected by filename for asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
+                f"[DATE CORRECTION] {self._reasoning} for asset {self._asset_wrapper.get_id()} ({self._asset_wrapper.get_original_file_name()})",
                 level=LogLevel.FOCUS,
             )
             return step_result
