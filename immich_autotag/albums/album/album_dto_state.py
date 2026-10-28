@@ -1,7 +1,6 @@
 import datetime
 import enum
 from typing import TYPE_CHECKING
-from uuid import UUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
@@ -14,6 +13,10 @@ if TYPE_CHECKING:
     from .album_user_list import AlbumUserList
 
 from immich_autotag.albums.album.album_url_helpers import album_url_from_dto
+
+# Value of AlbumUserRole.OWNER (Immich >= v3). Compared as text because the v2
+# client has no OWNER member.
+_OWNER_ROLE = "owner"
 
 
 class AlbumLoadSource(enum.Enum):
@@ -58,14 +61,13 @@ class AlbumDtoState:
 
     _max_age_seconds: int = DEFAULT_CACHE_MAX_AGE_SECONDS
 
-    # Lazy cache for the asset UUID set: get_asset_uuids() is called many times
-    # per processed asset (e.g. via has_asset_wrapper before each add). Building
-    # the set from `self._dto.assets` is O(N) per call, with N up to ~100k for
-    # the largest albums; typeguard validation of every UUID dominates CPU.
-    # The state is effectively immutable (the DTO does not mutate after load),
-    # so caching the set is safe within the lifetime of this state instance.
-    _asset_uuids_cache: "set[AssetUUID] | None" = attrs.field(
-        default=None, init=False, eq=False, repr=False
+    # Album membership. Since Immich v3 the album DTO no longer embeds its
+    # assets, so the asset UUIDs are fetched apart (POST /search/metadata with
+    # albumIds) and kept here. None means "not loaded": the state is partial.
+    # A DTO update (rename, re-list) does not change membership, so it keeps
+    # the set; only a fresh DETAIL load replaces it.
+    _asset_uuids: "set[AssetUUID] | None" = attrs.field(
+        default=None, kw_only=True, eq=False, repr=False
     )
 
     def __attrs_post_init__(self):
@@ -146,7 +148,8 @@ class AlbumDtoState:
 
     def get_album_id(self) -> AlbumUUID:
         """Returns the album ID as strongly-typed AlbumUUID."""
-        return AlbumUUID.from_uuid(UUID(self._dto.id))
+        # The constructor converts both UUID (client >= v3) and str (v2).
+        return AlbumUUID(self._dto.id)
 
     def get_album_name(self) -> str:
         """Returns the album name (without exposing the full DTO)."""
@@ -160,10 +163,17 @@ class AlbumDtoState:
         """Returns the timestamp when the album was obtained."""
         return self._loaded_at
 
-    def update(self, *, dto: AlbumResponseDto, load_source: AlbumLoadSource) -> None:
+    def update(
+        self,
+        *,
+        dto: AlbumResponseDto,
+        load_source: AlbumLoadSource,
+        asset_uuids: "set[AssetUUID] | None" = None,
+    ) -> None:
         """
         Updates the state with a new DTO, source, and current timestamp.
         Ensures loaded_at never goes backwards in time.
+        The album membership is replaced only when asset_uuids is given.
         """
         now = datetime.datetime.now()
         if self._loaded_at and now < self._loaded_at:
@@ -173,40 +183,61 @@ class AlbumDtoState:
         self._dto = dto
         self._load_source = load_source
         self._loaded_at = now
+        if asset_uuids is not None:
+            self._asset_uuids = asset_uuids
 
     def get_album_users(self) -> "AlbumUserList":
+        """
+        Returns the users the album is shared with, without the owner.
+
+        Since Immich v3 the owner is listed in album_users with role `owner`;
+        before, it was only in owner/ownerId. The owner is left out so that
+        callers (permission sync) keep seeing only shared members.
+        """
         from .album_user_list import AlbumUserList
         from .album_user_wrapper import AlbumUserWrapper
 
-        users = [AlbumUserWrapper(u) for u in self._dto.album_users]
+        users = [
+            AlbumUserWrapper(u)
+            for u in self._dto.album_users
+            if str(u.role) != _OWNER_ROLE
+        ]
         return AlbumUserList(users)
 
     def get_owner_uuid(self) -> UserUUID:
-        return UserUUID.from_string(self._dto.owner_id)
+        for album_user in self._dto.album_users:
+            if str(album_user.role) == _OWNER_ROLE:
+                return UserUUID(album_user.user.id)
+        # Immich v2: the owner is not in album_users but in ownerId, a field the
+        # v3 client does not declare; to_dict() reads it with either client.
+        owner_id = self._dto.to_dict().get("ownerId")
+        if not isinstance(owner_id, str):
+            raise RuntimeError(f"Album {self._dto.id} has no owner in its DTO.")
+        return UserUUID(owner_id)
 
     @staticmethod
     def create(
-        *, dto: AlbumResponseDto, load_source: AlbumLoadSource
+        *,
+        dto: AlbumResponseDto,
+        load_source: AlbumLoadSource,
+        asset_uuids: "set[AssetUUID] | None" = None,
     ) -> "AlbumDtoState":
         """
         Creates a new instance of AlbumDtoState safely to avoid issues with attrs and enums.
         Arguments must be passed positionally to match attrs usage.
         """
-        return AlbumDtoState(dto, load_source)
+        return AlbumDtoState(dto, load_source, asset_uuids=asset_uuids)
 
     def is_full(self) -> bool:
-        if self._load_source == AlbumLoadSource.DETAIL:
-            return True
-        elif self._load_source == AlbumLoadSource.SEARCH:
+        """
+        Whether the album membership is loaded. A DETAIL DTO alone is no
+        longer enough: since Immich v3 the assets are fetched apart.
+        """
+        if self._load_source == AlbumLoadSource.SEARCH:
             return False
-        elif self._load_source == AlbumLoadSource.UPDATE:
-            from immich_client.types import UNSET, Unset
-
-            if self._dto.assets is UNSET or self._dto.assets is Unset:
-                raise RuntimeError("UPDATE load source must have assets field set.")
-            return True
-        else:
-            raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
+        if self._load_source in (AlbumLoadSource.DETAIL, AlbumLoadSource.UPDATE):
+            return self._asset_uuids is not None
+        raise RuntimeError(f"Unknown AlbumLoadSource: {self._load_source!r}")
 
     def is_empty(self) -> bool:
         """
@@ -237,39 +268,22 @@ class AlbumDtoState:
     def get_asset_uuids(self) -> set[AssetUUID]:
         """
         Returns the set of asset UUIDs in the album.
-        Only allowed in DETAIL/full mode.
+        Only allowed in full mode (membership loaded).
         """
-        if self._load_source != AlbumLoadSource.DETAIL:
-            raise RuntimeError("Cannot get asset UUIDs from SEARCH/partial album DTO.")
-        if self._asset_uuids_cache is None:
-            # AssetUUID is already imported at module scope (line 11).
-            # A local `from ... import AssetUUID` here would shadow that module-level
-            # binding and make AssetUUID a *local* variable for the whole function;
-            # then typeguard's evaluation of the `set[AssetUUID]` return annotation
-            # (under conditional_typechecked) raises UnboundLocalError on the cached
-            # code path, where the import line is skipped.
-            self._asset_uuids_cache = set(
-                AssetUUID.from_uuid(UUID(a.id)) for a in self._dto.assets
+        if self._asset_uuids is None:
+            raise RuntimeError(
+                "Cannot get asset UUIDs from a partial album state "
+                f"(load source {self._load_source.value}, membership not loaded)."
             )
-        return self._asset_uuids_cache
+        return self._asset_uuids
 
     def is_stale(self) -> bool:
         import time
 
         return (time.time() - self.get_loaded_at().timestamp()) > self._max_age_seconds
 
-    def get_assets(self):
-        """
-        Returns the full list of assets in the album.
-
-        WARNING: Only available in DETAIL/full mode. In SEARCH mode, assets
-        may be empty even if asset_count > 0. Use get_asset_count() for
-        checking the number of assets without deserializing this list.
-        """
-        return self._dto.assets
-
     def get_album_uuid(self) -> AlbumUUID:
-        return AlbumUUID.from_uuid_string(self._dto.id)
+        return AlbumUUID(self._dto.id)
 
     def get_immich_album_url(self):
         return album_url_from_dto(self._dto)
