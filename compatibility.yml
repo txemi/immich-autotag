@@ -2,4 +2,4 @@
 # Keep a single source of truth for the tested Immich server version
 # Update this when you bump the supported/tested Immich server
 
-tested_immich: v2.6.3
+tested_immich: v3.3.5
