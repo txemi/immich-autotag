@@ -37,15 +37,19 @@ def is_precise_and_rounded_midnight_close(
     )
 
 
+_INVALID_TIMEZONES_LOGGED: set[str] = set()
+
+
 @typechecked
 def to_extraction_timezone(dt: datetime) -> datetime:
     """
-    Returns dt expressed in the configured extraction timezone (same instant, local wall time).
+    Returns dt in the configured extraction timezone (same instant, local wall time).
 
-    Immich takes the display timezone of an asset from the offset of the date we send. A date sent
-    as UTC (+00:00) shows its UTC wall time: a screenshot taken at 11:01 in Madrid (09:01Z),
-    copied to a duplicate as 09:01+00:00, was shown there as 09:01. Sending 11:01+02:00 keeps it
-    at 11:01. Falls back to dt unchanged if no timezone is configured.
+    Immich takes the display timezone of an asset from the offset of the date we send.
+    A date sent as UTC (+00:00) shows its UTC wall time: a screenshot taken at 11:01
+    in Madrid (09:01Z), copied to a duplicate as 09:01+00:00, was shown there as
+    09:01. Sending 11:01+02:00 keeps it at 11:01. Falls back to dt unchanged if no
+    timezone is configured.
     """
     from immich_autotag.config.manager import ConfigManager
 
@@ -58,12 +62,15 @@ def to_extraction_timezone(dt: datetime) -> datetime:
         return dt
     try:
         tz = ZoneInfo(tz_name)
-    except (ZoneInfoNotFoundError, ValueError):
-        log(
-            f"[DATE CORRECTION] extraction_timezone {tz_name!r} is not a valid timezone; "
-            f"sending {dt} unchanged",
-            level=LogLevel.FOCUS,
-        )
+    except (ZoneInfoNotFoundError, ValueError, OSError):
+        # OSError: a name like "Europe" is a directory of the tz database, not a zone.
+        if tz_name not in _INVALID_TIMEZONES_LOGGED:
+            _INVALID_TIMEZONES_LOGGED.add(tz_name)
+            log(
+                f"[DATE CORRECTION] extraction_timezone {tz_name!r} is not a valid "
+                "timezone; dates are sent unchanged (logged once)",
+                level=LogLevel.FOCUS,
+            )
         return dt
     return dt.astimezone(tz)
 
@@ -94,9 +101,10 @@ def _apply_candidate(
     return DateCorrectionStepResult.FIXED
 
 
-# A date written in the asset's own filename is the moment that asset was taken. Duplicates in Immich
-# are visually similar assets, not copies of the same file: three screenshots of the same screen taken
-# hours apart are a duplicate group, and each keeps its own time. txemi, Q1678 (25-oct-2026).
+# A date written in the asset's own filename is the moment that asset was taken.
+# Duplicates in Immich are visually similar assets, not copies of the same file: three
+# screenshots of the same screen taken hours apart are a duplicate group, and each keeps
+# its own time. txemi, Q1678 (25-oct-2026).
 OWN_DATE_KINDS = [DateSourceKind.FILENAME, DateSourceKind.WHATSAPP_FILENAME]
 GROUP_DATE_KINDS = [
     DateSourceKind.FILENAME,
@@ -112,13 +120,15 @@ def check_filename_candidate_and_fix(
     immich_date: datetime,
 ) -> DateCorrectionStepResult:
     """
-    Checks if a filename date suggests a date correction. If so, updates the date and returns FIXED.
+    Checks if a filename date suggests a date correction. If so, updates the date and
+    returns FIXED.
 
     Priority:
-    1. The asset's own filename date (FILENAME, WHATSAPP_FILENAME). If it has one, the duplicates are
-       not consulted, and the result is FIXED or EXIT, never CONTINUE.
-    2. Only if the asset has no date of its own: the oldest FILENAME, WHATSAPP_FILENAME or IMMICH date
-       of the duplicate group. If no correction is needed, returns CONTINUE.
+    1. The asset's own filename date (FILENAME, WHATSAPP_FILENAME). If it has one, the
+       duplicates are not consulted, and the result is FIXED or EXIT, never CONTINUE.
+    2. Only if the asset has no date of its own: the oldest FILENAME, WHATSAPP_FILENAME
+       or IMMICH date of the duplicate group. If no correction is needed, returns
+       CONTINUE.
     """
     own_candidates = date_sources_list.own_candidates_by_kinds(OWN_DATE_KINDS)
     if own_candidates:
