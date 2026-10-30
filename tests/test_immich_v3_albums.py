@@ -162,33 +162,52 @@ def test_detail_without_membership_is_not_full():
     assert full.get_asset_uuids() == assets
 
 
-def test_album_assets_follow_every_page():
-    ids = [str(uuid.uuid4()) for _ in range(3)]
+def test_album_assets_follow_every_page_of_every_visibility():
+    timeline = [str(uuid.uuid4()) for _ in range(3)]
+    archived = str(uuid.uuid4())
 
     def handler(body: dict) -> dict:
-        if body["page"] == 1:
-            return _search_page(ids[:2], next_page="2")
-        return _search_page(ids[2:], next_page=None)
+        if body["visibility"] == "timeline":
+            if body["page"] == 1:
+                return _search_page(timeline[:2], next_page="2")
+            return _search_page(timeline[2:], next_page=None)
+        if body["visibility"] == "archive":
+            return _search_page([archived], next_page=None)
+        return _search_page([], next_page=None)
 
     client, sent = _client(handler)
     result = proxy_get_album_asset_uuids(album_id=AlbumUUID(ALBUM_ID), client=client)
 
-    assert result == {AssetUUID(a) for a in ids}
-    assert [b["page"] for b in sent] == [1, 2]
+    # The archived asset counts too: a v2 server leaves it out of a search that
+    # sends no visibility.
+    assert result == {AssetUUID(a) for a in timeline + [archived]}
+    assert [(b["visibility"], b["page"]) for b in sent] == [
+        ("timeline", 1),
+        ("timeline", 2),
+        ("archive", 1),
+        ("hidden", 1),
+    ]
     assert all(b["albumIds"] == [ALBUM_ID] for b in sent)
-    # No visibility filter: archived and hidden album assets count too.
-    assert all("visibility" not in b for b in sent)
 
 
-def test_is_asset_in_album_asks_for_one_asset():
+def test_is_asset_in_album_finds_an_archived_asset():
     asset_id = str(uuid.uuid4())
-    client, sent = _client(lambda body: _search_page([asset_id], next_page=None))
+
+    def archived_only(body: dict) -> dict:
+        found = [asset_id] if body["visibility"] == "archive" else []
+        return _search_page(found, next_page=None)
+
+    client, sent = _client(archived_only)
     assert proxy_is_asset_in_album(
         album_id=AlbumUUID(ALBUM_ID), asset_id=AssetUUID(asset_id), client=client
     )
-    assert sent == [{"albumIds": [ALBUM_ID], "id": asset_id, "size": 1}]
+    assert sent == [
+        {"albumIds": [ALBUM_ID], "id": asset_id, "size": 1, "visibility": v}
+        for v in ("timeline", "archive")
+    ]
 
-    client, _ = _client(lambda body: _search_page([], next_page=None))
+    client, sent = _client(lambda body: _search_page([], next_page=None))
     assert not proxy_is_asset_in_album(
         album_id=AlbumUUID(ALBUM_ID), asset_id=AssetUUID(asset_id), client=client
     )
+    assert [b["visibility"] for b in sent] == ["timeline", "archive", "hidden"]

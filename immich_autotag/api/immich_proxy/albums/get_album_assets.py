@@ -3,12 +3,22 @@ from __future__ import annotations
 from immich_client.api.search.search_assets import sync as search_assets
 from immich_client.client import AuthenticatedClient
 from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.asset_visibility import AssetVisibility
 from immich_client.models.metadata_search_dto import MetadataSearchDto
 
 from immich_autotag.types.uuid_wrappers import AlbumUUID, AssetUUID
 
 # Largest page the search endpoint accepts.
 _PAGE_SIZE = 1000
+
+# What the old embedded album list held. The default visibility of a search is not
+# the same across servers (v3 returns every visibility, v2 only the timeline), so
+# each one is asked for explicitly. LOCKED needs a PIN-elevated session: left out.
+_ALBUM_VISIBILITIES = (
+    AssetVisibility.TIMELINE,
+    AssetVisibility.ARCHIVE,
+    AssetVisibility.HIDDEN,
+)
 
 
 def proxy_get_album_assets(
@@ -18,26 +28,31 @@ def proxy_get_album_assets(
     Returns every asset of an album, as full AssetResponseDto.
 
     Since Immich v3 the album DTO no longer embeds its assets: the official
-    replacement is POST /search/metadata filtered by albumIds. No visibility
-    filter is sent, so archived and hidden assets of the album are included,
-    like the old embedded list. Works the same against v2 servers.
+    replacement is POST /search/metadata filtered by albumIds. One search per
+    visibility in _ALBUM_VISIBILITIES, so archived and hidden assets of the album
+    are included, like the old embedded list, on v2 and v3 servers alike.
     """
     result: list[AssetResponseDto] = []
-    page = 1
-    while True:
-        body = MetadataSearchDto(
-            album_ids=[album_id.to_uuid()], page=page, size=_PAGE_SIZE
-        )
-        response = search_assets(client=client, body=body)
-        if response is None:
-            raise RuntimeError(
-                f"Search for the assets of album {album_id} returned no response "
-                f"(page {page})."
+    for visibility in _ALBUM_VISIBILITIES:
+        page = 1
+        while True:
+            body = MetadataSearchDto(
+                album_ids=[album_id.to_uuid()],
+                page=page,
+                size=_PAGE_SIZE,
+                visibility=visibility,
             )
-        result.extend(response.assets.items)
-        if not response.assets.next_page:
-            return result
-        page += 1
+            response = search_assets(client=client, body=body)
+            if response is None:
+                raise RuntimeError(
+                    f"Search for the {visibility} assets of album {album_id} "
+                    f"returned no response (page {page})."
+                )
+            result.extend(response.assets.items)
+            if not response.assets.next_page:
+                break
+            page += 1
+    return result
 
 
 def proxy_get_album_asset_uuids(
@@ -54,12 +69,19 @@ def proxy_is_asset_in_album(
     *, album_id: AlbumUUID, asset_id: AssetUUID, client: AuthenticatedClient
 ) -> bool:
     """Whether one asset belongs to an album, without listing the whole album."""
-    body = MetadataSearchDto(
-        album_ids=[album_id.to_uuid()], id=asset_id.to_uuid(), size=1
-    )
-    response = search_assets(client=client, body=body)
-    if response is None:
-        raise RuntimeError(
-            f"Search for asset {asset_id} in album {album_id} returned no response."
+    for visibility in _ALBUM_VISIBILITIES:
+        body = MetadataSearchDto(
+            album_ids=[album_id.to_uuid()],
+            id=asset_id.to_uuid(),
+            size=1,
+            visibility=visibility,
         )
-    return len(response.assets.items) > 0
+        response = search_assets(client=client, body=body)
+        if response is None:
+            raise RuntimeError(
+                f"Search for asset {asset_id} in album {album_id} returned no "
+                "response."
+            )
+        if response.assets.items:
+            return True
+    return False
