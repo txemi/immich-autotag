@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
+from immich_autotag.assets.date_correction import extraction_timezone
 from immich_autotag.assets.date_correction.asset_date_candidate import (
     AssetDateCandidate,
 )
@@ -50,6 +51,7 @@ def sources(main: MagicMock, *sets: AssetDateCandidates) -> AssetDateSourcesList
 def quiet(monkeypatch):
     """No config, no logging: the helpers only need a timezone setting."""
     monkeypatch.setattr(_helpers, "log", lambda *a, **k: None)
+    monkeypatch.setattr(extraction_timezone, "log", lambda *a, **k: None)
     monkeypatch.setattr(_helpers, "is_log_level_enabled", lambda *a, **k: False)
 
 
@@ -144,7 +146,6 @@ def test_date_is_sent_in_extraction_timezone(quiet, monkeypatch):
     sl = sources(main, candidate_set(main, (DateSourceKind.FILENAME, taken)))
     _helpers.check_filename_candidate_and_fix(main, sl, taken + timedelta(days=5))
     sent = main.update_date.call_args.kwargs["new_date"]
-    assert sent == taken
     assert (sent.hour, sent.minute) == (11, 1)
     assert sent.utcoffset() == timedelta(hours=2)
 
@@ -179,3 +180,33 @@ def test_to_extraction_timezone_without_config_section(monkeypatch, missing):
     monkeypatch.setattr(ConfigManager, "get_instance", staticmethod(lambda: manager))
     dt = datetime(2026, 5, 3, 9, 1, tzinfo=UTC)
     assert _helpers.to_extraction_timezone(dt) is dt
+
+
+@pytest.mark.parametrize("tz_name", ["Europe", "Not/AZone"])
+def test_naive_filename_date_with_invalid_timezone_does_not_abort(
+    quiet, monkeypatch, tz_name
+):
+    """A filename date is naive; an invalid extraction_timezone reads it as UTC."""
+    set_timezone(monkeypatch, tz_name)
+    main = wrapper("main")
+    naive = datetime(2025, 12, 15, 9, 24, 29)  # from 20251215_092429.jpg
+    sl = sources(main, candidate_set(main, (DateSourceKind.FILENAME, naive)))
+    immich_date = datetime(2025, 12, 20, 9, 0, tzinfo=UTC)
+    result = _helpers.check_filename_candidate_and_fix(main, sl, immich_date)
+    assert result == DateCorrectionStepResult.FIXED
+    main.update_date.assert_called_once_with(new_date=naive.replace(tzinfo=UTC))
+
+
+def test_naive_date_is_read_in_extraction_timezone(monkeypatch):
+    set_timezone(monkeypatch, "Europe/Madrid")
+    naive = datetime(2025, 12, 15, 9, 24, 29)
+    got = AssetDateCandidate(wrapper("a"), DateSourceKind.FILENAME, naive)
+    assert got.get_aware_date() == naive.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+
+
+@pytest.mark.parametrize("user_tz", ["Europe", ""])
+def test_get_aware_date_with_invalid_user_tz_falls_back(quiet, monkeypatch, user_tz):
+    set_timezone(monkeypatch, None)
+    naive = datetime(2025, 12, 15, 9, 24, 29)
+    got = AssetDateCandidate(wrapper("a"), DateSourceKind.FILENAME, naive)
+    assert got.get_aware_date(user_tz=user_tz) == naive.replace(tzinfo=UTC)

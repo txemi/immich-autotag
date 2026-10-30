@@ -7,20 +7,9 @@ from zoneinfo import ZoneInfo
 
 from typeguard import typechecked
 
-from immich_autotag.config.models import UserConfig
-
-
-def _get_extraction_timezone() -> Optional[ZoneInfo]:
-    """Get configured timezone for date extraction, or None if not configured."""
-    try:
-        from immich_autotag.config.manager import ConfigManager
-
-        config: UserConfig = ConfigManager.get_instance().get_config()
-        if config.duplicate_processing is None:
-            return None
-        return ZoneInfo(config.duplicate_processing.date_correction.extraction_timezone)
-    except Exception:
-        return None
+from immich_autotag.assets.date_correction.extraction_timezone import (
+    get_extraction_timezone,
+)
 
 
 def _extract_img_vid_pattern(path: str, tz: ZoneInfo) -> Optional[datetime]:
@@ -82,7 +71,7 @@ def extract_whatsapp_date_from_path(path: str) -> Optional[datetime]:
     - 'VID-20251229-WA0004.mp4'  # Real case: not initially detected, robust support added for this pattern
     ---
     """
-    tz = _get_extraction_timezone()
+    tz = get_extraction_timezone()
     if tz is None:
         return None
 

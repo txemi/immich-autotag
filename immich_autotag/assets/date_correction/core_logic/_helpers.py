@@ -1,10 +1,13 @@
 from datetime import datetime
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from zoneinfo import ZoneInfo
 
 from typeguard import typechecked
 
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
 from immich_autotag.assets.date_correction.date_source_kind import DateSourceKind
+from immich_autotag.assets.date_correction.extraction_timezone import (
+    get_extraction_timezone,
+)
 from immich_autotag.logging.levels import LogLevel
 from immich_autotag.logging.utils import is_log_level_enabled, log
 from immich_autotag.utils.date_compare import is_datetime_more_than_days_after
@@ -37,9 +40,6 @@ def is_precise_and_rounded_midnight_close(
     )
 
 
-_INVALID_TIMEZONES_LOGGED: set[str] = set()
-
-
 @typechecked
 def to_extraction_timezone(dt: datetime) -> datetime:
     """
@@ -49,28 +49,10 @@ def to_extraction_timezone(dt: datetime) -> datetime:
     A date sent as UTC (+00:00) shows its UTC wall time: a screenshot taken at 11:01
     in Madrid (09:01Z), copied to a duplicate as 09:01+00:00, was shown there as
     09:01. Sending 11:01+02:00 keeps it at 11:01. Falls back to dt unchanged if no
-    timezone is configured.
+    valid timezone is configured.
     """
-    from immich_autotag.config.manager import ConfigManager
-
-    config = ConfigManager.get_instance().get_config()
-    duplicate_processing = config.duplicate_processing
-    if duplicate_processing is None or duplicate_processing.date_correction is None:
-        return dt
-    tz_name = duplicate_processing.date_correction.extraction_timezone
-    if not tz_name:
-        return dt
-    try:
-        tz = ZoneInfo(tz_name)
-    except (ZoneInfoNotFoundError, ValueError, OSError):
-        # OSError: a name like "Europe" is a directory of the tz database, not a zone.
-        if tz_name not in _INVALID_TIMEZONES_LOGGED:
-            _INVALID_TIMEZONES_LOGGED.add(tz_name)
-            log(
-                f"[DATE CORRECTION] extraction_timezone {tz_name!r} is not a valid "
-                "timezone; dates are sent unchanged (logged once)",
-                level=LogLevel.FOCUS,
-            )
+    tz = get_extraction_timezone()
+    if tz is None:
         return dt
     return dt.astimezone(tz)
 
