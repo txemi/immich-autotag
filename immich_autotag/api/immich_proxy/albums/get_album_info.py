@@ -48,7 +48,8 @@ def proxy_get_album_info(
     cache_mgr = ApiCacheManager.create(cache_type=ApiCacheKey.ALBUMS)
     # Only accept AlbumUUID
     cache_key = str(album_id)
-    cache_data = cache_mgr.load(cache_key)
+    # use_cache=False must reach the API: callers use it to verify or refresh.
+    cache_data = cache_mgr.load(cache_key) if use_cache else None
     if cache_data is not None:
         if isinstance(cache_data, dict):
             return AlbumResponseDto.from_dict(cache_data)

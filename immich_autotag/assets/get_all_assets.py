@@ -10,6 +10,7 @@ from immich_autotag.api.immich_proxy.search import (
 )
 from immich_autotag.api.logging_proxy.types import (
     AssetResponseDto,
+    AssetVisibility,
     MetadataSearchDto,
     Response,
 )
@@ -28,7 +29,9 @@ def _fetch_assets_page(
 
     from immich_autotag.logging.utils import log_debug
 
-    body = MetadataSearchDto(page=page)
+    # Immich v3 returns every visibility when none is sent; v2 returned only
+    # the timeline. Ask for the timeline explicitly to keep the v2 scan.
+    body = MetadataSearchDto(page=page, visibility=AssetVisibility.TIMELINE)
     log_debug(f"[BUG] Before search_assets.sync_detailed, page={page}")
     # Use ImmichClient type for client
     response = proxy_search_assets(

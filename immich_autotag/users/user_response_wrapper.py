@@ -70,8 +70,8 @@ class UserResponseWrapper:
     @typechecked
     def __str__(self) -> str:
         try:
-            user_id = self._user.id  # type: ignore[attr-defined]
-            user_id = str(user_id) if user_id is not None else None
+            raw_user_id = self._user.id  # type: ignore[attr-defined]
+            user_id = str(raw_user_id) if raw_user_id is not None else None
         except (AttributeError, TypeError):
             user_id = None
         return self.get_name() or user_id or "<unknown user>"

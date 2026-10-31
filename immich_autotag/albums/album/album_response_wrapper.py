@@ -4,7 +4,6 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
-from uuid import UUID
 
 import attrs
 from immich_client.models.album_response_dto import AlbumResponseDto
@@ -194,9 +193,7 @@ class AlbumResponseWrapper:
     def has_asset(self, asset: "AssetResponseDto") -> bool:
         from immich_autotag.types.uuid_wrappers import AssetUUID
 
-        return (
-            AssetUUID.from_uuid(UUID(asset.id)) in self._cache_entry.get_asset_uuids()
-        )
+        return AssetUUID(asset.id) in self._cache_entry.get_asset_uuids()
 
     @conditional_typechecked
     def has_asset_wrapper(

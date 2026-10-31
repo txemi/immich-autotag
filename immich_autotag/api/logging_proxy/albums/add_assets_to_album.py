@@ -2,7 +2,7 @@ from immich_client.errors import UnexpectedStatus
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from typeguard import typechecked
 
-from immich_autotag.albums.album.album_dto_state import AlbumDtoState, AlbumLoadSource
+from immich_autotag.albums.album.album_dto_state import AlbumDtoState
 from immich_autotag.albums.album.album_response_wrapper import AlbumResponseWrapper
 from immich_autotag.api.immich_proxy.types import ImmichClient
 from immich_autotag.assets.asset_response_wrapper import AssetResponseWrapper
@@ -33,20 +33,17 @@ def _verify_asset_in_album_with_retry(
     """
     import time
 
-    from immich_autotag.api.immich_proxy.albums.get_album_info import (
-        proxy_get_album_info,
+    from immich_autotag.api.immich_proxy.albums.get_album_assets import (
+        proxy_is_asset_in_album,
     )
 
     for attempt in range(max_retries):
-        album_info = proxy_get_album_info(
-            album_id=album_id, client=client, use_cache=False
-        )
-        if album_info is not None:  # Validate album ID format
-            album_wrapper = AlbumDtoState.from_album_info(
-                album_info, load_source=AlbumLoadSource.DETAIL
-            )
-            if asset_wrapper.get_id() in album_wrapper.get_asset_uuids():
-                return  # Success - asset is in album
+        # Asks for this one asset: since Immich v3 the album DTO carries no
+        # assets, and listing the whole album to find one would be wasteful.
+        if proxy_is_asset_in_album(
+            album_id=album_id, asset_id=asset_wrapper.get_id(), client=client
+        ):
+            return  # Success - asset is in album
 
         if attempt < max_retries - 1:
             # Exponential backoff: 0.1s, 0.2s, 0.4s, etc.
@@ -179,7 +176,7 @@ def _find_asset_result_in_response(
             raise RuntimeError(
                 f"API returned non-boolean success value in BulkIdResponseDto: {type(item.success)} = {item.success}"
             )
-        if AssetUUID.from_uuid_string(item.id) == asset_id:
+        if AssetUUID(item.id) == asset_id:
             return item
 
     return None

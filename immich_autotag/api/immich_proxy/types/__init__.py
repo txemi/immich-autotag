@@ -15,6 +15,7 @@ from immich_client.models.album_user_add_dto import AlbumUserAddDto
 from immich_client.models.album_user_response_dto import AlbumUserResponseDto
 from immich_client.models.album_user_role import AlbumUserRole
 from immich_client.models.asset_response_dto import AssetResponseDto
+from immich_client.models.asset_visibility import AssetVisibility
 from immich_client.models.bulk_id_response_dto import BulkIdResponseDto
 from immich_client.models.create_album_dto import CreateAlbumDto
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
@@ -43,6 +44,7 @@ __all__ = [
     "AlbumUserResponseDto",
     "AlbumUserRole",
     "AssetResponseDto",
+    "AssetVisibility",
     "BulkIdResponseDto",
     "CreateAlbumDto",
     "DuplicateResponseDto",
