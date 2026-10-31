@@ -46,33 +46,17 @@ class AssetDateCandidate:
         if dt.tzinfo is not None:
             return dt
 
-        # Determine timezone to use
-        tz_str: str
-        if user_tz:
-            tz_str = user_tz
-        else:
-            from immich_autotag.config.manager import ConfigManager
-            from immich_autotag.config.models import (
-                DateCorrectionConfig,
-                DuplicateProcessingConfig,
-                UserConfig,
-            )
-
-            manager = ConfigManager.get_instance()
-            config: UserConfig = manager.get_config()
-            tz_str = "UTC"  # Default fallback
-            duplicate_processing: Optional[DuplicateProcessingConfig] = (
-                config.duplicate_processing
-            )
-            if duplicate_processing is not None:
-                date_correction: Optional[DateCorrectionConfig] = (
-                    duplicate_processing.date_correction
-                )
-                if date_correction and date_correction.extraction_timezone:
-                    tz_str = date_correction.extraction_timezone
         from zoneinfo import ZoneInfo
 
-        return dt.replace(tzinfo=ZoneInfo(tz_str))
+        from immich_autotag.assets.date_correction.extraction_timezone import (
+            get_extraction_timezone,
+            parse_timezone,
+        )
+
+        # A naive date is read in user_tz, or else in the configured extraction
+        # timezone; UTC if neither is a valid timezone.
+        tz = parse_timezone(user_tz) if user_tz else get_extraction_timezone()
+        return dt.replace(tzinfo=tz or ZoneInfo("UTC"))
 
     @typechecked
     def format_info(self) -> str:

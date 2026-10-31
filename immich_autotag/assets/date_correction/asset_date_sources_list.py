@@ -151,6 +151,18 @@ class AssetDateSourcesList:
             result.extend(candidate_set.candidates_by_kinds(kinds))
         return result
 
+    @typechecked
+    def own_candidates_by_kinds(
+        self, kinds: list[DateSourceKind]
+    ) -> list[AssetDateCandidate]:
+        """Returns the candidates of the main asset only (not of its duplicates) whose source_kind is in kinds."""
+        main_id = self.get_asset_wrapper().get_id()
+        result: list[AssetDateCandidate] = []
+        for candidate_set in self.get_date_candidates_per_duplicate():
+            if candidate_set.get_asset_wrapper().get_id() == main_id:
+                result.extend(candidate_set.candidates_by_kinds(kinds))
+        return result
+
     @staticmethod
     @typechecked
     def from_main_asset_wrapper(

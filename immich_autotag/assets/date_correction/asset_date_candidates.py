@@ -34,6 +34,11 @@ class AssetDateCandidates:
         return AssetDateCandidates(asset_wrapper)
 
     @typechecked
+    def get_asset_wrapper(self) -> AssetResponseWrapper:
+        """The asset these candidates belong to."""
+        return self._asset_wrapper
+
+    @typechecked
     def add(self, candidate: AssetDateCandidate) -> None:
         self._candidates.append(candidate)
 
