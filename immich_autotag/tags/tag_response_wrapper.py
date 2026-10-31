@@ -45,7 +45,7 @@ class TagWrapper:
 
     def get_id(self) -> TagUUID:
         id_val = self._tag.id
-        return TagUUID.from_string(id_val)
+        return TagUUID(id_val)
 
     def get_name(self) -> str:
         return self._tag.name

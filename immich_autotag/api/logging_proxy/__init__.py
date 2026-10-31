@@ -59,7 +59,7 @@ Usage Example:
 ==============
 
     # ❌ Old way (dispersed and error-prone):
-    proxy_delete_tag(client=client, tag_id=TagUUID.from_string(tag.id))
+    proxy_delete_tag(client=client, tag_id=TagUUID(tag.id))
     print(f"[CLEANUP] Deleted tag: {tag.name}")  # Manual logging
     report.add_modification(...)                  # Manual event tracking
 

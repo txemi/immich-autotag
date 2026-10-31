@@ -44,6 +44,9 @@ class RedundantAlbumCacheAccessError(Exception):
     pass
 
 
+# Key, inside a cached album dict, of its asset UUIDs (not part of the DTO).
+_ASSET_IDS_CACHE_KEY = "autotagAssetIds"
+
 # Global album cache (private, type-safe)
 _album_cache_global: dict[AlbumUUID, AlbumCacheEntry] = {}
 
@@ -80,10 +83,22 @@ class AlbumCacheEntry:
 
         from immich_autotag.albums.album.album_dto_state import AlbumLoadSource
 
-        if isinstance(cache_data, dict):
-            cached_album_dto = AlbumResponseDto.from_dict(cache_data)
+        # The cached album carries its asset UUIDs under _ASSET_IDS_CACHE_KEY
+        # (since Immich v3 they are not part of the DTO). An entry without it
+        # was written by an older autotag and is treated as a miss.
+        if isinstance(cache_data, dict) and _ASSET_IDS_CACHE_KEY in cache_data:
+            cache_dict = dict(cache_data)
+            raw_asset_ids = cache_dict.pop(_ASSET_IDS_CACHE_KEY)
+            if not isinstance(raw_asset_ids, list):
+                raise RuntimeError(
+                    f"Invalid cached asset ids for album_id={album_id}: "
+                    f"{type(raw_asset_ids)}"
+                )
+            cached_album_dto = AlbumResponseDto.from_dict(cache_dict)
             dto = AlbumDtoState.create(
-                dto=cached_album_dto, load_source=AlbumLoadSource.DETAIL
+                dto=cached_album_dto,
+                load_source=AlbumLoadSource.DETAIL,
+                asset_uuids={AssetUUID(a) for a in raw_asset_ids},
             )
             # Use public is_stale method
             if not dto.is_stale():
@@ -108,10 +123,19 @@ class AlbumCacheEntry:
             )
         # Explicit assert for mypy type narrowing
         assert album_dto is not None
-        from immich_autotag.utils.api_disk_cache import ApiCacheKey
+        from immich_autotag.api.immich_proxy.albums.get_album_assets import (
+            proxy_get_album_asset_uuids,
+        )
 
-        cache_mgr.save(album_id_str, album_dto.to_dict())
-        return AlbumDtoState.create(dto=album_dto, load_source=AlbumLoadSource.DETAIL)
+        asset_uuids = proxy_get_album_asset_uuids(album_id=album_id, client=client)
+        cache_dict = album_dto.to_dict()
+        cache_dict[_ASSET_IDS_CACHE_KEY] = sorted(str(a) for a in asset_uuids)
+        cache_mgr.save(album_id_str, cache_dict)
+        return AlbumDtoState.create(
+            dto=album_dto,
+            load_source=AlbumLoadSource.DETAIL,
+            asset_uuids=asset_uuids,
+        )
 
     def _ensure_full_loaded(self) -> "AlbumCacheEntry":
         """
@@ -136,6 +160,7 @@ class AlbumCacheEntry:
         self._dto.update(
             dto=new_dto.get_dto(),
             load_source=new_dto.get_load_source(),
+            asset_uuids=new_dto.get_asset_uuids(),
         )
         _album_cache_global[album_id] = self
         return self
@@ -216,61 +241,35 @@ class AlbumCacheEntry:
 
     @conditional_typechecked
     def get_assets(self, context: "ImmichContext") -> list["AssetResponseWrapper"]:
-        # Ensure the album is fully loaded once, then reuse the loaded state
-        loaded_entry = self._ensure_full_loaded()
-        from immich_autotag.assets.asset_dto_state import AssetDtoType
-
-        asset_manager = context.get_asset_manager()
-        # asset_manager should not be None; if it is, this is a programming error
-        result: list["AssetResponseWrapper"] = []
-        # Try to use the embedded assets list from the DTO. If the server
-        # no longer embeds assets in the album DTO, fall back to the
-        # dedicated album-assets endpoint via the proxy helper.
-        try:
-            dto_assets = loaded_entry._dto.get_assets()
-        except Exception:
-            dto_assets = None
-
-        if dto_assets:
-            for a in dto_assets:
-                b = asset_manager.get_wrapper_for_asset_dto(
-                    asset_dto=a,
-                    dto_type=AssetDtoType.ALBUM,
-                    context=context,
-                )
-                result.append(b)
-            return result
-
-        # Fallback: call album-assets endpoint (paginated) and convert raw items
+        """
+        Returns the album assets as wrappers. Since Immich v3 the album DTO
+        does not embed them: they come from the metadata search (albumIds).
+        The membership set is refreshed from the same search, so a caller that
+        lists the assets and then checks membership (asset_move) sees one
+        snapshot, as it did when both came from the album DTO.
+        """
         from immich_autotag.api.immich_proxy.albums.get_album_assets import (
             proxy_get_album_assets,
         )
+        from immich_autotag.assets.asset_dto_state import AssetDtoType
 
+        # Full first, so that the set refreshed below is the one later
+        # membership checks read (a partial state would be reloaded over it).
+        self._ensure_full_loaded()
+        asset_manager = context.get_asset_manager()
         client = context.get_client_wrapper().get_client()
-        from immich_client.models.asset_response_dto import AssetResponseDto
-
-        page = 1
-        page_size = 5000
-        while True:
-            items = proxy_get_album_assets(
-                album_id=self.get_album_id(), client=client, page=page, size=page_size
+        asset_dtos = proxy_get_album_assets(album_id=self.get_album_id(), client=client)
+        self._dto.update(
+            dto=self._dto.get_dto(),
+            load_source=self._dto.get_load_source(),
+            asset_uuids={AssetUUID(a.id) for a in asset_dtos},
+        )
+        return [
+            asset_manager.get_wrapper_for_asset_dto(
+                asset_dto=asset_dto, dto_type=AssetDtoType.SEARCH, context=context
             )
-            if not items:
-                break
-            for raw in items:
-                # Convert raw dict to DTO; skip malformed entries.
-                try:
-                    asset_dto: AssetResponseDto = AssetResponseDto.from_dict(raw)
-                except Exception:
-                    continue
-                b = asset_manager.get_wrapper_for_asset_dto(
-                    asset_dto=asset_dto, dto_type=AssetDtoType.ALBUM, context=context
-                )
-                result.append(b)
-            if len(items) < page_size:
-                break
-            page += 1
-        return result
+            for asset_dto in asset_dtos
+        ]
 
     def get_album_id(self) -> AlbumUUID:
         """

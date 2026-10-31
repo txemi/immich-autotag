@@ -32,7 +32,7 @@ Automations:
 Example (CHANGELOG entry snippet):
 
 ### Compatibility
-- **Tested with:** Immich `v2.6.3`.
-- **Compatibility note:** Compatible with Immich `v2.6.x` (tested). If you run Immich `v2.5.x` or earlier, upgrade the server or use an earlier AutoTag release.
+- **Tested with:** Immich `v3.3.5`.
+- **Compatibility note:** Compatible with Immich `v2.7.x` (gate and tests with the 2.7.5 client) and `v3.3.x` (real run against 3.3.5, see PR #15). If you run Immich `v2.5.x` or earlier, upgrade the server or use an earlier AutoTag release.
 
 Maintainers: update this document when the project's compatibility policy changes.

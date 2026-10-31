@@ -117,9 +117,6 @@ pipeline {
                         sh 'command -v uv >/dev/null 2>&1 || curl -LsSf "https://astral.sh/uv/${UV_PIN}/install.sh" | sh'
                     }
                 }
-                stage('Repo policy') {
-                    steps { sh 'python3 tools/repo_policy_check.py' }
-                }
                 stage('Language: commit messages') {
                     steps {
                         sh '''

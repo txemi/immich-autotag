@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Dict, Optional
 from urllib.parse import ParseResult
-from uuid import UUID
 
 import attrs
 from immich_client.models.duplicate_response_dto import DuplicateResponseDto
@@ -64,7 +63,7 @@ class DuplicateCollectionWrapper:
         mapping: Dict[DuplicateUUID, DuplicateAssetGroup] = {}
         for group in data:
             duplicate_id = DuplicateUUID(group.duplicate_id)
-            asset_ids = [AssetUUID.from_uuid(UUID(asset.id)) for asset in group.assets]
+            asset_ids = [AssetUUID(asset.id) for asset in group.assets]
             mapping[duplicate_id] = DuplicateAssetGroup(asset_ids)
         return cls(groups_by_duplicate_id=mapping)
 
