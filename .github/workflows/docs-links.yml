@@ -8,11 +8,13 @@ on:
     paths:
       - '**/*.md'
       - 'scripts/devtools/darnlink_docs_gate.sh'
+      - 'darnlink-gate.json'
       - '.github/workflows/docs-links.yml'
   pull_request:
     paths:
       - '**/*.md'
       - 'scripts/devtools/darnlink_docs_gate.sh'
+      - 'darnlink-gate.json'
       - '.github/workflows/docs-links.yml'
 
 jobs:

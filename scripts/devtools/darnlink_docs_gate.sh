@@ -21,9 +21,9 @@
 # ever silently break a link — darnlink can always re-anchor by uuid. The added
 # `check` pass also covers integrity + strict (broken robust links / un-anchored);
 # it additionally requires that *linkable* targets be uuid-bearing.
-# Exit 0 = clean, non-zero = findings. To fix locally (writes uuids):
+# Exit 0 = clean, non-zero = findings. To fix locally (writes uuids; run it from the repo root):
 #
-#     uvx --from "git+https://github.com/txemi/darnlink@v0.24.0" darnlink . --robustify --create-frontmatter --write
+#     uvx --from "$(python3 -c 'import json;print(json.load(open("darnlink-gate.json"))["ref"])')" darnlink . --robustify --create-frontmatter --write
 #
 # Shared by the three gates so the logic lives in one place:
 #   - pre-commit  (.pre-commit-config.yaml)
@@ -31,7 +31,7 @@
 #   - GitHub Actions (.github/workflows/docs-links.yml)
 #
 # Env overrides:
-#   DARNLINK_REF   git ref of darnlink to use   (default: immutable SHA of v0.20.4)
+#   DARNLINK_REF   git ref of darnlink to use   (default: the SHA in darnlink-gate.json `ref`)
 #   DARNLINK_FROM  full uvx --from spec (path or git+)  (default: the pinned SHA)
 #                  e.g. DARNLINK_FROM=/path/to/local/darnlink for local dev
 #
@@ -40,16 +40,27 @@
 #       build the uuid index, so scan the repo root, not a single file.
 set -euo pipefail
 
-# Pinned to an immutable commit SHA (== tag v0.20.4). Tags can be force-moved,
-# which would weaken CI reproducibility / supply-chain integrity, so we pin the
-# SHA and keep the tag only as a human-readable note.
-#
-# ^ That note is the WHOLE point of the tag comment, and it went stale for four
-# releases: the SHA was bumped v0.16.0 -> v0.20.3 while this line kept saying
-# v0.16.0. A pin whose human-readable note lies is worse than one with no note --
-# it is what an auditor reads instead of resolving the SHA. When you bump the SHA
-# on the line below, bump BOTH mentions or neither.
-DARNLINK_REF="${DARNLINK_REF:-c61a9e0bf80e044f61d2ca2e00c2f1e84f6da6ea}" # v0.24.0
+# SINGLE SOURCE: the pin and the excludes live in `darnlink-gate.json` at the repo root, the same
+# file every other repo of the fleet carries (and the one the fleet's darnlink report reads). Before,
+# the SHA lived on a line here and its human-readable tag in a comment next to it, and the comment
+# went stale for four releases (v0.16.0 -> v0.20.3) while the SHA moved. Now there is one place:
+# `ref` (an immutable commit SHA, never a tag: tags can be force-moved) and `ref_tag` beside it.
+GATE_CFG="${DARNLINK_GATE_CFG:-$(cd "$(dirname "$0")/../.." && pwd)/darnlink-gate.json}"
+[ -f "${GATE_CFG}" ] || {
+	echo "darnlink gate: ${GATE_CFG} not found (it holds the pin and the excludes)" >&2
+	exit 1
+}
+cfg() { python3 -c 'import json,sys
+d=json.load(open(sys.argv[1])); v=d.get(sys.argv[2])
+if not v: sys.exit("darnlink-gate.json: missing or empty `%s`" % sys.argv[2])
+print("\n".join(v) if isinstance(v,list) else v)' "${GATE_CFG}" "$1"; }
+CFG_REF="$(cfg ref)"
+case "${CFG_REF}" in *@*) ;; *)
+	echo "darnlink-gate.json: \`ref\` must be <uvx spec>@<sha>, got '${CFG_REF}'" >&2
+	exit 1
+	;;
+esac
+DARNLINK_REF="${DARNLINK_REF:-${CFG_REF##*@}}"
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
 
@@ -81,7 +92,10 @@ SCAN_ROOT="${1:-.}"
 #
 # ⚠️ A permanently-red wall is worse than no wall: it teaches people to reach for `--no-verify`,
 # and then it stops catching the thing it exists for. txnet1 already carries this exclude.
-DARNLINK_EXCLUDES=(--exclude 'logs_local' --exclude 'worktrees')
+# The list itself is `excludes` in darnlink-gate.json (today: logs_local, worktrees).
+CFG_EXCLUDES="$(cfg excludes)" # a command substitution, so `set -e` stops here if it fails
+DARNLINK_EXCLUDES=()
+while IFS= read -r ex; do [ -n "$ex" ] && DARNLINK_EXCLUDES+=(--exclude "$ex"); done <<<"${CFG_EXCLUDES}"
 
 echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (max: fail-closed, read-only)"
 # mode=max = check (integrity + strict) UNION create-frontmatter UNION web. `check` catches broken
