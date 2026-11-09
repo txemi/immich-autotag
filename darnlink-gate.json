@@ -1,0 +1,18 @@
+{
+  "ref": "git+https://github.com/txemi/darnlink@84e2db4db1055a0fedd6b7a2c826269f282c9d26",
+  "ref_tag": "v0.30.0",
+  "ref_comment": "v0.30.0 (published tag, commit 84e2db4) — pinned by SHA: uvx resolves a tag over the network on every call, and a tag can be force-moved. Same pin as txnet1's darnlink-gate.json. SINGLE SOURCE: scripts/devtools/darnlink_docs_gate.sh reads `ref` and `excludes` from here, so pre-commit, pre-push, Jenkins and Actions cannot drift apart. No recipe_sha256: this repo runs its own script, not the shared recipe.",
+  "excludes": [
+    "logs_local",
+    "worktrees"
+  ],
+  "mode": "max",
+  "scope": "repo",
+  "web": true,
+  "dangling": "repo",
+  "dangling_max": 0,
+  "default_branch": "main",
+  "own_web": [
+    "txemi"
+  ]
+}
