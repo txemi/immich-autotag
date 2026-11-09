@@ -46,13 +46,20 @@ set -euo pipefail
 # went stale for four releases (v0.16.0 -> v0.20.3) while the SHA moved. Now there is one place:
 # `ref` (an immutable commit SHA, never a tag: tags can be force-moved) and `ref_tag` beside it.
 GATE_CFG="${DARNLINK_GATE_CFG:-$(cd "$(dirname "$0")/../.." && pwd)/darnlink-gate.json}"
-[ -f "${GATE_CFG}" ] || { echo "darnlink gate: ${GATE_CFG} not found (it holds the pin and the excludes)" >&2; exit 1; }
+[ -f "${GATE_CFG}" ] || {
+	echo "darnlink gate: ${GATE_CFG} not found (it holds the pin and the excludes)" >&2
+	exit 1
+}
 cfg() { python3 -c 'import json,sys
 d=json.load(open(sys.argv[1])); v=d.get(sys.argv[2])
 if not v: sys.exit("darnlink-gate.json: missing or empty `%s`" % sys.argv[2])
 print("\n".join(v) if isinstance(v,list) else v)' "${GATE_CFG}" "$1"; }
 CFG_REF="$(cfg ref)"
-case "${CFG_REF}" in *@*) ;; *) echo "darnlink-gate.json: \`ref\` must be <uvx spec>@<sha>, got '${CFG_REF}'" >&2; exit 1;; esac
+case "${CFG_REF}" in *@*) ;; *)
+	echo "darnlink-gate.json: \`ref\` must be <uvx spec>@<sha>, got '${CFG_REF}'" >&2
+	exit 1
+	;;
+esac
 DARNLINK_REF="${DARNLINK_REF:-${CFG_REF##*@}}"
 DARNLINK_FROM="${DARNLINK_FROM:-git+https://github.com/txemi/darnlink@${DARNLINK_REF}}"
 SCAN_ROOT="${1:-.}"
@@ -86,9 +93,9 @@ SCAN_ROOT="${1:-.}"
 # ⚠️ A permanently-red wall is worse than no wall: it teaches people to reach for `--no-verify`,
 # and then it stops catching the thing it exists for. txnet1 already carries this exclude.
 # The list itself is `excludes` in darnlink-gate.json (today: logs_local, worktrees).
-CFG_EXCLUDES="$(cfg excludes)"   # a command substitution, so `set -e` stops here if it fails
+CFG_EXCLUDES="$(cfg excludes)" # a command substitution, so `set -e` stops here if it fails
 DARNLINK_EXCLUDES=()
-while IFS= read -r ex; do [ -n "$ex" ] && DARNLINK_EXCLUDES+=(--exclude "$ex"); done <<< "${CFG_EXCLUDES}"
+while IFS= read -r ex; do [ -n "$ex" ] && DARNLINK_EXCLUDES+=(--exclude "$ex"); done <<<"${CFG_EXCLUDES}"
 
 echo "darnlink docs-link gate — scanning '${SCAN_ROOT}' via '${DARNLINK_FROM}' (max: fail-closed, read-only)"
 # mode=max = check (integrity + strict) UNION create-frontmatter UNION web. `check` catches broken
