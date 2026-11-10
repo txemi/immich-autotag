@@ -1,7 +1,8 @@
 {
   "ref": "git+https://github.com/txemi/darnlink@84e2db4db1055a0fedd6b7a2c826269f282c9d26",
   "ref_tag": "v0.30.0",
-  "ref_comment": "v0.30.0 (published tag, commit 84e2db4) — pinned by SHA: uvx resolves a tag over the network on every call, and a tag can be force-moved. Same pin as txnet1's darnlink-gate.json. SINGLE SOURCE: scripts/devtools/darnlink_docs_gate.sh reads `ref` and `excludes` from here, so pre-commit, pre-push, Jenkins and Actions cannot drift apart. No recipe_sha256: this repo runs its own script, not the shared recipe.",
+  "recipe_sha256": "47354c3a3b5e145bac3207a8869a63f8fc932f91512ae02d2a801a58535cabfd",
+  "ref_comment": "v0.30.0 (published tag, commit 84e2db4) — pinned by SHA: uvx resolves a tag over the network on every call, and a tag can be force-moved. Same pin as txnet1's darnlink-gate.json. SINGLE SOURCE: scripts/devtools/darnlink_docs_gate.sh reads `ref` and `excludes` from here, so pre-commit, pre-push, Jenkins and Actions cannot drift apart. Pre-push and Jenkins run the fleet's shared recipe (darnlink-gate), verified by recipe_sha256; pre-commit and Actions still run scripts/devtools/darnlink_docs_gate.sh with the same ref and excludes.",
   "excludes": [
     "logs_local",
     "worktrees"
