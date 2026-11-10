@@ -321,18 +321,33 @@ pipeline {
             }
         }
         stage('Quality Gate (Docs Links)') {
+            environment {
+                DARNLINK_GATE_FAIL_CLOSED = '1'   // on the server the gate IS the wall: never fail open
+            }
             steps {
                 script {
-                    echo "================ DOCS LINK GATE (darnlink) ================"
-                    echo "[DOCS LINK GATE] Checking uuid-anchored Markdown links (read-only, no --write)"
-                    sh '''
-                        git config --global --add safe.directory "$PWD"
-                        # darnlink runs via uvx; ensure uv is available in a
-                        # predictable location (user site, not a global pip).
-                        export PATH="$HOME/.local/bin:$PATH"
-                        command -v uvx >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
-                        bash scripts/devtools/darnlink_docs_gate.sh .
-                    '''
+                    echo "================ DOCS LINK GATE (darnlink, shared recipe) ================"
+                    withCredentials([string(credentialsId: 'github_ro_pat', variable: 'GITHUB_TOKEN')]) {
+                        sh '''
+                            set -eu
+                            git config --global --add safe.directory "$PWD"
+                            export PATH="$HOME/.local/bin:$PATH"
+                            command -v uv >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
+                            # SINGLE SOURCE: the version and the recipe checksum come from darnlink-gate.json,
+                            # the same pin pre-push uses. The recipe is the fleet's shared one (darnlink-gate).
+                            REF=$(python3 -c 'import json;print(json.load(open("darnlink-gate.json"))["ref"])')
+                            VER=${REF##*@}
+                            test -n "$VER" || { echo "no version in darnlink-gate.json ref"; exit 1; }
+                            RECIPE="$WORKSPACE/.darnlink-gate"
+                            curl -fsSL "https://raw.githubusercontent.com/txemi/darnlink/${VER}/recipes/darnlink-gate" -o "$RECIPE"
+                            # A tag is mutable: the checksum turns a moved tag into a named red build.
+                            WANT=$(python3 -c 'import json;print(json.load(open("darnlink-gate.json"))["recipe_sha256"])')
+                            GOT=$(sha256sum "$RECIPE" | cut -d" " -f1)
+                            [ "$GOT" = "$WANT" ] || { echo "recipe checksum mismatch for ${VER}: expected $WANT, got $GOT"; exit 1; }
+                            chmod +x "$RECIPE"
+                            "$RECIPE"
+                        '''
+                    }
                 }
             }
         }

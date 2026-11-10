@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# immich-autotag pre-push — WHOLE-REPO darnlink wall (piece 3 of 4), run by the global git-hooks
-# dispatcher (pre-push -> _dispatch). Mirrors the pre-commit-framework gate but for the push wall,
-# so nothing broken leaves the machine even if a commit used --no-verify. Same script, same pin (darnlink-gate.json `ref`).
+# immich-autotag pre-push: WHOLE-REPO darnlink wall, OFFLINE (the web pass runs only in Jenkins), with the fleet's
+# shared recipe (darnlink-gate) and the pin in darnlink-gate.json. Run by the global git-hooks dispatcher.
 # Bypass (discouraged): git push --no-verify
 set -euo pipefail
-root="$(git rev-parse --show-toplevel)"
-exec bash "$root/scripts/devtools/darnlink_docs_gate.sh"
+command -v darnlink-gate >/dev/null 2>&1 || { echo "darnlink pre-push: darnlink-gate not on PATH -> SKIP (CI covers it)." >&2; exit 0; }
+export DARNLINK_GATE_WEB=0
+exec darnlink-gate
