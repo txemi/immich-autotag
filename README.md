@@ -188,6 +188,12 @@ You can run Immich AutoTag using any of the following methods:
 
 That's it! Your Immich autotagging tool is ready to use.
 
+### 1.4.3. Try it first: dry run
+
+Add `--dry-run` (or set `IMMICH_AUTOTAG_DRY_RUN=1`) to go through the whole pipeline
+without writing anything to Immich: every change it would make is recorded in a file,
+with a summary of the counts. See [Dry-run mode](./docs/dry-run.md) <!-- uuid: a8d4fa73-b1a5-430a-ac9a-623a3601e235 -->.
+
 > **Do you prefer to download the code and run it manually?**
 > See the section [Installation and Automatic Client Generation](./docs/development.md#15-installation-and-automatic-client-generation) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 --> in the [Development Guide](./docs/development.md) <!-- uuid: 2adee19a-d0f2-4d34-9d64-ab1da0a9f2b6 -->.
 

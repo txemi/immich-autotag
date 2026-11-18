@@ -87,6 +87,19 @@ class RunExecution:
         """
         return self.get_custom_path("modification_report.txt")
 
+    def get_dry_run_changes_path(self) -> Path:
+        """
+        Returns the path to the changes file (JSONL) of a dry run: one line per
+        write that was intercepted instead of being sent to Immich.
+        """
+        return self.get_custom_path("dry_run_changes.jsonl")
+
+    def get_dry_run_summary_path(self) -> Path:
+        """
+        Returns the path to the summary (JSON) of a dry run, with its counts.
+        """
+        return self.get_custom_path("dry_run_summary.json")
+
     def get_log_path(self, name: str) -> Path:
         return self.run_dir / f"{name}.log"
 
