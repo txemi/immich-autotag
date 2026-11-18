@@ -29,8 +29,9 @@ the run: ignoring it would run for real what was meant as a test.
 the container's environment; its entrypoint copies `IMMICH_AUTOTAG_DRY_RUN` into the
 crontab, so `docker run -e IMMICH_AUTOTAG_DRY_RUN=1 …` is a dry run there too. Both images
 install `immich-autotag` from PyPI: a release older than this mode ignores the variable and
-the flag, and runs **for real**. Before trusting a dry run, check that it left
-`logs_local/dry_run/` (section 1.2); if it did not, it was not a dry run.
+the flag, and runs **for real**. Before launching, check that the installed release has
+the mode: `python -c "import immich_autotag.dry_run"` fails on one without it. Afterwards,
+a dry run always leaves `logs_local/dry_run/` (section 1.2).
 
 ## 1.2. What it leaves
 

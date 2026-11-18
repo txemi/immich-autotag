@@ -458,6 +458,8 @@ def test_client_built_before_the_switch_is_refused(clean_mode, monkeypatch):
 def test_encoded_search_path_is_not_sent(session, fake_immich):
     with httpx.Client(transport=session.get_transport()) as raw_client:
         raw_client.post(BASE_URL + "/search/%2e%2e/albums", json={})
+        # Decoded, this is a legitimate search; only the wire-path check stops it.
+        raw_client.post(BASE_URL + "/search/%6detadata", json={})
     assert fake_immich.requests == []
 
 
