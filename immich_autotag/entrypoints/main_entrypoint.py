@@ -21,4 +21,12 @@ def run_main():
     Wrapper that runs run_main_inner, and if error mode is CRAZY_DEBUG, activates cProfile and saves the result in profile_debug.stats.
     """
     setup_profiling_and_memory()
-    run_main_inner_logic()
+    from immich_autotag.dry_run.dry_run_session import finish_current_session
+
+    completed = False
+    try:
+        run_main_inner_logic()
+        completed = True
+    finally:
+        # In a dry run, the summary is written even when the run fails.
+        finish_current_session(completed=completed)

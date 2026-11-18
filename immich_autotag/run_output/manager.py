@@ -14,6 +14,9 @@ from .execution import RunExecution
 _RUN_DIR_PID_MARK = "PID"
 _RUN_DIR_PID_SEP = "_PID"
 _RUN_DIR_DATE_FORMAT = "%Y%m%d_%H%M%S"
+# Subfolder of the logs folder for dry runs. It has no _RUN_DIR_PID_MARK in its
+# name, so real runs never take it for one of their run folders.
+DRY_RUN_SUBDIR = "dry_run"
 _current_instance = None
 
 
@@ -61,6 +64,12 @@ class RunOutputManager:
     )
     _logs_local_dir: Path = attrs.field(
         default=Path("logs_local"), validator=attrs.validators.instance_of(Path)
+    )
+    # A dry run lives apart (logs_local/dry_run) and is isolated: it neither reuses
+    # the caches and checkpoints of earlier runs, nor leaves any for later ones.
+    # Its caches hold the simulated state, which must never feed a real run.
+    _isolated: bool = attrs.field(
+        default=False, validator=attrs.validators.instance_of(bool)
     )
 
     def __attrs_post_init__(self):
@@ -124,6 +133,8 @@ class RunOutputManager:
         ordered from most recent to oldest, filtered by age (max_age_hours).
         If exclude_current is True, excludes the current execution folder.
         """
+        if self._isolated:
+            return []
         logs_dir = self._logs_local_dir
         now = datetime.now()
         current_run = self.get_run_output_dir() if exclude_current else None
@@ -143,6 +154,8 @@ class RunOutputManager:
         Searches for the most recent previous execution folder in the default logs directory.
         Returns Path or None if there are no previous executions.
         """
+        if self._isolated:
+            return None
         base = self._logs_local_dir
         if not base.exists() or not base.is_dir():
             raise RuntimeError(
@@ -170,7 +183,15 @@ class RunOutputManager:
         """
         global _current_instance
         if _current_instance is None:
-            _current_instance = RunOutputManager()
+            from immich_autotag.dry_run.dry_run_mode import is_dry_run_active
+
+            if is_dry_run_active():
+                _current_instance = RunOutputManager(
+                    logs_local_dir=Path("logs_local") / DRY_RUN_SUBDIR,
+                    isolated=True,
+                )
+            else:
+                _current_instance = RunOutputManager()
         return _current_instance
 
     def get_log_path(self, name: str) -> Path:
