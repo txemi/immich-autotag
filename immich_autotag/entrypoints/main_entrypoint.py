@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import sys
 
 # Centralized hook setup: ensures all runtime hooks are installed before importing business logic.
