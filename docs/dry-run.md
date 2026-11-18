@@ -25,6 +25,13 @@ or empty, for a normal run). Any other value stops the run with an error. A comm
 argument that looks like a misspelt dry-run flag (`--dryrun`, `--dry_run`...) also stops
 the run: ignoring it would run for real what was meant as a test.
 
+**Docker.** The cron image (`Dockerfile.cron`) starts the job from cron, which does not see
+the container's environment; its entrypoint copies `IMMICH_AUTOTAG_DRY_RUN` into the
+crontab, so `docker run -e IMMICH_AUTOTAG_DRY_RUN=1 …` is a dry run there too. Both images
+install `immich-autotag` from PyPI: a release older than this mode ignores the variable and
+the flag, and runs **for real**. Before trusting a dry run, check that it left
+`logs_local/dry_run/` (section 1.2); if it did not, it was not a dry run.
+
 ## 1.2. What it leaves
 
 The run folder of a dry run lives apart, under `logs_local/dry_run/<date>_PID<pid>/`:

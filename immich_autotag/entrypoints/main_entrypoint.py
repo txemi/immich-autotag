@@ -1,4 +1,5 @@
 from __future__ import annotations
+import sys
 
 # Centralized hook setup: ensures all runtime hooks are installed before importing business logic.
 from immich_autotag.utils.hooks import setup_all_hooks
@@ -28,5 +29,11 @@ def run_main():
         run_main_inner_logic()
         completed = True
     finally:
-        # In a dry run, the summary is written even when the run fails.
-        finish_current_session(completed=completed)
+        # In a dry run, the summary is written even when the run fails. A failure
+        # writing it must not hide the pipeline's own error.
+        try:
+            finish_current_session(completed=completed)
+        except Exception as error:  # noqa: BLE001
+            if completed:
+                raise
+            print(f"[dry-run] could not write the summary: {error!r}", file=sys.stderr)

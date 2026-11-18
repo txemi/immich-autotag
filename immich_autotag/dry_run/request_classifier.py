@@ -122,11 +122,22 @@ def classify_request(method: str, relative_path: str) -> RequestKind:
     upper = method.upper()
     if upper in _READ_METHODS:
         return RequestKind.READ
-    if upper == "POST" and any(
-        relative_path.startswith(prefix) for prefix in _POST_READ_PREFIXES
+    if (
+        upper == "POST"
+        and not _is_ambiguous_path(relative_path)
+        and any(relative_path.startswith(prefix) for prefix in _POST_READ_PREFIXES)
     ):
         return RequestKind.READ
     return RequestKind.WRITE
+
+
+def _is_ambiguous_path(path: str) -> bool:
+    """A path a proxy might rewrite (percent-encoding or dot segments).
+
+    The read check runs on a path, but a proxy in front of Immich may normalise
+    ``/search/%2e%2e/albums`` into ``/albums``. Such a POST is never treated as a read.
+    """
+    return "%" in path or "/." in path or "\\" in path
 
 
 def match_write_route(method: str, relative_path: str) -> WriteRoute:

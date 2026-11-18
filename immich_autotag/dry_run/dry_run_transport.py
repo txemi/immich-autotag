@@ -54,7 +54,14 @@ class DryRunTransport(httpx.BaseTransport):
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
         relative_path = relative_api_path(request.url.path, self._base_path)
-        if classify_request(request.method, relative_path) is RequestKind.WRITE:
+        # Classify on the path as it goes on the wire (not decoded): an encoded
+        # segment must not turn a write into a read.
+        wire_path = request.url.raw_path.decode("ascii", "replace").split("?", 1)[0]
+        wire_relative = relative_api_path(wire_path, self._base_path)
+        if (
+            classify_request(request.method, wire_relative) is RequestKind.WRITE
+            or classify_request(request.method, relative_path) is RequestKind.WRITE
+        ):
             return self._simulator.simulate(request, relative_path)
         local = self._overlay.answer_locally(request, relative_path)
         if local is not None:

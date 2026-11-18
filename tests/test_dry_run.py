@@ -208,6 +208,9 @@ def read_changes(session: DryRunSession) -> list[dict]:
         ("PATCH", "/albums/x", RequestKind.WRITE),
         ("DELETE", "/tags/x", RequestKind.WRITE),
         ("POST", "/some/endpoint/nobody/listed", RequestKind.WRITE),
+        # A proxy could normalise these into POST /albums: never a read.
+        ("POST", "/search/%2e%2e/albums", RequestKind.WRITE),
+        ("POST", "/search/../albums", RequestKind.WRITE),
     ],
 )
 def test_classification_counts_unknown_requests_as_writes(method, path, kind):
@@ -449,4 +452,54 @@ def test_client_built_before_the_switch_is_refused(clean_mode, monkeypatch):
     dry_run_mode.activate_dry_run()
     with pytest.raises(RuntimeError):
         wrapper.get_client()
+    monkeypatch.setattr(wrapper_module, "_singleton", None)
+
+
+def test_encoded_search_path_is_not_sent(session, fake_immich):
+    with httpx.Client(transport=session.get_transport()) as raw_client:
+        raw_client.post(BASE_URL + "/search/%2e%2e/albums", json={})
+    assert fake_immich.requests == []
+
+
+def test_run_main_reads_the_flag_before_the_pipeline(clean_mode, monkeypatch):
+    import sys
+
+    from immich_autotag import main_entrypoint as top_level
+
+    seen = {}
+
+    def fake_run_main():
+        seen["dry_run"] = dry_run_mode.is_dry_run_active()
+
+    monkeypatch.setattr(sys, "argv", ["immich_autotag", "--dry-run"])
+    monkeypatch.setitem(
+        sys.modules,
+        "immich_autotag.entrypoints.main_entrypoint",
+        SimpleNamespace(run_main=fake_run_main),
+    )
+    top_level.run_main()
+    assert seen == {"dry_run": True}
+
+
+def test_normal_run_does_not_install_the_dry_run_transport(clean_mode, monkeypatch):
+    from immich_autotag.config import host_config
+    from immich_autotag.context import immich_client_wrapper as wrapper_module
+
+    config = SimpleNamespace(server=SimpleNamespace(api_key="invented-key"))
+    monkeypatch.setattr(
+        wrapper_module.ConfigManager,
+        "get_instance",
+        staticmethod(lambda: SimpleNamespace(get_config=lambda: config)),
+    )
+    monkeypatch.setattr(host_config, "get_immich_base_url", lambda: BASE_URL)
+    built = {}
+    from immich_autotag.types import client_types
+
+    monkeypatch.setattr(
+        client_types, "ImmichClient", lambda **kwargs: built.update(kwargs) or object()
+    )
+    monkeypatch.setattr(wrapper_module, "_singleton", None)
+
+    wrapper_module.ImmichClientWrapper().get_client()
+    assert "transport" not in built["httpx_args"]
     monkeypatch.setattr(wrapper_module, "_singleton", None)
