@@ -329,24 +329,21 @@ pipeline {
                     echo "================ DOCS LINK GATE (darnlink, shared recipe) ================"
                     withCredentials([string(credentialsId: 'github_ro_pat', variable: 'GITHUB_TOKEN')]) {
                         sh '''
-                            set -eu
-                            git config --global --add safe.directory "$PWD"
-                            export PATH="$HOME/.local/bin:$PATH"
-                            command -v uv >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
-                            # SINGLE SOURCE: the version and the recipe checksum come from darnlink-gate.json,
-                            # the same pin pre-push uses. The recipe is the fleet's shared one (darnlink-gate).
-                            REF=$(python3 -c 'import json;print(json.load(open("darnlink-gate.json"))["ref"])')
-                            VER=${REF##*@}
-                            test -n "$VER" || { echo "no version in darnlink-gate.json ref"; exit 1; }
-                            RECIPE="$WORKSPACE/.darnlink-gate"
-                            curl -fsSL "https://raw.githubusercontent.com/txemi/darnlink/${VER}/recipes/darnlink-gate" -o "$RECIPE"
-                            # A tag is mutable: the checksum turns a moved tag into a named red build.
-                            WANT=$(python3 -c 'import json;print(json.load(open("darnlink-gate.json"))["recipe_sha256"])')
-                            GOT=$(sha256sum "$RECIPE" | cut -d" " -f1)
-                            [ "$GOT" = "$WANT" ] || { echo "recipe checksum mismatch for ${VER}: expected $WANT, got $GOT"; exit 1; }
-                            chmod +x "$RECIPE"
-                            "$RECIPE"
+                          set -eu
+                          git config --global --add safe.directory "$PWD"
+                          export PATH="$HOME/.local/bin:$PATH"; command -v uv >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
                         '''
+                        script {
+                          // darnlink runs here with darnlinkGate(), the ONE copy of fetch-verify-run that darnlink
+                          // itself ships (vars/darnlinkGate.groovy). Nothing is installed on the agent or the controller
+                          // (txemi, Q3120 = a): the library is loaded for this build, at the version after the @ in this
+                          // repo's darnlink-gate.json `ref` -- the only pin, so the step and the gate it runs cannot drift
+                          // apart. It needs v0.33.1 or later: earlier tags carry symlinks, which Jenkins rejects.
+                          def ver = sh(returnStdout: true, script: "python3 -c 'import json;print(json.load(open(\"darnlink-gate.json\"))[\"ref\"].rsplit(\"@\",1)[1])'").trim()
+                          library identifier: "darnlink@${ver}", retriever: legacySCM([$class: 'GitSCM',
+                            branches: [[name: ver]], userRemoteConfigs: [[url: 'https://github.com/txemi/darnlink.git']]])
+                          withEnv(["PATH+LOCALBIN=${env.HOME}/.local/bin"]) { darnlinkGate() }   // the old block put uv on PATH this way
+                        }
                     }
                 }
             }
