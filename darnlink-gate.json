@@ -2,7 +2,7 @@
   "ref": "git+https://github.com/txemi/darnlink@1d19e473e7924303f029eb90917ae5bc93ddb099",
   "ref_tag": "v0.33.1",
   "recipe_sha256": "cee7969d6d2ab6771aff2a9e664b033965258ee82bc5ee180ee1f3992b252f5f",
-  "ref_comment": "v0.33.1 (tag publicado, commit 1d19e47; trae vars/darnlinkGate.groovy y ya sin symlinks, que Jenkins rechaza en una biblioteca: darnlink#40, el paso de Jenkins que corre la receta: Q3120 = a) \u2014 pinned by SHA: uvx resolves a tag over the network on every call. REGLA: solo se fija el SHA de un TAG publicado, nunca un commit suelto",
+  "ref_comment": "v0.33.1 (published tag, commit 1d19e47; ships vars/darnlinkGate.groovy and has no symlinks, which Jenkins rejects in a library: darnlink#40) \u2014 pinned by SHA: uvx resolves a tag over the network on every call. RULE: only the SHA of a published TAG is pinned, never a loose commit",
   "excludes": [
     "logs_local",
     "worktrees"
