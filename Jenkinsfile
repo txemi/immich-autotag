@@ -332,6 +332,9 @@ pipeline {
                           set -eu
                           git config --global --add safe.directory "$PWD"
                           export PATH="$HOME/.local/bin:$PATH"; command -v uv >/dev/null 2>&1 || python3 -m pip install --quiet --user uv
+                          # darnlinkGate() runs its own sh steps, and inside a docker agent Jenkins does not hand them a
+                          # withEnv PATH: link uv and uvx into /usr/local/bin, already on the container's default PATH.
+                          for b in uv uvx; do p="$(command -v "$b")" && [ "$p" != "/usr/local/bin/$b" ] && ln -sf "$p" "/usr/local/bin/$b"; done || true
                         '''
                         script {
                           // darnlink runs here with darnlinkGate(), the ONE copy of fetch-verify-run that darnlink
@@ -342,10 +345,7 @@ pipeline {
                           def ver = sh(returnStdout: true, script: "python3 -c 'import json;print(json.load(open(\"darnlink-gate.json\"))[\"ref\"].rsplit(\"@\",1)[1])'").trim()
                           library identifier: "darnlink@${ver}", retriever: legacySCM([$class: 'GitSCM',
                             branches: [[name: ver]], userRemoteConfigs: [[url: 'https://github.com/txemi/darnlink.git']]])
-                          // uv was installed with `pip --user` by the shell above, so it sits in THAT shell's $HOME, which
-                          // inside a docker agent is /root, not the agent's env.HOME: ask the shell, do not guess.
-                          def localBin = sh(returnStdout: true, script: 'echo "$HOME/.local/bin"').trim()
-                          withEnv(["PATH+LOCALBIN=${localBin}"]) { darnlinkGate() }
+                          darnlinkGate()   // uv/uvx: linked into /usr/local/bin by the sh block above
                         }
                     }
                 }
