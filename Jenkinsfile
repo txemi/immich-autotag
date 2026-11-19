@@ -342,7 +342,10 @@ pipeline {
                           def ver = sh(returnStdout: true, script: "python3 -c 'import json;print(json.load(open(\"darnlink-gate.json\"))[\"ref\"].rsplit(\"@\",1)[1])'").trim()
                           library identifier: "darnlink@${ver}", retriever: legacySCM([$class: 'GitSCM',
                             branches: [[name: ver]], userRemoteConfigs: [[url: 'https://github.com/txemi/darnlink.git']]])
-                          withEnv(["PATH+LOCALBIN=${env.HOME}/.local/bin"]) { darnlinkGate() }   // the old block put uv on PATH this way
+                          // uv was installed with `pip --user` by the shell above, so it sits in THAT shell's $HOME, which
+                          // inside a docker agent is /root, not the agent's env.HOME: ask the shell, do not guess.
+                          def localBin = sh(returnStdout: true, script: 'echo "$HOME/.local/bin"').trim()
+                          withEnv(["PATH+LOCALBIN=${localBin}"]) { darnlinkGate() }
                         }
                     }
                 }
