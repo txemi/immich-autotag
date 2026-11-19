@@ -1,0 +1,170 @@
+{
+    "$defs": {
+        "Entry": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "glob": {
+                    "description": "fnmatch pattern from the repo root; `*` crosses folders",
+                    "pattern": "\\S",
+                    "type": "string"
+                },
+                "reason": {
+                    "description": "why it declares no schema, or what it waits for",
+                    "pattern": "\\S",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "glob",
+                "reason"
+            ],
+            "title": "Entry",
+            "type": "object"
+        },
+        "Manifest": {
+            "additionalProperties": false,
+            "description": "Read by schema-declared and schema-valid: the YAML or JSON files of a repo that declare no schema, exempt with their reason or pending their fix (pending only shrinks), and the pinned copies of schemas declared by url.",
+            "properties": {
+                "$comment": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "$schema": {
+                    "description": "path or url of the schema this manifest follows",
+                    "pattern": "\\S",
+                    "type": "string"
+                },
+                "exempt": {
+                    "items": {
+                        "$ref": "#/$defs/Entry"
+                    },
+                    "type": "array"
+                },
+                "pending": {
+                    "items": {
+                        "$ref": "#/$defs/Entry"
+                    },
+                    "type": "array"
+                },
+                "pinned": {
+                    "additionalProperties": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/PinnedCopy__identifier_optional"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "description": "url of a schema declared by url -> path in the repo of its pinned copy, to validate offline",
+                    "type": [
+                        "object",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "$schema",
+                "exempt",
+                "pending"
+            ],
+            "title": "Manifest",
+            "type": "object"
+        },
+        "PinnedCopy": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "url",
+                "path"
+            ],
+            "title": "PinnedCopy",
+            "type": "object"
+        },
+        "PinnedCopy__identifier_optional": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "path"
+            ],
+            "title": "PinnedCopy",
+            "type": "object"
+        }
+    },
+    "$id": "urn:schema-declared:manifest:v1",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": false,
+    "description": "Read by schema-declared and schema-valid: the YAML or JSON files of a repo that declare no schema, exempt with their reason or pending their fix (pending only shrinks), and the pinned copies of schemas declared by url.",
+    "metamodel_version": "1.12.0",
+    "properties": {
+        "$comment": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "$schema": {
+            "description": "path or url of the schema this manifest follows",
+            "pattern": "\\S",
+            "type": "string"
+        },
+        "exempt": {
+            "items": {
+                "$ref": "#/$defs/Entry"
+            },
+            "type": "array"
+        },
+        "pending": {
+            "items": {
+                "$ref": "#/$defs/Entry"
+            },
+            "type": "array"
+        },
+        "pinned": {
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/PinnedCopy__identifier_optional"
+                    },
+                    {
+                        "type": "string"
+                    }
+                ]
+            },
+            "description": "url of a schema declared by url -> path in the repo of its pinned copy, to validate offline",
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "$schema",
+        "exempt",
+        "pending"
+    ],
+    "title": "schema_declared",
+    "type": "object",
+    "version": null
+}
+
