@@ -1,0 +1,63 @@
+{
+  "$schema": "schemas/schema_declared.schema.json",
+  "$comment": "Manifest of the schema walls (schema-declared and schema-valid): which YAML or JSON files of this repo declare no schema, and why. Born on 2026-11-19 with every such file in `pending`, so nothing is cut on day one. `pending` only shrinks.",
+  "exempt": [],
+  "pending": [
+    {
+      "glob": ".claude/settings.json",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".github/workflows/docs-links.yml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".github/workflows/lang-issue.yml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".github/workflows/lang-surfaces.yml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".github/workflows/privacy-gate.yml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".github/workflows/release.yml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".pre-commit-config.yaml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".vscode/launch.json",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".vscode/settings.json",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": ".vscode/tasks.json",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": "compatibility.yml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": "darnlink-gate.json",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": "docker-compose.yml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    },
+    {
+      "glob": "immich_autotag/config/user_config_template.yaml",
+      "reason": "no schema declared yet when the wall was adopted: declare one, or move it to `exempt` with its reason if no schema exists for it"
+    }
+  ]
+}
