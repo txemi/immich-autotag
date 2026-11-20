@@ -57,6 +57,36 @@ class AssetCacheEntry:
         self._state = refreshed_entry.get_state()
         return self
 
+    def refresh_after_write(self, context: "ImmichContext") -> None:
+        """
+        Reloads the asset from the API right after this run changed it (a tag
+        added or removed), bypassing every cache, and saves the fresh state to
+        the disk cache.
+
+        Without this the entry keeps its pre-write state until it is 24 h old,
+        so later checks in the same run (``has_tag``, the duplicate comparison)
+        answer from stale data and send the same write again. The disk cache
+        is updated too because other wrappers of the same asset (duplicates are
+        rebuilt from it) must see the change.
+        """
+        from immich_autotag.api.logging_proxy.assets.get_asset_info import (
+            proxy_get_asset_info,
+        )
+
+        asset_id = self._state.get_uuid()
+        dto = proxy_get_asset_info(
+            asset_id, context.get_client_wrapper().get_client(), use_cache=False
+        )
+        if dto is None:
+            raise RuntimeError(
+                f"proxy_get_asset_info returned None for asset id={asset_id}"
+            )
+        state = AssetDtoState.from_dto(dto, AssetDtoType.FULL)
+        ApiCacheManager.create(cache_type=ApiCacheKey.ASSETS).save(
+            str(asset_id), state.to_cache_dict()
+        )
+        self._state = state
+
     def _ensure_fresh(self, context: "ImmichContext") -> "AssetCacheEntry":
         """
         Ensures the cache entry is fresh. If stale, reloads from API and updates self.
