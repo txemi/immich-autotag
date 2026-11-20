@@ -14,6 +14,9 @@ from immich_autotag.types.uuid_wrappers import AssetUUID, DuplicateUUID
 from immich_autotag.utils.api_disk_cache import ApiCacheKey, ApiCacheManager
 
 if TYPE_CHECKING:
+    from immich_autotag.report.modification_entries_list import (
+        ModificationEntriesList,
+    )
     from immich_autotag.tags.tag_response_wrapper import TagWrapper
 
 ASSET_CACHE_KEY = "assets"
@@ -56,6 +59,62 @@ class AssetCacheEntry:
         refreshed_entry = AssetCacheEntry._from_api_entry(asset_id, context)
         self._state = refreshed_entry.get_state()
         return self
+
+    def refresh_after_write(self, context: "ImmichContext") -> None:
+        """
+        Reloads the asset from the API right after this run changed it (a tag
+        added or removed), bypassing every cache, and saves the fresh state to
+        the disk cache.
+
+        Without this the entry keeps its pre-write state until it is 24 h old,
+        so later checks in the same run (``has_tag``, the duplicate comparison)
+        answer from stale data and send the same write again. The disk cache
+        is updated too because other wrappers of the same asset (duplicates are
+        rebuilt from it) must see the change.
+        """
+        from immich_autotag.api.logging_proxy.assets.get_asset_info import (
+            proxy_get_asset_info,
+        )
+
+        asset_id = self._state.get_uuid()
+        dto = proxy_get_asset_info(
+            asset_id, context.get_client_wrapper().get_client(), use_cache=False
+        )
+        if dto is None:
+            raise RuntimeError(
+                f"proxy_get_asset_info returned None for asset id={asset_id}"
+            )
+        state = AssetDtoState.from_dto(dto, AssetDtoType.FULL)
+        ApiCacheManager.create(cache_type=ApiCacheKey.ASSETS).save(
+            str(asset_id), state.to_cache_dict()
+        )
+        self._state = state
+
+    def refresh_after_tag_write(
+        self, context: "ImmichContext", entries: "ModificationEntriesList"
+    ) -> None:
+        """
+        Reloads the asset after a tag write that went through, so the rest of
+        the run sees the change. Nothing to reload when there was no write or
+        every entry is a WARNING_* (the write failed and was already reported).
+        A failed reload is only logged: the write itself succeeded, and the
+        worst case is the old behaviour (stale state until the cache expires).
+        """
+        from immich_autotag.logging.levels import LogLevel
+        from immich_autotag.logging.utils import log
+
+        if not entries or all(
+            e.kind.name.startswith("WARNING_") for e in entries.entries()
+        ):
+            return
+        try:
+            self.refresh_after_write(context)
+        except Exception as e:  # noqa: BLE001 - a reload must never break a run
+            log(
+                f"[WARN] Could not reload asset {self._state.get_uuid()} after a "
+                f"tag write; it keeps its previous state: {e}",
+                level=LogLevel.WARNING,
+            )
 
     def _ensure_fresh(self, context: "ImmichContext") -> "AssetCacheEntry":
         """

@@ -270,6 +270,9 @@ class AssetResponseWrapper:
         )
 
         # Check if entries were created (success)
+        # The asset may have changed: reload it, or later checks in this run
+        # still see the tag and remove it again.
+        self._cache_entry.refresh_after_tag_write(self.get_context(), entries)
         if entries and is_log_level_enabled(LogLevel.DEBUG):
             log_debug(f"[PERF] Tag '{tag_name}' removal applied")
 
@@ -399,7 +402,12 @@ class AssetResponseWrapper:
             tag=tag,
             user=user_wrapper,
         )
-        return ModificationEntriesList(entries=[entry])
+        result = ModificationEntriesList(entries=[entry])
+        # The asset changed: reload it, or `has_tag` keeps answering False for
+        # the rest of the run and the same tag is added again (seen: one tag
+        # added ~20 times to one asset while comparing it with its duplicates).
+        self._cache_entry.refresh_after_tag_write(self.get_context(), result)
+        return result
 
     @typechecked
     def _get_current_tag_ids(self) -> list[TagUUID]:
