@@ -8,9 +8,6 @@ from urllib.parse import ParseResult
 import attrs
 from typeguard import typechecked
 
-from immich_autotag.albums.folder_analysis.album_folder_analyzer import (
-    AlbumFolderAnalyzer,
-)
 from immich_autotag.api.logging_proxy.types import Unset, UpdateAssetDto
 from immich_autotag.assets.asset_cache_entry import (
     AssetCacheEntry,
@@ -767,36 +764,13 @@ class AssetResponseWrapper:
         Improved: If the date folder is the parent of the containing folder, concatenate both (date + subfolder) for the album name.
         If the date is already in the containing folder, keep as before.
         """
-        from immich_autotag.classification.classification_status import (
-            ClassificationStatus,
+        from immich_autotag.assets.albums.folder_album_detection import (
+            folder_analyzer_for,
         )
 
-        config: UserConfig = ConfigManager.get_instance().get_config()
-        if not config.album_detection_from_folders.enabled:
+        analyzer = folder_analyzer_for(self)
+        if analyzer is None:
             return None
-
-        # If already classified or conflicted by tag or album, skip
-        match_results = self.get_classification_status()
-        status = match_results.classification_status()
-        match status:
-            case ClassificationStatus.UNCLASSIFIED:
-                # Proceed with album detection
-                pass
-            case ClassificationStatus.CLASSIFIED | ClassificationStatus.CONFLICT:
-                # Asset already has classifications, don't try folder detection
-                return None
-            case _:
-                raise NotImplementedError(f"Unhandled classification status: {status}")
-
-        # If already in an album matching configured album patterns, skip
-        from immich_autotag.classification.classification_rule_set import (
-            ClassificationRuleSet,
-        )
-
-        rule_set = ClassificationRuleSet.get_rule_set_from_config_manager()
-        if rule_set.matches_any_album_of_asset(self):
-            return None
-        analyzer = AlbumFolderAnalyzer(self.get_original_path())
         album_name = analyzer.get_album_name()
 
         # Check if there's a conflict (multiple candidate folders) and ensure tag symmetry
