@@ -51,11 +51,11 @@ def test_different_rules_still_autofix(monkeypatch):
     assert res.tag_info == "autotag_input_meme"
 
 
-def test_unclassified_pair_is_not_equal_by_rules(monkeypatch):
+def test_unclassified_pair_falls_back_to_tags(monkeypatch):
     # Two copies matching no rule fall back to the tag comparison (equal tags → EQUAL).
-    a, b = wrapper([]), wrapper([])
-    monkeypatch.setattr(cmp_mod, "_matched_rule_keys", lambda a: frozenset())
-    res = cmp_mod.compare_classification_tags(a, b)
+    first, second = wrapper([]), wrapper([])
+    monkeypatch.setattr(cmp_mod, "_matched_rule_keys", lambda asset: frozenset())
+    res = cmp_mod.compare_classification_tags(first, second)
     assert res.result == ClassificationTagComparisonResult.EQUAL
 
 
@@ -85,3 +85,71 @@ def test_refresh_after_write_bypasses_caches_and_saves(monkeypatch):
     assert calls["use_cache"] is False
     saver.save.assert_called_once_with("asset-1", {"id": "x"})
     assert entry._state is fresh_state
+
+
+def test_matched_rule_keys_uses_the_configured_rule_object(monkeypatch):
+    # The key is the configured rule itself, stable across rule-set rebuilds;
+    # rules that did not match are left out.
+    from immich_autotag.classification import classification_rule_set as rs_mod
+
+    meme_rule, other_rule = object(), object()
+
+    def match(rule, matched):
+        m = MagicMock()
+        m.rule.return_value.rule = rule
+        m.has_match.return_value = matched
+        return m
+
+    fake_set = MagicMock()
+    fake_set.matching_rules.return_value.rules.return_value = [
+        match(meme_rule, True),
+        match(other_rule, False),
+    ]
+    monkeypatch.setattr(
+        rs_mod.ClassificationRuleSet,
+        "get_rule_set_from_config_manager",
+        staticmethod(lambda: fake_set),
+    )
+    assert cmp_mod._matched_rule_keys(wrapper([])) == frozenset({id(meme_rule)})
+
+
+def entries_of(*kinds: str) -> MagicMock:
+    entries = MagicMock()
+    entries.__bool__.return_value = bool(kinds)
+    fake = []
+    for k in kinds:
+        e = MagicMock()
+        e.kind.name = k
+        fake.append(e)
+    entries.entries.return_value = fake
+    return entries
+
+
+def fake_asset() -> MagicMock:
+    asset = MagicMock()
+    asset.get_id.return_value = "asset-1"
+    return asset
+
+
+def test_tag_write_reloads_the_asset():
+    asset = fake_asset()
+    AssetResponseWrapper._refresh_after_tag_write(asset, entries_of("ADD_TAG_TO_ASSET"))
+    asset._cache_entry.refresh_after_write.assert_called_once()
+
+
+def test_failed_or_empty_write_does_not_reload():
+    for entries in (
+        entries_of(),
+        entries_of("WARNING_TAG_REMOVAL_FROM_ASSET_FAILED"),
+    ):
+        asset = fake_asset()
+        AssetResponseWrapper._refresh_after_tag_write(asset, entries)
+        asset._cache_entry.refresh_after_write.assert_not_called()
+
+
+def test_a_failed_reload_does_not_break_the_run():
+    asset = fake_asset()
+    asset._cache_entry.refresh_after_write.side_effect = RuntimeError("API down")
+    AssetResponseWrapper._refresh_after_tag_write(
+        asset, entries_of("REMOVE_TAG_FROM_ASSET")
+    )
