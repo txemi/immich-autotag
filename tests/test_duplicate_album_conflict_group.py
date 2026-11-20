@@ -11,6 +11,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from immich_autotag.assets.albums import folder_album_detection as fad
 from immich_autotag.assets.albums.album_decision import AlbumDecision
 from immich_autotag.assets.albums.analyze_and_assign_album import (
     _handle_duplicate_conflicts as mod,
@@ -35,12 +36,14 @@ def rule_set(monkeypatch):
         "get_rule_set_from_config_manager",
         staticmethod(lambda: _AllAlbumsMatch()),
     )
+    # The other copies' folder album, read without side effects.
+    monkeypatch.setattr(fad, "folder_album_of", lambda w: w.folder_album)
 
 
 def copy(albums: list[str], folder: str | None) -> MagicMock:
     w = MagicMock(spec=AssetResponseWrapper)
     w.get_album_names.return_value = albums
-    w.try_detect_album_from_folders.return_value = folder
+    w.folder_album = folder
     w.get_duplicate_id_as_uuid.return_value = GROUP
     w.ensure_autotag_duplicate_album_conflict.return_value = None
     return w
@@ -48,6 +51,7 @@ def copy(albums: list[str], folder: str | None) -> MagicMock:
 
 def run_from(current: MagicMock, others: list[MagicMock]) -> None:
     decision = MagicMock(spec=AlbumDecision)
+    decision.album_from_folder = current.folder_album
     decision.duplicates_info.get_details.return_value = {
         i: o for i, o in enumerate(others)
     }
@@ -98,3 +102,17 @@ def test_no_duplicate_id_does_nothing():
     a.get_duplicate_id_as_uuid.return_value = None
     run_from(a, [])
     a.ensure_autotag_duplicate_album_conflict.assert_not_called()
+
+
+def test_a_group_of_one_is_no_duplicate_conflict():
+    # One copy in two albums is a classification conflict, not a duplicate one.
+    a = copy(["trip", "party"], None)
+    run_from(a, [])
+    assert verdicts(a) == {False}
+
+
+def test_other_copies_are_not_written_while_judging():
+    # Judging the group must not run the folder detection that writes tags.
+    a, b = copy([], "trip"), copy(["party"], None)
+    run_from(a, [b])
+    b.try_detect_album_from_folders.assert_not_called()
