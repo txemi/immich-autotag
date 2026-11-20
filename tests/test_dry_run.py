@@ -119,6 +119,7 @@ def search_json(items: list) -> dict:
             "facets": [],
             "items": items,
             "nextPage": None,
+            "nextCursor": None,
             "total": len(items),
         },
     }
