@@ -125,16 +125,18 @@ def entries_of(*kinds: str) -> MagicMock:
     return entries
 
 
-def fake_asset() -> MagicMock:
-    asset = MagicMock()
-    asset.get_id.return_value = "asset-1"
-    return asset
+def fake_entry() -> MagicMock:
+    entry = MagicMock()
+    entry._state.get_uuid.return_value = "asset-1"
+    return entry
 
 
 def test_tag_write_reloads_the_asset():
-    asset = fake_asset()
-    AssetResponseWrapper._refresh_after_tag_write(asset, entries_of("ADD_TAG_TO_ASSET"))
-    asset._cache_entry.refresh_after_write.assert_called_once()
+    entry = fake_entry()
+    ace.AssetCacheEntry.refresh_after_tag_write(
+        entry, MagicMock(), entries_of("ADD_TAG_TO_ASSET")
+    )
+    entry.refresh_after_write.assert_called_once()
 
 
 def test_failed_or_empty_write_does_not_reload():
@@ -142,14 +144,14 @@ def test_failed_or_empty_write_does_not_reload():
         entries_of(),
         entries_of("WARNING_TAG_REMOVAL_FROM_ASSET_FAILED"),
     ):
-        asset = fake_asset()
-        AssetResponseWrapper._refresh_after_tag_write(asset, entries)
-        asset._cache_entry.refresh_after_write.assert_not_called()
+        entry = fake_entry()
+        ace.AssetCacheEntry.refresh_after_tag_write(entry, MagicMock(), entries)
+        entry.refresh_after_write.assert_not_called()
 
 
 def test_a_failed_reload_does_not_break_the_run():
-    asset = fake_asset()
-    asset._cache_entry.refresh_after_write.side_effect = RuntimeError("API down")
-    AssetResponseWrapper._refresh_after_tag_write(
-        asset, entries_of("REMOVE_TAG_FROM_ASSET")
+    entry = fake_entry()
+    entry.refresh_after_write.side_effect = RuntimeError("API down")
+    ace.AssetCacheEntry.refresh_after_tag_write(
+        entry, MagicMock(), entries_of("REMOVE_TAG_FROM_ASSET")
     )

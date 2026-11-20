@@ -272,7 +272,7 @@ class AssetResponseWrapper:
         # Check if entries were created (success)
         # The asset may have changed: reload it, or later checks in this run
         # still see the tag and remove it again.
-        self._refresh_after_tag_write(entries)
+        self._cache_entry.refresh_after_tag_write(self.get_context(), entries)
         if entries and is_log_level_enabled(LogLevel.DEBUG):
             log_debug(f"[PERF] Tag '{tag_name}' removal applied")
 
@@ -406,32 +406,8 @@ class AssetResponseWrapper:
         # The asset changed: reload it, or `has_tag` keeps answering False for
         # the rest of the run and the same tag is added again (seen: one tag
         # added ~20 times to one asset while comparing it with its duplicates).
-        self._refresh_after_tag_write(result)
+        self._cache_entry.refresh_after_tag_write(self.get_context(), result)
         return result
-
-    def _refresh_after_tag_write(self, entries: ModificationEntriesList) -> None:
-        """
-        Reloads the asset after a tag write that went through, so the rest of
-        the run sees the change. Nothing to reload when there was no write or
-        every entry is a WARNING_* (the write failed and was already reported).
-        A failed reload is only logged: the write itself succeeded, and the
-        worst case is the old behaviour (stale state until the cache expires).
-        """
-        from immich_autotag.logging.levels import LogLevel
-        from immich_autotag.logging.utils import log
-
-        if not entries or all(
-            e.kind.name.startswith("WARNING_") for e in entries.entries()
-        ):
-            return
-        try:
-            self._cache_entry.refresh_after_write(self.get_context())
-        except Exception as e:  # noqa: BLE001 - a reload must never break a run
-            log(
-                f"[WARN] Could not reload asset {self.get_id()} after a tag "
-                f"write; it keeps its previous state: {e}",
-                level=LogLevel.WARNING,
-            )
 
     @typechecked
     def _get_current_tag_ids(self) -> list[TagUUID]:
