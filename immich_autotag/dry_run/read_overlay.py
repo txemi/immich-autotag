@@ -51,6 +51,9 @@ def empty_search_result(items: list[dict[str, Any]]) -> dict[str, Any]:
             "facets": [],
             "items": items,
             "nextPage": None,
+            # Immich 3.2+ declares nextCursor as required (nullable): a client
+            # generated from that spec raises KeyError if it is missing.
+            "nextCursor": None,
             "total": len(items),
         },
     }

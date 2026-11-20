@@ -29,6 +29,7 @@ from immich_client.models.asset_response_dto import AssetResponseDto
 from immich_client.models.bulk_ids_dto import BulkIdsDto
 from immich_client.models.create_album_dto import CreateAlbumDto
 from immich_client.models.metadata_search_dto import MetadataSearchDto
+from immich_client.models.search_response_dto import SearchResponseDto
 from immich_client.models.tag_create_dto import TagCreateDto
 from immich_client.models.tag_response_dto import TagResponseDto
 from immich_client.models.update_album_dto import UpdateAlbumDto
@@ -41,6 +42,7 @@ from immich_autotag.dry_run.request_classifier import (
     classify_request,
     relative_api_path,
 )
+from immich_autotag.dry_run.read_overlay import empty_search_result
 from immich_autotag.dry_run.simulated_state import is_simulated_id
 
 BASE_URL = "http://immich.example.invalid:2283/api"
@@ -117,6 +119,7 @@ def search_json(items: list) -> dict:
             "facets": [],
             "items": items,
             "nextPage": None,
+            "nextCursor": None,
             "total": len(items),
         },
     }
@@ -505,3 +508,16 @@ def test_normal_run_does_not_install_the_dry_run_transport(clean_mode, monkeypat
     wrapper_module.ImmichClientWrapper().get_client()
     assert "transport" not in built["httpx_args"]
     monkeypatch.setattr(wrapper_module, "_singleton", None)
+
+
+def test_simulated_search_result_has_every_field_the_spec_requires():
+    """A search answered by the simulation must parse with the generated client.
+
+    Immich 3.2+ declares ``nextCursor`` as required (nullable). Without it, every
+    search on a simulated album raised KeyError and the asset was skipped (784
+    assets skipped in a 30.000-asset dry run against Immich 3.3.5).
+    """
+    assets = empty_search_result([])["assets"]
+    for field in ("count", "facets", "items", "nextPage", "nextCursor", "total"):
+        assert field in assets
+    assert SearchResponseDto.from_dict(empty_search_result([])).assets.count == 0
